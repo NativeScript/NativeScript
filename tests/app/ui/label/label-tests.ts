@@ -175,7 +175,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             TKUnit.assertNull(actualTransformationMethod, "TransformationMethod");
         }
         else {
-            expectedLineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
+            expectedLineBreakMode = NSLineBreakMode.ByWordWrapping;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 
@@ -211,7 +211,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             TKUnit.assert(("" + actualTransformationMethod).indexOf("SingleLineTransformationMethod") > -1, "Expected: SingleLineTransformationMethod, Actual: " + actualTransformationMethod);
         }
         else {
-            expectedLineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
+            expectedLineBreakMode = NSLineBreakMode.ByTruncatingTail;
             actualLineBreakMode = testLabel.ios.lineBreakMode;
             actualLinesNumber = testLabel.ios.numberOfLines;
 

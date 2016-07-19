@@ -133,8 +133,7 @@ export class KeyframeAnimation {
         this._target = view;
 
         if (this.delay !== 0) {
-            let that = this;
-            setTimeout(function (){ that.animate(view, 0, that.iterations); }, that.delay, that);
+            setTimeout(() => this.animate(view, 0, this.iterations), this.delay);
         }
         else {
             this.animate(view, 0, this.iterations);
@@ -169,8 +168,7 @@ export class KeyframeAnimation {
                 view.style._setValue(style.opacityProperty, animation["opacity"], modifier);
             }
 
-            let that = this;
-            setTimeout(function () { that.animate(view, 1, iterations); }, 1, that);
+            setTimeout(() => this.animate(view, 1, iterations), 1);
         }
         else if (index < 0 || index >= this.animations.length) {
             iterations -= 1;

@@ -50,7 +50,7 @@ class Device implements definition.Device {
         if (!this._deviceType) {
             var enums = require("ui/enums");
 
-            if (UIDevice.currentDevice().userInterfaceIdiom === UIUserInterfaceIdiom.UIUserInterfaceIdiomPhone) {
+            if (UIDevice.currentDevice().userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
                 this._deviceType = enums.DeviceType.Phone;
             }
             else {

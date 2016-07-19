@@ -2,15 +2,15 @@
 import style = require("ui/styling/style");
 import {View} from "ui/core/view";
 
-function getDate(hour: number, minute: number): NSDate {
+function getDate(hour: number, minute: number): Date {
     var comps = NSDateComponents.alloc().init();
     comps.hour = hour;
     comps.minute = minute;
-    return NSCalendar.currentCalendar().dateFromComponents(comps);
+    return NSCalendar.currentCalendar().dateFromComponents(<any>comps);
 }
 
-function getComponents(date: NSDate): NSDateComponents {
-    return NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.NSCalendarUnitHour | NSCalendarUnit.NSCalendarUnitMinute, date);
+function getComponents(date: Date | NSDate): NSDateComponents {
+    return NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
 global.moduleMerge(common, exports);
@@ -22,11 +22,11 @@ export class TimePicker extends common.TimePicker {
     constructor() {
         super();
 
-        this._ios = new UIDatePicker();
-        this._ios.datePickerMode = UIDatePickerMode.UIDatePickerModeTime;
+        this._ios = UIDatePicker.new();
+        this._ios.datePickerMode = UIDatePickerMode.Time;
 
         this._changeHandler = UITimePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.UIControlEventValueChanged);
+        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
 
         var comps = getComponents(NSDate.date());
         this.hour = comps.hour;
@@ -39,19 +39,19 @@ export class TimePicker extends common.TimePicker {
 
     public _setNativeTime() {
         if (this.ios) {
-            this.ios.date = getDate(this.hour, this.minute);
+            this.ios.date = <any>getDate(this.hour, this.minute);
         }
     }
 
     public _setNativeMinTime() {
         if (this.ios) {
-            this.ios.minimumDate = getDate(this.minHour, this.minMinute);
+            this.ios.minimumDate = <any>getDate(this.minHour, this.minMinute);
         }
     }
 
     public _setNativeMaxTime() {
         if (this.ios) {
-            this.ios.maximumDate = getDate(this.maxHour, this.maxMinute);
+            this.ios.maximumDate = <any>getDate(this.maxHour, this.maxMinute);
         }
     }
 

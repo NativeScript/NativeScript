@@ -15,7 +15,7 @@ function ensureTrace() {
 }
 
 function isOrientationLandscape(orientation: number) {
-    return orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeLeft || orientation === UIDeviceOrientation.UIDeviceOrientationLandscapeRight;
+    return orientation === UIDeviceOrientation.LandscapeLeft || orientation === UIDeviceOrientation.LandscapeRight;
 }
 
 export module layout {
@@ -43,13 +43,13 @@ export module ios {
     export function setTextAlignment(view: dts.ios.TextUIView, value: string) {
         switch (value) {
             case enums.TextAlignment.left:
-                view.textAlignment = NSTextAlignment.NSTextAlignmentLeft;
+                view.textAlignment = NSTextAlignment.Left;
                 break;
             case enums.TextAlignment.center:
-                view.textAlignment = NSTextAlignment.NSTextAlignmentCenter;
+                view.textAlignment = NSTextAlignment.Center;
                 break;
             case enums.TextAlignment.right:
-                view.textAlignment = NSTextAlignment.NSTextAlignmentRight;
+                view.textAlignment = NSTextAlignment.Right;
                 break;
             default:
                 break;
@@ -84,25 +84,25 @@ export module ios {
 
     export function setWhiteSpace(view: dts.ios.TextUIView, value: string, parentView?: UIView) {
         if (value === enums.WhiteSpace.normal) {
-            view.lineBreakMode = NSLineBreakMode.NSLineBreakByWordWrapping;
+            view.lineBreakMode = NSLineBreakMode.ByWordWrapping;
             view.numberOfLines = 0;
         }
         else {
             if (parentView) {
-                view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingMiddle;
+                view.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
             } else {
-                view.lineBreakMode = NSLineBreakMode.NSLineBreakByTruncatingTail;
+                view.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
             }
             view.numberOfLines = 1;
         }
     }
 
     export module collections {
-        export function jsArrayToNSArray(str: string[]): NSArray {
+        export function jsArrayToNSArray(str: string[]): NSArray<any> {
             return NSArray.arrayWithArray(<any>str);
         }
 
-        export function nsArrayToJSArray(a: NSArray): Array<Object> {
+        export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
             var arr = [];
             if ("undefined" !== typeof a) {
                 let count = a.count;

@@ -26,7 +26,7 @@ export class Progress extends common.Progress {
     constructor() {
         super();
 
-        this._ios = new UIProgressView();
+        this._ios = UIProgressView.new();
     }
 
     get ios(): UIProgressView {

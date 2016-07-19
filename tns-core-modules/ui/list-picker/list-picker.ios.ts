@@ -12,7 +12,7 @@ export class ListPicker extends common.ListPicker {
     constructor() {
         super();
 
-        this._ios = new UIPickerView();
+        this._ios = UIPickerView.new();
         this._ios.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
         this._delegate = ListPickerDelegateImpl.initWithOwner(new WeakRef(this));
     }

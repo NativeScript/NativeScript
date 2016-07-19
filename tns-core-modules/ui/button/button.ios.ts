@@ -39,10 +39,10 @@ export class Button extends common.Button {
 
     constructor() {
         super();
-        this._ios = UIButton.buttonWithType(UIButtonType.UIButtonTypeSystem);
+        this._ios = UIButton.buttonWithType(UIButtonType.System);
 
         this._tapHandler = TapHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.UIControlEventTouchUpInside);
+        this._ios.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
     }
 
     get ios(): UIButton {
@@ -51,13 +51,13 @@ export class Button extends common.Button {
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         // In general, if a property is not specified for a state, the default is to use
-        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // the UIControlState.Normal value. If the value for UIControlState.Normal is not set,
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
-        this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
+        this.ios.setTitleForState(data.newValue + "", UIControlState.Normal);
         
         //https://github.com/NativeScript/NativeScript/issues/2615
-        let attributedTitle = this.ios.attributedTitleForState(UIControlState.UIControlStateNormal);
+        let attributedTitle = this.ios.attributedTitleForState(UIControlState.Normal);
         if (attributedTitle !== null){
             ButtonStyler._setButtonTextDecorationAndTransform(this, this.style.textDecoration, this.style.textTransform, this.style.letterSpacing);
         }
@@ -65,11 +65,11 @@ export class Button extends common.Button {
 
     public _setFormattedTextPropertyToNative(value) {
         // In general, if a property is not specified for a state, the default is to use
-        // the UIControlStateNormal value. If the value for UIControlStateNormal is not set,
+        // the UIControlState.Normal value. If the value for UIControlState.Normal is not set,
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
         let newText = value ? value._formattedText : null;
-        this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
+        this.ios.setAttributedTitleForState(newText, UIControlState.Normal);
         //RemoveThisDoubleCall
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
@@ -101,17 +101,17 @@ export class ButtonStyler implements style.Styler {
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        btn.setTitleColorForState(newValue, UIControlState.UIControlStateNormal);
+        btn.setTitleColorForState(newValue, UIControlState.Normal);
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
         var btn: UIButton = <UIButton>view._nativeView;
-        btn.setTitleColorForState(nativeValue, UIControlState.UIControlStateNormal);
+        btn.setTitleColorForState(nativeValue, UIControlState.Normal);
     }
 
     private static getNativeColorValue(view: view.View): any {
         var btn: UIButton = <UIButton>view._nativeView;
-        return btn.titleColorForState(UIControlState.UIControlStateNormal);
+        return btn.titleColorForState(UIControlState.Normal);
     }
 
     // font
@@ -138,13 +138,13 @@ export class ButtonStyler implements style.Styler {
         // Also set the contentHorizontalAlignment
         switch (newValue) {
             case enums.TextAlignment.left:
-                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentLeft;
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
                 break;
             case enums.TextAlignment.center:
-                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentCenter;
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
                 break;
             case enums.TextAlignment.right:
-                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.UIControlContentHorizontalAlignmentRight;
+                btn.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
                 break;
             default:
                 break;
@@ -258,15 +258,15 @@ export class ButtonStyler implements style.Styler {
             if (button.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
                 
                 if (button.style.textDecoration.indexOf(enums.TextDecoration.underline) !== -1) {
-                    button.formattedText.underline = NSUnderlineStyle.NSUnderlineStyleSingle;
+                    button.formattedText.underline = NSUnderlineStyle.StyleSingle;
                 }
 
                 if (button.style.textDecoration.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    button.formattedText.strikethrough = NSUnderlineStyle.NSUnderlineStyleSingle;
+                    button.formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
                 }
             } 
             else {
-                button.formattedText.underline = NSUnderlineStyle.NSUnderlineStyleNone;
+                button.formattedText.underline = NSUnderlineStyle.StyleNone;
             }
 
             for (let i = 0; i < button.formattedText.spans.length; i++) {
@@ -275,9 +275,9 @@ export class ButtonStyler implements style.Styler {
             }
             
             if (hasLetterSpacing) {
-                let attrText = NSMutableAttributedString.alloc().initWithAttributedString(button.ios.attributedTitleForState(UIControlState.UIControlStateNormal));
+                let attrText = NSMutableAttributedString.alloc().initWithAttributedString(button.ios.attributedTitleForState(UIControlState.Normal));
                 attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * button.ios.font.pointSize, { location: 0, length: attrText.length });
-                button.ios.setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);            
+                button.ios.setAttributedTitleForState(attrText, UIControlState.Normal);            
             }
         } 
         else {
@@ -286,11 +286,11 @@ export class ButtonStyler implements style.Styler {
             let dict = new Map<string, number>();
             if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
-                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 }
 
                 if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 }
 
                 if (hasLetterSpacing) {
@@ -310,10 +310,10 @@ export class ButtonStyler implements style.Styler {
                 result.setAttributesRange(<any>dict, NSValue.valueWithRange({ location: 0, length: source.length }).rangeValue);
             } 
             
-            button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+            button.ios.setAttributedTitleForState(result, UIControlState.Normal);
             
             if (dict.size === 0) {
-                button.ios.setTitleForState(source, UIControlState.UIControlStateNormal);
+                button.ios.setTitleForState(source, UIControlState.Normal);
             }
         }
     }

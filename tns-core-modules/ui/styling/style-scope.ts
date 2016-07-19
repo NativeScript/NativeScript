@@ -12,7 +12,7 @@ import cssAnimationParser = require("./css-animation-parser");
 import observable = require("ui/core/dependency-observable");
 
 import {convertString} from "utils/utils";
-import {RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap } from "ui/styling/css-selector";
+import {RuleSet, Node, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap } from "ui/styling/css-selector";
 import {StyleProperty, withStyleProperty} from "ui/styling/style-property";
 import {getSpecialPropertySetter} from "ui/builder/special-properties";
 
@@ -214,7 +214,7 @@ export class StyleScope {
 
     private static createSelectorsFromSyntaxTree(ast: cssParser.SyntaxTree, keyframes: Object): RuleSet[] {
         let nodes = ast.stylesheet.rules;
-        nodes.filter(isKeyframe).forEach(node => keyframes[node.name] = node);
+        (<cssParser.Keyframes[]>nodes.filter(isKeyframe)).forEach(node => keyframes[node.name] = node);
 
         let rulesets = cssSelector.fromAstNodes(nodes);
         rulesets.forEach(rule => rule[animationsSymbol] = cssAnimationParser.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations));
@@ -250,7 +250,7 @@ export class StyleScope {
 export function applyInlineSyle(view: view.View, style: string) {
     try {
         let syntaxTree = cssParser.parse("local { " + style + " }", undefined);
-        let filteredDeclarations = syntaxTree.stylesheet.rules.filter(isRule)[0].declarations.filter(isDeclaration);
+        let filteredDeclarations = <cssParser.Declaration[]>(<cssParser.Rule[]>syntaxTree.stylesheet.rules.filter(isRule))[0].declarations.filter(isDeclaration);
         applyInlineStyle(view, filteredDeclarations);
     } catch (ex) {
         trace.write("Applying local style failed: " + ex, trace.categories.Error, trace.messageType.error);

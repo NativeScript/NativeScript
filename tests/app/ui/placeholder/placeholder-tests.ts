@@ -13,7 +13,7 @@ import placeholderModule = require("ui/placeholder");
 function creatingView(args) {
    var nativeView;
    if (platform.device.os === platform.platformNames.ios) {
-       nativeView = new UITextView();
+       nativeView = UITextView.new();
        nativeView.text = "Native";
    } else if (platform.device.os === platform.platformNames.android) {
        nativeView = new android.widget.TextView(utils.ad.getApplicationContext());
@@ -33,7 +33,7 @@ export function test_placeholder_creatingView() {
     p.id = "test";
     p.on(placeholderModule.Placeholder.creatingViewEvent, (args: placeholderModule.CreateViewEventData) => {
         if (platform.device.os === platform.platformNames.ios) {
-            nativeView = new UITextView();
+        nativeView = UITextView.new();
             nativeView.text = "Native";
         } else if (platform.device.os === platform.platformNames.android) {
             nativeView = new android.widget.TextView(utils.ad.getApplicationContext());

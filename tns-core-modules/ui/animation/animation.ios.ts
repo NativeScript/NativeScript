@@ -396,7 +396,7 @@ export class Animation extends common.Animation implements definition.Animation 
         }
 
         UIView.animateWithDurationDelayUsingSpringWithDampingInitialSpringVelocityOptionsAnimationsCompletion(args.duration, delay, 0.2, 0,
-            UIViewKeyframeAnimationOptions.UIViewKeyframeAnimationOptionCalculationModeLinear,
+            UIViewAnimationOptions.CurveLinear,
             () => {
                 if (args.repeatCount !== undefined) {
                     UIView.setAnimationRepeatCount(args.repeatCount);

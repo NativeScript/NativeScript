@@ -1,4 +1,4 @@
-﻿/* tslint:disable:no-unused-variable */
+/* tslint:disable:no-unused-variable */
 
 interface WeakMap<K, V> {
     clear(): void;
