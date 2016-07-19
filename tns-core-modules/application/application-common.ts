@@ -2,7 +2,7 @@
 import definition = require("application");
 import observable = require("data/observable");
 import frame = require("ui/frame");
-import cssSelector = require("ui/styling/css-selector");
+import {RuleSet} from "ui/styling/css-selector";
 import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
 import * as fileResolverModule  from "file-system/file-name-resolver";
@@ -34,9 +34,9 @@ export var mainEntry: frame.NavigationEntry;
 
 export var cssFile: string = "app.css"
 
-export var appSelectors: Array<cssSelector.CssSelector> = [];
-export var additionalSelectors: Array<cssSelector.CssSelector> = [];
-export var cssSelectors: Array<cssSelector.CssSelector> = [];
+export var appSelectors: RuleSet[] = [];
+export var additionalSelectors: RuleSet[] = [];
+export var cssSelectors: RuleSet[] = [];
 export var cssSelectorVersion: number = 0;
 export var keyframes: any = {};
 
@@ -58,12 +58,12 @@ export var android = undefined;
 
 export var ios = undefined;
 
-export function loadCss(cssFile?: string): Array<cssSelector.CssSelector> {
+export function loadCss(cssFile?: string): RuleSet[] {
     if (!cssFile) {
         return undefined;
     }
 
-    var result: Array<cssSelector.CssSelector>;
+    var result: RuleSet[];
 
     var fs: typeof fileSystemModule = require("file-system");
     if (!styleScope) {
@@ -89,7 +89,7 @@ export function mergeCssSelectors(module: any): void {
     module.cssSelectorVersion++;
 }
 
-export function parseCss(cssText: string, cssFileName?: string): Array<cssSelector.CssSelector> {
+export function parseCss(cssText: string, cssFileName?: string): RuleSet[] {
     if (!styleScope) {
         styleScope = require("ui/styling/style-scope");
     }

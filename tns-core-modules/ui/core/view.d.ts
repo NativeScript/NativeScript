@@ -33,6 +33,8 @@ declare module "ui/core/view" {
 
     export function isEventOrGesture(name: string, view: View): boolean;
 
+    export function PseudoClassHandler(... pseudoClasses: string[]): MethodDecorator;
+
     /**
      * The Point interface describes a two dimensional location. 
      * It has two properties x and y, representing the x and y coordinate of the location. 
@@ -289,9 +291,14 @@ declare module "ui/core/view" {
          */
         isLayoutValid: boolean;
 
+        /**
+         * Gets the CSS fully qualified type name.
+         * Using this as element type should allow for PascalCase and kebap-case selectors, when fully qualified, to match the element.
+         */
         cssType: string;
 
-        visualState: string;
+        cssClasses: Set<string>;
+        cssPseudoClasses: Set<string>;
 
         /**
          * Gets owner page. This is a read-only property.
@@ -477,6 +484,20 @@ declare module "ui/core/view" {
          * Returns the actual size of the view in device-independent pixels.
          */
         public getActualSize(): Size;
+
+        /**
+         * @protected
+         * @unstable
+         * A widget can call this method to add a matching css pseudo class.
+         */
+        public addPseudoClass(name: string): void;
+
+        /**
+         * @protected
+         * @unstable
+         * A widget can call this method to discard mathing css pseudo class.
+         */
+        public deletePseudoClass(name: string): void;
         
         // Lifecycle events
         onLoaded(): void;
@@ -505,7 +526,9 @@ declare module "ui/core/view" {
         _gestureObservers: any;
         _isInheritedChange(): boolean;
         _domId: number;
-        _cssClasses: Array<string>;
+
+        _cssState: any /* "ui/styling/style-scope" */;
+        _onCssStateChange(previous: any /* "ui/styling/style-scope" */, any /* "ui/styling/style-scope" */);
 
         _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
         _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
@@ -560,7 +583,7 @@ declare module "ui/core/view" {
      */
     export class CustomLayoutView extends View {
     }
-    
+
     /**
      * Defines an interface for a View factory function.
      * Commonly used to specify the visualization of data objects.

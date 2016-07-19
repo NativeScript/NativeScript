@@ -119,12 +119,6 @@ declare module "ui/page" {
         addCssFile(cssFileName: string): void;
 
         /**
-         * Removes all selectors matching the specified selector expression.
-         * @param selectorExpression - A valid selector expression.
-         */
-        removeCssSelectors(selectorExpression: string): void;
-
-        /**
          * Returns a CSS keyframe animation with the specified name, if it exists.
          */
         getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo;

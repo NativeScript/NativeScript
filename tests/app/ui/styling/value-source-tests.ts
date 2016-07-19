@@ -42,21 +42,3 @@ export function test_value_Local_stronger_than_Css() {
     btn.style.color = undefined;
     TKUnit.assertEqual(btn.style.color, undefined, "style.color should be undefined when set locally.");
 }
-
-export var test_value_VisualState_stronger_than_Local = function () {
-    let testPage = helper.getCurrentPage();
-
-    let testStack = new stack.StackLayout();
-    testPage.content = testStack;
-
-    let btn = new button.Button();
-    btn.style.color = new color.Color("#FF0000");
-    testStack.addChild(btn);
-    testPage.css = "button:pressed { color: #0000FF; }";
-
-    helper.assertViewColor(btn, "#FF0000");
-    btn._goToVisualState("pressed");
-    helper.assertViewColor(btn, "#0000FF");
-    btn._goToVisualState("normal");
-    helper.assertViewColor(btn, "#FF0000");
-}
