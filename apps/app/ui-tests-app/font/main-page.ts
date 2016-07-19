@@ -16,7 +16,8 @@ export function pageLoaded(args: EventData) {
     examples.set("fontfield", "font/text-field");
     examples.set("fontview", "font/text-view");
     examples.set("nordic", "nordic/nordic");
-
+    examples.set("customfonts", "font/custom-fonts");
+    
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
 }
