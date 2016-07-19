@@ -16,7 +16,7 @@ export class FormattedString extends formattedStringCommon.FormattedString {
             spanText = types.toUIString(span.text);
             spanLength = spanText.length;
             span.updateSpanModifiers(this);
-            var attrDict = NSMutableDictionary.alloc().init();
+            var attrDict = NSMutableDictionary.alloc<string, any>().init();
             var p;
             for (p = 0; p < span.spanModifiers.length; p++) {
                 attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);

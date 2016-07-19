@@ -135,7 +135,7 @@ export class Frame extends frameCommon.Frame {
 
         // We should hide the current entry from the back stack.
         if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
-            let newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
+            let newControllers = NSMutableArray.alloc<UIViewController>().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
                 throw new Error("Wrong controllers count.");
             }
@@ -146,7 +146,7 @@ export class Frame extends frameCommon.Frame {
 
             // swap the top entry with the new one
             const skippedNavController = newControllers.lastObject;
-            skippedNavController.isBackstackSkipped = true;
+            (<any>skippedNavController).isBackstackSkipped = true;
             newControllers.removeLastObject();
             newControllers.addObject(viewController);
 
@@ -349,7 +349,7 @@ export class Frame extends frameCommon.Frame {
             trace.write(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, trace.categories.Layout);
         }
 
-        this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
+        this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.None;
         this._ios.controller.navigationBar.removeConstraints((<any>this)._ios.controller.navigationBar.constraints);
         this._ios.controller.navigationBar.frame = CGRectMake(
             this._ios.controller.navigationBar.frame.origin.x,
@@ -415,10 +415,10 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
 
         let viewController: UIViewController;
         switch (operation) {
-            case UINavigationControllerOperation.UINavigationControllerOperationPush:
+            case UINavigationControllerOperation.Push:
                 viewController = toVC;
                 break;
-            case UINavigationControllerOperation.UINavigationControllerOperationPop:
+            case UINavigationControllerOperation.Pop:
                 viewController = fromVC;
                 break;
         }
@@ -523,9 +523,10 @@ class UINavigationControllerImpl extends UINavigationController {
         });
     }
 
-    public setViewControllersAnimated(viewControllers: NSArray, animated: boolean): void {
+    public setViewControllersAnimated(viewControllers: NSArray<any>, animated: boolean): void {
         let viewController = viewControllers.lastObject;
         let navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
+
         if (trace.enabled) {
             trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
@@ -565,7 +566,7 @@ class UINavigationControllerImpl extends UINavigationController {
         return null;
     }
 
-    public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray {
+    public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray<UIViewController> {
         let lastViewController = this.viewControllers.lastObject;
         let navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         if (trace.enabled) {
@@ -593,11 +594,11 @@ class UINavigationControllerImpl extends UINavigationController {
 function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitionType: string): string {
     let name;
     switch (nativeTransition) {
-        case UIViewAnimationTransition.UIViewAnimationTransitionCurlDown: name = "CurlDown"; break;
-        case UIViewAnimationTransition.UIViewAnimationTransitionCurlUp: name = "CurlUp"; break;
-        case UIViewAnimationTransition.UIViewAnimationTransitionFlipFromLeft: name = "FlipFromLeft"; break;
-        case UIViewAnimationTransition.UIViewAnimationTransitionFlipFromRight: name = "FlipFromRight"; break;
-        case UIViewAnimationTransition.UIViewAnimationTransitionNone: name = "None"; break;
+        case UIViewAnimationTransition.CurlDown: name = "CurlDown"; break;
+        case UIViewAnimationTransition.CurlUp: name = "CurlUp"; break;
+        case UIViewAnimationTransition.FlipFromLeft: name = "FlipFromLeft"; break;
+        case UIViewAnimationTransition.FlipFromRight: name = "FlipFromRight"; break;
+        case UIViewAnimationTransition.None: name = "None"; break;
     }
 
     return `${name} ${transitionType}`;
@@ -608,14 +609,14 @@ function _getNativeTransition(navigationTransition: definition.NavigationTransit
         switch (navigationTransition.name.toLowerCase()) {
             case "flip":
             case "flipright":
-                return push ? UIViewAnimationTransition.UIViewAnimationTransitionFlipFromRight : UIViewAnimationTransition.UIViewAnimationTransitionFlipFromLeft;
+                return push ? UIViewAnimationTransition.FlipFromRight : UIViewAnimationTransition.FlipFromLeft;
             case "flipleft":
-                return push ? UIViewAnimationTransition.UIViewAnimationTransitionFlipFromLeft : UIViewAnimationTransition.UIViewAnimationTransitionFlipFromRight;
+                return push ? UIViewAnimationTransition.FlipFromLeft : UIViewAnimationTransition.FlipFromRight;
             case "curl":
             case "curlup":
-                return push ? UIViewAnimationTransition.UIViewAnimationTransitionCurlUp : UIViewAnimationTransition.UIViewAnimationTransitionCurlDown;
+                return push ? UIViewAnimationTransition.CurlUp : UIViewAnimationTransition.CurlDown;
             case "curldown":
-                return push ? UIViewAnimationTransition.UIViewAnimationTransitionCurlDown : UIViewAnimationTransition.UIViewAnimationTransitionCurlUp;
+                return push ? UIViewAnimationTransition.CurlDown : UIViewAnimationTransition.CurlUp;
         }
     }
 
@@ -627,24 +628,24 @@ export function _getNativeCurve(transition: definition.NavigationTransition): UI
         switch (transition.curve) {
             case AnimationCurve.easeIn:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseIn.", trace.categories.Transition);
+                    trace.write("Transition curve resolved to UIViewAnimationCurve.EaseIn.", trace.categories.Transition);
                 }
-                return UIViewAnimationCurve.UIViewAnimationCurveEaseIn;
+                return UIViewAnimationCurve.EaseIn;
             case AnimationCurve.easeOut:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseOut.", trace.categories.Transition);
+                    trace.write("Transition curve resolved to UIViewAnimationCurve.EaseOut.", trace.categories.Transition);
                 }
-                return UIViewAnimationCurve.UIViewAnimationCurveEaseOut;
+                return UIViewAnimationCurve.EaseOut;
             case AnimationCurve.easeInOut:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveEaseInOut.", trace.categories.Transition);
+                    trace.write("Transition curve resolved to UIViewAnimationCurve.EaseInOut.", trace.categories.Transition);
                 }
-                return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
+                return UIViewAnimationCurve.EaseInOut;
             case AnimationCurve.linear:
                 if (trace.enabled) {
-                    trace.write("Transition curve resolved to UIViewAnimationCurve.UIViewAnimationCurveLinear.", trace.categories.Transition);
+                    trace.write("Transition curve resolved to UIViewAnimationCurve.Linear.", trace.categories.Transition);
                 }
-                return UIViewAnimationCurve.UIViewAnimationCurveLinear;
+                return UIViewAnimationCurve.Linear;
             default:
                 if (trace.enabled) {
                     trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
@@ -653,7 +654,7 @@ export function _getNativeCurve(transition: definition.NavigationTransition): UI
         }
     }
 
-    return UIViewAnimationCurve.UIViewAnimationCurveEaseInOut;
+    return UIViewAnimationCurve.EaseInOut;
 }
 
 /* tslint:disable */

@@ -368,10 +368,10 @@ export class Page extends pageCommon.Page {
         }
 
         if (fullscreen) {
-            this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFullScreen;
+            this._ios.modalPresentationStyle = UIModalPresentationStyle.FullScreen;
         }
         else {
-            this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
+            this._ios.modalPresentationStyle = UIModalPresentationStyle.FormSheet;
             this._UIModalPresentationFormSheet = true;
         }
 

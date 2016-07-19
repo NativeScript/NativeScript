@@ -20,7 +20,7 @@ function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: numbe
 
 //export function testWTF() {
 //    var picker = new UIDatePicker();
-//    picker.datePickerMode = UIDatePickerMode.UIDatePickerModeDate;
+//    picker.datePickerMode = UIDatePickerMode.Date;
 //    var jsDate = new Date(1980, 1, 9);
 //    var nsDate = NSDate.dateWithTimeIntervalSince1970(jsDate.getTime() / 1000);
 //    console.log("nsDate: " + nsDate);

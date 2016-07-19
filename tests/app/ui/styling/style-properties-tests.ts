@@ -466,7 +466,7 @@ export var test_setting_button_whiteSpace_normal_sets_native = function () {
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual((<android.widget.Button>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
         } else if (platform.device.os === platform.platformNames.ios) {
-            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.NSLineBreakByTruncatingMiddle);
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.ByTruncatingMiddle);
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
         }
     });
@@ -480,7 +480,7 @@ export var test_setting_label_whiteSpace_normal_sets_native = function () {
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual((<android.widget.TextView>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
         } else if (platform.device.os === platform.platformNames.ios) {
-            TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.NSLineBreakByTruncatingTail);
+            TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.ByTruncatingTail);
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 1);
         }
     });
@@ -494,7 +494,7 @@ export var test_setting_button_whiteSpace_nowrap_sets_native = function () {
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertNull((<android.widget.Button>testView.android).getEllipsize(), null);
         } else if (platform.device.os === platform.platformNames.ios) {
-            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.NSLineBreakByWordWrapping);
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.ByWordWrapping);
             TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 0);
         }
     });
@@ -508,7 +508,7 @@ export var test_setting_label_whiteSpace_nowrap_sets_native = function () {
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertNull((<android.widget.TextView>testView.android).getEllipsize(), null);
         } else if (platform.device.os === platform.platformNames.ios) {
-            TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.NSLineBreakByWordWrapping);
+            TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.ByWordWrapping);
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 0);
         }
     });
@@ -590,7 +590,7 @@ export var test_setting_button_textTransform_sets_native = function () {
     testView.text = initial;
     testView.style.textTransform = enums.TextTransform.capitalize;
 
-    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).titleForState(UIControlState.UIControlStateNormal); });
+    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).titleForState(UIControlState.Normal); });
 }
 
 export var test_setting_label_textTransform_and_textDecoration_sets_native = function () {
@@ -626,5 +626,5 @@ export var test_setting_button_textTransform_and_textDecoration_sets_native = fu
     testView.style.textTransform = enums.TextTransform.capitalize;
     testView.style.textDecoration = enums.TextDecoration.underline;
 
-    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).attributedTitleForState(UIControlState.UIControlStateNormal).string; });
+    executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).attributedTitleForState(UIControlState.Normal).string; });
 }

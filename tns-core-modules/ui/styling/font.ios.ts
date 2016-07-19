@@ -85,10 +85,10 @@ function createUIFont(font: Font, defaultFont: UIFont) {
 
     var symbolicTraits: number = 0;
     if (font.isBold) {
-        symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitBold;
+        symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
     }
     if (font.isItalic) {
-        symbolicTraits |= UIFontDescriptorSymbolicTraits.UIFontDescriptorTraitItalic;
+        symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
     }
 
     descriptor = tryResolveWithSystemFont(font, size, symbolicTraits);
@@ -162,7 +162,7 @@ function tryResolveByFamily(font: Font): UIFontDescriptor {
 }
 
 function createFontDescriptor(fontFamily: string, fontFace: string): UIFontDescriptor  {
-    var fontAttributes = NSMutableDictionary.alloc().init();
+    var fontAttributes = NSMutableDictionary.alloc<string, any>().init();
     fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
     if (fontFace) {
         fontAttributes.setObjectForKey(fontFace, "NSFontFaceAttribute");
@@ -302,7 +302,7 @@ export module ios {
             throw new Error("Could not load font from: " + fontFile);
         }
 
-        var error = new interop.Reference();
+        var error = new interop.Reference<NSError>();
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
             var trace: typeof traceModule = require("trace");
 

@@ -9,10 +9,10 @@ export class FadeTransition extends transition.Transition {
         fromView.alpha = 1.0;
 
         switch (operation) {
-            case UINavigationControllerOperation.UINavigationControllerOperationPush:
+            case UINavigationControllerOperation.Push:
                 containerView.insertSubviewAboveSubview(toView, fromView);
                 break;
-            case UINavigationControllerOperation.UINavigationControllerOperationPop:
+            case UINavigationControllerOperation.Pop:
                 containerView.insertSubviewBelowSubview(toView, fromView);
                 break;
         }

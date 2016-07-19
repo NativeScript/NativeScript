@@ -48,8 +48,9 @@ export class CubicBezierAnimationCurve implements definition.CubicBezierAnimatio
 // We didn't want to actually modify Promise; as the cancel() is ONLY valid for animations "Promise"
 export class AnimationPromise implements definition.AnimationPromise {
     public cancel(): void { /* Do Nothing */ }
-    public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
-    public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
+    public then(): AnimationPromise { return null; }
+    public catch(): AnimationPromise { return null; }
+    [Symbol.toStringTag]: "Promise" = "Promise";
 }
 
 export class Animation implements definition.Animation {

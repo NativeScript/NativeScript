@@ -87,9 +87,9 @@
      */
     export class AnimationPromise extends Promise<void> {
         cancel(): void;
-        then(onFulfilled?: (value?: any) => Thenable<void>, onRejected?: (error?: any) => Thenable<void>): AnimationPromise;
+        then(onFulfilled?: (value?: any) => PromiseLike<void>, onRejected?: (error?: any) => PromiseLike<void>): AnimationPromise;
         then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise;
-        catch(onRejected?: (error?: any) => Thenable<void>): AnimationPromise;
+        catch(onRejected?: (error?: any) => PromiseLike<void>): AnimationPromise;
         catch(onRejected?: (error?: any) => void): AnimationPromise;
     }
 

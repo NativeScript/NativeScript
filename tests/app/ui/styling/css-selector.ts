@@ -1,6 +1,5 @@
 import * as selector from "ui/styling/css-selector";
 import * as parser from "css";
-
 import * as TKUnit from "../../TKUnit";
 
 function create(css: string, source: string = "css-selectors.ts@test"): { rules: selector.RuleSet[], map: selector.SelectorsMap } {
@@ -206,7 +205,7 @@ export function test_simple_query_match() {
     let match = map.query(button);
     TKUnit.assertEqual(match.selectors.length, 1, "Expected match to have one selector.");
 
-    let expected = new Map<Node, selector.Changes>()
+    let expected = new Map<selector.Node, selector.Changes>()
         .set(grid, { attributes: new Set(["promotion"]) })
         .set(button, { pseudoClasses: new Set(["highlighted"]) });
 
@@ -230,6 +229,6 @@ export function test_query_match_one_child_group() {
     let match = map.query(gridlayout);
     TKUnit.assertEqual(match.selectors.length, 1, "Expected match to have one selector.");
 
-    let expected = new Map<Node, selector.Changes>().set(prod, { attributes: new Set(["special"])} );
+    let expected = new Map<selector.Node, selector.Changes>().set(prod, { attributes: new Set(["special"])} );
     TKUnit.assertDeepEqual(match.changeMap, expected);
 }

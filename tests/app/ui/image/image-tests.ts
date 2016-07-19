@@ -178,7 +178,7 @@ export var test_SettingStretch_AspectFit = function () {
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
+            var expectedContentMode = UIViewContentMode.ScaleAspectFit;
             TKUnit.assertEqual(actualContentMode, expectedContentMode, "actualContentMode");
         }
     }
@@ -200,7 +200,7 @@ export var test_SettingStretch_Default = function () {
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleAspectFit;
+            var expectedContentMode = UIViewContentMode.ScaleAspectFit;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }
@@ -223,7 +223,7 @@ export var test_SettingStretch_AspectFill = function () {
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleAspectFill;
+            var expectedContentMode = UIViewContentMode.ScaleAspectFill;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }
@@ -246,7 +246,7 @@ export var test_SettingStretch_Fill = function () {
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeScaleToFill;
+            var expectedContentMode = UIViewContentMode.ScaleToFill;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }
@@ -269,7 +269,7 @@ export var test_SettingStretch_none = function () {
         }
         else if (image.ios) {
             var actualContentMode = testImage.ios.contentMode;
-            var expectedContentMode = UIViewContentMode.UIViewContentModeTopLeft;
+            var expectedContentMode = UIViewContentMode.TopLeft;
             TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
         }
     }

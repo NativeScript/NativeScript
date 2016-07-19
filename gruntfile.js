@@ -92,10 +92,6 @@ module.exports = function(grunt) {
             return '!' + file;
         });
         var nonES6Files = [
-            'es-collections.d.ts',
-            'es6-promise.d.ts',
-            'es6.d.ts',
-            'weakmap.d.ts',
         ];
         var es6Excludes = nonES6Files.map(function(file) {
             return '!' + file;
@@ -168,6 +164,9 @@ module.exports = function(grunt) {
         "!tns-core-modules/ios.d.ts",
         "!tns-core-modules/android17.d.ts",
         "!tns-core-modules/libjs.d.ts",
+        "!tns-core-modules/ios/**/*.*",
+        "!tns-core-modules/lib.core.es6.d.ts",
+        "!tns-core-modules/lib.dom.d.ts"
     ]);
     localCfg.srcTsdFiles = [
         "tns-core-modules/**/*.d.ts",
@@ -328,9 +327,9 @@ module.exports = function(grunt) {
                     'tns-core-modules/js-libs/easysax/**/*.ts',
                     'tns-core-modules/module.d.ts',
                     'tns-core-modules/xml/**/*.ts',
-                    'tns-core-modules/es-collections.d.ts',
+                    'tns-core-modules/lib.core.es6.d.ts',
+                    'tns-core-modules/lib.dom.d.ts',
                     'tns-core-modules/declarations.d.ts',
-                    'tns-core-modules/es6-promise.d.ts',
                     'node-tests/**/*.ts'
                 ],
                 outDir: localCfg.outDir,

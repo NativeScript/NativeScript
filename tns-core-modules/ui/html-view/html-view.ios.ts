@@ -37,7 +37,7 @@ export class HtmlView extends common.HtmlView {
         this._ios.editable = false;
         this._ios.selectable = true;
         this._ios.userInteractionEnabled = true;
-        this._ios.dataDetectorTypes = UIDataDetectorTypes.UIDataDetectorTypeAll;
+        this._ios.dataDetectorTypes = UIDataDetectorTypes.All;
     }
 
     get ios(): UITextView {
