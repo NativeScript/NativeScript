@@ -129,7 +129,7 @@ class UIViewControllerImpl extends UIViewController {
         // Don't raise event if currentPage was showing modal page.
         if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
             let isBack = isBackNavigation(page, newEntry)
-            page.onNavigatingTo(newEntry.entry.context, isBack);
+            page.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
 
         if (frame) {

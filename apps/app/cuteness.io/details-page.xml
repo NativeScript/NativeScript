@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="pageNavigatedTo">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
   <GridLayout rows="*, auto">
     <ScrollView>
       <StackLayout>

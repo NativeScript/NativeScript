@@ -336,7 +336,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this.currentPage.onNavigatingFrom(isBack);
         }
 
-        backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack);
+        backstackEntry.resolvedPage.onNavigatingTo(backstackEntry.entry.context, isBack, backstackEntry.entry.bindingContext);
     }
 
     public get animated(): boolean {
