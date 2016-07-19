@@ -23,7 +23,7 @@ export function listViewItemTap(args: ListViewItemEventData) {
     // Navigate to the details page with context set to the data item for specified index
     topmostFrame().navigate({
         moduleName: "cuteness.io/details-page",
-        context: appViewModel.redditItems.getItem(args.index)
+        bindingContext: appViewModel.redditItems.getItem(args.index)
     });
 }
 

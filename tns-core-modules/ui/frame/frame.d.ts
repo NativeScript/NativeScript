@@ -163,6 +163,11 @@ declare module "ui/frame" {
         context?: any;
 
         /**
+         * An object to become the binding context of the page navigating to. Optional.
+         */
+        bindingContext?: any;
+
+        /**
          * True to navigate to the new Page using animated transitions, false otherwise.
          */
         animated?: boolean;

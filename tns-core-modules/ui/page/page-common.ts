@@ -200,12 +200,12 @@ export class Page extends ContentView implements dts.Page {
         };
     }
 
-    public onNavigatingTo(context: any, isBackNavigation: boolean) {
+    public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext: any) {
         this._navigationContext = context;
         
         //https://github.com/NativeScript/NativeScript/issues/731
-        if (!isBackNavigation && !types.isNullOrUndefined(context)){
-            this.bindingContext = context;
+        if (!isBackNavigation && !types.isNullOrUndefined(bindingContext)){
+            this.bindingContext = bindingContext;
         }
         this.notify(this.createNavigatedData(Page.navigatingToEvent, isBackNavigation));
     }
