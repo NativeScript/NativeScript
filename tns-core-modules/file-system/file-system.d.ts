@@ -208,6 +208,51 @@ declare module "file-system" {
          * iOS - this folder is read-only and contains the app and all its resources.
          */
         export function currentApp(): Folder;
+        
+        /**
+         * Contains iOS-specific known folders.
+         */
+        module ios {
+            /**
+             * Gets the NSLibraryDirectory.
+             */
+            export function library(): Folder;
+            
+            /**
+             * Gets the NSDeveloperDirectory.
+             */
+            export function developer(): Folder;
+            
+            /**
+             * Gets the NSDesktopDirectory.
+             */
+            export function desktop(): Folder;
+            
+            /**
+             * Gets the NSDownloadsDirectory.
+             */
+            export function downloads(): Folder;
+            
+            /**
+             * Gets the NSMoviesDirectory.
+             */
+            export function movies(): Folder;
+            
+            /**
+             * Gets the NSMusicDirectory.
+             */
+            export function music(): Folder;
+            
+            /**
+             * Gets the NSPicturesDirectory.
+             */
+            export function pictures(): Folder;
+            
+            /**
+             * Gets the NSSharedPublicDirectory.
+             */
+            export function sharedPublic(): Folder;
+        } 
     }
 
     /**

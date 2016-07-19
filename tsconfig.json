@@ -9,7 +9,8 @@
         "noImplicitAny": false,
         "noImplicitUseStrict": true,
         "experimentalDecorators": true,
-        "diagnostics": true
+        "diagnostics": true,
+        "sourceMap": true
     },
     "exclude": [
         "node_modules",

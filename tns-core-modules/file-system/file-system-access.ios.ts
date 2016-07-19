@@ -5,13 +5,10 @@ import * as utilsModule from "utils/utils";
 // TODO: Check whether we need try/catch blocks for the iOS implementation
 
 export class FileSystemAccess {
-    //private keyFileType = "NSFileType";
-    //private keyReadonly = "NSFileImmutable";
-    //private NSUTF8StringEncoding = 4;
     private keyModificationTime = "NSFileModificationDate";
-    private documentDir = 9;
-    private cachesDir = 13;
-    private userDomain = 1;
+    private userDomain = NSSearchPathDirectory.NSApplicationDirectory; //1
+    private documentDir = NSSearchPathDirectory.NSDocumentDirectory; //9
+    private cachesDir = NSSearchPathDirectory.NSCachesDirectory; //13
 
     public getLastModified(path: string): Date {
         var fileManager = NSFileManager.defaultManager();
