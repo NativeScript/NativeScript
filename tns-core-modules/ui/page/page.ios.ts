@@ -35,6 +35,8 @@ class UIViewControllerImpl extends UIViewController {
 
     private _owner: WeakRef<Page>;
 
+    public isBackstackSkipped: boolean;
+
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
         let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
         controller._owner = owner;
@@ -51,7 +53,7 @@ class UIViewControllerImpl extends UIViewController {
         if (trace.enabled) {
             trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
         }
-        
+
         if (!owner.isLoaded) {
             return;
         }
@@ -225,7 +227,7 @@ class UIViewControllerImpl extends UIViewController {
         var frame = page.frame;
         // Skip navigation events if we are hiding because we are about to show modal page.
         if (!page._presentedViewController && frame && frame.currentPage === page) {
-            let isBack = page.frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this));
+            let isBack = page.frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this)) && !this.isBackstackSkipped;
             page.onNavigatingFrom(isBack);
         }
 
@@ -239,7 +241,7 @@ class UIViewControllerImpl extends UIViewController {
             trace.write(page + " viewDidDisappear", trace.categories.Navigation);
         }
         // Exit if no page or page is hiding because it shows another page modally.
-        if (!page || page.modal || page._presentedViewController ) {
+        if (!page || page.modal || page._presentedViewController) {
             return;
         }
 
@@ -265,7 +267,7 @@ class UIViewControllerImpl extends UIViewController {
 
         // Remove from parent if page was in frame and we navigated back.
         // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
-        let isBack = frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this));
+        let isBack = frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this)) && !this.isBackstackSkipped;
         if (isBack) {
             // Remove parent when navigating back.
             frame._removeView(page);
@@ -372,12 +374,12 @@ export class Page extends pageCommon.Page {
             this._ios.modalPresentationStyle = UIModalPresentationStyle.UIModalPresentationFormSheet;
             this._UIModalPresentationFormSheet = true;
         }
-        
+
         super._raiseShowingModallyEvent();
 
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 7, null);
         let transitionCoordinator = parent.ios.transitionCoordinator();
-        if (transitionCoordinator){
+        if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
         }
         else {

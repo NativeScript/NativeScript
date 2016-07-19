@@ -5,9 +5,9 @@ import {Color} from "color";
 import helper = require("../ui/helper");
 
 // Creates a random colorful page full of meaningless stuff.
-var id = 0;
-var pageFactory = function (): Page {
-    var page = new Page();
+let id = 0;
+let pageFactory = function (): Page {
+    const page = new Page();
     page.actionBarHidden = true;
     page.id = `NavTestPage${id++}`;
     page.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
@@ -22,17 +22,28 @@ function androidGC() {
     }
 }
 
+function attachEventListeners(page: Page, events: Array<string>) {
+    let argsToString = (args: NavigatedData) => {
+        return `${(<Page>args.object).id} ${args.eventName} ${(args.isBackNavigation ? "back" : "forward")}`;
+    };
+
+    page.on(Page.navigatingFromEvent, (args: NavigatedData) => { events.push(argsToString(args)); });
+    page.on(Page.navigatedFromEvent, (args: NavigatedData) => { events.push(argsToString(args)); });
+    page.on(Page.navigatingToEvent, (args: NavigatedData) => { events.push(argsToString(args)); });
+    page.on(Page.navigatedToEvent, (args: NavigatedData) => { events.push(argsToString(args)); });
+}
+
 function _test_backstackVisible(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
-    
+
     // page1 should not be added to the backstack
     let page0 = topmost.currentPage;
     helper.navigateWithEntry({ create: pageFactory, backstackVisible: false, transition: transition, animated: true });
 
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
-    
+
     helper.goBack();
 
     // From page2 we have to go directly to page0, skipping page1.
@@ -42,12 +53,12 @@ function _test_backstackVisible(transition?: NavigationTransition) {
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
-export var test_backstackVisible = function () {
+export function test_backstackVisible() {
     androidGC();
     _test_backstackVisible();
 }
 
-export var test_backstackVisible_WithTransition = function () {
+export function test_backstackVisible_WithTransition() {
     androidGC();
     _test_backstackVisible({ name: "fade" });
 }
@@ -55,26 +66,29 @@ export var test_backstackVisible_WithTransition = function () {
 function _test_backToEntry(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let page = (tag) => () => {
-        var p = new Page();
+        const p = new Page();
         p.actionBarHidden = true;
         p.id = `NavTestPage${id++}`;
         p["tag"] = tag;
         return p;
-    }
+    };
+
     let mainTestPage = topmost.currentPage;
     let waitFunc = tag => TKUnit.waitUntilReady(() => topmost.currentPage["tag"] === tag, 1);
     let navigate = tag => {
         topmost.navigate({ create: page(tag), transition: transition, animated: true });
         waitFunc(tag);
-        
-    }
+
+    };
+
     let back = pages => {
         topmost.goBack(topmost.backStack[topmost.backStack.length - pages]);
-    }
+    };
+
     let currentPageMustBe = tag => {
         waitFunc(tag); // TODO: Add a timeout...
         TKUnit.assert(topmost.currentPage["tag"] === tag, "Expected current page to be " + tag + " it was " + topmost.currentPage["tag"] + " instead.");
-    }
+    };
 
     navigate("page1");
     navigate("page2");
@@ -99,14 +113,14 @@ function _test_backToEntry(transition?: NavigationTransition) {
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
-export var test_backToEntry = function () {
+export function test_backToEntry() {
     androidGC();
     _test_backToEntry();
 }
 
-export var test_backToEntry_WithTransition = function () {
+export function test_backToEntry_WithTransition() {
     androidGC();
-    _test_backToEntry({name: "flip"});
+    _test_backToEntry({ name: "flip" });
 }
 
 function _test_ClearHistory(transition?: NavigationTransition) {
@@ -141,17 +155,17 @@ function _test_ClearHistory(transition?: NavigationTransition) {
 }
 
 // Clearing the history messes up the tests app.
-export var test_ClearHistory = function () {
+export function test_ClearHistory() {
     androidGC();
     _test_ClearHistory();
 }
 
-export var test_ClearHistory_WithTransition = function () {
+export function test_ClearHistory_WithTransition() {
     androidGC();
     _test_ClearHistory({ name: "fade" });
 }
 
-export var test_ClearHistory_WithTransition_WithCachePagesOnNavigate = function () {
+export function test_ClearHistory_WithTransition_WithCachePagesOnNavigate() {
     androidGC();
     let topmost = topmostFrame();
     if (!topmost.android) {
@@ -165,7 +179,7 @@ export var test_ClearHistory_WithTransition_WithCachePagesOnNavigate = function 
 }
 
 // Test case for https://github.com/NativeScript/NativeScript/issues/1948
-export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
+export function test_ClearHistoryWithTransitionDoesNotBreakNavigation() {
     androidGC();
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
@@ -175,18 +189,18 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
 
     // Go to details-page
     helper.navigateWithEntry({ create: pageFactory, clearHistory: false, animated: true });
-    
+
     // Go back to main-page with clearHistory
     topmost.transition = { name: "fade" };
     helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: true });
-    
+
     // Go to details-page AGAIN
     helper.navigateWithEntry({ create: pageFactory, clearHistory: false, animated: true });
-    
+
     // Go back to main-page with clearHistory
     topmost.transition = { name: "fade" };
     helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: true });
-    
+
     // Clean up
     topmost.transition = undefined;
 
@@ -194,9 +208,10 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation = function () {
     TKUnit.assertEqual(topmost.backStack.length, 0, "Back stack should be empty at the end of the test.");
 }
 
-export var test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransition = function () {
+export function test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransition() {
     androidGC();
-    let topmost = topmostFrame();
+    const topmost = topmostFrame();
+
     let originalCachePagesOnNavigate: boolean;
     if (topmost.android) {
         originalCachePagesOnNavigate = topmost.android.cachePagesOnNavigate;
@@ -210,16 +225,16 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransi
 
     // Go to 1st page
     helper.navigateWithEntry({ create: pageFactory, clearHistory: false, transition: { name: "fade" }, animated: true });
-    
+
     // Go to 2nd page
     helper.navigateWithEntry({ create: pageFactory, clearHistory: false, transition: { name: "fade" }, animated: true });
-    
+
     // Go to 3rd page with clearHistory
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: { name: "fade" }, animated: true });
-    
+
     // Go back to main
     helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, transition: { name: "fade" }, animated: true });
-    
+
     if (topmost.android) {
         topmostFrame().android.cachePagesOnNavigate = originalCachePagesOnNavigate;
     }
@@ -229,39 +244,30 @@ export var test_ClearHistoryWithTransitionDoesNotBreakNavigation_WithLocalTransi
 }
 
 function _test_NavigationEvents(transition?: NavigationTransition) {
-    let topmost = topmostFrame();
-    let argsToString = (args: NavigatedData) => {
-        return `${(<Page>args.object).id} ${args.eventName} ${(args.isBackNavigation ? "back" : "forward") }`
-    };
+    const topmost = topmostFrame();
+    const mainTestPage = topmost.currentPage;
+    const originalMainPageId = mainTestPage.id;
 
-    let mainTestPage = topmost.currentPage;
-    let originalMainPageId = mainTestPage.id;
     mainTestPage.id = "main-page";
     let actualMainPageEvents = new Array<string>();
-    mainTestPage.on(Page.navigatingFromEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
-    mainTestPage.on(Page.navigatedFromEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
-    mainTestPage.on(Page.navigatingToEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
-    mainTestPage.on(Page.navigatedToEvent, (args: NavigatedData) => { actualMainPageEvents.push(argsToString(args)); });
+    attachEventListeners(mainTestPage, actualMainPageEvents);
 
     let actualSecondPageEvents = new Array<string>();
     let secondPageFactory = function (): Page {
-        var secondPage = new Page();
-        secondPage.actionBarHidden = true;        
-        secondPage.id = "second-page"
-        secondPage.on(Page.navigatingFromEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
-        secondPage.on(Page.navigatedFromEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
-        secondPage.on(Page.navigatingToEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
-        secondPage.on(Page.navigatedToEvent, (args: NavigatedData) => { actualSecondPageEvents.push(argsToString(args)); });
+        const secondPage = new Page();
+        secondPage.actionBarHidden = true;
+        secondPage.id = "second-page";
+        attachEventListeners(secondPage, actualSecondPageEvents);
         secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
         return secondPage;
     };
 
     // Go to other page
     helper.navigateWithEntry({ create: secondPageFactory, transition: transition, animated: true });
-    
+
     // Go back to main
     helper.goBack();
-    
+
     mainTestPage.id = originalMainPageId;
 
     let expectedMainPageEvents = [
@@ -283,12 +289,97 @@ function _test_NavigationEvents(transition?: NavigationTransition) {
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
-export var test_NavigationEvents = function () {
+export function test_NavigationEvents() {
     androidGC();
     _test_NavigationEvents();
 }
 
-export var test_NavigationEvents_WithTransition = function () {
+export function test_NavigationEvents_WithTransition() {
     androidGC();
     _test_NavigationEvents({ name: "fade" });
+}
+
+function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back(transition?: NavigationTransition) {
+    const topmost = topmostFrame();
+    const mainTestPage = topmost.currentPage;
+
+    let actualSecondPageEvents = new Array<string>();
+    let secondPageFactory = function (): Page {
+        const secondPage = new Page();
+        secondPage.actionBarHidden = true;
+        secondPage.id = "second-page";
+        attachEventListeners(secondPage, actualSecondPageEvents);
+        secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+        return secondPage;
+    };
+
+    // Go to other page
+    helper.navigateWithEntry({ create: secondPageFactory, transition: transition, animated: true, backstackVisible: false });
+
+    // Go back to main
+    helper.goBack();
+
+    let expectedSecondPageEvents = [
+        "second-page navigatingTo forward",
+        "second-page navigatedTo forward",
+        "second-page navigatingFrom back",
+        "second-page navigatedFrom back"
+    ];
+    TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, "Actual second-page events are different from expected.");
+
+    TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
+}
+
+export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Back() {
+    androidGC();
+    _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back();
+}
+
+export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Back_WithTransition() {
+    androidGC();
+    _test_NavigationEvents_WithBackstackVisibile_False_Forward_Back({ name: "fade" });
+}
+
+function _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward(transition?: NavigationTransition) {
+    const topmost = topmostFrame();
+    const mainTestPage = topmost.currentPage;
+
+    let actualSecondPageEvents = new Array<string>();
+    let secondPageFactory = function (): Page {
+        const secondPage = new Page();
+        secondPage.actionBarHidden = true;
+        secondPage.id = "second-page";
+        attachEventListeners(secondPage, actualSecondPageEvents);
+        secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+        return secondPage;
+    };
+
+    // Go to other page
+    helper.navigateWithEntry({ create: secondPageFactory, transition: transition, animated: true, backstackVisible: false });
+
+    // Go forward to third page
+    helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
+
+    // Go back to main
+    helper.goBack();
+
+    let expectedSecondPageEvents = [
+        "second-page navigatingTo forward",
+        "second-page navigatedTo forward",
+        "second-page navigatingFrom forward",
+        "second-page navigatedFrom forward"
+    ];
+    TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, "Actual second-page events are different from expected.");
+
+    TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
+}
+
+export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward() {
+    androidGC();
+    _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward();
+}
+
+export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward_WithTransition() {
+    androidGC();
+    _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward({ name: "fade" });
 }

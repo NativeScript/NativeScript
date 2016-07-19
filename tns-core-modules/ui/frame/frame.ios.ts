@@ -145,6 +145,8 @@ export class Frame extends frameCommon.Frame {
             viewController.navigationItem.hidesBackButton = this.backStack.length === 0;
 
             // swap the top entry with the new one
+            var skippedNavController = newControllers.lastObject;
+            skippedNavController.isBackstackSkipped = true;
             newControllers.removeLastObject();
             newControllers.addObject(viewController);
 
