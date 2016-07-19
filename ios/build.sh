@@ -2,7 +2,7 @@ echo "Build for iphonesimulator"
 xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -sdk iphonesimulator -target TNSWidgets -configuration Release clean build CONFIGURATION_BUILD_DIR=build/Release-iphonesimulator
 
 echo "Build for iphoneos"
-xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -sdk iphoneos -target TNSWidgets -configuration Release clean build CONFIGURATION_BUILD_DIR=build/Release-iphoneos
+xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -sdk iphoneos -target TNSWidgets -configuration Release clean build CONFIGURATION_BUILD_DIR=build/Release-iphoneos CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
 
 echo "Build fat framework at TNSWidgets/build/TNSWidgets.framework"
 rm -rf TNSWidgets/build/TNSWidgets.framework
