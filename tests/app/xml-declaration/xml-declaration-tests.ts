@@ -900,3 +900,15 @@ export function test_hasSourceCodeLocations() {
     var labelSource = Source.get(label);
     TKUnit.assertEqual(labelSource.toString(), "file:///app/" + basePath + "examples/test-page.xml:3:5");
 }
+
+export function test_Setting_digits_for_text_Label_is_not_converted_to_number() {
+    var p = <Page>builder.parse('<Page><Label id="testLabel" text="01234"/></Page>');
+    var testLabel = <Label>p.getViewById("testLabel");
+    TKUnit.assertEqual(testLabel.text, "01234");
+}
+
+export function test_Setting_digits_for_text_Button_is_not_converted_to_number() {
+    var p = <Page>builder.parse('<Page><Button id="testButton" text="01234"/></Page>');
+    var testButton = <Button>p.getViewById("testButton");
+    TKUnit.assertEqual(testButton.text, "01234");
+}
