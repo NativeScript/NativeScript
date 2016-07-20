@@ -11,14 +11,11 @@ export function pageLoaded(args: EventData) {
 
     let examples: Map<string, string> = new Map<string, string>();
 
-    examples.set("gestures", "pages/gestures");
-    examples.set("touch", "pages/touch-event");
-    examples.set("pan", "pages/pan-event");
-    examples.set("handlers", "pages/handlers");
-    examples.set("console", "pages/console");
-    examples.set("i61", "pages/i61");
-    examples.set("i73", "pages/i73");
-    examples.set("i86", "pages/i86");
+    examples.set("tabColor", "tab-view/color");
+    examples.set("tabBG", "tab-view/background");
+    examples.set("tabTabsBG", "tab-view/tabsBackground");
+    examples.set("tabSelected", "tab-view/selected");
+    examples.set("tabStyle", "tab-view/all");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
