@@ -3,6 +3,10 @@ declare function ABCreateStringWithAddressDictionary(address: NSDictionary<any, 
 
 declare class ABNewPersonViewController extends UIViewController {
 
+	static alloc(): ABNewPersonViewController; // inherited from NSObject
+
+	static new(): ABNewPersonViewController; // inherited from NSObject
+
 	addressBook: any;
 
 	displayedPerson: any;
@@ -10,12 +14,6 @@ declare class ABNewPersonViewController extends UIViewController {
 	newPersonViewDelegate: ABNewPersonViewControllerDelegate;
 
 	parentGroup: any;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): ABNewPersonViewController; // inherited from NSObjectProtocol
 }
 
 interface ABNewPersonViewControllerDelegate extends NSObjectProtocol {
@@ -29,6 +27,10 @@ declare var ABNewPersonViewControllerDelegate: {
 
 declare class ABPeoplePickerNavigationController extends UINavigationController {
 
+	static alloc(): ABPeoplePickerNavigationController; // inherited from NSObject
+
+	static new(): ABPeoplePickerNavigationController; // inherited from NSObject
+
 	addressBook: any;
 
 	displayedProperties: NSArray<number>;
@@ -40,10 +42,6 @@ declare class ABPeoplePickerNavigationController extends UINavigationController 
 	predicateForSelectionOfPerson: NSPredicate;
 
 	predicateForSelectionOfProperty: NSPredicate;
-
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
 }
 
 interface ABPeoplePickerNavigationControllerDelegate extends NSObjectProtocol {
@@ -111,7 +109,11 @@ declare var ABPersonUrlAddressesProperty: string;
 
 declare class ABPersonViewController extends UIViewController implements UIViewControllerRestoration {
 
-	static viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<any>, coder: NSCoder): UIViewController; // inherited from UIViewControllerRestoration
+	static alloc(): ABPersonViewController; // inherited from NSObject
+
+	static new(): ABPersonViewController; // inherited from NSObject
+
+	static viewControllerWithRestorationIdentifierPathCoder(identifierComponents: NSArray<any>, coder: NSCoder): UIViewController;
 
 	addressBook: any;
 
@@ -127,12 +129,6 @@ declare class ABPersonViewController extends UIViewController implements UIViewC
 
 	shouldShowLinkedPeople: boolean;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): ABPersonViewController; // inherited from NSObjectProtocol
-
 	setHighlightedItemForPropertyWithIdentifier(property: number, identifier: number): void;
 }
 
@@ -147,6 +143,10 @@ declare var ABPersonViewControllerDelegate: {
 
 declare class ABUnknownPersonViewController extends UIViewController {
 
+	static alloc(): ABUnknownPersonViewController; // inherited from NSObject
+
+	static new(): ABUnknownPersonViewController; // inherited from NSObject
+
 	addressBook: any;
 
 	allowsActions: boolean;
@@ -160,12 +160,6 @@ declare class ABUnknownPersonViewController extends UIViewController {
 	message: string;
 
 	unknownPersonViewDelegate: ABUnknownPersonViewControllerDelegate;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): ABUnknownPersonViewController; // inherited from NSObjectProtocol
 }
 
 interface ABUnknownPersonViewControllerDelegate extends NSObjectProtocol {

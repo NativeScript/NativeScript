@@ -33,11 +33,7 @@ declare class GLKBaseEffect extends NSObject implements GLKNamedEffect {
 
 	useConstantColor: number;
 
-	constructor(); // inherited from NSObject
-
-	prepareToDraw(): void; // inherited from GLKNamedEffect
-
-	self(): GLKBaseEffect; // inherited from NSObjectProtocol
+	prepareToDraw(): void;
 }
 
 declare class GLKEffectProperty extends NSObject {
@@ -45,13 +41,13 @@ declare class GLKEffectProperty extends NSObject {
 	static alloc(): GLKEffectProperty; // inherited from NSObject
 
 	static new(): GLKEffectProperty; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): GLKEffectProperty; // inherited from NSObjectProtocol
 }
 
 declare class GLKEffectPropertyFog extends GLKEffectProperty {
+
+	static alloc(): GLKEffectPropertyFog; // inherited from NSObject
+
+	static new(): GLKEffectPropertyFog; // inherited from NSObject
 
 	density: number;
 
@@ -65,6 +61,10 @@ declare class GLKEffectPropertyFog extends GLKEffectProperty {
 }
 
 declare class GLKEffectPropertyLight extends GLKEffectProperty {
+
+	static alloc(): GLKEffectPropertyLight; // inherited from NSObject
+
+	static new(): GLKEffectPropertyLight; // inherited from NSObject
 
 	constantAttenuation: number;
 
@@ -83,10 +83,18 @@ declare class GLKEffectPropertyLight extends GLKEffectProperty {
 
 declare class GLKEffectPropertyMaterial extends GLKEffectProperty {
 
+	static alloc(): GLKEffectPropertyMaterial; // inherited from NSObject
+
+	static new(): GLKEffectPropertyMaterial; // inherited from NSObject
+
 	shininess: number;
 }
 
 declare class GLKEffectPropertyTexture extends GLKEffectProperty {
+
+	static alloc(): GLKEffectPropertyTexture; // inherited from NSObject
+
+	static new(): GLKEffectPropertyTexture; // inherited from NSObject
 
 	enabled: number;
 
@@ -98,6 +106,10 @@ declare class GLKEffectPropertyTexture extends GLKEffectProperty {
 }
 
 declare class GLKEffectPropertyTransform extends GLKEffectProperty {
+
+	static alloc(): GLKEffectPropertyTransform; // inherited from NSObject
+
+	static new(): GLKEffectPropertyTransform; // inherited from NSObject
 }
 
 declare const enum GLKFogMode {
@@ -146,7 +158,7 @@ declare class GLKMesh extends NSObject {
 
 	static new(): GLKMesh; // inherited from NSObject
 
-	static newMeshesFromAssetSourceMeshesError(asset: MDLAsset, sourceMeshes: interop.Reference<NSArray<MDLMesh>>): NSArray<GLKMesh>;
+	static newMeshesFromAssetSourceMeshesError(asset: MDLAsset, sourceMeshes: interop.Pointer | interop.Reference<NSArray<MDLMesh>>): NSArray<GLKMesh>;
 
 	/* readonly */ name: string;
 
@@ -158,11 +170,9 @@ declare class GLKMesh extends NSObject {
 
 	/* readonly */ vertexDescriptor: MDLVertexDescriptor;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { mesh: MDLMesh; });
 
-	self(): GLKMesh; // inherited from NSObjectProtocol
+	initWithMeshError(mesh: MDLMesh): this;
 }
 
 declare class GLKMeshBuffer extends NSObject implements MDLMeshBuffer {
@@ -177,21 +187,49 @@ declare class GLKMeshBuffer extends NSObject implements MDLMeshBuffer {
 
 	/* readonly */ offset: number;
 
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
 	/* readonly */ length: number; // inherited from MDLMeshBuffer
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */ type: MDLMeshBufferType; // inherited from MDLMeshBuffer
 
-	/* readonly */ zone: any; /*MDLMeshBufferZone */ // inherited from MDLMeshBuffer
+	/* readonly */  // inherited from MDLMeshBuffer
 
-	constructor(); // inherited from NSObject
+	class(): typeof NSObject;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	fillDataOffset(data: NSData, offset: number): void; // inherited from MDLMeshBuffer
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	map(): MDLMeshBufferMap; // inherited from MDLMeshBuffer
+	fillDataOffset(data: NSData, offset: number): void;
 
-	self(): GLKMeshBuffer; // inherited from NSObjectProtocol
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	map(): MDLMeshBufferMap;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class GLKMeshBufferAllocator extends NSObject implements MDLMeshBufferAllocator {
@@ -200,21 +238,51 @@ declare class GLKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 
 	static new(): GLKMeshBufferAllocator; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
-	newBufferFromZoneDataType(zone: MDLMeshBufferZone, data: NSData, type: MDLMeshBufferType): MDLMeshBuffer; // inherited from MDLMeshBufferAllocator
+	/* readonly */ description: string; // inherited from NSObjectProtocol
 
-	newBufferFromZoneLengthType(zone: MDLMeshBufferZone, length: number, type: MDLMeshBufferType): MDLMeshBuffer; // inherited from MDLMeshBufferAllocator
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
 
-	newBufferType(length: number, type: MDLMeshBufferType): MDLMeshBuffer; // inherited from MDLMeshBufferAllocator
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
 
-	newBufferWithDataType(data: NSData, type: MDLMeshBufferType): MDLMeshBuffer; // inherited from MDLMeshBufferAllocator
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	newZone(capacity: number): MDLMeshBufferZone; // inherited from MDLMeshBufferAllocator
+	/* readonly */  // inherited from NSObjectProtocol
 
-	newZoneForBuffersWithSizeAndType(sizes: NSArray<number>, types: NSArray<number>): MDLMeshBufferZone; // inherited from MDLMeshBufferAllocator
+	class(): typeof NSObject;
 
-	self(): GLKMeshBufferAllocator; // inherited from NSObjectProtocol
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	newBufferFromZoneDataType(zone: MDLMeshBufferZone, data: NSData, type: MDLMeshBufferType): MDLMeshBuffer;
+
+	newBufferFromZoneLengthType(zone: MDLMeshBufferZone, length: number, type: MDLMeshBufferType): MDLMeshBuffer;
+
+	newBufferType(length: number, type: MDLMeshBufferType): MDLMeshBuffer;
+
+	newBufferWithDataType(data: NSData, type: MDLMeshBufferType): MDLMeshBuffer;
+
+	newZone(capacity: number): MDLMeshBufferZone;
+
+	newZoneForBuffersWithSizeAndType(sizes: NSArray<number>, types: NSArray<number>): MDLMeshBufferZone;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface GLKNamedEffect {
@@ -228,7 +296,13 @@ declare var GLKNamedEffect: {
 
 declare class GLKReflectionMapEffect extends GLKBaseEffect implements GLKNamedEffect {
 
+	static alloc(): GLKReflectionMapEffect; // inherited from NSObject
+
+	static new(): GLKReflectionMapEffect; // inherited from NSObject
+
 	/* readonly */ textureCubeMap: GLKEffectPropertyTexture;
+
+	prepareToDraw(): void;
 }
 
 declare class GLKSkyboxEffect extends NSObject implements GLKNamedEffect {
@@ -249,13 +323,9 @@ declare class GLKSkyboxEffect extends NSObject implements GLKNamedEffect {
 
 	zSize: number;
 
-	constructor(); // inherited from NSObject
-
 	draw(): void;
 
-	prepareToDraw(): void; // inherited from GLKNamedEffect
-
-	self(): GLKSkyboxEffect; // inherited from NSObjectProtocol
+	prepareToDraw(): void;
 }
 
 declare class GLKSubmesh extends NSObject {
@@ -275,10 +345,6 @@ declare class GLKSubmesh extends NSObject {
 	/* readonly */ name: string;
 
 	/* readonly */ type: number;
-
-	constructor(); // inherited from NSObject
-
-	self(): GLKSubmesh; // inherited from NSObjectProtocol
 }
 
 declare const enum GLKTextureEnvMode {
@@ -310,11 +376,7 @@ declare class GLKTextureInfo extends NSObject implements NSCopying {
 
 	/* readonly */ width: number;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): GLKTextureInfo; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum GLKTextureInfoAlphaState {
@@ -355,8 +417,6 @@ declare class GLKTextureLoader extends NSObject {
 
 	static textureWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>): GLKTextureInfo;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { sharegroup: EAGLSharegroup; });
 
 	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
@@ -365,7 +425,7 @@ declare class GLKTextureLoader extends NSObject {
 
 	cubeMapWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
-	self(): GLKTextureLoader; // inherited from NSObjectProtocol
+	initWithSharegroup(sharegroup: EAGLSharegroup): this;
 
 	textureWithCGImageOptionsQueueCompletionHandler(cgImage: any, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
@@ -466,6 +526,8 @@ declare function GLKVertexAttributeParametersFromModelIO(vertexFormat: MDLVertex
 
 declare class GLKView extends UIView implements NSCoding {
 
+	static alloc(): GLKView; // inherited from NSObject
+
 	static appearance(): GLKView; // inherited from UIAppearance
 
 	static appearanceForTraitCollection(trait: UITraitCollection): GLKView; // inherited from UIAppearance
@@ -477,6 +539,8 @@ declare class GLKView extends UIView implements NSCoding {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): GLKView; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): GLKView; // inherited from UIAppearance
+
+	static new(): GLKView; // inherited from NSObject
 
 	context: EAGLContext;
 
@@ -500,8 +564,6 @@ declare class GLKView extends UIView implements NSCoding {
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
 	constructor(o: { frame: CGRect; context: EAGLContext; });
 
 	bindDrawable(): void;
@@ -510,10 +572,18 @@ declare class GLKView extends UIView implements NSCoding {
 
 	display(): void;
 
-	self(): GLKView; // inherited from NSObjectProtocol
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithFrameContext(frame: CGRect, context: EAGLContext): this;
 }
 
 declare class GLKViewController extends UIViewController implements GLKViewDelegate, NSCoding {
+
+	static alloc(): GLKViewController; // inherited from NSObject
+
+	static new(): GLKViewController; // inherited from NSObject
 
 	delegate: GLKViewControllerDelegate;
 
@@ -537,13 +607,47 @@ declare class GLKViewController extends UIViewController implements GLKViewDeleg
 
 	/* readonly */ timeSinceLastUpdate: number;
 
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
+	class(): typeof NSObject;
 
-	glkViewDrawInRect(view: GLKView, rect: CGRect): void; // inherited from GLKViewDelegate
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	self(): GLKViewController; // inherited from NSObjectProtocol
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	glkViewDrawInRect(view: GLKView, rect: CGRect): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface GLKViewControllerDelegate extends NSObjectProtocol {

@@ -22,7 +22,7 @@ export class TimePicker extends common.TimePicker {
     constructor() {
         super();
 
-        this._ios = new UIDatePicker();
+        this._ios = UIDatePicker.new();
         this._ios.datePickerMode = UIDatePickerMode.Time;
 
         this._changeHandler = UITimePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));

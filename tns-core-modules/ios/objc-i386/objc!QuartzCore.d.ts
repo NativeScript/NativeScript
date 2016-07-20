@@ -48,33 +48,39 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	timeOffset: number; // inherited from CAMediaTiming
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void; // inherited from CAAction
+	initWithCoder(aDecoder: NSCoder): this;
 
-	self(): CAAnimation; // inherited from NSObjectProtocol
+	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void;
 
 	shouldArchiveValueForKey(key: string): boolean;
 }
 
 declare class CAAnimationGroup extends CAAnimation {
 
+	static alloc(): CAAnimationGroup; // inherited from NSObject
+
 	static animation(): CAAnimationGroup; // inherited from CAAnimation
 
-	animations: NSArray<CAAnimation>;
+	static new(): CAAnimationGroup; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	animations: NSArray<CAAnimation>;
 }
 
 declare class CABasicAnimation extends CAPropertyAnimation {
 
+	static alloc(): CABasicAnimation; // inherited from NSObject
+
+	static animation(): CABasicAnimation; // inherited from CAAnimation
+
 	static animationWithKeyPath(path: string): CABasicAnimation; // inherited from CAPropertyAnimation
+
+	static new(): CABasicAnimation; // inherited from NSObject
 
 	byValue: any;
 
@@ -101,28 +107,24 @@ declare class CADisplayLink extends NSObject {
 
 	/* readonly */ timestamp: number;
 
-	constructor(); // inherited from NSObject
-
 	addToRunLoopForMode(runloop: NSRunLoop, mode: string): void;
 
 	invalidate(): void;
 
 	removeFromRunLoopForMode(runloop: NSRunLoop, mode: string): void;
-
-	self(): CADisplayLink; // inherited from NSObjectProtocol
 }
 
 declare class CAEAGLLayer extends CALayer implements EAGLDrawable {
 
+	static alloc(): CAEAGLLayer; // inherited from NSObject
+
 	static layer(): CAEAGLLayer; // inherited from CALayer
+
+	static new(): CAEAGLLayer; // inherited from NSObject
 
 	presentsWithTransaction: boolean;
 
 	drawableProperties: NSDictionary<any, any>; // inherited from EAGLDrawable
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare const enum CAEdgeAntialiasingMask {
@@ -152,15 +154,15 @@ declare class CAEmitterBehavior extends NSObject implements NSCoding {
 
 	/* readonly */ type: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { type: string; });
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CAEmitterBehavior; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithType(type: string): this;
 }
 
 declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSCoding {
@@ -259,20 +261,22 @@ declare class CAEmitterCell extends NSObject implements CAMediaTiming, NSCoding 
 
 	timeOffset: number; // inherited from CAMediaTiming
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CAEmitterCell; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 
 	shouldArchiveValueForKey(key: string): boolean;
 }
 
 declare class CAEmitterLayer extends CALayer {
 
+	static alloc(): CAEmitterLayer; // inherited from NSObject
+
 	static layer(): CAEmitterLayer; // inherited from CALayer
+
+	static new(): CAEmitterLayer; // inherited from NSObject
 
 	birthRate: number;
 
@@ -303,15 +307,15 @@ declare class CAEmitterLayer extends CALayer {
 	spin: number;
 
 	velocity: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare class CAGradientLayer extends CALayer {
 
+	static alloc(): CAGradientLayer; // inherited from NSObject
+
 	static layer(): CAGradientLayer; // inherited from CALayer
+
+	static new(): CAGradientLayer; // inherited from NSObject
 
 	colors: NSArray<any>;
 
@@ -322,15 +326,17 @@ declare class CAGradientLayer extends CALayer {
 	startPoint: CGPoint;
 
 	type: string;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare class CAKeyframeAnimation extends CAPropertyAnimation {
 
+	static alloc(): CAKeyframeAnimation; // inherited from NSObject
+
+	static animation(): CAKeyframeAnimation; // inherited from CAAnimation
+
 	static animationWithKeyPath(path: string): CAKeyframeAnimation; // inherited from CAPropertyAnimation
+
+	static new(): CAKeyframeAnimation; // inherited from NSObject
 
 	biasValues: NSArray<number>;
 
@@ -479,8 +485,6 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	timeOffset: number; // inherited from CAMediaTiming
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { layer: any; });
@@ -519,9 +523,13 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	drawInContext(ctx: any): void;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
 	hitTest(p: CGPoint): CALayer;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithLayer(layer: any): this;
 
 	insertSublayerAbove(layer: CALayer, sibling: CALayer): void;
 
@@ -556,8 +564,6 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 	scrollPoint(p: CGPoint): void;
 
 	scrollRectToVisible(r: CGRect): void;
-
-	self(): CALayer; // inherited from NSObjectProtocol
 
 	setAffineTransform(m: CGAffineTransform): void;
 
@@ -603,24 +609,28 @@ declare class CAMediaTimingFunction extends NSObject implements NSCoding {
 
 	static new(): CAMediaTimingFunction; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { controlPoints: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
 	getControlPointAtIndexValues(idx: number, ptr: interop.Reference<number>): void;
 
-	self(): CAMediaTimingFunction; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithControlPoints(c1x: number, c1y: number, c2x: number, c2y: number): this;
 }
 
 declare class CAPropertyAnimation extends CAAnimation {
 
+	static alloc(): CAPropertyAnimation; // inherited from NSObject
+
 	static animation(): CAPropertyAnimation; // inherited from CAAnimation
 
 	static animationWithKeyPath(path: string): CAPropertyAnimation;
+
+	static new(): CAPropertyAnimation; // inherited from NSObject
 
 	additive: boolean;
 
@@ -629,13 +639,15 @@ declare class CAPropertyAnimation extends CAAnimation {
 	keyPath: string;
 
 	valueFunction: CAValueFunction;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class CAReplicatorLayer extends CALayer {
 
+	static alloc(): CAReplicatorLayer; // inherited from NSObject
+
 	static layer(): CAReplicatorLayer; // inherited from CALayer
+
+	static new(): CAReplicatorLayer; // inherited from NSObject
 
 	instanceAlphaOffset: number;
 
@@ -654,21 +666,17 @@ declare class CAReplicatorLayer extends CALayer {
 	instanceTransform: CATransform3D;
 
 	preservesDepth: boolean;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare class CAScrollLayer extends CALayer {
 
+	static alloc(): CAScrollLayer; // inherited from NSObject
+
 	static layer(): CAScrollLayer; // inherited from CALayer
 
+	static new(): CAScrollLayer; // inherited from NSObject
+
 	scrollMode: string;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 
 	scrollToPoint(p: CGPoint): void;
 
@@ -677,7 +685,11 @@ declare class CAScrollLayer extends CALayer {
 
 declare class CAShapeLayer extends CALayer {
 
+	static alloc(): CAShapeLayer; // inherited from NSObject
+
 	static layer(): CAShapeLayer; // inherited from CALayer
+
+	static new(): CAShapeLayer; // inherited from NSObject
 
 	fillColor: any;
 
@@ -702,13 +714,17 @@ declare class CAShapeLayer extends CALayer {
 	strokeEnd: number;
 
 	strokeStart: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare class CASpringAnimation extends CABasicAnimation {
+
+	static alloc(): CASpringAnimation; // inherited from NSObject
+
+	static animation(): CASpringAnimation; // inherited from CAAnimation
+
+	static animationWithKeyPath(path: string): CASpringAnimation; // inherited from CAPropertyAnimation
+
+	static new(): CASpringAnimation; // inherited from NSObject
 
 	damping: number;
 
@@ -723,7 +739,11 @@ declare class CASpringAnimation extends CABasicAnimation {
 
 declare class CATextLayer extends CALayer {
 
+	static alloc(): CATextLayer; // inherited from NSObject
+
 	static layer(): CATextLayer; // inherited from CALayer
+
+	static new(): CATextLayer; // inherited from NSObject
 
 	alignmentMode: string;
 
@@ -740,27 +760,23 @@ declare class CATextLayer extends CALayer {
 	truncationMode: string;
 
 	wrapped: boolean;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare class CATiledLayer extends CALayer {
 
+	static alloc(): CATiledLayer; // inherited from NSObject
+
 	static fadeDuration(): number;
 
 	static layer(): CATiledLayer; // inherited from CALayer
+
+	static new(): CATiledLayer; // inherited from NSObject
 
 	levelsOfDetail: number;
 
 	levelsOfDetailBias: number;
 
 	tileSize: CGSize;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
 }
 
 declare class CATransaction extends NSObject {
@@ -798,10 +814,6 @@ declare class CATransaction extends NSObject {
 	static unlock(): void;
 
 	static valueForKey(key: string): any;
-
-	constructor(); // inherited from NSObject
-
-	self(): CATransaction; // inherited from NSObjectProtocol
 }
 
 interface CATransform3D {
@@ -854,16 +866,20 @@ declare function CATransform3DTranslate(t: CATransform3D, tx: number, ty: number
 
 declare class CATransformLayer extends CALayer {
 
+	static alloc(): CATransformLayer; // inherited from NSObject
+
 	static layer(): CATransformLayer; // inherited from CALayer
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { layer: any; }); // inherited from CALayer
+	static new(): CATransformLayer; // inherited from NSObject
 }
 
 declare class CATransition extends CAAnimation {
 
+	static alloc(): CATransition; // inherited from NSObject
+
 	static animation(): CATransition; // inherited from CAAnimation
+
+	static new(): CATransition; // inherited from NSObject
 
 	endProgress: number;
 
@@ -874,8 +890,6 @@ declare class CATransition extends CAAnimation {
 	subtype: string;
 
 	type: string;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class CAValueFunction extends NSObject implements NSCoding {
@@ -888,20 +902,18 @@ declare class CAValueFunction extends NSObject implements NSCoding {
 
 	/* readonly */ name: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CAValueFunction; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 interface _CALayerIvars {
 	refcount: number;
 	magic: number;
-	layer: interop.Pointer;
-	unused1: interop.Reference<interop.Pointer>;
+	layer: interop.Pointer | interop.Reference<any>;
+	unused1: interop.Reference<interop.Pointer | interop.Reference<any>>;
 }
 declare var _CALayerIvars: interop.StructType<_CALayerIvars>;
 

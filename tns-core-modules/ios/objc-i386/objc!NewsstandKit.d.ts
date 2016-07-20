@@ -13,11 +13,7 @@ declare class NKAssetDownload extends NSObject {
 
 	userInfo: NSDictionary<any, any>;
 
-	constructor(); // inherited from NSObject
-
 	downloadWithDelegate(delegate: NSURLConnectionDownloadDelegate): NSURLConnection;
-
-	self(): NKAssetDownload; // inherited from NSObjectProtocol
 }
 
 declare class NKIssue extends NSObject {
@@ -28,7 +24,7 @@ declare class NKIssue extends NSObject {
 
 	/* readonly */ contentURL: NSURL;
 
-	/* readonly */ date: Date;
+	/* readonly */ date: NSDate;
 
 	/* readonly */ downloadingAssets: NSArray<NKAssetDownload>;
 
@@ -36,11 +32,7 @@ declare class NKIssue extends NSObject {
 
 	/* readonly */ status: NKIssueContentStatus;
 
-	constructor(); // inherited from NSObject
-
 	addAssetWithRequest(request: NSURLRequest): NKAssetDownload;
-
-	self(): NKIssue; // inherited from NSObjectProtocol
 }
 
 declare const enum NKIssueContentStatus {
@@ -68,13 +60,9 @@ declare class NKLibrary extends NSObject {
 
 	/* readonly */ issues: NSArray<NKIssue>;
 
-	constructor(); // inherited from NSObject
-
-	addIssueWithNameDate(name: string, date: Date): NKIssue;
+	addIssueWithNameDate(name: string, date: NSDate): NKIssue;
 
 	issueWithName(name: string): NKIssue;
 
 	removeIssue(issue: NKIssue): void;
-
-	self(): NKLibrary; // inherited from NSObjectProtocol
 }

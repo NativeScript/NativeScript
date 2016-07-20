@@ -10,8 +10,4 @@ declare class ASIdentifierManager extends NSObject {
 	/* readonly */ advertisingIdentifier: NSUUID;
 
 	/* readonly */ advertisingTrackingEnabled: boolean;
-
-	constructor(); // inherited from NSObject
-
-	self(): ASIdentifierManager; // inherited from NSObjectProtocol
 }

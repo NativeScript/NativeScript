@@ -15,11 +15,7 @@ declare class WKBackForwardList extends NSObject {
 
 	/* readonly */ forwardList: NSArray<WKBackForwardListItem>;
 
-	constructor(); // inherited from NSObject
-
 	itemAtIndex(index: number): WKBackForwardListItem;
-
-	self(): WKBackForwardList; // inherited from NSObjectProtocol
 }
 
 declare class WKBackForwardListItem extends NSObject {
@@ -33,10 +29,6 @@ declare class WKBackForwardListItem extends NSObject {
 	/* readonly */ initialURL: NSURL;
 
 	/* readonly */ title: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKBackForwardListItem; // inherited from NSObjectProtocol
 }
 
 declare const enum WKErrorCode {
@@ -66,11 +58,7 @@ declare class WKFrameInfo extends NSObject implements NSCopying {
 
 	/* readonly */ securityOrigin: WKSecurityOrigin;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): WKFrameInfo; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class WKNavigation extends NSObject {
@@ -78,10 +66,6 @@ declare class WKNavigation extends NSObject {
 	static alloc(): WKNavigation; // inherited from NSObject
 
 	static new(): WKNavigation; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): WKNavigation; // inherited from NSObjectProtocol
 }
 
 declare class WKNavigationAction extends NSObject {
@@ -97,10 +81,6 @@ declare class WKNavigationAction extends NSObject {
 	/* readonly */ sourceFrame: WKFrameInfo;
 
 	/* readonly */ targetFrame: WKFrameInfo;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKNavigationAction; // inherited from NSObjectProtocol
 }
 
 declare const enum WKNavigationActionPolicy {
@@ -148,10 +128,6 @@ declare class WKNavigationResponse extends NSObject {
 	/* readonly */ forMainFrame: boolean;
 
 	/* readonly */ response: NSURLResponse;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKNavigationResponse; // inherited from NSObjectProtocol
 }
 
 declare const enum WKNavigationResponsePolicy {
@@ -187,10 +163,6 @@ declare class WKPreferences extends NSObject {
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKPreferences; // inherited from NSObjectProtocol
 }
 
 declare class WKProcessPool extends NSObject {
@@ -198,10 +170,6 @@ declare class WKProcessPool extends NSObject {
 	static alloc(): WKProcessPool; // inherited from NSObject
 
 	static new(): WKProcessPool; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): WKProcessPool; // inherited from NSObjectProtocol
 }
 
 declare class WKScriptMessage extends NSObject {
@@ -217,10 +185,6 @@ declare class WKScriptMessage extends NSObject {
 	/* readonly */ name: string;
 
 	/* readonly */ webView: WKWebView;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKScriptMessage; // inherited from NSObjectProtocol
 }
 
 interface WKScriptMessageHandler extends NSObjectProtocol {
@@ -243,10 +207,6 @@ declare class WKSecurityOrigin extends NSObject {
 	/* readonly */ port: number;
 
 	/* readonly */ protocol: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKSecurityOrigin; // inherited from NSObjectProtocol
 }
 
 declare const enum WKSelectionGranularity {
@@ -281,8 +241,6 @@ declare class WKUserContentController extends NSObject {
 
 	/* readonly */ userScripts: NSArray<WKUserScript>;
 
-	constructor(); // inherited from NSObject
-
 	addScriptMessageHandlerName(scriptMessageHandler: WKScriptMessageHandler, name: string): void;
 
 	addUserScript(userScript: WKUserScript): void;
@@ -290,8 +248,6 @@ declare class WKUserContentController extends NSObject {
 	removeAllUserScripts(): void;
 
 	removeScriptMessageHandlerForName(name: string): void;
-
-	self(): WKUserContentController; // inherited from NSObjectProtocol
 }
 
 declare class WKUserScript extends NSObject implements NSCopying {
@@ -306,13 +262,11 @@ declare class WKUserScript extends NSObject implements NSCopying {
 
 	/* readonly */ source: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { source: string; injectionTime: WKUserScriptInjectionTime; forMainFrameOnly: boolean; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	self(): WKUserScript; // inherited from NSObjectProtocol
+	initWithSourceInjectionTimeForMainFrameOnly(source: string, injectionTime: WKUserScriptInjectionTime, forMainFrameOnly: boolean): this;
 }
 
 declare const enum WKUserScriptInjectionTime {
@@ -323,6 +277,8 @@ declare const enum WKUserScriptInjectionTime {
 }
 
 declare class WKWebView extends UIView {
+
+	static alloc(): WKWebView; // inherited from NSObject
 
 	static appearance(): WKWebView; // inherited from UIAppearance
 
@@ -335,6 +291,8 @@ declare class WKWebView extends UIView {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): WKWebView; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): WKWebView; // inherited from UIAppearance
+
+	static new(): WKWebView; // inherited from NSObject
 
 	UIDelegate: WKUIDelegate;
 
@@ -368,10 +326,6 @@ declare class WKWebView extends UIView {
 
 	/* readonly */ title: string;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
 
 	evaluateJavaScriptCompletionHandler(javaScriptString: string, completionHandler: (p1: any, p2: NSError) => void): void;
@@ -381,6 +335,8 @@ declare class WKWebView extends UIView {
 	goForward(): WKNavigation;
 
 	goToBackForwardListItem(item: WKBackForwardListItem): WKNavigation;
+
+	initWithFrameConfiguration(frame: CGRect, configuration: WKWebViewConfiguration): this;
 
 	loadDataMIMETypeCharacterEncodingNameBaseURL(data: NSData, MIMEType: string, characterEncodingName: string, baseURL: NSURL): WKNavigation;
 
@@ -393,8 +349,6 @@ declare class WKWebView extends UIView {
 	reload(): WKNavigation;
 
 	reloadFromOrigin(): WKNavigation;
-
-	self(): WKWebView; // inherited from NSObjectProtocol
 
 	stopLoading(): void;
 }
@@ -431,11 +385,7 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying {
 
 	websiteDataStore: WKWebsiteDataStore;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): WKWebViewConfiguration; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class WKWebsiteDataRecord extends NSObject {
@@ -447,10 +397,6 @@ declare class WKWebsiteDataRecord extends NSObject {
 	/* readonly */ dataTypes: NSSet<string>;
 
 	/* readonly */ displayName: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKWebsiteDataRecord; // inherited from NSObjectProtocol
 }
 
 declare class WKWebsiteDataStore extends NSObject {
@@ -467,15 +413,11 @@ declare class WKWebsiteDataStore extends NSObject {
 
 	/* readonly */ persistent: boolean;
 
-	constructor(); // inherited from NSObject
-
 	fetchDataRecordsOfTypesCompletionHandler(dataTypes: NSSet<string>, completionHandler: (p1: NSArray<WKWebsiteDataRecord>) => void): void;
 
 	removeDataOfTypesForDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebsiteDataRecord>, completionHandler: () => void): void;
 
-	removeDataOfTypesModifiedSinceCompletionHandler(websiteDataTypes: NSSet<string>, date: Date, completionHandler: () => void): void;
-
-	self(): WKWebsiteDataStore; // inherited from NSObjectProtocol
+	removeDataOfTypesModifiedSinceCompletionHandler(websiteDataTypes: NSSet<string>, date: NSDate, completionHandler: () => void): void;
 }
 
 declare var WKWebsiteDataTypeCookies: string;
@@ -515,8 +457,4 @@ declare class WKWindowFeatures extends NSObject {
 	/* readonly */ x: number;
 
 	/* readonly */ y: number;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKWindowFeatures; // inherited from NSObjectProtocol
 }

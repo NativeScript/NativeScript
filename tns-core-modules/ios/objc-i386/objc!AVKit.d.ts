@@ -30,11 +30,9 @@ declare class AVPictureInPictureController extends NSObject {
 
 	/* readonly */ playerLayer: AVPlayerLayer;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
-	self(): AVPictureInPictureController; // inherited from NSObjectProtocol
+	initWithPlayerLayer(playerLayer: AVPlayerLayer): this;
 
 	startPictureInPicture(): void;
 
@@ -62,6 +60,10 @@ declare var AVPictureInPictureControllerDelegate: {
 
 declare class AVPlayerViewController extends UIViewController {
 
+	static alloc(): AVPlayerViewController; // inherited from NSObject
+
+	static new(): AVPlayerViewController; // inherited from NSObject
+
 	static preparePrerollAds(): void;
 
 	allowsPictureInPicturePlayback: boolean;
@@ -80,15 +82,9 @@ declare class AVPlayerViewController extends UIViewController {
 
 	videoGravity: string;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
 	cancelPreroll(): void;
 
 	playPrerollAdWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
-
-	self(): AVPlayerViewController; // inherited from NSObjectProtocol
 }
 
 interface AVPlayerViewControllerDelegate extends NSObjectProtocol {

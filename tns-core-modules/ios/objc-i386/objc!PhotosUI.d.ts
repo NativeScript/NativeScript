@@ -25,6 +25,8 @@ declare const enum PHLivePhotoBadgeOptions {
 
 declare class PHLivePhotoView extends UIView {
 
+	static alloc(): PHLivePhotoView; // inherited from NSObject
+
 	static appearance(): PHLivePhotoView; // inherited from UIAppearance
 
 	static appearanceForTraitCollection(trait: UITraitCollection): PHLivePhotoView; // inherited from UIAppearance
@@ -39,6 +41,8 @@ declare class PHLivePhotoView extends UIView {
 
 	static livePhotoBadgeImageWithOptions(badgeOptions: PHLivePhotoBadgeOptions): UIImage;
 
+	static new(): PHLivePhotoView; // inherited from NSObject
+
 	delegate: PHLivePhotoViewDelegate;
 
 	livePhoto: PHLivePhoto;
@@ -46,12 +50,6 @@ declare class PHLivePhotoView extends UIView {
 	muted: boolean;
 
 	/* readonly */ playbackGestureRecognizer: UIGestureRecognizer;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
-	self(): PHLivePhotoView; // inherited from NSObjectProtocol
 
 	startPlaybackWithStyle(playbackStyle: PHLivePhotoViewPlaybackStyle): void;
 

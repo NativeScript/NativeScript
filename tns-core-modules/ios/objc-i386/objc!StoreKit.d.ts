@@ -31,13 +31,9 @@ declare class SKCloudServiceController extends NSObject {
 
 	static requestAuthorization(handler: (p1: SKCloudServiceAuthorizationStatus) => void): void;
 
-	constructor(); // inherited from NSObject
-
 	requestCapabilitiesWithCompletionHandler(completionHandler: (p1: SKCloudServiceCapability, p2: NSError) => void): void;
 
 	requestStorefrontIdentifierWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
-
-	self(): SKCloudServiceController; // inherited from NSObjectProtocol
 }
 
 declare class SKDownload extends NSObject {
@@ -63,10 +59,6 @@ declare class SKDownload extends NSObject {
 	/* readonly */ timeRemaining: number;
 
 	/* readonly */ transaction: SKPaymentTransaction;
-
-	constructor(); // inherited from NSObject
-
-	self(): SKDownload; // inherited from NSObjectProtocol
 }
 
 declare const enum SKDownloadState {
@@ -109,6 +101,10 @@ declare var SKErrorDomain: string;
 
 declare class SKMutablePayment extends SKPayment {
 
+	static alloc(): SKMutablePayment; // inherited from NSObject
+
+	static new(): SKMutablePayment; // inherited from NSObject
+
 	static paymentWithProduct(product: SKProduct): SKMutablePayment; // inherited from SKPayment
 
 	applicationUsername: string;
@@ -142,13 +138,9 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 
 	/* readonly */ simulatesAskToBuyInSandbox: boolean;
 
-	constructor(); // inherited from NSObject
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	mutableCopyWithZone(zone: interop.Pointer): any; // inherited from NSMutableCopying
-
-	self(): SKPayment; // inherited from NSObjectProtocol
+	mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class SKPaymentQueue extends NSObject {
@@ -162,8 +154,6 @@ declare class SKPaymentQueue extends NSObject {
 	static new(): SKPaymentQueue; // inherited from NSObject
 
 	/* readonly */ transactions: NSArray<SKPaymentTransaction>;
-
-	constructor(); // inherited from NSObject
 
 	addPayment(payment: SKPayment): void;
 
@@ -183,8 +173,6 @@ declare class SKPaymentQueue extends NSObject {
 
 	resumeDownloads(downloads: NSArray<SKDownload>): void;
 
-	self(): SKPaymentQueue; // inherited from NSObjectProtocol
-
 	startDownloads(downloads: NSArray<SKDownload>): void;
 }
 
@@ -202,17 +190,13 @@ declare class SKPaymentTransaction extends NSObject {
 
 	/* readonly */ payment: SKPayment;
 
-	/* readonly */ transactionDate: Date;
+	/* readonly */ transactionDate: NSDate;
 
 	/* readonly */ transactionIdentifier: string;
 
 	/* readonly */ transactionReceipt: NSData;
 
 	/* readonly */ transactionState: SKPaymentTransactionState;
-
-	constructor(); // inherited from NSObject
-
-	self(): SKPaymentTransaction; // inherited from NSObjectProtocol
 }
 
 interface SKPaymentTransactionObserver extends NSObjectProtocol {
@@ -266,17 +250,19 @@ declare class SKProduct extends NSObject {
 	/* readonly */ priceLocale: NSLocale;
 
 	/* readonly */ productIdentifier: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): SKProduct; // inherited from NSObjectProtocol
 }
 
 declare class SKProductsRequest extends SKRequest {
 
-	delegate: any; /*SKProductsRequestDelegate */
+	static alloc(): SKProductsRequest; // inherited from NSObject
+
+	static new(): SKProductsRequest; // inherited from NSObject
+
+	delegate: SKProductsRequestDelegate;
 
 	constructor(o: { productIdentifiers: NSSet<string>; });
+
+	initWithProductIdentifiers(productIdentifiers: NSSet<string>): this;
 }
 
 interface SKProductsRequestDelegate extends SKRequestDelegate {
@@ -297,10 +283,6 @@ declare class SKProductsResponse extends NSObject {
 	/* readonly */ invalidProductIdentifiers: NSArray<string>;
 
 	/* readonly */ products: NSArray<SKProduct>;
-
-	constructor(); // inherited from NSObject
-
-	self(): SKProductsResponse; // inherited from NSObjectProtocol
 }
 
 declare var SKReceiptPropertyIsExpired: string;
@@ -311,9 +293,15 @@ declare var SKReceiptPropertyIsVolumePurchase: string;
 
 declare class SKReceiptRefreshRequest extends SKRequest {
 
+	static alloc(): SKReceiptRefreshRequest; // inherited from NSObject
+
+	static new(): SKReceiptRefreshRequest; // inherited from NSObject
+
 	/* readonly */ receiptProperties: NSDictionary<string, any>;
 
 	constructor(o: { receiptProperties: NSDictionary<string, any>; });
+
+	initWithReceiptProperties(properties: NSDictionary<string, any>): this;
 }
 
 declare class SKRequest extends NSObject {
@@ -324,11 +312,7 @@ declare class SKRequest extends NSObject {
 
 	delegate: SKRequestDelegate;
 
-	constructor(); // inherited from NSObject
-
 	cancel(): void;
-
-	self(): SKRequest; // inherited from NSObjectProtocol
 
 	start(): void;
 }
@@ -356,15 +340,13 @@ declare var SKStoreProductParameterProviderToken: string;
 
 declare class SKStoreProductViewController extends UIViewController {
 
+	static alloc(): SKStoreProductViewController; // inherited from NSObject
+
+	static new(): SKStoreProductViewController; // inherited from NSObject
+
 	delegate: SKStoreProductViewControllerDelegate;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
 	loadProductWithParametersCompletionBlock(parameters: NSDictionary<string, any>, block: (p1: boolean, p2: NSError) => void): void;
-
-	self(): SKStoreProductViewController; // inherited from NSObjectProtocol
 }
 
 interface SKStoreProductViewControllerDelegate extends NSObjectProtocol {

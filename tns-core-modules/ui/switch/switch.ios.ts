@@ -43,7 +43,7 @@ export class Switch extends common.Switch {
 
     constructor() {
         super();
-        this._ios = new UISwitch();
+        this._ios = UISwitch.new();
 
         this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);

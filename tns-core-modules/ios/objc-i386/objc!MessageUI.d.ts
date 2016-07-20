@@ -21,13 +21,13 @@ declare const enum MFMailComposeResult {
 
 declare class MFMailComposeViewController extends UINavigationController {
 
+	static alloc(): MFMailComposeViewController; // inherited from NSObject
+
 	static canSendMail(): boolean;
 
+	static new(): MFMailComposeViewController; // inherited from NSObject
+
 	mailComposeDelegate: MFMailComposeViewControllerDelegate;
-
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
 
 	addAttachmentDataMimeTypeFileName(attachment: NSData, mimeType: string, filename: string): void;
 
@@ -53,6 +53,8 @@ declare var MFMailComposeViewControllerDelegate: {
 
 declare class MFMessageComposeViewController extends UINavigationController {
 
+	static alloc(): MFMessageComposeViewController; // inherited from NSObject
+
 	static canSendAttachments(): boolean;
 
 	static canSendSubject(): boolean;
@@ -60,6 +62,8 @@ declare class MFMessageComposeViewController extends UINavigationController {
 	static canSendText(): boolean;
 
 	static isSupportedAttachmentUTI(uti: string): boolean;
+
+	static new(): MFMessageComposeViewController; // inherited from NSObject
 
 	/* readonly */ attachments: NSArray<NSDictionary<any, any>>;
 
@@ -70,10 +74,6 @@ declare class MFMessageComposeViewController extends UINavigationController {
 	recipients: NSArray<string>;
 
 	subject: string;
-
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
 
 	addAttachmentDataTypeIdentifierFilename(attachmentData: NSData, uti: string, filename: string): boolean;
 

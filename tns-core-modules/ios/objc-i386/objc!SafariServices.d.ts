@@ -17,25 +17,23 @@ declare class SFContentBlockerManager extends NSObject {
 	static new(): SFContentBlockerManager; // inherited from NSObject
 
 	static reloadContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
-
-	constructor(); // inherited from NSObject
-
-	self(): SFContentBlockerManager; // inherited from NSObjectProtocol
 }
 
 declare class SFSafariViewController extends UIViewController {
 
+	static alloc(): SFSafariViewController; // inherited from NSObject
+
+	static new(): SFSafariViewController; // inherited from NSObject
+
 	delegate: SFSafariViewControllerDelegate;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
 
 	constructor(o: { URL: NSURL; });
 
 	constructor(o: { URL: NSURL; entersReaderIfAvailable: boolean; });
 
-	self(): SFSafariViewController; // inherited from NSObjectProtocol
+	initWithURL(URL: NSURL): this;
+
+	initWithURLEntersReaderIfAvailable(URL: NSURL, entersReaderIfAvailable: boolean): this;
 }
 
 interface SFSafariViewControllerDelegate extends NSObjectProtocol {
@@ -61,11 +59,7 @@ declare class SSReadingList extends NSObject {
 
 	static supportsURL(URL: NSURL): boolean;
 
-	constructor(); // inherited from NSObject
-
 	addReadingListItemWithURLTitlePreviewTextError(URL: NSURL, title: string, previewText: string): boolean;
-
-	self(): SSReadingList; // inherited from NSObjectProtocol
 }
 
 declare const enum SSReadingListErrorCode {

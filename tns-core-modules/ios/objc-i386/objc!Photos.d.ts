@@ -11,14 +11,14 @@ declare class PHAdjustmentData extends NSObject {
 
 	/* readonly */ formatVersion: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { formatIdentifier: string; formatVersion: string; data: NSData; });
 
-	self(): PHAdjustmentData; // inherited from NSObjectProtocol
+	initWithFormatIdentifierFormatVersionData(formatIdentifier: string, formatVersion: string, data: NSData): this;
 }
 
 declare class PHAsset extends PHObject {
+
+	static alloc(): PHAsset; // inherited from NSObject
 
 	static fetchAssetsInAssetCollectionOptions(assetCollection: PHAssetCollection, options: PHFetchOptions): PHFetchResult<PHAsset>;
 
@@ -34,11 +34,13 @@ declare class PHAsset extends PHObject {
 
 	static fetchKeyAssetsInAssetCollectionOptions(assetCollection: PHAssetCollection, options: PHFetchOptions): PHFetchResult<PHAsset>;
 
+	static new(): PHAsset; // inherited from NSObject
+
 	/* readonly */ burstIdentifier: string;
 
 	/* readonly */ burstSelectionTypes: PHAssetBurstSelectionType;
 
-	/* readonly */ creationDate: Date;
+	/* readonly */ creationDate: NSDate;
 
 	/* readonly */ duration: number;
 
@@ -52,7 +54,7 @@ declare class PHAsset extends PHObject {
 
 	/* readonly */ mediaType: PHAssetMediaType;
 
-	/* readonly */ modificationDate: Date;
+	/* readonly */ modificationDate: NSDate;
 
 	/* readonly */ pixelHeight: number;
 
@@ -96,7 +98,7 @@ declare class PHAssetChangeRequest extends NSObject {
 
 	contentEditingOutput: PHContentEditingOutput;
 
-	creationDate: Date;
+	creationDate: NSDate;
 
 	favorite: boolean;
 
@@ -106,14 +108,12 @@ declare class PHAssetChangeRequest extends NSObject {
 
 	/* readonly */ placeholderForCreatedAsset: PHObjectPlaceholder;
 
-	constructor(); // inherited from NSObject
-
 	revertAssetContentToOriginal(): void;
-
-	self(): PHAssetChangeRequest; // inherited from NSObjectProtocol
 }
 
 declare class PHAssetCollection extends PHCollection {
+
+	static alloc(): PHAssetCollection; // inherited from NSObject
 
 	static fetchAssetCollectionsContainingAssetWithTypeOptions(asset: PHAsset, type: PHAssetCollectionType, options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
 
@@ -127,6 +127,8 @@ declare class PHAssetCollection extends PHCollection {
 
 	static fetchMomentsWithOptions(options: PHFetchOptions): PHFetchResult<PHAssetCollection>;
 
+	static new(): PHAssetCollection; // inherited from NSObject
+
 	static transientAssetCollectionWithAssetFetchResultTitle(fetchResult: PHFetchResult<PHAsset>, title: string): PHAssetCollection;
 
 	static transientAssetCollectionWithAssetsTitle(assets: NSArray<PHAsset>, title: string): PHAssetCollection;
@@ -137,13 +139,13 @@ declare class PHAssetCollection extends PHCollection {
 
 	/* readonly */ assetCollectionType: PHAssetCollectionType;
 
-	/* readonly */ endDate: Date;
+	/* readonly */ endDate: NSDate;
 
 	/* readonly */ estimatedAssetCount: number;
 
 	/* readonly */ localizedLocationNames: NSArray<string>;
 
-	/* readonly */ startDate: Date;
+	/* readonly */ startDate: NSDate;
 }
 
 declare class PHAssetCollectionChangeRequest extends NSObject {
@@ -164,8 +166,6 @@ declare class PHAssetCollectionChangeRequest extends NSObject {
 
 	title: string;
 
-	constructor(); // inherited from NSObject
-
 	addAssets(assets: NSFastEnumeration): void;
 
 	insertAssetsAtIndexes(assets: NSFastEnumeration, indexes: NSIndexSet): void;
@@ -177,8 +177,6 @@ declare class PHAssetCollectionChangeRequest extends NSObject {
 	removeAssetsAtIndexes(indexes: NSIndexSet): void;
 
 	replaceAssetsAtIndexesWithAssets(indexes: NSIndexSet, assets: NSFastEnumeration): void;
-
-	self(): PHAssetCollectionChangeRequest; // inherited from NSObjectProtocol
 }
 
 declare const enum PHAssetCollectionSubtype {
@@ -235,6 +233,8 @@ declare const enum PHAssetCollectionType {
 
 declare class PHAssetCreationRequest extends PHAssetChangeRequest {
 
+	static alloc(): PHAssetCreationRequest; // inherited from NSObject
+
 	static changeRequestForAsset(asset: PHAsset): PHAssetCreationRequest; // inherited from PHAssetChangeRequest
 
 	static creationRequestForAsset(): PHAssetCreationRequest;
@@ -244,6 +244,8 @@ declare class PHAssetCreationRequest extends PHAssetChangeRequest {
 	static creationRequestForAssetFromImageAtFileURL(fileURL: NSURL): PHAssetCreationRequest; // inherited from PHAssetChangeRequest
 
 	static creationRequestForAssetFromVideoAtFileURL(fileURL: NSURL): PHAssetCreationRequest; // inherited from PHAssetChangeRequest
+
+	static new(): PHAssetCreationRequest; // inherited from NSObject
 
 	static supportsAssetResourceTypes(types: NSArray<number>): boolean;
 
@@ -308,10 +310,6 @@ declare class PHAssetResource extends NSObject {
 	/* readonly */ type: PHAssetResourceType;
 
 	/* readonly */ uniformTypeIdentifier: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): PHAssetResource; // inherited from NSObjectProtocol
 }
 
 declare class PHAssetResourceCreationOptions extends NSObject implements NSCopying {
@@ -326,11 +324,7 @@ declare class PHAssetResourceCreationOptions extends NSObject implements NSCopyi
 
 	uniformTypeIdentifier: string;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): PHAssetResourceCreationOptions; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class PHAssetResourceManager extends NSObject {
@@ -341,13 +335,9 @@ declare class PHAssetResourceManager extends NSObject {
 
 	static new(): PHAssetResourceManager; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	cancelDataRequest(requestID: number): void;
 
 	requestDataForAssetResourceOptionsDataReceivedHandlerCompletionHandler(resource: PHAssetResource, options: PHAssetResourceRequestOptions, handler: (p1: NSData) => void, completionHandler: (p1: NSError) => void): number;
-
-	self(): PHAssetResourceManager; // inherited from NSObjectProtocol
 
 	writeDataForAssetResourceToFileOptionsCompletionHandler(resource: PHAssetResource, fileURL: NSURL, options: PHAssetResourceRequestOptions, completionHandler: (p1: NSError) => void): void;
 }
@@ -362,11 +352,7 @@ declare class PHAssetResourceRequestOptions extends NSObject implements NSCopyin
 
 	progressHandler: (p1: number) => void;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): PHAssetResourceRequestOptions; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum PHAssetResourceType {
@@ -414,6 +400,10 @@ declare const enum PHAuthorizationStatus {
 
 declare class PHCachingImageManager extends PHImageManager {
 
+	static alloc(): PHCachingImageManager; // inherited from NSObject
+
+	static new(): PHCachingImageManager; // inherited from NSObject
+
 	allowsCachingHighQualityImages: boolean;
 
 	startCachingImagesForAssetsTargetSizeContentModeOptions(assets: NSArray<PHAsset>, targetSize: CGSize, contentMode: PHImageContentMode, options: PHImageRequestOptions): void;
@@ -429,20 +419,20 @@ declare class PHChange extends NSObject {
 
 	static new(): PHChange; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	changeDetailsForFetchResult(object: PHFetchResult<any>): PHFetchResultChangeDetails;
 
 	changeDetailsForObject(object: PHObject): PHObjectChangeDetails;
-
-	self(): PHChange; // inherited from NSObjectProtocol
 }
 
 declare class PHCollection extends PHObject {
 
+	static alloc(): PHCollection; // inherited from NSObject
+
 	static fetchCollectionsInCollectionListOptions(collectionList: PHCollectionList, options: PHFetchOptions): PHFetchResult<PHCollection>;
 
 	static fetchTopLevelUserCollectionsWithOptions(options: PHFetchOptions): PHFetchResult<PHCollection>;
+
+	static new(): PHCollection; // inherited from NSObject
 
 	/* readonly */ canContainAssets: boolean;
 
@@ -472,6 +462,8 @@ declare const enum PHCollectionEditOperation {
 
 declare class PHCollectionList extends PHCollection {
 
+	static alloc(): PHCollectionList; // inherited from NSObject
+
 	static fetchCollectionListsContainingCollectionOptions(collection: PHCollection, options: PHFetchOptions): PHFetchResult<PHCollectionList>;
 
 	static fetchCollectionListsWithLocalIdentifiersOptions(identifiers: NSArray<string>, options: PHFetchOptions): PHFetchResult<PHCollectionList>;
@@ -482,6 +474,8 @@ declare class PHCollectionList extends PHCollection {
 
 	static fetchMomentListsWithSubtypeOptions(momentListSubtype: PHCollectionListSubtype, options: PHFetchOptions): PHFetchResult<PHCollectionList>;
 
+	static new(): PHCollectionList; // inherited from NSObject
+
 	static transientCollectionListWithCollectionsFetchResultTitle(fetchResult: PHFetchResult<PHCollection>, title: string): PHCollectionList;
 
 	static transientCollectionListWithCollectionsTitle(collections: NSArray<PHCollection>, title: string): PHCollectionList;
@@ -490,11 +484,11 @@ declare class PHCollectionList extends PHCollection {
 
 	/* readonly */ collectionListType: PHCollectionListType;
 
-	/* readonly */ endDate: Date;
+	/* readonly */ endDate: NSDate;
 
 	/* readonly */ localizedLocationNames: NSArray<string>;
 
-	/* readonly */ startDate: Date;
+	/* readonly */ startDate: NSDate;
 }
 
 declare class PHCollectionListChangeRequest extends NSObject {
@@ -515,8 +509,6 @@ declare class PHCollectionListChangeRequest extends NSObject {
 
 	title: string;
 
-	constructor(); // inherited from NSObject
-
 	addChildCollections(collections: NSFastEnumeration): void;
 
 	insertChildCollectionsAtIndexes(collections: NSFastEnumeration, indexes: NSIndexSet): void;
@@ -528,8 +520,6 @@ declare class PHCollectionListChangeRequest extends NSObject {
 	removeChildCollectionsAtIndexes(indexes: NSIndexSet): void;
 
 	replaceChildCollectionsAtIndexesWithChildCollections(indexes: NSIndexSet, collections: NSFastEnumeration): void;
-
-	self(): PHCollectionListChangeRequest; // inherited from NSObjectProtocol
 }
 
 declare const enum PHCollectionListSubtype {
@@ -568,7 +558,7 @@ declare class PHContentEditingInput extends NSObject {
 
 	/* readonly */ avAsset: AVAsset;
 
-	/* readonly */ creationDate: Date;
+	/* readonly */ creationDate: NSDate;
 
 	/* readonly */ displaySizeImage: UIImage;
 
@@ -583,10 +573,6 @@ declare class PHContentEditingInput extends NSObject {
 	/* readonly */ mediaType: PHAssetMediaType;
 
 	/* readonly */ uniformTypeIdentifier: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): PHContentEditingInput; // inherited from NSObjectProtocol
 }
 
 declare var PHContentEditingInputCancelledKey: string;
@@ -603,11 +589,7 @@ declare class PHContentEditingInputRequestOptions extends NSObject {
 
 	networkAccessAllowed: boolean;
 
-	progressHandler: (p1: number, p2: interop.Reference<boolean>) => void;
-
-	constructor(); // inherited from NSObject
-
-	self(): PHContentEditingInputRequestOptions; // inherited from NSObjectProtocol
+	progressHandler: (p1: number, p2: interop.Pointer | interop.Reference<boolean>) => void;
 }
 
 declare var PHContentEditingInputResultIsInCloudKey: string;
@@ -622,13 +604,13 @@ declare class PHContentEditingOutput extends NSObject {
 
 	/* readonly */ renderedContentURL: NSURL;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { contentEditingInput: PHContentEditingInput; });
 
 	constructor(o: { placeholderForCreatedAsset: PHObjectPlaceholder; });
 
-	self(): PHContentEditingOutput; // inherited from NSObjectProtocol
+	initWithContentEditingInput(contentEditingInput: PHContentEditingInput): this;
+
+	initWithPlaceholderForCreatedAsset(placeholderForCreatedAsset: PHObjectPlaceholder): this;
 }
 
 declare class PHFetchOptions extends NSObject implements NSCopying {
@@ -651,11 +633,7 @@ declare class PHFetchOptions extends NSObject implements NSCopying {
 
 	wantsIncrementalChangeDetails: boolean;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): PHFetchOptions; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class PHFetchResult<ObjectType> extends NSObject implements NSCopying, NSFastEnumeration {
@@ -672,19 +650,17 @@ declare class PHFetchResult<ObjectType> extends NSObject implements NSCopying, N
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
-	constructor(); // inherited from NSObject
-
 	containsObject(anObject: ObjectType): boolean;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	countOfAssetsWithMediaType(mediaType: PHAssetMediaType): number;
 
-	enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: NSEnumerationOptions, block: (p1: ObjectType, p2: number, p3: interop.Reference<boolean>) => void): void;
+	enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: NSEnumerationOptions, block: (p1: ObjectType, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateObjectsUsingBlock(block: (p1: ObjectType, p2: number, p3: interop.Reference<boolean>) => void): void;
+	enumerateObjectsUsingBlock(block: (p1: ObjectType, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateObjectsWithOptionsUsingBlock(opts: NSEnumerationOptions, block: (p1: ObjectType, p2: number, p3: interop.Reference<boolean>) => void): void;
+	enumerateObjectsWithOptionsUsingBlock(opts: NSEnumerationOptions, block: (p1: ObjectType, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	indexOfObject(anObject: ObjectType): number;
 
@@ -695,8 +671,6 @@ declare class PHFetchResult<ObjectType> extends NSObject implements NSCopying, N
 	objectAtIndexedSubscript(idx: number): ObjectType;
 
 	objectsAtIndexes(indexes: NSIndexSet): NSArray<ObjectType>;
-
-	self(): PHFetchResult<ObjectType>; // inherited from NSObjectProtocol
 }
 
 declare class PHFetchResultChangeDetails extends NSObject {
@@ -727,11 +701,7 @@ declare class PHFetchResultChangeDetails extends NSObject {
 
 	/* readonly */ removedObjects: NSArray<PHObject>;
 
-	constructor(); // inherited from NSObject
-
 	enumerateMovesWithBlock(handler: (p1: number, p2: number) => void): void;
-
-	self(): PHFetchResultChangeDetails; // inherited from NSObjectProtocol
 }
 
 declare var PHImageCancelledKey: string;
@@ -755,8 +725,6 @@ declare class PHImageManager extends NSObject {
 
 	static new(): PHImageManager; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	cancelImageRequest(requestID: number): void;
 
 	requestAVAssetForVideoOptionsResultHandler(asset: PHAsset, options: PHVideoRequestOptions, resultHandler: (p1: AVAsset, p2: AVAudioMix, p3: NSDictionary<any, any>) => void): number;
@@ -770,8 +738,6 @@ declare class PHImageManager extends NSObject {
 	requestLivePhotoForAssetTargetSizeContentModeOptionsResultHandler(asset: PHAsset, targetSize: CGSize, contentMode: PHImageContentMode, options: PHLivePhotoRequestOptions, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
 
 	requestPlayerItemForVideoOptionsResultHandler(asset: PHAsset, options: PHVideoRequestOptions, resultHandler: (p1: AVPlayerItem, p2: NSDictionary<any, any>) => void): number;
-
-	self(): PHImageManager; // inherited from NSObjectProtocol
 }
 
 declare var PHImageManagerMaximumSize: CGSize;
@@ -788,7 +754,7 @@ declare class PHImageRequestOptions extends NSObject implements NSCopying {
 
 	normalizedCropRect: CGRect;
 
-	progressHandler: (p1: number, p2: NSError, p3: interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
+	progressHandler: (p1: number, p2: NSError, p3: interop.Pointer | interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
 
 	resizeMode: PHImageRequestOptionsResizeMode;
 
@@ -796,11 +762,7 @@ declare class PHImageRequestOptions extends NSObject implements NSCopying {
 
 	version: PHImageRequestOptionsVersion;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): PHImageRequestOptions; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum PHImageRequestOptionsDeliveryMode {
@@ -850,19 +812,17 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding 
 
 	static requestLivePhotoWithResourceFileURLsPlaceholderImageTargetSizeContentModeResultHandler(fileURLs: NSArray<NSURL>, image: UIImage, targetSize: CGSize, contentMode: PHImageContentMode, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ size: CGSize;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): PHLivePhoto; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare var PHLivePhotoInfoCancelledKey: string;
@@ -883,13 +843,9 @@ declare class PHLivePhotoRequestOptions extends NSObject implements NSCopying {
 
 	networkAccessAllowed: boolean;
 
-	progressHandler: (p1: number, p2: NSError, p3: interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
+	progressHandler: (p1: number, p2: NSError, p3: interop.Pointer | interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): PHLivePhotoRequestOptions; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class PHObject extends NSObject implements NSCopying {
@@ -900,11 +856,7 @@ declare class PHObject extends NSObject implements NSCopying {
 
 	/* readonly */ localIdentifier: string;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): PHObject; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class PHObjectChangeDetails extends NSObject {
@@ -920,13 +872,13 @@ declare class PHObjectChangeDetails extends NSObject {
 	/* readonly */ objectBeforeChanges: PHObject;
 
 	/* readonly */ objectWasDeleted: boolean;
-
-	constructor(); // inherited from NSObject
-
-	self(): PHObjectChangeDetails; // inherited from NSObjectProtocol
 }
 
 declare class PHObjectPlaceholder extends PHObject {
+
+	static alloc(): PHObjectPlaceholder; // inherited from NSObject
+
+	static new(): PHObjectPlaceholder; // inherited from NSObject
 }
 
 declare class PHPhotoLibrary extends NSObject {
@@ -941,15 +893,11 @@ declare class PHPhotoLibrary extends NSObject {
 
 	static sharedPhotoLibrary(): PHPhotoLibrary;
 
-	constructor(); // inherited from NSObject
-
 	performChangesAndWaitError(changeBlock: () => void): boolean;
 
 	performChangesCompletionHandler(changeBlock: () => void, completionHandler: (p1: boolean, p2: NSError) => void): void;
 
 	registerChangeObserver(observer: PHPhotoLibraryChangeObserver): void;
-
-	self(): PHPhotoLibrary; // inherited from NSObjectProtocol
 
 	unregisterChangeObserver(observer: PHPhotoLibraryChangeObserver): void;
 }
@@ -973,13 +921,9 @@ declare class PHVideoRequestOptions extends NSObject {
 
 	networkAccessAllowed: boolean;
 
-	progressHandler: (p1: number, p2: NSError, p3: interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
+	progressHandler: (p1: number, p2: NSError, p3: interop.Pointer | interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
 
 	version: PHVideoRequestOptionsVersion;
-
-	constructor(); // inherited from NSObject
-
-	self(): PHVideoRequestOptions; // inherited from NSObjectProtocol
 }
 
 declare const enum PHVideoRequestOptionsDeliveryMode {

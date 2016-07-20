@@ -411,7 +411,7 @@ export class FileSystemAccess {
             return "";
         }
 
-        var nsArray = NSMutableArray.alloc().initWithCapacity(paths.length);
+        var nsArray = NSMutableArray.alloc<string>().initWithCapacity(paths.length);
 
         var i;
         for (i = 0; i < paths.length; i++) {

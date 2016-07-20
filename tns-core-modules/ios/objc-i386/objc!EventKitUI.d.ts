@@ -1,6 +1,10 @@
 
 declare class EKCalendarChooser extends UIViewController {
 
+	static alloc(): EKCalendarChooser; // inherited from NSObject
+
+	static new(): EKCalendarChooser; // inherited from NSObject
+
 	delegate: EKCalendarChooserDelegate;
 
 	selectedCalendars: NSSet<EKCalendar>;
@@ -11,15 +15,13 @@ declare class EKCalendarChooser extends UIViewController {
 
 	showsDoneButton: boolean;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
 	constructor(o: { selectionStyle: EKCalendarChooserSelectionStyle; displayStyle: EKCalendarChooserDisplayStyle; entityType: EKEntityType; eventStore: EKEventStore; });
 
 	constructor(o: { selectionStyle: EKCalendarChooserSelectionStyle; displayStyle: EKCalendarChooserDisplayStyle; eventStore: EKEventStore; });
 
-	self(): EKCalendarChooser; // inherited from NSObjectProtocol
+	initWithSelectionStyleDisplayStyleEntityTypeEventStore(style: EKCalendarChooserSelectionStyle, displayStyle: EKCalendarChooserDisplayStyle, entityType: EKEntityType, eventStore: EKEventStore): this;
+
+	initWithSelectionStyleDisplayStyleEventStore(selectionStyle: EKCalendarChooserSelectionStyle, displayStyle: EKCalendarChooserDisplayStyle, eventStore: EKEventStore): this;
 }
 
 interface EKCalendarChooserDelegate extends NSObjectProtocol {
@@ -62,15 +64,15 @@ declare const enum EKEventEditViewAction {
 
 declare class EKEventEditViewController extends UINavigationController {
 
+	static alloc(): EKEventEditViewController; // inherited from NSObject
+
+	static new(): EKEventEditViewController; // inherited from NSObject
+
 	editViewDelegate: EKEventEditViewDelegate;
 
 	event: EKEvent;
 
 	eventStore: EKEventStore;
-
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
 
 	cancelEditing(): void;
 }
@@ -97,6 +99,10 @@ declare const enum EKEventViewAction {
 
 declare class EKEventViewController extends UIViewController {
 
+	static alloc(): EKEventViewController; // inherited from NSObject
+
+	static new(): EKEventViewController; // inherited from NSObject
+
 	allowsCalendarPreview: boolean;
 
 	allowsEditing: boolean;
@@ -104,12 +110,6 @@ declare class EKEventViewController extends UIViewController {
 	delegate: EKEventViewDelegate;
 
 	event: EKEvent;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): EKEventViewController; // inherited from NSObjectProtocol
 }
 
 interface EKEventViewDelegate extends NSObjectProtocol {

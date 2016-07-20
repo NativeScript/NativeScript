@@ -24,8 +24,6 @@ declare class LAContext extends NSObject {
 
 	touchIDAuthenticationAllowableReuseDuration: number;
 
-	constructor(); // inherited from NSObject
-
 	canEvaluatePolicyError(policy: LAPolicy): boolean;
 
 	evaluateAccessControlOperationLocalizedReasonReply(accessControl: any, operation: LAAccessControlOperation, localizedReason: string, reply: (p1: boolean, p2: NSError) => void): void;
@@ -35,8 +33,6 @@ declare class LAContext extends NSObject {
 	invalidate(): void;
 
 	isCredentialSet(type: LACredentialType): boolean;
-
-	self(): LAContext; // inherited from NSObjectProtocol
 
 	setCredentialType(credential: NSData, type: LACredentialType): boolean;
 }

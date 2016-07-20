@@ -8,10 +8,6 @@ declare class CTCall extends NSObject {
 	/* readonly */ callID: string;
 
 	/* readonly */ callState: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTCall; // inherited from NSObjectProtocol
 }
 
 declare class CTCallCenter extends NSObject {
@@ -23,10 +19,6 @@ declare class CTCallCenter extends NSObject {
 	callEventHandler: (p1: CTCall) => void;
 
 	/* readonly */ currentCalls: NSSet<CTCall>;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTCallCenter; // inherited from NSObjectProtocol
 }
 
 declare var CTCallStateConnected: string;
@@ -52,10 +44,6 @@ declare class CTCarrier extends NSObject {
 	/* readonly */ mobileCountryCode: string;
 
 	/* readonly */ mobileNetworkCode: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTCarrier; // inherited from NSObjectProtocol
 }
 
 declare class CTCellularData extends NSObject {
@@ -67,10 +55,6 @@ declare class CTCellularData extends NSObject {
 	cellularDataRestrictionDidUpdateNotifier: (p1: CTCellularDataRestrictedState) => void;
 
 	/* readonly */ restrictedState: CTCellularDataRestrictedState;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTCellularData; // inherited from NSObjectProtocol
 }
 
 declare const enum CTCellularDataRestrictedState {
@@ -119,10 +103,6 @@ declare class CTSubscriber extends NSObject {
 	static new(): CTSubscriber; // inherited from NSObject
 
 	/* readonly */ carrierToken: NSData;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTSubscriber; // inherited from NSObjectProtocol
 }
 
 declare class CTSubscriberInfo extends NSObject {
@@ -132,10 +112,6 @@ declare class CTSubscriberInfo extends NSObject {
 	static new(): CTSubscriberInfo; // inherited from NSObject
 
 	static subscriber(): CTSubscriber;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTSubscriberInfo; // inherited from NSObjectProtocol
 }
 
 declare var CTSubscriberTokenRefreshed: string;
@@ -151,8 +127,4 @@ declare class CTTelephonyNetworkInfo extends NSObject {
 	/* readonly */ subscriberCellularProvider: CTCarrier;
 
 	subscriberCellularProviderDidUpdateNotifier: (p1: CTCarrier) => void;
-
-	constructor(); // inherited from NSObject
-
-	self(): CTTelephonyNetworkInfo; // inherited from NSObjectProtocol
 }

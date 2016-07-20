@@ -30,10 +30,6 @@ declare class MTLArgument extends NSObject {
 	/* readonly */ threadgroupMemoryDataSize: number;
 
 	/* readonly */ type: MTLArgumentType;
-
-	constructor(); // inherited from NSObject
-
-	self(): MTLArgument; // inherited from NSObjectProtocol
 }
 
 declare const enum MTLArgumentAccess {
@@ -68,13 +64,9 @@ declare class MTLArrayType extends NSObject {
 
 	/* readonly */ stride: number;
 
-	constructor(); // inherited from NSObject
-
 	elementArrayType(): MTLArrayType;
 
 	elementStructType(): MTLStructType;
-
-	self(): MTLArrayType; // inherited from NSObjectProtocol
 }
 
 declare const enum MTLBlendFactor {
@@ -161,7 +153,7 @@ interface MTLBuffer extends MTLResource {
 
 	length: number;
 
-	contents(): interop.Pointer;
+	contents(): interop.Pointer | interop.Reference<any>;
 
 	newTextureWithDescriptorOffsetBytesPerRow(descriptor: MTLTextureDescriptor, offset: number, bytesPerRow: number): MTLTexture;
 }
@@ -348,11 +340,7 @@ declare class MTLCompileOptions extends NSObject implements NSCopying {
 
 	preprocessorMacros: NSDictionary<string, NSObject>;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLCompileOptions; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 interface MTLComputeCommandEncoder extends MTLCommandEncoder {
@@ -367,7 +355,7 @@ interface MTLComputeCommandEncoder extends MTLCommandEncoder {
 
 	setBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, range: NSRange): void;
 
-	setBytesLengthAtIndex(bytes: interop.Pointer, length: number, index: number): void;
+	setBytesLengthAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, index: number): void;
 
 	setComputePipelineState(state: MTLComputePipelineState): void;
 
@@ -402,13 +390,9 @@ declare class MTLComputePipelineDescriptor extends NSObject implements NSCopying
 
 	threadGroupSizeIsMultipleOfThreadExecutionWidth: boolean;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	reset(): void;
-
-	self(): MTLComputePipelineDescriptor; // inherited from NSObjectProtocol
 }
 
 declare class MTLComputePipelineReflection extends NSObject {
@@ -418,10 +402,6 @@ declare class MTLComputePipelineReflection extends NSObject {
 	static new(): MTLComputePipelineReflection; // inherited from NSObject
 
 	/* readonly */ arguments: NSArray<MTLArgument>;
-
-	constructor(); // inherited from NSObject
-
-	self(): MTLComputePipelineReflection; // inherited from NSObjectProtocol
 }
 
 interface MTLComputePipelineState extends NSObjectProtocol {
@@ -588,11 +568,7 @@ declare class MTLDepthStencilDescriptor extends NSObject implements NSCopying {
 
 	label: string;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLDepthStencilDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 interface MTLDepthStencilState extends NSObjectProtocol {
@@ -612,9 +588,9 @@ interface MTLDevice extends NSObjectProtocol {
 
 	name: string;
 
-	newBufferWithBytesLengthOptions(pointer: interop.Pointer, length: number, options: MTLResourceOptions): MTLBuffer;
+	newBufferWithBytesLengthOptions(pointer: interop.Pointer | interop.Reference<any>, length: number, options: MTLResourceOptions): MTLBuffer;
 
-	newBufferWithBytesNoCopyLengthOptionsDeallocator(pointer: interop.Pointer, length: number, options: MTLResourceOptions, deallocator: (p1: interop.Pointer, p2: number) => void): MTLBuffer;
+	newBufferWithBytesNoCopyLengthOptionsDeallocator(pointer: interop.Pointer | interop.Reference<any>, length: number, options: MTLResourceOptions, deallocator: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): MTLBuffer;
 
 	newBufferWithLengthOptions(length: number, options: MTLResourceOptions): MTLBuffer;
 
@@ -624,7 +600,7 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newComputePipelineStateWithDescriptorOptionsCompletionHandler(descriptor: MTLComputePipelineDescriptor, options: MTLPipelineOption, completionHandler: (p1: MTLComputePipelineState, p2: MTLComputePipelineReflection, p3: NSError) => void): void;
 
-	newComputePipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLComputePipelineDescriptor, options: MTLPipelineOption, reflection: interop.Reference<MTLComputePipelineReflection>): MTLComputePipelineState;
+	newComputePipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLComputePipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLComputePipelineReflection>): MTLComputePipelineState;
 
 	newComputePipelineStateWithFunctionCompletionHandler(computeFunction: MTLFunction, completionHandler: (p1: MTLComputePipelineState, p2: NSError) => void): void;
 
@@ -632,7 +608,7 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newComputePipelineStateWithFunctionOptionsCompletionHandler(computeFunction: MTLFunction, options: MTLPipelineOption, completionHandler: (p1: MTLComputePipelineState, p2: MTLComputePipelineReflection, p3: NSError) => void): void;
 
-	newComputePipelineStateWithFunctionOptionsReflectionError(computeFunction: MTLFunction, options: MTLPipelineOption, reflection: interop.Reference<MTLComputePipelineReflection>): MTLComputePipelineState;
+	newComputePipelineStateWithFunctionOptionsReflectionError(computeFunction: MTLFunction, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLComputePipelineReflection>): MTLComputePipelineState;
 
 	newDefaultLibrary(): MTLLibrary;
 
@@ -652,7 +628,7 @@ interface MTLDevice extends NSObjectProtocol {
 
 	newRenderPipelineStateWithDescriptorOptionsCompletionHandler(descriptor: MTLRenderPipelineDescriptor, options: MTLPipelineOption, completionHandler: (p1: MTLRenderPipelineState, p2: MTLRenderPipelineReflection, p3: NSError) => void): void;
 
-	newRenderPipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Reference<MTLRenderPipelineReflection>): MTLRenderPipelineState;
+	newRenderPipelineStateWithDescriptorOptionsReflectionError(descriptor: MTLRenderPipelineDescriptor, options: MTLPipelineOption, reflection: interop.Pointer | interop.Reference<MTLRenderPipelineReflection>): MTLRenderPipelineState;
 
 	newSamplerStateWithDescriptor(descriptor: MTLSamplerDescriptor): MTLSamplerState;
 
@@ -1125,7 +1101,7 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	setFragmentBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offset: interop.Reference<number>, range: NSRange): void;
 
-	setFragmentBytesLengthAtIndex(bytes: interop.Pointer, length: number, index: number): void;
+	setFragmentBytesLengthAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, index: number): void;
 
 	setFragmentSamplerStateAtIndex(sampler: MTLSamplerState, index: number): void;
 
@@ -1157,7 +1133,7 @@ interface MTLRenderCommandEncoder extends MTLCommandEncoder {
 
 	setVertexBuffersOffsetsWithRange(buffers: interop.Reference<MTLBuffer>, offsets: interop.Reference<number>, range: NSRange): void;
 
-	setVertexBytesLengthAtIndex(bytes: interop.Pointer, length: number, index: number): void;
+	setVertexBytesLengthAtIndex(bytes: interop.Pointer | interop.Reference<any>, length: number, index: number): void;
 
 	setVertexSamplerStateAtIndex(sampler: MTLSamplerState, index: number): void;
 
@@ -1206,14 +1182,14 @@ declare class MTLRenderPassAttachmentDescriptor extends NSObject implements NSCo
 
 	texture: MTLTexture;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLRenderPassAttachmentDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class MTLRenderPassColorAttachmentDescriptor extends MTLRenderPassAttachmentDescriptor {
+
+	static alloc(): MTLRenderPassColorAttachmentDescriptor; // inherited from NSObject
+
+	static new(): MTLRenderPassColorAttachmentDescriptor; // inherited from NSObject
 
 	clearColor: MTLClearColor;
 }
@@ -1225,16 +1201,16 @@ declare class MTLRenderPassColorAttachmentDescriptorArray extends NSObject {
 	static new(): MTLRenderPassColorAttachmentDescriptorArray; // inherited from NSObject
 	[index: number]: MTLRenderPassColorAttachmentDescriptor;
 
-	constructor(); // inherited from NSObject
-
 	objectAtIndexedSubscript(attachmentIndex: number): MTLRenderPassColorAttachmentDescriptor;
-
-	self(): MTLRenderPassColorAttachmentDescriptorArray; // inherited from NSObjectProtocol
 
 	setObjectAtIndexedSubscript(attachment: MTLRenderPassColorAttachmentDescriptor, attachmentIndex: number): void;
 }
 
 declare class MTLRenderPassDepthAttachmentDescriptor extends MTLRenderPassAttachmentDescriptor {
+
+	static alloc(): MTLRenderPassDepthAttachmentDescriptor; // inherited from NSObject
+
+	static new(): MTLRenderPassDepthAttachmentDescriptor; // inherited from NSObject
 
 	clearDepth: number;
 
@@ -1257,14 +1233,14 @@ declare class MTLRenderPassDescriptor extends NSObject implements NSCopying {
 
 	visibilityResultBuffer: MTLBuffer;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLRenderPassDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class MTLRenderPassStencilAttachmentDescriptor extends MTLRenderPassAttachmentDescriptor {
+
+	static alloc(): MTLRenderPassStencilAttachmentDescriptor; // inherited from NSObject
+
+	static new(): MTLRenderPassStencilAttachmentDescriptor; // inherited from NSObject
 
 	clearStencil: number;
 }
@@ -1293,11 +1269,7 @@ declare class MTLRenderPipelineColorAttachmentDescriptor extends NSObject implem
 
 	writeMask: MTLColorWriteMask;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLRenderPipelineColorAttachmentDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class MTLRenderPipelineColorAttachmentDescriptorArray extends NSObject {
@@ -1307,11 +1279,7 @@ declare class MTLRenderPipelineColorAttachmentDescriptorArray extends NSObject {
 	static new(): MTLRenderPipelineColorAttachmentDescriptorArray; // inherited from NSObject
 	[index: number]: MTLRenderPipelineColorAttachmentDescriptor;
 
-	constructor(); // inherited from NSObject
-
 	objectAtIndexedSubscript(attachmentIndex: number): MTLRenderPipelineColorAttachmentDescriptor;
-
-	self(): MTLRenderPipelineColorAttachmentDescriptorArray; // inherited from NSObjectProtocol
 
 	setObjectAtIndexedSubscript(attachment: MTLRenderPipelineColorAttachmentDescriptor, attachmentIndex: number): void;
 }
@@ -1344,13 +1312,9 @@ declare class MTLRenderPipelineDescriptor extends NSObject implements NSCopying 
 
 	vertexFunction: MTLFunction;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	reset(): void;
-
-	self(): MTLRenderPipelineDescriptor; // inherited from NSObjectProtocol
 }
 
 declare const enum MTLRenderPipelineError {
@@ -1373,10 +1337,6 @@ declare class MTLRenderPipelineReflection extends NSObject {
 	/* readonly */ fragmentArguments: NSArray<MTLArgument>;
 
 	/* readonly */ vertexArguments: NSArray<MTLArgument>;
-
-	constructor(); // inherited from NSObject
-
-	self(): MTLRenderPipelineReflection; // inherited from NSObjectProtocol
 }
 
 interface MTLRenderPipelineState extends NSObjectProtocol {
@@ -1469,11 +1429,7 @@ declare class MTLSamplerDescriptor extends NSObject implements NSCopying {
 
 	tAddressMode: MTLSamplerAddressMode;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLSamplerDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum MTLSamplerMinMagFilter {
@@ -1536,11 +1492,7 @@ declare class MTLStencilDescriptor extends NSObject implements NSCopying {
 
 	writeMask: number;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLStencilDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum MTLStencilOperation {
@@ -1592,11 +1544,7 @@ declare class MTLStructMember extends NSObject {
 
 	/* readonly */ offset: number;
 
-	constructor(); // inherited from NSObject
-
 	arrayType(): MTLArrayType;
-
-	self(): MTLStructMember; // inherited from NSObjectProtocol
 
 	structType(): MTLStructType;
 }
@@ -1609,11 +1557,7 @@ declare class MTLStructType extends NSObject {
 
 	/* readonly */ members: NSArray<MTLStructMember>;
 
-	constructor(); // inherited from NSObject
-
 	memberByName(name: string): MTLStructMember;
-
-	self(): MTLStructType; // inherited from NSObjectProtocol
 }
 
 interface MTLTexture extends MTLResource {
@@ -1652,17 +1596,17 @@ interface MTLTexture extends MTLResource {
 
 	width: number;
 
-	getBytesBytesPerRowBytesPerImageFromRegionMipmapLevelSlice(pixelBytes: interop.Pointer, bytesPerRow: number, bytesPerImage: number, region: MTLRegion, level: number, slice: number): void;
+	getBytesBytesPerRowBytesPerImageFromRegionMipmapLevelSlice(pixelBytes: interop.Pointer | interop.Reference<any>, bytesPerRow: number, bytesPerImage: number, region: MTLRegion, level: number, slice: number): void;
 
-	getBytesBytesPerRowFromRegionMipmapLevel(pixelBytes: interop.Pointer, bytesPerRow: number, region: MTLRegion, level: number): void;
+	getBytesBytesPerRowFromRegionMipmapLevel(pixelBytes: interop.Pointer | interop.Reference<any>, bytesPerRow: number, region: MTLRegion, level: number): void;
 
 	newTextureViewWithPixelFormat(pixelFormat: MTLPixelFormat): MTLTexture;
 
 	newTextureViewWithPixelFormatTextureTypeLevelsSlices(pixelFormat: MTLPixelFormat, textureType: MTLTextureType, levelRange: NSRange, sliceRange: NSRange): MTLTexture;
 
-	replaceRegionMipmapLevelSliceWithBytesBytesPerRowBytesPerImage(region: MTLRegion, level: number, slice: number, pixelBytes: interop.Pointer, bytesPerRow: number, bytesPerImage: number): void;
+	replaceRegionMipmapLevelSliceWithBytesBytesPerRowBytesPerImage(region: MTLRegion, level: number, slice: number, pixelBytes: interop.Pointer | interop.Reference<any>, bytesPerRow: number, bytesPerImage: number): void;
 
-	replaceRegionMipmapLevelWithBytesBytesPerRow(region: MTLRegion, level: number, pixelBytes: interop.Pointer, bytesPerRow: number): void;
+	replaceRegionMipmapLevelWithBytesBytesPerRow(region: MTLRegion, level: number, pixelBytes: interop.Pointer | interop.Reference<any>, bytesPerRow: number): void;
 }
 declare var MTLTexture: {
 
@@ -1703,11 +1647,7 @@ declare class MTLTextureDescriptor extends NSObject implements NSCopying {
 
 	width: number;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLTextureDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum MTLTextureType {
@@ -1762,10 +1702,6 @@ declare class MTLVertexAttribute extends NSObject {
 	/* readonly */ attributeType: MTLDataType;
 
 	/* readonly */ name: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): MTLVertexAttribute; // inherited from NSObjectProtocol
 }
 
 declare class MTLVertexAttributeDescriptor extends NSObject implements NSCopying {
@@ -1780,11 +1716,7 @@ declare class MTLVertexAttributeDescriptor extends NSObject implements NSCopying
 
 	offset: number;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLVertexAttributeDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class MTLVertexAttributeDescriptorArray extends NSObject {
@@ -1794,11 +1726,7 @@ declare class MTLVertexAttributeDescriptorArray extends NSObject {
 	static new(): MTLVertexAttributeDescriptorArray; // inherited from NSObject
 	[index: number]: MTLVertexAttributeDescriptor;
 
-	constructor(); // inherited from NSObject
-
 	objectAtIndexedSubscript(index: number): MTLVertexAttributeDescriptor;
-
-	self(): MTLVertexAttributeDescriptorArray; // inherited from NSObjectProtocol
 
 	setObjectAtIndexedSubscript(attributeDesc: MTLVertexAttributeDescriptor, index: number): void;
 }
@@ -1815,11 +1743,7 @@ declare class MTLVertexBufferLayoutDescriptor extends NSObject implements NSCopy
 
 	stride: number;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): MTLVertexBufferLayoutDescriptor; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class MTLVertexBufferLayoutDescriptorArray extends NSObject {
@@ -1829,11 +1753,7 @@ declare class MTLVertexBufferLayoutDescriptorArray extends NSObject {
 	static new(): MTLVertexBufferLayoutDescriptorArray; // inherited from NSObject
 	[index: number]: MTLVertexBufferLayoutDescriptor;
 
-	constructor(); // inherited from NSObject
-
 	objectAtIndexedSubscript(index: number): MTLVertexBufferLayoutDescriptor;
-
-	self(): MTLVertexBufferLayoutDescriptorArray; // inherited from NSObjectProtocol
 
 	setObjectAtIndexedSubscript(bufferDesc: MTLVertexBufferLayoutDescriptor, index: number): void;
 }
@@ -1850,13 +1770,9 @@ declare class MTLVertexDescriptor extends NSObject implements NSCopying {
 
 	/* readonly */ layouts: MTLVertexBufferLayoutDescriptorArray;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	reset(): void;
-
-	self(): MTLVertexDescriptor; // inherited from NSObjectProtocol
 }
 
 declare const enum MTLVertexFormat {

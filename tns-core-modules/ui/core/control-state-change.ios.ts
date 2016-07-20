@@ -2,20 +2,17 @@
 import definition = require("ui/core/control-state-change");
 import * as visualStateConstants from "ui/styling/visual-state-constants";
 
-var ObserverClass = NSObject.extend(
-    {
-        observeValueForKeyPathOfObjectChangeContext: function (path: string, obj: Object, change: NSDictionary, context: any) {
-            if (path === "selected") {
-                this["_owner"]._onSelectedChanged();
-            } else if (path === "enabled") {
-                this["_owner"]._onEnabledChanged();
-            } else if (path === "highlighted") {
-                this["_owner"]._onHighlightedChanged();
-            }
+class ObserverClass extends NSObject {
+    observeValueForKeyPathOfObjectChangeContext(path: string, obj: Object, change: NSDictionary<any, any>, context: any) {
+        if (path === "selected") {
+            this["_owner"]._onSelectedChanged();
+        } else if (path === "enabled") {
+            this["_owner"]._onEnabledChanged();
+        } else if (path === "highlighted") {
+            this["_owner"]._onHighlightedChanged();
         }
-    },
-    {
-    });
+    }
+}
 
 export class ControlStateChangeListener implements definition.ControlStateChangeListener {
     private _observer: NSObject;

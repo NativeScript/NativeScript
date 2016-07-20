@@ -563,7 +563,7 @@ class UINavigationControllerImpl extends UINavigationController {
         return null;
     }
 
-    public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray {
+    public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray<UIViewController> {
         let lastViewController = this.viewControllers.lastObject;
         let navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         if (trace.enabled) {

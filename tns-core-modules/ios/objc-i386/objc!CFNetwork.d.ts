@@ -1,5 +1,5 @@
 
-declare function CFFTPCreateParsedResourceListing(alloc: any, buffer: string, bufferLength: number, parsed: interop.Reference<NSDictionary<any, any>>): number;
+declare function CFFTPCreateParsedResourceListing(alloc: any, buffer: string, bufferLength: number, parsed: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
 declare function CFHTTPAuthenticationAppliesToRequest(auth: any, request: any): boolean;
 
@@ -13,7 +13,7 @@ declare function CFHTTPAuthenticationCreateFromResponse(alloc: any, response: an
 
 declare function CFHTTPAuthenticationGetTypeID(): number;
 
-declare function CFHTTPAuthenticationIsValid(auth: any, error: interop.Reference<CFStreamError>): boolean;
+declare function CFHTTPAuthenticationIsValid(auth: any, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
 declare function CFHTTPAuthenticationRequiresAccountDomain(auth: any): boolean;
 
@@ -25,9 +25,9 @@ declare function CFHTTPMessageAddAuthentication(request: any, authenticationFail
 
 declare function CFHTTPMessageAppendBytes(message: any, newBytes: string, numBytes: number): boolean;
 
-declare function CFHTTPMessageApplyCredentialDictionary(request: any, auth: any, dict: NSDictionary<any, any>, error: interop.Reference<CFStreamError>): boolean;
+declare function CFHTTPMessageApplyCredentialDictionary(request: any, auth: any, dict: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
-declare function CFHTTPMessageApplyCredentials(request: any, auth: any, username: string, password: string, error: interop.Reference<CFStreamError>): boolean;
+declare function CFHTTPMessageApplyCredentials(request: any, auth: any, username: string, password: string, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
 declare function CFHTTPMessageCopyAllHeaderFields(message: any): interop.Unmanaged<NSDictionary<any, any>>;
 
@@ -69,10 +69,10 @@ declare function CFHostCancelInfoResolution(theHost: any, info: CFHostInfoType):
 
 interface CFHostClientContext {
 	version: number;
-	info: interop.Pointer;
-	retain: interop.FunctionReference<(p1: interop.Pointer) => interop.Pointer>;
-	release: interop.FunctionReference<(p1: interop.Pointer) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer) => string>;
+	info: interop.Pointer | interop.Reference<any>;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
 }
 declare var CFHostClientContext: interop.StructType<CFHostClientContext>;
 
@@ -101,13 +101,13 @@ declare const enum CFHostInfoType {
 
 declare function CFHostScheduleWithRunLoop(theHost: any, runLoop: any, runLoopMode: string): void;
 
-declare function CFHostSetClient(theHost: any, clientCB: interop.FunctionReference<(p1: any, p2: CFHostInfoType, p3: interop.Reference<CFStreamError>, p4: interop.Pointer) => void>, clientContext: interop.Reference<CFHostClientContext>): boolean;
+declare function CFHostSetClient(theHost: any, clientCB: interop.FunctionReference<(p1: any, p2: CFHostInfoType, p3: interop.Pointer | interop.Reference<CFStreamError>, p4: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFHostClientContext>): boolean;
 
-declare function CFHostStartInfoResolution(theHost: any, info: CFHostInfoType, error: interop.Reference<CFStreamError>): boolean;
+declare function CFHostStartInfoResolution(theHost: any, info: CFHostInfoType, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
 declare function CFHostUnscheduleFromRunLoop(theHost: any, runLoop: any, runLoopMode: string): void;
 
-declare function CFNetDiagnosticCopyNetworkStatusPassively(details: any, description: interop.Reference<string>): number;
+declare function CFNetDiagnosticCopyNetworkStatusPassively(details: any, description: interop.Pointer | interop.Reference<string>): number;
 
 declare function CFNetDiagnosticCreateWithStreams(alloc: any, readStream: NSInputStream, writeStream: NSOutputStream): interop.Unmanaged<any>;
 
@@ -130,7 +130,7 @@ declare const enum CFNetDiagnosticStatusValues {
 	kCFNetDiagnosticConnectionDown = -66557
 }
 
-declare function CFNetServiceBrowserCreate(alloc: any, clientCB: interop.FunctionReference<(p1: any, p2: number, p3: any, p4: interop.Reference<CFStreamError>, p5: interop.Pointer) => void>, clientContext: interop.Reference<CFNetServiceClientContext>): interop.Unmanaged<any>;
+declare function CFNetServiceBrowserCreate(alloc: any, clientCB: interop.FunctionReference<(p1: any, p2: number, p3: any, p4: interop.Pointer | interop.Reference<CFStreamError>, p5: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext>): interop.Unmanaged<any>;
 
 declare const enum CFNetServiceBrowserFlags {
 
@@ -151,11 +151,11 @@ declare function CFNetServiceBrowserInvalidate(browser: any): void;
 
 declare function CFNetServiceBrowserScheduleWithRunLoop(browser: any, runLoop: any, runLoopMode: string): void;
 
-declare function CFNetServiceBrowserSearchForDomains(browser: any, registrationDomains: boolean, error: interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceBrowserSearchForDomains(browser: any, registrationDomains: boolean, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
-declare function CFNetServiceBrowserSearchForServices(browser: any, domain: string, serviceType: string, error: interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceBrowserSearchForServices(browser: any, domain: string, serviceType: string, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
-declare function CFNetServiceBrowserStopSearch(browser: any, error: interop.Reference<CFStreamError>): void;
+declare function CFNetServiceBrowserStopSearch(browser: any, error: interop.Pointer | interop.Reference<CFStreamError>): void;
 
 declare function CFNetServiceBrowserUnscheduleFromRunLoop(browser: any, runLoop: any, runLoopMode: string): void;
 
@@ -163,10 +163,10 @@ declare function CFNetServiceCancel(theService: any): void;
 
 interface CFNetServiceClientContext {
 	version: number;
-	info: interop.Pointer;
-	retain: interop.FunctionReference<(p1: interop.Pointer) => interop.Pointer>;
-	release: interop.FunctionReference<(p1: interop.Pointer) => void>;
-	copyDescription: interop.FunctionReference<(p1: interop.Pointer) => string>;
+	info: interop.Pointer | interop.Reference<any>;
+	retain: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => interop.Pointer | interop.Reference<any>>;
+	release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
 }
 declare var CFNetServiceClientContext: interop.StructType<CFNetServiceClientContext>;
 
@@ -194,7 +194,7 @@ declare function CFNetServiceGetType(theService: any): interop.Unmanaged<string>
 
 declare function CFNetServiceGetTypeID(): number;
 
-declare function CFNetServiceMonitorCreate(alloc: any, theService: any, clientCB: interop.FunctionReference<(p1: any, p2: any, p3: CFNetServiceMonitorType, p4: NSData, p5: interop.Reference<CFStreamError>, p6: interop.Pointer) => void>, clientContext: interop.Reference<CFNetServiceClientContext>): interop.Unmanaged<any>;
+declare function CFNetServiceMonitorCreate(alloc: any, theService: any, clientCB: interop.FunctionReference<(p1: any, p2: any, p3: CFNetServiceMonitorType, p4: NSData, p5: interop.Pointer | interop.Reference<CFStreamError>, p6: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext>): interop.Unmanaged<any>;
 
 declare function CFNetServiceMonitorGetTypeID(): number;
 
@@ -202,9 +202,9 @@ declare function CFNetServiceMonitorInvalidate(monitor: any): void;
 
 declare function CFNetServiceMonitorScheduleWithRunLoop(monitor: any, runLoop: any, runLoopMode: string): void;
 
-declare function CFNetServiceMonitorStart(monitor: any, recordType: CFNetServiceMonitorType, error: interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceMonitorStart(monitor: any, recordType: CFNetServiceMonitorType, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
-declare function CFNetServiceMonitorStop(monitor: any, error: interop.Reference<CFStreamError>): void;
+declare function CFNetServiceMonitorStop(monitor: any, error: interop.Pointer | interop.Reference<CFStreamError>): void;
 
 declare const enum CFNetServiceMonitorType {
 
@@ -218,13 +218,13 @@ declare const enum CFNetServiceRegisterFlags {
 	kCFNetServiceFlagNoAutoRename = 1
 }
 
-declare function CFNetServiceRegisterWithOptions(theService: any, options: number, error: interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceRegisterWithOptions(theService: any, options: number, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
-declare function CFNetServiceResolveWithTimeout(theService: any, timeout: number, error: interop.Reference<CFStreamError>): boolean;
+declare function CFNetServiceResolveWithTimeout(theService: any, timeout: number, error: interop.Pointer | interop.Reference<CFStreamError>): boolean;
 
 declare function CFNetServiceScheduleWithRunLoop(theService: any, runLoop: any, runLoopMode: string): void;
 
-declare function CFNetServiceSetClient(theService: any, clientCB: interop.FunctionReference<(p1: any, p2: interop.Reference<CFStreamError>, p3: interop.Pointer) => void>, clientContext: interop.Reference<CFNetServiceClientContext>): boolean;
+declare function CFNetServiceSetClient(theService: any, clientCB: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<CFStreamError>, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFNetServiceClientContext>): boolean;
 
 declare function CFNetServiceSetTXTData(theService: any, txtRecord: NSData): boolean;
 
@@ -249,7 +249,7 @@ declare const enum CFNetServicesError {
 	kCFNetServicesErrorTimeout = -72007
 }
 
-declare function CFNetworkCopyProxiesForAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, error: interop.Reference<NSError>): interop.Unmanaged<NSArray<any>>;
+declare function CFNetworkCopyProxiesForAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, error: interop.Pointer | interop.Reference<NSError>): interop.Unmanaged<NSArray<any>>;
 
 declare function CFNetworkCopyProxiesForURL(url: NSURL, proxySettings: NSDictionary<any, any>): interop.Unmanaged<NSArray<any>>;
 
@@ -424,9 +424,9 @@ declare const enum CFNetworkErrors {
 	kCFNetServiceErrorDNSServiceFailure = -73000
 }
 
-declare function CFNetworkExecuteProxyAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer, p2: NSArray<any>, p3: NSError) => void>, clientContext: interop.Reference<CFStreamClientContext>): interop.Unmanaged<any>;
+declare function CFNetworkExecuteProxyAutoConfigurationScript(proxyAutoConfigurationScript: string, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: NSArray<any>, p3: NSError) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): interop.Unmanaged<any>;
 
-declare function CFNetworkExecuteProxyAutoConfigurationURL(proxyAutoConfigURL: NSURL, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer, p2: NSArray<any>, p3: NSError) => void>, clientContext: interop.Reference<CFStreamClientContext>): interop.Unmanaged<any>;
+declare function CFNetworkExecuteProxyAutoConfigurationURL(proxyAutoConfigURL: NSURL, targetURL: NSURL, cb: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: NSArray<any>, p3: NSError) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): interop.Unmanaged<any>;
 
 declare function CFReadStreamCreateForHTTPRequest(alloc: any, request: any): interop.Unmanaged<NSInputStream>;
 
@@ -434,9 +434,9 @@ declare function CFReadStreamCreateForStreamedHTTPRequest(alloc: any, requestHea
 
 declare function CFReadStreamCreateWithFTPURL(alloc: any, ftpURL: NSURL): interop.Unmanaged<NSInputStream>;
 
-declare function CFStreamCreatePairWithSocketToCFHost(alloc: any, host: any, port: number, readStream: interop.Reference<NSInputStream>, writeStream: interop.Reference<NSOutputStream>): void;
+declare function CFStreamCreatePairWithSocketToCFHost(alloc: any, host: any, port: number, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
 
-declare function CFStreamCreatePairWithSocketToNetService(alloc: any, service: any, readStream: interop.Reference<NSInputStream>, writeStream: interop.Reference<NSOutputStream>): void;
+declare function CFStreamCreatePairWithSocketToNetService(alloc: any, service: any, readStream: interop.Pointer | interop.Reference<NSInputStream>, writeStream: interop.Pointer | interop.Reference<NSOutputStream>): void;
 
 declare const enum CFStreamErrorHTTP {
 

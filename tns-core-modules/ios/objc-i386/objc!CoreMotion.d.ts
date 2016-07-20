@@ -8,9 +8,11 @@ declare var CMAcceleration: interop.StructType<CMAcceleration>;
 
 declare class CMAccelerometerData extends CMLogItem {
 
-	/* readonly */ acceleration: CMAcceleration;
+	static alloc(): CMAccelerometerData; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): CMAccelerometerData; // inherited from NSObject
+
+	/* readonly */ acceleration: CMAcceleration;
 }
 
 declare class CMAltimeter extends NSObject {
@@ -21,10 +23,6 @@ declare class CMAltimeter extends NSObject {
 
 	static new(): CMAltimeter; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
-	self(): CMAltimeter; // inherited from NSObjectProtocol
-
 	startRelativeAltitudeUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMAltitudeData, p2: NSError) => void): void;
 
 	stopRelativeAltitudeUpdates(): void;
@@ -32,11 +30,13 @@ declare class CMAltimeter extends NSObject {
 
 declare class CMAltitudeData extends CMLogItem {
 
+	static alloc(): CMAltitudeData; // inherited from NSObject
+
+	static new(): CMAltitudeData; // inherited from NSObject
+
 	/* readonly */ pressure: number;
 
 	/* readonly */ relativeAltitude: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
@@ -45,7 +45,7 @@ declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CMAttitude; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ pitch: number;
 
@@ -57,17 +57,15 @@ declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ yaw: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	multiplyByInverseOfAttitude(attitude: CMAttitude): void;
-
-	self(): CMAttitude; // inherited from NSObjectProtocol
 }
 
 declare const enum CMAttitudeReferenceFrame {
@@ -89,6 +87,10 @@ declare var CMCalibratedMagneticField: interop.StructType<CMCalibratedMagneticFi
 
 declare class CMDeviceMotion extends CMLogItem {
 
+	static alloc(): CMDeviceMotion; // inherited from NSObject
+
+	static new(): CMDeviceMotion; // inherited from NSObject
+
 	/* readonly */ attitude: CMAttitude;
 
 	/* readonly */ gravity: CMAcceleration;
@@ -98,8 +100,6 @@ declare class CMDeviceMotion extends CMLogItem {
 	/* readonly */ rotationRate: CMRotationRate;
 
 	/* readonly */ userAcceleration: CMAcceleration;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare const enum CMError {
@@ -133,9 +133,11 @@ declare var CMErrorDomain: string;
 
 declare class CMGyroData extends CMLogItem {
 
-	/* readonly */ rotationRate: CMRotationRate;
+	static alloc(): CMGyroData; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): CMGyroData; // inherited from NSObject
+
+	/* readonly */ rotationRate: CMRotationRate;
 }
 
 declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
@@ -144,19 +146,17 @@ declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CMLogItem; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ timestamp: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CMLogItem; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 interface CMMagneticField {
@@ -179,12 +179,18 @@ declare const enum CMMagneticFieldCalibrationAccuracy {
 
 declare class CMMagnetometerData extends CMLogItem {
 
-	/* readonly */ magneticField: CMMagneticField;
+	static alloc(): CMMagnetometerData; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): CMMagnetometerData; // inherited from NSObject
+
+	/* readonly */ magneticField: CMMagneticField;
 }
 
 declare class CMMotionActivity extends CMLogItem {
+
+	static alloc(): CMMotionActivity; // inherited from NSObject
+
+	static new(): CMMotionActivity; // inherited from NSObject
 
 	/* readonly */ automotive: boolean;
 
@@ -194,15 +200,13 @@ declare class CMMotionActivity extends CMLogItem {
 
 	/* readonly */ running: boolean;
 
-	/* readonly */ startDate: Date;
+	/* readonly */ startDate: NSDate;
 
 	/* readonly */ stationary: boolean;
 
 	/* readonly */ unknown: boolean;
 
 	/* readonly */ walking: boolean;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare const enum CMMotionActivityConfidence {
@@ -222,11 +226,7 @@ declare class CMMotionActivityManager extends NSObject {
 
 	static new(): CMMotionActivityManager; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
-	queryActivityStartingFromDateToDateToQueueWithHandler(start: Date, end: Date, queue: NSOperationQueue, handler: (p1: NSArray<CMMotionActivity>, p2: NSError) => void): void;
-
-	self(): CMMotionActivityManager; // inherited from NSObjectProtocol
+	queryActivityStartingFromDateToDateToQueueWithHandler(start: NSDate, end: NSDate, queue: NSOperationQueue, handler: (p1: NSArray<CMMotionActivity>, p2: NSError) => void): void;
 
 	startActivityUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMMotionActivity) => void): void;
 
@@ -277,10 +277,6 @@ declare class CMMotionManager extends NSObject {
 
 	showsDeviceMovementDisplay: boolean;
 
-	constructor(); // inherited from NSObject
-
-	self(): CMMotionManager; // inherited from NSObjectProtocol
-
 	startAccelerometerUpdates(): void;
 
 	startAccelerometerUpdatesToQueueWithHandler(queue: NSOperationQueue, handler: (p1: CMAccelerometerData, p2: NSError) => void): void;
@@ -326,13 +322,9 @@ declare class CMPedometer extends NSObject {
 
 	static new(): CMPedometer; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
+	queryPedometerDataFromDateToDateWithHandler(start: NSDate, end: NSDate, handler: (p1: CMPedometerData, p2: NSError) => void): void;
 
-	queryPedometerDataFromDateToDateWithHandler(start: Date, end: Date, handler: (p1: CMPedometerData, p2: NSError) => void): void;
-
-	self(): CMPedometer; // inherited from NSObjectProtocol
-
-	startPedometerUpdatesFromDateWithHandler(start: Date, handler: (p1: CMPedometerData, p2: NSError) => void): void;
+	startPedometerUpdatesFromDateWithHandler(start: NSDate, handler: (p1: CMPedometerData, p2: NSError) => void): void;
 
 	stopPedometerUpdates(): void;
 }
@@ -343,7 +335,7 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): CMPedometerData; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ currentCadence: number;
 
@@ -351,7 +343,7 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 
 	/* readonly */ distance: number;
 
-	/* readonly */ endDate: Date;
+	/* readonly */ endDate: NSDate;
 
 	/* readonly */ floorsAscended: number;
 
@@ -359,17 +351,15 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 
 	/* readonly */ numberOfSteps: number;
 
-	/* readonly */ startDate: Date;
-
-	constructor(); // inherited from NSObject
+	/* readonly */ startDate: NSDate;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CMPedometerData; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 interface CMQuaternion {
@@ -382,9 +372,13 @@ declare var CMQuaternion: interop.StructType<CMQuaternion>;
 
 declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 
+	static alloc(): CMRecordedAccelerometerData; // inherited from NSObject
+
+	static new(): CMRecordedAccelerometerData; // inherited from NSObject
+
 	/* readonly */ identifier: number;
 
-	/* readonly */ startDate: Date;
+	/* readonly */ startDate: NSDate;
 }
 
 interface CMRotationMatrix {
@@ -413,10 +407,6 @@ declare class CMSensorDataList extends NSObject implements NSFastEnumeration {
 
 	static new(): CMSensorDataList; // inherited from NSObject
 	[Symbol.iterator](): Iterator<any>;
-
-	constructor(); // inherited from NSObject
-
-	self(): CMSensorDataList; // inherited from NSObjectProtocol
 }
 
 declare class CMSensorRecorder extends NSObject {
@@ -429,13 +419,9 @@ declare class CMSensorRecorder extends NSObject {
 
 	static new(): CMSensorRecorder; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
-	accelerometerDataFromDateToDate(fromDate: Date, toDate: Date): CMSensorDataList;
+	accelerometerDataFromDateToDate(fromDate: NSDate, toDate: NSDate): CMSensorDataList;
 
 	recordAccelerometerForDuration(duration: number): void;
-
-	self(): CMSensorRecorder; // inherited from NSObjectProtocol
 }
 
 declare class CMStepCounter extends NSObject {
@@ -446,13 +432,9 @@ declare class CMStepCounter extends NSObject {
 
 	static new(): CMStepCounter; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
+	queryStepCountStartingFromToToQueueWithHandler(start: NSDate, end: NSDate, queue: NSOperationQueue, handler: (p1: number, p2: NSError) => void): void;
 
-	queryStepCountStartingFromToToQueueWithHandler(start: Date, end: Date, queue: NSOperationQueue, handler: (p1: number, p2: NSError) => void): void;
-
-	self(): CMStepCounter; // inherited from NSObjectProtocol
-
-	startStepCountingUpdatesToQueueUpdateOnWithHandler(queue: NSOperationQueue, stepCounts: number, handler: (p1: number, p2: Date, p3: NSError) => void): void;
+	startStepCountingUpdatesToQueueUpdateOnWithHandler(queue: NSOperationQueue, stepCounts: number, handler: (p1: number, p2: NSDate, p3: NSError) => void): void;
 
 	stopStepCountingUpdates(): void;
 }

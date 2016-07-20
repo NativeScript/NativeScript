@@ -72,7 +72,7 @@ declare function CTFontCollectionCreateFromAvailableFonts(options: NSDictionary<
 
 declare function CTFontCollectionCreateMatchingFontDescriptors(collection: any): NSArray<any>;
 
-declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback(collection: any, sortCallback: interop.FunctionReference<(p1: UIFontDescriptor, p2: UIFontDescriptor, p3: interop.Pointer) => CFComparisonResult>, refCon: interop.Pointer): NSArray<any>;
+declare function CTFontCollectionCreateMatchingFontDescriptorsSortedWithCallback(collection: any, sortCallback: interop.FunctionReference<(p1: UIFontDescriptor, p2: UIFontDescriptor, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>, refCon: interop.Pointer | interop.Reference<any>): NSArray<any>;
 
 declare function CTFontCollectionCreateWithFontDescriptors(queryDescriptors: NSArray<any>, options: NSDictionary<any, any>): any;
 
@@ -98,9 +98,9 @@ declare function CTFontCopyFontDescriptor(font: UIFont): UIFontDescriptor;
 
 declare function CTFontCopyFullName(font: UIFont): string;
 
-declare function CTFontCopyGraphicsFont(font: UIFont, attributes: interop.Reference<UIFontDescriptor>): any;
+declare function CTFontCopyGraphicsFont(font: UIFont, attributes: interop.Pointer | interop.Reference<UIFontDescriptor>): any;
 
-declare function CTFontCopyLocalizedName(font: UIFont, nameKey: string, actualLanguage: interop.Reference<string>): string;
+declare function CTFontCopyLocalizedName(font: UIFont, nameKey: string, actualLanguage: interop.Pointer | interop.Reference<string>): string;
 
 declare function CTFontCopyName(font: UIFont, nameKey: string): string;
 
@@ -116,33 +116,33 @@ declare function CTFontCopyVariation(font: UIFont): NSDictionary<any, any>;
 
 declare function CTFontCopyVariationAxes(font: UIFont): NSArray<any>;
 
-declare function CTFontCreateCopyWithAttributes(font: UIFont, size: number, matrix: interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
+declare function CTFontCreateCopyWithAttributes(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
 
-declare function CTFontCreateCopyWithFamily(font: UIFont, size: number, matrix: interop.Reference<CGAffineTransform>, family: string): UIFont;
+declare function CTFontCreateCopyWithFamily(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, family: string): UIFont;
 
-declare function CTFontCreateCopyWithSymbolicTraits(font: UIFont, size: number, matrix: interop.Reference<CGAffineTransform>, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFont;
+declare function CTFontCreateCopyWithSymbolicTraits(font: UIFont, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, symTraitValue: CTFontSymbolicTraits, symTraitMask: CTFontSymbolicTraits): UIFont;
 
 declare function CTFontCreateForString(currentFont: UIFont, string: string, range: CFRange): UIFont;
 
-declare function CTFontCreatePathForGlyph(font: UIFont, glyph: number, matrix: interop.Reference<CGAffineTransform>): any;
+declare function CTFontCreatePathForGlyph(font: UIFont, glyph: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): any;
 
 declare function CTFontCreateUIFontForLanguage(uiType: CTFontUIFontType, size: number, language: string): UIFont;
 
-declare function CTFontCreateWithFontDescriptor(descriptor: UIFontDescriptor, size: number, matrix: interop.Reference<CGAffineTransform>): UIFont;
+declare function CTFontCreateWithFontDescriptor(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): UIFont;
 
-declare function CTFontCreateWithFontDescriptorAndOptions(descriptor: UIFontDescriptor, size: number, matrix: interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
+declare function CTFontCreateWithFontDescriptorAndOptions(descriptor: UIFontDescriptor, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
 
-declare function CTFontCreateWithGraphicsFont(graphicsFont: any, size: number, matrix: interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
+declare function CTFontCreateWithGraphicsFont(graphicsFont: any, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, attributes: UIFontDescriptor): UIFont;
 
-declare function CTFontCreateWithName(name: string, size: number, matrix: interop.Reference<CGAffineTransform>): UIFont;
+declare function CTFontCreateWithName(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>): UIFont;
 
-declare function CTFontCreateWithNameAndOptions(name: string, size: number, matrix: interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
+declare function CTFontCreateWithNameAndOptions(name: string, size: number, matrix: interop.Pointer | interop.Reference<CGAffineTransform>, options: CTFontOptions): UIFont;
 
 declare function CTFontDescriptorCopyAttribute(descriptor: UIFontDescriptor, attribute: string): any;
 
 declare function CTFontDescriptorCopyAttributes(descriptor: UIFontDescriptor): NSDictionary<any, any>;
 
-declare function CTFontDescriptorCopyLocalizedAttribute(descriptor: UIFontDescriptor, attribute: string, language: interop.Reference<string>): any;
+declare function CTFontDescriptorCopyLocalizedAttribute(descriptor: UIFontDescriptor, attribute: string, language: interop.Pointer | interop.Reference<string>): any;
 
 declare function CTFontDescriptorCreateCopyWithAttributes(original: UIFontDescriptor, attributes: NSDictionary<any, any>): UIFontDescriptor;
 
@@ -204,13 +204,13 @@ declare const enum CTFontFormat {
 	kCTFontFormatBitmap = 5
 }
 
-declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Reference<CGSize>, count: number): number;
+declare function CTFontGetAdvancesForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, advances: interop.Pointer | interop.Reference<CGSize>, count: number): number;
 
 declare function CTFontGetAscent(font: UIFont): number;
 
 declare function CTFontGetBoundingBox(font: UIFont): CGRect;
 
-declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number): CGRect;
+declare function CTFontGetBoundingRectsForGlyphs(font: UIFont, orientation: CTFontOrientation, glyphs: interop.Reference<number>, boundingRects: interop.Pointer | interop.Reference<CGRect>, count: number): CGRect;
 
 declare function CTFontGetCapHeight(font: UIFont): number;
 
@@ -224,11 +224,11 @@ declare function CTFontGetGlyphsForCharacters(font: UIFont, characters: interop.
 
 declare function CTFontGetLeading(font: UIFont): number;
 
-declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Reference<number>, maxPositions: number): number;
+declare function CTFontGetLigatureCaretPositions(font: UIFont, glyph: number, positions: interop.Pointer | interop.Reference<number>, maxPositions: number): number;
 
 declare function CTFontGetMatrix(font: UIFont): CGAffineTransform;
 
-declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Reference<CGRect>, count: number, options: number): CGRect;
+declare function CTFontGetOpticalBoundsForGlyphs(font: UIFont, glyphs: interop.Reference<number>, boundingRects: interop.Pointer | interop.Reference<CGRect>, count: number, options: number): CGRect;
 
 declare function CTFontGetSize(font: UIFont): number;
 
@@ -284,11 +284,11 @@ declare const enum CTFontManagerError {
 	kCTFontManagerErrorSystemRequired = 203
 }
 
-declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Reference<NSError>): boolean;
+declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
-declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
-declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Reference<NSError>): boolean;
+declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare const enum CTFontManagerScope {
 
@@ -301,11 +301,11 @@ declare const enum CTFontManagerScope {
 	kCTFontManagerScopeSession = 3
 }
 
-declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Reference<NSError>): boolean;
+declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
-declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
 
-declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Reference<NSError>): boolean;
+declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare const enum CTFontOptions {
 
@@ -583,7 +583,7 @@ declare function CTFramesetterGetTypeID(): number;
 
 declare function CTFramesetterGetTypesetter(framesetter: any): any;
 
-declare function CTFramesetterSuggestFrameSizeWithConstraints(framesetter: any, stringRange: CFRange, frameAttributes: NSDictionary<any, any>, constraints: CGSize, fitRange: interop.Reference<CFRange>): CGSize;
+declare function CTFramesetterSuggestFrameSizeWithConstraints(framesetter: any, stringRange: CFRange, frameAttributes: NSDictionary<any, any>, constraints: CGSize, fitRange: interop.Pointer | interop.Reference<CFRange>): CGSize;
 
 declare function CTGetCoreTextVersion(): number;
 
@@ -639,7 +639,7 @@ declare function CTLineCreateWithAttributedString(attrString: NSAttributedString
 
 declare function CTLineDraw(line: any, context: any): void;
 
-declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: boolean, p4: interop.Reference<boolean>) => void): void;
+declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: boolean, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 declare function CTLineGetBoundsWithOptions(line: any, options: CTLineBoundsOptions): CGRect;
 
@@ -649,7 +649,7 @@ declare function CTLineGetGlyphRuns(line: any): NSArray<any>;
 
 declare function CTLineGetImageBounds(line: any, context: any): CGRect;
 
-declare function CTLineGetOffsetForStringIndex(line: any, charIndex: number, secondaryOffset: interop.Reference<number>): number;
+declare function CTLineGetOffsetForStringIndex(line: any, charIndex: number, secondaryOffset: interop.Pointer | interop.Reference<number>): number;
 
 declare function CTLineGetPenOffsetForFlush(line: any, flushFactor: number, flushWidth: number): number;
 
@@ -661,7 +661,7 @@ declare function CTLineGetTrailingWhitespaceWidth(line: any): number;
 
 declare function CTLineGetTypeID(): number;
 
-declare function CTLineGetTypographicBounds(line: any, ascent: interop.Reference<number>, descent: interop.Reference<number>, leading: interop.Reference<number>): number;
+declare function CTLineGetTypographicBounds(line: any, ascent: interop.Pointer | interop.Reference<number>, descent: interop.Pointer | interop.Reference<number>, leading: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum CTLineTruncationType {
 
@@ -672,18 +672,18 @@ declare const enum CTLineTruncationType {
 	kCTLineTruncationMiddle = 2
 }
 
-declare function CTParagraphStyleCreate(settings: interop.Reference<CTParagraphStyleSetting>, settingCount: number): any;
+declare function CTParagraphStyleCreate(settings: interop.Pointer | interop.Reference<CTParagraphStyleSetting>, settingCount: number): any;
 
 declare function CTParagraphStyleCreateCopy(paragraphStyle: any): any;
 
 declare function CTParagraphStyleGetTypeID(): number;
 
-declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer): boolean;
+declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer | interop.Reference<any>): boolean;
 
 interface CTParagraphStyleSetting {
 	spec: CTParagraphStyleSpecifier;
 	valueSize: number;
-	value: interop.Pointer;
+	value: interop.Pointer | interop.Reference<any>;
 }
 declare var CTParagraphStyleSetting: interop.StructType<CTParagraphStyleSetting>;
 
@@ -789,16 +789,16 @@ declare const enum CTRubyPosition {
 
 interface CTRunDelegateCallbacks {
 	version: number;
-	dealloc: interop.FunctionReference<(p1: interop.Pointer) => void>;
-	getAscent: interop.FunctionReference<(p1: interop.Pointer) => number>;
-	getDescent: interop.FunctionReference<(p1: interop.Pointer) => number>;
-	getWidth: interop.FunctionReference<(p1: interop.Pointer) => number>;
+	dealloc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+	getAscent: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
+	getDescent: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
+	getWidth: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
 }
 declare var CTRunDelegateCallbacks: interop.StructType<CTRunDelegateCallbacks>;
 
-declare function CTRunDelegateCreate(callbacks: interop.Reference<CTRunDelegateCallbacks>, refCon: interop.Pointer): any;
+declare function CTRunDelegateCreate(callbacks: interop.Pointer | interop.Reference<CTRunDelegateCallbacks>, refCon: interop.Pointer | interop.Reference<any>): any;
 
-declare function CTRunDelegateGetRefCon(runDelegate: any): interop.Pointer;
+declare function CTRunDelegateGetRefCon(runDelegate: any): interop.Pointer | interop.Reference<any>;
 
 declare function CTRunDelegateGetTypeID(): number;
 
@@ -806,7 +806,7 @@ declare function CTRunDraw(run: any, context: any, range: CFRange): void;
 
 declare function CTRunGetAdvances(run: any, range: CFRange, buffer: interop.Reference<CGSize>): void;
 
-declare function CTRunGetAdvancesPtr(run: any): interop.Reference<CGSize>;
+declare function CTRunGetAdvancesPtr(run: any): interop.Pointer | interop.Reference<CGSize>;
 
 declare function CTRunGetAttributes(run: any): NSDictionary<any, any>;
 
@@ -814,19 +814,19 @@ declare function CTRunGetGlyphCount(run: any): number;
 
 declare function CTRunGetGlyphs(run: any, range: CFRange, buffer: interop.Reference<number>): void;
 
-declare function CTRunGetGlyphsPtr(run: any): interop.Reference<number>;
+declare function CTRunGetGlyphsPtr(run: any): interop.Pointer | interop.Reference<number>;
 
 declare function CTRunGetImageBounds(run: any, context: any, range: CFRange): CGRect;
 
 declare function CTRunGetPositions(run: any, range: CFRange, buffer: interop.Reference<CGPoint>): void;
 
-declare function CTRunGetPositionsPtr(run: any): interop.Reference<CGPoint>;
+declare function CTRunGetPositionsPtr(run: any): interop.Pointer | interop.Reference<CGPoint>;
 
 declare function CTRunGetStatus(run: any): CTRunStatus;
 
 declare function CTRunGetStringIndices(run: any, range: CFRange, buffer: interop.Reference<number>): void;
 
-declare function CTRunGetStringIndicesPtr(run: any): interop.Reference<number>;
+declare function CTRunGetStringIndicesPtr(run: any): interop.Pointer | interop.Reference<number>;
 
 declare function CTRunGetStringRange(run: any): CFRange;
 
@@ -834,7 +834,7 @@ declare function CTRunGetTextMatrix(run: any): CGAffineTransform;
 
 declare function CTRunGetTypeID(): number;
 
-declare function CTRunGetTypographicBounds(run: any, range: CFRange, ascent: interop.Reference<number>, descent: interop.Reference<number>, leading: interop.Reference<number>): number;
+declare function CTRunGetTypographicBounds(run: any, range: CFRange, ascent: interop.Pointer | interop.Reference<number>, descent: interop.Pointer | interop.Reference<number>, leading: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum CTRunStatus {
 

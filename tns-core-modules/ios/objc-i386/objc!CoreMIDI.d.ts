@@ -1,7 +1,7 @@
 
-declare function MIDIClientCreate(name: string, notifyProc: interop.FunctionReference<(p1: interop.Reference<MIDINotification>, p2: interop.Pointer) => void>, notifyRefCon: interop.Pointer, outClient: interop.Reference<number>): number;
+declare function MIDIClientCreate(name: string, notifyProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDINotification>, p2: interop.Pointer | interop.Reference<any>) => void>, notifyRefCon: interop.Pointer | interop.Reference<any>, outClient: interop.Pointer | interop.Reference<number>): number;
 
-declare function MIDIClientCreateWithBlock(name: string, outClient: interop.Reference<number>, notifyBlock: (p1: interop.Reference<MIDINotification>) => void): number;
+declare function MIDIClientCreateWithBlock(name: string, outClient: interop.Pointer | interop.Reference<number>, notifyBlock: (p1: interop.Pointer | interop.Reference<MIDINotification>) => void): number;
 
 declare function MIDIClientDispose(client: number): number;
 
@@ -14,13 +14,13 @@ interface MIDIControlTransform {
 }
 declare var MIDIControlTransform: interop.StructType<MIDIControlTransform>;
 
-declare function MIDIDestinationCreate(client: number, name: string, readProc: interop.FunctionReference<(p1: interop.Reference<MIDIPacketList>, p2: interop.Pointer, p3: interop.Pointer) => void>, refCon: interop.Pointer, outDest: interop.Reference<number>): number;
+declare function MIDIDestinationCreate(client: number, name: string, readProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, refCon: interop.Pointer | interop.Reference<any>, outDest: interop.Pointer | interop.Reference<number>): number;
 
-declare function MIDIDestinationCreateWithBlock(client: number, name: string, outDest: interop.Reference<number>, readBlock: (p1: interop.Reference<MIDIPacketList>, p2: interop.Pointer) => void): number;
+declare function MIDIDestinationCreateWithBlock(client: number, name: string, outDest: interop.Pointer | interop.Reference<number>, readBlock: (p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>) => void): number;
 
-declare function MIDIDeviceAddEntity(device: number, name: string, embedded: boolean, numSourceEndpoints: number, numDestinationEndpoints: number, newEntity: interop.Reference<number>): number;
+declare function MIDIDeviceAddEntity(device: number, name: string, embedded: boolean, numSourceEndpoints: number, numDestinationEndpoints: number, newEntity: interop.Pointer | interop.Reference<number>): number;
 
-declare function MIDIDeviceCreate(owner: interop.Reference<interop.Reference<MIDIDriverInterface>>, name: string, manufacturer: string, model: string, outDevice: interop.Reference<number>): number;
+declare function MIDIDeviceCreate(owner: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, name: string, manufacturer: string, model: string, outDevice: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIDeviceDispose(device: number): number;
 
@@ -39,34 +39,34 @@ declare function MIDIDeviceListGetNumberOfDevices(devList: number): number;
 declare function MIDIDeviceRemoveEntity(device: number, entity: number): number;
 
 interface MIDIDriverInterface {
-	_reserved: interop.Pointer;
-	QueryInterface: interop.FunctionReference<(p1: interop.Pointer, p2: CFUUIDBytes, p3: interop.Reference<interop.Pointer>) => number>;
-	AddRef: interop.FunctionReference<(p1: interop.Pointer) => number>;
-	Release: interop.FunctionReference<(p1: interop.Pointer) => number>;
-	FindDevices: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: number) => number>;
-	Start: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: number) => number>;
-	Stop: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>) => number>;
-	Configure: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: number) => number>;
-	Send: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: interop.Reference<MIDIPacketList>, p3: interop.Pointer, p4: interop.Pointer) => number>;
-	EnableSource: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: number, p3: boolean) => number>;
-	Flush: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Pointer, p4: interop.Pointer) => number>;
-	Monitor: interop.FunctionReference<(p1: interop.Reference<interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Reference<MIDIPacketList>) => number>;
+	_reserved: interop.Pointer | interop.Reference<any>;
+	QueryInterface: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: CFUUIDBytes, p3: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	AddRef: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
+	Release: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
+	FindDevices: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number) => number>;
+	Start: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number) => number>;
+	Stop: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>) => number>;
+	Configure: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number) => number>;
+	Send: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: interop.Pointer | interop.Reference<MIDIPacketList>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>;
+	EnableSource: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: boolean) => number>;
+	Flush: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>) => number>;
+	Monitor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>, p2: number, p3: interop.Pointer | interop.Reference<MIDIPacketList>) => number>;
 }
 declare var MIDIDriverInterface: interop.StructType<MIDIDriverInterface>;
 
 declare function MIDIEndpointDispose(endpt: number): number;
 
-declare function MIDIEndpointGetEntity(inEndpoint: number, outEntity: interop.Reference<number>): number;
+declare function MIDIEndpointGetEntity(inEndpoint: number, outEntity: interop.Pointer | interop.Reference<number>): number;
 
-declare function MIDIEndpointGetRefCons(endpt: number, ref1: interop.Reference<interop.Pointer>, ref2: interop.Reference<interop.Pointer>): number;
+declare function MIDIEndpointGetRefCons(endpt: number, ref1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, ref2: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function MIDIEndpointSetRefCons(endpt: number, ref1: interop.Pointer, ref2: interop.Pointer): number;
+declare function MIDIEndpointSetRefCons(endpt: number, ref1: interop.Pointer | interop.Reference<any>, ref2: interop.Pointer | interop.Reference<any>): number;
 
 declare function MIDIEntityAddOrRemoveEndpoints(entity: number, numSourceEndpoints: number, numDestinationEndpoints: number): number;
 
 declare function MIDIEntityGetDestination(entity: number, destIndex0: number): number;
 
-declare function MIDIEntityGetDevice(inEntity: number, outDevice: interop.Reference<number>): number;
+declare function MIDIEntityGetDevice(inEntity: number, outDevice: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIEntityGetNumberOfDestinations(entity: number): number;
 
@@ -74,7 +74,7 @@ declare function MIDIEntityGetNumberOfSources(entity: number): number;
 
 declare function MIDIEntityGetSource(entity: number, sourceIndex0: number): number;
 
-declare function MIDIExternalDeviceCreate(name: string, manufacturer: string, model: string, outDevice: interop.Reference<number>): number;
+declare function MIDIExternalDeviceCreate(name: string, manufacturer: string, model: string, outDevice: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIFlushOutput(dest: number): number;
 
@@ -82,7 +82,7 @@ declare function MIDIGetDestination(destIndex0: number): number;
 
 declare function MIDIGetDevice(deviceIndex0: number): number;
 
-declare function MIDIGetDriverDeviceList(driver: interop.Reference<interop.Reference<MIDIDriverInterface>>): number;
+declare function MIDIGetDriverDeviceList(driver: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<MIDIDriverInterface>>): number;
 
 declare function MIDIGetDriverIORunLoop(): interop.Unmanaged<any>;
 
@@ -106,9 +106,9 @@ interface MIDIIOErrorNotification {
 }
 declare var MIDIIOErrorNotification: interop.StructType<MIDIIOErrorNotification>;
 
-declare function MIDIInputPortCreate(client: number, portName: string, readProc: interop.FunctionReference<(p1: interop.Reference<MIDIPacketList>, p2: interop.Pointer, p3: interop.Pointer) => void>, refCon: interop.Pointer, outPort: interop.Reference<number>): number;
+declare function MIDIInputPortCreate(client: number, portName: string, readProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, refCon: interop.Pointer | interop.Reference<any>, outPort: interop.Pointer | interop.Reference<number>): number;
 
-declare function MIDIInputPortCreateWithBlock(client: number, portName: string, outPort: interop.Reference<number>, readBlock: (p1: interop.Reference<MIDIPacketList>, p2: interop.Pointer) => void): number;
+declare function MIDIInputPortCreateWithBlock(client: number, portName: string, outPort: interop.Pointer | interop.Reference<number>, readBlock: (p1: interop.Pointer | interop.Reference<MIDIPacketList>, p2: interop.Pointer | interop.Reference<any>) => void): number;
 
 declare var MIDINetworkBonjourServiceType: string;
 
@@ -121,10 +121,6 @@ declare class MIDINetworkConnection extends NSObject {
 	static new(): MIDINetworkConnection; // inherited from NSObject
 
 	/* readonly */ host: MIDINetworkHost;
-
-	constructor(); // inherited from NSObject
-
-	self(): MIDINetworkConnection; // inherited from NSObjectProtocol
 }
 
 declare const enum MIDINetworkConnectionPolicy {
@@ -158,11 +154,7 @@ declare class MIDINetworkHost extends NSObject {
 
 	/* readonly */ port: number;
 
-	constructor(); // inherited from NSObject
-
 	hasSameAddressAs(other: MIDINetworkHost): boolean;
-
-	self(): MIDINetworkHost; // inherited from NSObjectProtocol
 }
 
 declare var MIDINetworkNotificationContactsDidChange: string;
@@ -187,8 +179,6 @@ declare class MIDINetworkSession extends NSObject {
 
 	/* readonly */ networkPort: number;
 
-	constructor(); // inherited from NSObject
-
 	addConnection(connection: MIDINetworkConnection): boolean;
 
 	addContact(contact: MIDINetworkHost): boolean;
@@ -202,8 +192,6 @@ declare class MIDINetworkSession extends NSObject {
 	removeConnection(connection: MIDINetworkConnection): boolean;
 
 	removeContact(contact: MIDINetworkHost): boolean;
-
-	self(): MIDINetworkSession; // inherited from NSObjectProtocol
 
 	sourceEndpoint(): number;
 }
@@ -241,17 +229,17 @@ interface MIDIObjectAddRemoveNotification {
 }
 declare var MIDIObjectAddRemoveNotification: interop.StructType<MIDIObjectAddRemoveNotification>;
 
-declare function MIDIObjectFindByUniqueID(inUniqueID: number, outObject: interop.Reference<number>, outObjectType: interop.Reference<MIDIObjectType>): number;
+declare function MIDIObjectFindByUniqueID(inUniqueID: number, outObject: interop.Pointer | interop.Reference<number>, outObjectType: interop.Pointer | interop.Reference<MIDIObjectType>): number;
 
-declare function MIDIObjectGetDataProperty(obj: number, propertyID: string, outData: interop.Reference<NSData>): number;
+declare function MIDIObjectGetDataProperty(obj: number, propertyID: string, outData: interop.Pointer | interop.Reference<NSData>): number;
 
-declare function MIDIObjectGetDictionaryProperty(obj: number, propertyID: string, outDict: interop.Reference<NSDictionary<any, any>>): number;
+declare function MIDIObjectGetDictionaryProperty(obj: number, propertyID: string, outDict: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
-declare function MIDIObjectGetIntegerProperty(obj: number, propertyID: string, outValue: interop.Reference<number>): number;
+declare function MIDIObjectGetIntegerProperty(obj: number, propertyID: string, outValue: interop.Pointer | interop.Reference<number>): number;
 
-declare function MIDIObjectGetProperties(obj: number, outProperties: interop.Reference<any>, deep: boolean): number;
+declare function MIDIObjectGetProperties(obj: number, outProperties: interop.Pointer | interop.Reference<any>, deep: boolean): number;
 
-declare function MIDIObjectGetStringProperty(obj: number, propertyID: string, str: interop.Reference<string>): number;
+declare function MIDIObjectGetStringProperty(obj: number, propertyID: string, str: interop.Pointer | interop.Reference<string>): number;
 
 interface MIDIObjectPropertyChangeNotification {
 	messageID: MIDINotificationMessageID;
@@ -293,7 +281,7 @@ declare const enum MIDIObjectType {
 	kMIDIObjectType_ExternalDestination = 19
 }
 
-declare function MIDIOutputPortCreate(client: number, portName: string, outPort: interop.Reference<number>): number;
+declare function MIDIOutputPortCreate(client: number, portName: string, outPort: interop.Pointer | interop.Reference<number>): number;
 
 interface MIDIPacket {
 	timeStamp: number;
@@ -308,23 +296,23 @@ interface MIDIPacketList {
 }
 declare var MIDIPacketList: interop.StructType<MIDIPacketList>;
 
-declare function MIDIPacketListAdd(pktlist: interop.Reference<MIDIPacketList>, listSize: number, curPacket: interop.Reference<MIDIPacket>, time: number, nData: number, data: string): interop.Reference<MIDIPacket>;
+declare function MIDIPacketListAdd(pktlist: interop.Pointer | interop.Reference<MIDIPacketList>, listSize: number, curPacket: interop.Pointer | interop.Reference<MIDIPacket>, time: number, nData: number, data: string): interop.Pointer | interop.Reference<MIDIPacket>;
 
-declare function MIDIPacketListInit(pktlist: interop.Reference<MIDIPacketList>): interop.Reference<MIDIPacket>;
+declare function MIDIPacketListInit(pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): interop.Pointer | interop.Reference<MIDIPacket>;
 
-declare function MIDIPortConnectSource(port: number, source: number, connRefCon: interop.Pointer): number;
+declare function MIDIPortConnectSource(port: number, source: number, connRefCon: interop.Pointer | interop.Reference<any>): number;
 
 declare function MIDIPortDisconnectSource(port: number, source: number): number;
 
 declare function MIDIPortDispose(port: number): number;
 
-declare function MIDIReceived(src: number, pktlist: interop.Reference<MIDIPacketList>): number;
+declare function MIDIReceived(src: number, pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): number;
 
 declare function MIDIRestart(): number;
 
-declare function MIDISend(port: number, dest: number, pktlist: interop.Reference<MIDIPacketList>): number;
+declare function MIDISend(port: number, dest: number, pktlist: interop.Pointer | interop.Reference<MIDIPacketList>): number;
 
-declare function MIDISendSysex(request: interop.Reference<MIDISysexSendRequest>): number;
+declare function MIDISendSysex(request: interop.Pointer | interop.Reference<MIDISysexSendRequest>): number;
 
 declare function MIDISetupAddDevice(device: number): number;
 
@@ -334,7 +322,7 @@ declare function MIDISetupRemoveDevice(device: number): number;
 
 declare function MIDISetupRemoveExternalDevice(device: number): number;
 
-declare function MIDISourceCreate(client: number, name: string, outSrc: interop.Reference<number>): number;
+declare function MIDISourceCreate(client: number, name: string, outSrc: interop.Pointer | interop.Reference<number>): number;
 
 interface MIDISysexSendRequest {
 	destination: number;
@@ -342,12 +330,12 @@ interface MIDISysexSendRequest {
 	bytesToSend: number;
 	complete: boolean;
 	reserved: interop.Reference<number>;
-	completionProc: interop.FunctionReference<(p1: interop.Reference<MIDISysexSendRequest>) => void>;
-	completionRefCon: interop.Pointer;
+	completionProc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<MIDISysexSendRequest>) => void>;
+	completionRefCon: interop.Pointer | interop.Reference<any>;
 }
 declare var MIDISysexSendRequest: interop.StructType<MIDISysexSendRequest>;
 
-declare function MIDIThruConnectionCreate(inPersistentOwnerID: string, inConnectionParams: NSData, outConnection: interop.Reference<number>): number;
+declare function MIDIThruConnectionCreate(inPersistentOwnerID: string, inConnectionParams: NSData, outConnection: interop.Pointer | interop.Reference<number>): number;
 
 declare function MIDIThruConnectionDispose(connection: number): number;
 
@@ -357,9 +345,9 @@ interface MIDIThruConnectionEndpoint {
 }
 declare var MIDIThruConnectionEndpoint: interop.StructType<MIDIThruConnectionEndpoint>;
 
-declare function MIDIThruConnectionFind(inPersistentOwnerID: string, outConnectionList: interop.Reference<NSData>): number;
+declare function MIDIThruConnectionFind(inPersistentOwnerID: string, outConnectionList: interop.Pointer | interop.Reference<NSData>): number;
 
-declare function MIDIThruConnectionGetParams(connection: number, outConnectionParams: interop.Reference<NSData>): number;
+declare function MIDIThruConnectionGetParams(connection: number, outConnectionParams: interop.Pointer | interop.Reference<NSData>): number;
 
 interface MIDIThruConnectionParams {
 	version: number;
@@ -390,7 +378,7 @@ interface MIDIThruConnectionParams {
 }
 declare var MIDIThruConnectionParams: interop.StructType<MIDIThruConnectionParams>;
 
-declare function MIDIThruConnectionParamsInitialize(inConnectionParams: interop.Reference<MIDIThruConnectionParams>): void;
+declare function MIDIThruConnectionParamsInitialize(inConnectionParams: interop.Pointer | interop.Reference<MIDIThruConnectionParams>): void;
 
 declare function MIDIThruConnectionSetParams(connection: number, inConnectionParams: NSData): number;
 

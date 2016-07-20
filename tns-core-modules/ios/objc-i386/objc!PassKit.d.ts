@@ -3,13 +3,29 @@ declare class PKAddPassButton extends UIButton {
 
 	static addPassButtonWithStyle(addPassButtonStyle: PKAddPassButtonStyle): PKAddPassButton;
 
+	static alloc(): PKAddPassButton; // inherited from NSObject
+
+	static appearance(): PKAddPassButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): PKAddPassButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PKAddPassButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKAddPassButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PKAddPassButton; // inherited from UIAppearance
+
 	static buttonWithType(buttonType: UIButtonType): PKAddPassButton; // inherited from UIButton
+
+	static new(): PKAddPassButton; // inherited from NSObject
 
 	addPassButtonStyle: PKAddPassButtonStyle;
 
 	constructor(o: { addPassButtonStyle: PKAddPassButtonStyle; });
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	initWithAddPassButtonStyle(style: PKAddPassButtonStyle): this;
 }
 
 declare const enum PKAddPassButtonStyle {
@@ -21,19 +37,21 @@ declare const enum PKAddPassButtonStyle {
 
 declare class PKAddPassesViewController extends UIViewController {
 
+	static alloc(): PKAddPassesViewController; // inherited from NSObject
+
 	static canAddPasses(): boolean;
 
+	static new(): PKAddPassesViewController; // inherited from NSObject
+
 	delegate: PKAddPassesViewControllerDelegate;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
 
 	constructor(o: { pass: PKPass; });
 
 	constructor(o: { passes: NSArray<PKPass>; });
 
-	self(): PKAddPassesViewController; // inherited from NSObjectProtocol
+	initWithPass(pass: PKPass): this;
+
+	initWithPasses(passes: NSArray<PKPass>): this;
 }
 
 interface PKAddPassesViewControllerDelegate extends NSObjectProtocol {
@@ -67,10 +85,6 @@ declare class PKAddPaymentPassRequest extends NSObject {
 	ephemeralPublicKey: NSData;
 
 	wrappedKey: NSData;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKAddPaymentPassRequest; // inherited from NSObjectProtocol
 }
 
 declare class PKAddPaymentPassRequestConfiguration extends NSObject {
@@ -91,26 +105,24 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 
 	primaryAccountSuffix: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { encryptionScheme: string; });
 
-	self(): PKAddPaymentPassRequestConfiguration; // inherited from NSObjectProtocol
+	initWithEncryptionScheme(encryptionScheme: string): this;
 }
 
 declare class PKAddPaymentPassViewController extends UIViewController {
 
+	static alloc(): PKAddPaymentPassViewController; // inherited from NSObject
+
 	static canAddPaymentPass(): boolean;
+
+	static new(): PKAddPaymentPassViewController; // inherited from NSObject
 
 	delegate: PKAddPaymentPassViewControllerDelegate;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
 	constructor(o: { requestConfiguration: PKAddPaymentPassRequestConfiguration; delegate: PKAddPaymentPassViewControllerDelegate; });
 
-	self(): PKAddPaymentPassViewController; // inherited from NSObjectProtocol
+	initWithRequestConfigurationDelegate(configuration: PKAddPaymentPassRequestConfiguration, delegate: PKAddPaymentPassViewControllerDelegate): this;
 }
 
 interface PKAddPaymentPassViewControllerDelegate extends NSObjectProtocol {
@@ -167,10 +179,6 @@ declare class PKContact extends NSObject {
 	postalAddress: CNPostalAddress;
 
 	supplementarySubLocality: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKContact; // inherited from NSObjectProtocol
 }
 
 declare var PKEncryptionSchemeECC_V2: string;
@@ -191,13 +199,13 @@ declare class PKObject extends NSObject {
 	static alloc(): PKObject; // inherited from NSObject
 
 	static new(): PKObject; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): PKObject; // inherited from NSObjectProtocol
 }
 
 declare class PKPass extends PKObject {
+
+	static alloc(): PKPass; // inherited from NSObject
+
+	static new(): PKPass; // inherited from NSObject
 
 	/* readonly */ authenticationToken: string;
 
@@ -219,7 +227,7 @@ declare class PKPass extends PKObject {
 
 	/* readonly */ paymentPass: PKPaymentPass;
 
-	/* readonly */ relevantDate: Date;
+	/* readonly */ relevantDate: NSDate;
 
 	/* readonly */ remotePass: boolean;
 
@@ -230,6 +238,8 @@ declare class PKPass extends PKObject {
 	/* readonly */ webServiceURL: NSURL;
 
 	constructor(o: { data: NSData; });
+
+	initWithDataError(data: NSData): this;
 
 	localizedValueForFieldKey(key: string): any;
 }
@@ -265,8 +275,6 @@ declare class PKPassLibrary extends NSObject {
 
 	static requestAutomaticPassPresentationSuppressionWithResponseHandler(responseHandler: (p1: PKAutomaticPassPresentationSuppressionResult) => void): number;
 
-	constructor(); // inherited from NSObject
-
 	activatePaymentPassWithActivationCodeCompletion(paymentPass: PKPaymentPass, activationCode: string, completion: (p1: boolean, p2: NSError) => void): void;
 
 	activatePaymentPassWithActivationDataCompletion(paymentPass: PKPaymentPass, activationData: NSData, completion: (p1: boolean, p2: NSError) => void): void;
@@ -292,8 +300,6 @@ declare class PKPassLibrary extends NSObject {
 	removePass(pass: PKPass): void;
 
 	replacePassWithPass(pass: PKPass): boolean;
-
-	self(): PKPassLibrary; // inherited from NSObjectProtocol
 }
 
 declare const enum PKPassLibraryAddPassesStatus {
@@ -345,10 +351,6 @@ declare class PKPayment extends NSObject {
 	/* readonly */ shippingMethod: PKShippingMethod;
 
 	/* readonly */ token: PKPaymentToken;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPayment; // inherited from NSObjectProtocol
 }
 
 declare const enum PKPaymentAuthorizationStatus {
@@ -372,21 +374,21 @@ declare const enum PKPaymentAuthorizationStatus {
 
 declare class PKPaymentAuthorizationViewController extends UIViewController {
 
+	static alloc(): PKPaymentAuthorizationViewController; // inherited from NSObject
+
 	static canMakePayments(): boolean;
 
 	static canMakePaymentsUsingNetworks(supportedNetworks: NSArray<string>): boolean;
 
 	static canMakePaymentsUsingNetworksCapabilities(supportedNetworks: NSArray<string>, capabilties: PKMerchantCapability): boolean;
 
+	static new(): PKPaymentAuthorizationViewController; // inherited from NSObject
+
 	delegate: PKPaymentAuthorizationViewControllerDelegate;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
 
 	constructor(o: { paymentRequest: PKPaymentRequest; });
 
-	self(): PKPaymentAuthorizationViewController; // inherited from NSObjectProtocol
+	initWithPaymentRequest(request: PKPaymentRequest): this;
 }
 
 interface PKPaymentAuthorizationViewControllerDelegate extends NSObjectProtocol {
@@ -412,13 +414,29 @@ declare var PKPaymentAuthorizationViewControllerDelegate: {
 
 declare class PKPaymentButton extends UIButton {
 
+	static alloc(): PKPaymentButton; // inherited from NSObject
+
+	static appearance(): PKPaymentButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): PKPaymentButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): PKPaymentButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): PKPaymentButton; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): PKPaymentButton; // inherited from UIAppearance
+
 	static buttonWithType(buttonType: UIButtonType): PKPaymentButton; // inherited from UIButton
 
 	static buttonWithTypeStyle(buttonType: PKPaymentButtonType, buttonStyle: PKPaymentButtonStyle): PKPaymentButton;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): PKPaymentButton; // inherited from NSObject
 
 	constructor(o: { paymentButtonType: PKPaymentButtonType; paymentButtonStyle: PKPaymentButtonStyle; });
+
+	initWithPaymentButtonTypePaymentButtonStyle(type: PKPaymentButtonType, style: PKPaymentButtonStyle): this;
 }
 
 declare const enum PKPaymentButtonStyle {
@@ -452,10 +470,6 @@ declare class PKPaymentMethod extends NSObject {
 	/* readonly */ paymentPass: PKPaymentPass;
 
 	/* readonly */ type: PKPaymentMethodType;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPaymentMethod; // inherited from NSObjectProtocol
 }
 
 declare const enum PKPaymentMethodType {
@@ -487,6 +501,10 @@ declare var PKPaymentNetworkVisa: string;
 
 declare class PKPaymentPass extends PKPass {
 
+	static alloc(): PKPaymentPass; // inherited from NSObject
+
+	static new(): PKPaymentPass; // inherited from NSObject
+
 	/* readonly */ activationState: PKPaymentPassActivationState;
 
 	/* readonly */ deviceAccountIdentifier: string;
@@ -496,8 +514,6 @@ declare class PKPaymentPass extends PKPass {
 	/* readonly */ primaryAccountIdentifier: string;
 
 	/* readonly */ primaryAccountNumberSuffix: string;
-
-	constructor(o: { data: NSData; }); // inherited from PKPass
 }
 
 declare const enum PKPaymentPassActivationState {
@@ -548,10 +564,6 @@ declare class PKPaymentRequest extends NSObject {
 	shippingType: PKShippingType;
 
 	supportedNetworks: NSArray<string>;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPaymentRequest; // inherited from NSObjectProtocol
 }
 
 declare class PKPaymentSummaryItem extends NSObject {
@@ -569,10 +581,6 @@ declare class PKPaymentSummaryItem extends NSObject {
 	label: string;
 
 	type: PKPaymentSummaryItemType;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPaymentSummaryItem; // inherited from NSObjectProtocol
 }
 
 declare const enum PKPaymentSummaryItemType {
@@ -597,13 +605,13 @@ declare class PKPaymentToken extends NSObject {
 	/* readonly */ paymentNetwork: string;
 
 	/* readonly */ transactionIdentifier: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPaymentToken; // inherited from NSObjectProtocol
 }
 
 declare class PKShippingMethod extends PKPaymentSummaryItem {
+
+	static alloc(): PKShippingMethod; // inherited from NSObject
+
+	static new(): PKShippingMethod; // inherited from NSObject
 
 	static summaryItemWithLabelAmount(label: string, amount: NSDecimalNumber): PKShippingMethod; // inherited from PKPaymentSummaryItem
 

@@ -13,7 +13,7 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIColor; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ alpha: number;
 
@@ -21,7 +21,7 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ colorSpace: any;
 
-	/* readonly */ components: interop.Reference<number>;
+	/* readonly */ components: interop.Pointer | interop.Reference<number>;
 
 	/* readonly */ green: number;
 
@@ -30,8 +30,6 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ red: number;
 
 	/* readonly */ stringRepresentation: string;
-
-	constructor(); // inherited from NSObject
 
 	constructor(o: { CGColor: any; });
 
@@ -43,16 +41,28 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { red: number; green: number; blue: number; alpha: number; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CIColor; // inherited from NSObjectProtocol
+	initWithCGColor(c: any): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithColor(color: UIColor): this;
+
+	initWithRedGreenBlue(r: number, g: number, b: number): this;
+
+	initWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): this;
 }
 
 declare class CIColorKernel extends CIKernel {
 
+	static alloc(): CIColorKernel; // inherited from NSObject
+
 	static kernelWithString(string: string): CIColorKernel; // inherited from CIKernel
+
+	static new(): CIColorKernel; // inherited from NSObject
 
 	applyWithExtentArguments(extent: CGRect, args: NSArray<any>): CIImage;
 }
@@ -77,8 +87,6 @@ declare class CIContext extends NSObject {
 
 	/* readonly */ workingColorSpace: any;
 
-	constructor(); // inherited from NSObject
-
 	createCGImageFromRect(image: CIImage, fromRect: CGRect): any;
 
 	createCGImageFromRectFormatColorSpace(image: CIImage, fromRect: CGRect, format: number, colorSpace: any): any;
@@ -91,15 +99,13 @@ declare class CIContext extends NSObject {
 
 	outputImageMaximumSize(): CGSize;
 
-	renderToBitmapRowBytesBoundsFormatColorSpace(image: CIImage, data: interop.Pointer, rowBytes: number, bounds: CGRect, format: number, colorSpace: any): void;
+	renderToBitmapRowBytesBoundsFormatColorSpace(image: CIImage, data: interop.Pointer | interop.Reference<any>, rowBytes: number, bounds: CGRect, format: number, colorSpace: any): void;
 
 	renderToCVPixelBuffer(image: CIImage, buffer: any): void;
 
 	renderToCVPixelBufferBoundsColorSpace(image: CIImage, buffer: any, bounds: CGRect, colorSpace: any): void;
 
 	renderToMTLTextureCommandBufferBoundsColorSpace(image: CIImage, texture: MTLTexture, commandBuffer: MTLCommandBuffer, bounds: CGRect, colorSpace: any): void;
-
-	self(): CIContext; // inherited from NSObjectProtocol
 }
 
 declare class CIDetector extends NSObject {
@@ -110,13 +116,9 @@ declare class CIDetector extends NSObject {
 
 	static new(): CIDetector; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	featuresInImage(image: CIImage): NSArray<CIFeature>;
 
 	featuresInImageOptions(image: CIImage, options: NSDictionary<string, any>): NSArray<CIFeature>;
-
-	self(): CIDetector; // inherited from NSObjectProtocol
 }
 
 declare var CIDetectorAccuracy: string;
@@ -152,6 +154,10 @@ declare var CIDetectorTypeRectangle: string;
 declare var CIDetectorTypeText: string;
 
 declare class CIFaceFeature extends CIFeature {
+
+	static alloc(): CIFaceFeature; // inherited from NSObject
+
+	static new(): CIFaceFeature; // inherited from NSObject
 
 	/* readonly */ faceAngle: number;
 
@@ -193,10 +199,6 @@ declare class CIFeature extends NSObject {
 	/* readonly */ bounds: CGRect;
 
 	/* readonly */ type: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): CIFeature; // inherited from NSObjectProtocol
 }
 
 declare var CIFeatureTypeFace: string;
@@ -237,7 +239,7 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static serializedXMPFromFiltersInputImageExtent(filters: NSArray<CIFilter>, extent: CGRect): NSData;
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ attributes: NSDictionary<string, any>;
 
@@ -249,15 +251,13 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ outputKeys: NSArray<string>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CIFilter; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 
 	setDefaults(): void;
 }
@@ -281,19 +281,17 @@ declare class CIFilterShape extends NSObject implements NSCopying {
 
 	/* readonly */ extent: CGRect;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { rect: CGRect; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithRect(r: CGRect): this;
 
 	insetByXY(dx: number, dy: number): CIFilterShape;
 
 	intersectWith(s2: CIFilterShape): CIFilterShape;
 
 	intersectWithRect(r: CGRect): CIFilterShape;
-
-	self(): CIFilterShape; // inherited from NSObjectProtocol
 
 	transformByInterior(m: CGAffineTransform, flag: boolean): CIFilterShape;
 
@@ -340,7 +338,7 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIImage; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ colorSpace: any;
 
@@ -349,8 +347,6 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ properties: NSDictionary<string, any>;
 
 	/* readonly */ url: NSURL;
-
-	constructor(); // inherited from NSObject
 
 	constructor(o: { bitmapData: NSData; bytesPerRow: number; size: CGSize; format: number; colorSpace: any; });
 
@@ -390,9 +386,9 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	autoAdjustmentFiltersWithOptions(options: NSDictionary<string, any>): NSArray<CIFilter>;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
 	imageByApplyingFilterWithInputParameters(filterName: string, params: NSDictionary<string, any>): CIImage;
 
@@ -408,9 +404,43 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	imageTransformForOrientation(orientation: number): CGAffineTransform;
 
-	regionOfInterestForImageInRect(image: CIImage, rect: CGRect): CGRect;
+	initWithBitmapDataBytesPerRowSizeFormatColorSpace(data: NSData, bytesPerRow: number, size: CGSize, format: number, colorSpace: any): this;
 
-	self(): CIImage; // inherited from NSObjectProtocol
+	initWithCGImage(image: any): this;
+
+	initWithCGImageOptions(image: any, options: NSDictionary<string, any>): this;
+
+	initWithCVImageBuffer(imageBuffer: any): this;
+
+	initWithCVImageBufferOptions(imageBuffer: any, options: NSDictionary<string, any>): this;
+
+	initWithCVPixelBuffer(pixelBuffer: any): this;
+
+	initWithCVPixelBufferOptions(pixelBuffer: any, options: NSDictionary<string, any>): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithColor(color: CIColor): this;
+
+	initWithContentsOfURL(url: NSURL): this;
+
+	initWithContentsOfURLOptions(url: NSURL, options: NSDictionary<string, any>): this;
+
+	initWithData(data: NSData): this;
+
+	initWithDataOptions(data: NSData, options: NSDictionary<string, any>): this;
+
+	initWithImage(image: UIImage): this;
+
+	initWithImageOptions(image: UIImage, options: NSDictionary<any, any>): this;
+
+	initWithImageProviderSizeFormatColorSpaceOptions(p: any, width: number, height: number, f: number, cs: any, options: NSDictionary<string, any>): this;
+
+	initWithMTLTextureOptions(texture: MTLTexture, options: NSDictionary<string, any>): this;
+
+	initWithTextureSizeFlippedColorSpace(name: number, size: CGSize, flipped: boolean, colorSpace: any): this;
+
+	regionOfInterestForImageInRect(image: CIImage, rect: CGRect): CGRect;
 }
 
 declare class CIImageAccumulator extends NSObject {
@@ -427,8 +457,6 @@ declare class CIImageAccumulator extends NSObject {
 
 	/* readonly */ format: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { extent: CGRect; format: number; });
 
 	constructor(o: { extent: CGRect; format: number; colorSpace: any; });
@@ -437,7 +465,9 @@ declare class CIImageAccumulator extends NSObject {
 
 	image(): CIImage;
 
-	self(): CIImageAccumulator; // inherited from NSObjectProtocol
+	initWithExtentFormat(extent: CGRect, format: number): this;
+
+	initWithExtentFormatColorSpace(extent: CGRect, format: number, colorSpace: any): this;
 
 	setImage(image: CIImage): void;
 
@@ -456,16 +486,16 @@ declare class CIKernel extends NSObject {
 
 	/* readonly */ name: string;
 
-	constructor(); // inherited from NSObject
-
 	applyWithExtentRoiCallbackArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, args: NSArray<any>): CIImage;
-
-	self(): CIKernel; // inherited from NSObjectProtocol
 
 	setROISelector(method: string): void;
 }
 
 declare class CIQRCodeFeature extends CIFeature {
+
+	static alloc(): CIQRCodeFeature; // inherited from NSObject
+
+	static new(): CIQRCodeFeature; // inherited from NSObject
 
 	/* readonly */ bottomLeft: CGPoint;
 
@@ -479,6 +509,10 @@ declare class CIQRCodeFeature extends CIFeature {
 }
 
 declare class CIRectangleFeature extends CIFeature {
+
+	static alloc(): CIRectangleFeature; // inherited from NSObject
+
+	static new(): CIRectangleFeature; // inherited from NSObject
 
 	/* readonly */ bottomLeft: CGPoint;
 
@@ -505,18 +539,22 @@ declare class CISampler extends NSObject implements NSCopying {
 
 	/* readonly */ extent: CGRect;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { image: CIImage; });
 
 	constructor(o: { image: CIImage; options: NSDictionary<any, any>; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	self(): CISampler; // inherited from NSObjectProtocol
+	initWithImage(im: CIImage): this;
+
+	initWithImageOptions(im: CIImage, dict: NSDictionary<any, any>): this;
 }
 
 declare class CITextFeature extends CIFeature {
+
+	static alloc(): CITextFeature; // inherited from NSObject
+
+	static new(): CITextFeature; // inherited from NSObject
 
 	/* readonly */ bottomLeft: CGPoint;
 
@@ -535,7 +573,7 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIVector; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	static vectorWithCGAffineTransform(t: CGAffineTransform): CIVector;
 
@@ -545,7 +583,7 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static vectorWithString(representation: string): CIVector;
 
-	static vectorWithValuesCount(values: interop.Reference<number>, count: number): CIVector;
+	static vectorWithValuesCount(values: interop.Pointer | interop.Reference<number>, count: number): CIVector;
 
 	static vectorWithX(x: number): CIVector;
 
@@ -573,8 +611,6 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ stringRepresentation: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { CGAffineTransform: CGAffineTransform; });
 
 	constructor(o: { CGPoint: CGPoint; });
@@ -585,7 +621,7 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { string: string; });
 
-	constructor(o: { values: interop.Reference<number>; count: number; });
+	constructor(o: { values: interop.Pointer | interop.Reference<number>; count: number; });
 
 	constructor(o: { x: number; });
 
@@ -595,18 +631,40 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { x: number; y: number; z: number; w: number; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CIVector; // inherited from NSObjectProtocol
+	initWithCGAffineTransform(r: CGAffineTransform): this;
+
+	initWithCGPoint(p: CGPoint): this;
+
+	initWithCGRect(r: CGRect): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithString(representation: string): this;
+
+	initWithValuesCount(values: interop.Pointer | interop.Reference<number>, count: number): this;
+
+	initWithX(x: number): this;
+
+	initWithXY(x: number, y: number): this;
+
+	initWithXYZ(x: number, y: number, z: number): this;
+
+	initWithXYZW(x: number, y: number, z: number, w: number): this;
 
 	valueAtIndex(index: number): number;
 }
 
 declare class CIWarpKernel extends CIKernel {
 
+	static alloc(): CIWarpKernel; // inherited from NSObject
+
 	static kernelWithString(string: string): CIWarpKernel; // inherited from CIKernel
+
+	static new(): CIWarpKernel; // inherited from NSObject
 
 	applyWithExtentRoiCallbackInputImageArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, image: CIImage, args: NSArray<any>): CIImage;
 }

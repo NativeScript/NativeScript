@@ -16,6 +16,8 @@ declare var ADBannerContentSizeIdentifierPortrait: string;
 
 declare class ADBannerView extends UIView {
 
+	static alloc(): ADBannerView; // inherited from NSObject
+
 	static appearance(): ADBannerView; // inherited from UIAppearance
 
 	static appearanceForTraitCollection(trait: UITraitCollection): ADBannerView; // inherited from UIAppearance
@@ -27,6 +29,8 @@ declare class ADBannerView extends UIView {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): ADBannerView; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): ADBannerView; // inherited from UIAppearance
+
+	static new(): ADBannerView; // inherited from NSObject
 
 	static sizeFromBannerContentSizeIdentifier(contentSizeIdentifier: string): CGSize;
 
@@ -46,13 +50,9 @@ declare class ADBannerView extends UIView {
 
 	constructor(o: { adType: ADAdType; });
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
 	cancelBannerViewAction(): void;
 
-	self(): ADBannerView; // inherited from NSObjectProtocol
+	initWithAdType(type: ADAdType): this;
 }
 
 interface ADBannerViewDelegate extends NSObjectProtocol {
@@ -80,17 +80,13 @@ declare class ADClient extends NSObject {
 
 	static sharedClient(): ADClient;
 
-	constructor(); // inherited from NSObject
-
 	addClientToSegmentsReplaceExisting(segmentIdentifiers: NSArray<any>, replaceExisting: boolean): void;
 
 	determineAppInstallationAttributionWithCompletionHandler(completionHandler: (p1: boolean) => void): void;
 
-	lookupAdConversionDetails(completionHandler: (p1: Date, p2: Date) => void): void;
+	lookupAdConversionDetails(completionHandler: (p1: NSDate, p2: NSDate) => void): void;
 
 	requestAttributionDetailsWithBlock(completionHandler: (p1: NSDictionary<any, any>, p2: NSError) => void): void;
-
-	self(): ADClient; // inherited from NSObjectProtocol
 }
 
 declare const enum ADClientError {
@@ -137,15 +133,11 @@ declare class ADInterstitialAd extends NSObject {
 
 	/* readonly */ loaded: boolean;
 
-	constructor(); // inherited from NSObject
-
 	cancelAction(): void;
 
 	presentFromViewController(viewController: UIViewController): void;
 
 	presentInView(containerView: UIView): boolean;
-
-	self(): ADInterstitialAd; // inherited from NSObjectProtocol
 }
 
 interface ADInterstitialAdDelegate extends NSObjectProtocol {

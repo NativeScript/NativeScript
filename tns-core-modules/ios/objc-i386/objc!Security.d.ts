@@ -1,5 +1,5 @@
 
-declare function SSLAddDistinguishedName(context: any, derDN: interop.Pointer, derDNLen: number): number;
+declare function SSLAddDistinguishedName(context: any, derDN: interop.Pointer | interop.Reference<any>, derDNLen: number): number;
 
 declare const enum SSLAuthenticate {
 
@@ -32,47 +32,47 @@ declare const enum SSLConnectionType {
 
 declare function SSLContextGetTypeID(): number;
 
-declare function SSLCopyDistinguishedNames(context: any, names: interop.Reference<NSArray<any>>): number;
+declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
-declare function SSLCopyPeerTrust(context: any, trust: interop.Reference<any>): number;
+declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any>): number;
 
 declare function SSLCreateContext(alloc: any, protocolSide: SSLProtocolSide, connectionType: SSLConnectionType): any;
 
-declare function SSLGetBufferedReadSize(context: any, bufSize: interop.Reference<number>): number;
+declare function SSLGetBufferedReadSize(context: any, bufSize: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetClientCertificateState(context: any, clientState: interop.Reference<SSLClientCertificateState>): number;
+declare function SSLGetClientCertificateState(context: any, clientState: interop.Pointer | interop.Reference<SSLClientCertificateState>): number;
 
-declare function SSLGetConnection(context: any, connection: interop.Reference<interop.Pointer>): number;
+declare function SSLGetConnection(context: any, connection: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function SSLGetDatagramWriteSize(dtlsContext: any, bufSize: interop.Reference<number>): number;
+declare function SSLGetDatagramWriteSize(dtlsContext: any, bufSize: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetEnabledCiphers(context: any, ciphers: interop.Reference<number>, numCiphers: interop.Reference<number>): number;
+declare function SSLGetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetMaxDatagramRecordSize(dtlsContext: any, maxSize: interop.Reference<number>): number;
+declare function SSLGetMaxDatagramRecordSize(dtlsContext: any, maxSize: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetNegotiatedCipher(context: any, cipherSuite: interop.Reference<number>): number;
+declare function SSLGetNegotiatedCipher(context: any, cipherSuite: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetNegotiatedProtocolVersion(context: any, protocol: interop.Reference<SSLProtocol>): number;
+declare function SSLGetNegotiatedProtocolVersion(context: any, protocol: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
-declare function SSLGetNumberEnabledCiphers(context: any, numCiphers: interop.Reference<number>): number;
+declare function SSLGetNumberEnabledCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetNumberSupportedCiphers(context: any, numCiphers: interop.Reference<number>): number;
+declare function SSLGetNumberSupportedCiphers(context: any, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetPeerDomainName(context: any, peerName: string, peerNameLen: interop.Reference<number>): number;
+declare function SSLGetPeerDomainName(context: any, peerName: string, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetPeerDomainNameLength(context: any, peerNameLen: interop.Reference<number>): number;
+declare function SSLGetPeerDomainNameLength(context: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetPeerID(context: any, peerID: interop.Reference<interop.Pointer>, peerIDLen: interop.Reference<number>): number;
+declare function SSLGetPeerID(context: any, peerID: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, peerIDLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SSLGetProtocolVersionMax(context: any, maxVersion: interop.Reference<SSLProtocol>): number;
+declare function SSLGetProtocolVersionMax(context: any, maxVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
-declare function SSLGetProtocolVersionMin(context: any, minVersion: interop.Reference<SSLProtocol>): number;
+declare function SSLGetProtocolVersionMin(context: any, minVersion: interop.Pointer | interop.Reference<SSLProtocol>): number;
 
 declare function SSLGetSessionOption(context: any, option: SSLSessionOption, value: string): number;
 
-declare function SSLGetSessionState(context: any, state: interop.Reference<SSLSessionState>): number;
+declare function SSLGetSessionState(context: any, state: interop.Pointer | interop.Reference<SSLSessionState>): number;
 
-declare function SSLGetSupportedCiphers(context: any, ciphers: interop.Reference<number>, numCiphers: interop.Reference<number>): number;
+declare function SSLGetSupportedCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: interop.Pointer | interop.Reference<number>): number;
 
 declare function SSLHandshake(context: any): number;
 
@@ -106,7 +106,7 @@ declare const enum SSLProtocolSide {
 	kSSLClientSide = 1
 }
 
-declare function SSLRead(context: any, data: interop.Pointer, dataLength: number, processed: interop.Reference<number>): number;
+declare function SSLRead(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum SSLSessionOption {
 
@@ -153,21 +153,21 @@ declare function SSLSetCertificate(context: any, certRefs: NSArray<any>): number
 
 declare function SSLSetClientSideAuthenticate(context: any, auth: SSLAuthenticate): number;
 
-declare function SSLSetConnection(context: any, connection: interop.Pointer): number;
+declare function SSLSetConnection(context: any, connection: interop.Pointer | interop.Reference<any>): number;
 
-declare function SSLSetDatagramHelloCookie(dtlsContext: any, cookie: interop.Pointer, cookieLen: number): number;
+declare function SSLSetDatagramHelloCookie(dtlsContext: any, cookie: interop.Pointer | interop.Reference<any>, cookieLen: number): number;
 
-declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Reference<number>, numCiphers: number): number;
+declare function SSLSetEnabledCiphers(context: any, ciphers: interop.Pointer | interop.Reference<number>, numCiphers: number): number;
 
 declare function SSLSetEncryptionCertificate(context: any, certRefs: NSArray<any>): number;
 
-declare function SSLSetIOFuncs(context: any, readFunc: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer, p3: interop.Reference<number>) => number>, writeFunc: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer, p3: interop.Reference<number>) => number>): number;
+declare function SSLSetIOFuncs(context: any, readFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>, writeFunc: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<number>) => number>): number;
 
 declare function SSLSetMaxDatagramRecordSize(dtlsContext: any, maxSize: number): number;
 
 declare function SSLSetPeerDomainName(context: any, peerName: string, peerNameLen: number): number;
 
-declare function SSLSetPeerID(context: any, peerID: interop.Pointer, peerIDLen: number): number;
+declare function SSLSetPeerID(context: any, peerID: interop.Pointer | interop.Reference<any>, peerIDLen: number): number;
 
 declare function SSLSetProtocolVersionMax(context: any, maxVersion: SSLProtocol): number;
 
@@ -177,7 +177,7 @@ declare function SSLSetSessionOption(context: any, option: SSLSessionOption, val
 
 declare function SSLSetSessionStrengthPolicy(context: any, policyStrength: SSLSessionStrengthPolicy): number;
 
-declare function SSLWrite(context: any, data: interop.Pointer, dataLength: number, processed: interop.Reference<number>): number;
+declare function SSLWrite(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum SecAccessControlCreateFlags {
 
@@ -198,7 +198,7 @@ declare const enum SecAccessControlCreateFlags {
 	kSecAccessControlApplicationPassword = -2147483648
 }
 
-declare function SecAccessControlCreateWithFlags(allocator: any, protection: any, flags: SecAccessControlCreateFlags, error: interop.Reference<NSError>): any;
+declare function SecAccessControlCreateWithFlags(allocator: any, protection: any, flags: SecAccessControlCreateFlags, error: interop.Pointer | interop.Reference<NSError>): any;
 
 declare function SecAccessControlGetTypeID(): number;
 
@@ -214,35 +214,35 @@ declare function SecCertificateGetTypeID(): number;
 
 declare function SecCreateSharedWebCredentialPassword(): string;
 
-declare function SecIdentityCopyCertificate(identityRef: any, certificateRef: interop.Reference<any>): number;
+declare function SecIdentityCopyCertificate(identityRef: any, certificateRef: interop.Pointer | interop.Reference<any>): number;
 
-declare function SecIdentityCopyPrivateKey(identityRef: any, privateKeyRef: interop.Reference<any>): number;
+declare function SecIdentityCopyPrivateKey(identityRef: any, privateKeyRef: interop.Pointer | interop.Reference<any>): number;
 
 declare function SecIdentityGetTypeID(): number;
 
-declare function SecItemAdd(attributes: NSDictionary<any, any>, result: interop.Reference<any>): number;
+declare function SecItemAdd(attributes: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any>): number;
 
-declare function SecItemCopyMatching(query: NSDictionary<any, any>, result: interop.Reference<any>): number;
+declare function SecItemCopyMatching(query: NSDictionary<any, any>, result: interop.Pointer | interop.Reference<any>): number;
 
 declare function SecItemDelete(query: NSDictionary<any, any>): number;
 
 declare function SecItemUpdate(query: NSDictionary<any, any>, attributesToUpdate: NSDictionary<any, any>): number;
 
-declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string, cipherTextLen: number, plainText: string, plainTextLen: interop.Reference<number>): number;
+declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string, cipherTextLen: number, plainText: string, plainTextLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string, plainTextLen: number, cipherText: string, cipherTextLen: interop.Reference<number>): number;
+declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string, plainTextLen: number, cipherText: string, cipherTextLen: interop.Pointer | interop.Reference<number>): number;
 
-declare function SecKeyGeneratePair(parameters: NSDictionary<any, any>, publicKey: interop.Reference<any>, privateKey: interop.Reference<any>): number;
+declare function SecKeyGeneratePair(parameters: NSDictionary<any, any>, publicKey: interop.Pointer | interop.Reference<any>, privateKey: interop.Pointer | interop.Reference<any>): number;
 
 declare function SecKeyGetBlockSize(key: any): number;
 
 declare function SecKeyGetTypeID(): number;
 
-declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string, dataToSignLen: number, sig: string, sigLen: interop.Reference<number>): number;
+declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string, dataToSignLen: number, sig: string, sigLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string, signedDataLen: number, sig: string, sigLen: number): number;
 
-declare function SecPKCS12Import(pkcs12_data: NSData, options: NSDictionary<any, any>, items: interop.Reference<NSArray<any>>): number;
+declare function SecPKCS12Import(pkcs12_data: NSData, options: NSDictionary<any, any>, items: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare const enum SecPadding {
 
@@ -281,15 +281,15 @@ declare function SecPolicyCreateWithProperties(policyIdentifier: any, properties
 
 declare function SecPolicyGetTypeID(): number;
 
-declare function SecRandomCopyBytes(rnd: interop.Pointer, count: number, bytes: string): number;
+declare function SecRandomCopyBytes(rnd: interop.Pointer | interop.Reference<any>, count: number, bytes: string): number;
 
 declare function SecRequestSharedWebCredential(fqdn: string, account: string, completionHandler: (p1: NSArray<any>, p2: NSError) => void): void;
 
-declare function SecTrustCopyCustomAnchorCertificates(trust: any, anchors: interop.Reference<NSArray<any>>): number;
+declare function SecTrustCopyCustomAnchorCertificates(trust: any, anchors: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare function SecTrustCopyExceptions(trust: any): NSData;
 
-declare function SecTrustCopyPolicies(trust: any, policies: interop.Reference<NSArray<any>>): number;
+declare function SecTrustCopyPolicies(trust: any, policies: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
 declare function SecTrustCopyProperties(trust: any): NSArray<any>;
 
@@ -297,9 +297,9 @@ declare function SecTrustCopyPublicKey(trust: any): any;
 
 declare function SecTrustCopyResult(trust: any): NSDictionary<any, any>;
 
-declare function SecTrustCreateWithCertificates(certificates: any, policies: any, trust: interop.Reference<any>): number;
+declare function SecTrustCreateWithCertificates(certificates: any, policies: any, trust: interop.Pointer | interop.Reference<any>): number;
 
-declare function SecTrustEvaluate(trust: any, result: interop.Reference<number>): number;
+declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<number>): number;
 
 declare function SecTrustEvaluateAsync(trust: any, queue: NSObject, result: (p1: any, p2: number) => void): number;
 
@@ -309,7 +309,7 @@ declare function SecTrustGetCertificateCount(trust: any): number;
 
 declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string): number;
 
-declare function SecTrustGetTrustResult(trust: any, result: interop.Reference<number>): number;
+declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<number>): number;
 
 declare function SecTrustGetTypeID(): number;
 
@@ -327,7 +327,7 @@ declare function SecTrustSetOCSPResponse(trust: any, responseData: any): number;
 
 declare function SecTrustSetPolicies(trust: any, policies: any): number;
 
-declare function SecTrustSetVerifyDate(trust: any, verifyDate: Date): number;
+declare function SecTrustSetVerifyDate(trust: any, verifyDate: NSDate): number;
 
 declare var kSecAttrAccessControl: string;
 
@@ -611,7 +611,7 @@ declare var kSecPropertyTypeTitle: string;
 
 declare var kSecPublicKeyAttrs: string;
 
-declare var kSecRandomDefault: interop.Pointer;
+declare var kSecRandomDefault: interop.Pointer | interop.Reference<any>;
 
 declare var kSecReturnAttributes: string;
 

@@ -88,7 +88,7 @@ export class WebView extends common.WebView {
     constructor() {
         super();
 
-        this._ios = new UIWebView();
+        this._ios = UIWebView.new();
         this._delegate = UIWebViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 

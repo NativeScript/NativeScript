@@ -44,7 +44,7 @@ export class Image extends imageCommon.Image {
         super();
 
         //TODO: Think of unified way of setting all the default values.
-        this._ios = new UIImageView();
+        this._ios = UIImageView.new();
         this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
         this._ios.clipsToBounds = true;
         this._ios.userInteractionEnabled = true;

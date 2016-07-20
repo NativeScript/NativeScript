@@ -33,13 +33,13 @@ declare class GCController extends NSObject {
 	playerIndex: GCControllerPlayerIndex;
 
 	/* readonly */ vendorName: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): GCController; // inherited from NSObjectProtocol
 }
 
 declare class GCControllerAxisInput extends GCControllerElement {
+
+	static alloc(): GCControllerAxisInput; // inherited from NSObject
+
+	static new(): GCControllerAxisInput; // inherited from NSObject
 
 	/* readonly */ value: number;
 
@@ -47,6 +47,10 @@ declare class GCControllerAxisInput extends GCControllerElement {
 }
 
 declare class GCControllerButtonInput extends GCControllerElement {
+
+	static alloc(): GCControllerButtonInput; // inherited from NSObject
+
+	static new(): GCControllerButtonInput; // inherited from NSObject
 
 	/* readonly */ pressed: boolean;
 
@@ -62,6 +66,10 @@ declare var GCControllerDidConnectNotification: string;
 declare var GCControllerDidDisconnectNotification: string;
 
 declare class GCControllerDirectionPad extends GCControllerElement {
+
+	static alloc(): GCControllerDirectionPad; // inherited from NSObject
+
+	static new(): GCControllerDirectionPad; // inherited from NSObject
 
 	/* readonly */ down: GCControllerButtonInput;
 
@@ -87,10 +95,6 @@ declare class GCControllerElement extends NSObject {
 	/* readonly */ analog: boolean;
 
 	/* readonly */ collection: GCControllerElement;
-
-	constructor(); // inherited from NSObject
-
-	self(): GCControllerElement; // inherited from NSObjectProtocol
 }
 
 declare const enum GCControllerPlayerIndex {
@@ -145,11 +149,7 @@ declare class GCExtendedGamepad extends NSObject {
 
 	valueChangedHandler: (p1: GCExtendedGamepad, p2: GCControllerElement) => void;
 
-	constructor(); // inherited from NSObject
-
 	saveSnapshot(): GCExtendedGamepadSnapshot;
-
-	self(): GCExtendedGamepad; // inherited from NSObjectProtocol
 }
 
 interface GCExtendedGamepadSnapShotDataV100 {
@@ -172,15 +172,23 @@ interface GCExtendedGamepadSnapShotDataV100 {
 }
 declare var GCExtendedGamepadSnapShotDataV100: interop.StructType<GCExtendedGamepadSnapShotDataV100>;
 
-declare function GCExtendedGamepadSnapShotDataV100FromNSData(snapshotData: interop.Reference<GCExtendedGamepadSnapShotDataV100>, data: NSData): boolean;
+declare function GCExtendedGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>, data: NSData): boolean;
 
 declare class GCExtendedGamepadSnapshot extends GCExtendedGamepad {
+
+	static alloc(): GCExtendedGamepadSnapshot; // inherited from NSObject
+
+	static new(): GCExtendedGamepadSnapshot; // inherited from NSObject
 
 	snapshotData: NSData;
 
 	constructor(o: { controller: GCController; snapshotData: NSData; });
 
 	constructor(o: { snapshotData: NSData; });
+
+	initWithControllerSnapshotData(controller: GCController, data: NSData): this;
+
+	initWithSnapshotData(data: NSData): this;
 }
 
 declare class GCGamepad extends NSObject {
@@ -207,11 +215,7 @@ declare class GCGamepad extends NSObject {
 
 	valueChangedHandler: (p1: GCGamepad, p2: GCControllerElement) => void;
 
-	constructor(); // inherited from NSObject
-
 	saveSnapshot(): GCGamepadSnapshot;
-
-	self(): GCGamepad; // inherited from NSObjectProtocol
 }
 
 interface GCGamepadSnapShotDataV100 {
@@ -228,15 +232,23 @@ interface GCGamepadSnapShotDataV100 {
 }
 declare var GCGamepadSnapShotDataV100: interop.StructType<GCGamepadSnapShotDataV100>;
 
-declare function GCGamepadSnapShotDataV100FromNSData(snapshotData: interop.Reference<GCGamepadSnapShotDataV100>, data: NSData): boolean;
+declare function GCGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100>, data: NSData): boolean;
 
 declare class GCGamepadSnapshot extends GCGamepad {
+
+	static alloc(): GCGamepadSnapshot; // inherited from NSObject
+
+	static new(): GCGamepadSnapshot; // inherited from NSObject
 
 	snapshotData: NSData;
 
 	constructor(o: { controller: GCController; snapshotData: NSData; });
 
 	constructor(o: { snapshotData: NSData; });
+
+	initWithControllerSnapshotData(controller: GCController, data: NSData): this;
+
+	initWithSnapshotData(data: NSData): this;
 }
 
 declare class GCMotion extends NSObject {
@@ -256,10 +268,6 @@ declare class GCMotion extends NSObject {
 	/* readonly */ userAcceleration: GCAcceleration;
 
 	valueChangedHandler: (p1: GCMotion) => void;
-
-	constructor(); // inherited from NSObject
-
-	self(): GCMotion; // inherited from NSObjectProtocol
 }
 
 interface GCQuaternion {
@@ -277,6 +285,6 @@ interface GCRotationRate {
 }
 declare var GCRotationRate: interop.StructType<GCRotationRate>;
 
-declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Reference<GCExtendedGamepadSnapShotDataV100>): NSData;
+declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>): NSData;
 
-declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Reference<GCGamepadSnapShotDataV100>): NSData;
+declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100>): NSData;

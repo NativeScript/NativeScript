@@ -1,6 +1,8 @@
 
 declare class HKActivityRingView extends UIView {
 
+	static alloc(): HKActivityRingView; // inherited from NSObject
+
 	static appearance(): HKActivityRingView; // inherited from UIAppearance
 
 	static appearanceForTraitCollection(trait: UITraitCollection): HKActivityRingView; // inherited from UIAppearance
@@ -13,13 +15,9 @@ declare class HKActivityRingView extends UIView {
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): HKActivityRingView; // inherited from UIAppearance
 
+	static new(): HKActivityRingView; // inherited from NSObject
+
 	activitySummary: HKActivitySummary;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
-	self(): HKActivityRingView; // inherited from NSObjectProtocol
 
 	setActivitySummaryAnimated(activitySummary: HKActivitySummary, animated: boolean): void;
 }

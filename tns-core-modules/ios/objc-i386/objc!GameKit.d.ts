@@ -13,7 +13,7 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	static resetAchievementsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ completed: boolean;
 
@@ -21,7 +21,7 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	identifier: string;
 
-	/* readonly */ lastReportedDate: Date;
+	/* readonly */ lastReportedDate: NSDate;
 
 	percentComplete: number;
 
@@ -30,8 +30,6 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 	/* readonly */ playerID: string;
 
 	showsCompletionBanner: boolean;
-
-	constructor(); // inherited from NSObject
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -45,7 +43,15 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	challengeComposeControllerWithPlayersMessageCompletionHandler(playerIDs: NSArray<string>, message: string, completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithIdentifier(identifier: string): this;
+
+	initWithIdentifierForPlayer(identifier: string, playerID: string): this;
+
+	initWithIdentifierPlayer(identifier: string, player: GKPlayer): this;
 
 	issueChallengeToPlayersMessage(playerIDs: NSArray<string>, message: string): void;
 
@@ -54,15 +60,15 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 	selectChallengeablePlayerIDsWithCompletionHandler(playerIDs: NSArray<string>, completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
 
 	selectChallengeablePlayersWithCompletionHandler(players: NSArray<GKPlayer>, completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
-
-	self(): GKAchievement; // inherited from NSObjectProtocol
 }
 
 declare class GKAchievementChallenge extends GKChallenge {
 
-	/* readonly */ achievement: GKAchievement;
+	static alloc(): GKAchievementChallenge; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): GKAchievementChallenge; // inherited from NSObject
+
+	/* readonly */ achievement: GKAchievement;
 }
 
 declare class GKAchievementDescription extends NSObject implements NSCoding, NSSecureCoding {
@@ -77,7 +83,7 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 
 	static placeholderCompletedAchievementImage(): UIImage;
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ achievedDescription: string;
 
@@ -97,18 +103,20 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 
 	/* readonly */ unachievedDescription: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
-
-	self(): GKAchievementDescription; // inherited from NSObjectProtocol
 }
 
 declare class GKAchievementViewController extends GKGameCenterViewController {
+
+	static alloc(): GKAchievementViewController; // inherited from NSObject
+
+	static new(): GKAchievementViewController; // inherited from NSObject
 
 	achievementDelegate: GKAchievementViewControllerDelegate;
 }
@@ -130,11 +138,11 @@ declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 
 	static new(): GKChallenge; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
-	/* readonly */ completionDate: Date;
+	/* readonly */ completionDate: NSDate;
 
-	/* readonly */ issueDate: Date;
+	/* readonly */ issueDate: NSDate;
 
 	/* readonly */ issuingPlayer: GKPlayer;
 
@@ -148,15 +156,13 @@ declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 
 	/* readonly */ state: GKChallengeState;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	decline(): void;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): GKChallenge; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class GKChallengeEventHandler extends NSObject {
@@ -168,10 +174,6 @@ declare class GKChallengeEventHandler extends NSObject {
 	static new(): GKChallengeEventHandler; // inherited from NSObject
 
 	delegate: GKChallengeEventHandlerDelegate;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKChallengeEventHandler; // inherited from NSObjectProtocol
 }
 
 interface GKChallengeEventHandlerDelegate extends NSObjectProtocol {
@@ -286,13 +288,13 @@ declare var GKExchangeTimeoutNone: number;
 
 declare class GKFriendRequestComposeViewController extends UINavigationController {
 
+	static alloc(): GKFriendRequestComposeViewController; // inherited from NSObject
+
 	static maxNumberOfRecipients(): number;
 
+	static new(): GKFriendRequestComposeViewController; // inherited from NSObject
+
 	composeViewDelegate: GKFriendRequestComposeViewControllerDelegate;
-
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
 
 	addRecipientPlayers(players: NSArray<GKPlayer>): void;
 
@@ -323,6 +325,10 @@ declare var GKGameCenterControllerDelegate: {
 
 declare class GKGameCenterViewController extends UINavigationController {
 
+	static alloc(): GKGameCenterViewController; // inherited from NSObject
+
+	static new(): GKGameCenterViewController; // inherited from NSObject
+
 	gameCenterDelegate: GKGameCenterControllerDelegate;
 
 	leaderboardCategory: string;
@@ -332,10 +338,6 @@ declare class GKGameCenterViewController extends UINavigationController {
 	leaderboardTimeScope: GKLeaderboardTimeScope;
 
 	viewState: GKGameCenterViewControllerState;
-
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
 }
 
 declare const enum GKGameCenterViewControllerState {
@@ -364,10 +366,6 @@ declare class GKInvite extends NSObject {
 	/* readonly */ playerGroup: number;
 
 	/* readonly */ sender: GKPlayer;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKInvite; // inherited from NSObjectProtocol
 }
 
 interface GKInviteEventListener {
@@ -444,17 +442,17 @@ declare class GKLeaderboard extends NSObject {
 
 	/* readonly */ title: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { playerIDs: NSArray<string>; });
 
 	constructor(o: { players: NSArray<GKPlayer>; });
 
+	initWithPlayerIDs(playerIDs: NSArray<string>): this;
+
+	initWithPlayers(players: NSArray<GKPlayer>): this;
+
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 
 	loadScoresWithCompletionHandler(completionHandler: (p1: NSArray<GKScore>, p2: NSError) => void): void;
-
-	self(): GKLeaderboard; // inherited from NSObjectProtocol
 }
 
 declare const enum GKLeaderboardPlayerScope {
@@ -472,7 +470,7 @@ declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCod
 
 	static new(): GKLeaderboardSet; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ groupIdentifier: string;
 
@@ -480,17 +478,15 @@ declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCod
 
 	/* readonly */ title: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	loadImageWithCompletionHandler(completionHandler: (p1: UIImage, p2: NSError) => void): void;
 
 	loadLeaderboardsWithCompletionHandler(completionHandler: (p1: NSArray<GKLeaderboard>, p2: NSError) => void): void;
-
-	self(): GKLeaderboardSet; // inherited from NSObjectProtocol
 }
 
 declare const enum GKLeaderboardTimeScope {
@@ -503,6 +499,10 @@ declare const enum GKLeaderboardTimeScope {
 }
 
 declare class GKLeaderboardViewController extends GKGameCenterViewController {
+
+	static alloc(): GKLeaderboardViewController; // inherited from NSObject
+
+	static new(): GKLeaderboardViewController; // inherited from NSObject
 
 	category: string;
 
@@ -522,9 +522,13 @@ declare var GKLeaderboardViewControllerDelegate: {
 
 declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
+	static alloc(): GKLocalPlayer; // inherited from NSObject
+
 	static anonymousGuestPlayerWithIdentifier(guestIdentifier: string): GKLocalPlayer; // inherited from GKPlayer
 
 	static localPlayer(): GKLocalPlayer;
+
+	static new(): GKLocalPlayer; // inherited from NSObject
 
 	authenticateHandler: (p1: UIViewController, p2: NSError) => void;
 
@@ -544,13 +548,13 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ zone: interop.Pointer; // inherited from NSObjectProtocol
+	/* readonly */  // inherited from NSObjectProtocol
 
 	authenticateWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	class(): typeof NSObject; // inherited from NSObjectProtocol
+	class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean; // inherited from NSObjectProtocol
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	deleteSavedGamesWithNameCompletionHandler(name: string, handler: (p1: NSError) => void): void;
 
@@ -558,11 +562,11 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	generateIdentityVerificationSignatureWithCompletionHandler(completionHandler: (p1: NSURL, p2: NSData, p3: NSData, p4: number, p5: NSError) => void): void;
 
-	isEqual(object: any): boolean; // inherited from NSObjectProtocol
+	isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
 	loadDefaultLeaderboardCategoryIDWithCompletionHandler(completionHandler: (p1: string, p2: NSError) => void): void;
 
@@ -572,27 +576,27 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	loadFriendsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
 
-	performSelector(aSelector: string): any; // inherited from NSObjectProtocol
+	performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	playerDidModifySavedGame(player: GKPlayer, savedGame: GKSavedGame): void; // inherited from GKSavedGameListener
+	playerDidModifySavedGame(player: GKPlayer, savedGame: GKSavedGame): void;
 
-	playerHasConflictingSavedGames(player: GKPlayer, savedGames: NSArray<GKSavedGame>): void; // inherited from GKSavedGameListener
+	playerHasConflictingSavedGames(player: GKPlayer, savedGames: NSArray<GKSavedGame>): void;
 
 	registerListener(listener: GKLocalPlayerListener): void;
 
 	resolveConflictingSavedGamesWithDataCompletionHandler(conflictingSavedGames: NSArray<GKSavedGame>, data: NSData, handler: (p1: NSArray<GKSavedGame>, p2: NSError) => void): void;
 
-	respondsToSelector(aSelector: string): boolean; // inherited from NSObjectProtocol
+	respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number; // inherited from NSObjectProtocol
+	retainCount(): number;
 
 	saveGameDataWithNameCompletionHandler(data: NSData, name: string, handler: (p1: GKSavedGame, p2: NSError) => void): void;
 
-	self(): GKLocalPlayer; // inherited from NSObjectProtocol
+	self(): this;
 
 	setDefaultLeaderboardCategoryIDCompletionHandler(categoryID: string, completionHandler: (p1: NSError) => void): void;
 
@@ -624,8 +628,6 @@ declare class GKMatch extends NSObject {
 
 	/* readonly */ players: NSArray<GKPlayer>;
 
-	constructor(); // inherited from NSObject
-
 	chooseBestHostPlayerWithCompletionHandler(completionHandler: (p1: string) => void): void;
 
 	chooseBestHostingPlayerWithCompletionHandler(completionHandler: (p1: GKPlayer) => void): void;
@@ -633,8 +635,6 @@ declare class GKMatch extends NSObject {
 	disconnect(): void;
 
 	rematchWithCompletionHandler(completionHandler: (p1: GKMatch, p2: NSError) => void): void;
-
-	self(): GKMatch; // inherited from NSObjectProtocol
 
 	sendDataToAllPlayersWithDataModeError(data: NSData, mode: GKMatchSendDataMode): boolean;
 
@@ -695,10 +695,6 @@ declare class GKMatchRequest extends NSObject {
 	recipientResponseHandler: (p1: GKPlayer, p2: GKInviteRecipientResponse) => void;
 
 	recipients: NSArray<GKPlayer>;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKMatchRequest; // inherited from NSObjectProtocol
 }
 
 declare const enum GKMatchSendDataMode {
@@ -727,8 +723,6 @@ declare class GKMatchmaker extends NSObject {
 
 	inviteHandler: (p1: GKInvite, p2: NSArray<any>) => void;
 
-	constructor(); // inherited from NSObject
-
 	addPlayersToMatchMatchRequestCompletionHandler(match: GKMatch, matchRequest: GKMatchRequest, completionHandler: (p1: NSError) => void): void;
 
 	cancel(): void;
@@ -751,8 +745,6 @@ declare class GKMatchmaker extends NSObject {
 
 	queryPlayerGroupActivityWithCompletionHandler(playerGroup: number, completionHandler: (p1: number, p2: NSError) => void): void;
 
-	self(): GKMatchmaker; // inherited from NSObjectProtocol
-
 	startBrowsingForNearbyPlayersWithHandler(reachableHandler: (p1: GKPlayer, p2: boolean) => void): void;
 
 	startBrowsingForNearbyPlayersWithReachableHandler(reachableHandler: (p1: string, p2: boolean) => void): void;
@@ -761,6 +753,10 @@ declare class GKMatchmaker extends NSObject {
 }
 
 declare class GKMatchmakerViewController extends UINavigationController {
+
+	static alloc(): GKMatchmakerViewController; // inherited from NSObject
+
+	static new(): GKMatchmakerViewController; // inherited from NSObject
 
 	defaultInvitationMessage: string;
 
@@ -774,11 +770,11 @@ declare class GKMatchmakerViewController extends UINavigationController {
 
 	constructor(o: { matchRequest: GKMatchRequest; });
 
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
-
 	addPlayersToMatch(match: GKMatch): void;
+
+	initWithInvite(invite: GKInvite): this;
+
+	initWithMatchRequest(request: GKMatchRequest): this;
 
 	setHostedPlayerConnected(playerID: string, connected: boolean): void;
 
@@ -817,10 +813,6 @@ declare class GKNotificationBanner extends NSObject {
 	static showBannerWithTitleMessageCompletionHandler(title: string, message: string, completionHandler: () => void): void;
 
 	static showBannerWithTitleMessageDurationCompletionHandler(title: string, message: string, duration: number, completionHandler: () => void): void;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKNotificationBanner; // inherited from NSObjectProtocol
 }
 
 declare const enum GKPeerConnectionState {
@@ -855,11 +847,7 @@ declare class GKPeerPickerController extends NSObject {
 
 	/* readonly */ visible: boolean;
 
-	constructor(); // inherited from NSObject
-
 	dismiss(): void;
-
-	self(): GKPeerPickerController; // inherited from NSObjectProtocol
 
 	show(): void;
 }
@@ -899,11 +887,7 @@ declare class GKPlayer extends NSObject {
 
 	/* readonly */ playerID: string;
 
-	constructor(); // inherited from NSObject
-
 	loadPhotoForSizeWithCompletionHandler(size: number, completionHandler: (p1: UIImage, p2: NSError) => void): void;
-
-	self(): GKPlayer; // inherited from NSObjectProtocol
 }
 
 declare var GKPlayerAuthenticationDidChangeNotificationName: string;
@@ -927,17 +911,13 @@ declare class GKSavedGame extends NSObject implements NSCopying {
 
 	/* readonly */ deviceName: string;
 
-	/* readonly */ modificationDate: Date;
+	/* readonly */ modificationDate: NSDate;
 
 	/* readonly */ name: string;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	loadDataWithCompletionHandler(handler: (p1: NSData, p2: NSError) => void): void;
-
-	self(): GKSavedGame; // inherited from NSObjectProtocol
 }
 
 interface GKSavedGameListener extends NSObjectProtocol {
@@ -961,13 +941,13 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 
 	static reportScoresWithEligibleChallengesWithCompletionHandler(scores: NSArray<GKScore>, challenges: NSArray<GKChallenge>, completionHandler: (p1: NSError) => void): void;
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	category: string;
 
 	context: number;
 
-	/* readonly */ date: Date;
+	/* readonly */ date: NSDate;
 
 	/* readonly */ formattedValue: string;
 
@@ -983,8 +963,6 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 
 	value: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { category: string; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -999,20 +977,30 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 
 	challengeComposeControllerWithPlayersMessageCompletionHandler(playerIDs: NSArray<string>, message: string, completionHandler: (p1: UIViewController, p2: boolean, p3: NSArray<string>) => void): UIViewController;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCategory(category: string): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithLeaderboardIdentifier(identifier: string): this;
+
+	initWithLeaderboardIdentifierForPlayer(identifier: string, playerID: string): this;
+
+	initWithLeaderboardIdentifierPlayer(identifier: string, player: GKPlayer): this;
 
 	issueChallengeToPlayersMessage(playerIDs: NSArray<string>, message: string): void;
 
 	reportScoreWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
-
-	self(): GKScore; // inherited from NSObjectProtocol
 }
 
 declare class GKScoreChallenge extends GKChallenge {
 
-	/* readonly */ score: GKScore;
+	static alloc(): GKScoreChallenge; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): GKScoreChallenge; // inherited from NSObject
+
+	/* readonly */ score: GKScore;
 }
 
 declare const enum GKSendDataMode {
@@ -1042,8 +1030,6 @@ declare class GKSession extends NSObject {
 
 	/* readonly */ sessionMode: GKSessionMode;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { sessionID: string; displayName: string; sessionMode: GKSessionMode; });
 
 	acceptConnectionFromPeerError(peerID: string): boolean;
@@ -1060,15 +1046,15 @@ declare class GKSession extends NSObject {
 
 	displayNameForPeer(peerID: string): string;
 
-	peersWithConnectionState(state: GKPeerConnectionState): NSArray<any>;
+	initWithSessionIDDisplayNameSessionMode(sessionID: string, name: string, mode: GKSessionMode): this;
 
-	self(): GKSession; // inherited from NSObjectProtocol
+	peersWithConnectionState(state: GKPeerConnectionState): NSArray<any>;
 
 	sendDataToAllPeersWithDataModeError(data: NSData, mode: GKSendDataMode): boolean;
 
 	sendDataToPeersWithDataModeError(data: NSData, peers: NSArray<any>, mode: GKSendDataMode): boolean;
 
-	setDataReceiveHandlerWithContext(handler: any, context: interop.Pointer): void;
+	setDataReceiveHandlerWithContext(handler: any, context: interop.Pointer | interop.Reference<any>): void;
 }
 
 interface GKSessionDelegate extends NSObjectProtocol {
@@ -1141,10 +1127,6 @@ declare class GKTurnBasedEventHandler extends NSObject {
 	static sharedTurnBasedEventHandler(): GKTurnBasedEventHandler;
 
 	delegate: NSObject;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKTurnBasedEventHandler; // inherited from NSObjectProtocol
 }
 
 interface GKTurnBasedEventHandlerDelegate {
@@ -1191,7 +1173,7 @@ declare class GKTurnBasedExchange extends NSObject {
 
 	static new(): GKTurnBasedExchange; // inherited from NSObject
 
-	/* readonly */ completionDate: Date;
+	/* readonly */ completionDate: NSDate;
 
 	/* readonly */ data: NSData;
 
@@ -1203,21 +1185,17 @@ declare class GKTurnBasedExchange extends NSObject {
 
 	/* readonly */ replies: NSArray<GKTurnBasedExchangeReply>;
 
-	/* readonly */ sendDate: Date;
+	/* readonly */ sendDate: NSDate;
 
 	/* readonly */ sender: GKTurnBasedParticipant;
 
 	/* readonly */ status: GKTurnBasedExchangeStatus;
 
-	/* readonly */ timeoutDate: Date;
-
-	constructor(); // inherited from NSObject
+	/* readonly */ timeoutDate: NSDate;
 
 	cancelWithLocalizableMessageKeyArgumentsCompletionHandler(key: string, _arguments: NSArray<string>, completionHandler: (p1: NSError) => void): void;
 
 	replyWithLocalizableMessageKeyArgumentsDataCompletionHandler(key: string, _arguments: NSArray<string>, data: NSData, completionHandler: (p1: NSError) => void): void;
-
-	self(): GKTurnBasedExchange; // inherited from NSObjectProtocol
 }
 
 declare class GKTurnBasedExchangeReply extends NSObject {
@@ -1232,11 +1210,7 @@ declare class GKTurnBasedExchangeReply extends NSObject {
 
 	/* readonly */ recipient: GKTurnBasedParticipant;
 
-	/* readonly */ replyDate: Date;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKTurnBasedExchangeReply; // inherited from NSObjectProtocol
+	/* readonly */ replyDate: NSDate;
 }
 
 declare const enum GKTurnBasedExchangeStatus {
@@ -1268,7 +1242,7 @@ declare class GKTurnBasedMatch extends NSObject {
 
 	/* readonly */ completedExchanges: NSArray<GKTurnBasedExchange>;
 
-	/* readonly */ creationDate: Date;
+	/* readonly */ creationDate: NSDate;
 
 	/* readonly */ currentParticipant: GKTurnBasedParticipant;
 
@@ -1289,8 +1263,6 @@ declare class GKTurnBasedMatch extends NSObject {
 	/* readonly */ participants: NSArray<GKTurnBasedParticipant>;
 
 	/* readonly */ status: GKTurnBasedMatchStatus;
-
-	constructor(); // inherited from NSObject
 
 	acceptInviteWithCompletionHandler(completionHandler: (p1: GKTurnBasedMatch, p2: NSError) => void): void;
 
@@ -1319,8 +1291,6 @@ declare class GKTurnBasedMatch extends NSObject {
 	saveCurrentTurnWithMatchDataCompletionHandler(matchData: NSData, completionHandler: (p1: NSError) => void): void;
 
 	saveMergedMatchDataWithResolvedExchangesCompletionHandler(matchData: NSData, exchanges: NSArray<GKTurnBasedExchange>, completionHandler: (p1: NSError) => void): void;
-
-	self(): GKTurnBasedMatch; // inherited from NSObjectProtocol
 
 	sendExchangeToParticipantsDataLocalizableMessageKeyArgumentsTimeoutCompletionHandler(participants: NSArray<GKTurnBasedParticipant>, data: NSData, key: string, _arguments: NSArray<string>, timeout: number, completionHandler: (p1: GKTurnBasedExchange, p2: NSError) => void): void;
 
@@ -1367,15 +1337,17 @@ declare const enum GKTurnBasedMatchStatus {
 
 declare class GKTurnBasedMatchmakerViewController extends UINavigationController {
 
+	static alloc(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
+
+	static new(): GKTurnBasedMatchmakerViewController; // inherited from NSObject
+
 	showExistingMatches: boolean;
 
 	turnBasedMatchmakerDelegate: GKTurnBasedMatchmakerViewControllerDelegate;
 
 	constructor(o: { matchRequest: GKMatchRequest; });
 
-	constructor(o: { navigationBarClass: typeof NSObject; toolbarClass: typeof NSObject; }); // inherited from UINavigationController
-
-	constructor(o: { rootViewController: UIViewController; }); // inherited from UINavigationController
+	initWithMatchRequest(request: GKMatchRequest): this;
 }
 
 interface GKTurnBasedMatchmakerViewControllerDelegate extends NSObjectProtocol {
@@ -1399,7 +1371,7 @@ declare class GKTurnBasedParticipant extends NSObject {
 
 	static new(): GKTurnBasedParticipant; // inherited from NSObject
 
-	/* readonly */ lastTurnDate: Date;
+	/* readonly */ lastTurnDate: NSDate;
 
 	matchOutcome: GKTurnBasedMatchOutcome;
 
@@ -1409,11 +1381,7 @@ declare class GKTurnBasedParticipant extends NSObject {
 
 	/* readonly */ status: GKTurnBasedParticipantStatus;
 
-	/* readonly */ timeoutDate: Date;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKTurnBasedParticipant; // inherited from NSObjectProtocol
+	/* readonly */ timeoutDate: NSDate;
 }
 
 declare const enum GKTurnBasedParticipantStatus {
@@ -1456,10 +1424,6 @@ declare class GKVoiceChat extends NSObject {
 	/* readonly */ players: NSArray<GKPlayer>;
 
 	volume: number;
-
-	constructor(); // inherited from NSObject
-
-	self(): GKVoiceChat; // inherited from NSObjectProtocol
 
 	setMuteForPlayer(isMuted: boolean, playerID: string): void;
 
@@ -1528,8 +1492,6 @@ declare class GKVoiceChatService extends NSObject {
 
 	remoteParticipantVolume: number;
 
-	constructor(); // inherited from NSObject
-
 	acceptCallIDError(callID: number): boolean;
 
 	denyCallID(callID: number): void;
@@ -1537,8 +1499,6 @@ declare class GKVoiceChatService extends NSObject {
 	receivedDataFromParticipantID(arbitraryData: NSData, participantID: string): void;
 
 	receivedRealTimeDataFromParticipantID(audio: NSData, participantID: string): void;
-
-	self(): GKVoiceChatService; // inherited from NSObjectProtocol
 
 	startVoiceChatWithParticipantIDError(participantID: string): boolean;
 

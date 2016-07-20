@@ -26,10 +26,6 @@ declare class EAAccessory extends NSObject {
 	/* readonly */ protocolStrings: NSArray<string>;
 
 	/* readonly */ serialNumber: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): EAAccessory; // inherited from NSObjectProtocol
 }
 
 interface EAAccessoryDelegate extends NSObjectProtocol {
@@ -57,11 +53,7 @@ declare class EAAccessoryManager extends NSObject {
 
 	/* readonly */ connectedAccessories: NSArray<EAAccessory>;
 
-	constructor(); // inherited from NSObject
-
 	registerForLocalNotifications(): void;
-
-	self(): EAAccessoryManager; // inherited from NSObjectProtocol
 
 	showBluetoothAccessoryPickerWithNameFilterCompletion(predicate: NSPredicate, completion: (p1: NSError) => void): void;
 
@@ -97,11 +89,9 @@ declare class EASession extends NSObject {
 
 	/* readonly */ protocolString: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { accessory: EAAccessory; forProtocol: string; });
 
-	self(): EASession; // inherited from NSObjectProtocol
+	initWithAccessoryForProtocol(accessory: EAAccessory, protocolString: string): this;
 }
 
 declare class EAWiFiUnconfiguredAccessory extends NSObject {
@@ -121,10 +111,6 @@ declare class EAWiFiUnconfiguredAccessory extends NSObject {
 	/* readonly */ properties: EAWiFiUnconfiguredAccessoryProperties;
 
 	/* readonly */ ssid: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): EAWiFiUnconfiguredAccessory; // inherited from NSObjectProtocol
 }
 
 declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
@@ -137,13 +123,11 @@ declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
 
 	/* readonly */ unconfiguredAccessories: NSSet<EAWiFiUnconfiguredAccessory>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate; queue: NSObject; });
 
 	configureAccessoryWithConfigurationUIOnViewController(accessory: EAWiFiUnconfiguredAccessory, viewController: UIViewController): void;
 
-	self(): EAWiFiUnconfiguredAccessoryBrowser; // inherited from NSObjectProtocol
+	initWithDelegateQueue(delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate, queue: NSObject): this;
 
 	startSearchingForUnconfiguredAccessoriesMatchingPredicate(predicate: NSPredicate): void;
 

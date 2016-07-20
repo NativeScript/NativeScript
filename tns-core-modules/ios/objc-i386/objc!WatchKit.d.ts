@@ -10,10 +10,6 @@ declare class WKAccessibilityImageRegion extends NSObject {
 	frame: CGRect;
 
 	label: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): WKAccessibilityImageRegion; // inherited from NSObjectProtocol
 }
 
 interface WKImageAnimatable extends NSObjectProtocol {
@@ -30,6 +26,10 @@ declare var WKImageAnimatable: {
 };
 
 declare class WKInterfaceButton extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceButton; // inherited from NSObject
+
+	static new(): WKInterfaceButton; // inherited from NSObject
 
 	setAttributedTitle(attributedTitle: NSAttributedString): void;
 
@@ -57,8 +57,6 @@ declare class WKInterfaceController extends NSObject {
 	static reloadRootControllersWithNamesContexts(names: NSArray<string>, contexts: NSArray<any>): void;
 
 	/* readonly */ contentFrame: CGRect;
-
-	constructor(); // inherited from NSObject
 
 	addMenuItemWithImageNamedTitleAction(imageName: string, title: string, action: string): void;
 
@@ -108,8 +106,6 @@ declare class WKInterfaceController extends NSObject {
 
 	pushControllerWithNameContext(name: string, context: any): void;
 
-	self(): WKInterfaceController; // inherited from NSObjectProtocol
-
 	setTitle(title: string): void;
 
 	tableDidSelectRowAtIndex(table: WKInterfaceTable, rowIndex: number): void;
@@ -120,6 +116,10 @@ declare class WKInterfaceController extends NSObject {
 }
 
 declare class WKInterfaceDate extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceDate; // inherited from NSObject
+
+	static new(): WKInterfaceDate; // inherited from NSObject
 
 	setCalendar(calendar: NSCalendar): void;
 
@@ -154,8 +154,6 @@ declare class WKInterfaceDevice extends NSObject {
 
 	/* readonly */ systemVersion: string;
 
-	constructor(); // inherited from NSObject
-
 	addCachedImageName(image: UIImage, name: string): boolean;
 
 	addCachedImageWithDataName(imageData: NSData, name: string): boolean;
@@ -163,11 +161,13 @@ declare class WKInterfaceDevice extends NSObject {
 	removeAllCachedImages(): void;
 
 	removeCachedImageWithName(name: string): void;
-
-	self(): WKInterfaceDevice; // inherited from NSObjectProtocol
 }
 
 declare class WKInterfaceGroup extends WKInterfaceObject implements WKImageAnimatable {
+
+	static alloc(): WKInterfaceGroup; // inherited from NSObject
+
+	static new(): WKInterfaceGroup; // inherited from NSObject
 
 	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
@@ -179,29 +179,29 @@ declare class WKInterfaceGroup extends WKInterfaceObject implements WKImageAnima
 
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ zone: interop.Pointer; // inherited from NSObjectProtocol
+	/* readonly */  // inherited from NSObjectProtocol
 
-	class(): typeof NSObject; // inherited from NSObjectProtocol
+	class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean; // inherited from NSObjectProtocol
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean; // inherited from NSObjectProtocol
+	isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any; // inherited from NSObjectProtocol
+	performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean; // inherited from NSObjectProtocol
+	respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number; // inherited from NSObjectProtocol
+	retainCount(): number;
 
-	self(): WKInterfaceGroup; // inherited from NSObjectProtocol
+	self(): this;
 
 	setBackgroundColor(color: UIColor): void;
 
@@ -213,14 +213,18 @@ declare class WKInterfaceGroup extends WKInterfaceObject implements WKImageAnima
 
 	setCornerRadius(cornerRadius: number): void;
 
-	startAnimating(): void; // inherited from WKImageAnimatable
+	startAnimating(): void;
 
-	startAnimatingWithImagesInRangeDurationRepeatCount(imageRange: NSRange, duration: number, repeatCount: number): void; // inherited from WKImageAnimatable
+	startAnimatingWithImagesInRangeDurationRepeatCount(imageRange: NSRange, duration: number, repeatCount: number): void;
 
-	stopAnimating(): void; // inherited from WKImageAnimatable
+	stopAnimating(): void;
 }
 
 declare class WKInterfaceImage extends WKInterfaceObject implements WKImageAnimatable {
+
+	static alloc(): WKInterfaceImage; // inherited from NSObject
+
+	static new(): WKInterfaceImage; // inherited from NSObject
 
 	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
@@ -232,29 +236,29 @@ declare class WKInterfaceImage extends WKInterfaceObject implements WKImageAnima
 
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ zone: interop.Pointer; // inherited from NSObjectProtocol
+	/* readonly */  // inherited from NSObjectProtocol
 
-	class(): typeof NSObject; // inherited from NSObjectProtocol
+	class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean; // inherited from NSObjectProtocol
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
-	isEqual(object: any): boolean; // inherited from NSObjectProtocol
+	isEqual(object: any): boolean;
 
-	isKindOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isKindOfClass(aClass: typeof NSObject): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
-	performSelector(aSelector: string): any; // inherited from NSObjectProtocol
+	performSelector(aSelector: string): any;
 
-	performSelectorWithObject(aSelector: string, object: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObject(aSelector: string, object: any): any;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	respondsToSelector(aSelector: string): boolean; // inherited from NSObjectProtocol
+	respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number; // inherited from NSObjectProtocol
+	retainCount(): number;
 
-	self(): WKInterfaceImage; // inherited from NSObjectProtocol
+	self(): this;
 
 	setImage(image: UIImage): void;
 
@@ -264,14 +268,18 @@ declare class WKInterfaceImage extends WKInterfaceObject implements WKImageAnima
 
 	setTintColor(tintColor: UIColor): void;
 
-	startAnimating(): void; // inherited from WKImageAnimatable
+	startAnimating(): void;
 
-	startAnimatingWithImagesInRangeDurationRepeatCount(imageRange: NSRange, duration: number, repeatCount: number): void; // inherited from WKImageAnimatable
+	startAnimatingWithImagesInRangeDurationRepeatCount(imageRange: NSRange, duration: number, repeatCount: number): void;
 
-	stopAnimating(): void; // inherited from WKImageAnimatable
+	stopAnimating(): void;
 }
 
 declare class WKInterfaceLabel extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceLabel; // inherited from NSObject
+
+	static new(): WKInterfaceLabel; // inherited from NSObject
 
 	setAttributedText(attributedText: NSAttributedString): void;
 
@@ -281,6 +289,10 @@ declare class WKInterfaceLabel extends WKInterfaceObject {
 }
 
 declare class WKInterfaceMap extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceMap; // inherited from NSObject
+
+	static new(): WKInterfaceMap; // inherited from NSObject
 
 	addAnnotationWithImageCenterOffset(location: CLLocationCoordinate2D, image: UIImage, offset: CGPoint): void;
 
@@ -312,10 +324,6 @@ declare class WKInterfaceObject extends NSObject {
 
 	/* readonly */ interfaceProperty: string;
 
-	constructor(); // inherited from NSObject
-
-	self(): WKInterfaceObject; // inherited from NSObjectProtocol
-
 	setAccessibilityHint(accessibilityHint: string): void;
 
 	setAccessibilityIdentifier(accessibilityIdentifier: string): void;
@@ -341,10 +349,18 @@ declare class WKInterfaceObject extends NSObject {
 
 declare class WKInterfaceSeparator extends WKInterfaceObject {
 
+	static alloc(): WKInterfaceSeparator; // inherited from NSObject
+
+	static new(): WKInterfaceSeparator; // inherited from NSObject
+
 	setColor(color: UIColor): void;
 }
 
 declare class WKInterfaceSlider extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceSlider; // inherited from NSObject
+
+	static new(): WKInterfaceSlider; // inherited from NSObject
 
 	setColor(color: UIColor): void;
 
@@ -356,6 +372,10 @@ declare class WKInterfaceSlider extends WKInterfaceObject {
 }
 
 declare class WKInterfaceSwitch extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceSwitch; // inherited from NSObject
+
+	static new(): WKInterfaceSwitch; // inherited from NSObject
 
 	setAttributedTitle(attributedTitle: NSAttributedString): void;
 
@@ -369,6 +389,10 @@ declare class WKInterfaceSwitch extends WKInterfaceObject {
 }
 
 declare class WKInterfaceTable extends WKInterfaceObject {
+
+	static alloc(): WKInterfaceTable; // inherited from NSObject
+
+	static new(): WKInterfaceTable; // inherited from NSObject
 
 	/* readonly */ numberOfRows: number;
 
@@ -387,7 +411,11 @@ declare class WKInterfaceTable extends WKInterfaceObject {
 
 declare class WKInterfaceTimer extends WKInterfaceObject {
 
-	setDate(date: Date): void;
+	static alloc(): WKInterfaceTimer; // inherited from NSObject
+
+	static new(): WKInterfaceTimer; // inherited from NSObject
+
+	setDate(date: NSDate): void;
 
 	setTextColor(color: UIColor): void;
 
@@ -441,6 +469,10 @@ declare const enum WKTextInputMode {
 }
 
 declare class WKUserNotificationInterfaceController extends WKInterfaceController {
+
+	static alloc(): WKUserNotificationInterfaceController; // inherited from NSObject
+
+	static new(): WKUserNotificationInterfaceController; // inherited from NSObject
 
 	didReceiveLocalNotificationWithCompletion(localNotification: UILocalNotification, completionHandler: (p1: WKUserNotificationInterfaceType) => void): void;
 

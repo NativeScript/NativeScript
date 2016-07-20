@@ -85,7 +85,7 @@ export class DatePicker extends common.DatePicker {
     constructor() {
         super();
 
-        this._ios = new UIDatePicker();
+        this._ios = UIDatePicker.new();
         this._ios.datePickerMode = UIDatePickerMode.Date;
 
         this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));

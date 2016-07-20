@@ -9,15 +9,11 @@ declare class NEAppProxyFlow extends NSObject {
 
 	/* readonly */ metaData: NEFlowMetaData;
 
-	constructor(); // inherited from NSObject
-
 	closeReadWithError(error: NSError): void;
 
 	closeWriteWithError(error: NSError): void;
 
 	openWithLocalEndpointCompletionHandler(localEndpoint: NWHostEndpoint, completionHandler: (p1: NSError) => void): void;
-
-	self(): NEAppProxyFlow; // inherited from NSObjectProtocol
 }
 
 declare const enum NEAppProxyFlowError {
@@ -45,6 +41,10 @@ declare const enum NEAppProxyFlowError {
 
 declare class NEAppProxyProvider extends NETunnelProvider {
 
+	static alloc(): NEAppProxyProvider; // inherited from NSObject
+
+	static new(): NEAppProxyProvider; // inherited from NSObject
+
 	cancelProxyWithError(error: NSError): void;
 
 	handleNewFlow(flow: NEAppProxyFlow): boolean;
@@ -55,9 +55,17 @@ declare class NEAppProxyProvider extends NETunnelProvider {
 }
 
 declare class NEAppProxyProviderManager extends NETunnelProviderManager {
+
+	static alloc(): NEAppProxyProviderManager; // inherited from NSObject
+
+	static new(): NEAppProxyProviderManager; // inherited from NSObject
 }
 
 declare class NEAppProxyTCPFlow extends NEAppProxyFlow {
+
+	static alloc(): NEAppProxyTCPFlow; // inherited from NSObject
+
+	static new(): NEAppProxyTCPFlow; // inherited from NSObject
 
 	/* readonly */ remoteEndpoint: NWEndpoint;
 
@@ -67,6 +75,10 @@ declare class NEAppProxyTCPFlow extends NEAppProxyFlow {
 }
 
 declare class NEAppProxyUDPFlow extends NEAppProxyFlow {
+
+	static alloc(): NEAppProxyUDPFlow; // inherited from NSObject
+
+	static new(): NEAppProxyUDPFlow; // inherited from NSObject
 
 	/* readonly */ localEndpoint: NWEndpoint;
 
@@ -81,7 +93,7 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NEAppRule; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	matchDomains: NSArray<any>;
 
@@ -89,17 +101,17 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ matchSigningIdentifier: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { signingIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEAppRule; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithSigningIdentifier(signingIdentifier: string): this;
 }
 
 declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCoding {
@@ -108,7 +120,7 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): NEDNSSettings; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	domainName: string;
 
@@ -120,17 +132,17 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 
 	/* readonly */ servers: NSArray<string>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { servers: NSArray<string>; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEDNSSettings; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithServers(servers: NSArray<string>): this;
 }
 
 declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NSSecureCoding {
@@ -139,7 +151,7 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 
 	static new(): NEEvaluateConnectionRule; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ action: NEEvaluateConnectionRuleAction;
 
@@ -149,17 +161,17 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 
 	useDNSServers: NSArray<string>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { matchDomains: NSArray<string>; andAction: NEEvaluateConnectionRuleAction; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEEvaluateConnectionRule; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithMatchDomainsAndAction(domains: NSArray<string>, action: NEEvaluateConnectionRuleAction): this;
 }
 
 declare const enum NEEvaluateConnectionRuleAction {
@@ -171,6 +183,12 @@ declare const enum NEEvaluateConnectionRuleAction {
 
 declare class NEFilterBrowserFlow extends NEFilterFlow implements NSCopying, NSSecureCoding {
 
+	static alloc(): NEFilterBrowserFlow; // inherited from NSObject
+
+	static new(): NEFilterBrowserFlow; // inherited from NSObject
+
+	static supportsSecureCoding(): boolean;
+
 	/* readonly */ parentURL: NSURL;
 
 	/* readonly */ request: NSURLRequest;
@@ -178,11 +196,21 @@ declare class NEFilterBrowserFlow extends NEFilterFlow implements NSCopying, NSS
 	/* readonly */ response: NSURLResponse;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare var NEFilterConfigurationDidChangeNotification: string;
 
 declare class NEFilterControlProvider extends NEFilterProvider {
+
+	static alloc(): NEFilterControlProvider; // inherited from NSObject
+
+	static new(): NEFilterControlProvider; // inherited from NSObject
 
 	URLAppendStringMap: NSDictionary<string, string>;
 
@@ -197,16 +225,32 @@ declare class NEFilterControlProvider extends NEFilterProvider {
 
 declare class NEFilterControlVerdict extends NEFilterNewFlowVerdict implements NSCopying, NSSecureCoding {
 
+	static alloc(): NEFilterControlVerdict; // inherited from NSObject
+
 	static allowVerdictWithUpdateRules(updateRules: boolean): NEFilterControlVerdict;
 
 	static dropVerdictWithUpdateRules(updateRules: boolean): NEFilterControlVerdict;
 
+	static new(): NEFilterControlVerdict; // inherited from NSObject
+
+	static supportsSecureCoding(): boolean;
+
 	static updateRules(): NEFilterControlVerdict;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEFilterDataProvider extends NEFilterProvider {
+
+	static alloc(): NEFilterDataProvider; // inherited from NSObject
+
+	static new(): NEFilterDataProvider; // inherited from NSObject
 
 	handleInboundDataCompleteForFlow(flow: NEFilterFlow): NEFilterDataVerdict;
 
@@ -225,6 +269,8 @@ declare class NEFilterDataProvider extends NEFilterProvider {
 
 declare class NEFilterDataVerdict extends NEFilterVerdict implements NSCopying, NSSecureCoding {
 
+	static alloc(): NEFilterDataVerdict; // inherited from NSObject
+
 	static allowVerdict(): NEFilterDataVerdict;
 
 	static dataVerdictWithPassBytesPeekBytes(passBytes: number, peekBytes: number): NEFilterDataVerdict;
@@ -233,9 +279,19 @@ declare class NEFilterDataVerdict extends NEFilterVerdict implements NSCopying, 
 
 	static needRulesVerdict(): NEFilterDataVerdict;
 
+	static new(): NEFilterDataVerdict; // inherited from NSObject
+
 	static remediateVerdictWithRemediationURLMapKeyRemediationButtonTextMapKey(remediationURLMapKey: string, remediationButtonTextMapKey: string): NEFilterDataVerdict;
 
+	static supportsSecureCoding(): boolean;
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare var NEFilterErrorDomain: string;
@@ -246,19 +302,17 @@ declare class NEFilterFlow extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): NEFilterFlow; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ URL: NSURL;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEFilterFlow; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEFilterManager extends NSObject {
@@ -275,15 +329,11 @@ declare class NEFilterManager extends NSObject {
 
 	providerConfiguration: NEFilterProviderConfiguration;
 
-	constructor(); // inherited from NSObject
-
 	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
-
-	self(): NEFilterManager; // inherited from NSObjectProtocol
 }
 
 declare const enum NEFilterManagerError {
@@ -301,6 +351,8 @@ declare class NEFilterNewFlowVerdict extends NEFilterVerdict implements NSCopyin
 
 	static URLAppendStringVerdictWithMapKey(urlAppendMapKey: string): NEFilterNewFlowVerdict;
 
+	static alloc(): NEFilterNewFlowVerdict; // inherited from NSObject
+
 	static allowVerdict(): NEFilterNewFlowVerdict;
 
 	static dropVerdict(): NEFilterNewFlowVerdict;
@@ -309,12 +361,26 @@ declare class NEFilterNewFlowVerdict extends NEFilterVerdict implements NSCopyin
 
 	static needRulesVerdict(): NEFilterNewFlowVerdict;
 
+	static new(): NEFilterNewFlowVerdict; // inherited from NSObject
+
 	static remediateVerdictWithRemediationURLMapKeyRemediationButtonTextMapKey(remediationURLMapKey: string, remediationButtonTextMapKey: string): NEFilterNewFlowVerdict;
 
+	static supportsSecureCoding(): boolean;
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEFilterProvider extends NEProvider {
+
+	static alloc(): NEFilterProvider; // inherited from NSObject
+
+	static new(): NEFilterProvider; // inherited from NSObject
 
 	/* readonly */ filterConfiguration: NEFilterProviderConfiguration;
 
@@ -329,7 +395,7 @@ declare class NEFilterProviderConfiguration extends NSObject implements NSCopyin
 
 	static new(): NEFilterProviderConfiguration; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	filterBrowsers: boolean;
 
@@ -347,15 +413,13 @@ declare class NEFilterProviderConfiguration extends NSObject implements NSCopyin
 
 	vendorConfiguration: NSDictionary<string, any>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEFilterProviderConfiguration; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare var NEFilterProviderRemediationMapRemediationButtonTexts: string;
@@ -364,16 +428,34 @@ declare var NEFilterProviderRemediationMapRemediationURLs: string;
 
 declare class NEFilterRemediationVerdict extends NEFilterVerdict implements NSCopying, NSSecureCoding {
 
+	static alloc(): NEFilterRemediationVerdict; // inherited from NSObject
+
 	static allowVerdict(): NEFilterRemediationVerdict;
 
 	static dropVerdict(): NEFilterRemediationVerdict;
 
 	static needRulesVerdict(): NEFilterRemediationVerdict;
 
+	static new(): NEFilterRemediationVerdict; // inherited from NSObject
+
+	static supportsSecureCoding(): boolean;
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSecureCoding {
+
+	static alloc(): NEFilterSocketFlow; // inherited from NSObject
+
+	static new(): NEFilterSocketFlow; // inherited from NSObject
+
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ localEndpoint: NWEndpoint;
 
@@ -386,6 +468,12 @@ declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSe
 	socketType: number;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEFilterVerdict extends NSObject implements NSCopying, NSSecureCoding {
@@ -394,17 +482,15 @@ declare class NEFilterVerdict extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NEFilterVerdict; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
-
-	constructor(); // inherited from NSObject
+	static supportsSecureCoding(): boolean;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEFilterVerdict; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEFlowMetaData extends NSObject {
@@ -416,10 +502,6 @@ declare class NEFlowMetaData extends NSObject {
 	/* readonly */ sourceAppSigningIdentifier: string;
 
 	/* readonly */ sourceAppUniqueIdentifier: NSData;
-
-	constructor(); // inherited from NSObject
-
-	self(): NEFlowMetaData; // inherited from NSObjectProtocol
 }
 
 declare class NEHotspotHelper extends NSObject {
@@ -433,10 +515,6 @@ declare class NEHotspotHelper extends NSObject {
 	static registerWithOptionsQueueHandler(options: NSDictionary<string, NSObject>, queue: NSObject, handler: (p1: NEHotspotHelperCommand) => void): boolean;
 
 	static supportedNetworkInterfaces(): NSArray<any>;
-
-	constructor(); // inherited from NSObject
-
-	self(): NEHotspotHelper; // inherited from NSObjectProtocol
 }
 
 declare class NEHotspotHelperCommand extends NSObject {
@@ -451,15 +529,11 @@ declare class NEHotspotHelperCommand extends NSObject {
 
 	/* readonly */ networkList: NSArray<NEHotspotNetwork>;
 
-	constructor(); // inherited from NSObject
-
 	createResponse(result: NEHotspotHelperResult): NEHotspotHelperResponse;
 
 	createTCPConnection(endpoint: NWEndpoint): NWTCPConnection;
 
 	createUDPSession(endpoint: NWEndpoint): NWUDPSession;
-
-	self(): NEHotspotHelperCommand; // inherited from NSObjectProtocol
 }
 
 declare const enum NEHotspotHelperCommandType {
@@ -494,11 +568,7 @@ declare class NEHotspotHelperResponse extends NSObject {
 
 	static new(): NEHotspotHelperResponse; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	deliver(): void;
-
-	self(): NEHotspotHelperResponse; // inherited from NSObjectProtocol
 
 	setNetwork(network: NEHotspotNetwork): void;
 
@@ -542,10 +612,6 @@ declare class NEHotspotNetwork extends NSObject {
 
 	/* readonly */ signalStrength: number;
 
-	constructor(); // inherited from NSObject
-
-	self(): NEHotspotNetwork; // inherited from NSObjectProtocol
-
 	setConfidence(confidence: NEHotspotHelperConfidence): void;
 
 	setPassword(password: string): void;
@@ -559,7 +625,7 @@ declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): NEIPv4Route; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ destinationAddress: string;
 
@@ -567,17 +633,17 @@ declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding 
 
 	gatewayAddress: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { destinationAddress: string; subnetMask: string; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEIPv4Route; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDestinationAddressSubnetMask(address: string, subnetMask: string): this;
 }
 
 declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCoding {
@@ -586,7 +652,7 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NEIPv4Settings; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ addresses: NSArray<string>;
 
@@ -596,17 +662,17 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	/* readonly */ subnetMasks: NSArray<string>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { addresses: NSArray<string>; subnetMasks: NSArray<string>; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEIPv4Settings; // inherited from NSObjectProtocol
+	initWithAddressesSubnetMasks(addresses: NSArray<string>, subnetMasks: NSArray<string>): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEIPv6Route extends NSObject implements NSCopying, NSSecureCoding {
@@ -617,7 +683,7 @@ declare class NEIPv6Route extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): NEIPv6Route; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ destinationAddress: string;
 
@@ -625,17 +691,17 @@ declare class NEIPv6Route extends NSObject implements NSCopying, NSSecureCoding 
 
 	gatewayAddress: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { destinationAddress: string; networkPrefixLength: number; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEIPv6Route; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDestinationAddressNetworkPrefixLength(address: string, networkPrefixLength: number): this;
 }
 
 declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCoding {
@@ -644,7 +710,7 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NEIPv6Settings; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ addresses: NSArray<string>;
 
@@ -654,17 +720,17 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	/* readonly */ networkPrefixLengths: NSArray<number>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { addresses: NSArray<string>; networkPrefixLengths: NSArray<number>; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEIPv6Settings; // inherited from NSObjectProtocol
+	initWithAddressesNetworkPrefixLengths(addresses: NSArray<string>, networkPrefixLengths: NSArray<number>): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEOnDemandRule extends NSObject implements NSCopying, NSSecureCoding {
@@ -673,7 +739,7 @@ declare class NEOnDemandRule extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NEOnDemandRule; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	DNSSearchDomainMatch: NSArray<string>;
 
@@ -687,15 +753,13 @@ declare class NEOnDemandRule extends NSObject implements NSCopying, NSSecureCodi
 
 	probeURL: NSURL;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEOnDemandRule; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare const enum NEOnDemandRuleAction {
@@ -711,24 +775,32 @@ declare const enum NEOnDemandRuleAction {
 
 declare class NEOnDemandRuleConnect extends NEOnDemandRule {
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static alloc(): NEOnDemandRuleConnect; // inherited from NSObject
+
+	static new(): NEOnDemandRuleConnect; // inherited from NSObject
 }
 
 declare class NEOnDemandRuleDisconnect extends NEOnDemandRule {
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static alloc(): NEOnDemandRuleDisconnect; // inherited from NSObject
+
+	static new(): NEOnDemandRuleDisconnect; // inherited from NSObject
 }
 
 declare class NEOnDemandRuleEvaluateConnection extends NEOnDemandRule {
 
-	connectionRules: NSArray<NEEvaluateConnectionRule>;
+	static alloc(): NEOnDemandRuleEvaluateConnection; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): NEOnDemandRuleEvaluateConnection; // inherited from NSObject
+
+	connectionRules: NSArray<NEEvaluateConnectionRule>;
 }
 
 declare class NEOnDemandRuleIgnore extends NEOnDemandRule {
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static alloc(): NEOnDemandRuleIgnore; // inherited from NSObject
+
+	static new(): NEOnDemandRuleIgnore; // inherited from NSObject
 }
 
 declare const enum NEOnDemandRuleInterfaceType {
@@ -748,16 +820,16 @@ declare class NEPacketTunnelFlow extends NSObject {
 
 	static new(): NEPacketTunnelFlow; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	readPacketsWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSArray<number>) => void): void;
-
-	self(): NEPacketTunnelFlow; // inherited from NSObjectProtocol
 
 	writePacketsWithProtocols(packets: NSArray<NSData>, protocols: NSArray<number>): boolean;
 }
 
 declare class NEPacketTunnelNetworkSettings extends NETunnelNetworkSettings {
+
+	static alloc(): NEPacketTunnelNetworkSettings; // inherited from NSObject
+
+	static new(): NEPacketTunnelNetworkSettings; // inherited from NSObject
 
 	IPv4Settings: NEIPv4Settings;
 
@@ -766,13 +838,13 @@ declare class NEPacketTunnelNetworkSettings extends NETunnelNetworkSettings {
 	MTU: number;
 
 	tunnelOverheadBytes: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { tunnelRemoteAddress: string; }); // inherited from NETunnelNetworkSettings
 }
 
 declare class NEPacketTunnelProvider extends NETunnelProvider {
+
+	static alloc(): NEPacketTunnelProvider; // inherited from NSObject
+
+	static new(): NEPacketTunnelProvider; // inherited from NSObject
 
 	/* readonly */ packetFlow: NEPacketTunnelFlow;
 
@@ -795,13 +867,9 @@ declare class NEProvider extends NSObject {
 
 	/* readonly */ defaultPath: NWPath;
 
-	constructor(); // inherited from NSObject
-
 	createTCPConnectionToEndpointEnableTLSTLSParametersDelegate(remoteEndpoint: NWEndpoint, enableTLS: boolean, TLSParameters: NWTLSParameters, delegate: any): NWTCPConnection;
 
 	createUDPSessionToEndpointFromEndpoint(remoteEndpoint: NWEndpoint, localEndpoint: NWHostEndpoint): NWUDPSession;
-
-	self(): NEProvider; // inherited from NSObjectProtocol
 
 	sleepWithCompletionHandler(completionHandler: () => void): void;
 
@@ -847,7 +915,7 @@ declare class NEProxyServer extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): NEProxyServer; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ address: string;
 
@@ -859,17 +927,17 @@ declare class NEProxyServer extends NSObject implements NSCopying, NSSecureCodin
 
 	username: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { address: string; port: number; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEProxyServer; // inherited from NSObjectProtocol
+	initWithAddressPort(address: string, port: number): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCoding {
@@ -878,7 +946,7 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NEProxySettings; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	HTTPEnabled: boolean;
 
@@ -900,15 +968,13 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 
 	proxyAutoConfigurationURL: NSURL;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEProxySettings; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NETunnelNetworkSettings extends NSObject implements NSCopying, NSSecureCoding {
@@ -917,7 +983,7 @@ declare class NETunnelNetworkSettings extends NSObject implements NSCopying, NSS
 
 	static new(): NETunnelNetworkSettings; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	DNSSettings: NEDNSSettings;
 
@@ -925,20 +991,24 @@ declare class NETunnelNetworkSettings extends NSObject implements NSCopying, NSS
 
 	/* readonly */ tunnelRemoteAddress: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { tunnelRemoteAddress: string; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NETunnelNetworkSettings; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithTunnelRemoteAddress(address: string): this;
 }
 
 declare class NETunnelProvider extends NEProvider {
+
+	static alloc(): NETunnelProvider; // inherited from NSObject
+
+	static new(): NETunnelProvider; // inherited from NSObject
 
 	/* readonly */ appRules: NSArray<NEAppRule>;
 
@@ -966,7 +1036,11 @@ declare var NETunnelProviderErrorDomain: string;
 
 declare class NETunnelProviderManager extends NEVPNManager {
 
+	static alloc(): NETunnelProviderManager; // inherited from NSObject
+
 	static loadAllFromPreferencesWithCompletionHandler(completionHandler: (p1: NSArray<NETunnelProviderManager>, p2: NSError) => void): void;
+
+	static new(): NETunnelProviderManager; // inherited from NSObject
 
 	/* readonly */ routingMethod: NETunnelProviderRoutingMethod;
 
@@ -975,11 +1049,13 @@ declare class NETunnelProviderManager extends NEVPNManager {
 
 declare class NETunnelProviderProtocol extends NEVPNProtocol {
 
+	static alloc(): NETunnelProviderProtocol; // inherited from NSObject
+
+	static new(): NETunnelProviderProtocol; // inherited from NSObject
+
 	providerBundleIdentifier: string;
 
 	providerConfiguration: NSDictionary<string, any>;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare const enum NETunnelProviderRoutingMethod {
@@ -991,7 +1067,11 @@ declare const enum NETunnelProviderRoutingMethod {
 
 declare class NETunnelProviderSession extends NEVPNConnection {
 
-	sendProviderMessageReturnErrorResponseHandler(messageData: NSData, error: interop.Reference<NSError>, responseHandler: (p1: NSData) => void): boolean;
+	static alloc(): NETunnelProviderSession; // inherited from NSObject
+
+	static new(): NETunnelProviderSession; // inherited from NSObject
+
+	sendProviderMessageReturnErrorResponseHandler(messageData: NSData, error: interop.Pointer | interop.Reference<NSError>, responseHandler: (p1: NSData) => void): boolean;
 
 	startTunnelWithOptionsAndReturnError(options: NSDictionary<string, any>): boolean;
 
@@ -1006,13 +1086,9 @@ declare class NEVPNConnection extends NSObject {
 
 	static new(): NEVPNConnection; // inherited from NSObject
 
-	/* readonly */ connectedDate: Date;
+	/* readonly */ connectedDate: NSDate;
 
 	/* readonly */ status: NEVPNStatus;
-
-	constructor(); // inherited from NSObject
-
-	self(): NEVPNConnection; // inherited from NSObjectProtocol
 
 	startVPNTunnelAndReturnError(): boolean;
 
@@ -1134,7 +1210,7 @@ declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implement
 
 	static new(): NEVPNIKEv2SecurityAssociationParameters; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	diffieHellmanGroup: NEVPNIKEv2DiffieHellmanGroup;
 
@@ -1144,15 +1220,13 @@ declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implement
 
 	lifetimeMinutes: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEVPNIKEv2SecurityAssociationParameters; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEVPNManager extends NSObject {
@@ -1177,15 +1251,11 @@ declare class NEVPNManager extends NSObject {
 
 	protocolConfiguration: NEVPNProtocol;
 
-	constructor(); // inherited from NSObject
-
 	loadFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	removeFromPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
 	saveToPreferencesWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
-
-	self(): NEVPNManager; // inherited from NSObjectProtocol
 }
 
 declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCoding {
@@ -1194,7 +1264,7 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): NEVPNProtocol; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	disconnectOnSleep: boolean;
 
@@ -1212,18 +1282,20 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 
 	username: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): NEVPNProtocol; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
+
+	static alloc(): NEVPNProtocolIKEv2; // inherited from NSObject
+
+	static new(): NEVPNProtocolIKEv2; // inherited from NSObject
 
 	/* readonly */ IKESecurityAssociationParameters: NEVPNIKEv2SecurityAssociationParameters;
 
@@ -1252,6 +1324,10 @@ declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
 
 declare class NEVPNProtocolIPSec extends NEVPNProtocol {
 
+	static alloc(): NEVPNProtocolIPSec; // inherited from NSObject
+
+	static new(): NEVPNProtocolIPSec; // inherited from NSObject
+
 	authenticationMethod: NEVPNIKEAuthenticationMethod;
 
 	localIdentifier: string;
@@ -1261,8 +1337,6 @@ declare class NEVPNProtocolIPSec extends NEVPNProtocol {
 	sharedSecretReference: NSData;
 
 	useExtendedAuthentication: boolean;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare const enum NEVPNStatus {
@@ -1284,7 +1358,11 @@ declare var NEVPNStatusDidChangeNotification: string;
 
 declare class NWBonjourServiceEndpoint extends NWEndpoint {
 
+	static alloc(): NWBonjourServiceEndpoint; // inherited from NSObject
+
 	static endpointWithNameTypeDomain(name: string, type: string, domain: string): NWBonjourServiceEndpoint;
+
+	static new(): NWBonjourServiceEndpoint; // inherited from NSObject
 
 	/* readonly */ domain: string;
 
@@ -1298,15 +1376,15 @@ declare class NWEndpoint extends NSObject {
 	static alloc(): NWEndpoint; // inherited from NSObject
 
 	static new(): NWEndpoint; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): NWEndpoint; // inherited from NSObjectProtocol
 }
 
 declare class NWHostEndpoint extends NWEndpoint {
 
+	static alloc(): NWHostEndpoint; // inherited from NSObject
+
 	static endpointWithHostnamePort(hostname: string, port: string): NWHostEndpoint;
+
+	static new(): NWHostEndpoint; // inherited from NSObject
 
 	/* readonly */ hostname: string;
 
@@ -1323,11 +1401,7 @@ declare class NWPath extends NSObject {
 
 	/* readonly */ status: NWPathStatus;
 
-	constructor(); // inherited from NSObject
-
 	isEqualToPath(path: NWPath): boolean;
-
-	self(): NWPath; // inherited from NSObjectProtocol
 }
 
 declare const enum NWPathStatus {
@@ -1365,17 +1439,15 @@ declare class NWTCPConnection extends NSObject {
 
 	/* readonly */ viable: boolean;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { upgradeForConnection: NWTCPConnection; });
 
 	cancel(): void;
 
+	initWithUpgradeForConnection(connection: NWTCPConnection): this;
+
 	readLengthCompletionHandler(length: number, completion: (p1: NSData, p2: NSError) => void): void;
 
 	readMinimumLengthMaximumLengthCompletionHandler(minimum: number, maximum: number, completion: (p1: NSData, p2: NSError) => void): void;
-
-	self(): NWTCPConnection; // inherited from NSObjectProtocol
 
 	writeClose(): void;
 
@@ -1425,10 +1497,6 @@ declare class NWTLSParameters extends NSObject {
 	maximumSSLProtocolVersion: number;
 
 	minimumSSLProtocolVersion: number;
-
-	constructor(); // inherited from NSObject
-
-	self(): NWTLSParameters; // inherited from NSObjectProtocol
 }
 
 declare class NWUDPSession extends NSObject {
@@ -1451,13 +1519,11 @@ declare class NWUDPSession extends NSObject {
 
 	/* readonly */ viable: boolean;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { upgradeForSession: NWUDPSession; });
 
 	cancel(): void;
 
-	self(): NWUDPSession; // inherited from NSObjectProtocol
+	initWithUpgradeForSession(session: NWUDPSession): this;
 
 	setReadHandlerMaxDatagrams(handler: (p1: NSArray<NSData>, p2: NSError) => void, maxDatagrams: number): void;
 

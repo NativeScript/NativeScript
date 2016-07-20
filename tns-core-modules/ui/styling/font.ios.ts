@@ -162,7 +162,7 @@ function tryResolveByFamily(font: Font): UIFontDescriptor {
 }
 
 function createFontDescriptor(fontFamily: string, fontFace: string): UIFontDescriptor  {
-    var fontAttributes = NSMutableDictionary.alloc().init();
+    var fontAttributes = NSMutableDictionary.alloc<string, any>().init();
     fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
     if (fontFace) {
         fontAttributes.setObjectForKey(fontFace, "NSFontFaceAttribute");

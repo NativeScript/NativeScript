@@ -89,23 +89,23 @@ declare var _dispatch_source_type_write: void;
 
 declare function dispatch_after(when: number, queue: NSObject, block: () => void): void;
 
-declare function dispatch_after_f(when: number, queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_after_f(when: number, queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_apply(iterations: number, queue: NSObject, block: (p1: number) => void): void;
 
-declare function dispatch_apply_f(iterations: number, queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer, p2: number) => void>): void;
+declare function dispatch_apply_f(iterations: number, queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>): void;
 
 declare function dispatch_async(queue: NSObject, block: () => void): void;
 
-declare function dispatch_async_f(queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_async_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_barrier_async(queue: NSObject, block: () => void): void;
 
-declare function dispatch_barrier_async_f(queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_barrier_async_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_barrier_sync(queue: NSObject, block: () => void): void;
 
-declare function dispatch_barrier_sync_f(queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_barrier_sync_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_block_cancel(block: () => void): void;
 
@@ -136,31 +136,31 @@ declare function dispatch_block_testcancel(block: () => void): number;
 
 declare function dispatch_block_wait(block: () => void, timeout: number): number;
 
-declare function dispatch_data_apply(data: NSObject, applier: (p1: NSObject, p2: number, p3: interop.Pointer, p4: number) => boolean): boolean;
+declare function dispatch_data_apply(data: NSObject, applier: (p1: NSObject, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number) => boolean): boolean;
 
-declare function dispatch_data_copy_region(data: NSObject, location: number, offset_ptr: interop.Reference<number>): NSObject;
+declare function dispatch_data_copy_region(data: NSObject, location: number, offset_ptr: interop.Pointer | interop.Reference<number>): NSObject;
 
-declare function dispatch_data_create(buffer: interop.Pointer, size: number, queue: NSObject, destructor: () => void): NSObject;
+declare function dispatch_data_create(buffer: interop.Pointer | interop.Reference<any>, size: number, queue: NSObject, destructor: () => void): NSObject;
 
 declare function dispatch_data_create_concat(data1: NSObject, data2: NSObject): NSObject;
 
-declare function dispatch_data_create_map(data: NSObject, buffer_ptr: interop.Reference<interop.Pointer>, size_ptr: interop.Reference<number>): NSObject;
+declare function dispatch_data_create_map(data: NSObject, buffer_ptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, size_ptr: interop.Pointer | interop.Reference<number>): NSObject;
 
 declare function dispatch_data_create_subrange(data: NSObject, offset: number, length: number): NSObject;
 
 declare function dispatch_data_get_size(data: NSObject): number;
 
-declare function dispatch_get_context(object: NSObject): interop.Pointer;
+declare function dispatch_get_context(object: NSObject): interop.Pointer | interop.Reference<any>;
 
 declare function dispatch_get_current_queue(): NSObject;
 
 declare function dispatch_get_global_queue(identifier: number, flags: number): NSObject;
 
-declare function dispatch_get_specific(key: interop.Pointer): interop.Pointer;
+declare function dispatch_get_specific(key: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function dispatch_group_async(group: NSObject, queue: NSObject, block: () => void): void;
 
-declare function dispatch_group_async_f(group: NSObject, queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_group_async_f(group: NSObject, queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_group_create(): NSObject;
 
@@ -170,13 +170,13 @@ declare function dispatch_group_leave(group: NSObject): void;
 
 declare function dispatch_group_notify(group: NSObject, queue: NSObject, block: () => void): void;
 
-declare function dispatch_group_notify_f(group: NSObject, queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_group_notify_f(group: NSObject, queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_group_wait(group: NSObject, timeout: number): number;
 
-declare function dispatch_introspection_hook_queue_callout_begin(queue: NSObject, context: interop.Pointer, _function: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_introspection_hook_queue_callout_begin(queue: NSObject, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
-declare function dispatch_introspection_hook_queue_callout_end(queue: NSObject, context: interop.Pointer, _function: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_introspection_hook_queue_callout_end(queue: NSObject, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_introspection_hook_queue_create(queue: NSObject): void;
 
@@ -212,9 +212,9 @@ declare function dispatch_io_write(channel: NSObject, offset: number, data: NSOb
 
 declare function dispatch_main(): void;
 
-declare function dispatch_once(predicate: interop.Reference<number>, block: () => void): void;
+declare function dispatch_once(predicate: interop.Pointer | interop.Reference<number>, block: () => void): void;
 
-declare function dispatch_once_f(predicate: interop.Reference<number>, context: interop.Pointer, _function: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_once_f(predicate: interop.Pointer | interop.Reference<number>, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_queue_attr_make_with_qos_class(attr: NSObject, qos_class: qos_class_t, relative_priority: number): NSObject;
 
@@ -222,11 +222,11 @@ declare function dispatch_queue_create(label: string, attr: NSObject): NSObject;
 
 declare function dispatch_queue_get_label(queue: NSObject): string;
 
-declare function dispatch_queue_get_qos_class(queue: NSObject, relative_priority_ptr: interop.Reference<number>): qos_class_t;
+declare function dispatch_queue_get_qos_class(queue: NSObject, relative_priority_ptr: interop.Pointer | interop.Reference<number>): qos_class_t;
 
-declare function dispatch_queue_get_specific(queue: NSObject, key: interop.Pointer): interop.Pointer;
+declare function dispatch_queue_get_specific(queue: NSObject, key: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function dispatch_queue_set_specific(queue: NSObject, key: interop.Pointer, context: interop.Pointer, destructor: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_queue_set_specific(queue: NSObject, key: interop.Pointer | interop.Reference<any>, context: interop.Pointer | interop.Reference<any>, destructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_read(fd: number, length: number, queue: NSObject, handler: (p1: NSObject, p2: number) => void): void;
 
@@ -242,15 +242,15 @@ declare function dispatch_semaphore_signal(dsema: NSObject): number;
 
 declare function dispatch_semaphore_wait(dsema: NSObject, timeout: number): number;
 
-declare function dispatch_set_context(object: NSObject, context: interop.Pointer): void;
+declare function dispatch_set_context(object: NSObject, context: interop.Pointer | interop.Reference<any>): void;
 
-declare function dispatch_set_finalizer_f(object: NSObject, finalizer: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_set_finalizer_f(object: NSObject, finalizer: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_set_target_queue(object: NSObject, queue: NSObject): void;
 
 declare function dispatch_source_cancel(source: NSObject): void;
 
-declare function dispatch_source_create(type: interop.Pointer, handle: number, mask: number, queue: NSObject): NSObject;
+declare function dispatch_source_create(type: interop.Pointer | interop.Reference<any>, handle: number, mask: number, queue: NSObject): NSObject;
 
 declare function dispatch_source_get_data(source: NSObject): number;
 
@@ -262,15 +262,15 @@ declare function dispatch_source_merge_data(source: NSObject, value: number): vo
 
 declare function dispatch_source_set_cancel_handler(source: NSObject, handler: () => void): void;
 
-declare function dispatch_source_set_cancel_handler_f(source: NSObject, handler: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_source_set_cancel_handler_f(source: NSObject, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_source_set_event_handler(source: NSObject, handler: () => void): void;
 
-declare function dispatch_source_set_event_handler_f(source: NSObject, handler: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_source_set_event_handler_f(source: NSObject, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_source_set_registration_handler(source: NSObject, handler: () => void): void;
 
-declare function dispatch_source_set_registration_handler_f(source: NSObject, handler: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_source_set_registration_handler_f(source: NSObject, handler: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_source_set_timer(source: NSObject, start: number, interval: number, leeway: number): void;
 
@@ -280,10 +280,10 @@ declare function dispatch_suspend(object: NSObject): void;
 
 declare function dispatch_sync(queue: NSObject, block: () => void): void;
 
-declare function dispatch_sync_f(queue: NSObject, context: interop.Pointer, work: interop.FunctionReference<(p1: interop.Pointer) => void>): void;
+declare function dispatch_sync_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
 declare function dispatch_time(when: number, delta: number): number;
 
-declare function dispatch_walltime(when: interop.Reference<timespec>, delta: number): number;
+declare function dispatch_walltime(when: interop.Pointer | interop.Reference<timespec>, delta: number): number;
 
 declare function dispatch_write(fd: number, data: NSObject, queue: NSObject, handler: (p1: NSObject, p2: number) => void): void;

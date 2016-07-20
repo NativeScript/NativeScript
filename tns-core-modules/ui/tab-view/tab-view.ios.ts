@@ -127,11 +127,11 @@ export class TabViewItem extends common.TabViewItem {
             var icon = this._parent._getIcon(this.iconSource);
             var tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((this.title || ""), icon, this._parent.items.indexOf(this));
             if (!icon) {
-                if (types.isFunction(tabBarItem.setTitlePositionAdjustment)) {
-                    tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
+                if (types.isFunction((<any>tabBarItem).setTitlePositionAdjustment)) {
+                    (<any>tabBarItem).setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
                 }
                 else {
-                    (<any>tabBarItem).titlePositionAdjustment = { horizontal: 0, vertical: -20 };
+                    tabBarItem.titlePositionAdjustment = { horizontal: 0, vertical: -20 };
                 }
             }
 
@@ -279,7 +279,7 @@ export class TabView extends common.TabView {
             if (item.view.ios instanceof UIViewController) {
                 newController = <UIViewController>item.view.ios;
             } else {
-                newController = new UIViewController();
+                newController = UIViewController.new();
                 newController.view.addSubview(item.view.ios);
             }
 
@@ -290,8 +290,8 @@ export class TabView extends common.TabView {
 
             var tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
             if (!icon) {
-                if (types.isFunction(tabBarItem.setTitlePositionAdjustment)) {
-                    tabBarItem.setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
+                if (types.isFunction((<any>tabBarItem).setTitlePositionAdjustment)) {
+                    (<any>tabBarItem).setTitlePositionAdjustment({ horizontal: 0, vertical: -20 });
                 }
                 else {
                     (<any>tabBarItem).titlePositionAdjustment = { horizontal: 0, vertical: -20 };

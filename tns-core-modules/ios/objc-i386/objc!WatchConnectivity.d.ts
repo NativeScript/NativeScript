@@ -70,11 +70,7 @@ declare class WCSession extends NSObject {
 
 	/* readonly */ watchDirectoryURL: NSURL;
 
-	constructor(); // inherited from NSObject
-
 	activateSession(): void;
-
-	self(): WCSession; // inherited from NSObjectProtocol
 
 	sendMessageDataReplyHandlerErrorHandler(data: NSData, replyHandler: (p1: NSData) => void, errorHandler: (p1: NSError) => void): void;
 
@@ -142,10 +138,6 @@ declare class WCSessionFile extends NSObject {
 	/* readonly */ fileURL: NSURL;
 
 	/* readonly */ metadata: NSDictionary<string, any>;
-
-	constructor(); // inherited from NSObject
-
-	self(): WCSessionFile; // inherited from NSObjectProtocol
 }
 
 declare class WCSessionFileTransfer extends NSObject {
@@ -158,11 +150,7 @@ declare class WCSessionFileTransfer extends NSObject {
 
 	/* readonly */ transferring: boolean;
 
-	constructor(); // inherited from NSObject
-
 	cancel(): void;
-
-	self(): WCSessionFileTransfer; // inherited from NSObjectProtocol
 }
 
 declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCoding {
@@ -171,7 +159,7 @@ declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCodi
 
 	static new(): WCSessionUserInfoTransfer; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ currentComplicationInfo: boolean;
 
@@ -179,13 +167,11 @@ declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCodi
 
 	/* readonly */ userInfo: NSDictionary<string, any>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	cancel(): void;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): WCSessionUserInfoTransfer; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }

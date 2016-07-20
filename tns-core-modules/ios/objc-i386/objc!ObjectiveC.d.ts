@@ -19,7 +19,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	static conformsToProtocol(protocol: any /* Protocol */): boolean;
 
-	static copyWithZone(zone: interop.Pointer): any;
+	static copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	static debugDescription(): string;
 
@@ -41,7 +41,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	static load(): void;
 
-	static mutableCopyWithZone(zone: interop.Pointer): any;
+	static mutableCopyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	static new(): NSObject;
 
@@ -89,7 +89,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	isAccessibilityElement: boolean;
 
-	observationInfo: interop.Pointer;
+	observationInfo: interop.Pointer | interop.Reference<any>;
 
 	shouldGroupAccessibilityChildren: boolean;
 
@@ -103,7 +103,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ zone: interop.Pointer; // inherited from NSObjectProtocol
+	/* readonly */  // inherited from NSObjectProtocol
 
 	constructor();
 
@@ -133,7 +133,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	actionForLayerForKey(layer: CALayer, event: string): CAAction;
 
-	addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: string, options: NSKeyValueObservingOptions, context: interop.Pointer): void;
+	addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: string, options: NSKeyValueObservingOptions, context: interop.Pointer | interop.Reference<any>): void;
 
 	animationDidStart(anim: CAAnimation): void;
 
@@ -141,15 +141,15 @@ declare class NSObject implements NSObjectProtocol {
 
 	attemptRecoveryFromErrorOptionIndex(error: NSError, recoveryOptionIndex: number): boolean;
 
-	attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: number, delegate: any, didRecoverSelector: string, contextInfo: interop.Pointer): void;
+	attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: number, delegate: any, didRecoverSelector: string, contextInfo: interop.Pointer | interop.Reference<any>): void;
 
 	awakeAfterUsingCoder(aDecoder: NSCoder): any;
 
 	awakeFromNib(): void;
 
-	class(): typeof NSObject; // inherited from NSObjectProtocol
+	class(): typeof NSObject;
 
-	conformsToProtocol(aProtocol: any /* Protocol */): boolean; // inherited from NSObjectProtocol
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copy(): any;
 
@@ -181,11 +181,13 @@ declare class NSObject implements NSObjectProtocol {
 
 	indexOfAccessibilityElement(element: any): number;
 
-	isEqual(object: any): boolean; // inherited from NSObjectProtocol
+	init(): this;
 
-	isKindOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isEqual(object: any): boolean;
 
-	isMemberOfClass(aClass: typeof NSObject): boolean; // inherited from NSObjectProtocol
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
 	layoutSublayersOfLayer(layer: CALayer): void;
 
@@ -207,9 +209,9 @@ declare class NSObject implements NSObjectProtocol {
 
 	mutableSetValueForKeyPath(keyPath: string): NSMutableSet<any>;
 
-	observeValueForKeyPathOfObjectChangeContext(keyPath: string, object: any, change: NSDictionary<string, any>, context: interop.Pointer): void;
+	observeValueForKeyPathOfObjectChangeContext(keyPath: string, object: any, change: NSDictionary<string, any>, context: interop.Pointer | interop.Reference<any>): void;
 
-	performSelector(aSelector: string): any; // inherited from NSObjectProtocol
+	performSelector(aSelector: string): any;
 
 	performSelectorInBackgroundWithObject(aSelector: string, arg: any): void;
 
@@ -221,31 +223,31 @@ declare class NSObject implements NSObjectProtocol {
 
 	performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: string, thr: NSThread, arg: any, wait: boolean, array: NSArray<string>): void;
 
-	performSelectorWithObject(aSelector: string, object: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObject(aSelector: string, object: any): any;
 
 	performSelectorWithObjectAfterDelay(aSelector: string, anArgument: any, delay: number): void;
 
 	performSelectorWithObjectAfterDelayInModes(aSelector: string, anArgument: any, delay: number, modes: NSArray<string>): void;
 
-	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any; // inherited from NSObjectProtocol
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	prepareForInterfaceBuilder(): void;
 
-	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer, rowbytes: number, x: number, y: number, width: number, height: number, info: any): void;
+	provideImageDataBytesPerRowOriginSizeUserInfo(data: interop.Pointer | interop.Reference<any>, rowbytes: number, x: number, y: number, width: number, height: number, info: any): void;
 
 	removeObserverForKeyPath(observer: NSObject, keyPath: string): void;
 
-	removeObserverForKeyPathContext(observer: NSObject, keyPath: string, context: interop.Pointer): void;
+	removeObserverForKeyPathContext(observer: NSObject, keyPath: string, context: interop.Pointer | interop.Reference<any>): void;
 
 	replacementObjectForCoder(aCoder: NSCoder): any;
 
 	replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): any;
 
-	respondsToSelector(aSelector: string): boolean; // inherited from NSObjectProtocol
+	respondsToSelector(aSelector: string): boolean;
 
-	retainCount(): number; // inherited from NSObjectProtocol
+	retainCount(): number;
 
-	self(): NSObject; // inherited from NSObjectProtocol
+	self(): this;
 
 	setNilValueForKey(key: string): void;
 
@@ -257,9 +259,9 @@ declare class NSObject implements NSObjectProtocol {
 
 	setValuesForKeysWithDictionary(keyedValues: NSDictionary<string, any>): void;
 
-	validateValueForKeyError(ioValue: interop.Reference<any>, inKey: string): boolean;
+	validateValueForKeyError(ioValue: interop.Pointer | interop.Reference<any>, inKey: string): boolean;
 
-	validateValueForKeyPathError(ioValue: interop.Reference<any>, inKeyPath: string): boolean;
+	validateValueForKeyPathError(ioValue: interop.Pointer | interop.Reference<any>, inKeyPath: string): boolean;
 
 	valueForKey(key: string): any;
 
@@ -286,7 +288,7 @@ interface NSObjectProtocol {
 
 	superclass: typeof NSObject;
 
-	zone: interop.Pointer;
+	
 
 	class(): typeof NSObject;
 
@@ -320,10 +322,6 @@ declare class Protocol extends NSObject {
 	static alloc(): Protocol; // inherited from NSObject
 
 	static new(): Protocol; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): Protocol; // inherited from NSObjectProtocol
 }
 
 declare function _objc_flush_caches(cls: typeof NSObject): void;
@@ -332,35 +330,35 @@ declare function class_addIvar(cls: typeof NSObject, name: string, size: number,
 
 declare function class_addMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<(p1: any, p2: string) => any>, types: string): boolean;
 
-declare function class_addProperty(cls: typeof NSObject, name: string, attributes: interop.Reference<objc_property_attribute_t>, attributeCount: number): boolean;
+declare function class_addProperty(cls: typeof NSObject, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): boolean;
 
 declare function class_addProtocol(cls: typeof NSObject, protocol: any /* Protocol */): boolean;
 
 declare function class_conformsToProtocol(cls: typeof NSObject, protocol: any /* Protocol */): boolean;
 
-declare function class_copyIvarList(cls: typeof NSObject, outCount: interop.Reference<number>): interop.Reference<interop.Pointer>;
+declare function class_copyIvarList(cls: typeof NSObject, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
-declare function class_copyMethodList(cls: typeof NSObject, outCount: interop.Reference<number>): interop.Reference<interop.Pointer>;
+declare function class_copyMethodList(cls: typeof NSObject, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
-declare function class_copyPropertyList(cls: typeof NSObject, outCount: interop.Reference<number>): interop.Reference<interop.Pointer>;
+declare function class_copyPropertyList(cls: typeof NSObject, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
-declare function class_copyProtocolList(cls: typeof NSObject, outCount: interop.Reference<number>): interop.Reference<any /* Protocol */>;
+declare function class_copyProtocolList(cls: typeof NSObject, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any /* Protocol */>;
 
 declare function class_createInstance(cls: typeof NSObject, extraBytes: number): any;
 
 declare function class_createInstanceFunction(cls: typeof NSObject, extraBytes: number): any;
 
-declare function class_getClassMethod(cls: typeof NSObject, name: string): interop.Pointer;
+declare function class_getClassMethod(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
 
-declare function class_getClassVariable(cls: typeof NSObject, name: string): interop.Pointer;
+declare function class_getClassVariable(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
 
 declare function class_getImageName(cls: typeof NSObject): string;
 
-declare function class_getInstanceMethod(cls: typeof NSObject, name: string): interop.Pointer;
+declare function class_getInstanceMethod(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
 
 declare function class_getInstanceSize(cls: typeof NSObject): number;
 
-declare function class_getInstanceVariable(cls: typeof NSObject, name: string): interop.Pointer;
+declare function class_getInstanceVariable(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
 
 declare function class_getIvarLayout(cls: typeof NSObject): string;
 
@@ -370,7 +368,7 @@ declare function class_getMethodImplementation_stret(cls: typeof NSObject, name:
 
 declare function class_getName(cls: typeof NSObject): string;
 
-declare function class_getProperty(cls: typeof NSObject, name: string): interop.Pointer;
+declare function class_getProperty(cls: typeof NSObject, name: string): interop.Pointer | interop.Reference<any>;
 
 declare function class_getSuperclass(cls: typeof NSObject): typeof NSObject;
 
@@ -384,7 +382,7 @@ declare function class_lookupMethod(cls: typeof NSObject, sel: string): interop.
 
 declare function class_replaceMethod(cls: typeof NSObject, name: string, imp: interop.FunctionReference<(p1: any, p2: string) => any>, types: string): interop.FunctionReference<(p1: any, p2: string) => any>;
 
-declare function class_replaceProperty(cls: typeof NSObject, name: string, attributes: interop.Reference<objc_property_attribute_t>, attributeCount: number): void;
+declare function class_replaceProperty(cls: typeof NSObject, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number): void;
 
 declare function class_respondsToMethod(cls: typeof NSObject, sel: string): boolean;
 
@@ -404,33 +402,33 @@ declare function imp_implementationWithBlock(block: any): interop.FunctionRefere
 
 declare function imp_removeBlock(anImp: interop.FunctionReference<(p1: any, p2: string) => any>): boolean;
 
-declare function ivar_getName(v: interop.Pointer): string;
+declare function ivar_getName(v: interop.Pointer | interop.Reference<any>): string;
 
-declare function ivar_getOffset(v: interop.Pointer): number;
+declare function ivar_getOffset(v: interop.Pointer | interop.Reference<any>): number;
 
-declare function ivar_getTypeEncoding(v: interop.Pointer): string;
+declare function ivar_getTypeEncoding(v: interop.Pointer | interop.Reference<any>): string;
 
-declare function method_copyArgumentType(m: interop.Pointer, index: number): string;
+declare function method_copyArgumentType(m: interop.Pointer | interop.Reference<any>, index: number): string;
 
-declare function method_copyReturnType(m: interop.Pointer): string;
+declare function method_copyReturnType(m: interop.Pointer | interop.Reference<any>): string;
 
-declare function method_exchangeImplementations(m1: interop.Pointer, m2: interop.Pointer): void;
+declare function method_exchangeImplementations(m1: interop.Pointer | interop.Reference<any>, m2: interop.Pointer | interop.Reference<any>): void;
 
-declare function method_getArgumentType(m: interop.Pointer, index: number, dst: string, dst_len: number): void;
+declare function method_getArgumentType(m: interop.Pointer | interop.Reference<any>, index: number, dst: string, dst_len: number): void;
 
-declare function method_getDescription(m: interop.Pointer): interop.Reference<objc_method_description>;
+declare function method_getDescription(m: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<objc_method_description>;
 
-declare function method_getImplementation(m: interop.Pointer): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function method_getImplementation(m: interop.Pointer | interop.Reference<any>): interop.FunctionReference<(p1: any, p2: string) => any>;
 
-declare function method_getName(m: interop.Pointer): string;
+declare function method_getName(m: interop.Pointer | interop.Reference<any>): string;
 
-declare function method_getNumberOfArguments(m: interop.Pointer): number;
+declare function method_getNumberOfArguments(m: interop.Pointer | interop.Reference<any>): number;
 
-declare function method_getReturnType(m: interop.Pointer, dst: string, dst_len: number): void;
+declare function method_getReturnType(m: interop.Pointer | interop.Reference<any>, dst: string, dst_len: number): void;
 
-declare function method_getTypeEncoding(m: interop.Pointer): string;
+declare function method_getTypeEncoding(m: interop.Pointer | interop.Reference<any>): string;
 
-declare function method_setImplementation(m: interop.Pointer, imp: interop.FunctionReference<(p1: any, p2: string) => any>): interop.FunctionReference<(p1: any, p2: string) => any>;
+declare function method_setImplementation(m: interop.Pointer | interop.Reference<any>, imp: interop.FunctionReference<(p1: any, p2: string) => any>): interop.FunctionReference<(p1: any, p2: string) => any>;
 
 declare const enum objc_AssociationPolicy {
 
@@ -449,19 +447,19 @@ declare function objc_allocateClassPair(superclass: typeof NSObject, name: strin
 
 declare function objc_allocateProtocol(name: string): any /* Protocol */;
 
-declare function objc_begin_catch(exc_buf: interop.Pointer): any;
+declare function objc_begin_catch(exc_buf: interop.Pointer | interop.Reference<any>): any;
 
-declare function objc_constructInstance(cls: typeof NSObject, bytes: interop.Pointer): any;
+declare function objc_constructInstance(cls: typeof NSObject, bytes: interop.Pointer | interop.Reference<any>): any;
 
-declare function objc_copyClassList(outCount: interop.Reference<number>): interop.Reference<typeof NSObject>;
+declare function objc_copyClassList(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<typeof NSObject>;
 
-declare function objc_copyClassNamesForImage(image: string, outCount: interop.Reference<number>): interop.Reference<string>;
+declare function objc_copyClassNamesForImage(image: string, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
 
-declare function objc_copyImageNames(outCount: interop.Reference<number>): interop.Reference<string>;
+declare function objc_copyImageNames(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<string>;
 
-declare function objc_copyProtocolList(outCount: interop.Reference<number>): interop.Reference<any /* Protocol */>;
+declare function objc_copyProtocolList(outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any /* Protocol */>;
 
-declare function objc_destructInstance(obj: any): interop.Pointer;
+declare function objc_destructInstance(obj: any): interop.Pointer | interop.Reference<any>;
 
 declare function objc_disposeClassPair(cls: typeof NSObject): void;
 
@@ -475,11 +473,11 @@ declare function objc_exception_rethrow(): void;
 
 declare function objc_exception_throw(exception: any): void;
 
-declare function objc_getAssociatedObject(object: any, key: interop.Pointer): any;
+declare function objc_getAssociatedObject(object: any, key: interop.Pointer | interop.Reference<any>): any;
 
 declare function objc_getClass(name: string): any;
 
-declare function objc_getClassList(buffer: interop.Reference<typeof NSObject>, bufferCount: number): number;
+declare function objc_getClassList(buffer: interop.Pointer | interop.Reference<typeof NSObject>, bufferCount: number): number;
 
 declare function objc_getFutureClass(name: string): typeof NSObject;
 
@@ -489,7 +487,7 @@ declare function objc_getProtocol(name: string): any /* Protocol */;
 
 declare function objc_getRequiredClass(name: string): typeof NSObject;
 
-declare function objc_loadWeak(location: interop.Reference<any>): any;
+declare function objc_loadWeak(location: interop.Pointer | interop.Reference<any>): any;
 
 declare function objc_lookUpClass(name: string): typeof NSObject;
 
@@ -516,7 +514,7 @@ declare function objc_registerProtocol(proto: any /* Protocol */): void;
 
 declare function objc_removeAssociatedObjects(object: any): void;
 
-declare function objc_setAssociatedObject(object: any, key: interop.Pointer, value: any, policy: objc_AssociationPolicy): void;
+declare function objc_setAssociatedObject(object: any, key: interop.Pointer | interop.Reference<any>, value: any, policy: objc_AssociationPolicy): void;
 
 declare function objc_setEnumerationMutationHandler(handler: interop.FunctionReference<(p1: any) => void>): void;
 
@@ -524,11 +522,11 @@ declare function objc_setExceptionMatcher(fn: interop.FunctionReference<(p1: typ
 
 declare function objc_setExceptionPreprocessor(fn: interop.FunctionReference<(p1: any) => any>): interop.FunctionReference<(p1: any) => any>;
 
-declare function objc_setForwardHandler(fwd: interop.Pointer, fwd_stret: interop.Pointer): void;
+declare function objc_setForwardHandler(fwd: interop.Pointer | interop.Reference<any>, fwd_stret: interop.Pointer | interop.Reference<any>): void;
 
 declare function objc_setUncaughtExceptionHandler(fn: interop.FunctionReference<(p1: any) => void>): interop.FunctionReference<(p1: any) => void>;
 
-declare function objc_storeWeak(location: interop.Reference<any>, obj: any): any;
+declare function objc_storeWeak(location: interop.Pointer | interop.Reference<any>, obj: any): any;
 
 interface objc_super {
 	receiver: any;
@@ -552,49 +550,49 @@ declare function object_getClassName(obj: any): string;
 
 declare function object_getClassNameFunction(obj: any): string;
 
-declare function object_getIndexedIvars(obj: any): interop.Pointer;
+declare function object_getIndexedIvars(obj: any): interop.Pointer | interop.Reference<any>;
 
-declare function object_getIndexedIvarsFunction(obj: any): interop.Pointer;
+declare function object_getIndexedIvarsFunction(obj: any): interop.Pointer | interop.Reference<any>;
 
-declare function object_getInstanceVariable(obj: any, name: string, outValue: interop.Reference<interop.Pointer>): interop.Pointer;
+declare function object_getInstanceVariable(obj: any, name: string, outValue: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function object_getIvar(obj: any, ivar: interop.Pointer): any;
+declare function object_getIvar(obj: any, ivar: interop.Pointer | interop.Reference<any>): any;
 
 declare function object_isClass(obj: any): boolean;
 
 declare function object_setClass(obj: any, cls: typeof NSObject): typeof NSObject;
 
-declare function object_setInstanceVariable(obj: any, name: string, value: interop.Pointer): interop.Pointer;
+declare function object_setInstanceVariable(obj: any, name: string, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function object_setIvar(obj: any, ivar: interop.Pointer, value: any): void;
+declare function object_setIvar(obj: any, ivar: interop.Pointer | interop.Reference<any>, value: any): void;
 
-declare function property_copyAttributeList(property: interop.Pointer, outCount: interop.Reference<number>): interop.Reference<objc_property_attribute_t>;
+declare function property_copyAttributeList(property: interop.Pointer | interop.Reference<any>, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_property_attribute_t>;
 
-declare function property_copyAttributeValue(property: interop.Pointer, attributeName: string): string;
+declare function property_copyAttributeValue(property: interop.Pointer | interop.Reference<any>, attributeName: string): string;
 
-declare function property_getAttributes(property: interop.Pointer): string;
+declare function property_getAttributes(property: interop.Pointer | interop.Reference<any>): string;
 
-declare function property_getName(property: interop.Pointer): string;
+declare function property_getName(property: interop.Pointer | interop.Reference<any>): string;
 
 declare function protocol_addMethodDescription(proto: any /* Protocol */, name: string, types: string, isRequiredMethod: boolean, isInstanceMethod: boolean): void;
 
-declare function protocol_addProperty(proto: any /* Protocol */, name: string, attributes: interop.Reference<objc_property_attribute_t>, attributeCount: number, isRequiredProperty: boolean, isInstanceProperty: boolean): void;
+declare function protocol_addProperty(proto: any /* Protocol */, name: string, attributes: interop.Pointer | interop.Reference<objc_property_attribute_t>, attributeCount: number, isRequiredProperty: boolean, isInstanceProperty: boolean): void;
 
 declare function protocol_addProtocol(proto: any /* Protocol */, addition: any /* Protocol */): void;
 
 declare function protocol_conformsToProtocol(proto: any /* Protocol */, other: any /* Protocol */): boolean;
 
-declare function protocol_copyMethodDescriptionList(p: any /* Protocol */, isRequiredMethod: boolean, isInstanceMethod: boolean, outCount: interop.Reference<number>): interop.Reference<objc_method_description>;
+declare function protocol_copyMethodDescriptionList(p: any /* Protocol */, isRequiredMethod: boolean, isInstanceMethod: boolean, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_method_description>;
 
-declare function protocol_copyPropertyList(proto: any /* Protocol */, outCount: interop.Reference<number>): interop.Reference<interop.Pointer>;
+declare function protocol_copyPropertyList(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
-declare function protocol_copyProtocolList(proto: any /* Protocol */, outCount: interop.Reference<number>): interop.Reference<any /* Protocol */>;
+declare function protocol_copyProtocolList(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any /* Protocol */>;
 
 declare function protocol_getMethodDescription(p: any /* Protocol */, aSel: string, isRequiredMethod: boolean, isInstanceMethod: boolean): objc_method_description;
 
 declare function protocol_getName(p: any /* Protocol */): string;
 
-declare function protocol_getProperty(proto: any /* Protocol */, name: string, isRequiredProperty: boolean, isInstanceProperty: boolean): interop.Pointer;
+declare function protocol_getProperty(proto: any /* Protocol */, name: string, isRequiredProperty: boolean, isInstanceProperty: boolean): interop.Pointer | interop.Reference<any>;
 
 declare function protocol_isEqual(proto: any /* Protocol */, other: any /* Protocol */): boolean;
 

@@ -16,10 +16,6 @@ declare class NCWidgetController extends NSObject {
 
 	static widgetController(): NCWidgetController;
 
-	constructor(); // inherited from NSObject
-
-	self(): NCWidgetController; // inherited from NSObjectProtocol
-
 	setHasContentForWidgetWithBundleIdentifier(flag: boolean, bundleID: string): void;
 }
 

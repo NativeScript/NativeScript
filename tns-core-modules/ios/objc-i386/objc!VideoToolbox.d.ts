@@ -1,19 +1,19 @@
 
-declare function VTCompressionSessionBeginPass(session: any, beginPassFlags: VTCompressionSessionOptionFlags, reserved: interop.Reference<number>): number;
+declare function VTCompressionSessionBeginPass(session: any, beginPassFlags: VTCompressionSessionOptionFlags, reserved: interop.Pointer | interop.Reference<number>): number;
 
 declare function VTCompressionSessionCompleteFrames(session: any, completeUntilPresentationTimeStamp: CMTime): number;
 
-declare function VTCompressionSessionCreate(allocator: any, width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, sourceImageBufferAttributes: NSDictionary<any, any>, compressedDataAllocator: any, outputCallback: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer, p3: number, p4: VTEncodeInfoFlags, p5: any) => void>, outputCallbackRefCon: interop.Pointer, compressionSessionOut: interop.Reference<any>): number;
+declare function VTCompressionSessionCreate(allocator: any, width: number, height: number, codecType: number, encoderSpecification: NSDictionary<any, any>, sourceImageBufferAttributes: NSDictionary<any, any>, compressedDataAllocator: any, outputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTEncodeInfoFlags, p5: any) => void>, outputCallbackRefCon: interop.Pointer | interop.Reference<any>, compressionSessionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefCon: interop.Pointer, infoFlagsOut: interop.Reference<VTEncodeInfoFlags>): number;
+declare function VTCompressionSessionEncodeFrame(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>): number;
 
-declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
+declare function VTCompressionSessionEncodeFrameWithOutputHandler(session: any, imageBuffer: any, presentationTimeStamp: CMTime, duration: CMTime, frameProperties: NSDictionary<any, any>, infoFlagsOut: interop.Pointer | interop.Reference<VTEncodeInfoFlags>, outputHandler: (p1: number, p2: VTEncodeInfoFlags, p3: any) => void): number;
 
-declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string, reserved: interop.Reference<number>): number;
+declare function VTCompressionSessionEndPass(session: any, furtherPassesRequestedOut: string, reserved: interop.Pointer | interop.Reference<number>): number;
 
 declare function VTCompressionSessionGetPixelBufferPool(session: any): any;
 
-declare function VTCompressionSessionGetTimeRangesForNextPass(session: any, timeRangeCountOut: interop.Reference<number>, timeRangeArrayOut: interop.Reference<interop.Reference<CMTimeRange>>): number;
+declare function VTCompressionSessionGetTimeRangesForNextPass(session: any, timeRangeCountOut: interop.Pointer | interop.Reference<number>, timeRangeArrayOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<CMTimeRange>>): number;
 
 declare function VTCompressionSessionGetTypeID(): number;
 
@@ -26,9 +26,9 @@ declare const enum VTCompressionSessionOptionFlags {
 
 declare function VTCompressionSessionPrepareToEncodeFrames(session: any): number;
 
-declare function VTCopyVideoEncoderList(options: NSDictionary<any, any>, listOfVideoEncodersOut: interop.Reference<NSArray<any>>): number;
+declare function VTCopyVideoEncoderList(options: NSDictionary<any, any>, listOfVideoEncodersOut: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
-declare function VTCreateCGImageFromCVPixelBuffer(pixelBuffer: any, options: NSDictionary<any, any>, imageOut: interop.Reference<any>): number;
+declare function VTCreateCGImageFromCVPixelBuffer(pixelBuffer: any, options: NSDictionary<any, any>, imageOut: interop.Pointer | interop.Reference<any>): number;
 
 declare const enum VTDecodeFrameFlags {
 
@@ -51,20 +51,20 @@ declare const enum VTDecodeInfoFlags {
 }
 
 interface VTDecompressionOutputCallbackRecord {
-	decompressionOutputCallback: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer, p3: number, p4: VTDecodeInfoFlags, p5: any, p6: CMTime, p7: CMTime) => void>;
-	decompressionOutputRefCon: interop.Pointer;
+	decompressionOutputCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: VTDecodeInfoFlags, p5: any, p6: CMTime, p7: CMTime) => void>;
+	decompressionOutputRefCon: interop.Pointer | interop.Reference<any>;
 }
 declare var VTDecompressionOutputCallbackRecord: interop.StructType<VTDecompressionOutputCallbackRecord>;
 
 declare function VTDecompressionSessionCanAcceptFormatDescription(session: any, newFormatDesc: any): boolean;
 
-declare function VTDecompressionSessionCopyBlackPixelBuffer(session: any, pixelBufferOut: interop.Reference<any>): number;
+declare function VTDecompressionSessionCopyBlackPixelBuffer(session: any, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function VTDecompressionSessionCreate(allocator: any, videoFormatDescription: any, videoDecoderSpecification: NSDictionary<any, any>, destinationImageBufferAttributes: NSDictionary<any, any>, outputCallback: interop.Reference<VTDecompressionOutputCallbackRecord>, decompressionSessionOut: interop.Reference<any>): number;
+declare function VTDecompressionSessionCreate(allocator: any, videoFormatDescription: any, videoDecoderSpecification: NSDictionary<any, any>, destinationImageBufferAttributes: NSDictionary<any, any>, outputCallback: interop.Pointer | interop.Reference<VTDecompressionOutputCallbackRecord>, decompressionSessionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function VTDecompressionSessionDecodeFrame(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, sourceFrameRefCon: interop.Pointer, infoFlagsOut: interop.Reference<VTDecodeInfoFlags>): number;
+declare function VTDecompressionSessionDecodeFrame(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, sourceFrameRefCon: interop.Pointer | interop.Reference<any>, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>): number;
 
-declare function VTDecompressionSessionDecodeFrameWithOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
+declare function VTDecompressionSessionDecodeFrameWithOutputHandler(session: any, sampleBuffer: any, decodeFlags: VTDecodeFrameFlags, infoFlagsOut: interop.Pointer | interop.Reference<VTDecodeInfoFlags>, outputHandler: (p1: number, p2: VTDecodeInfoFlags, p3: any, p4: CMTime, p5: CMTime) => void): number;
 
 declare function VTDecompressionSessionFinishDelayedFrames(session: any): number;
 
@@ -85,27 +85,27 @@ declare function VTFrameSiloAddSampleBuffer(silo: any, sampleBuffer: any): numbe
 
 declare function VTFrameSiloCallBlockForEachSampleBuffer(silo: any, timeRange: CMTimeRange, handler: (p1: any) => number): number;
 
-declare function VTFrameSiloCallFunctionForEachSampleBuffer(silo: any, timeRange: CMTimeRange, callbackInfo: interop.Pointer, callback: interop.FunctionReference<(p1: interop.Pointer, p2: any) => number>): number;
+declare function VTFrameSiloCallFunctionForEachSampleBuffer(silo: any, timeRange: CMTimeRange, callbackInfo: interop.Pointer | interop.Reference<any>, callback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any) => number>): number;
 
-declare function VTFrameSiloCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, siloOut: interop.Reference<any>): number;
+declare function VTFrameSiloCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, siloOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function VTFrameSiloGetProgressOfCurrentPass(silo: any, progressOut: interop.Reference<number>): number;
+declare function VTFrameSiloGetProgressOfCurrentPass(silo: any, progressOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function VTFrameSiloGetTypeID(): number;
 
-declare function VTFrameSiloSetTimeRangesForNextPass(silo: any, timeRangeCount: number, timeRangeArray: interop.Reference<CMTimeRange>): number;
+declare function VTFrameSiloSetTimeRangesForNextPass(silo: any, timeRangeCount: number, timeRangeArray: interop.Pointer | interop.Reference<CMTimeRange>): number;
 
 declare function VTMultiPassStorageClose(multiPassStorage: any): number;
 
-declare function VTMultiPassStorageCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, multiPassStorageOut: interop.Reference<any>): number;
+declare function VTMultiPassStorageCreate(allocator: any, fileURL: NSURL, timeRange: CMTimeRange, options: NSDictionary<any, any>, multiPassStorageOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function VTMultiPassStorageGetTypeID(): number;
 
-declare function VTSessionCopyProperty(session: any, propertyKey: string, allocator: any, propertyValueOut: interop.Pointer): number;
+declare function VTSessionCopyProperty(session: any, propertyKey: string, allocator: any, propertyValueOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function VTSessionCopySerializableProperties(session: any, allocator: any, dictionaryOut: interop.Reference<NSDictionary<any, any>>): number;
+declare function VTSessionCopySerializableProperties(session: any, allocator: any, dictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
-declare function VTSessionCopySupportedPropertyDictionary(session: any, supportedPropertyDictionaryOut: interop.Reference<NSDictionary<any, any>>): number;
+declare function VTSessionCopySupportedPropertyDictionary(session: any, supportedPropertyDictionaryOut: interop.Pointer | interop.Reference<NSDictionary<any, any>>): number;
 
 declare function VTSessionSetProperties(session: any, propertyDictionary: NSDictionary<any, any>): number;
 

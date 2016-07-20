@@ -1,11 +1,15 @@
 
 declare class EKAlarm extends EKObject implements NSCopying {
 
-	static alarmWithAbsoluteDate(date: Date): EKAlarm;
+	static alarmWithAbsoluteDate(date: NSDate): EKAlarm;
 
 	static alarmWithRelativeOffset(offset: number): EKAlarm;
 
-	absoluteDate: Date;
+	static alloc(): EKAlarm; // inherited from NSObject
+
+	static new(): EKAlarm; // inherited from NSObject
+
+	absoluteDate: NSDate;
 
 	proximity: EKAlarmProximity;
 
@@ -13,7 +17,7 @@ declare class EKAlarm extends EKObject implements NSCopying {
 
 	structuredLocation: EKStructuredLocation;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum EKAlarmProximity {
@@ -49,9 +53,13 @@ declare const enum EKAuthorizationStatus {
 
 declare class EKCalendar extends EKObject {
 
+	static alloc(): EKCalendar; // inherited from NSObject
+
 	static calendarForEntityTypeEventStore(entityType: EKEntityType, eventStore: EKEventStore): EKCalendar;
 
 	static calendarWithEventStore(eventStore: EKEventStore): EKCalendar;
+
+	static new(): EKCalendar; // inherited from NSObject
 
 	CGColor: any;
 
@@ -89,6 +97,10 @@ declare const enum EKCalendarEventAvailabilityMask {
 
 declare class EKCalendarItem extends EKObject {
 
+	static alloc(): EKCalendarItem; // inherited from NSObject
+
+	static new(): EKCalendarItem; // inherited from NSObject
+
 	URL: NSURL;
 
 	/* readonly */ UUID: string;
@@ -103,7 +115,7 @@ declare class EKCalendarItem extends EKObject {
 
 	/* readonly */ calendarItemIdentifier: string;
 
-	/* readonly */ creationDate: Date;
+	/* readonly */ creationDate: NSDate;
 
 	/* readonly */ hasAlarms: boolean;
 
@@ -113,7 +125,7 @@ declare class EKCalendarItem extends EKObject {
 
 	/* readonly */ hasRecurrenceRules: boolean;
 
-	/* readonly */ lastModifiedDate: Date;
+	/* readonly */ lastModifiedDate: NSDate;
 
 	location: string;
 
@@ -232,7 +244,11 @@ declare var EKErrorDomain: string;
 
 declare class EKEvent extends EKCalendarItem {
 
+	static alloc(): EKEvent; // inherited from NSObject
+
 	static eventWithEventStore(eventStore: EKEventStore): EKEvent;
+
+	static new(): EKEvent; // inherited from NSObject
 
 	allDay: boolean;
 
@@ -242,17 +258,17 @@ declare class EKEvent extends EKCalendarItem {
 
 	/* readonly */ birthdayPersonID: number;
 
-	endDate: Date;
+	endDate: NSDate;
 
 	/* readonly */ eventIdentifier: string;
 
 	/* readonly */ isDetached: boolean;
 
-	/* readonly */ occurrenceDate: Date;
+	/* readonly */ occurrenceDate: NSDate;
 
 	/* readonly */ organizer: EKParticipant;
 
-	startDate: Date;
+	startDate: NSDate;
 
 	/* readonly */ status: EKEventStatus;
 
@@ -301,8 +317,6 @@ declare class EKEventStore extends NSObject {
 
 	/* readonly */ sources: NSArray<EKSource>;
 
-	constructor(); // inherited from NSObject
-
 	calendarItemWithIdentifier(identifier: string): EKCalendarItem;
 
 	calendarItemsWithExternalIdentifier(externalIdentifier: string): NSArray<EKCalendarItem>;
@@ -317,7 +331,7 @@ declare class EKEventStore extends NSObject {
 
 	defaultCalendarForNewReminders(): EKCalendar;
 
-	enumerateEventsMatchingPredicateUsingBlock(predicate: NSPredicate, block: (p1: EKEvent, p2: interop.Reference<boolean>) => void): void;
+	enumerateEventsMatchingPredicateUsingBlock(predicate: NSPredicate, block: (p1: EKEvent, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	eventWithIdentifier(identifier: string): EKEvent;
 
@@ -325,11 +339,11 @@ declare class EKEventStore extends NSObject {
 
 	fetchRemindersMatchingPredicateCompletion(predicate: NSPredicate, completion: (p1: NSArray<EKReminder>) => void): any;
 
-	predicateForCompletedRemindersWithCompletionDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForCompletedRemindersWithCompletionDateStartingEndingCalendars(startDate: NSDate, endDate: NSDate, calendars: NSArray<EKCalendar>): NSPredicate;
 
-	predicateForEventsWithStartDateEndDateCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForEventsWithStartDateEndDateCalendars(startDate: NSDate, endDate: NSDate, calendars: NSArray<EKCalendar>): NSPredicate;
 
-	predicateForIncompleteRemindersWithDueDateStartingEndingCalendars(startDate: Date, endDate: Date, calendars: NSArray<EKCalendar>): NSPredicate;
+	predicateForIncompleteRemindersWithDueDateStartingEndingCalendars(startDate: NSDate, endDate: NSDate, calendars: NSArray<EKCalendar>): NSPredicate;
 
 	predicateForRemindersInCalendars(calendars: NSArray<EKCalendar>): NSPredicate;
 
@@ -355,8 +369,6 @@ declare class EKEventStore extends NSObject {
 
 	saveReminderCommitError(reminder: EKReminder, commit: boolean): boolean;
 
-	self(): EKEventStore; // inherited from NSObjectProtocol
-
 	sourceWithIdentifier(identifier: string): EKSource;
 }
 
@@ -372,18 +384,18 @@ declare class EKObject extends NSObject {
 
 	/* readonly */ new: boolean;
 
-	constructor(); // inherited from NSObject
-
 	refresh(): boolean;
 
 	reset(): void;
 
 	rollback(): void;
-
-	self(): EKObject; // inherited from NSObjectProtocol
 }
 
 declare class EKParticipant extends EKObject implements NSCopying {
+
+	static alloc(): EKParticipant; // inherited from NSObject
+
+	static new(): EKParticipant; // inherited from NSObject
 
 	/* readonly */ URL: NSURL;
 
@@ -401,7 +413,7 @@ declare class EKParticipant extends EKObject implements NSCopying {
 
 	ABRecordWithAddressBook(addressBook: any): any;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum EKParticipantRole {
@@ -484,13 +496,11 @@ declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying {
 
 	/* readonly */ weekNumber: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { dayOfTheWeek: EKWeekday; weekNumber: number; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	self(): EKRecurrenceDayOfWeek; // inherited from NSObjectProtocol
+	initWithDayOfTheWeekWeekNumber(dayOfTheWeek: EKWeekday, weekNumber: number): this;
 }
 
 declare class EKRecurrenceEnd extends NSObject implements NSCopying {
@@ -499,19 +509,15 @@ declare class EKRecurrenceEnd extends NSObject implements NSCopying {
 
 	static new(): EKRecurrenceEnd; // inherited from NSObject
 
-	static recurrenceEndWithEndDate(endDate: Date): EKRecurrenceEnd;
+	static recurrenceEndWithEndDate(endDate: NSDate): EKRecurrenceEnd;
 
 	static recurrenceEndWithOccurrenceCount(occurrenceCount: number): EKRecurrenceEnd;
 
-	/* readonly */ endDate: Date;
+	/* readonly */ endDate: NSDate;
 
 	/* readonly */ occurrenceCount: number;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): EKRecurrenceEnd; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum EKRecurrenceFrequency {
@@ -526,6 +532,10 @@ declare const enum EKRecurrenceFrequency {
 }
 
 declare class EKRecurrenceRule extends EKObject implements NSCopying {
+
+	static alloc(): EKRecurrenceRule; // inherited from NSObject
+
+	static new(): EKRecurrenceRule; // inherited from NSObject
 
 	/* readonly */ calendarIdentifier: string;
 
@@ -553,16 +563,24 @@ declare class EKRecurrenceRule extends EKObject implements NSCopying {
 
 	constructor(o: { recurrenceWithFrequency: EKRecurrenceFrequency; interval: number; end: EKRecurrenceEnd; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initRecurrenceWithFrequencyIntervalDaysOfTheWeekDaysOfTheMonthMonthsOfTheYearWeeksOfTheYearDaysOfTheYearSetPositionsEnd(type: EKRecurrenceFrequency, interval: number, days: NSArray<EKRecurrenceDayOfWeek>, monthDays: NSArray<number>, months: NSArray<number>, weeksOfTheYear: NSArray<number>, daysOfTheYear: NSArray<number>, setPositions: NSArray<number>, end: EKRecurrenceEnd): this;
+
+	initRecurrenceWithFrequencyIntervalEnd(type: EKRecurrenceFrequency, interval: number, end: EKRecurrenceEnd): this;
 }
 
 declare class EKReminder extends EKCalendarItem {
+
+	static alloc(): EKReminder; // inherited from NSObject
+
+	static new(): EKReminder; // inherited from NSObject
 
 	static reminderWithEventStore(eventStore: EKEventStore): EKReminder;
 
 	completed: boolean;
 
-	completionDate: Date;
+	completionDate: NSDate;
 
 	dueDateComponents: NSDateComponents;
 
@@ -583,6 +601,10 @@ declare const enum EKReminderPriority {
 }
 
 declare class EKSource extends EKObject {
+
+	static alloc(): EKSource; // inherited from NSObject
+
+	static new(): EKSource; // inherited from NSObject
 
 	/* readonly */ calendars: NSSet<EKCalendar>;
 
@@ -619,9 +641,13 @@ declare const enum EKSpan {
 
 declare class EKStructuredLocation extends EKObject implements NSCopying {
 
+	static alloc(): EKStructuredLocation; // inherited from NSObject
+
 	static locationWithMapItem(mapItem: MKMapItem): EKStructuredLocation;
 
 	static locationWithTitle(title: string): EKStructuredLocation;
+
+	static new(): EKStructuredLocation; // inherited from NSObject
 
 	geoLocation: CLLocation;
 
@@ -629,7 +655,7 @@ declare class EKStructuredLocation extends EKObject implements NSCopying {
 
 	title: string;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum EKWeekday {

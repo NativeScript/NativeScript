@@ -5,7 +5,7 @@ declare function CGImageDestinationAddImageAndMetadata(idst: any, image: any, me
 
 declare function CGImageDestinationAddImageFromSource(idst: any, isrc: any, index: number, properties: NSDictionary<any, any>): void;
 
-declare function CGImageDestinationCopyImageSource(idst: any, isrc: any, options: NSDictionary<any, any>, err: interop.Reference<NSError>): boolean;
+declare function CGImageDestinationCopyImageSource(idst: any, isrc: any, options: NSDictionary<any, any>, err: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function CGImageDestinationCopyTypeIdentifiers(): NSArray<any>;
 
@@ -54,7 +54,7 @@ declare const enum CGImageMetadataErrors {
 
 declare function CGImageMetadataGetTypeID(): number;
 
-declare function CGImageMetadataRegisterNamespaceForPrefix(metadata: any, xmlns: string, prefix: string, err: interop.Reference<NSError>): boolean;
+declare function CGImageMetadataRegisterNamespaceForPrefix(metadata: any, xmlns: string, prefix: string, err: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function CGImageMetadataRemoveTagWithPath(metadata: any, parent: any, path: string): boolean;
 

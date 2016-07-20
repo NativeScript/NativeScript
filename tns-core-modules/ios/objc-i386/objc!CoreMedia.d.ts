@@ -1,57 +1,57 @@
 
-declare function CMAudioClockCreate(allocator: any, clockOut: interop.Reference<any>): number;
+declare function CMAudioClockCreate(allocator: any, clockOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCopyAsBigEndianSoundDescriptionBlockBuffer(allocator: any, audioFormatDescription: any, soundDescriptionFlavor: string, soundDescriptionBlockBufferOut: interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCopyAsBigEndianSoundDescriptionBlockBuffer(allocator: any, audioFormatDescription: any, soundDescriptionFlavor: string, soundDescriptionBlockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCreate(allocator: any, asbd: interop.Reference<AudioStreamBasicDescription>, layoutSize: number, layout: interop.Reference<AudioChannelLayout>, magicCookieSize: number, magicCookie: interop.Pointer, extensions: NSDictionary<any, any>, outDesc: interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreate(allocator: any, asbd: interop.Pointer | interop.Reference<AudioStreamBasicDescription>, layoutSize: number, layout: interop.Pointer | interop.Reference<AudioChannelLayout>, magicCookieSize: number, magicCookie: interop.Pointer | interop.Reference<any>, extensions: NSDictionary<any, any>, outDesc: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionBlockBuffer(allocator: any, soundDescriptionBlockBuffer: any, soundDescriptionFlavor: string, audioFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionBlockBuffer(allocator: any, soundDescriptionBlockBuffer: any, soundDescriptionFlavor: string, audioFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionData(allocator: any, soundDescriptionData: string, soundDescriptionSize: number, soundDescriptionFlavor: string, audioFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateFromBigEndianSoundDescriptionData(allocator: any, soundDescriptionData: string, soundDescriptionSize: number, soundDescriptionFlavor: string, audioFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionCreateSummary(allocator: any, formatDescriptionArray: NSArray<any>, flags: number, summaryFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMAudioFormatDescriptionCreateSummary(allocator: any, formatDescriptionArray: NSArray<any>, flags: number, summaryFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioFormatDescriptionEqual(desc1: any, desc2: any, equalityMask: number, equalityMaskOut: interop.Reference<number>): boolean;
+declare function CMAudioFormatDescriptionEqual(desc1: any, desc2: any, equalityMask: number, equalityMaskOut: interop.Pointer | interop.Reference<number>): boolean;
 
-declare function CMAudioFormatDescriptionGetChannelLayout(desc: any, layoutSize: interop.Reference<number>): interop.Reference<AudioChannelLayout>;
+declare function CMAudioFormatDescriptionGetChannelLayout(desc: any, layoutSize: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<AudioChannelLayout>;
 
-declare function CMAudioFormatDescriptionGetFormatList(desc: any, formatListSize: interop.Reference<number>): interop.Reference<AudioFormatListItem>;
+declare function CMAudioFormatDescriptionGetFormatList(desc: any, formatListSize: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<AudioFormatListItem>;
 
-declare function CMAudioFormatDescriptionGetMagicCookie(desc: any, cookieSizeOut: interop.Reference<number>): interop.Pointer;
+declare function CMAudioFormatDescriptionGetMagicCookie(desc: any, cookieSizeOut: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any>;
 
-declare function CMAudioFormatDescriptionGetMostCompatibleFormat(desc: any): interop.Reference<AudioFormatListItem>;
+declare function CMAudioFormatDescriptionGetMostCompatibleFormat(desc: any): interop.Pointer | interop.Reference<AudioFormatListItem>;
 
-declare function CMAudioFormatDescriptionGetRichestDecodableFormat(desc: any): interop.Reference<AudioFormatListItem>;
+declare function CMAudioFormatDescriptionGetRichestDecodableFormat(desc: any): interop.Pointer | interop.Reference<AudioFormatListItem>;
 
-declare function CMAudioFormatDescriptionGetStreamBasicDescription(desc: any): interop.Reference<AudioStreamBasicDescription>;
+declare function CMAudioFormatDescriptionGetStreamBasicDescription(desc: any): interop.Pointer | interop.Reference<AudioStreamBasicDescription>;
 
-declare function CMAudioSampleBufferCreateReadyWithPacketDescriptions(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, sbufPTS: CMTime, packetDescriptions: interop.Reference<AudioStreamPacketDescription>, sBufOut: interop.Reference<any>): number;
+declare function CMAudioSampleBufferCreateReadyWithPacketDescriptions(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, sbufPTS: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMAudioSampleBufferCreateWithPacketDescriptions(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer) => number>, makeDataReadyRefcon: interop.Pointer, formatDescription: any, numSamples: number, sbufPTS: CMTime, packetDescriptions: interop.Reference<AudioStreamPacketDescription>, sBufOut: interop.Reference<any>): number;
+declare function CMAudioSampleBufferCreateWithPacketDescriptions(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, numSamples: number, sbufPTS: CMTime, packetDescriptions: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer, returnedPointer: interop.Reference<string>): number;
+declare function CMBlockBufferAccessDataBytes(theBuffer: any, offset: number, length: number, temporaryBlock: interop.Pointer | interop.Reference<any>, returnedPointer: interop.Pointer | interop.Reference<string>): number;
 
 declare function CMBlockBufferAppendBufferReference(theBuffer: any, targetBBuf: any, offsetToData: number, dataLength: number, flags: number): number;
 
-declare function CMBlockBufferAppendMemoryBlock(theBuffer: any, memoryBlock: interop.Pointer, blockLength: number, blockAllocator: any, customBlockSource: interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number): number;
+declare function CMBlockBufferAppendMemoryBlock(theBuffer: any, memoryBlock: interop.Pointer | interop.Reference<any>, blockLength: number, blockAllocator: any, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number): number;
 
 declare function CMBlockBufferAssureBlockMemory(theBuffer: any): number;
 
-declare function CMBlockBufferCopyDataBytes(theSourceBuffer: any, offsetToData: number, dataLength: number, destination: interop.Pointer): number;
+declare function CMBlockBufferCopyDataBytes(theSourceBuffer: any, offsetToData: number, dataLength: number, destination: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBlockBufferCreateContiguous(structureAllocator: any, sourceBuffer: any, blockAllocator: any, customBlockSource: interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number, newBBufOut: interop.Reference<any>): number;
+declare function CMBlockBufferCreateContiguous(structureAllocator: any, sourceBuffer: any, blockAllocator: any, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number, newBBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBlockBufferCreateEmpty(structureAllocator: any, subBlockCapacity: number, flags: number, newBBufOut: interop.Reference<any>): number;
+declare function CMBlockBufferCreateEmpty(structureAllocator: any, subBlockCapacity: number, flags: number, newBBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBlockBufferCreateWithBufferReference(structureAllocator: any, targetBuffer: any, offsetToData: number, dataLength: number, flags: number, newBBufOut: interop.Reference<any>): number;
+declare function CMBlockBufferCreateWithBufferReference(structureAllocator: any, targetBuffer: any, offsetToData: number, dataLength: number, flags: number, newBBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBlockBufferCreateWithMemoryBlock(structureAllocator: any, memoryBlock: interop.Pointer, blockLength: number, blockAllocator: any, customBlockSource: interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number, newBBufOut: interop.Reference<any>): number;
+declare function CMBlockBufferCreateWithMemoryBlock(structureAllocator: any, memoryBlock: interop.Pointer | interop.Reference<any>, blockLength: number, blockAllocator: any, customBlockSource: interop.Pointer | interop.Reference<CMBlockBufferCustomBlockSource>, offsetToData: number, dataLength: number, flags: number, newBBufOut: interop.Pointer | interop.Reference<any>): number;
 
 interface CMBlockBufferCustomBlockSource {
 	version: number;
-	AllocateBlock: interop.FunctionReference<(p1: interop.Pointer, p2: number) => interop.Pointer>;
-	FreeBlock: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer, p3: number) => void>;
-	refCon: interop.Pointer;
+	AllocateBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => interop.Pointer | interop.Reference<any>>;
+	FreeBlock: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number) => void>;
+	refCon: interop.Pointer | interop.Reference<any>;
 }
 declare var CMBlockBufferCustomBlockSource: interop.StructType<CMBlockBufferCustomBlockSource>;
 
@@ -59,7 +59,7 @@ declare function CMBlockBufferFillDataBytes(fillByte: number, destinationBuffer:
 
 declare function CMBlockBufferGetDataLength(theBuffer: any): number;
 
-declare function CMBlockBufferGetDataPointer(theBuffer: any, offset: number, lengthAtOffset: interop.Reference<number>, totalLength: interop.Reference<number>, dataPointer: interop.Reference<string>): number;
+declare function CMBlockBufferGetDataPointer(theBuffer: any, offset: number, lengthAtOffset: interop.Pointer | interop.Reference<number>, totalLength: interop.Pointer | interop.Reference<number>, dataPointer: interop.Pointer | interop.Reference<string>): number;
 
 declare function CMBlockBufferGetTypeID(): number;
 
@@ -67,26 +67,26 @@ declare function CMBlockBufferIsEmpty(theBuffer: any): boolean;
 
 declare function CMBlockBufferIsRangeContiguous(theBuffer: any, offset: number, length: number): boolean;
 
-declare function CMBlockBufferReplaceDataBytes(sourceBytes: interop.Pointer, destinationBuffer: any, offsetIntoDestination: number, dataLength: number): number;
+declare function CMBlockBufferReplaceDataBytes(sourceBytes: interop.Pointer | interop.Reference<any>, destinationBuffer: any, offsetIntoDestination: number, dataLength: number): number;
 
 interface CMBufferCallbacks {
 	version: number;
-	refcon: interop.Pointer;
-	getDecodeTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer) => CMTime>;
-	getPresentationTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer) => CMTime>;
-	getDuration: interop.FunctionReference<(p1: any, p2: interop.Pointer) => CMTime>;
-	isDataReady: interop.FunctionReference<(p1: any, p2: interop.Pointer) => boolean>;
-	compare: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer) => CFComparisonResult>;
+	refcon: interop.Pointer | interop.Reference<any>;
+	getDecodeTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => CMTime>;
+	getPresentationTimeStamp: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => CMTime>;
+	getDuration: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => CMTime>;
+	isDataReady: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => boolean>;
+	compare: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any>) => CFComparisonResult>;
 	dataBecameReadyNotification: string;
-	getSize: interop.FunctionReference<(p1: any, p2: interop.Pointer) => number>;
+	getSize: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>;
 }
 declare var CMBufferCallbacks: interop.StructType<CMBufferCallbacks>;
 
-declare function CMBufferQueueCallForEachBuffer(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer) => number>, refcon: interop.Pointer): number;
+declare function CMBufferQueueCallForEachBuffer(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueContainsEndOfData(queue: any): boolean;
 
-declare function CMBufferQueueCreate(allocator: any, capacity: number, callbacks: interop.Reference<CMBufferCallbacks>, queueOut: interop.Reference<any>): number;
+declare function CMBufferQueueCreate(allocator: any, capacity: number, callbacks: interop.Pointer | interop.Reference<CMBufferCallbacks>, queueOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueDequeueAndRetain(queue: any): any;
 
@@ -96,9 +96,9 @@ declare function CMBufferQueueEnqueue(queue: any, buf: any): number;
 
 declare function CMBufferQueueGetBufferCount(queue: any): number;
 
-declare function CMBufferQueueGetCallbacksForSampleBuffersSortedByOutputPTS(): interop.Reference<CMBufferCallbacks>;
+declare function CMBufferQueueGetCallbacksForSampleBuffersSortedByOutputPTS(): interop.Pointer | interop.Reference<CMBufferCallbacks>;
 
-declare function CMBufferQueueGetCallbacksForUnsortedSampleBuffers(): interop.Reference<CMBufferCallbacks>;
+declare function CMBufferQueueGetCallbacksForUnsortedSampleBuffers(): interop.Pointer | interop.Reference<CMBufferCallbacks>;
 
 declare function CMBufferQueueGetDuration(queue: any): CMTime;
 
@@ -120,9 +120,9 @@ declare function CMBufferQueueGetTotalSize(queue: any): number;
 
 declare function CMBufferQueueGetTypeID(): number;
 
-declare function CMBufferQueueInstallTrigger(queue: any, triggerCallback: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer) => void>, triggerRefcon: interop.Pointer, triggerCondition: number, triggerTime: CMTime, triggerTokenOut: interop.Reference<interop.Pointer>): number;
+declare function CMBufferQueueInstallTrigger(queue: any, triggerCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, triggerRefcon: interop.Pointer | interop.Reference<any>, triggerCondition: number, triggerTime: CMTime, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CMBufferQueueInstallTriggerWithIntegerThreshold(queue: any, triggerCallback: interop.FunctionReference<(p1: interop.Pointer, p2: interop.Pointer) => void>, triggerRefcon: interop.Pointer, triggerCondition: number, triggerThreshold: number, triggerTokenOut: interop.Reference<interop.Pointer>): number;
+declare function CMBufferQueueInstallTriggerWithIntegerThreshold(queue: any, triggerCallback: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, triggerRefcon: interop.Pointer | interop.Reference<any>, triggerCondition: number, triggerThreshold: number, triggerTokenOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function CMBufferQueueIsAtEndOfData(queue: any): boolean;
 
@@ -130,19 +130,19 @@ declare function CMBufferQueueIsEmpty(queue: any): boolean;
 
 declare function CMBufferQueueMarkEndOfData(queue: any): number;
 
-declare function CMBufferQueueRemoveTrigger(queue: any, triggerToken: interop.Pointer): number;
+declare function CMBufferQueueRemoveTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMBufferQueueReset(queue: any): number;
 
-declare function CMBufferQueueResetWithCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer) => void>, refcon: interop.Pointer): number;
+declare function CMBufferQueueResetWithCallback(queue: any, callback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => void>, refcon: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBufferQueueSetValidationCallback(queue: any, validationCallback: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer) => number>, validationRefCon: interop.Pointer): number;
+declare function CMBufferQueueSetValidationCallback(queue: any, validationCallback: interop.FunctionReference<(p1: any, p2: any, p3: interop.Pointer | interop.Reference<any>) => number>, validationRefCon: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMBufferQueueTestTrigger(queue: any, triggerToken: interop.Pointer): boolean;
+declare function CMBufferQueueTestTrigger(queue: any, triggerToken: interop.Pointer | interop.Reference<any>): boolean;
 
 declare function CMClockConvertHostTimeToSystemUnits(hostTime: CMTime): number;
 
-declare function CMClockGetAnchorTime(clock: any, outClockTime: interop.Reference<CMTime>, outReferenceClockTime: interop.Reference<CMTime>): number;
+declare function CMClockGetAnchorTime(clock: any, outClockTime: interop.Pointer | interop.Reference<CMTime>, outReferenceClockTime: interop.Pointer | interop.Reference<CMTime>): number;
 
 declare function CMClockGetHostTimeClock(): any;
 
@@ -156,17 +156,17 @@ declare function CMClockMakeHostTimeFromSystemUnits(hostTime: number): CMTime;
 
 declare function CMClockMightDrift(clock: any, otherClock: any): boolean;
 
-declare function CMClosedCaptionFormatDescriptionCopyAsBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionFormatDescription: any, closedCaptionDescriptionFlavor: string, closedCaptionDescriptionBlockBufferOut: interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCopyAsBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionFormatDescription: any, closedCaptionDescriptionFlavor: string, closedCaptionDescriptionBlockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionDescriptionBlockBuffer: any, closedCaptionDescriptionFlavor: string, closedCaptionFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionBlockBuffer(allocator: any, closedCaptionDescriptionBlockBuffer: any, closedCaptionDescriptionFlavor: string, closedCaptionFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionData(allocator: any, closedCaptionDescriptionData: string, closedCaptionDescriptionSize: number, closedCaptionDescriptionFlavor: string, closedCaptionFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMClosedCaptionFormatDescriptionCreateFromBigEndianClosedCaptionDescriptionData(allocator: any, closedCaptionDescriptionData: string, closedCaptionDescriptionSize: number, closedCaptionDescriptionFlavor: string, closedCaptionFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMCopyDictionaryOfAttachments(allocator: any, target: any, attachmentMode: number): NSDictionary<any, any>;
 
 declare function CMDoesBigEndianSoundDescriptionRequireLegacyCBRSampleTableLayout(soundDescriptionBlockBuffer: any, soundDescriptionFlavor: string): boolean;
 
-declare function CMFormatDescriptionCreate(allocator: any, mediaType: number, mediaSubtype: number, extensions: NSDictionary<any, any>, descOut: interop.Reference<any>): number;
+declare function CMFormatDescriptionCreate(allocator: any, mediaType: number, mediaSubtype: number, extensions: NSDictionary<any, any>, descOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMFormatDescriptionEqual(desc1: any, desc2: any): boolean;
 
@@ -182,7 +182,7 @@ declare function CMFormatDescriptionGetMediaType(desc: any): number;
 
 declare function CMFormatDescriptionGetTypeID(): number;
 
-declare function CMGetAttachment(target: any, key: string, attachmentModeOut: interop.Reference<number>): any;
+declare function CMGetAttachment(target: any, key: string, attachmentModeOut: interop.Pointer | interop.Reference<number>): any;
 
 declare function CMMemoryPoolCreate(options: NSDictionary<any, any>): any;
 
@@ -194,13 +194,13 @@ declare function CMMemoryPoolGetTypeID(): number;
 
 declare function CMMemoryPoolInvalidate(pool: any): void;
 
-declare function CMMetadataCreateIdentifierForKeyAndKeySpace(allocator: any, key: any, keySpace: string, identifierOut: interop.Reference<string>): number;
+declare function CMMetadataCreateIdentifierForKeyAndKeySpace(allocator: any, key: any, keySpace: string, identifierOut: interop.Pointer | interop.Reference<string>): number;
 
-declare function CMMetadataCreateKeyFromIdentifier(allocator: any, identifier: string, keyOut: interop.Reference<any>): number;
+declare function CMMetadataCreateKeyFromIdentifier(allocator: any, identifier: string, keyOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataCreateKeyFromIdentifierAsCFData(allocator: any, identifier: string, keyOut: interop.Reference<NSData>): number;
+declare function CMMetadataCreateKeyFromIdentifierAsCFData(allocator: any, identifier: string, keyOut: interop.Pointer | interop.Reference<NSData>): number;
 
-declare function CMMetadataCreateKeySpaceFromIdentifier(allocator: any, identifier: string, keySpaceOut: interop.Reference<string>): number;
+declare function CMMetadataCreateKeySpaceFromIdentifier(allocator: any, identifier: string, keySpaceOut: interop.Pointer | interop.Reference<string>): number;
 
 declare function CMMetadataDataTypeRegistryDataTypeConformsToDataType(dataType: string, conformsToDataType: string): boolean;
 
@@ -218,25 +218,25 @@ declare function CMMetadataDataTypeRegistryGetDataTypeDescription(dataType: stri
 
 declare function CMMetadataDataTypeRegistryRegisterDataType(dataType: string, description: string, conformingDataTypes: NSArray<any>): number;
 
-declare function CMMetadataFormatDescriptionCopyAsBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataFormatDescription: any, metadataDescriptionFlavor: string, metadataDescriptionBlockBufferOut: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCopyAsBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataFormatDescription: any, metadataDescriptionFlavor: string, metadataDescriptionBlockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateByMergingMetadataFormatDescriptions(allocator: any, srcDesc1: any, srcDesc2: any, outDesc: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateByMergingMetadataFormatDescriptions(allocator: any, srcDesc1: any, srcDesc2: any, outDesc: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataDescriptionBlockBuffer: any, metadataDescriptionFlavor: string, metadataFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionBlockBuffer(allocator: any, metadataDescriptionBlockBuffer: any, metadataDescriptionFlavor: string, metadataFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionData(allocator: any, metadataDescriptionData: string, metadataDescriptionSize: number, metadataDescriptionFlavor: string, metadataFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateFromBigEndianMetadataDescriptionData(allocator: any, metadataDescriptionData: string, metadataDescriptionSize: number, metadataDescriptionFlavor: string, metadataFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateWithKeys(allocator: any, metadataType: number, keys: NSArray<any>, outDesc: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithKeys(allocator: any, metadataType: number, keys: NSArray<any>, outDesc: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetadataSpecifications(allocator: any, srcDesc: any, metadataSpecifications: NSArray<any>, outDesc: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithMetadataFormatDescriptionAndMetadataSpecifications(allocator: any, srcDesc: any, metadataSpecifications: NSArray<any>, outDesc: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMMetadataFormatDescriptionCreateWithMetadataSpecifications(allocator: any, metadataType: number, metadataSpecifications: NSArray<any>, outDesc: interop.Reference<any>): number;
+declare function CMMetadataFormatDescriptionCreateWithMetadataSpecifications(allocator: any, metadataType: number, metadataSpecifications: NSArray<any>, outDesc: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMMetadataFormatDescriptionGetIdentifiers(desc: any): NSArray<any>;
 
 declare function CMMetadataFormatDescriptionGetKeyWithLocalID(desc: any, localKeyID: number): NSDictionary<any, any>;
 
-declare function CMMuxedFormatDescriptionCreate(allocator: any, muxType: number, extensions: NSDictionary<any, any>, outDesc: interop.Reference<any>): number;
+declare function CMMuxedFormatDescriptionCreate(allocator: any, muxType: number, extensions: NSDictionary<any, any>, outDesc: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMPropagateAttachments(source: any, destination: any): void;
 
@@ -246,31 +246,31 @@ declare function CMRemoveAttachment(target: any, key: string): void;
 
 declare function CMSampleBufferCallBlockForEachSample(sbuf: any, handler: (p1: any, p2: number) => number): number;
 
-declare function CMSampleBufferCallForEachSample(sbuf: any, callback: interop.FunctionReference<(p1: any, p2: number, p3: interop.Pointer) => number>, refcon: interop.Pointer): number;
+declare function CMSampleBufferCallForEachSample(sbuf: any, callback: interop.FunctionReference<(p1: any, p2: number, p3: interop.Pointer | interop.Reference<any>) => number>, refcon: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCopyPCMDataIntoAudioBufferList(sbuf: any, frameOffset: number, numFrames: number, bufferList: interop.Reference<AudioBufferList>): number;
+declare function CMSampleBufferCopyPCMDataIntoAudioBufferList(sbuf: any, frameOffset: number, numFrames: number, bufferList: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
-declare function CMSampleBufferCopySampleBufferForRange(allocator: any, sbuf: any, sampleRange: CFRange, sBufOut: interop.Reference<any>): number;
+declare function CMSampleBufferCopySampleBufferForRange(allocator: any, sbuf: any, sampleRange: CFRange, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCreate(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer) => number>, makeDataReadyRefcon: interop.Pointer, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Reference<number>, sBufOut: interop.Reference<any>): number;
+declare function CMSampleBufferCreate(allocator: any, dataBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCreateCopy(allocator: any, sbuf: any, sbufCopyOut: interop.Reference<any>): number;
+declare function CMSampleBufferCreateCopy(allocator: any, sbuf: any, sbufCopyOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCreateCopyWithNewTiming(allocator: any, originalSBuf: any, numSampleTimingEntries: number, sampleTimingArray: interop.Reference<CMSampleTimingInfo>, sBufCopyOut: interop.Reference<any>): number;
+declare function CMSampleBufferCreateCopyWithNewTiming(allocator: any, originalSBuf: any, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sBufCopyOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCreateForImageBuffer(allocator: any, imageBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer) => number>, makeDataReadyRefcon: interop.Pointer, formatDescription: any, sampleTiming: interop.Reference<CMSampleTimingInfo>, sBufOut: interop.Reference<any>): number;
+declare function CMSampleBufferCreateForImageBuffer(allocator: any, imageBuffer: any, dataReady: boolean, makeDataReadyCallback: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>) => number>, makeDataReadyRefcon: interop.Pointer | interop.Reference<any>, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCreateReady(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Reference<number>, sBufOut: interop.Reference<any>): number;
+declare function CMSampleBufferCreateReady(allocator: any, dataBuffer: any, formatDescription: any, numSamples: number, numSampleTimingEntries: number, sampleTimingArray: interop.Pointer | interop.Reference<CMSampleTimingInfo>, numSampleSizeEntries: number, sampleSizeArray: interop.Pointer | interop.Reference<number>, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferCreateReadyWithImageBuffer(allocator: any, imageBuffer: any, formatDescription: any, sampleTiming: interop.Reference<CMSampleTimingInfo>, sBufOut: interop.Reference<any>): number;
+declare function CMSampleBufferCreateReadyWithImageBuffer(allocator: any, imageBuffer: any, formatDescription: any, sampleTiming: interop.Pointer | interop.Reference<CMSampleTimingInfo>, sBufOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMSampleBufferDataIsReady(sbuf: any): boolean;
 
-declare function CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sbuf: any, bufferListSizeNeededOut: interop.Reference<number>, bufferListOut: interop.Reference<AudioBufferList>, bufferListSize: number, bbufStructAllocator: any, bbufMemoryAllocator: any, flags: number, blockBufferOut: interop.Reference<any>): number;
+declare function CMSampleBufferGetAudioBufferListWithRetainedBlockBuffer(sbuf: any, bufferListSizeNeededOut: interop.Pointer | interop.Reference<number>, bufferListOut: interop.Pointer | interop.Reference<AudioBufferList>, bufferListSize: number, bbufStructAllocator: any, bbufMemoryAllocator: any, flags: number, blockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSampleBufferGetAudioStreamPacketDescriptions(sbuf: any, packetDescriptionsSize: number, packetDescriptionsOut: interop.Reference<AudioStreamPacketDescription>, packetDescriptionsSizeNeededOut: interop.Reference<number>): number;
+declare function CMSampleBufferGetAudioStreamPacketDescriptions(sbuf: any, packetDescriptionsSize: number, packetDescriptionsOut: interop.Pointer | interop.Reference<AudioStreamPacketDescription>, packetDescriptionsSizeNeededOut: interop.Pointer | interop.Reference<number>): number;
 
-declare function CMSampleBufferGetAudioStreamPacketDescriptionsPtr(sbuf: any, packetDescriptionsPtrOut: interop.Reference<interop.Reference<AudioStreamPacketDescription>>, packetDescriptionsSizeOut: interop.Reference<number>): number;
+declare function CMSampleBufferGetAudioStreamPacketDescriptionsPtr(sbuf: any, packetDescriptionsPtrOut: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<AudioStreamPacketDescription>>, packetDescriptionsSizeOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMSampleBufferGetDataBuffer(sbuf: any): any;
 
@@ -290,7 +290,7 @@ declare function CMSampleBufferGetOutputDuration(sbuf: any): CMTime;
 
 declare function CMSampleBufferGetOutputPresentationTimeStamp(sbuf: any): CMTime;
 
-declare function CMSampleBufferGetOutputSampleTimingInfoArray(sbuf: any, timingArrayEntries: number, timingArrayOut: interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Reference<number>): number;
+declare function CMSampleBufferGetOutputSampleTimingInfoArray(sbuf: any, timingArrayEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMSampleBufferGetPresentationTimeStamp(sbuf: any): CMTime;
 
@@ -298,17 +298,17 @@ declare function CMSampleBufferGetSampleAttachmentsArray(sbuf: any, createIfNece
 
 declare function CMSampleBufferGetSampleSize(sbuf: any, sampleIndex: number): number;
 
-declare function CMSampleBufferGetSampleSizeArray(sbuf: any, sizeArrayEntries: number, sizeArrayOut: interop.Reference<number>, sizeArrayEntriesNeededOut: interop.Reference<number>): number;
+declare function CMSampleBufferGetSampleSizeArray(sbuf: any, sizeArrayEntries: number, sizeArrayOut: interop.Pointer | interop.Reference<number>, sizeArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
 
-declare function CMSampleBufferGetSampleTimingInfo(sbuf: any, sampleIndex: number, timingInfoOut: interop.Reference<CMSampleTimingInfo>): number;
+declare function CMSampleBufferGetSampleTimingInfo(sbuf: any, sampleIndex: number, timingInfoOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>): number;
 
-declare function CMSampleBufferGetSampleTimingInfoArray(sbuf: any, timingArrayEntries: number, timingArrayOut: interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Reference<number>): number;
+declare function CMSampleBufferGetSampleTimingInfoArray(sbuf: any, timingArrayEntries: number, timingArrayOut: interop.Pointer | interop.Reference<CMSampleTimingInfo>, timingArrayEntriesNeededOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMSampleBufferGetTotalSampleSize(sbuf: any): number;
 
 declare function CMSampleBufferGetTypeID(): number;
 
-declare function CMSampleBufferHasDataFailed(sbuf: any, statusOut: interop.Reference<number>): boolean;
+declare function CMSampleBufferHasDataFailed(sbuf: any, statusOut: interop.Pointer | interop.Reference<number>): boolean;
 
 declare function CMSampleBufferInvalidate(sbuf: any): number;
 
@@ -318,7 +318,7 @@ declare function CMSampleBufferMakeDataReady(sbuf: any): number;
 
 declare function CMSampleBufferSetDataBuffer(sbuf: any, dataBuffer: any): number;
 
-declare function CMSampleBufferSetDataBufferFromAudioBufferList(sbuf: any, bbufStructAllocator: any, bbufMemoryAllocator: any, flags: number, bufferList: interop.Reference<AudioBufferList>): number;
+declare function CMSampleBufferSetDataBufferFromAudioBufferList(sbuf: any, bbufStructAllocator: any, bbufMemoryAllocator: any, flags: number, bufferList: interop.Pointer | interop.Reference<AudioBufferList>): number;
 
 declare function CMSampleBufferSetDataFailed(sbuf: any, status: number): number;
 
@@ -343,17 +343,17 @@ declare function CMSetAttachment(target: any, key: string, value: any, attachmen
 
 declare function CMSetAttachments(target: any, theAttachments: NSDictionary<any, any>, attachmentMode: number): void;
 
-declare function CMSimpleQueueCreate(allocator: any, capacity: number, queueOut: interop.Reference<any>): number;
+declare function CMSimpleQueueCreate(allocator: any, capacity: number, queueOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMSimpleQueueDequeue(queue: any): interop.Pointer;
+declare function CMSimpleQueueDequeue(queue: any): interop.Pointer | interop.Reference<any>;
 
-declare function CMSimpleQueueEnqueue(queue: any, element: interop.Pointer): number;
+declare function CMSimpleQueueEnqueue(queue: any, element: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMSimpleQueueGetCapacity(queue: any): number;
 
 declare function CMSimpleQueueGetCount(queue: any): number;
 
-declare function CMSimpleQueueGetHead(queue: any): interop.Pointer;
+declare function CMSimpleQueueGetHead(queue: any): interop.Pointer | interop.Reference<any>;
 
 declare function CMSimpleQueueGetTypeID(): number;
 
@@ -387,27 +387,27 @@ declare function CMSyncConvertTime(time: CMTime, fromClockOrTimebase: any, toClo
 
 declare function CMSyncGetRelativeRate(ofClockOrTimebase: any, relativeToClockOrTimebase: any): number;
 
-declare function CMSyncGetRelativeRateAndAnchorTime(ofClockOrTimebase: any, relativeToClockOrTimebase: any, outRelativeRate: interop.Reference<number>, outOfClockOrTimebaseAnchorTime: interop.Reference<CMTime>, outRelativeToClockOrTimebaseAnchorTime: interop.Reference<CMTime>): number;
+declare function CMSyncGetRelativeRateAndAnchorTime(ofClockOrTimebase: any, relativeToClockOrTimebase: any, outRelativeRate: interop.Pointer | interop.Reference<number>, outOfClockOrTimebaseAnchorTime: interop.Pointer | interop.Reference<CMTime>, outRelativeToClockOrTimebaseAnchorTime: interop.Pointer | interop.Reference<CMTime>): number;
 
 declare function CMSyncGetTime(clockOrTimebase: any): CMTime;
 
 declare function CMSyncMightDrift(clockOrTimebase1: any, clockOrTimebase2: any): boolean;
 
-declare function CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuffer(allocator: any, textFormatDescription: any, textDescriptionFlavor: string, textDescriptionBlockBufferOut: interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCopyAsBigEndianTextDescriptionBlockBuffer(allocator: any, textFormatDescription: any, textDescriptionFlavor: string, textDescriptionBlockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionBlockBuffer(allocator: any, textDescriptionBlockBuffer: any, textDescriptionFlavor: string, mediaType: number, textFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionBlockBuffer(allocator: any, textDescriptionBlockBuffer: any, textDescriptionFlavor: string, mediaType: number, textFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData(allocator: any, textDescriptionData: string, textDescriptionSize: number, textDescriptionFlavor: string, mediaType: number, textFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMTextFormatDescriptionCreateFromBigEndianTextDescriptionData(allocator: any, textDescriptionData: string, textDescriptionSize: number, textDescriptionFlavor: string, mediaType: number, textFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTextFormatDescriptionGetDefaultStyle(desc: any, outLocalFontID: interop.Reference<number>, outBold: string, outItalic: string, outUnderline: string, outFontSize: interop.Reference<number>, outColorComponents: interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetDefaultStyle(desc: any, outLocalFontID: interop.Pointer | interop.Reference<number>, outBold: string, outItalic: string, outUnderline: string, outFontSize: interop.Pointer | interop.Reference<number>, outColorComponents: interop.Reference<number>): number;
 
-declare function CMTextFormatDescriptionGetDefaultTextBox(desc: any, originIsAtTopLeft: boolean, heightOfTextTrack: number, outDefaultTextBox: interop.Reference<CGRect>): number;
+declare function CMTextFormatDescriptionGetDefaultTextBox(desc: any, originIsAtTopLeft: boolean, heightOfTextTrack: number, outDefaultTextBox: interop.Pointer | interop.Reference<CGRect>): number;
 
-declare function CMTextFormatDescriptionGetDisplayFlags(desc: any, outDisplayFlags: interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetDisplayFlags(desc: any, outDisplayFlags: interop.Pointer | interop.Reference<number>): number;
 
-declare function CMTextFormatDescriptionGetFontName(desc: any, localFontID: number, outFontName: interop.Reference<string>): number;
+declare function CMTextFormatDescriptionGetFontName(desc: any, localFontID: number, outFontName: interop.Pointer | interop.Reference<string>): number;
 
-declare function CMTextFormatDescriptionGetJustification(desc: any, outHorizontalJust: interop.Reference<number>, outVerticalJust: interop.Reference<number>): number;
+declare function CMTextFormatDescriptionGetJustification(desc: any, outHorizontalJust: interop.Pointer | interop.Reference<number>, outVerticalJust: interop.Pointer | interop.Reference<number>): number;
 
 interface CMTime {
 	value: number;
@@ -423,13 +423,13 @@ declare function CMTimeAdd(addend1: CMTime, addend2: CMTime): CMTime;
 
 declare function CMTimeClampToRange(time: CMTime, range: CMTimeRange): CMTime;
 
-declare function CMTimeCodeFormatDescriptionCopyAsBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeFormatDescription: any, timeCodeDescriptionFlavor: string, timeCodeDescriptionBlockBufferOut: interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCopyAsBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeFormatDescription: any, timeCodeDescriptionFlavor: string, timeCodeDescriptionBlockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimeCodeFormatDescriptionCreate(allocator: any, timeCodeFormatType: number, frameDuration: CMTime, frameQuanta: number, tcFlags: number, extensions: NSDictionary<any, any>, descOut: interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreate(allocator: any, timeCodeFormatType: number, frameDuration: CMTime, frameQuanta: number, tcFlags: number, extensions: NSDictionary<any, any>, descOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeDescriptionBlockBuffer: any, timeCodeDescriptionFlavor: string, timeCodeFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionBlockBuffer(allocator: any, timeCodeDescriptionBlockBuffer: any, timeCodeDescriptionFlavor: string, timeCodeFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionData(allocator: any, timeCodeDescriptionData: string, timeCodeDescriptionSize: number, timeCodeDescriptionFlavor: string, timeCodeFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMTimeCodeFormatDescriptionCreateFromBigEndianTimeCodeDescriptionData(allocator: any, timeCodeDescriptionData: string, timeCodeDescriptionSize: number, timeCodeDescriptionFlavor: string, timeCodeFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimeCodeFormatDescriptionGetFrameDuration(timeCodeFormatDescription: any): CMTime;
 
@@ -565,9 +565,9 @@ declare function CMTimebaseCopyMasterTimebase(timebase: any): any;
 
 declare function CMTimebaseCopyUltimateMasterClock(timebase: any): any;
 
-declare function CMTimebaseCreateWithMasterClock(allocator: any, masterClock: any, timebaseOut: interop.Reference<any>): number;
+declare function CMTimebaseCreateWithMasterClock(allocator: any, masterClock: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMTimebaseCreateWithMasterTimebase(allocator: any, masterTimebase: any, timebaseOut: interop.Reference<any>): number;
+declare function CMTimebaseCreateWithMasterTimebase(allocator: any, masterTimebase: any, timebaseOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMTimebaseGetEffectiveRate(timebase: any): number;
 
@@ -581,7 +581,7 @@ declare function CMTimebaseGetRate(timebase: any): number;
 
 declare function CMTimebaseGetTime(timebase: any): CMTime;
 
-declare function CMTimebaseGetTimeAndRate(timebase: any, outTime: interop.Reference<CMTime>, outRate: interop.Reference<number>): number;
+declare function CMTimebaseGetTimeAndRate(timebase: any, outTime: interop.Pointer | interop.Reference<CMTime>, outRate: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMTimebaseGetTimeWithTimeScale(timebase: any, timescale: number, method: CMTimeRoundingMethod): CMTime;
 
@@ -617,17 +617,17 @@ interface CMVideoDimensions {
 }
 declare var CMVideoDimensions: interop.StructType<CMVideoDimensions>;
 
-declare function CMVideoFormatDescriptionCopyAsBigEndianImageDescriptionBlockBuffer(allocator: any, videoFormatDescription: any, imageDescriptionStringEncoding: number, imageDescriptionFlavor: string, imageDescriptionBlockBufferOut: interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCopyAsBigEndianImageDescriptionBlockBuffer(allocator: any, videoFormatDescription: any, imageDescriptionStringEncoding: number, imageDescriptionFlavor: string, imageDescriptionBlockBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMVideoFormatDescriptionCreate(allocator: any, codecType: number, width: number, height: number, extensions: NSDictionary<any, any>, outDesc: interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreate(allocator: any, codecType: number, width: number, height: number, extensions: NSDictionary<any, any>, outDesc: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMVideoFormatDescriptionCreateForImageBuffer(allocator: any, imageBuffer: any, outDesc: interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateForImageBuffer(allocator: any, imageBuffer: any, outDesc: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionBlockBuffer(allocator: any, imageDescriptionBlockBuffer: any, imageDescriptionStringEncoding: number, imageDescriptionFlavor: string, videoFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionBlockBuffer(allocator: any, imageDescriptionBlockBuffer: any, imageDescriptionStringEncoding: number, imageDescriptionFlavor: string, videoFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData(allocator: any, imageDescriptionData: string, imageDescriptionSize: number, imageDescriptionStringEncoding: number, imageDescriptionFlavor: string, videoFormatDescriptionOut: interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromBigEndianImageDescriptionData(allocator: any, imageDescriptionData: string, imageDescriptionSize: number, imageDescriptionStringEncoding: number, imageDescriptionFlavor: string, videoFormatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Reference<string>, parameterSetSizes: interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Reference<any>): number;
+declare function CMVideoFormatDescriptionCreateFromH264ParameterSets(allocator: any, parameterSetCount: number, parameterSetPointers: interop.Pointer | interop.Reference<string>, parameterSetSizes: interop.Pointer | interop.Reference<number>, NALUnitHeaderLength: number, formatDescriptionOut: interop.Pointer | interop.Reference<any>): number;
 
 declare function CMVideoFormatDescriptionGetCleanAperture(videoDesc: any, originIsAtTopLeft: boolean): CGRect;
 
@@ -635,7 +635,7 @@ declare function CMVideoFormatDescriptionGetDimensions(videoDesc: any): CMVideoD
 
 declare function CMVideoFormatDescriptionGetExtensionKeysCommonWithImageBuffers(): NSArray<any>;
 
-declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Reference<string>, parameterSetSizeOut: interop.Reference<number>, parameterSetCountOut: interop.Reference<number>, NALUnitHeaderLengthOut: interop.Reference<number>): number;
+declare function CMVideoFormatDescriptionGetH264ParameterSetAtIndex(videoDesc: any, parameterSetIndex: number, parameterSetPointerOut: interop.Pointer | interop.Reference<string>, parameterSetSizeOut: interop.Pointer | interop.Reference<number>, parameterSetCountOut: interop.Pointer | interop.Reference<number>, NALUnitHeaderLengthOut: interop.Pointer | interop.Reference<number>): number;
 
 declare function CMVideoFormatDescriptionGetPresentationDimensions(videoDesc: any, usePixelAspectRatio: boolean, useCleanAperture: boolean): CGSize;
 

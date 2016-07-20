@@ -64,4 +64,4 @@ interface __mm_storel_epi64_struct {
 }
 declare var __mm_storel_epi64_struct: interop.StructType<__mm_storel_epi64_struct>;
 
-declare function posix_memalign(__memptr: interop.Reference<interop.Pointer>, __alignment: number, __size: number): number;
+declare function posix_memalign(__memptr: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, __alignment: number, __size: number): number;

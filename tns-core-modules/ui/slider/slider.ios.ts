@@ -54,7 +54,7 @@ export class Slider extends common.Slider {
 
     constructor() {
         super();
-        this._ios = new UISlider();
+        this._ios = UISlider.new();
 
         // default values
         this._ios.minimumValue = 0;

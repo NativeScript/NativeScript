@@ -2,7 +2,7 @@
 interface AudioBuffer {
 	mNumberChannels: number;
 	mDataByteSize: number;
-	mData: interop.Pointer;
+	mData: interop.Pointer | interop.Reference<any>;
 }
 declare var AudioBuffer: interop.StructType<AudioBuffer>;
 
@@ -154,9 +154,9 @@ interface AudioValueRange {
 declare var AudioValueRange: interop.StructType<AudioValueRange>;
 
 interface AudioValueTranslation {
-	mInputData: interop.Pointer;
+	mInputData: interop.Pointer | interop.Reference<any>;
 	mInputDataSize: number;
-	mOutputData: interop.Pointer;
+	mOutputData: interop.Pointer | interop.Reference<any>;
 	mOutputDataSize: number;
 }
 declare var AudioValueTranslation: interop.StructType<AudioValueTranslation>;

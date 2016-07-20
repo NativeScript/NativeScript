@@ -29,11 +29,7 @@ declare class HMAccessory extends NSObject {
 
 	/* readonly */ uniqueIdentifiersForBridgedAccessories: NSArray<NSUUID>;
 
-	constructor(); // inherited from NSObject
-
 	identifyWithCompletionHandler(completion: (p1: NSError) => void): void;
-
-	self(): HMAccessory; // inherited from NSObjectProtocol
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
@@ -47,10 +43,6 @@ declare class HMAccessoryBrowser extends NSObject {
 	delegate: HMAccessoryBrowserDelegate;
 
 	/* readonly */ discoveredAccessories: NSArray<HMAccessory>;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMAccessoryBrowser; // inherited from NSObjectProtocol
 
 	startSearchingForNewAccessories(): void;
 
@@ -77,10 +69,6 @@ declare class HMAccessoryCategory extends NSObject {
 	/* readonly */ categoryType: string;
 
 	/* readonly */ localizedDescription: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMAccessoryCategory; // inherited from NSObjectProtocol
 }
 
 declare var HMAccessoryCategoryTypeBridge: string;
@@ -141,10 +129,6 @@ declare class HMAction extends NSObject {
 	static new(): HMAction; // inherited from NSObject
 
 	/* readonly */ uniqueIdentifier: NSUUID;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMAction; // inherited from NSObjectProtocol
 }
 
 declare class HMActionSet extends NSObject {
@@ -163,13 +147,9 @@ declare class HMActionSet extends NSObject {
 
 	/* readonly */ uniqueIdentifier: NSUUID;
 
-	constructor(); // inherited from NSObject
-
 	addActionCompletionHandler(action: HMAction, completion: (p1: NSError) => void): void;
 
 	removeActionCompletionHandler(action: HMAction, completion: (p1: NSError) => void): void;
-
-	self(): HMActionSet; // inherited from NSObjectProtocol
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
@@ -206,13 +186,9 @@ declare class HMCharacteristic extends NSObject {
 
 	/* readonly */ value: any;
 
-	constructor(); // inherited from NSObject
-
 	enableNotificationCompletionHandler(enable: boolean, completion: (p1: NSError) => void): void;
 
 	readValueWithCompletionHandler(completion: (p1: NSError) => void): void;
-
-	self(): HMCharacteristic; // inherited from NSObjectProtocol
 
 	updateAuthorizationDataCompletionHandler(data: NSData, completion: (p1: NSError) => void): void;
 
@@ -221,11 +197,17 @@ declare class HMCharacteristic extends NSObject {
 
 declare class HMCharacteristicEvent<TriggerValueType> extends HMEvent {
 
+	static alloc<TriggerValueType>(): HMCharacteristicEvent<TriggerValueType>; // inherited from NSObject
+
+	static new<TriggerValueType>(): HMCharacteristicEvent<TriggerValueType>; // inherited from NSObject
+
 	/* readonly */ characteristic: HMCharacteristic;
 
 	/* readonly */ triggerValue: TriggerValueType;
 
 	constructor(o: { characteristic: HMCharacteristic; triggerValue: TriggerValueType; });
+
+	initWithCharacteristicTriggerValue(characteristic: HMCharacteristic, triggerValue: TriggerValueType): this;
 
 	updateTriggerValueCompletionHandler(triggerValue: TriggerValueType, completion: (p1: NSError) => void): void;
 }
@@ -251,10 +233,6 @@ declare class HMCharacteristicMetadata extends NSObject {
 	/* readonly */ stepValue: number;
 
 	/* readonly */ units: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMCharacteristicMetadata; // inherited from NSObjectProtocol
 }
 
 declare var HMCharacteristicMetadataFormatArray: string;
@@ -576,11 +554,17 @@ declare const enum HMCharacteristicValueTemperatureUnit {
 
 declare class HMCharacteristicWriteAction<TargetValueType> extends HMAction {
 
+	static alloc<TargetValueType>(): HMCharacteristicWriteAction<TargetValueType>; // inherited from NSObject
+
+	static new<TargetValueType>(): HMCharacteristicWriteAction<TargetValueType>; // inherited from NSObject
+
 	/* readonly */ characteristic: HMCharacteristic;
 
 	/* readonly */ targetValue: TargetValueType;
 
 	constructor(o: { characteristic: HMCharacteristic; targetValue: TargetValueType; });
+
+	initWithCharacteristicTargetValue(characteristic: HMCharacteristic, targetValue: TargetValueType): this;
 
 	updateTargetValueCompletionHandler(targetValue: TargetValueType, completion: (p1: NSError) => void): void;
 }
@@ -769,13 +753,13 @@ declare class HMEvent extends NSObject {
 	static new(): HMEvent; // inherited from NSObject
 
 	/* readonly */ uniqueIdentifier: NSUUID;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMEvent; // inherited from NSObjectProtocol
 }
 
 declare class HMEventTrigger extends HMTrigger {
+
+	static alloc(): HMEventTrigger; // inherited from NSObject
+
+	static new(): HMEventTrigger; // inherited from NSObject
 
 	static predicateForEvaluatingTriggerOccurringAfterDateWithComponents(dateComponents: NSDateComponents): NSPredicate;
 
@@ -796,6 +780,8 @@ declare class HMEventTrigger extends HMTrigger {
 	constructor(o: { name: string; events: NSArray<HMEvent>; predicate: NSPredicate; });
 
 	addEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
+
+	initWithNameEventsPredicate(name: string, events: NSArray<HMEvent>, predicate: NSPredicate): this;
 
 	removeEventCompletionHandler(event: HMEvent, completion: (p1: NSError) => void): void;
 
@@ -831,8 +817,6 @@ declare class HMHome extends NSObject {
 	/* readonly */ users: NSArray<HMUser>;
 
 	/* readonly */ zones: NSArray<HMZone>;
-
-	constructor(); // inherited from NSObject
 
 	addAccessoryCompletionHandler(accessory: HMAccessory, completion: (p1: NSError) => void): void;
 
@@ -874,8 +858,6 @@ declare class HMHome extends NSObject {
 
 	roomForEntireHome(): HMRoom;
 
-	self(): HMHome; // inherited from NSObjectProtocol
-
 	servicesWithTypes(serviceTypes: NSArray<string>): NSArray<HMService>;
 
 	unblockAccessoryCompletionHandler(accessory: HMAccessory, completion: (p1: NSError) => void): void;
@@ -890,10 +872,6 @@ declare class HMHomeAccessControl extends NSObject {
 	static new(): HMHomeAccessControl; // inherited from NSObject
 
 	/* readonly */ administrator: boolean;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMHomeAccessControl; // inherited from NSObjectProtocol
 }
 
 interface HMHomeDelegate extends NSObjectProtocol {
@@ -973,13 +951,9 @@ declare class HMHomeManager extends NSObject {
 
 	/* readonly */ primaryHome: HMHome;
 
-	constructor(); // inherited from NSObject
-
 	addHomeWithNameCompletionHandler(homeName: string, completion: (p1: HMHome, p2: NSError) => void): void;
 
 	removeHomeCompletionHandler(home: HMHome, completion: (p1: NSError) => void): void;
-
-	self(): HMHomeManager; // inherited from NSObjectProtocol
 
 	updatePrimaryHomeCompletionHandler(home: HMHome, completion: (p1: NSError) => void): void;
 }
@@ -1001,9 +975,15 @@ declare var HMHomeManagerDelegate: {
 
 declare class HMLocationEvent extends HMEvent {
 
+	static alloc(): HMLocationEvent; // inherited from NSObject
+
+	static new(): HMLocationEvent; // inherited from NSObject
+
 	/* readonly */ region: CLRegion;
 
 	constructor(o: { region: CLRegion; });
+
+	initWithRegion(region: CLRegion): this;
 
 	updateRegionCompletionHandler(region: CLRegion, completion: (p1: NSError) => void): void;
 }
@@ -1019,10 +999,6 @@ declare class HMRoom extends NSObject {
 	/* readonly */ name: string;
 
 	/* readonly */ uniqueIdentifier: NSUUID;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMRoom; // inherited from NSObjectProtocol
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
@@ -1049,10 +1025,6 @@ declare class HMService extends NSObject {
 
 	/* readonly */ userInteractive: boolean;
 
-	constructor(); // inherited from NSObject
-
-	self(): HMService; // inherited from NSObjectProtocol
-
 	updateAssociatedServiceTypeCompletionHandler(serviceType: string, completion: (p1: NSError) => void): void;
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
@@ -1070,13 +1042,9 @@ declare class HMServiceGroup extends NSObject {
 
 	/* readonly */ uniqueIdentifier: NSUUID;
 
-	constructor(); // inherited from NSObject
-
 	addServiceCompletionHandler(service: HMService, completion: (p1: NSError) => void): void;
 
 	removeServiceCompletionHandler(service: HMService, completion: (p1: NSError) => void): void;
-
-	self(): HMServiceGroup; // inherited from NSObjectProtocol
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
@@ -1141,7 +1109,11 @@ declare var HMSignificantEventSunset: string;
 
 declare class HMTimerTrigger extends HMTrigger {
 
-	/* readonly */ fireDate: Date;
+	static alloc(): HMTimerTrigger; // inherited from NSObject
+
+	static new(): HMTimerTrigger; // inherited from NSObject
+
+	/* readonly */ fireDate: NSDate;
 
 	/* readonly */ recurrence: NSDateComponents;
 
@@ -1149,9 +1121,11 @@ declare class HMTimerTrigger extends HMTrigger {
 
 	/* readonly */ timeZone: NSTimeZone;
 
-	constructor(o: { name: string; fireDate: Date; timeZone: NSTimeZone; recurrence: NSDateComponents; recurrenceCalendar: NSCalendar; });
+	constructor(o: { name: string; fireDate: NSDate; timeZone: NSTimeZone; recurrence: NSDateComponents; recurrenceCalendar: NSCalendar; });
 
-	updateFireDateCompletionHandler(fireDate: Date, completion: (p1: NSError) => void): void;
+	initWithNameFireDateTimeZoneRecurrenceRecurrenceCalendar(name: string, fireDate: NSDate, timeZone: NSTimeZone, recurrence: NSDateComponents, recurrenceCalendar: NSCalendar): this;
+
+	updateFireDateCompletionHandler(fireDate: NSDate, completion: (p1: NSError) => void): void;
 
 	updateRecurrenceCompletionHandler(recurrence: NSDateComponents, completion: (p1: NSError) => void): void;
 
@@ -1168,21 +1142,17 @@ declare class HMTrigger extends NSObject {
 
 	/* readonly */ enabled: boolean;
 
-	/* readonly */ lastFireDate: Date;
+	/* readonly */ lastFireDate: NSDate;
 
 	/* readonly */ name: string;
 
 	/* readonly */ uniqueIdentifier: NSUUID;
-
-	constructor(); // inherited from NSObject
 
 	addActionSetCompletionHandler(actionSet: HMActionSet, completion: (p1: NSError) => void): void;
 
 	enableCompletionHandler(enable: boolean, completion: (p1: NSError) => void): void;
 
 	removeActionSetCompletionHandler(actionSet: HMActionSet, completion: (p1: NSError) => void): void;
-
-	self(): HMTrigger; // inherited from NSObjectProtocol
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
@@ -1196,10 +1166,6 @@ declare class HMUser extends NSObject {
 	/* readonly */ name: string;
 
 	/* readonly */ uniqueIdentifier: NSUUID;
-
-	constructor(); // inherited from NSObject
-
-	self(): HMUser; // inherited from NSObjectProtocol
 }
 
 declare var HMUserFailedAccessoriesKey: string;
@@ -1216,13 +1182,9 @@ declare class HMZone extends NSObject {
 
 	/* readonly */ uniqueIdentifier: NSUUID;
 
-	constructor(); // inherited from NSObject
-
 	addRoomCompletionHandler(room: HMRoom, completion: (p1: NSError) => void): void;
 
 	removeRoomCompletionHandler(room: HMRoom, completion: (p1: NSError) => void): void;
-
-	self(): HMZone; // inherited from NSObjectProtocol
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }

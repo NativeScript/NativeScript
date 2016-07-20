@@ -8,10 +8,6 @@ declare class PKPushCredentials extends NSObject {
 	/* readonly */ token: NSData;
 
 	/* readonly */ type: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPushCredentials; // inherited from NSObjectProtocol
 }
 
 declare class PKPushPayload extends NSObject {
@@ -23,10 +19,6 @@ declare class PKPushPayload extends NSObject {
 	/* readonly */ dictionaryPayload: NSDictionary<any, any>;
 
 	/* readonly */ type: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): PKPushPayload; // inherited from NSObjectProtocol
 }
 
 declare class PKPushRegistry extends NSObject {
@@ -39,13 +31,11 @@ declare class PKPushRegistry extends NSObject {
 
 	desiredPushTypes: NSSet<any>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { queue: NSObject; });
 
-	pushTokenForType(type: string): NSData;
+	initWithQueue(queue: NSObject): this;
 
-	self(): PKPushRegistry; // inherited from NSObjectProtocol
+	pushTokenForType(type: string): NSData;
 }
 
 interface PKPushRegistryDelegate extends NSObjectProtocol {

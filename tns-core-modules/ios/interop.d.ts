@@ -112,11 +112,6 @@ declare module interop {
          * Gets the value using pointer arithmetic.
          */
         [index: number]: any;
-
-        /**
-         * Dereferences the pointer.
-         */
-        value: any;
     }
 
     interface FunctionReference<T> {

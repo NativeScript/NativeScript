@@ -1,30 +1,64 @@
 
 declare class AUViewController extends UIViewController implements NSExtensionRequestHandling {
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static alloc(): AUViewController; // inherited from NSObject
 
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
+	static new(): AUViewController; // inherited from NSObject
 
-	self(): AUViewController; // inherited from NSObjectProtocol
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
+
+	beginRequestWithExtensionContext(context: NSExtensionContext): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class CABTMIDICentralViewController extends UITableViewController {
 
-	constructor(o: { style: UITableViewStyle; }); // inherited from UITableViewController
+	static alloc(): CABTMIDICentralViewController; // inherited from NSObject
 
-	self(): CABTMIDICentralViewController; // inherited from NSObjectProtocol
+	static new(): CABTMIDICentralViewController; // inherited from NSObject
 }
 
 declare class CABTMIDILocalPeripheralViewController extends UIViewController {
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static alloc(): CABTMIDILocalPeripheralViewController; // inherited from NSObject
 
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): CABTMIDILocalPeripheralViewController; // inherited from NSObjectProtocol
+	static new(): CABTMIDILocalPeripheralViewController; // inherited from NSObject
 }
 
 declare class CAInterAppAudioSwitcherView extends UIView {
+
+	static alloc(): CAInterAppAudioSwitcherView; // inherited from NSObject
 
 	static appearance(): CAInterAppAudioSwitcherView; // inherited from UIAppearance
 
@@ -38,20 +72,18 @@ declare class CAInterAppAudioSwitcherView extends UIView {
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): CAInterAppAudioSwitcherView; // inherited from UIAppearance
 
+	static new(): CAInterAppAudioSwitcherView; // inherited from NSObject
+
 	showingAppNames: boolean;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
 
 	contentWidth(): number;
 
-	self(): CAInterAppAudioSwitcherView; // inherited from NSObjectProtocol
-
-	setOutputAudioUnit(au: interop.Pointer): void;
+	setOutputAudioUnit(au: interop.Pointer | interop.Reference<any>): void;
 }
 
 declare class CAInterAppAudioTransportView extends UIView {
+
+	static alloc(): CAInterAppAudioTransportView; // inherited from NSObject
 
 	static appearance(): CAInterAppAudioTransportView; // inherited from UIAppearance
 
@@ -64,6 +96,8 @@ declare class CAInterAppAudioTransportView extends UIView {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): CAInterAppAudioTransportView; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): CAInterAppAudioTransportView; // inherited from UIAppearance
+
+	static new(): CAInterAppAudioTransportView; // inherited from NSObject
 
 	/* readonly */ connected: boolean;
 
@@ -85,11 +119,5 @@ declare class CAInterAppAudioTransportView extends UIView {
 
 	rewindButtonColor: UIColor;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
-	self(): CAInterAppAudioTransportView; // inherited from NSObjectProtocol
-
-	setOutputAudioUnit(au: interop.Pointer): void;
+	setOutputAudioUnit(au: interop.Pointer | interop.Reference<any>): void;
 }

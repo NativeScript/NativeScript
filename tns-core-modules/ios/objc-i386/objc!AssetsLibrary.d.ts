@@ -9,15 +9,11 @@ declare class ALAsset extends NSObject {
 
 	/* readonly */ originalAsset: ALAsset;
 
-	constructor(); // inherited from NSObject
-
 	aspectRatioThumbnail(): any;
 
 	defaultRepresentation(): ALAssetRepresentation;
 
 	representationForUTI(representationUTI: string): ALAssetRepresentation;
-
-	self(): ALAsset; // inherited from NSObjectProtocol
 
 	setImageDataMetadataCompletionBlock(imageData: NSData, metadata: NSDictionary<any, any>, completionBlock: (p1: NSURL, p2: NSError) => void): void;
 
@@ -81,8 +77,6 @@ declare class ALAssetRepresentation extends NSObject {
 
 	static new(): ALAssetRepresentation; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	CGImageWithOptions(options: NSDictionary<any, any>): any;
 
 	UTI(): string;
@@ -102,8 +96,6 @@ declare class ALAssetRepresentation extends NSObject {
 	orientation(): ALAssetOrientation;
 
 	scale(): number;
-
-	self(): ALAssetRepresentation; // inherited from NSObjectProtocol
 
 	size(): number;
 
@@ -127,10 +119,6 @@ declare class ALAssetsFilter extends NSObject {
 	static alloc(): ALAssetsFilter; // inherited from NSObject
 
 	static new(): ALAssetsFilter; // inherited from NSObject
-
-	constructor(); // inherited from NSObject
-
-	self(): ALAssetsFilter; // inherited from NSObjectProtocol
 }
 
 declare class ALAssetsGroup extends NSObject {
@@ -141,21 +129,17 @@ declare class ALAssetsGroup extends NSObject {
 
 	/* readonly */ editable: boolean;
 
-	constructor(); // inherited from NSObject
-
 	addAsset(asset: ALAsset): boolean;
 
-	enumerateAssetsAtIndexesOptionsUsingBlock(indexSet: NSIndexSet, options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Reference<boolean>) => void): void;
+	enumerateAssetsAtIndexesOptionsUsingBlock(indexSet: NSIndexSet, options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateAssetsUsingBlock(enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Reference<boolean>) => void): void;
+	enumerateAssetsUsingBlock(enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateAssetsWithOptionsUsingBlock(options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Reference<boolean>) => void): void;
+	enumerateAssetsWithOptionsUsingBlock(options: NSEnumerationOptions, enumerationBlock: (p1: ALAsset, p2: number, p3: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	numberOfAssets(): number;
 
 	posterImage(): any;
-
-	self(): ALAssetsGroup; // inherited from NSObjectProtocol
 
 	setAssetsFilter(filter: ALAssetsFilter): void;
 
@@ -180,17 +164,13 @@ declare class ALAssetsLibrary extends NSObject {
 
 	static new(): ALAssetsLibrary; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
-
 	addAssetsGroupAlbumWithNameResultBlockFailureBlock(name: string, resultBlock: (p1: ALAssetsGroup) => void, failureBlock: (p1: NSError) => void): void;
 
 	assetForURLResultBlockFailureBlock(assetURL: NSURL, resultBlock: (p1: ALAsset) => void, failureBlock: (p1: NSError) => void): void;
 
-	enumerateGroupsWithTypesUsingBlockFailureBlock(types: number, enumerationBlock: (p1: ALAssetsGroup, p2: interop.Reference<boolean>) => void, failureBlock: (p1: NSError) => void): void;
+	enumerateGroupsWithTypesUsingBlockFailureBlock(types: number, enumerationBlock: (p1: ALAssetsGroup, p2: interop.Pointer | interop.Reference<boolean>) => void, failureBlock: (p1: NSError) => void): void;
 
 	groupForURLResultBlockFailureBlock(groupURL: NSURL, resultBlock: (p1: ALAssetsGroup) => void, failureBlock: (p1: NSError) => void): void;
-
-	self(): ALAssetsLibrary; // inherited from NSObjectProtocol
 
 	videoAtPathIsCompatibleWithSavedPhotosAlbum(videoPathURL: NSURL): boolean;
 

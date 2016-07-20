@@ -13,11 +13,9 @@ declare class MCAdvertiserAssistant extends NSObject {
 
 	/* readonly */ session: MCSession;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { serviceType: string; discoveryInfo: NSDictionary<string, string>; session: MCSession; });
 
-	self(): MCAdvertiserAssistant; // inherited from NSObjectProtocol
+	initWithServiceTypeDiscoveryInfoSession(serviceType: string, info: NSDictionary<string, string>, session: MCSession): this;
 
 	start(): void;
 
@@ -37,6 +35,10 @@ declare var MCAdvertiserAssistantDelegate: {
 
 declare class MCBrowserViewController extends UIViewController implements MCNearbyServiceBrowserDelegate {
 
+	static alloc(): MCBrowserViewController; // inherited from NSObject
+
+	static new(): MCBrowserViewController; // inherited from NSObject
+
 	/* readonly */ browser: MCNearbyServiceBrowser;
 
 	delegate: MCBrowserViewControllerDelegate;
@@ -47,21 +49,53 @@ declare class MCBrowserViewController extends UIViewController implements MCNear
 
 	/* readonly */ session: MCSession;
 
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
+
 	constructor(o: { browser: MCNearbyServiceBrowser; session: MCSession; });
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
 
 	constructor(o: { serviceType: string; session: MCSession; });
 
-	browserDidNotStartBrowsingForPeers(browser: MCNearbyServiceBrowser, error: NSError): void; // inherited from MCNearbyServiceBrowserDelegate
+	browserDidNotStartBrowsingForPeers(browser: MCNearbyServiceBrowser, error: NSError): void;
 
-	browserFoundPeerWithDiscoveryInfo(browser: MCNearbyServiceBrowser, peerID: MCPeerID, info: NSDictionary<string, string>): void; // inherited from MCNearbyServiceBrowserDelegate
+	browserFoundPeerWithDiscoveryInfo(browser: MCNearbyServiceBrowser, peerID: MCPeerID, info: NSDictionary<string, string>): void;
 
-	browserLostPeer(browser: MCNearbyServiceBrowser, peerID: MCPeerID): void; // inherited from MCNearbyServiceBrowserDelegate
+	browserLostPeer(browser: MCNearbyServiceBrowser, peerID: MCPeerID): void;
 
-	self(): MCBrowserViewController; // inherited from NSObjectProtocol
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	initWithBrowserSession(browser: MCNearbyServiceBrowser, session: MCSession): this;
+
+	initWithServiceTypeSession(serviceType: string, session: MCSession): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface MCBrowserViewControllerDelegate extends NSObjectProtocol {
@@ -119,11 +153,9 @@ declare class MCNearbyServiceAdvertiser extends NSObject {
 
 	/* readonly */ serviceType: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { peer: MCPeerID; discoveryInfo: NSDictionary<string, string>; serviceType: string; });
 
-	self(): MCNearbyServiceAdvertiser; // inherited from NSObjectProtocol
+	initWithPeerDiscoveryInfoServiceType(myPeerID: MCPeerID, info: NSDictionary<string, string>, serviceType: string): this;
 
 	startAdvertisingPeer(): void;
 
@@ -153,13 +185,11 @@ declare class MCNearbyServiceBrowser extends NSObject {
 
 	/* readonly */ serviceType: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { peer: MCPeerID; serviceType: string; });
 
-	invitePeerToSessionWithContextTimeout(peerID: MCPeerID, session: MCSession, context: NSData, timeout: number): void;
+	initWithPeerServiceType(myPeerID: MCPeerID, serviceType: string): this;
 
-	self(): MCNearbyServiceBrowser; // inherited from NSObjectProtocol
+	invitePeerToSessionWithContextTimeout(peerID: MCPeerID, session: MCSession, context: NSData, timeout: number): void;
 
 	startBrowsingForPeers(): void;
 
@@ -185,21 +215,21 @@ declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): MCPeerID; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ displayName: string;
-
-	constructor(); // inherited from NSObject
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { displayName: string; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): MCPeerID; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDisplayName(myDisplayName: string): this;
 }
 
 declare class MCSession extends NSObject {
@@ -218,8 +248,6 @@ declare class MCSession extends NSObject {
 
 	/* readonly */ securityIdentity: NSArray<any>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { peer: MCPeerID; });
 
 	constructor(o: { peer: MCPeerID; securityIdentity: NSArray<any>; encryptionPreference: MCEncryptionPreference; });
@@ -230,9 +258,11 @@ declare class MCSession extends NSObject {
 
 	disconnect(): void;
 
-	nearbyConnectionDataForPeerWithCompletionHandler(peerID: MCPeerID, completionHandler: (p1: NSData, p2: NSError) => void): void;
+	initWithPeer(myPeerID: MCPeerID): this;
 
-	self(): MCSession; // inherited from NSObjectProtocol
+	initWithPeerSecurityIdentityEncryptionPreference(myPeerID: MCPeerID, identity: NSArray<any>, encryptionPreference: MCEncryptionPreference): this;
+
+	nearbyConnectionDataForPeerWithCompletionHandler(peerID: MCPeerID, completionHandler: (p1: NSData, p2: NSError) => void): void;
 
 	sendDataToPeersWithModeError(data: NSData, peerIDs: NSArray<MCPeerID>, mode: MCSessionSendDataMode): boolean;
 

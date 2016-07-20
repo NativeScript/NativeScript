@@ -31,7 +31,7 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLBeacon; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ accuracy: number;
 
@@ -45,18 +45,20 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ rssi: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CLBeacon; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class CLBeaconRegion extends CLRegion {
+
+	static alloc(): CLBeaconRegion; // inherited from NSObject
+
+	static new(): CLBeaconRegion; // inherited from NSObject
 
 	/* readonly */ major: number;
 
@@ -66,26 +68,30 @@ declare class CLBeaconRegion extends CLRegion {
 
 	/* readonly */ proximityUUID: NSUUID;
 
-	constructor(o: { circularRegionWithCenter: CLLocationCoordinate2D; radius: number; identifier: string; }); // inherited from CLRegion
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { proximityUUID: NSUUID; identifier: string; });
 
 	constructor(o: { proximityUUID: NSUUID; major: number; identifier: string; });
 
 	constructor(o: { proximityUUID: NSUUID; major: number; minor: number; identifier: string; });
 
+	initWithProximityUUIDIdentifier(proximityUUID: NSUUID, identifier: string): this;
+
+	initWithProximityUUIDMajorIdentifier(proximityUUID: NSUUID, major: number, identifier: string): this;
+
+	initWithProximityUUIDMajorMinorIdentifier(proximityUUID: NSUUID, major: number, minor: number, identifier: string): this;
+
 	peripheralDataWithMeasuredPower(measuredPower: number): NSMutableDictionary<string, any>;
 }
 
 declare class CLCircularRegion extends CLRegion {
 
-	constructor(o: { circularRegionWithCenter: CLLocationCoordinate2D; radius: number; identifier: string; }); // inherited from CLRegion
+	static alloc(): CLCircularRegion; // inherited from NSObject
+
+	static new(): CLCircularRegion; // inherited from NSObject
 
 	constructor(o: { center: CLLocationCoordinate2D; radius: number; identifier: string; });
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	initWithCenterRadiusIdentifier(center: CLLocationCoordinate2D, radius: number, identifier: string): this;
 }
 
 declare const enum CLDeviceOrientation {
@@ -150,19 +156,17 @@ declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLFloor; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ level: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CLFloor; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class CLGeocoder extends NSObject {
@@ -173,8 +177,6 @@ declare class CLGeocoder extends NSObject {
 
 	/* readonly */ geocoding: boolean;
 
-	constructor(); // inherited from NSObject
-
 	cancelGeocode(): void;
 
 	geocodeAddressDictionaryCompletionHandler(addressDictionary: NSDictionary<any, any>, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
@@ -184,8 +186,6 @@ declare class CLGeocoder extends NSObject {
 	geocodeAddressStringInRegionCompletionHandler(addressString: string, region: CLRegion, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
 
 	reverseGeocodeLocationCompletionHandler(location: CLLocation, completionHandler: (p1: NSArray<CLPlacemark>, p2: NSError) => void): void;
-
-	self(): CLGeocoder; // inherited from NSObjectProtocol
 }
 
 declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
@@ -194,13 +194,13 @@ declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLHeading; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ headingAccuracy: number;
 
 	/* readonly */ magneticHeading: number;
 
-	/* readonly */ timestamp: Date;
+	/* readonly */ timestamp: NSDate;
 
 	/* readonly */ trueHeading: number;
 
@@ -210,15 +210,13 @@ declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ z: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CLHeading; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, NSSecureCoding {
@@ -227,7 +225,7 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	static new(): CLLocation; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ altitude: number;
 
@@ -241,29 +239,67 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 
 	/* readonly */ speed: number;
 
-	/* readonly */ timestamp: Date;
+	/* readonly */ timestamp: NSDate;
 
 	/* readonly */ verticalAccuracy: number;
 
-	constructor(); // inherited from NSObject
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; speed: number; timestamp: Date; });
+	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; course: number; speed: number; timestamp: NSDate; });
 
-	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; timestamp: Date; });
+	constructor(o: { coordinate: CLLocationCoordinate2D; altitude: number; horizontalAccuracy: number; verticalAccuracy: number; timestamp: NSDate; });
 
 	constructor(o: { latitude: number; longitude: number; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	distanceFromLocation(location: CLLocation): number;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
 	getDistanceFrom(location: CLLocation): number;
 
-	self(): CLLocation; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyCourseSpeedTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, course: number, speed: number, timestamp: NSDate): this;
+
+	initWithCoordinateAltitudeHorizontalAccuracyVerticalAccuracyTimestamp(coordinate: CLLocationCoordinate2D, altitude: number, hAccuracy: number, vAccuracy: number, timestamp: NSDate): this;
+
+	initWithLatitudeLongitude(latitude: number, longitude: number): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 interface CLLocationCoordinate2D {
@@ -334,8 +370,6 @@ declare class CLLocationManager extends NSObject {
 
 	/* readonly */ rangedRegions: NSSet<CLRegion>;
 
-	constructor(); // inherited from NSObject
-
 	allowDeferredLocationUpdatesUntilTraveledTimeout(distance: number, timeout: number): void;
 
 	disallowDeferredLocationUpdates(): void;
@@ -349,8 +383,6 @@ declare class CLLocationManager extends NSObject {
 	requestStateForRegion(region: CLRegion): void;
 
 	requestWhenInUseAuthorization(): void;
-
-	self(): CLLocationManager; // inherited from NSObjectProtocol
 
 	startMonitoringForRegion(region: CLRegion): void;
 
@@ -426,7 +458,7 @@ declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): CLPlacemark; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ ISOcountryCode: string;
 
@@ -462,17 +494,17 @@ declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding 
 
 	/* readonly */ timeZone: NSTimeZone;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { placemark: CLPlacemark; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CLPlacemark; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithPlacemark(placemark: CLPlacemark): this;
 }
 
 declare const enum CLProximity {
@@ -492,7 +524,7 @@ declare class CLRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLRegion; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ center: CLLocationCoordinate2D;
 
@@ -504,19 +536,19 @@ declare class CLRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ radius: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { circularRegionWithCenter: CLLocationCoordinate2D; radius: number; identifier: string; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	containsCoordinate(coordinate: CLLocationCoordinate2D): boolean;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CLRegion; // inherited from NSObjectProtocol
+	initCircularRegionWithCenterRadiusIdentifier(center: CLLocationCoordinate2D, radius: number, identifier: string): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare const enum CLRegionState {
@@ -536,25 +568,23 @@ declare class CLVisit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLVisit; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
-	/* readonly */ arrivalDate: Date;
+	/* readonly */ arrivalDate: NSDate;
 
 	/* readonly */ coordinate: CLLocationCoordinate2D;
 
-	/* readonly */ departureDate: Date;
+	/* readonly */ departureDate: NSDate;
 
 	/* readonly */ horizontalAccuracy: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CLVisit; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare var kCLDistanceFilterNone: number;

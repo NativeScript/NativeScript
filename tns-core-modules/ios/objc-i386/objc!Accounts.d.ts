@@ -17,11 +17,9 @@ declare class ACAccount extends NSObject {
 
 	username: string;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { accountType: ACAccountType; });
 
-	self(): ACAccount; // inherited from NSObjectProtocol
+	initWithAccountType(type: ACAccountType): this;
 }
 
 declare class ACAccountCredential extends NSObject {
@@ -32,13 +30,13 @@ declare class ACAccountCredential extends NSObject {
 
 	oauthToken: string;
 
-	constructor(); // inherited from NSObject
-
-	constructor(o: { OAuth2Token: string; refreshToken: string; expiryDate: Date; });
+	constructor(o: { OAuth2Token: string; refreshToken: string; expiryDate: NSDate; });
 
 	constructor(o: { OAuthToken: string; tokenSecret: string; });
 
-	self(): ACAccountCredential; // inherited from NSObjectProtocol
+	initWithOAuth2TokenRefreshTokenExpiryDate(token: string, refreshToken: string, expiryDate: NSDate): this;
+
+	initWithOAuthTokenTokenSecret(token: string, secret: string): this;
 }
 
 declare const enum ACAccountCredentialRenewResult {
@@ -58,8 +56,6 @@ declare class ACAccountStore extends NSObject {
 
 	/* readonly */ accounts: NSArray<any>;
 
-	constructor(); // inherited from NSObject
-
 	accountTypeWithAccountTypeIdentifier(typeIdentifier: string): ACAccountType;
 
 	accountWithIdentifier(identifier: string): ACAccount;
@@ -75,8 +71,6 @@ declare class ACAccountStore extends NSObject {
 	requestAccessToAccountsWithTypeWithCompletionHandler(accountType: ACAccountType, handler: (p1: boolean, p2: NSError) => void): void;
 
 	saveAccountWithCompletionHandler(account: ACAccount, completionHandler: (p1: boolean, p2: NSError) => void): void;
-
-	self(): ACAccountStore; // inherited from NSObjectProtocol
 }
 
 declare var ACAccountStoreDidChangeNotification: string;
@@ -92,10 +86,6 @@ declare class ACAccountType extends NSObject {
 	/* readonly */ accountTypeDescription: string;
 
 	/* readonly */ identifier: string;
-
-	constructor(); // inherited from NSObject
-
-	self(): ACAccountType; // inherited from NSObjectProtocol
 }
 
 declare var ACAccountTypeIdentifierFacebook: string;

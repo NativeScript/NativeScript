@@ -18,6 +18,10 @@ declare var CNContactPickerDelegate: {
 
 declare class CNContactPickerViewController extends UIViewController {
 
+	static alloc(): CNContactPickerViewController; // inherited from NSObject
+
+	static new(): CNContactPickerViewController; // inherited from NSObject
+
 	delegate: CNContactPickerDelegate;
 
 	displayedPropertyKeys: NSArray<string>;
@@ -27,17 +31,15 @@ declare class CNContactPickerViewController extends UIViewController {
 	predicateForSelectionOfContact: NSPredicate;
 
 	predicateForSelectionOfProperty: NSPredicate;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): CNContactPickerViewController; // inherited from NSObjectProtocol
 }
 
 declare class CNContactViewController extends UIViewController {
 
+	static alloc(): CNContactViewController; // inherited from NSObject
+
 	static descriptorForRequiredKeys(): CNKeyDescriptor;
+
+	static new(): CNContactViewController; // inherited from NSObject
 
 	static viewControllerForContact(contact: CNContact): CNContactViewController;
 
@@ -67,13 +69,7 @@ declare class CNContactViewController extends UIViewController {
 
 	shouldShowLinkedContacts: boolean;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
 	highlightPropertyWithKeyIdentifier(key: string, identifier: string): void;
-
-	self(): CNContactViewController; // inherited from NSObjectProtocol
 }
 
 interface CNContactViewControllerDelegate extends NSObjectProtocol {

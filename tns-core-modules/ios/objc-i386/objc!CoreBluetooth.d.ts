@@ -53,10 +53,6 @@ declare class CBATTRequest extends NSObject {
 	/* readonly */ offset: number;
 
 	value: NSData;
-
-	constructor(); // inherited from NSObject
-
-	self(): CBATTRequest; // inherited from NSObjectProtocol
 }
 
 declare var CBAdvertisementDataIsConnectable: string;
@@ -82,10 +78,6 @@ declare class CBAttribute extends NSObject {
 	static new(): CBAttribute; // inherited from NSObject
 
 	/* readonly */ UUID: CBUUID;
-
-	constructor(); // inherited from NSObject
-
-	self(): CBAttribute; // inherited from NSObjectProtocol
 }
 
 declare const enum CBAttributePermissions {
@@ -100,6 +92,10 @@ declare const enum CBAttributePermissions {
 }
 
 declare class CBCentral extends CBPeer {
+
+	static alloc(): CBCentral; // inherited from NSObject
+
+	static new(): CBCentral; // inherited from NSObject
 
 	/* readonly */ maximumUpdateValueLength: number;
 }
@@ -116,8 +112,6 @@ declare class CBCentralManager extends NSObject {
 
 	/* readonly */ state: CBCentralManagerState;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject; });
 
 	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject; options: NSDictionary<string, any>; });
@@ -126,13 +120,15 @@ declare class CBCentralManager extends NSObject {
 
 	connectPeripheralOptions(peripheral: CBPeripheral, options: NSDictionary<string, any>): void;
 
+	initWithDelegateQueue(delegate: CBCentralManagerDelegate, queue: NSObject): this;
+
+	initWithDelegateQueueOptions(delegate: CBCentralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
+
 	retrieveConnectedPeripheralsWithServices(serviceUUIDs: NSArray<CBUUID>): NSArray<CBPeripheral>;
 
 	retrievePeripheralsWithIdentifiers(identifiers: NSArray<NSUUID>): NSArray<CBPeripheral>;
 
 	scanForPeripheralsWithServicesOptions(serviceUUIDs: NSArray<CBUUID>, options: NSDictionary<string, any>): void;
-
-	self(): CBCentralManager; // inherited from NSObjectProtocol
 
 	stopScan(): void;
 }
@@ -187,6 +183,10 @@ declare const enum CBCentralManagerState {
 
 declare class CBCharacteristic extends CBAttribute {
 
+	static alloc(): CBCharacteristic; // inherited from NSObject
+
+	static new(): CBCharacteristic; // inherited from NSObject
+
 	/* readonly */ descriptors: NSArray<CBDescriptor>;
 
 	/* readonly */ isBroadcasted: boolean;
@@ -238,6 +238,10 @@ declare var CBConnectPeripheralOptionNotifyOnNotificationKey: string;
 
 declare class CBDescriptor extends CBAttribute {
 
+	static alloc(): CBDescriptor; // inherited from NSObject
+
+	static new(): CBDescriptor; // inherited from NSObject
+
 	/* readonly */ characteristic: CBCharacteristic;
 
 	/* readonly */ value: any;
@@ -274,6 +278,10 @@ declare var CBErrorDomain: string;
 
 declare class CBMutableCharacteristic extends CBCharacteristic {
 
+	static alloc(): CBMutableCharacteristic; // inherited from NSObject
+
+	static new(): CBMutableCharacteristic; // inherited from NSObject
+
 	descriptors: NSArray<CBDescriptor>;
 
 	permissions: CBAttributePermissions;
@@ -285,20 +293,34 @@ declare class CBMutableCharacteristic extends CBCharacteristic {
 	value: NSData;
 
 	constructor(o: { type: CBUUID; properties: CBCharacteristicProperties; value: NSData; permissions: CBAttributePermissions; });
+
+	initWithTypePropertiesValuePermissions(UUID: CBUUID, properties: CBCharacteristicProperties, value: NSData, permissions: CBAttributePermissions): this;
 }
 
 declare class CBMutableDescriptor extends CBDescriptor {
 
+	static alloc(): CBMutableDescriptor; // inherited from NSObject
+
+	static new(): CBMutableDescriptor; // inherited from NSObject
+
 	constructor(o: { type: CBUUID; value: any; });
+
+	initWithTypeValue(UUID: CBUUID, value: any): this;
 }
 
 declare class CBMutableService extends CBService {
+
+	static alloc(): CBMutableService; // inherited from NSObject
+
+	static new(): CBMutableService; // inherited from NSObject
 
 	characteristics: NSArray<CBCharacteristic>;
 
 	includedServices: NSArray<CBService>;
 
 	constructor(o: { type: CBUUID; primary: boolean; });
+
+	initWithTypePrimary(UUID: CBUUID, isPrimary: boolean): this;
 }
 
 declare class CBPeer extends NSObject implements NSCopying {
@@ -309,14 +331,14 @@ declare class CBPeer extends NSObject implements NSCopying {
 
 	/* readonly */ identifier: NSUUID;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): CBPeer; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare class CBPeripheral extends CBPeer {
+
+	static alloc(): CBPeripheral; // inherited from NSObject
+
+	static new(): CBPeripheral; // inherited from NSObject
 
 	/* readonly */ RSSI: number;
 
@@ -398,21 +420,21 @@ declare class CBPeripheralManager extends NSObject {
 
 	/* readonly */ state: CBPeripheralManagerState;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject; });
 
 	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject; options: NSDictionary<string, any>; });
 
 	addService(service: CBMutableService): void;
 
+	initWithDelegateQueue(delegate: CBPeripheralManagerDelegate, queue: NSObject): this;
+
+	initWithDelegateQueueOptions(delegate: CBPeripheralManagerDelegate, queue: NSObject, options: NSDictionary<string, any>): this;
+
 	removeAllServices(): void;
 
 	removeService(service: CBMutableService): void;
 
 	respondToRequestWithResult(request: CBATTRequest, result: CBATTError): void;
-
-	self(): CBPeripheralManager; // inherited from NSObjectProtocol
 
 	setDesiredConnectionLatencyForCentral(latency: CBPeripheralManagerConnectionLatency, central: CBCentral): void;
 
@@ -504,6 +526,10 @@ declare const enum CBPeripheralState {
 
 declare class CBService extends CBAttribute {
 
+	static alloc(): CBService; // inherited from NSObject
+
+	static new(): CBService; // inherited from NSObject
+
 	/* readonly */ characteristics: NSArray<CBCharacteristic>;
 
 	/* readonly */ includedServices: NSArray<CBService>;
@@ -531,11 +557,7 @@ declare class CBUUID extends NSObject implements NSCopying {
 
 	/* readonly */ data: NSData;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): CBUUID; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare var CBUUIDCharacteristicAggregateFormatString: string;

@@ -149,7 +149,7 @@ class IOSApplication implements definition.iOSApplication {
             this.rootController = this._window.rootViewController = rootView.ios;
         }
         else if (rootView.ios instanceof UIView) {
-            let newController = new UIViewController();
+            let newController = UIViewController.new();
             newController.view.addSubview(rootView.ios);
             this.rootController = newController;
         }

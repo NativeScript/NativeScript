@@ -1,7 +1,11 @@
 
 declare class QLPreviewController extends UIViewController {
 
+	static alloc(): QLPreviewController; // inherited from NSObject
+
 	static canPreviewItem(item: QLPreviewItem): boolean;
+
+	static new(): QLPreviewController; // inherited from NSObject
 
 	/* readonly */ currentPreviewItem: QLPreviewItem;
 
@@ -11,15 +15,9 @@ declare class QLPreviewController extends UIViewController {
 
 	delegate: QLPreviewControllerDelegate;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
 	refreshCurrentPreviewItem(): void;
 
 	reloadData(): void;
-
-	self(): QLPreviewController; // inherited from NSObjectProtocol
 }
 
 interface QLPreviewControllerDataSource {
@@ -37,11 +35,11 @@ interface QLPreviewControllerDelegate extends NSObjectProtocol {
 
 	previewControllerDidDismiss?(controller: QLPreviewController): void;
 
-	previewControllerFrameForPreviewItemInSourceView?(controller: QLPreviewController, item: QLPreviewItem, view: interop.Reference<UIView>): CGRect;
+	previewControllerFrameForPreviewItemInSourceView?(controller: QLPreviewController, item: QLPreviewItem, view: interop.Pointer | interop.Reference<UIView>): CGRect;
 
 	previewControllerShouldOpenURLForPreviewItem?(controller: QLPreviewController, url: NSURL, item: QLPreviewItem): boolean;
 
-	previewControllerTransitionImageForPreviewItemContentRect?(controller: QLPreviewController, item: QLPreviewItem, contentRect: interop.Reference<CGRect>): UIImage;
+	previewControllerTransitionImageForPreviewItemContentRect?(controller: QLPreviewController, item: QLPreviewItem, contentRect: interop.Pointer | interop.Reference<CGRect>): UIImage;
 
 	previewControllerWillDismiss?(controller: QLPreviewController): void;
 }

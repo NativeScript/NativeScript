@@ -10,17 +10,17 @@ declare const enum MACaptionAppearanceBehavior {
 	kMACaptionAppearanceBehaviorUseContentIfAvailable = 1
 }
 
-declare function MACaptionAppearanceCopyBackgroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
+declare function MACaptionAppearanceCopyBackgroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
 
-declare function MACaptionAppearanceCopyFontDescriptorForStyle(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>, fontStyle: MACaptionAppearanceFontStyle): interop.Unmanaged<UIFontDescriptor>;
+declare function MACaptionAppearanceCopyFontDescriptorForStyle(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>, fontStyle: MACaptionAppearanceFontStyle): interop.Unmanaged<UIFontDescriptor>;
 
-declare function MACaptionAppearanceCopyForegroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
+declare function MACaptionAppearanceCopyForegroundColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
 
 declare function MACaptionAppearanceCopyPreferredCaptioningMediaCharacteristics(domain: MACaptionAppearanceDomain): interop.Unmanaged<NSArray<any>>;
 
 declare function MACaptionAppearanceCopySelectedLanguages(domain: MACaptionAppearanceDomain): interop.Unmanaged<NSArray<any>>;
 
-declare function MACaptionAppearanceCopyWindowColor(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
+declare function MACaptionAppearanceCopyWindowColor(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): interop.Unmanaged<any>;
 
 declare const enum MACaptionAppearanceDisplayType {
 
@@ -57,19 +57,19 @@ declare const enum MACaptionAppearanceFontStyle {
 	kMACaptionAppearanceFontStyleSmallCapital = 7
 }
 
-declare function MACaptionAppearanceGetBackgroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetBackgroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
 
 declare function MACaptionAppearanceGetDisplayType(domain: MACaptionAppearanceDomain): MACaptionAppearanceDisplayType;
 
-declare function MACaptionAppearanceGetForegroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetForegroundOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
 
-declare function MACaptionAppearanceGetRelativeCharacterSize(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetRelativeCharacterSize(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
 
-declare function MACaptionAppearanceGetTextEdgeStyle(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): MACaptionAppearanceTextEdgeStyle;
+declare function MACaptionAppearanceGetTextEdgeStyle(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): MACaptionAppearanceTextEdgeStyle;
 
-declare function MACaptionAppearanceGetWindowOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetWindowOpacity(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
 
-declare function MACaptionAppearanceGetWindowRoundedCornerRadius(domain: MACaptionAppearanceDomain, behavior: interop.Reference<MACaptionAppearanceBehavior>): number;
+declare function MACaptionAppearanceGetWindowRoundedCornerRadius(domain: MACaptionAppearanceDomain, behavior: interop.Pointer | interop.Reference<MACaptionAppearanceBehavior>): number;
 
 declare function MACaptionAppearanceSetDisplayType(domain: MACaptionAppearanceDomain, displayType: MACaptionAppearanceDisplayType): void;
 

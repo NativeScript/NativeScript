@@ -1,13 +1,11 @@
 
 declare class RPPreviewViewController extends UIViewController {
 
+	static alloc(): RPPreviewViewController; // inherited from NSObject
+
+	static new(): RPPreviewViewController; // inherited from NSObject
+
 	previewControllerDelegate: RPPreviewViewControllerDelegate;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { nibName: string; bundle: NSBundle; }); // inherited from UIViewController
-
-	self(): RPPreviewViewController; // inherited from NSObjectProtocol
 }
 
 interface RPPreviewViewControllerDelegate extends NSObjectProtocol {
@@ -58,11 +56,7 @@ declare class RPScreenRecorder extends NSObject {
 
 	/* readonly */ recording: boolean;
 
-	constructor(); // inherited from NSObject
-
 	discardRecordingWithHandler(handler: () => void): void;
-
-	self(): RPScreenRecorder; // inherited from NSObjectProtocol
 
 	startRecordingWithMicrophoneEnabledHandler(microphoneEnabled: boolean, handler: (p1: NSError) => void): void;
 

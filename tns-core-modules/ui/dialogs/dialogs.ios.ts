@@ -47,7 +47,7 @@ class UIActionSheetDelegateImpl extends NSObject implements UIActionSheetDelegat
 }
 
 function createUIAlertView(options: dialogs.DialogOptions): UIAlertView {
-    var alert = new UIAlertView();
+    var alert = UIAlertView.new();
     alert.title = options && options.title ? options.title : "";
     alert.message = options && options.message ? options.message : "";
     return alert;
@@ -450,7 +450,7 @@ export function action(arg: any): Promise<string> {
             var action: string;
 
             if (utils.ios.MajorVersion < 8) {
-                var actionSheet = new UIActionSheet();
+                var actionSheet = UIActionSheet.new();
 
                 if (types.isString(options.message)) {
                     actionSheet.title = options.message;

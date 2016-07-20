@@ -1,6 +1,10 @@
 
 declare class SK3DNode extends SKNode {
 
+	static alloc(): SK3DNode; // inherited from NSObject
+
+	static new(): SK3DNode; // inherited from NSObject
+
 	static node(): SK3DNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SK3DNode; // inherited from SKNode
@@ -21,11 +25,11 @@ declare class SK3DNode extends SKNode {
 
 	viewportSize: CGSize;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { viewportSize: CGSize; });
 
 	hitTestOptions(point: CGPoint, options: NSDictionary<string, any>): NSArray<SCNHitTestResult>;
+
+	initWithViewportSize(viewportSize: CGSize): this;
 }
 
 declare class SKAction extends NSObject implements NSCoding, NSCopying {
@@ -222,17 +226,15 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	timingMode: SKActionTimingMode;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	reversedAction(): SKAction;
-
-	self(): SKAction; // inherited from NSObjectProtocol
 }
 
 declare const enum SKActionTimingMode {
@@ -247,6 +249,10 @@ declare const enum SKActionTimingMode {
 }
 
 declare class SKAudioNode extends SKNode implements NSCoding {
+
+	static alloc(): SKAudioNode; // inherited from NSObject
+
+	static new(): SKAudioNode; // inherited from NSObject
 
 	static node(): SKAudioNode; // inherited from SKNode
 
@@ -265,6 +271,16 @@ declare class SKAudioNode extends SKNode implements NSCoding {
 	constructor(o: { fileNamed: string; });
 
 	constructor(o: { URL: NSURL; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithAVAudioNode(node: AVAudioNode): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithFileNamed(name: string): this;
+
+	initWithURL(url: NSURL): this;
 }
 
 declare const enum SKBlendMode {
@@ -286,11 +302,13 @@ declare const enum SKBlendMode {
 
 declare class SKCameraNode extends SKNode {
 
+	static alloc(): SKCameraNode; // inherited from NSObject
+
+	static new(): SKCameraNode; // inherited from NSObject
+
 	static node(): SKCameraNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKCameraNode; // inherited from SKNode
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	containedNodeSet(): NSSet<SKNode>;
 
@@ -327,29 +345,33 @@ declare class SKConstraint extends NSObject implements NSCoding, NSCopying {
 
 	referenceNode: SKNode;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): SKConstraint; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class SKCropNode extends SKNode {
+
+	static alloc(): SKCropNode; // inherited from NSObject
+
+	static new(): SKCropNode; // inherited from NSObject
 
 	static node(): SKCropNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKCropNode; // inherited from SKNode
 
 	maskNode: SKNode;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKEffectNode extends SKNode {
+
+	static alloc(): SKEffectNode; // inherited from NSObject
+
+	static new(): SKEffectNode; // inherited from NSObject
 
 	static node(): SKEffectNode; // inherited from SKNode
 
@@ -366,11 +388,13 @@ declare class SKEffectNode extends SKNode {
 	shouldEnableEffects: boolean;
 
 	shouldRasterize: boolean;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKEmitterNode extends SKNode {
+
+	static alloc(): SKEmitterNode; // inherited from NSObject
+
+	static new(): SKEmitterNode; // inherited from NSObject
 
 	static node(): SKEmitterNode; // inherited from SKNode
 
@@ -472,8 +496,6 @@ declare class SKEmitterNode extends SKNode {
 
 	yAcceleration: number;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	advanceSimulationTime(sec: number): void;
 
 	resetSimulation(): void;
@@ -481,11 +503,15 @@ declare class SKEmitterNode extends SKNode {
 
 declare class SKFieldNode extends SKNode {
 
+	static alloc(): SKFieldNode; // inherited from NSObject
+
 	static dragField(): SKFieldNode;
 
 	static electricField(): SKFieldNode;
 
 	static magneticField(): SKFieldNode;
+
+	static new(): SKFieldNode; // inherited from NSObject
 
 	static node(): SKFieldNode; // inherited from SKNode
 
@@ -522,8 +548,6 @@ declare class SKFieldNode extends SKNode {
 	strength: number;
 
 	texture: SKTexture;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare const enum SKInterpolationMode {
@@ -545,8 +569,6 @@ declare class SKKeyframeSequence extends NSObject implements NSCoding, NSCopying
 
 	repeatMode: SKRepeatMode;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { capacity: number; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -555,23 +577,27 @@ declare class SKKeyframeSequence extends NSObject implements NSCoding, NSCopying
 
 	addKeyframeValueTime(value: any, time: number): void;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	count(): number;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
 	getKeyframeTimeForIndex(index: number): number;
 
 	getKeyframeValueForIndex(index: number): any;
+
+	initWithCapacity(numItems: number): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithKeyframeValuesTimes(values: NSArray<any>, times: NSArray<number>): this;
 
 	removeKeyframeAtIndex(index: number): void;
 
 	removeLastKeyframe(): void;
 
 	sampleAtTime(time: number): any;
-
-	self(): SKKeyframeSequence; // inherited from NSObjectProtocol
 
 	setKeyframeTimeForIndex(time: number, index: number): void;
 
@@ -591,9 +617,13 @@ declare const enum SKLabelHorizontalAlignmentMode {
 
 declare class SKLabelNode extends SKNode {
 
+	static alloc(): SKLabelNode; // inherited from NSObject
+
 	static labelNodeWithFontNamed(fontName: string): SKLabelNode;
 
 	static labelNodeWithText(text: string): SKLabelNode;
+
+	static new(): SKLabelNode; // inherited from NSObject
 
 	static node(): SKLabelNode; // inherited from SKNode
 
@@ -617,9 +647,9 @@ declare class SKLabelNode extends SKNode {
 
 	verticalAlignmentMode: SKLabelVerticalAlignmentMode;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { fontNamed: string; });
+
+	initWithFontNamed(fontName: string): this;
 }
 
 declare const enum SKLabelVerticalAlignmentMode {
@@ -634,6 +664,10 @@ declare const enum SKLabelVerticalAlignmentMode {
 }
 
 declare class SKLightNode extends SKNode {
+
+	static alloc(): SKLightNode; // inherited from NSObject
+
+	static new(): SKLightNode; // inherited from NSObject
 
 	static node(): SKLightNode; // inherited from SKNode
 
@@ -650,13 +684,15 @@ declare class SKLightNode extends SKNode {
 	lightColor: UIColor;
 
 	shadowColor: UIColor;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKMutableTexture extends SKTexture {
 
+	static alloc(): SKMutableTexture; // inherited from NSObject
+
 	static mutableTextureWithSize(size: CGSize): SKMutableTexture;
+
+	static new(): SKMutableTexture; // inherited from NSObject
 
 	static textureNoiseWithSmoothnessSizeGrayscale(smoothness: number, size: CGSize, grayscale: boolean): SKMutableTexture; // inherited from SKTexture
 
@@ -676,22 +712,22 @@ declare class SKMutableTexture extends SKTexture {
 
 	static textureWithRectInTexture(rect: CGRect, texture: SKTexture): SKMutableTexture; // inherited from SKTexture
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { size: CGSize; });
 
 	constructor(o: { size: CGSize; pixelFormat: number; });
 
-	modifyPixelDataWithBlock(block: (p1: interop.Pointer, p2: number) => void): void;
+	initWithSize(size: CGSize): this;
 
-	textureByApplyingCIFilter(filter: CIFilter): SKMutableTexture; // inherited from SKTexture
+	initWithSizePixelFormat(size: CGSize, format: number): this;
 
-	textureByGeneratingNormalMap(): SKMutableTexture; // inherited from SKTexture
-
-	textureByGeneratingNormalMapWithSmoothnessContrast(smoothness: number, contrast: number): SKMutableTexture; // inherited from SKTexture
+	modifyPixelDataWithBlock(block: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
 }
 
 declare class SKNode extends UIResponder implements NSCoding, NSCopying {
+
+	static alloc(): SKNode; // inherited from NSObject
+
+	static new(): SKNode; // inherited from NSObject
 
 	static node(): SKNode;
 
@@ -757,15 +793,17 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 
 	convertPointToNode(point: CGPoint, node: SKNode): CGPoint;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	enumerateChildNodesWithNameUsingBlock(name: string, block: (p1: SKNode, p2: interop.Reference<boolean>) => void): void;
+	enumerateChildNodesWithNameUsingBlock(name: string, block: (p1: SKNode, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
 	hasActions(): boolean;
 
 	inParentHierarchy(parent: SKNode): boolean;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	insertChildAtIndex(node: SKNode, index: number): void;
 
@@ -883,8 +921,6 @@ declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
 
 	velocity: CGVector;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	allContactedBodies(): NSArray<SKPhysicsBody>;
@@ -901,11 +937,11 @@ declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
 
 	applyTorque(torque: number): void;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): SKPhysicsBody; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class SKPhysicsContact extends NSObject {
@@ -923,10 +959,6 @@ declare class SKPhysicsContact extends NSObject {
 	/* readonly */ contactNormal: CGVector;
 
 	/* readonly */ contactPoint: CGPoint;
-
-	constructor(); // inherited from NSObject
-
-	self(): SKPhysicsContact; // inherited from NSObjectProtocol
 }
 
 interface SKPhysicsContactDelegate extends NSObjectProtocol {
@@ -954,34 +986,40 @@ declare class SKPhysicsJoint extends NSObject implements NSCoding {
 
 	/* readonly */ reactionTorque: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): SKPhysicsJoint; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class SKPhysicsJointFixed extends SKPhysicsJoint {
 
+	static alloc(): SKPhysicsJointFixed; // inherited from NSObject
+
 	static jointWithBodyABodyBAnchor(bodyA: SKPhysicsBody, bodyB: SKPhysicsBody, anchor: CGPoint): SKPhysicsJointFixed;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	static new(): SKPhysicsJointFixed; // inherited from NSObject
 }
 
 declare class SKPhysicsJointLimit extends SKPhysicsJoint {
 
+	static alloc(): SKPhysicsJointLimit; // inherited from NSObject
+
 	static jointWithBodyABodyBAnchorAAnchorB(bodyA: SKPhysicsBody, bodyB: SKPhysicsBody, anchorA: CGPoint, anchorB: CGPoint): SKPhysicsJointLimit;
 
-	maxLength: number;
+	static new(): SKPhysicsJointLimit; // inherited from NSObject
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+	maxLength: number;
 }
 
 declare class SKPhysicsJointPin extends SKPhysicsJoint {
 
+	static alloc(): SKPhysicsJointPin; // inherited from NSObject
+
 	static jointWithBodyABodyBAnchor(bodyA: SKPhysicsBody, bodyB: SKPhysicsBody, anchor: CGPoint): SKPhysicsJointPin;
+
+	static new(): SKPhysicsJointPin; // inherited from NSObject
 
 	frictionTorque: number;
 
@@ -992,32 +1030,34 @@ declare class SKPhysicsJointPin extends SKPhysicsJoint {
 	shouldEnableLimits: boolean;
 
 	upperAngleLimit: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKPhysicsJointSliding extends SKPhysicsJoint {
 
+	static alloc(): SKPhysicsJointSliding; // inherited from NSObject
+
 	static jointWithBodyABodyBAnchorAxis(bodyA: SKPhysicsBody, bodyB: SKPhysicsBody, anchor: CGPoint, axis: CGVector): SKPhysicsJointSliding;
+
+	static new(): SKPhysicsJointSliding; // inherited from NSObject
 
 	lowerDistanceLimit: number;
 
 	shouldEnableLimits: boolean;
 
 	upperDistanceLimit: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKPhysicsJointSpring extends SKPhysicsJoint {
 
+	static alloc(): SKPhysicsJointSpring; // inherited from NSObject
+
 	static jointWithBodyABodyBAnchorAAnchorB(bodyA: SKPhysicsBody, bodyB: SKPhysicsBody, anchorA: CGPoint, anchorB: CGPoint): SKPhysicsJointSpring;
+
+	static new(): SKPhysicsJointSpring; // inherited from NSObject
 
 	damping: number;
 
 	frequency: number;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKPhysicsWorld extends NSObject implements NSCoding {
@@ -1032,8 +1072,6 @@ declare class SKPhysicsWorld extends NSObject implements NSCoding {
 
 	speed: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	addJoint(joint: SKPhysicsJoint): void;
@@ -1044,19 +1082,19 @@ declare class SKPhysicsWorld extends NSObject implements NSCoding {
 
 	bodyInRect(rect: CGRect): SKPhysicsBody;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	enumerateBodiesAlongRayStartEndUsingBlock(start: CGPoint, end: CGPoint, block: (p1: SKPhysicsBody, p2: CGPoint, p3: CGVector, p4: interop.Reference<boolean>) => void): void;
+	enumerateBodiesAlongRayStartEndUsingBlock(start: CGPoint, end: CGPoint, block: (p1: SKPhysicsBody, p2: CGPoint, p3: CGVector, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateBodiesAtPointUsingBlock(point: CGPoint, block: (p1: SKPhysicsBody, p2: interop.Reference<boolean>) => void): void;
+	enumerateBodiesAtPointUsingBlock(point: CGPoint, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
 
-	enumerateBodiesInRectUsingBlock(rect: CGRect, block: (p1: SKPhysicsBody, p2: interop.Reference<boolean>) => void): void;
+	enumerateBodiesInRectUsingBlock(rect: CGRect, block: (p1: SKPhysicsBody, p2: interop.Pointer | interop.Reference<boolean>) => void): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	removeAllJoints(): void;
 
 	removeJoint(joint: SKPhysicsJoint): void;
-
-	self(): SKPhysicsWorld; // inherited from NSObjectProtocol
 }
 
 declare class SKRange extends NSObject implements NSCoding, NSCopying {
@@ -1081,17 +1119,17 @@ declare class SKRange extends NSObject implements NSCoding, NSCopying {
 
 	upperLimit: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { lowerLimit: number; upperLimit: number; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): SKRange; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithLowerLimitUpperLimit(lower: number, upper: number): this;
 }
 
 declare class SKReachConstraints extends NSObject implements NSCoding {
@@ -1104,18 +1142,22 @@ declare class SKReachConstraints extends NSObject implements NSCoding {
 
 	upperAngleLimit: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { lowerAngleLimit: number; upperAngleLimit: number; });
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): SKReachConstraints; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithLowerAngleLimitUpperAngleLimit(lowerAngleLimit: number, upperAngleLimit: number): this;
 }
 
 declare class SKReferenceNode extends SKNode {
+
+	static alloc(): SKReferenceNode; // inherited from NSObject
+
+	static new(): SKReferenceNode; // inherited from NSObject
 
 	static node(): SKReferenceNode; // inherited from SKNode
 
@@ -1125,13 +1167,15 @@ declare class SKReferenceNode extends SKNode {
 
 	static referenceNodeWithURL(referenceURL: NSURL): SKReferenceNode;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { fileNamed: string; });
 
 	constructor(o: { URL: NSURL; });
 
 	didLoadReferenceNode(node: SKNode): void;
+
+	initWithFileNamed(fileName: string): this;
+
+	initWithURL(url: NSURL): this;
 
 	resolveReferenceNode(): void;
 }
@@ -1146,8 +1190,6 @@ declare class SKRegion extends NSObject implements NSCoding, NSCopying {
 
 	/* readonly */ path: any;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { path: any; });
@@ -1158,19 +1200,25 @@ declare class SKRegion extends NSObject implements NSCoding, NSCopying {
 
 	containsPoint(point: CGPoint): boolean;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	inverseRegion(): SKRegion;
+	initWithCoder(aDecoder: NSCoder): this;
 
-	regionByDifferenceFromRegion(region: SKRegion): SKRegion;
+	initWithPath(path: any): this;
 
-	regionByIntersectionWithRegion(region: SKRegion): SKRegion;
+	initWithRadius(radius: number): this;
 
-	regionByUnionWithRegion(region: SKRegion): SKRegion;
+	initWithSize(size: CGSize): this;
 
-	self(): SKRegion; // inherited from NSObjectProtocol
+	inverseRegion(): this;
+
+	regionByDifferenceFromRegion(region: SKRegion): this;
+
+	regionByIntersectionWithRegion(region: SKRegion): this;
+
+	regionByUnionWithRegion(region: SKRegion): this;
 }
 
 declare const enum SKRepeatMode {
@@ -1181,6 +1229,14 @@ declare const enum SKRepeatMode {
 }
 
 declare class SKScene extends SKEffectNode {
+
+	static alloc(): SKScene; // inherited from NSObject
+
+	static new(): SKScene; // inherited from NSObject
+
+	static node(): SKScene; // inherited from SKNode
+
+	static nodeWithFileNamed(filename: string): SKScene; // inherited from SKNode
 
 	static sceneWithSize(size: CGSize): SKScene;
 
@@ -1221,6 +1277,8 @@ declare class SKScene extends SKEffectNode {
 	didMoveToView(view: SKView): void;
 
 	didSimulatePhysics(): void;
+
+	initWithSize(size: CGSize): this;
 
 	update(currentTime: number): void;
 
@@ -1273,8 +1331,6 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 
 	uniforms: NSArray<SKUniform>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { source: string; });
@@ -1283,18 +1339,26 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 
 	addUniform(uniform: SKUniform): void;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithSource(source: string): this;
+
+	initWithSourceUniforms(source: string, uniforms: NSArray<SKUniform>): this;
 
 	removeUniformNamed(name: string): void;
-
-	self(): SKShader; // inherited from NSObjectProtocol
 
 	uniformNamed(name: string): SKUniform;
 }
 
 declare class SKShapeNode extends SKNode {
+
+	static alloc(): SKShapeNode; // inherited from NSObject
+
+	static new(): SKShapeNode; // inherited from NSObject
 
 	static node(): SKShapeNode; // inherited from SKNode
 
@@ -1310,7 +1374,7 @@ declare class SKShapeNode extends SKNode {
 
 	static shapeNodeWithPathCentered(path: any, centered: boolean): SKShapeNode;
 
-	static shapeNodeWithPointsCount(points: interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
+	static shapeNodeWithPointsCount(points: interop.Pointer | interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
 
 	static shapeNodeWithRect(rect: CGRect): SKShapeNode;
 
@@ -1320,7 +1384,7 @@ declare class SKShapeNode extends SKNode {
 
 	static shapeNodeWithRectOfSizeCornerRadius(size: CGSize, cornerRadius: number): SKShapeNode;
 
-	static shapeNodeWithSplinePointsCount(points: interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
+	static shapeNodeWithSplinePointsCount(points: interop.Pointer | interop.Reference<CGPoint>, numPoints: number): SKShapeNode;
 
 	antialiased: boolean;
 
@@ -1351,11 +1415,13 @@ declare class SKShapeNode extends SKNode {
 	strokeShader: SKShader;
 
 	strokeTexture: SKTexture;
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 }
 
 declare class SKSpriteNode extends SKNode {
+
+	static alloc(): SKSpriteNode; // inherited from NSObject
+
+	static new(): SKSpriteNode; // inherited from NSObject
 
 	static node(): SKSpriteNode; // inherited from SKNode
 
@@ -1397,8 +1463,6 @@ declare class SKSpriteNode extends SKNode {
 
 	texture: SKTexture;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { color: UIColor; size: CGSize; });
 
 	constructor(o: { imageNamed: string; });
@@ -1406,6 +1470,14 @@ declare class SKSpriteNode extends SKNode {
 	constructor(o: { texture: SKTexture; });
 
 	constructor(o: { texture: SKTexture; color: UIColor; size: CGSize; });
+
+	initWithColorSize(color: UIColor, size: CGSize): this;
+
+	initWithImageNamed(name: string): this;
+
+	initWithTexture(texture: SKTexture): this;
+
+	initWithTextureColorSize(texture: SKTexture, color: UIColor, size: CGSize): this;
 }
 
 declare class SKTexture extends NSObject implements NSCoding, NSCopying {
@@ -1438,27 +1510,25 @@ declare class SKTexture extends NSObject implements NSCoding, NSCopying {
 
 	usesMipmaps: boolean;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	CGImage(): any;
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	preloadWithCompletionHandler(completionHandler: () => void): void;
 
-	self(): SKTexture; // inherited from NSObjectProtocol
-
 	size(): CGSize;
 
-	textureByApplyingCIFilter(filter: CIFilter): SKTexture;
+	textureByApplyingCIFilter(filter: CIFilter): this;
 
-	textureByGeneratingNormalMap(): SKTexture;
+	textureByGeneratingNormalMap(): this;
 
-	textureByGeneratingNormalMapWithSmoothnessContrast(smoothness: number, contrast: number): SKTexture;
+	textureByGeneratingNormalMapWithSmoothnessContrast(smoothness: number, contrast: number): this;
 
 	textureRect(): CGRect;
 }
@@ -1479,15 +1549,13 @@ declare class SKTextureAtlas extends NSObject implements NSCoding {
 
 	/* readonly */ textureNames: NSArray<string>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	preloadWithCompletionHandler(completionHandler: () => void): void;
-
-	self(): SKTextureAtlas; // inherited from NSObjectProtocol
 
 	textureNamed(name: string): SKTexture;
 }
@@ -1537,11 +1605,7 @@ declare class SKTransition extends NSObject implements NSCopying {
 
 	pausesOutgoingScene: boolean;
 
-	constructor(); // inherited from NSObject
-
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
-
-	self(): SKTransition; // inherited from NSObjectProtocol
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
 declare const enum SKTransitionDirection {
@@ -1575,8 +1639,6 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 
 	/* readonly */ uniformType: SKUniformType;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { name: string; });
@@ -1585,11 +1647,17 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 
 	constructor(o: { name: string; texture: SKTexture; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): SKUniform; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithName(name: string): this;
+
+	initWithNameFloat(name: string, value: number): this;
+
+	initWithNameTexture(name: string, texture: SKTexture): this;
 }
 
 declare const enum SKUniformType {
@@ -1615,6 +1683,10 @@ declare const enum SKUniformType {
 
 declare class SKVideoNode extends SKNode {
 
+	static alloc(): SKVideoNode; // inherited from NSObject
+
+	static new(): SKVideoNode; // inherited from NSObject
+
 	static node(): SKVideoNode; // inherited from SKNode
 
 	static nodeWithFileNamed(filename: string): SKVideoNode; // inherited from SKNode
@@ -1635,8 +1707,6 @@ declare class SKVideoNode extends SKNode {
 
 	constructor(o: { AVPlayer: AVPlayer; });
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
 	constructor(o: { fileNamed: string; });
 
 	constructor(o: { URL: NSURL; });
@@ -1645,12 +1715,24 @@ declare class SKVideoNode extends SKNode {
 
 	constructor(o: { videoURL: NSURL; });
 
+	initWithAVPlayer(player: AVPlayer): this;
+
+	initWithFileNamed(videoFile: string): this;
+
+	initWithURL(url: NSURL): this;
+
+	initWithVideoFileNamed(videoFile: string): this;
+
+	initWithVideoURL(url: NSURL): this;
+
 	pause(): void;
 
 	play(): void;
 }
 
 declare class SKView extends UIView {
+
+	static alloc(): SKView; // inherited from NSObject
 
 	static appearance(): SKView; // inherited from UIAppearance
 
@@ -1663,6 +1745,8 @@ declare class SKView extends UIView {
 	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): SKView; // inherited from UIAppearance
 
 	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): SKView; // inherited from UIAppearance
+
+	static new(): SKView; // inherited from NSObject
 
 	allowsTransparency: boolean;
 
@@ -1690,10 +1774,6 @@ declare class SKView extends UIView {
 
 	showsQuadCount: boolean;
 
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { frame: CGRect; }); // inherited from UIView
-
 	convertPointFromScene(point: CGPoint, scene: SKScene): CGPoint;
 
 	convertPointToScene(point: CGPoint, scene: SKScene): CGPoint;
@@ -1701,8 +1781,6 @@ declare class SKView extends UIView {
 	presentScene(scene: SKScene): void;
 
 	presentSceneTransition(scene: SKScene, transition: SKTransition): void;
-
-	self(): SKView; // inherited from NSObjectProtocol
 
 	textureFromNode(node: SKNode): SKTexture;
 

@@ -5,7 +5,7 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 
 	static new(): CSCustomAttributeKey; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	/* readonly */ keyName: string;
 
@@ -17,19 +17,21 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 
 	/* readonly */ unique: boolean;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { keyName: string; });
 
 	constructor(o: { keyName: string; searchable: boolean; searchableByDefault: boolean; unique: boolean; multiValued: boolean; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CSCustomAttributeKey; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithKeyName(keyName: string): this;
+
+	initWithKeyNameSearchableSearchableByDefaultUniqueMultiValued(keyName: string, searchable: boolean, searchableByDefault: boolean, unique: boolean, multiValued: boolean): this;
 }
 
 declare const enum CSIndexErrorCode {
@@ -57,82 +59,80 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 
 	static new(): CSIndexExtensionRequestHandler; // inherited from NSObject
 
-	constructor(); // inherited from NSObject
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
-	beginRequestWithExtensionContext(context: NSExtensionContext): void; // inherited from NSExtensionRequestHandling
+	/* readonly */ description: string; // inherited from NSObjectProtocol
 
-	searchableIndexDidFinishThrottle(searchableIndex: CSSearchableIndex): void; // inherited from CSSearchableIndexDelegate
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
 
-	searchableIndexDidThrottle(searchableIndex: CSSearchableIndex): void; // inherited from CSSearchableIndexDelegate
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
 
-	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void; // inherited from CSSearchableIndexDelegate
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string>, acknowledgementHandler: () => void): void; // inherited from CSSearchableIndexDelegate
+	/* readonly */  // inherited from NSObjectProtocol
 
-	self(): CSIndexExtensionRequestHandler; // inherited from NSObjectProtocol
+	beginRequestWithExtensionContext(context: NSExtensionContext): void;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	searchableIndexDidFinishThrottle(searchableIndex: CSSearchableIndex): void;
+
+	searchableIndexDidThrottle(searchableIndex: CSSearchableIndex): void;
+
+	searchableIndexReindexAllSearchableItemsWithAcknowledgementHandler(searchableIndex: CSSearchableIndex, acknowledgementHandler: () => void): void;
+
+	searchableIndexReindexSearchableItemsWithIdentifiersAcknowledgementHandler(searchableIndex: CSSearchableIndex, identifiers: NSArray<string>, acknowledgementHandler: () => void): void;
+
+	self(): this;
 }
 
 declare class CSLocalizedString extends NSString {
+
+	static alloc(): CSLocalizedString; // inherited from NSObject
+
+	static new(): CSLocalizedString; // inherited from NSObject
 
 	static string(): CSLocalizedString; // inherited from NSString
 
 	static stringWithCStringEncoding(cString: string, enc: number): CSLocalizedString; // inherited from NSString
 
-	static stringWithCharactersLength(characters: interop.Reference<string>, length: number): CSLocalizedString; // inherited from NSString
+	static stringWithCharactersLength(characters: interop.Pointer | interop.Reference<string>, length: number): CSLocalizedString; // inherited from NSString
 
 	static stringWithContentsOfFileEncodingError(path: string, enc: number): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Reference<number>): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfFileUsedEncodingError(path: string, enc: interop.Pointer | interop.Reference<number>): CSLocalizedString; // inherited from NSString
 
 	static stringWithContentsOfURLEncodingError(url: NSURL, enc: number): CSLocalizedString; // inherited from NSString
 
-	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Reference<number>): CSLocalizedString; // inherited from NSString
+	static stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: interop.Pointer | interop.Reference<number>): CSLocalizedString; // inherited from NSString
 
 	static stringWithString(string: string): CSLocalizedString; // inherited from NSString
 
 	static stringWithUTF8String(nullTerminatedCString: string): CSLocalizedString; // inherited from NSString
 
-	constructor(o: { bytes: interop.Pointer; length: number; encoding: number; }); // inherited from NSString
-
-	constructor(o: { bytesNoCopy: interop.Pointer; length: number; encoding: number; freeWhenDone: boolean; }); // inherited from NSString
-
-	constructor(o: { CString: string; }); // inherited from NSString
-
-	constructor(o: { CString: string; encoding: number; }); // inherited from NSString
-
-	constructor(o: { CString: string; length: number; }); // inherited from NSString
-
-	constructor(o: { CStringNoCopy: string; length: number; freeWhenDone: boolean; }); // inherited from NSString
-
-	constructor(o: { characters: interop.Reference<string>; length: number; }); // inherited from NSString
-
-	constructor(o: { charactersNoCopy: interop.Reference<string>; length: number; freeWhenDone: boolean; }); // inherited from NSString
-
-	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	constructor(o: { contentsOfFile: string; }); // inherited from NSString
-
-	constructor(o: { contentsOfFile: string; encoding: number; }); // inherited from NSString
-
-	constructor(o: { contentsOfFile: string; usedEncoding: interop.Reference<number>; }); // inherited from NSString
-
-	constructor(o: { contentsOfURL: NSURL; }); // inherited from NSString
-
-	constructor(o: { contentsOfURL: NSURL; encoding: number; }); // inherited from NSString
-
-	constructor(o: { contentsOfURL: NSURL; usedEncoding: interop.Reference<number>; }); // inherited from NSString
-
-	constructor(o: { data: NSData; encoding: number; }); // inherited from NSString
-
 	constructor(o: { localizedStrings: NSDictionary<any, any>; });
 
-	constructor(o: { string: string; }); // inherited from NSString
-
-	constructor(o: { UTF8String: string; }); // inherited from NSString
+	initWithLocalizedStrings(localizedStrings: NSDictionary<any, any>): this;
 
 	localizedString(): string;
-
-	self(): CSLocalizedString; // inherited from NSObjectProtocol
 }
 
 declare var CSMailboxArchive: string;
@@ -153,7 +153,7 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CSPerson; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	contactIdentifier: string;
 
@@ -163,17 +163,17 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ handles: NSArray<string>;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { displayName: string; handles: NSArray<string>; handleIdentifier: string; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CSPerson; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string>, handleIdentifier: string): this;
 }
 
 declare class CSSearchableIndex extends NSObject {
@@ -187,8 +187,6 @@ declare class CSSearchableIndex extends NSObject {
 	static new(): CSSearchableIndex; // inherited from NSObject
 
 	indexDelegate: CSSearchableIndexDelegate;
-
-	constructor(); // inherited from NSObject
 
 	constructor(o: { name: string; });
 
@@ -208,7 +206,9 @@ declare class CSSearchableIndex extends NSObject {
 
 	indexSearchableItemsCompletionHandler(items: NSArray<CSSearchableItem>, completionHandler: (p1: NSError) => void): void;
 
-	self(): CSSearchableIndex; // inherited from NSObjectProtocol
+	initWithName(name: string): this;
+
+	initWithNameProtectionClass(name: string, protectionClass: string): this;
 }
 
 interface CSSearchableIndexDelegate extends NSObjectProtocol {
@@ -232,27 +232,27 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): CSSearchableItem; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	attributeSet: CSSearchableItemAttributeSet;
 
 	domainIdentifier: string;
 
-	expirationDate: Date;
+	expirationDate: NSDate;
 
 	uniqueIdentifier: string;
-
-	constructor(); // inherited from NSObject
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { uniqueIdentifier: string; domainIdentifier: string; attributeSet: CSSearchableItemAttributeSet; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CSSearchableItem; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithUniqueIdentifierDomainIdentifierAttributeSet(uniqueIdentifier: string, domainIdentifier: string, attributeSet: CSSearchableItemAttributeSet): this;
 }
 
 declare var CSSearchableItemActionType: string;
@@ -265,7 +265,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	static new(): CSSearchableItemAttributeSet; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean; // inherited from NSSecureCoding
+	static supportsSecureCoding(): boolean;
 
 	EXIFGPSVersion: string;
 
@@ -275,7 +275,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	GPSDOP: number;
 
-	GPSDateStamp: Date;
+	GPSDateStamp: NSDate;
 
 	GPSDestBearing: number;
 
@@ -311,7 +311,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	acquisitionModel: string;
 
-	addedDate: Date;
+	addedDate: NSDate;
 
 	additionalRecipients: NSArray<CSPerson>;
 
@@ -359,7 +359,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	comment: string;
 
-	completionDate: Date;
+	completionDate: NSDate;
 
 	composer: string;
 
@@ -373,11 +373,11 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	containerTitle: string;
 
-	contentCreationDate: Date;
+	contentCreationDate: NSDate;
 
 	contentDescription: string;
 
-	contentModificationDate: Date;
+	contentModificationDate: NSDate;
 
 	contentRating: number;
 
@@ -405,9 +405,9 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	displayName: string;
 
-	downloadedDate: Date;
+	downloadedDate: NSDate;
 
-	dueDate: Date;
+	dueDate: NSDate;
 
 	duration: number;
 
@@ -419,7 +419,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	encodingApplications: NSArray<string>;
 
-	endDate: Date;
+	endDate: NSDate;
 
 	exposureMode: number;
 
@@ -455,7 +455,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	imageDirection: number;
 
-	importantDates: NSArray<Date>;
+	importantDates: NSArray<NSDate>;
 
 	information: string;
 
@@ -471,7 +471,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	languages: NSArray<string>;
 
-	lastUsedDate: Date;
+	lastUsedDate: NSDate;
 
 	latitude: number;
 
@@ -493,7 +493,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	mediaTypes: NSArray<string>;
 
-	metadataModificationDate: Date;
+	metadataModificationDate: NSDate;
 
 	meteringMode: string;
 
@@ -555,7 +555,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	recipientNames: NSArray<string>;
 
-	recordingDate: Date;
+	recordingDate: NSDate;
 
 	redEyeOn: number;
 
@@ -573,7 +573,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	speed: number;
 
-	startDate: Date;
+	startDate: NSDate;
 
 	stateOrProvince: string;
 
@@ -597,7 +597,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	timeSignature: string;
 
-	timestamp: Date;
+	timestamp: NSDate;
 
 	title: string;
 
@@ -609,17 +609,17 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	whiteBalance: number;
 
-	constructor(); // inherited from NSObject
-
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { itemContentType: string; });
 
-	copyWithZone(zone: interop.Pointer): any; // inherited from NSCopying
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	encodeWithCoder(aCoder: NSCoder): void; // inherited from NSCoding
+	encodeWithCoder(aCoder: NSCoder): void;
 
-	self(): CSSearchableItemAttributeSet; // inherited from NSObjectProtocol
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithItemContentType(itemContentType: string): this;
 
 	setValueForCustomKey(value: NSSecureCoding, key: CSCustomAttributeKey): void;
 
