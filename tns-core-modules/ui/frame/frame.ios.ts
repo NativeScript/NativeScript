@@ -10,15 +10,15 @@ import * as types from "utils/types";
 import application = require("application");
 import * as _transitionModule from "ui/transition";
 
-var transitionModule: typeof _transitionModule;
+let transitionModule: typeof _transitionModule;
 
 global.moduleMerge(frameCommon, exports);
 
-var ENTRY = "_entry";
-var NAV_DEPTH = "_navDepth";
-var TRANSITION = "_transition";
-var DELEGATE = "_delegate";
-var navDepth = -1;
+const ENTRY = "_entry";
+const NAV_DEPTH = "_navDepth";
+const TRANSITION = "_transition";
+const DELEGATE = "_delegate";
+let navDepth = -1;
 
 export class Frame extends frameCommon.Frame {
     private _ios: iOSFrame;
@@ -123,7 +123,7 @@ export class Frame extends frameCommon.Frame {
         // We should clear the entire history.
         if (clearHistory) {
             viewController.navigationItem.hidesBackButton = true;
-            var newControllers = NSMutableArray.alloc().initWithCapacity(1);
+            let newControllers = NSMutableArray.alloc().initWithCapacity(1);
             newControllers.addObject(viewController);
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
             if (trace.enabled) {
@@ -135,7 +135,7 @@ export class Frame extends frameCommon.Frame {
 
         // We should hide the current entry from the back stack.
         if (!Frame._isEntryBackstackVisible(this._currentEntry)) {
-            var newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
+            let newControllers = NSMutableArray.alloc().initWithArray(this._ios.controller.viewControllers);
             if (newControllers.count === 0) {
                 throw new Error("Wrong controllers count.");
             }
@@ -145,7 +145,7 @@ export class Frame extends frameCommon.Frame {
             viewController.navigationItem.hidesBackButton = this.backStack.length === 0;
 
             // swap the top entry with the new one
-            var skippedNavController = newControllers.lastObject;
+            const skippedNavController = newControllers.lastObject;
             skippedNavController.isBackstackSkipped = true;
             newControllers.removeLastObject();
             newControllers.addObject(viewController);
@@ -171,8 +171,8 @@ export class Frame extends frameCommon.Frame {
         navDepth = backstackEntry[NAV_DEPTH];
 
         if (!this._shouldSkipNativePop) {
-            var controller = backstackEntry.resolvedPage.ios;
-            var animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
+            let controller = backstackEntry.resolvedPage.ios;
+            let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
             this._updateActionBar(backstackEntry.resolvedPage);
             if (trace.enabled) {
@@ -185,8 +185,8 @@ export class Frame extends frameCommon.Frame {
     public _updateActionBar(page?: Page): void {
         super._updateActionBar(page);
 
-        var page = page || this.currentPage;
-        var newValue = this._getNavBarVisible(page);
+        page = page || this.currentPage;
+        let newValue = this._getNavBarVisible(page);
 
         this._ios.showNavigationBar = newValue;
         if (this._ios.controller.navigationBar) {
@@ -242,7 +242,7 @@ export class Frame extends frameCommon.Frame {
     public requestLayout(): void {
         super.requestLayout();
         // Invalidate our Window so that layout is triggered again.
-        var window = this._nativeView.window;
+        let window = this._nativeView.window;
         if (window) {
             window.setNeedsLayout();
         }
@@ -308,7 +308,7 @@ export class Frame extends frameCommon.Frame {
     }
 
     public get navigationBarHeight(): number {
-        var navigationBar = this._ios.controller.navigationBar;
+        let navigationBar = this._ios.controller.navigationBar;
         return (navigationBar && !this._ios.controller.navigationBarHidden) ? navigationBar.frame.size.height : 0;
     }
 
@@ -348,7 +348,7 @@ export class Frame extends frameCommon.Frame {
         if (trace.enabled) {
             trace.write(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, trace.categories.Layout);
         }
-        
+
         this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
         this._ios.controller.navigationBar.removeConstraints((<any>this)._ios.controller.navigationBar.constraints);
         this._ios.controller.navigationBar.frame = CGRectMake(
@@ -390,7 +390,7 @@ class TransitionDelegate extends NSObject {
             }
         }
 
-        var index = transitionDelegates.indexOf(this);
+        let index = transitionDelegates.indexOf(this);
         if (index > -1) {
             transitionDelegates.splice(index, 1);
         }
@@ -402,7 +402,7 @@ class TransitionDelegate extends NSObject {
     };
 }
 
-var _defaultTransitionDuration = 0.35;
+const _defaultTransitionDuration = 0.35;
 
 class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
@@ -435,7 +435,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
         if (trace.enabled) {
             trace.write(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
-        
+
         if (!transitionModule) {
             transitionModule = require("ui/transition");
         }
@@ -450,7 +450,7 @@ class UINavigationControllerImpl extends UINavigationController {
     private _owner: WeakRef<Frame>;
 
     public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
-        var controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
+        let controller = <UINavigationControllerImpl>UINavigationControllerImpl.new();
         controller._owner = owner;
         return controller;
     }
@@ -473,7 +473,7 @@ class UINavigationControllerImpl extends UINavigationController {
             if (trace.enabled) {
                 trace.write(this._owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
             }
-            
+
             owner._updateLayout();
         }
     }
@@ -524,8 +524,8 @@ class UINavigationControllerImpl extends UINavigationController {
     }
 
     public setViewControllersAnimated(viewControllers: NSArray, animated: boolean): void {
-        var viewController = viewControllers.lastObject;
-        var navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
+        let viewController = viewControllers.lastObject;
+        let navigationTransition = <definition.NavigationTransition>viewController[TRANSITION];
         if (trace.enabled) {
             trace.write(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
@@ -542,8 +542,8 @@ class UINavigationControllerImpl extends UINavigationController {
     }
 
     public popViewControllerAnimated(animated: boolean): UIViewController {
-        var lastViewController = this.viewControllers.lastObject;
-        var navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
+        let lastViewController = this.viewControllers.lastObject;
+        let navigationTransition = <definition.NavigationTransition>lastViewController[TRANSITION];
         if (trace.enabled) {
             trace.write(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, trace.categories.NativeLifecycle);
         }
@@ -553,7 +553,7 @@ class UINavigationControllerImpl extends UINavigationController {
             return super.popViewControllerAnimated(false);
         }
 
-        var nativeTransition = _getNativeTransition(navigationTransition, false);
+        let nativeTransition = _getNativeTransition(navigationTransition, false);
         if (!animated || !navigationTransition || !nativeTransition) {
             return super.popViewControllerAnimated(animated);
         }
@@ -591,7 +591,7 @@ class UINavigationControllerImpl extends UINavigationController {
 }
 
 function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitionType: string): string {
-    var name;
+    let name;
     switch (nativeTransition) {
         case UIViewAnimationTransition.UIViewAnimationTransitionCurlDown: name = "CurlDown"; break;
         case UIViewAnimationTransition.UIViewAnimationTransitionCurlUp: name = "CurlUp"; break;
@@ -663,7 +663,7 @@ class iOSFrame implements definition.iOSFrame {
     private _showNavigationBar: boolean;
     private _navBarVisibility: string;
     private _frame: Frame;
-    
+
     // TabView uses this flag to disable animation while showing/hiding the navigation bar because of the "< More" bar.
     // See the TabView._handleTwoNavigationBars method for more details.
     public _disableNavBarAnimation: boolean;
@@ -684,7 +684,7 @@ class iOSFrame implements definition.iOSFrame {
         return this._showNavigationBar;
     }
     public set showNavigationBar(value: boolean) {
-        var change = this._showNavigationBar !== value;
+        let change = this._showNavigationBar !== value;
         this._showNavigationBar = value;
 
         let animated = !this._frame._isInitialNavigation && !this._disableNavBarAnimation;
