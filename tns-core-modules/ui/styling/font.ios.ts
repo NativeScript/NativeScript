@@ -317,6 +317,12 @@ export module ios {
 
 function registerCustomFonts() {
     var fontsFolderPath = fs.path.join(__dirname.substring(0, __dirname.indexOf("/tns_modules")), "fonts");
+    
+    // Try from root when bundled with webpack
+    if (!fs.Folder.exists(fontsFolderPath)) {
+        fontsFolderPath = fs.path.join(__dirname, "fonts");
+    }
+
     if (fs.Folder.exists(fontsFolderPath)) {
         var fontsFolder = fs.Folder.fromPath(fontsFolderPath);
         var onEachEntityFunc = function (fileEntity: fs.FileSystemEntity): boolean {
