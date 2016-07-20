@@ -1,4 +1,5 @@
 ﻿import file_access_module = require("file-system/file-system-access");
+import * as platformModule from "platform";
 
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;
@@ -9,6 +10,13 @@ var getFileAccess = function (): file_access_module.FileSystemAccess {
 
     return fileAccess;
 };
+
+let platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
+}
 
 // we are defining these as private variables within the IO scope and will use them to access the corresponding properties for each FSEntity instance.
 // this allows us to encapsulate (hide) the explicit property setters and force the users go through the exposed APIs to receive FSEntity instances.
@@ -491,6 +499,119 @@ export module knownFolders {
 
         return _app;
     };
+    
+    export module ios {
+        function _checkPlatform(knownFolderName: string){
+            ensurePlatform();
+            if (!platform.isIOS){
+                throw new Error(`The "${knownFolderName}" known folder is available on iOS only!`);
+            }            
+        }
+        
+        let _library: Folder;
+        export var library = function(): Folder {
+            _checkPlatform("library");
+            if (!_library) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSLibraryDirectory);
+                _library = Folder.fromPath(path);
+                _library[pathProperty] = path;
+                _library[isKnownProperty] = true;
+            }
+
+            return _library;
+        };
+        
+        let _developer: Folder;
+        export var developer = function(): Folder {
+            _checkPlatform("developer");
+            if (!_developer) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSDeveloperDirectory);
+                _developer = Folder.fromPath(path);
+                _developer[pathProperty] = path;
+                _developer[isKnownProperty] = true;
+            }
+
+            return _developer;
+        };
+        
+        let _desktop: Folder;
+        export var desktop = function(): Folder {
+            _checkPlatform("desktop");
+            if (!_desktop) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSDesktopDirectory);
+                _desktop = Folder.fromPath(path);
+                _desktop[pathProperty] = path;
+                _desktop[isKnownProperty] = true;
+            }
+
+            return _desktop;
+        };
+        
+        let _downloads: Folder;
+        export var downloads = function(): Folder {
+            _checkPlatform("downloads");
+            if (!_downloads) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSDownloadsDirectory);
+                _downloads = Folder.fromPath(path);
+                _downloads[pathProperty] = path;
+                _downloads[isKnownProperty] = true;
+            }
+
+            return _downloads;
+        };
+        
+        let _movies: Folder;
+        export var movies = function(): Folder {
+            _checkPlatform("movies");
+            if (!_movies) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSMoviesDirectory);
+                _movies = Folder.fromPath(path);
+                _movies[pathProperty] = path;
+                _movies[isKnownProperty] = true;
+            }
+
+            return _movies;
+        };
+        
+        let _music: Folder;
+        export var music = function(): Folder {
+            _checkPlatform("music");
+            if (!_music) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSMusicDirectory);
+                _music = Folder.fromPath(path);
+                _music[pathProperty] = path;
+                _music[isKnownProperty] = true;
+            }
+
+            return _music;
+        };
+
+        let _pictures: Folder;
+        export var pictures = function(): Folder {
+            _checkPlatform("pictures");
+            if (!_pictures) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSPicturesDirectory);
+                _pictures = Folder.fromPath(path);
+                _pictures[pathProperty] = path;
+                _pictures[isKnownProperty] = true;
+            }
+
+            return _pictures;
+        };
+
+        let _sharedPublic: Folder;
+        export var sharedPublic = function(): Folder {
+            _checkPlatform("sharedPublic");
+            if (!_sharedPublic) {
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSSharedPublicDirectory);
+                _sharedPublic = Folder.fromPath(path);
+                _sharedPublic[pathProperty] = path;
+                _sharedPublic[isKnownProperty] = true;
+            }
+
+            return _sharedPublic;
+        };
+    }
 }
 
 export module path {

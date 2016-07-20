@@ -218,6 +218,40 @@ export var testGetKnownFolders = function () {
     // << file-system-known-folders
 };
 
+function _testIOSSpecificKnownFolder(knownFolderName: string){
+    let knownFolder: fs.Folder;
+    let createdFile: fs.File;
+    let testFunc = function testFunc(){
+        knownFolder = fs.knownFolders.ios[knownFolderName]();
+        createdFile = knownFolder.getFile("createdFile");
+        createdFile.writeTextSync("some text");
+    };
+    if (platform.isIOS){
+        testFunc();
+        TKUnit.assertNotNull(knownFolder, `Could not retrieve the ${knownFolderName} known folder.`);
+        TKUnit.assertTrue(knownFolder.isKnown, `The ${knownFolderName} folder should have its "isKnown" property set to true.`);
+        TKUnit.assertNotNull(createdFile, `Could not create a new file in the ${knownFolderName} known folder.`);
+        TKUnit.assertTrue(fs.File.exists(createdFile.path), `Could not create a new file in the ${knownFolderName} known folder.`);
+        TKUnit.assertEqual(createdFile.readTextSync(), "some text", `The contents of the new file created in the ${knownFolderName} known folder are not as expected.`);
+    }
+    else {
+        TKUnit.assertThrows(testFunc, 
+        `Trying to retrieve the ${knownFolderName} known folder on a platform different from iOS should throw!`,
+        `The "${knownFolderName}" known folder is available on iOS only!`);
+    }
+}
+
+export var testIOSSpecificKnownFolders = function () {
+    _testIOSSpecificKnownFolder("library");    
+    _testIOSSpecificKnownFolder("developer");    
+    _testIOSSpecificKnownFolder("desktop");    
+    _testIOSSpecificKnownFolder("downloads");    
+    _testIOSSpecificKnownFolder("movies");    
+    _testIOSSpecificKnownFolder("music");    
+    _testIOSSpecificKnownFolder("pictures");    
+    _testIOSSpecificKnownFolder("sharedPublic");    
+}
+
 export var testGetEntities = function () {
     // >> file-system-folders-content
     var documents = fs.knownFolders.documents();
