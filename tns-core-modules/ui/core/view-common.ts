@@ -21,6 +21,9 @@ import {Source} from "utils/debug";
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
 });
+registerSpecialProperty("text", (instance, propertyValue) => {
+    instance.set("text", propertyValue);
+});
 
 function getEventOrGestureName(name: string): string {
     return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
