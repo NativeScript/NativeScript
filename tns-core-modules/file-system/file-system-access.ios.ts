@@ -3,19 +3,14 @@ import * as utilsModule from "utils/utils";
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
-
 export class FileSystemAccess {
-    private keyModificationTime = "NSFileModificationDate";
-    private userDomain = NSSearchPathDirectory.NSApplicationDirectory; //1
-    private documentDir = NSSearchPathDirectory.NSDocumentDirectory; //9
-    private cachesDir = NSSearchPathDirectory.NSCachesDirectory; //13
 
     public getLastModified(path: string): Date {
         var fileManager = NSFileManager.defaultManager();
         var attributes = fileManager.attributesOfItemAtPathError(path);
 
         if (attributes) {
-            return attributes.objectForKey(this.keyModificationTime);
+            return attributes.objectForKey("NSFileModificationDate");
         } else {
             return new Date();
         }
@@ -223,11 +218,11 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        return this.getKnownPath(this.documentDir);
+        return this.getKnownPath(NSSearchPathDirectory.NSDocumentDirectory);
     }
 
     public getTempFolderPath(): string {
-        return this.getKnownPath(this.cachesDir);
+        return this.getKnownPath(NSSearchPathDirectory.NSCachesDirectory);
     }
     
     public getCurrentAppPath(): string {
@@ -304,7 +299,7 @@ export class FileSystemAccess {
 
     private getKnownPath(folderType: number): string {
         var fileManager = NSFileManager.defaultManager();
-        var paths = fileManager.URLsForDirectoryInDomains(folderType, this.userDomain);
+        var paths = fileManager.URLsForDirectoryInDomains(folderType, NSSearchPathDirectory.NSApplicationDirectory);
 
         var url = paths.objectAtIndex(0);
         return url.path;
