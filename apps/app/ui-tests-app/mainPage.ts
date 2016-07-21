@@ -26,7 +26,8 @@ export function pageLoaded(args: EventData) {
     examples.set("tab-view", "tab-view/main-page");
     examples.set("layouts", "layouts/main-page");
     examples.set("pages-events", "pages/main-page");
-
+    examples.set("webview", "web-view/main-page");
+    
     examples.set("modalview", "modal-view/modal-view");
     examples.set("dialogs", "dialogs/dialogs");
     examples.set("htmlview", "html-view/html-view");
@@ -34,7 +35,6 @@ export function pageLoaded(args: EventData) {
     examples.set("animeBG", "animations/background");
     examples.set("transitions", "transitions/page0");
     examples.set("segStyle", "segmented-bar/all");
-    examples.set("webview", "web-view/web-view");
 
     //examples.set("listview_binding", "pages/listview_binding");
     //examples.set("textfield", "text-field/text-field");
