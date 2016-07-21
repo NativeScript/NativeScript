@@ -24,6 +24,7 @@ export function pageLoaded(args: EventData) {
     examples.set("zindex", "css/zindex");
     examples.set("clipPath", "css/clip-path");
     examples.set("padding", "css/padding");
+    examples.set("label-background-image", "css/label-background-image");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;

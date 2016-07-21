@@ -94,7 +94,7 @@ export module ios {
         UIGraphicsBeginImageContextWithOptions(originalImage.size, false, 0.0);
         var context = UIGraphicsGetCurrentContext();
         CGContextSaveGState(context);
-        CGContextTranslateCTM(context, 0.0, originalImage.size.width);
+        CGContextTranslateCTM(context, 0.0, originalImage.size.height);
         CGContextScaleCTM(context, 1.0, -1.0);
         originalImage.drawInRect(CGRectMake(0, 0, originalImage.size.width, originalImage.size.height))
         CGContextRestoreGState(context);
