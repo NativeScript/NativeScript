@@ -1,4 +1,18 @@
-﻿// This method iterates all the keys in the source exports object and copies them to the destination exports one.
+﻿// Required by TypeScript compiler
+require("./decorators");
+
+// Required by V8 snapshot generator
+global.__extends = global.__extends || function (d, b) {
+    for (var p in b) {
+        if (b.hasOwnProperty(p)) {
+            d[p] = b[p];
+        }
+    }
+    function __() { this.constructor = d; }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+};
+
+// This method iterates all the keys in the source exports object and copies them to the destination exports one.
 // Note: the method will not check for naming collisions and will override any already existing entries in the destination exports.
 global.moduleMerge = function (sourceExports: any, destExports: any) {
     for (var key in sourceExports) {
@@ -43,16 +57,6 @@ global.zonedCallback = function (callback: Function): Function {
         return callback;
     }
 }
-
-global.__extends = global.__extends || function (d, b) {
-    for (var p in b) {
-        if (b.hasOwnProperty(p)) {
-            d[p] = b[p];
-        }
-    }
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
 
 global.registerModule("timer", () => require("timer"));
 global.registerModule("ui/dialogs", () => require("ui/dialogs"));
@@ -127,8 +131,6 @@ if (platform.device.os === platform.platformNames.android) {
 } else if (platform.device.os === platform.platformNames.ios) {
     global.console.dump = function (args) { c.dump(args); };
 }
-
-require("./decorators");
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {
