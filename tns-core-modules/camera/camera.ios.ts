@@ -82,7 +82,7 @@ var listener;
 export var takePicture = function (options): Promise<any> {
     return new Promise((resolve, reject) => {
         listener = null;
-        let imagePickerController = new UIImagePickerController();
+        let imagePickerController = UIImagePickerController.new();
         let reqWidth = 0;
         let reqHeight = 0;
         let keepAspectRatio = true;

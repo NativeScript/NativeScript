@@ -16,8 +16,8 @@ class Window extends UIWindow {
 
     private _content;
 
-    initWithFrame(frame: CGRect): UIWindow {
-        var window = super.initWithFrame(frame);
+    initWithFrame(frame: CGRect): this {
+        var window = <this>super.initWithFrame(frame);
         if (window) {
             window.autoresizingMask = UIViewAutoresizing.None;
         }
