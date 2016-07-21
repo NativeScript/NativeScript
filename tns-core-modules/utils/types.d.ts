@@ -19,6 +19,13 @@
      * Returns true if value is a function.
      */
     export function isFunction(value: any): boolean;
+
+    /**
+     * A function that checks if something is an object.
+     * @param value The value which will be checked.
+     * Returns true if value is an object.
+     */
+    export function isObject(value: any): boolean;
     
     /**
      * A function that checks if something is "undefined".
