@@ -13,6 +13,13 @@ export function isFunction(value: any): boolean {
     return typeof value === "function";
 }
 
+export function isObject(value: any): boolean {
+    if (!value) {
+        return false;
+    }
+    return typeof value === "object";
+}
+
 export function isUndefined(value: any): boolean {
     return typeof value === "undefined";
 }

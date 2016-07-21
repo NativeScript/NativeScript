@@ -81,7 +81,7 @@ export class XMLHttpRequest {
                 this._options.content = (<FormData>data).toString();
             }
 
-            http.request(this._options).then(r=> {
+            http.request(this._options).then(r => {
                 if (!this._errorFlag) {
                     this._loadResponse(r);
                 }
@@ -104,29 +104,27 @@ export class XMLHttpRequest {
 
         this._setResponseType();
 
-        if (this.responseType === XMLHttpRequestResponseType.json) {
-            this._prepareJsonResponse(r);
+        this._responseTextReader = () => r.content.toString();
+        this._addToStringOnResponse();
 
-        } else if (this.responseType === XMLHttpRequestResponseType.empty ||
-            this.responseType === XMLHttpRequestResponseType.text) {
-            this._responseTextReader = () => r.content.toString();
+        if (this.responseType === XMLHttpRequestResponseType.json) {
+            this._response = JSON.parse(this.responseText);
         }
 
         this._setReadyState(this.DONE);
     }
 
-    private _prepareJsonResponse(r) {
-        this._responseTextReader = () => r.content.toString();
-        this._response = JSON.parse(this.responseText);
-
+    private _addToStringOnResponse() {
         // Add toString() method to ease debugging and
         // make Angular2 response.text() method work properly.
-        Object.defineProperty(this._response, "toString", {
-            configurable: true,
-            enumerable: false,
-            writable: true,
-            value: () => this.responseText
-        });
+        if (types.isObject(this.response)) {
+            Object.defineProperty(this._response, "toString", {
+                configurable: true,
+                enumerable: false,
+                writable: true,
+                value: () => this.responseText
+            });
+        }
     }
 
     private _setResponseType() {
@@ -180,9 +178,9 @@ export class XMLHttpRequest {
             return "";
         }
 
-        var result = "";
+        let result = "";
 
-        for (var i in this._headers) {
+        for (let i in this._headers) {
             // Cookie headers are excluded
             if (i !== "set-cookie" && i !== "set-cookie2") {
                 result += i + ": " + this._headers[i] + "\r\n";
@@ -197,7 +195,7 @@ export class XMLHttpRequest {
             && !this._errorFlag
         ) {
             header = header.toLowerCase();
-            for (var i in this._headers) {
+            for (let i in this._headers) {
                 if (i.toLowerCase() === header) {
                     return this._headers[i];
                 }
@@ -275,7 +273,7 @@ export class XMLHttpRequest {
     }
 }
 
-var statuses = {
+const statuses = {
     100: "Continue",
     101: "Switching Protocols",
     200: "OK",
@@ -330,9 +328,9 @@ export class FormData {
     }
 
     toString(): string {
-        var arr = new Array<string>();
+        let arr = new Array<string>();
 
-        this._data.forEach(function(value, name, map) {
+        this._data.forEach(function (value, name, map) {
             arr.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
         });
 
