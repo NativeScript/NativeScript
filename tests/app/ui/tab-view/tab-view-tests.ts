@@ -231,10 +231,12 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
             return tabView.selectedIndex === expectedOldIndex;
         }, helper.ASYNC);
 
+        // >> article-tabview-selectedIndexChanged
         tabView.on(tabViewModule.TabView.selectedIndexChangedEvent, (args: tabViewModule.SelectedIndexChangedEventData) => {
             actualOldIndex = args.oldIndex;
             actualNewIndex = args.newIndex;
         });
+        // << article-tabview-selectedIndexChanged
 
         tabViewTestsNative.selectNativeTab(tabView, expectedNewIndex);
         TKUnit.waitUntilReady(function () {
