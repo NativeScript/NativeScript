@@ -28,6 +28,7 @@ function onTextPropertyChanged(data: PropertyChangeData) {
 
     button._onTextPropertyChanged(data);
 
+    //RemoveThisDoubleCall
     button.style._updateTextDecoration();
     button.style._updateTextTransform();
 }
@@ -53,6 +54,8 @@ export class Button extends view.View implements definition.Button {
             this.formattedText.updateSpansBindingContext(newValue);
         }
 
+        //This is because of ListView virtualization
+        //RemoveThisDoubleCall
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
     }

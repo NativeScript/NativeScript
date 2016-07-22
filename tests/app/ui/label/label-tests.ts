@@ -22,6 +22,9 @@ import {isIOS} from "platform";
 import {Label} from "ui/label";
 import {LayoutBase} from  "ui/layouts/layout-base";
 import * as helper from "../helper";
+import viewModule = require("ui/core/view");
+import formattedStringModule = require("text/formatted-string");
+import spanModule = require("text/span");
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
@@ -596,3 +599,66 @@ export function createTestCase(): LabelTest {
     return new LabelTest();
 }
 
+export var test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash = function () {
+    let view = new LabelModule.Label();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(view.text, "", "Text");
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration");
+        TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
+
+        view.text = "NormalText";
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}
+
+export var test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash = function () {
+    let view = new LabelModule.Label();
+    let formattedString = _generateFormattedString();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(view.text, "", "Text");
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration");
+        TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
+
+        view.formattedText = formattedString;
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}
+
+function _generateFormattedString(): formattedStringModule.FormattedString{
+    let formattedString = new formattedStringModule.FormattedString();
+    let span: spanModule.Span;
+
+    span = new spanModule.Span();
+    span.fontFamily = "serif";
+    span.fontSize = 10;
+    span.fontAttributes = enums.FontAttributes.Bold;
+    span.foregroundColor = new colorModule.Color("red");
+    span.backgroundColor = new colorModule.Color("blue");
+    span.underline = 0;
+    span.strikethrough = 1;
+    span.text = "Formatted";
+    formattedString.spans.push(span);
+    
+    span = new spanModule.Span();
+    span.fontFamily = "sans-serif";
+    span.fontSize = 20;
+    span.fontAttributes = enums.FontAttributes.Italic;
+    span.foregroundColor = new colorModule.Color("green");
+    span.backgroundColor = new colorModule.Color("yellow");
+    span.underline = 1;
+    span.strikethrough = 0;
+    span.text = "Text";
+    formattedString.spans.push(span);
+
+    return formattedString;
+}

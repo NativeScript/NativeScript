@@ -6,6 +6,7 @@ import view = require("ui/core/view");
 import utils = require("utils/utils");
 import enums = require("ui/enums");
 import dependencyObservable = require("ui/core/dependency-observable");
+import types = require("utils/types");
 import {PseudoClassHandler} from "ui/core/view";
 
 class TapHandlerImpl extends NSObject {
@@ -63,7 +64,9 @@ export class Button extends common.Button {
         // set the value for the normal state.
         let newText = value ? value._formattedText : null;
         this.ios.setAttributedTitleForState(newText, UIControlState.UIControlStateNormal);
+        //RemoveThisDoubleCall
         this.style._updateTextDecoration();
+        this.style._updateTextTransform();
     }
 
     @PseudoClassHandler("normal", "highlighted")
@@ -164,29 +167,29 @@ export class ButtonStyler implements style.Styler {
 
     // text-decoration
     private static setTextDecorationProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, newValue, view.style.textTransform, view.style.letterSpacing);
+        ButtonStyler._setButtonTextDecorationAndTransform(<Button>view, newValue, view.style.textTransform, view.style.letterSpacing);
     }
 
     private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, enums.TextDecoration.none, view.style.textTransform, view.style.letterSpacing);
+        ButtonStyler._setButtonTextDecorationAndTransform(<Button>view, enums.TextDecoration.none, view.style.textTransform, view.style.letterSpacing);
     }
 
     // text-transform
     private static setTextTransformProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, newValue, view.style.letterSpacing);
+        ButtonStyler._setButtonTextDecorationAndTransform(<Button>view, view.style.textDecoration, newValue, view.style.letterSpacing);
     }
 
     private static resetTextTransformProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, enums.TextTransform.none, view.style.letterSpacing);
+        ButtonStyler._setButtonTextDecorationAndTransform(<Button>view, view.style.textDecoration, enums.TextTransform.none, view.style.letterSpacing);
     }
 
     // letter-spacing
     private static setLetterSpacingProperty(view: view.View, newValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, view.style.textTransform, newValue);
+        ButtonStyler._setButtonTextDecorationAndTransform(<Button>view, view.style.textDecoration, view.style.textTransform, newValue);
     }
 
     private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
-        utils.ios.setTextDecorationAndTransform(view, view.style.textDecoration, view.style.textTransform, 0);
+        ButtonStyler._setButtonTextDecorationAndTransform(<Button>view, view.style.textDecoration, view.style.textTransform, 0);
     }
 
     // white-space
@@ -233,6 +236,77 @@ export class ButtonStyler implements style.Styler {
         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
             ButtonStyler.setWhiteSpaceProperty,
             ButtonStyler.resetWhiteSpaceProperty), "Button");
+    }
+
+    private static _setButtonTextDecorationAndTransform(button: Button, decoration: string, transform: string, letterSpacing: number) {
+        let hasLetterSpacing = types.isNumber(letterSpacing) && !isNaN(letterSpacing);
+
+        if (button.formattedText) {
+            if (button.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
+                
+                if (button.style.textDecoration.indexOf(enums.TextDecoration.underline) !== -1) {
+                    button.formattedText.underline = NSUnderlineStyle.NSUnderlineStyleSingle;
+                }
+
+                if (button.style.textDecoration.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+                    button.formattedText.strikethrough = NSUnderlineStyle.NSUnderlineStyleSingle;
+                }
+            } 
+            else {
+                button.formattedText.underline = NSUnderlineStyle.NSUnderlineStyleNone;
+            }
+
+            for (let i = 0; i < button.formattedText.spans.length; i++) {
+                let span = button.formattedText.spans.getItem(i);
+                span.text = utils.ios.getTransformedText(button, span.text, transform);
+            }
+            
+            if (hasLetterSpacing) {
+                let attrText = NSMutableAttributedString.alloc().initWithAttributedString(button.ios.attributedTitleForState(UIControlState.UIControlStateNormal));
+                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: attrText.length });
+                button.ios.setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);            
+            }
+        } 
+        else {
+            let source = button.text;
+            let attributes = new Array();
+            let range = { location: 0, length: source.length };
+
+            var decorationValues = (decoration + "").split(" ");
+
+            if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
+                let dict = new Map<string, number>();
+
+                if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
+                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                }
+
+                if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                }
+
+                if (hasLetterSpacing) {
+                    dict.set(NSKernAttributeName, letterSpacing);
+                }
+
+                attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
+            }
+
+            source = utils.ios.getTransformedText(button, source, transform);
+
+            if (attributes.length > 0) {
+                let result = NSMutableAttributedString.alloc().initWithString(source);
+                for (let i = 0; i < attributes.length; i++) {
+                    result.setAttributesRange(attributes[i]["attrs"], attributes[i]["range"].rangeValue);
+                }
+
+                button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+            } 
+            else {
+                button.ios.setAttributedTitleForState(NSMutableAttributedString.alloc().initWithString(source), UIControlState.UIControlStateNormal);
+                button.ios.setTitleForState(source, UIControlState.UIControlStateNormal);
+            }
+        }
     }
 }
 

@@ -986,39 +986,32 @@ export class Style extends DependencyObservable implements styling.Style {
             return;
         }
 
-        try {
-            let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
-            if (!handler) {
-                if (trace.enabled) {
-                    trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
-                }
-            }
-            else {
-                if (trace.enabled) {
-                    trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
-                }
-
-                let shouldReset = false;
-                if (property.equalityComparer) {
-                    shouldReset = property.equalityComparer(newValue, property.defaultValue);
-                }
-                else {
-                    shouldReset = (newValue === property.defaultValue);
-                }
-
-                if (shouldReset) {
-                    (<any>handler).resetProperty(property, this._view);
-                } else {
-                    (<any>handler).applyProperty(property, this._view, newValue);
-                }
-
-                this._view._onStylePropertyChanged(property);
+        let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
+        if (!handler) {
+            if (trace.enabled) {
+                trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
             }
         }
-        catch (ex) {
+        else {
             if (trace.enabled) {
-                trace.write("Error setting property: " + property.name + " on " + this._view + ": " + ex, trace.categories.Style, trace.messageType.error);
+                trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
             }
+
+            let shouldReset = false;
+            if (property.equalityComparer) {
+                shouldReset = property.equalityComparer(newValue, property.defaultValue);
+            }
+            else {
+                shouldReset = (newValue === property.defaultValue);
+            }
+
+            if (shouldReset) {
+                (<any>handler).resetProperty(property, this._view);
+            } else {
+                (<any>handler).applyProperty(property, this._view, newValue);
+            }
+
+            this._view._onStylePropertyChanged(property);
         }
     }
 

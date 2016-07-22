@@ -97,6 +97,11 @@ declare module "text/formatted-string" {
         /**
          * A static method used to add child elements of the FormattedString class to a View declared in xml.
          */
-        public static addFormattedStringToView(view: FormattedStringView, name: string, value: any): void; 
+        public static addFormattedStringToView(view: FormattedStringView, name: string, value: any): void;
+
+        //@private
+        createFormattedStringCore(): void;
+        _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void;
+        //@endprivate
     }
 }
