@@ -40,7 +40,7 @@ class UIViewControllerImpl extends UIViewController {
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
         let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
         controller._owner = owner;
-        controller.automaticallyAdjustsScrollViewInsets = false;
+        controller.automaticallyAdjustsScrollViewInsets = true;
         return controller;
     }
 
@@ -450,25 +450,7 @@ export class Page extends pageCommon.Page {
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
         View.layoutChild(this, this.actionBar, 0, 0, right - left, bottom - top);
-
-        let navigationBarHeight: number = 0;
-        if (this.frame && this.frame._getNavBarVisible(this)) {
-            navigationBarHeight = this.actionBar.getMeasuredHeight();
-        }
-
-        let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
-
-        // If this page is inside nested frame - don't substract statusBarHeight again.
-        if (this.frame && this.frame.parent) {
-            statusBarHeight = 0;
-        }
-
-        // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
-            statusBarHeight = 0;
-        }
-
-        View.layoutChild(this, this.layoutView, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
+        View.layoutChild(this, this.layoutView, 0, 0, right - left, bottom - top);
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {
