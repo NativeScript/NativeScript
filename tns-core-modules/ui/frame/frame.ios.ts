@@ -125,6 +125,13 @@ export class Frame extends frameCommon.Frame {
             viewController.navigationItem.hidesBackButton = true;
             let newControllers = NSMutableArray.alloc().initWithCapacity(1);
             newControllers.addObject(viewController);
+
+            // Mark all previous ViewControllers as cleared
+            const oldControllers = this._ios.controller.viewControllers;
+            for (let i = 0; i < oldControllers.count; i++) {
+                oldControllers.objectAtIndex(i).isBackstackCleared = true;
+            }
+
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
             if (trace.enabled) {
                 trace.write(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, trace.categories.Navigation);
