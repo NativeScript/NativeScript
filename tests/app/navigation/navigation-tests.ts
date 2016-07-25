@@ -383,3 +383,49 @@ export function test_NavigationEvents_WithBackstackVisibile_False_Forward_Forwar
     androidGC();
     _test_NavigationEvents_WithBackstackVisibile_False_Forward_Forward({ name: "fade" });
 }
+
+function _test_NavigationEvents_WithClearHistory(transition?: NavigationTransition) {
+    const topmost = topmostFrame();
+    const mainTestPage = topmost.currentPage;
+
+    mainTestPage.id = "main-page";
+    let actualMainPageEvents = new Array<string>();
+    attachEventListeners(mainTestPage, actualMainPageEvents);
+
+    let actualSecondPageEvents = new Array<string>();
+    const secondPage = new Page();
+    let secondPageFactory = function (): Page {
+        secondPage.actionBarHidden = true;
+        secondPage.id = "second-page";
+        attachEventListeners(secondPage, actualSecondPageEvents);
+        secondPage.style.backgroundColor = new Color(255, Math.round(Math.random() * 255), Math.round(Math.random() * 255), Math.round(Math.random() * 255));
+        return secondPage;
+    };
+
+    // Go to second page
+    helper.navigateWithEntry({ create: secondPageFactory, transition: transition, animated: true, clearHistory: true });
+
+    let expectedMainPageEvents = [
+        "main-page navigatingFrom forward",
+        "main-page navigatedFrom forward"
+    ];
+    TKUnit.arrayAssert(actualMainPageEvents, expectedMainPageEvents, "Actual main-page events are different from expected.");
+
+    let expectedSecondPageEvents = [
+        "second-page navigatingTo forward",
+        "second-page navigatedTo forward",
+    ];
+    TKUnit.arrayAssert(actualSecondPageEvents, expectedSecondPageEvents, "Actual main-page events are different from expected.");
+
+    TKUnit.assertEqual(topmost.currentPage, secondPage, "We should be on the second page at the end of the test.");
+}
+
+export function test_NavigationEvents_WithClearHistory() {
+    androidGC();
+    _test_NavigationEvents_WithClearHistory();
+}
+
+export function test_NavigationEvents_WithClearHistory_WithTransition() {
+    androidGC();
+    _test_NavigationEvents_WithClearHistory({ name: "fade" });
+}

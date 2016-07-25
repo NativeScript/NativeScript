@@ -7,10 +7,10 @@ import {device} from "platform";
 import {DeviceType} from "ui/enums";
 
 global.moduleMerge(pageCommon, exports);
-var ENTRY = "_entry";
-var DELEGATE = "_delegate";
+const ENTRY = "_entry";
+const DELEGATE = "_delegate";
 
-function isBackNavigation(page: Page, entry): boolean {
+function isBackNavigationTo(page: Page, entry): boolean {
     let frame = page.frame;
     if (!frame) {
         return false;
@@ -21,7 +21,7 @@ function isBackNavigation(page: Page, entry): boolean {
     }
     else {
         let navigationQueue = (<any>frame)._navigationQueue;
-        for (var i = 0; i < navigationQueue.length; i++) {
+        for (let i = 0; i < navigationQueue.length; i++) {
             if (navigationQueue[i].entry === entry) {
                 return navigationQueue[i].isBackNavigation;
             }
@@ -31,11 +31,29 @@ function isBackNavigation(page: Page, entry): boolean {
     return false;
 }
 
+function isBackNavigationFrom(controller: UIViewControllerImpl, page: Page): boolean {
+    if (!page.frame) {
+        return false;
+    }
+
+    // Controller is cleared or backstack skipped
+    if (controller.isBackstackCleared || controller.isBackstackSkipped) {
+        return false;
+    }
+
+    if (controller.navigationController && controller.navigationController.viewControllers.containsObject(controller)) {
+        return false;
+    }
+
+    return true;
+}
+
 class UIViewControllerImpl extends UIViewController {
 
     private _owner: WeakRef<Page>;
 
     public isBackstackSkipped: boolean;
+    public isBackstackCleared: boolean;
 
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
         let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
@@ -130,7 +148,7 @@ class UIViewControllerImpl extends UIViewController {
 
         // Don't raise event if currentPage was showing modal page.
         if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
-            let isBack = isBackNavigation(page, newEntry)
+            let isBack = isBackNavigationTo(page, newEntry);
             page.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
 
@@ -179,7 +197,7 @@ class UIViewControllerImpl extends UIViewController {
         // Skip navigation events if modal page is shown.
         if (!page._presentedViewController && frame) {
             let newEntry = this[ENTRY];
-            let isBack = isBackNavigation(page, newEntry);
+            let isBack = isBackNavigationTo(page, newEntry);
             // We are on the current page which happens when navigation is canceled so isBack should be false.
             if (frame.currentPage === page && frame._navigationQueue.length === 0) {
                 isBack = false;
@@ -224,10 +242,10 @@ class UIViewControllerImpl extends UIViewController {
             page._presentedViewController = this.presentedViewController;
         }
 
-        var frame = page.frame;
+        const frame = page.frame;
         // Skip navigation events if we are hiding because we are about to show modal page.
         if (!page._presentedViewController && frame && frame.currentPage === page) {
-            let isBack = page.frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this)) && !this.isBackstackSkipped;
+            let isBack = isBackNavigationFrom(this, page);
             page.onNavigatingFrom(isBack);
         }
 
@@ -267,7 +285,7 @@ class UIViewControllerImpl extends UIViewController {
 
         // Remove from parent if page was in frame and we navigated back.
         // Showing page modally will not pass isBack check so currentPage won't be removed from Frame.
-        let isBack = frame && (!this.navigationController || !this.navigationController.viewControllers.containsObject(this)) && !this.isBackstackSkipped;
+        let isBack = isBackNavigationFrom(this, page);
         if (isBack) {
             // Remove parent when navigating back.
             frame._removeView(page);
@@ -398,7 +416,7 @@ export class Page extends pageCommon.Page {
     }
 
     public _updateActionBar(hidden: boolean) {
-        var frame = this.frame;
+        const frame = this.frame;
         if (frame) {
             frame._updateActionBar(this);
         }
