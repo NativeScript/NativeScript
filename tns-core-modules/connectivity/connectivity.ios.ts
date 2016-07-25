@@ -9,7 +9,7 @@ function _createReachability(host?: string): any {
         return SCNetworkReachabilityCreateWithName(null, host);
     }
     else {
-        var zeroAddress = new interop.Reference(sockaddr, {
+        var zeroAddress = new interop.Reference<sockaddr>(sockaddr, {
             sa_len: 16,
             sa_family: 2
         });
@@ -37,13 +37,13 @@ function _getConnectionTypeFromFlags(flags: number): number {
         return common.connectionType.none;
     }
 
-    var isReachable = flags & kSCNetworkReachabilityFlagsReachable;
-    var connectionRequired = flags & kSCNetworkReachabilityFlagsConnectionRequired;
+    var isReachable = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsReachable;
+    var connectionRequired = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsConnectionRequired;
     if (!isReachable || connectionRequired) {
         return common.connectionType.none;
     }
 
-    var isWWAN = flags & kSCNetworkReachabilityFlagsIsWWAN;
+    var isWWAN = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsIsWWAN;
     if (isWWAN) {
         return common.connectionType.mobile;
     }

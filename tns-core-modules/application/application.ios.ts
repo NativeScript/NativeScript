@@ -16,10 +16,10 @@ class Window extends UIWindow {
 
     private _content;
 
-    initWithFrame(frame: CGRect): UIWindow {
-        var window = super.initWithFrame(frame);
+    initWithFrame(frame: CGRect): this {
+        var window = <this>super.initWithFrame(frame);
         if (window) {
-            window.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
+            window.autoresizingMask = UIViewAutoresizing.None;
         }
         return window;
     }
@@ -149,7 +149,7 @@ class IOSApplication implements definition.iOSApplication {
             this.rootController = this._window.rootViewController = rootView.ios;
         }
         else if (rootView.ios instanceof UIView) {
-            let newController = new UIViewController();
+            let newController = UIViewController.new();
             newController.view.addSubview(rootView.ios);
             this.rootController = newController;
         }
@@ -202,12 +202,12 @@ class IOSApplication implements definition.iOSApplication {
 
             var newValue;
             switch (orientation) {
-                case UIDeviceOrientation.UIDeviceOrientationLandscapeRight:
-                case UIDeviceOrientation.UIDeviceOrientationLandscapeLeft:
+                case UIDeviceOrientation.LandscapeRight:
+                case UIDeviceOrientation.LandscapeLeft:
                     newValue = enums.DeviceOrientation.landscape;
                     break;
-                case UIDeviceOrientation.UIDeviceOrientationPortrait:
-                case UIDeviceOrientation.UIDeviceOrientationPortraitUpsideDown:
+                case UIDeviceOrientation.Portrait:
+                case UIDeviceOrientation.PortraitUpsideDown:
                     newValue = enums.DeviceOrientation.portrait;
                     break;
                 default:

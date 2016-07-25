@@ -1,5 +1,3 @@
-﻿/* tslint:disable:no-unused-variable */
-
 /**
  * Provides API for working with native C types, pointers, pointer arithmetic and memory.
  */
@@ -74,6 +72,11 @@ declare module interop {
     function handleof(instance: any): Pointer;
 
     /**
+     * Wraps an NSData instance in an ArrayBuffer.
+     */
+    function bufferFromData(data: NSData): ArrayBuffer;
+
+    /**
      * A type that wraps a pointer and allows read/write operations on its value.
      */
     interface Reference<T> {
@@ -109,11 +112,6 @@ declare module interop {
          * Gets the value using pointer arithmetic.
          */
         [index: number]: any;
-
-        /**
-         * Dereferences the pointer.
-         */
-        value: any;
     }
 
     interface FunctionReference<T> {
@@ -181,6 +179,36 @@ declare module interop {
          */
         equals(left: T, right: T): boolean;
     }
-}
 
-declare function __collect(): void;
+    /** A type for propagating an unmanaged object reference.
+     * When you use this type, you become partially responsible for
+     * keeping the object alive.
+     */
+    interface Unmanaged<T> {
+      /**
+       * Get the value of this unmanaged reference as a managed
+       * reference and consume an unbalanced retain of it.
+       * This is useful when a function returns an unmanaged reference
+       * and you know that you're responsible for releasing the result.
+       */
+      takeRetainedValue(): T;
+
+      /**
+       * Get the value of this unmanaged reference as a managed
+       * reference without consuming an unbalanced retain of it.
+       * This is useful when a function returns an unmanaged reference
+       * and you know that you're not responsible for releasing the result.
+       */
+      takeUnretainedValue(): T;
+    }
+
+    interface NSErrorWrapper extends Error {
+        error: NSError;
+    }
+
+    var NSErrorWrapper: {
+        new (error: NSError): NSErrorWrapper;
+        (error: NSError): NSErrorWrapper;
+        prototype: NSErrorWrapper;
+    }
+}

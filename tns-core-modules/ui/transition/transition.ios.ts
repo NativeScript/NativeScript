@@ -42,9 +42,9 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
         let containerView = transitionContext.valueForKey("containerView");
         var completion = UIViewControllerAnimatedTransitioningMethods.completeTransition.bind(transitionContext);
         switch (this._operation) {
-            case UINavigationControllerOperation.UINavigationControllerOperationPush: this._transitionType = "push"; break;
-            case UINavigationControllerOperation.UINavigationControllerOperationPop: this._transitionType = "pop"; break;
-            case UINavigationControllerOperation.UINavigationControllerOperationNone: this._transitionType = "none"; break;
+            case UINavigationControllerOperation.Push: this._transitionType = "push"; break;
+            case UINavigationControllerOperation.Pop: this._transitionType = "pop"; break;
+            case UINavigationControllerOperation.None: this._transitionType = "none"; break;
         }
 
         if (trace.enabled) {
@@ -77,7 +77,7 @@ export class Transition implements definition.Transition {
     private _curve: UIViewAnimationCurve;
     private _id: number;
 
-    constructor(duration: number, curve: UIViewAnimationCurve = UIViewAnimationCurve.UIViewAnimationCurveEaseInOut) {
+    constructor(duration: number, curve: UIViewAnimationCurve = UIViewAnimationCurve.EaseInOut) {
         this._duration = duration ? (duration / 1000) : 0.35;
         this._curve = curve;
         this._id = transitionId++;

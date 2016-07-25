@@ -72,7 +72,7 @@ export class ActionBar extends common.ActionBar {
         if (previousController) {
             if (this.navigationButton) {
                 var tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
-                var barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+                var barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
             }
             else {
@@ -90,7 +90,7 @@ export class ActionBar extends common.ActionBar {
         // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
         // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
         if (img && img.ios) {
-            var image = img.ios.imageWithRenderingMode(UIImageRenderingMode.UIImageRenderingModeAlwaysOriginal)
+            var image = img.ios.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
             navigationBar.backIndicatorImage = image;
             navigationBar.backIndicatorTransitionMaskImage = image;
         }
@@ -149,14 +149,14 @@ export class ActionBar extends common.ActionBar {
         else if (item.icon) {
             var img = imageSource.fromFileOrResource(item.icon);
             if (img && img.ios) {
-                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+                barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.Plain, tapHandler, "tap");
             }
             else {
                 throw new Error("Error loading icon from " + item.icon);
             }
         }
         else {
-            barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+            barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }
 
         return barButtonItem;

@@ -85,7 +85,7 @@ export class ImageSource implements definition.ImageSource {
 
     public loadFromBase64(source: string): boolean {
         if (types.isString(source)) {
-            var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
+            var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
             this.ios = UIImage.imageWithData(data);
         }
 
@@ -95,7 +95,7 @@ export class ImageSource implements definition.ImageSource {
     public fromBase64(source: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             try {
-                var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.NSDataBase64DecodingIgnoreUnknownCharacters);
+                var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
                 UIImage.imageWithData["async"](UIImage, [data]).then(image => {
                     this.ios = image;
                     resolve(true);

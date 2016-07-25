@@ -153,6 +153,6 @@ function setNativeValue(mySwitch: switchModule.Switch, value: boolean) {
         mySwitch.ios.on = value;
 
         // setting value trough code does not send notification, so simulate that manually.
-        mySwitch.ios.sendActionsForControlEvents(UIControlEvents.UIControlEventValueChanged);
+        mySwitch.ios.sendActionsForControlEvents(UIControlEvents.ValueChanged);
     }
 }

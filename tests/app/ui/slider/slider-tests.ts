@@ -405,6 +405,6 @@ function setNativeValue(slider: sliderModule.Slider, value: number) {
         slider.ios.value = value;
 
         // setting value trough code does not send notification, so simulate that manually.
-        slider.ios.sendActionsForControlEvents(UIControlEvents.UIControlEventValueChanged);
+        slider.ios.sendActionsForControlEvents(UIControlEvents.ValueChanged);
     }
 }

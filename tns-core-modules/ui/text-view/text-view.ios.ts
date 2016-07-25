@@ -73,7 +73,7 @@ export class TextView extends common.TextView {
     constructor() {
         super();
 
-        this._ios = new UITextView();
+        this._ios = UITextView.new();
         if (!this._ios.font) {
             this._ios.font = UIFont.systemFontOfSize(12);
         }

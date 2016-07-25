@@ -362,7 +362,7 @@ export class RuleSet {
 }
 
 export function fromAstNodes(astRules: cssParser.Node[]): RuleSet[] {
-    return astRules.filter(isRule).map(rule => {
+    return (<cssParser.Rule[]>astRules.filter(isRule)).map(rule => {
         let declarations = rule.declarations.filter(isDeclaration).map(createDeclaration);
         let selectors = rule.selectors.map(createSelector);
         let ruleset = new RuleSet(selectors, declarations);

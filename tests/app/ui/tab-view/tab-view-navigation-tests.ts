@@ -245,6 +245,6 @@ function _clickTheFirstButtonInTheListViewNatively(tabView: TabView) {
         button.performClick();
     }
     else {
-        (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.UIControlEventTouchUpInside);
+        (<UIButton>(<UITableView>tabView.ios.viewControllers[0].view.subviews[0]).cellForRowAtIndexPath(NSIndexPath.indexPathForItemInSection(0, 0)).contentView.subviews[0]).sendActionsForControlEvents(UIControlEvents.TouchUpInside);
     }
 }
