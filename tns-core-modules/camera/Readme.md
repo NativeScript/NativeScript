@@ -1,1 +1,1 @@
-Allows you to take pictrues with the device's camera.
+Allows you to take pictures with the device's camera.
