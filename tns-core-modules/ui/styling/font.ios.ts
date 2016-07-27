@@ -315,23 +315,27 @@ export module ios {
     }
 }
 
-function registerCustomFonts() {
-    var fontsFolderPath = fs.path.join(__dirname.substring(0, __dirname.indexOf("/tns_modules")), "fonts");
-    if (fs.Folder.exists(fontsFolderPath)) {
-        var fontsFolder = fs.Folder.fromPath(fontsFolderPath);
-        var onEachEntityFunc = function (fileEntity: fs.FileSystemEntity): boolean {
-            if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
-                return true;
-            }
+function registerFontsInFolder(fontsFolderPath) {
+    const fontsFolder = fs.Folder.fromPath(fontsFolderPath);
 
-            if (fileEntity instanceof fs.File &&
-                ((<fs.File>fileEntity).extension === ".ttf" || (<fs.File>fileEntity).extension === ".otf")) {
-                ios.registerFont(fileEntity.name);
-            }
+    fontsFolder.eachEntity((fileEntity: fs.FileSystemEntity) => {
+        if (fs.Folder.exists(fs.path.join(fontsFolderPath, fileEntity.name))) {
             return true;
         }
 
-        fontsFolder.eachEntity(onEachEntityFunc);
+        if (fileEntity instanceof fs.File &&
+            ((<fs.File>fileEntity).extension === ".ttf" || (<fs.File>fileEntity).extension === ".otf")) {
+            ios.registerFont(fileEntity.name);
+        }
+        return true;
+    });
+}
+
+function registerCustomFonts() {
+    const appDir = fs.knownFolders.currentApp().path
+    const fontsDir = fs.path.join(appDir, "fonts");
+    if (fs.Folder.exists(fontsDir)) {
+        registerFontsInFolder(fontsDir);
     }
 }
 
