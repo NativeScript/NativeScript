@@ -41,12 +41,16 @@ Our Getting Started Guides are hands-on tutorials that walk you through installi
 The NativeScript framework consists of a number of components, all of which are open source and on GitHub. Here are the major ones:
 
 - **[Cross-platform modules](//github.com/NativeScript/NativeScript/)**
+    [![npm](https://img.shields.io/npm/dt/tns-core-modules.svg?label=npm%20downloads)](https://www.npmjs.com/package/tns-core-modules)
     - This repo contains the [NativeScript cross-platform modules](http://docs.nativescript.org/core-concepts/modules), which abstract iOS and Android APIs into JavaScript APIs—e.g. `camera.takePicture()`. The modules are written in TypeScript.
 - **[iOS runtime](//github.com/NativeScript/ios-runtime/)**
+    [![npm](https://img.shields.io/npm/dt/tns-ios.svg?label=npm%20downloads)](https://www.npmjs.com/package/tns-ios)
     - This repo contains the NativeScript iOS runtime—the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
 - **[Android runtime](//github.com/NativeScript/android-runtime)**
+    [![npm](https://img.shields.io/npm/dt/tns-android.svg?label=npm%20downloads)](https://www.npmjs.com/package/tns-android)
     - This repo contains the NativeScript Android—the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
+    [![npm](https://img.shields.io/npm/dt/nativescript.svg?label=npm%20downloads)](https://www.npmjs.com/package/nativescript)
     - This repo contains the NativeScript command-line interface, which lets you create, build, and run apps using the NativeScript framework. The CLI is written in TypeScript.
 - **[Docs](//github.com/NativeScript/docs)**
     - This repo contains the NativeScript framework documentation, which is available at <http://docs.nativescript.org/>. The docs are written in Markdown.
