@@ -140,9 +140,13 @@ export class Span extends bindable.Bindable implements definition.Span, view.App
 
     set text(value: string) {
         if (this._text !== value) {
-            this._text = value;
+            this._setTextInternal(value);
             this.updateAndNotify();
         }
+    }
+
+    _setTextInternal(value: string): void {
+        this._text = value;
     }
 
     get parentFormattedString(): formattedString.FormattedString {

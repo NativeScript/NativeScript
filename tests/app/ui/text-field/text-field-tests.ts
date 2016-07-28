@@ -536,7 +536,7 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = functi
     });
 }
 
-export var test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash = function () {
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
@@ -553,15 +553,10 @@ export var test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedTex
     });
 }
 
-export var test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash = function () {
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
     let view = new textFieldModule.TextField();
-    let formattedString = _generateFormattedString();
+    let formattedString = helper._generateFormattedString();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration");
-        TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
-
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
         
@@ -569,33 +564,4 @@ export var test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_D
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
     });
-}
-
-function _generateFormattedString(): formattedStringModule.FormattedString{
-    let formattedString = new formattedStringModule.FormattedString();
-    let span: spanModule.Span;
-
-    span = new spanModule.Span();
-    span.fontFamily = "serif";
-    span.fontSize = 10;
-    span.fontAttributes = enums.FontAttributes.Bold;
-    span.foregroundColor = new colorModule.Color("red");
-    span.backgroundColor = new colorModule.Color("blue");
-    span.underline = 0;
-    span.strikethrough = 1;
-    span.text = "Formatted";
-    formattedString.spans.push(span);
-    
-    span = new spanModule.Span();
-    span.fontFamily = "sans-serif";
-    span.fontSize = 20;
-    span.fontAttributes = enums.FontAttributes.Italic;
-    span.foregroundColor = new colorModule.Color("green");
-    span.backgroundColor = new colorModule.Color("yellow");
-    span.underline = 1;
-    span.strikethrough = 0;
-    span.text = "Text";
-    formattedString.spans.push(span);
-
-    return formattedString;
 }

@@ -6,22 +6,20 @@ global.moduleMerge(formattedStringCommon, exports);
 
 export class FormattedString extends formattedStringCommon.FormattedString {
     public createFormattedStringCore() {
-        var mas = NSMutableAttributedString.alloc().init();
-        var i;
-        var spanStart = 0;
-        var spanLength = 0;
-        var spanText = "";
-        for (i = 0; i < this.spans.length; i++) {
-            var span = <spanModule.Span>this.spans.getItem(i);
+        let mas = NSMutableAttributedString.alloc().init();
+        let spanStart = 0;
+        let spanLength = 0;
+        let spanText = "";
+        for (let i = 0; i < this.spans.length; i++) {
+            let span = <spanModule.Span>this.spans.getItem(i);
             spanText = types.toUIString(span.text);
             spanLength = spanText.length;
             span.updateSpanModifiers(this);
-            var attrDict = NSMutableDictionary.alloc().init();
-            var p;
-            for (p = 0; p < span.spanModifiers.length; p++) {
+            let attrDict = NSMutableDictionary.alloc().init();
+            for (let p = 0; p < span.spanModifiers.length; p++) {
                 attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);
             }
-            var nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
+            let nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
             mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
             spanStart += spanLength;
         }
@@ -34,7 +32,8 @@ export class FormattedString extends formattedStringCommon.FormattedString {
         for (let i = 0; i < this.spans.length; i++) {
             let span = <spanModule.Span>this.spans.getItem(i);
             if (currentLocation <= rangeLocation && rangeLocation < (currentLocation + span.text.length)){
-                (<any>span)._text = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
+                let newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
+                span._setTextInternal(newText); 
                 //console.log(`>>> ${span.text}`);
                 return;
             } 

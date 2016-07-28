@@ -72,5 +72,10 @@
          * Ends the process previously initiated by beginEdit and updates the span modifiers collection.
          */
         public endEdit(): void;
+
+        //@private
+        _setTextInternal(value: string): void;
+        //@endprivate
+
     }
 }
