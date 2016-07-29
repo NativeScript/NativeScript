@@ -115,7 +115,7 @@ export class TextBaseStyler implements style.Styler {
 
     private static setLetterSpacingProperty(view: view.View, newValue: any) {
         if(view.android.setLetterSpacing) {
-           view.android.setLetterSpacing(utils.layout.toDeviceIndependentPixels(newValue));
+           view.android.setLetterSpacing(newValue);
         }
     }
 

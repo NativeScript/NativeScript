@@ -169,7 +169,7 @@ export class MianPageViewModel extends observable.Observable {
     }
 
     public loadExample(exampleName: any) {
-        console.log("exampleName EXAMLE: " + exampleName);
+        console.log("exampleName EXAMPLE: " + exampleName);
         this.selectExample(exampleName);
     }
 
@@ -187,7 +187,7 @@ export class MianPageViewModel extends observable.Observable {
     }
 
     private selectExample(selectedExample: any) {
-        console.log(" EXAMLE: " + selectedExample);
+        console.log(" EXAMPLE: " + selectedExample);
 
         if (this.examples.has(selectedExample)) {
             frame.topmost().navigate("ui-tests-app/" + this.basePath + this.examples.get(selectedExample));

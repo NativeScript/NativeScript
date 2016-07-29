@@ -2,12 +2,12 @@
   <ScrollView>
     <StackLayout>
       <WrapLayout>
-        <Label text="labelLabel" style="letter-spacing: -1;" />
+        <Label text="labelLabel" style="letter-spacing: -0.1;" />
         <Label text="labelLabel" style="letter-spacing: 0;" />
-        <Label text="labelLabel" style="letter-spacing: 1;" />
+        <Label text="labelLabel" style="letter-spacing: 0.1;" />
       </WrapLayout>
-      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
-      <Label style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
+      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <Label style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -18,13 +18,13 @@
         </Label.formattedText>
       </Label>
       <WrapLayout>
-        <Button text="buttonButton" style="letter-spacing: -1;" />
+        <Button text="buttonButton" style="letter-spacing: -0.1;" />
         <Button text="buttonButton" style="letter-spacing: 0;" />
-        <Button text="buttonButton" style="letter-spacing: 1;" />
+        <Button text="buttonButton" style="letter-spacing: 0.1;" />
       </WrapLayout>
-      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
       <!--<android>-->
-      <Button style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
+      <Button style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -36,15 +36,13 @@
       </Button>
       <!--</android>-->
       <WrapLayout>
-        <ios>
-          <TextField text="textField" style="letter-spacing: -1;" />
-        </ios>
+        <TextField text="textField" style="letter-spacing: -0.1;" />
         <TextField text="textField" style="letter-spacing: 0;" />
-        <TextField text="textField" style="letter-spacing: 1;" />
+        <TextField text="textField" style="letter-spacing: 0.1;" />
       </WrapLayout>
-      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
       <!--<android>-->
-      <TextField style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
+      <TextField style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <TextField.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -56,13 +54,13 @@
       </TextField>
       <!--</android>-->
       <WrapLayout>
-        <TextView text="textView" style="letter-spacing: -1;" />
+        <TextView text="textView" style="letter-spacing: -0.1;" />
         <TextView text="textView" style="letter-spacing: 0;" />
-        <TextView text="textView" style="letter-spacing: 1;" />
+        <TextView text="textView" style="letter-spacing: 0.1;" />
       </WrapLayout>
-      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;" />
+      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
       <!--<android>-->
-      <TextView style="text-transform: uppercase; text-decoration: underline line-through; letter-spacing: 10;">
+      <TextView style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <TextView.formattedText>
           <FormattedString>
             <FormattedString.spans>

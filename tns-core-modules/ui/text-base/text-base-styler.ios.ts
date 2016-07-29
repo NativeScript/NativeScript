@@ -155,7 +155,7 @@ export class TextBaseStyler implements style.Styler {
             
             if (hasLetterSpacing) {
                 let attrText = NSMutableAttributedString.alloc().initWithAttributedString(nativeView.attributedText);
-                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: attrText.length });
+                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * (<UIFont>nativeView.font).pointSize, { location: 0, length: attrText.length });
                 nativeView.attributedText = attrText;
             }
         } 
@@ -178,7 +178,7 @@ export class TextBaseStyler implements style.Styler {
                 }
 
                 if (hasLetterSpacing) {
-                    dict.set(NSKernAttributeName, letterSpacing);
+                    dict.set(NSKernAttributeName, letterSpacing * (<UIFont>nativeView.font).pointSize);
                 }
 
                 attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
