@@ -8,7 +8,7 @@
     <!-- Resources: png and jpg -->
     <WrapLayout>
         <Image src="res://icon" stretch ="none" />
-        <Image src="res://logo" stretch ="none" />
+        <Image src="res://testlogo" stretch ="none" />
     </WrapLayout>
     
   </StackLayout>
