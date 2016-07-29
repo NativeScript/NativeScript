@@ -545,7 +545,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
         TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
 
         view.text = "NormalText";
-        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
@@ -558,7 +558,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
     let formattedString = helper._generateFormattedString();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.formattedText = formattedString;
-        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
