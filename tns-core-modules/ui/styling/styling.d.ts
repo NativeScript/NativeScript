@@ -207,9 +207,24 @@
          */
         opacity: number;
 
+        /**
+         * Gets or sets the text decoration style property. Possible values are contained in the [TextDecoration enumeration](../enums/TextDecoration/README.md).
+         */
         textDecoration: string;
+        
+        /**
+         * Gets or sets the text transform style property. Possible values are contained in the [TextTransform enumeration](../enums/TextTransform/README.md).
+         */
         textTransform: string;
+        
+        /**
+         * Gets or sets the whitespace style property. Possible values are contained in the [WhiteSpace enumeration](../enums/WhiteSpace/README.md).
+         */
         whiteSpace: string;
+        
+        /**
+         * Gets or sets the letter spacing style property. Values are in [EM units](https://en.wikipedia.org/wiki/Em_(typography)). Negative values tighten text.
+         */
         letterSpacing: number;
 
         //@private

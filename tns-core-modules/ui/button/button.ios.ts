@@ -263,7 +263,7 @@ export class ButtonStyler implements style.Styler {
             
             if (hasLetterSpacing) {
                 let attrText = NSMutableAttributedString.alloc().initWithAttributedString(button.ios.attributedTitleForState(UIControlState.UIControlStateNormal));
-                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: attrText.length });
+                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * button.ios.font.pointSize, { location: 0, length: attrText.length });
                 button.ios.setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);            
             }
         } 
@@ -286,7 +286,7 @@ export class ButtonStyler implements style.Styler {
                 }
 
                 if (hasLetterSpacing) {
-                    dict.set(NSKernAttributeName, letterSpacing);
+                    dict.set(NSKernAttributeName, letterSpacing * button.ios.font.pointSize);
                 }
 
                 attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
