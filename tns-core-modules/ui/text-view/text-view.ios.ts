@@ -27,15 +27,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         
         return true;
     }
-
-    public textViewDidBeginEditing(textView: UITextView) {
-        let owner = this._owner.get();
-        if (owner) {
-            owner.style._updateTextDecoration();
-            owner.style._updateTextTransform();
-        }
-    }
-
+    
     public textViewDidEndEditing(textView: UITextView) {
         let owner = this._owner.get();
         if (owner) {
@@ -46,6 +38,12 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
             owner.dismissSoftInput();
             owner._refreshHintState(owner.hint, textView.text);
 
+            if (owner.formattedText) {
+                owner.formattedText.createFormattedStringCore();
+                 
+            }
+            
+            //RemoveThisDoubleCall
             owner.style._updateTextDecoration();
             owner.style._updateTextTransform();
         }
@@ -54,15 +52,19 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewDidChange(textView: UITextView) {
         let owner = this._owner.get();
         if (owner) {
-            var range = textView.selectedRange;
-            owner.style._updateTextDecoration();
-            owner.style._updateTextTransform();
-            textView.selectedRange = range;
-
             if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
                 owner._onPropertyChangedFromNative(TextBase.textProperty, textView.text);
             }
         }        
+    }
+
+    public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
+        let owner = this._owner.get();
+        if (owner && owner.formattedText) {
+            owner.formattedText._updateCharactersInRangeReplacementString(range.location, range.length, replacementString);
+        }
+
+        return true;
     }
 }
 
@@ -83,9 +85,6 @@ export class TextView extends common.TextView {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
-        
-        this.style._updateTextDecoration();
-        this.style._updateTextTransform();
     }
 
     public onUnloaded() {

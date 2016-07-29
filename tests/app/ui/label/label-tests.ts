@@ -22,6 +22,7 @@ import {isIOS} from "platform";
 import {Label} from "ui/label";
 import {LayoutBase} from  "ui/layouts/layout-base";
 import * as helper from "../helper";
+import viewModule = require("ui/core/view");
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
@@ -596,3 +597,27 @@ export function createTestCase(): LabelTest {
     return new LabelTest();
 }
 
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
+    let view = new LabelModule.Label();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.text = "NormalText";
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}
+
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
+    let view = new LabelModule.Label();
+    let formattedString = helper._generateFormattedString();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.formattedText = formattedString;
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}

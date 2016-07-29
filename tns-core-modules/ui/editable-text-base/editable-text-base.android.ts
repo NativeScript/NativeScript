@@ -34,7 +34,11 @@ export class EditableTextBase extends common.EditableTextBase {
                 }
                 var selectionStart = owner.android.getSelectionStart();
                 owner.android.removeTextChangedListener(owner._textWatcher);
+                
+                //RemoveThisDoubleCall
+                owner.style._updateTextDecoration();
                 owner.style._updateTextTransform();
+                
                 owner.android.addTextChangedListener(owner._textWatcher);
                 owner.android.setSelection(selectionStart);
             },

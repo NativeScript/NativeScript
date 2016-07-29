@@ -1,5 +1,4 @@
 ﻿import dts = require("utils/utils");
-import types = require("utils/types");
 import common = require("./utils-common");
 import {Color} from "color";
 import enums = require("ui/enums");
@@ -41,7 +40,6 @@ export module layout {
 }
 
 export module ios {
-
     export function setTextAlignment(view: dts.ios.TextUIView, value: string) {
         switch (value) {
             case enums.TextAlignment.left:
@@ -58,98 +56,7 @@ export module ios {
         }
     }
 
-    export function setTextDecorationAndTransform(v: any, decoration: string, transform: string, letterSpacing: number) {
-        let hasLetterSpacing = types.isNumber(letterSpacing) && !isNaN(letterSpacing);
-
-        if (v.formattedText) {
-            if (v.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
-
-                if (v.style.textDecoration.indexOf(enums.TextDecoration.underline) !== -1) {
-                    (<any>v).formattedText.underline = NSUnderlineStyle.NSUnderlineStyleSingle;
-                }
-
-                if (v.style.textDecoration.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    (<any>v).formattedText.strikethrough = NSUnderlineStyle.NSUnderlineStyleSingle;
-                }
-
-            } else {
-                (<any>v).formattedText.underline = NSUnderlineStyle.NSUnderlineStyleNone;
-            }
-
-            for (let i = 0; i < v.formattedText.spans.length; i++) {
-                let span = v.formattedText.spans.getItem(i);
-                span.text = getTransformedText(v, span.text, transform);
-            }
-            
-            if (hasLetterSpacing) {
-                let attrText; 
-                if(v._nativeView instanceof UIButton){
-                    attrText = (<UIButton>v._nativeView).attributedTitleForState(UIControlState.UIControlStateNormal);
-                } else {
-                    attrText = v._nativeView.attributedText;
-                }
-                
-                attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing, { location: 0, length: v._nativeView.attributedText.length });
-                
-                if(v._nativeView instanceof UIButton){
-                    (<UIButton>v._nativeView).setAttributedTitleForState(attrText, UIControlState.UIControlStateNormal);
-                } 
-            }
-
-        } else {
-            let source = v.text;
-            let attributes = new Array();
-            let range = { location: 0, length: source.length };
-
-            var decorationValues = (decoration + "").split(" ");
-
-            if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
-                let dict = new Map<string, number>();
-
-                if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
-                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
-                }
-
-                if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
-                }
-
-                if (hasLetterSpacing) {
-                    dict.set(NSKernAttributeName, letterSpacing);
-                }
-
-                attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
-            }
-
-            let view: dts.ios.TextUIView | UIButton = v._nativeView;
-
-            source = getTransformedText(v, source, transform);
-
-            if (attributes.length > 0) {
-                let result = NSMutableAttributedString.alloc().initWithString(<string>source);
-                for (let i = 0; i < attributes.length; i++) {
-                    result.setAttributesRange(attributes[i]["attrs"], attributes[i]["range"].rangeValue);
-                }
-
-                if (view instanceof UIButton) {
-                    (<UIButton>view).setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
-                }
-                else {
-                    (<dts.ios.TextUIView>view).attributedText = result;
-                }
-            } else {
-                if (view instanceof UIButton) {
-                    (<UIButton>view).setAttributedTitleForState(NSMutableAttributedString.alloc().initWithString(source), UIControlState.UIControlStateNormal);
-                    (<UIButton>view).setTitleForState(<string>source, UIControlState.UIControlStateNormal);
-                }
-                else {
-                    (<dts.ios.TextUIView>view).text = <string>source;
-                }
-            }
-        }
-    }
-
-    function getTransformedText(view, source: string, transform: string): string {
+    export function getTransformedText(view, source: string, transform: string): string {
         let result = source;
 
         switch (transform) {

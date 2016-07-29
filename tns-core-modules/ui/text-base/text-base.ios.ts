@@ -6,16 +6,22 @@ export class TextBase extends common.TextBase {
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         var newValue = types.toUIString(data.newValue);
         this.ios.text = newValue;
+        
+        //RemoveThisDoubleCall
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
+        
         this._requestLayoutOnTextChanged();
     }
 
     public _setFormattedTextPropertyToNative(value) {
         var newText = value ? value._formattedText : null;
         this.ios.attributedText = newText;
+        
+        //RemoveThisDoubleCall
         this.style._updateTextDecoration();
         this.style._updateTextTransform();
+        
         this.requestLayout();
     }
 

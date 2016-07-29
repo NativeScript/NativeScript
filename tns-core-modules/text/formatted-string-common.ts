@@ -234,4 +234,8 @@ export class FormattedString extends observable.Observable implements definition
             view.formattedText = value;
         }
     }
+
+    public _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void {
+        //
+    }
 }

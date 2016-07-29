@@ -494,3 +494,28 @@ export function test_watch_listerer_is_removed_at_onDetach() {
         });
     }
 }
+
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
+    let view = new textViewModule.TextView();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.text = "NormalText";
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}
+
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
+    let view = new textViewModule.TextView();
+    let formattedString = helper._generateFormattedString();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.formattedText = formattedString;
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}

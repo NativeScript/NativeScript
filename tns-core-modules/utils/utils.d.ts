@@ -154,10 +154,11 @@
      * Module with ios specific utilities.
      */
     module ios {
-        export function setTextDecorationAndTransform(view: any, decoration: string, transform: string, letterSpacing : number);
+        export function getTransformedText(view, source: string, transform: string): string;
         export function setWhiteSpace(view, value: string, parentView?: any);
         export function setTextAlignment(view, value: string);
 
+        // Common properties between UILabel, UITextView and UITextField 
         export interface TextUIView {
             font: any;
             textAlignment: number;

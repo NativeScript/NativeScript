@@ -8,6 +8,10 @@ import utils = require("utils/utils");
 import types = require("utils/types");
 import styling = require("ui/styling");
 import platform = require("platform");
+import colorModule = require("color");
+import formattedStringModule = require("text/formatted-string");
+import spanModule = require("text/span");
+import enums = require("ui/enums");
 
 var DELTA = 0.1;
 
@@ -201,4 +205,33 @@ export function forceGC() {
     }
 
     utils.GC();
+}
+
+export function _generateFormattedString(): formattedStringModule.FormattedString{
+    let formattedString = new formattedStringModule.FormattedString();
+    let span: spanModule.Span;
+
+    span = new spanModule.Span();
+    span.fontFamily = "serif";
+    span.fontSize = 10;
+    span.fontAttributes = enums.FontAttributes.Bold;
+    span.foregroundColor = new colorModule.Color("red");
+    span.backgroundColor = new colorModule.Color("blue");
+    span.underline = 0;
+    span.strikethrough = 1;
+    span.text = "Formatted";
+    formattedString.spans.push(span);
+    
+    span = new spanModule.Span();
+    span.fontFamily = "sans-serif";
+    span.fontSize = 20;
+    span.fontAttributes = enums.FontAttributes.Italic;
+    span.foregroundColor = new colorModule.Color("green");
+    span.backgroundColor = new colorModule.Color("yellow");
+    span.underline = 1;
+    span.strikethrough = 0;
+    span.text = "Text";
+    formattedString.spans.push(span);
+
+    return formattedString;
 }

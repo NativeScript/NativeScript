@@ -45,6 +45,10 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
             }
 
             owner.dismissSoftInput();
+
+            if (owner.formattedText){
+                owner.formattedText.createFormattedStringCore();
+            }
         }
     }
 
@@ -71,12 +75,6 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         let owner = this._owner.get();
         if (owner) {
-
-            var r = textField.selectedTextRange;
-            owner.style._updateTextDecoration();
-            owner.style._updateTextTransform();
-            textField.selectedTextRange = r;
-
             if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
                 if (textField.secureTextEntry && this.firstEdit) {
                     owner._onPropertyChangedFromNative(TextBase.textProperty, replacementString);
@@ -87,6 +85,10 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
                         owner._onPropertyChangedFromNative(TextBase.textProperty, newText);
                     }
                 }
+            }
+            
+            if (owner.formattedText){
+                owner.formattedText._updateCharactersInRangeReplacementString(range.location, range.length, replacementString);
             }
         }
 
@@ -142,9 +144,6 @@ export class TextField extends common.TextField {
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
-        
-        this.style._updateTextDecoration();
-        this.style._updateTextTransform();
     }
 
     public onUnloaded() {

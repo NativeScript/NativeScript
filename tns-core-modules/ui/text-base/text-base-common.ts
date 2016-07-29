@@ -31,6 +31,7 @@ function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
     textBase._onTextPropertyChanged(data);
 
+    //RemoveThisDoubleCall
     textBase.style._updateTextTransform();
     textBase.style._updateTextDecoration();
 }
@@ -54,6 +55,8 @@ export class TextBase extends view.View implements definition.TextBase, formatte
             this.formattedText.updateSpansBindingContext(newValue);
         }
 
+        //This is because of ListView virtualization
+        //RemoveThisDoubleCall        
         this.style._updateTextTransform();
         this.style._updateTextDecoration();
     }
@@ -133,4 +136,4 @@ export class TextBase extends view.View implements definition.TextBase, formatte
     }
 }
 
-tbs.TextBaseStyler.registerHandlers()
+tbs.TextBaseStyler.registerHandlers();

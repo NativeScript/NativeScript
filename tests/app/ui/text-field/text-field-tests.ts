@@ -535,3 +535,33 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = functi
         TKUnit.assertEqual(view.text, "");
     });
 }
+
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
+    let view = new textFieldModule.TextField();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        TKUnit.assertEqual(view.text, "", "Text");
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration");
+        TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
+
+        view.text = "NormalText";
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}
+
+export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
+    let view = new textFieldModule.TextField();
+    let formattedString = helper._generateFormattedString();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.formattedText = formattedString;
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 10;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+    });
+}

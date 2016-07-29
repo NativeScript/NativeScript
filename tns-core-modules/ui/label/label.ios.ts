@@ -42,9 +42,6 @@ export class Label extends common.Label {
 
     public onLoaded() {
         super.onLoaded();
-
-        this.style._updateTextDecoration();
-        this.style._updateTextTransform();
     }
 
     _requestLayoutOnTextChanged(): void {
