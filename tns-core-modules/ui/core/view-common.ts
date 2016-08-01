@@ -988,7 +988,10 @@ export class View extends ProxyObject implements definition.View {
         if (!view) {
             throw new Error("Expecting a valid View instance.");
         }
-
+        if(!(view instanceof View))
+        {
+            throw new Error(view + " is not a valid View instance.");
+        }
         if (view._parent) {
             throw new Error("View already has a parent. View: " + view + " Parent: " + view._parent);
         }
