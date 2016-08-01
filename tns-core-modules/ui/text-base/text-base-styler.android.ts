@@ -150,7 +150,7 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
 
-        if (new Number(device.sdkVersion) >= 21) {
+        if (parseInt(device.sdkVersion, 10) >= 21) {
             style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
                 TextBaseStyler.setLetterSpacingProperty,
                 TextBaseStyler.resetLetterSpacingProperty,

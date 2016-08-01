@@ -121,7 +121,7 @@ export class ButtonStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "Button");
 
-        if (new Number(device.sdkVersion) >= 21) {
+        if (parseInt(device.sdkVersion, 10) >= 21) {
             style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
                 TextBaseStyler.setLetterSpacingProperty,
                 TextBaseStyler.resetLetterSpacingProperty,

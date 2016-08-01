@@ -1,4 +1,7 @@
 {
+  "name": "NativeScript",
+  "description": "Telerik NativeScript Core Modules",
+  "homepage": "https://www.nativescript.org",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"
