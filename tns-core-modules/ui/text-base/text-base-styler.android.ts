@@ -3,7 +3,7 @@ import utils = require("utils/utils");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
 import enums = require("ui/enums");
-import {isAndroid, device} from "platform";
+import {device} from "platform";
 
 export class TextBaseStyler implements style.Styler {
     // color
@@ -150,7 +150,7 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
 
-        if (!isAndroid || new Number(device.sdkVersion) >= 21) {
+        if (new Number(device.sdkVersion) >= 21) {
             style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
                 TextBaseStyler.setLetterSpacingProperty,
                 TextBaseStyler.resetLetterSpacingProperty,

@@ -3,7 +3,7 @@ import utils = require("utils/utils")
 import dependencyObservable = require("ui/core/dependency-observable");
 import style = require("ui/styling/style");
 import { TextBaseStyler as TBS } from "ui/text-base/text-base-styler";
-import {isAndroid, device} from "platform";
+import {device} from "platform";
 
 global.moduleMerge(common, exports);
 
@@ -121,7 +121,7 @@ export class ButtonStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "Button");
 
-        if (!isAndroid || new Number(device.sdkVersion) >= 21) {
+        if (new Number(device.sdkVersion) >= 21) {
             style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
                 TextBaseStyler.setLetterSpacingProperty,
                 TextBaseStyler.resetLetterSpacingProperty,
