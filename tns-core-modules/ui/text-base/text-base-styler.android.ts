@@ -3,6 +3,7 @@ import utils = require("utils/utils");
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
 import enums = require("ui/enums");
+import {isAndroid, device} from "platform";
 
 export class TextBaseStyler implements style.Styler {
     // color
@@ -109,20 +110,16 @@ export class TextBaseStyler implements style.Styler {
     }
 
     // letter-spacing
-    private static getLetterSpacingProperty(view: view.View) : any {
-        return view.android.getLetterSpacing ? view.android.getLetterSpacing() : 0;
+    private static getLetterSpacingProperty(view: view.View): any {
+        return view.android.getLetterSpacing();
     }
 
     private static setLetterSpacingProperty(view: view.View, newValue: any) {
-        if(view.android.setLetterSpacing) {
-           view.android.setLetterSpacing(newValue);
-        }
+        view.android.setLetterSpacing(newValue);
     }
 
     private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
-        if(view.android.setLetterSpacing) {
-            view.android.setLetterSpacing(nativeValue);
-        }
+        view.android.setLetterSpacing(nativeValue);
     }
 
     public static registerHandlers() {
@@ -153,10 +150,12 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
 
-        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setLetterSpacingProperty,
-            TextBaseStyler.resetLetterSpacingProperty,
-            TextBaseStyler.getLetterSpacingProperty), "TextBase");
+        if (!isAndroid || new Number(device.sdkVersion) >= 21) {
+            style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+                TextBaseStyler.setLetterSpacingProperty,
+                TextBaseStyler.resetLetterSpacingProperty,
+                TextBaseStyler.getLetterSpacingProperty), "TextBase");
+        }
 
         // !!! IMPORTANT !!! Button registrations were moved to button.android.ts to make sure they 
         // are executed when there is a Button on the page: https://github.com/NativeScript/NativeScript/issues/1902
