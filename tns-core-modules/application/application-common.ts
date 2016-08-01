@@ -112,8 +112,8 @@ export function __onLiveSync() {
         // Reload app.css in case it was changed.
         loadCss();
 
-        // Reload current page.
-        frame.reloadPage();
+        global.__onLiveSyncCore();
+
     } catch (ex) {
         // Show the error as modal page, save reference to the page in global context.
         ensureBuilder();
@@ -121,3 +121,9 @@ export function __onLiveSync() {
         global.errorPage.showModal();
     }
 }
+
+export function __onLiveSyncCore() {
+    // Reload current page.
+    frame.reloadPage();
+}
+global.__onLiveSyncCore = __onLiveSyncCore;
