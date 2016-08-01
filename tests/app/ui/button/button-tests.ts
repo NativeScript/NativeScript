@@ -310,7 +310,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
         
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
-        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }
 
@@ -323,6 +323,6 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
         
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
-        TKUnit.assertEqual(view.style.letterSpacing, 10, "LetterSpacing");
+        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }

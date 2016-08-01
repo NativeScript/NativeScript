@@ -3,6 +3,7 @@ import utils = require("utils/utils")
 import dependencyObservable = require("ui/core/dependency-observable");
 import style = require("ui/styling/style");
 import { TextBaseStyler as TBS } from "ui/text-base/text-base-styler";
+import {device} from "platform";
 
 global.moduleMerge(common, exports);
 
@@ -32,12 +33,12 @@ export class Button extends common.Button {
                     return that.get();
                 },
 
-                onClick: function(v) {
+                onClick: function (v) {
                     if (this.owner) {
                         this.owner._emit(common.Button.tapEvent);
                     }
                 }
-        }));
+            }));
 
         this._android.setOnTouchListener(new android.view.View.OnTouchListener(
             <utils.Owned & android.view.View.IOnTouchListener>{
@@ -45,7 +46,7 @@ export class Button extends common.Button {
                     return that.get();
                 },
 
-                onTouch: function(v, ev) {
+                onTouch: function (v, ev) {
                     if (ev.getAction() === 0) { // down
                         this.owner._goToVisualState("highlighted");
                     }
@@ -120,10 +121,12 @@ export class ButtonStyler implements style.Styler {
             TextBaseStyler.setWhiteSpaceProperty,
             TextBaseStyler.resetWhiteSpaceProperty), "Button");
 
-        style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setLetterSpacingProperty,
-            TextBaseStyler.resetLetterSpacingProperty,
-            TextBaseStyler.getLetterSpacingProperty), "Button");
+        if (parseInt(device.sdkVersion, 10) >= 21) {
+            style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+                TextBaseStyler.setLetterSpacingProperty,
+                TextBaseStyler.resetLetterSpacingProperty,
+                TextBaseStyler.getLetterSpacingProperty), "Button");
+        }
     }
 }
 
