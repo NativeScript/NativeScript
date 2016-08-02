@@ -24,12 +24,12 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "next"
+    "tns-core-modules-widgets": "2.2.0"
   },
   "nativescript": {
     "platforms": {
-      "ios": "2.1.0",
-      "android": "2.1.1"
+      "ios": "2.2.0",
+      "android": "2.2.0"
     }
   }
 }
