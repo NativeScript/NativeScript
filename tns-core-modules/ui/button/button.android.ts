@@ -4,6 +4,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import style = require("ui/styling/style");
 import { TextBaseStyler as TBS } from "ui/text-base/text-base-styler";
 import {device} from "platform";
+let styleHandlersInitialized: boolean;
 
 global.moduleMerge(common, exports);
 
@@ -15,6 +16,10 @@ export class Button extends common.Button {
         super();
 
         this._isPressed = false;
+        if(!styleHandlersInitialized) {
+            styleHandlersInitialized = true;
+            ButtonStyler.registerHandlers();
+        }
     }
 
     get android(): android.widget.Button {
@@ -129,5 +134,3 @@ export class ButtonStyler implements style.Styler {
         }
     }
 }
-
-ButtonStyler.registerHandlers();
