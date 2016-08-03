@@ -10,6 +10,7 @@ import style = require("ui/styling/style");
 import enums = require("ui/enums");
 import background = require("ui/styling/background");
 import {CommonLayoutParams, Thickness} from "ui/styling/style";
+import {device} from "platform";
 
 global.moduleMerge(viewCommon, exports);
 
@@ -51,12 +52,22 @@ function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.Pr
 }
 (<proxy.PropertyMetadata>viewCommon.View.isUserInteractionEnabledProperty.metadata).onSetNativeValue = onIsUserInteractionEnabledPropertyChanged;
 
+let styleHandlersInitialized: boolean;
+
 export class View extends viewCommon.View {
     private _disableUserInteractionListener: android.view.View.OnTouchListener = new android.view.View.OnTouchListener({
         onTouch: function (view: android.view.View, event: android.view.MotionEvent) {
             return true;
         }
     });
+
+    constructor() {
+        super();
+        if (!styleHandlersInitialized) {
+            styleHandlersInitialized = true;
+            ViewStyler.registerHandlers();
+        }
+    }
 
     public _updateOnTouchListener(isUserInteractionEnabled: boolean) {
         // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
@@ -784,12 +795,12 @@ export class ViewStyler implements style.Styler {
         style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setTranslateYProperty,
             ViewStyler.resetTranslateYProperty));
-
-        style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setZIndexProperty,
-            ViewStyler.resetZIndexProperty,
-            ViewStyler.getZIndexProperty));
+            
+        if (parseInt(device.sdkVersion, 10) >= 21) {
+            style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
+                ViewStyler.setZIndexProperty,
+                ViewStyler.resetZIndexProperty,
+                ViewStyler.getZIndexProperty));
+        }
     }
 }
-
-ViewStyler.registerHandlers();
