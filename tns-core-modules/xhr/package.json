@@ -1,5 +1,5 @@
 {
 	"name" : "xhr",
-  	"main" : "xhr.js",
+  	"main" : "xhr",
 	"nativescript": {}
 }

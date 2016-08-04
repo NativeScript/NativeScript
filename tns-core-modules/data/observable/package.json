@@ -1,4 +1,4 @@
 { 
   "name" : "observable",
-  "main" : "observable.js"
+  "main" : "observable"
 }
