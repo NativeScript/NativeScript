@@ -1,6 +1,6 @@
 { 
 	"name" : "camera",
-  	"main" : "camera.js",
+  	"main" : "camera",
 	"nativescript": {}
 }
 

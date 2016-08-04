@@ -1,5 +1,5 @@
 {
 	"name" : "connectivity",
-	"main" : "connectivity.js",
+	"main" : "connectivity",
 	"nativescript": {}
 }

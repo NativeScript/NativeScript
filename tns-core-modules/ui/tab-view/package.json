@@ -1,2 +1,2 @@
 { "name" : "ui/tab-view",
-  "main" : "tab-view.js" }
+  "main" : "tab-view" }

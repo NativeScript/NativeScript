@@ -1,5 +1,5 @@
 {
 	"name" : "text",
-  	"main" : "text.js",
+  	"main" : "text",
 	"nativescript": {}
 }

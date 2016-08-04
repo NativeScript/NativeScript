@@ -1,5 +1,5 @@
 { 
 	"name" : "trace",
-  	"main" : "trace.js",
+  	"main" : "trace",
 	"nativescript": {}
 }

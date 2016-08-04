@@ -1,5 +1,5 @@
 {
 	"name" : "platform",
-  	"main" : "platform.js",
+  	"main" : "platform",
 	"nativescript": {}
 }

@@ -1,6 +1,6 @@
 { 
 	"name" : "color",
-  	"main" : "color.js",
+  	"main" : "color",
 	"nativescript": {}
 }
 

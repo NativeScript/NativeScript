@@ -1,5 +1,5 @@
 {
 	"name" : "xml",
-  	"main" : "xml.js",
+  	"main" : "xml",
 	"nativescript": {}
 }

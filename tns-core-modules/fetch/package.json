@@ -1,5 +1,5 @@
 { 
 	"name" : "fetch",
-  	"main" : "fetch.js",
+  	"main" : "fetch",
 	"nativescript": {}
 }
