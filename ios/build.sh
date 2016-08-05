@@ -1,3 +1,8 @@
+#!/bin/sh
+
+echo "Set exit on simple errors"
+set -e
+
 echo "Build for iphonesimulator"
 xcodebuild -project TNSWidgets/TNSWidgets.xcodeproj -sdk iphonesimulator -target TNSWidgets -configuration Release clean build CONFIGURATION_BUILD_DIR=build/Release-iphonesimulator
 
