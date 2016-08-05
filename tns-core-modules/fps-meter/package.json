@@ -1,6 +1,6 @@
 {
 	"name" : "fps-meter",
-  	"main" : "fps-meter.js",
+  	"main" : "fps-meter",
 	"nativescript": {}
 }
 

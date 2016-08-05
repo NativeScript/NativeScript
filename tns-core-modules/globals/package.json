@@ -1,6 +1,6 @@
 {
 	"name" : "globals",
-  	"main" : "globals.js",
+  	"main" : "globals",
 	"nativescript": {}
 }
 

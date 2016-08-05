@@ -1,5 +1,5 @@
 {
 	"name" : "timer",
-  	"main" : "timer.js",
+  	"main" : "timer",
 	"nativescript": {}
 }

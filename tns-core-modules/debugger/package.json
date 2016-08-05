@@ -1,5 +1,5 @@
 {
 	"name" : "debugger",
-  	"main" : "debugger.js",
+  	"main" : "debugger",
 	"nativescript": {}
 }

@@ -439,24 +439,37 @@ module.exports = function(grunt) {
         "copy:childPackageFiles"
     ]);
 
-    grunt.registerTask("check-packagejson-boms", function() {
-        function hasBOM(filepath) {
-            var buf = grunt.file.read(filepath, { encoding: null });
-            return (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF);
-        }
+    function validatePackageJsons(fileValidator, errorFormatter) {
         var packageDescriptors = grunt.file.expand({}, [
-            '**/package.json',
-            '!node_modules/**'
+            'tns-core-modules/**/package.json'
         ]);
         var errors = packageDescriptors.map(function(packagePath) {
-            if (hasBOM(packagePath)) {
-                return "File " + packagePath + " contains a UTF-8 BOM.";
+            if (fileValidator(packagePath)) {
+                return errorFormatter(packagePath);
             } else {
                 return null;
             }
         }).filter(function(errorMessage) { return !!errorMessage; });
         if (errors.length > 0)
             grunt.fail.fatal("\n" + errors.join("\n"));
+    }
+
+    grunt.registerTask("check-packagejson-boms", function() {
+        validatePackageJsons(function (filepath) {
+            var buf = grunt.file.read(filepath, { encoding: null });
+            return (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF);
+        }, function(filepath) {
+                return "File " + filepath + " contains a UTF-8 BOM.";
+        });
+    });
+
+    grunt.registerTask("check-packagejson-mains", function() {
+        validatePackageJsons(function (filepath) {
+            var packageData = grunt.file.readJSON(filepath);
+            return /\.js/i.test(packageData.main || "");
+        }, function(filepath) {
+            return "File " + filepath + " contains a broken main setting.";
+        });
     });
 
     grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, ".", localCfg.srcTnsCoreModules));
@@ -475,6 +488,7 @@ module.exports = function(grunt) {
         "clean:build",
         "shell:getGitSHA",
         "check-packagejson-boms",
+        "check-packagejson-mains",
         "compile-ts",
         "collect-modules-raw-files",
         "copy:definitionFiles",

@@ -1,2 +1,2 @@
 { "name" : "builder",
-  "main" : "builder.js" }
+  "main" : "builder" }

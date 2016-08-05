@@ -1,6 +1,6 @@
 {
 	"name" : "location",
-  	"main" : "location.js",
+  	"main" : "location",
 	"nativescript": {}
 }
 

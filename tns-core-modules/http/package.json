@@ -1,6 +1,6 @@
 {
 	"name" : "http",
-  	"main" : "http.js",
+  	"main" : "http",
 	"nativescript": {}
 }
 
