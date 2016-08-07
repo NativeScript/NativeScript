@@ -9,7 +9,7 @@ import * as types from "utils/types";
 import style = require("ui/styling/style");
 import enums = require("ui/enums");
 import background = require("ui/styling/background");
-import {CommonLayoutParams, Thickness} from "ui/styling/style";
+import {CommonLayoutParams} from "ui/styling/style";
 import {device} from "platform";
 
 global.moduleMerge(viewCommon, exports);
@@ -254,6 +254,12 @@ export class View extends viewCommon.View {
         }
 
         // copy all the locally cached values to the native android widget
+        // Initialize padding default values.
+        // TODO: remove this code.
+        let padding = this.style.paddingLeft;
+        padding = this.style.paddingTop;
+        padding = this.style.paddingRight;
+        padding = this.style.paddingBottom;
         this._syncNativeProperties();
         trace.notifyEvent(this, "_onContextChanged");
     }
@@ -650,23 +656,64 @@ export class ViewStyler implements style.Styler {
         ViewStyler.setNativeLayoutParamsProperty(view, style.nativeLayoutParamsProperty.defaultValue)
     }
 
-    private static setPaddingProperty(view: View, newValue: Thickness) {
+    private static getNativePaddingLeft(view: View): number {
         let density = utils.layout.getDisplayDensity();
-        let style = view.style;
-        let left = Math.round((style.paddingLeft + view.borderWidth) * density);
-        let top = Math.round((style.paddingTop + view.borderWidth) * density);
-        let right = Math.round((style.paddingRight + view.borderWidth) * density);
-        let bottom = Math.round((style.paddingBottom + view.borderWidth) * density);
-        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+        return view._nativeView.getPaddingLeft() / density;
     }
 
-    private static resetPaddingProperty(view: View, nativeValue: Thickness) {
-        var density = utils.layout.getDisplayDensity();
-        var left = Math.round((nativeValue.left + view.borderWidth) * density);
-        var top = Math.round((nativeValue.top + view.borderWidth) * density);
-        var right = Math.round((nativeValue.right + view.borderWidth) * density);
-        var bottom = Math.round((nativeValue.bottom + view.borderWidth) * density);
-        (<android.view.View>view._nativeView).setPadding(left, top, right, bottom);
+    private static getNativePaddingTop(view: View): number {
+        let density = utils.layout.getDisplayDensity();
+        return view._nativeView.getPaddingTop() / density;
+    }
+
+    private static getNativePaddingRight(view: View): number {
+        let density = utils.layout.getDisplayDensity();
+        return view._nativeView.getPaddingRight() / density;
+    }
+
+    private static getNativePaddingBottom(view: View): number {
+        let density = utils.layout.getDisplayDensity();
+        return view._nativeView.getPaddingBottom() / density;
+    }
+
+    private static setNativePaddingLeft(view: View, value: number): void {
+        let nativeView = view._nativeView;
+        let density = utils.layout.getDisplayDensity();
+        let left = (value + view.borderWidth) * density;
+        let top = nativeView.getPaddingTop();
+        let right = nativeView.getPaddingRight();
+        let bottom = nativeView.getPaddingBottom();
+        nativeView.setPadding(left, top, right, bottom);
+    }
+
+    private static setNativePaddingTop(view: View, value: number): void {
+        let nativeView = view._nativeView;
+        let density = utils.layout.getDisplayDensity();
+        let left = nativeView.getPaddingLeft();
+        let top = (value + view.borderWidth) * density;
+        let right = nativeView.getPaddingRight();
+        let bottom = nativeView.getPaddingBottom();
+        nativeView.setPadding(left, top, right, bottom);
+    }
+
+    private static setNativePaddingRight(view: View, value: number): void {
+        let nativeView = view._nativeView;
+        let density = utils.layout.getDisplayDensity();
+        let left = nativeView.getPaddingLeft();
+        let top = nativeView.getPaddingTop();
+        let right = (value + view.borderWidth) * density;
+        let bottom = nativeView.getPaddingBottom();
+        nativeView.setPadding(left, top, right, bottom);
+    }
+
+    private static setNativePaddingBottom(view: View, value: number): void {
+        let nativeView = view._nativeView;
+        let density = utils.layout.getDisplayDensity();
+        let left = nativeView.getPaddingLeft();
+        let top = nativeView.getPaddingTop();
+        let right = nativeView.getPaddingRight();
+        let bottom = (value + view.borderWidth) * density;
+        nativeView.setPadding(left, top, right, bottom);
     }
 
     // Rotate
@@ -764,17 +811,32 @@ export class ViewStyler implements style.Styler {
             ViewStyler.setNativeLayoutParamsProperty,
             ViewStyler.resetNativeLayoutParamsProperty));
 
-        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setPaddingProperty,
-            ViewStyler.resetPaddingProperty), "TextBase");
+        style.registerHandler(style.paddingLeftProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingLeft, ViewStyler.setNativePaddingLeft, ViewStyler.getNativePaddingLeft), "TextBase");
+        style.registerHandler(style.paddingTopProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingTop, ViewStyler.setNativePaddingTop, ViewStyler.getNativePaddingTop), "TextBase");
+        style.registerHandler(style.paddingRightProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingRight, ViewStyler.setNativePaddingRight, ViewStyler.getNativePaddingRight), "TextBase");
+        style.registerHandler(style.paddingBottomProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingBottom, ViewStyler.setNativePaddingBottom, ViewStyler.getNativePaddingBottom), "TextBase");
 
-        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setPaddingProperty,
-            ViewStyler.resetPaddingProperty), "Button");
+        style.registerHandler(style.paddingLeftProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingLeft, ViewStyler.setNativePaddingLeft, ViewStyler.getNativePaddingLeft), "Button");
+        style.registerHandler(style.paddingTopProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingTop, ViewStyler.setNativePaddingTop, ViewStyler.getNativePaddingTop), "Button");
+        style.registerHandler(style.paddingRightProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingRight, ViewStyler.setNativePaddingRight, ViewStyler.getNativePaddingRight), "Button");
+        style.registerHandler(style.paddingBottomProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingBottom, ViewStyler.setNativePaddingBottom, ViewStyler.getNativePaddingBottom), "Button");
 
-        style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setPaddingProperty,
-            ViewStyler.resetPaddingProperty), "LayoutBase");
+        style.registerHandler(style.paddingLeftProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingLeft, ViewStyler.setNativePaddingLeft, ViewStyler.getNativePaddingLeft), "LayoutBase");
+        style.registerHandler(style.paddingTopProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingTop, ViewStyler.setNativePaddingTop, ViewStyler.getNativePaddingTop), "LayoutBase");
+        style.registerHandler(style.paddingRightProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingRight, ViewStyler.setNativePaddingRight, ViewStyler.getNativePaddingRight), "LayoutBase");
+        style.registerHandler(style.paddingBottomProperty,
+            new style.StylePropertyChangedHandler(ViewStyler.setNativePaddingBottom, ViewStyler.setNativePaddingBottom, ViewStyler.getNativePaddingBottom), "LayoutBase");
 
         style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setRotateProperty,
@@ -795,7 +857,7 @@ export class ViewStyler implements style.Styler {
         style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setTranslateYProperty,
             ViewStyler.resetTranslateYProperty));
-            
+
         if (parseInt(device.sdkVersion, 10) >= 21) {
             style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
                 ViewStyler.setZIndexProperty,
