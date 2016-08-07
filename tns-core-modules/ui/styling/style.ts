@@ -1224,7 +1224,7 @@ export var nativePaddingsProperty = new styleProperty.Property("paddingNative", 
     new PropertyMetadata(undefined, null, null, null, thicknessComparer));
 
 // TODO: separate into .android/.ios files so that there is no need for such checks
-var defaultPadding = platform.device.os === platform.platformNames.android ? undefined : 0;
+var defaultPadding = platform.isAndroid ? undefined : 0;
 
 export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), converters.numberConverter);
