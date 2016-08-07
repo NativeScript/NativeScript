@@ -9,7 +9,7 @@ import * as types from "utils/types";
 import style = require("ui/styling/style");
 import enums = require("ui/enums");
 import background = require("ui/styling/background");
-import {CommonLayoutParams, Thickness} from "ui/styling/style";
+import {CommonLayoutParams} from "ui/styling/style";
 import {device} from "platform";
 
 global.moduleMerge(viewCommon, exports);
@@ -677,7 +677,6 @@ export class ViewStyler implements style.Styler {
     }
 
     private static setNativePaddingLeft(view: View, value: number): void {
-        let style = view.style;
         let nativeView = view._nativeView;
         let density = utils.layout.getDisplayDensity();
         let left = (value + view.borderWidth) * density;
@@ -688,7 +687,6 @@ export class ViewStyler implements style.Styler {
     }
 
     private static setNativePaddingTop(view: View, value: number): void {
-        let style = view.style;
         let nativeView = view._nativeView;
         let density = utils.layout.getDisplayDensity();
         let left = nativeView.getPaddingLeft();
@@ -699,7 +697,6 @@ export class ViewStyler implements style.Styler {
     }
 
     private static setNativePaddingRight(view: View, value: number): void {
-        let style = view.style;
         let nativeView = view._nativeView;
         let density = utils.layout.getDisplayDensity();
         let left = nativeView.getPaddingLeft();
@@ -710,7 +707,6 @@ export class ViewStyler implements style.Styler {
     }
 
     private static setNativePaddingBottom(view: View, value: number): void {
-        let style = view.style;
         let nativeView = view._nativeView;
         let density = utils.layout.getDisplayDensity();
         let left = nativeView.getPaddingLeft();
