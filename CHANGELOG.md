@@ -1,6 +1,26 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.2.0 (2016, August 10)
+
+### Fixed
+
+- [(#2427)](https://github.com/NativeScript/NativeScript/pull/2427) Refactor application of text decoration, text transform, letter spacing and formatted text
+- [(#2414)](https://github.com/NativeScript/NativeScript/pull/2414) CSS background-image on Label not loading in iOS
+- [(#2413)](https://github.com/NativeScript/NativeScript/pull/2413) Multiple HTTP response headers not returned correctly on Android
+- [(#2391)](https://github.com/NativeScript/NativeScript/pull/2391) App crash when editing text and text-view is removed
+- [(#2362)](https://github.com/NativeScript/NativeScript/pull/2362) Multiple ScrollViews on one page fires scrollEvent simultaneously
+- [(#2173)](https://github.com/NativeScript/NativeScript/pull/2173) iOS onSuspend + showModal() returning "Error: This value is not a native object"
+- [(#2121)](https://github.com/NativeScript/NativeScript/pull/2121) The navigation bar duplicates when going to TabView's "More" tab
+
+### New
+
+- [(#2528)](https://github.com/NativeScript/NativeScript/issues/2528) Letter spacing in EM units
+- [(#2457)](https://github.com/NativeScript/NativeScript/issues/2457) Feature Request - Nested Bindable Observables
+- [(#1278)](https://github.com/NativeScript/NativeScript/issues/1278) TabView button icons (iOS)
+- [(#734)](https://github.com/NativeScript/NativeScript/issues/734) Add API to retrieve the following standard user directories under iOS
+- [(#731)](https://github.com/NativeScript/NativeScript/issues/731) NavigationEntry.bindingContext property
+
 ##2.1.0 (2016, June 30)
 
 ### Fixed
