@@ -51,18 +51,37 @@ export class Observable implements definition.Observable {
 
     private _observers = {};
 
+    public static fromJSON(json: any): Observable {
+        let observable = new Observable();
+        observable.addPropertiesFromJSON(observable, json, false);
+        return observable;
+    }
+
+    public static fromJSONRecursive(json: any): Observable {
+        let observable = new Observable();
+        observable.addPropertiesFromJSON(observable, json, true);
+        return observable;
+    }
+
+    private addPropertiesFromJSON(observable: Observable, json: any, recursive?: boolean) {
+        let isRecursive = recursive || false;
+        observable._map = new Map<string, Object>();
+        for (var prop in json) {
+            if (json.hasOwnProperty(prop)) {
+                if (isRecursive) {
+                    if (!Array.isArray(json[prop]) && typeof json[prop] === 'object' && types.getClass(json[prop]) !== 'ObservableArray') {
+                        json[prop] = Observable.fromJSONRecursive(json[prop]);
+                    }
+                }
+                observable._defineNewProperty(prop);
+                observable.set(prop, json[prop]);
+            }
+        }
+    }
+
     constructor(json?: any) {
         if (json) {
-            this._map = new Map<string, Object>();
-            for (var prop in json) {
-                if (json.hasOwnProperty(prop)) {
-                    if (!Array.isArray(json[prop]) && typeof json[prop] === 'object') {
-                        json[prop] = new Observable(json[prop]);
-                    }
-                    this._defineNewProperty(prop);
-                    this.set(prop, json[prop]);
-                }
-            }
+            this.addPropertiesFromJSON(this, json);
         }
     }
 

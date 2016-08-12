@@ -71,7 +71,18 @@ declare module "data/observable" {
         public static propertyChangeEvent: string;
 
         /**
+         * Creates an Observable instance and sets its properties according to the supplied JSON object. 
+         */
+        public static fromJSON(json: any): Observable;
+
+        /**
          * Creates an Observable instance and sets its properties according to the supplied JSON object.
+         * This function will create new Observable for each nested object (expect arrays and functions) from supplied JSON.
+         */
+        public static fromJSONRecursive(json: any): Observable;
+
+        /**
+         * [Deprecated please use static functions fromJSON or fromJSONRecursive instead] Creates an Observable instance and sets its properties according to the supplied JSON object.
          */
         constructor(json?: any);
 

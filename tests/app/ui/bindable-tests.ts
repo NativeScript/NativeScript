@@ -1265,7 +1265,7 @@ export function test_only_Bindable_BindingContext_Null_DoesNotThrow() {
 
 export function test_Observable_from_nested_json_binds_correctly() {
     let expectedValue = "Test";
-    var model = new observable.Observable({
+    let model = observable.Observable.fromJSONRecursive({
         "firstObject": {
             "secondObject": {
                 "dummyProperty": "text"
@@ -1286,7 +1286,7 @@ export function test_Observable_from_nested_json_binds_correctly() {
 
 export function test_Observable_from_nested_json_binds_correctly_when_upper_object_is_changed() {
     let expectedValue = "Test";
-    var model = new observable.Observable({
+    let model = observable.Observable.fromJSONRecursive({
         "firstObject": {
             "secondObject": {
                 "dummyProperty": "text"
