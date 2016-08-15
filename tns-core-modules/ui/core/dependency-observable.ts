@@ -93,8 +93,7 @@ export class Property implements definition.Property {
 
     constructor(public name: string, public ownerType: string, public metadata: PropertyMetadata, public valueConverter?: (value: string) => any) {
         // register key
-             this.key = generatePropertyKey(name, ownerType, true);
-
+        this.key = generatePropertyKey(name, ownerType, true);
         if (propertyFromKey[this.key]) {
             throw new Error("Property " + name + " already registered for type " + ownerType + ".");
         }
@@ -141,8 +140,6 @@ export class PropertyEntry implements definition.PropertyEntry {
         this.inheritedValue = this.cssValue = this.localValue = this.visualStateValue = this.effectiveValue = undefined;
     }
 }
-
-var defaultValueForPropertyPerType: Map<string, any> = new Map<string, any>();
 
 export class DependencyObservable extends Observable implements definition.DependencyObservable {
     private _propertyEntries = {};

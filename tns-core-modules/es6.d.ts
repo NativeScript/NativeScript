@@ -26,9 +26,9 @@ interface ObjectConstructor {
     is(value1: any, value2: any): boolean;
     setPrototypeOf(o: any, proto: any): any;
     /**
-     * Returns an array of all symbol properties found directly on object o.
-     * @param o Object to retrieve the symbols from.
-     */
+      * Returns an array of all symbol properties found directly on object o.
+      * @param o Object to retrieve the symbols from.
+      */
     getOwnPropertySymbols(o: any): symbol[];
 }
 
