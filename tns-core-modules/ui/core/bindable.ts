@@ -114,13 +114,22 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     }
 
     public _onBindingContextChanged(oldValue: any, newValue: any) {
+        let bindingContextBinding = this.bindings.get("bindingContext"); 
+        if (bindingContextBinding) {
+            if (!bindingContextBinding.updating) {
+                bindingContextBinding.bind(newValue);
+            }
+        }
+
+        let bindingContextSource = this.bindingContext;
+
         this.bindings.forEach((binding, index, bindings) => {
-            if (!binding.updating && binding.sourceIsBindingContext) {
+            if (!binding.updating && binding.sourceIsBindingContext && binding.options.targetProperty !== "bindingContext") {
                 if (trace.enabled) {
-                    trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${newValue}`, trace.categories.Binding);
+                    trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${bindingContextSource}`, trace.categories.Binding);
                 }
-                if (!types.isNullOrUndefined(newValue)) {
-                    binding.bind(newValue);
+                if (!types.isNullOrUndefined(bindingContextSource)) {
+                    binding.bind(bindingContextSource);
                 } else {
                     binding.clearBinding();
                 }
