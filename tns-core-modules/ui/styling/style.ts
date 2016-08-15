@@ -891,20 +891,11 @@ export class Style extends DependencyObservable implements styling.Style {
 
     public _resetCssValues() {
         this._view._unregisterAllAnimations();
-
-        const that = this;
-        this._eachSetProperty(function (property: Property) {
-            that._resetValue(property, ValueSource.Css);
-            return true;
-        });
+        this._resetValues(ValueSource.Css);
     }
 
     public _resetLocalValues() {
-        const that = this;
-        this._eachSetProperty(function (property: Property) {
-            that._resetValue(property);
-            return true;
-        });
+        this._resetValues(ValueSource.Local);
     }
 
     public _inheritStyleProperties(parent: View) {
@@ -917,16 +908,6 @@ export class Style extends DependencyObservable implements styling.Style {
             return true;
         });
     }
-
-    // public _inheritStyleProperty(property: Property, value: any) {
-    //     // let currentParent = this._view.parent;
-    //     // if (currentParent) {
-    //         // let valueSource = currentParent.style._getValueSource(property);
-    //         // if (valueSource > ValueSource.Default) {
-    //         this._setValue(property, value, ValueSource.Inherited);
-    //         // }
-    //     // }
-    // }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
         if (trace.enabled) {

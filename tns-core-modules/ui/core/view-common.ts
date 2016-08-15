@@ -1061,10 +1061,14 @@ export class View extends ProxyObject implements definition.View {
             view.onUnloaded();
         }
 
-        view._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
-        view._eachSetProperty((property) => {
+        view.unsetInheritedProperties();
+    }
+
+    public unsetInheritedProperties(): void {
+        this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
+        this._eachSetProperty((property) => {
             if (!(property instanceof styling.Property) && property.inheritable) {
-                view._resetValue(property, ValueSource.Inherited);
+                this._resetValue(property, ValueSource.Inherited);
             }
             return true;
         });
