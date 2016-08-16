@@ -45,15 +45,13 @@ export class Label extends common.Label {
     }
 
     _requestLayoutOnTextChanged(): void {
-        console.log("requestLayout called --------------------------------------->");
         if (this._fixedSize === FixedSize.BOTH) {
             return;
         }
-        if (this._fixedSize === FixedSize.WIDTH && !this.textWrap) {
+        if (this._fixedSize === FixedSize.WIDTH && !this.textWrap && this.getMeasuredHeight() > 0) {
             // Single line label with fixed width will skip request layout on text change.
             return;
         }
-        console.log("actual requestLayout called --------------------------------------->");
         super._requestLayoutOnTextChanged();
     }
 
@@ -74,13 +72,13 @@ export class Label extends common.Label {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            if (this.text !== "") {
+            //if (this.text !== "") {
                 this._fixedSize = (widthMode === utils.layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
                     | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
-            }
-            else {
-                this._fixedSize = FixedSize.NONE;
-            }
+            //}
+            //else {
+            //    this._fixedSize = FixedSize.NONE;
+            //}
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;

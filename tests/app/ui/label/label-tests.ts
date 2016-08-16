@@ -551,8 +551,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
     }
 
-    public test_SettingTextWhenInFixedSizeGridShouldRequestLayout() {
-        this.requestLayoutFixture(true, "", () => {
+    public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
+        this.requestLayoutFixture(false, "", () => {
             let host = new GridLayout();
             host.width = 100;
             host.height = 100;
@@ -569,8 +569,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         });
     }
 
-    public test_SettingTextWhenFixedWidthAndHeightDoesRequestLayout() {
-        this.requestLayoutFixture(true, "", label => {
+    public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
+        this.requestLayoutFixture(false, "", label => {
             let host = new StackLayout();
             label.width = 100;
             label.height = 100;
