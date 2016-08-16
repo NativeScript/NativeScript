@@ -1304,3 +1304,31 @@ export function test_Observable_from_nested_json_binds_correctly_when_upper_obje
 
     TKUnit.assertEqual(obj.get("test"), expectedValue);
 }
+
+export function test_BindingToBindingContextProperty_ShouldUseNewContext() {
+    let stackLayout = new stackLayoutModule.StackLayout();
+    let label = new labelModule.Label();
+    stackLayout.addChild(label);
+
+    label.bind({
+        sourceProperty: 'context',
+        targetProperty: 'bindingContext'
+    });
+
+    label.bind({
+        sourceProperty: 'text',
+        targetProperty: 'text'
+    });
+
+    let testBindingContext = observable.Observable.fromJSONRecursive({
+        context: {
+            text: 'Alabala'
+        }
+    });
+
+    stackLayout.bindingContext = testBindingContext;
+
+    (<any>testBindingContext).context.text = "Tralala";
+
+    TKUnit.assertEqual(label.text, "Tralala");
+}
