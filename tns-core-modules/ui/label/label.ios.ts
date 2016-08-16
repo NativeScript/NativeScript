@@ -72,13 +72,8 @@ export class Label extends common.Label {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            //if (this.text !== "") {
-                this._fixedSize = (widthMode === utils.layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
-                    | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
-            //}
-            //else {
-            //    this._fixedSize = FixedSize.NONE;
-            //}
+            this._fixedSize = (widthMode === utils.layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
+                | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
