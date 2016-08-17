@@ -69,6 +69,13 @@ export class Button extends common.Button {
         this.style._updateTextTransform();
     }
 
+    public onUnloaded() {
+        super.onUnloaded();
+        if (this._stateChangedHandler) {
+            this._stateChangedHandler.stop();
+        }
+    }
+
     @PseudoClassHandler("normal", "highlighted")
     _updateHandler(subscribe: boolean) {
         if (subscribe) {
