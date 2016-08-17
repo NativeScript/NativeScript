@@ -48,7 +48,7 @@ export class Label extends common.Label {
         if (this._fixedSize === FixedSize.BOTH) {
             return;
         }
-        if (this._fixedSize === FixedSize.WIDTH && !this.textWrap) {
+        if (this._fixedSize === FixedSize.WIDTH && !this.textWrap && this.getMeasuredHeight() > 0) {
             // Single line label with fixed width will skip request layout on text change.
             return;
         }
