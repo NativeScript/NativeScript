@@ -55,7 +55,7 @@ export var testLocation = function (done) {
     var locationManager = new LocationManager();
 
     locationManager.startLocationMonitoring(function (location) {
-        //console.log('Location received: ' + location);
+        //console.log('Location received: ' + JSON.stringify(location));
         // >> (hide)
         locationReceived = true;
         locationManager.stopLocationMonitoring();
@@ -120,7 +120,7 @@ function doOnce(options: locationModule.Options, done) {
     }, function (error) {
         locationReceived = error;
         done(error);
-        });
+    });
 }
 
 export var testLocationOnce = function (done) {
@@ -136,14 +136,17 @@ export var testLocationOnceMaximumAge = function (done) {
         return done(null);
     }
     TKUnit.waitUntilReady(function () { return false; }, 2);
-    doOnce({ maximumAge: 20000, timeout: 0 }, done); // this should pass
-    try {
-        doOnce({ maximumAge: 1000, timeout: 0 }, done);
-        TKUnit.assert(false, "maximumAge check failed");
-    }
-    catch (e) {
-        //
-    }
+    doOnce({ maximumAge: 86400000, timeout: 0 }, done); // this should pass max age denotes that Real location is taken today.
+    doOnce({ maximumAge: 1000, timeout: 0 }, (err) => {
+        if (err && err.message === "timeout is 0 and last known location is older than maximumAge") {
+            // since last known location is taken before 1 sec (what is the meaning of the maximumAge: 1000 value)
+            // we consider this as a successful test since we test that maxAge check is working
+            done(null);
+        }
+        else {
+            done(new Error("maximumAge check failed"));
+        }
+    });
 };
 
 export var testLocationOnceTimeout10000 = function (done) {
@@ -158,7 +161,7 @@ export var testSnippet = function (done) {
     // >> location-timeour
     // var locationModule = require("location");
     //// options can also look like { maximumAge: 2000, timeout: 20 * 1000 }
-    locationModule.getLocation({ maximumAge: 30000, timeout: 0 }).then(function (location) {
+    locationModule.getLocation({ maximumAge: 30000, timeout: 5000 }).then(function (location) {
         //console.log('Location received: ' + location);
         // >> (hide)
         locationReceived = true;
