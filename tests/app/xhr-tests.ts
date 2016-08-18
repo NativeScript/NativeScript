@@ -298,7 +298,27 @@ export function test_xhr_responseType_switched_to_JSON_if_header_present() {
             "Content-Type": "application/json"
         }
 
-    }
+    };
+    xhr._loadResponse(response);
+
+    TKUnit.assertEqual(xhr.responseType, "json");
+    TKUnit.assertEqual(xhr.response.data, 42);
+}
+
+export function test_xhr_responseType_switched_to_JSON_if_headers_content_type_has_json_suffix() {
+    const xhr = <any>new XMLHttpRequest();
+    const response = {
+        statusCode: 200,
+        content: {
+            toString: function () {
+                return this.raw
+            },
+            raw: '{"data": 42}'
+        },
+        headers: {
+            "Content-Type": "type/media.type+json"
+        }
+    };
     xhr._loadResponse(response);
 
     TKUnit.assertEqual(xhr.responseType, "json");
