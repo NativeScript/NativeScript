@@ -2,6 +2,8 @@ import imageCommon = require("./image-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import enums = require("ui/enums");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
 import * as trace from "trace";
 import * as utils from "utils/utils";
 
@@ -39,6 +41,7 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
 export class Image extends imageCommon.Image {
     private _ios: UIImageView;
     private _imageSourceAffectsLayout: boolean = true;
+    private _templateImageWasCreated: boolean = false;
 
     constructor() {
         super();
@@ -54,7 +57,21 @@ export class Image extends imageCommon.Image {
         return this._ios;
     }
 
+    public _setTintColor(value: any) {
+       if (value !== null && this._ios.image && !this._templateImageWasCreated) {
+             this._ios.image = this._ios.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+             this._templateImageWasCreated = true;
+         }
+         this._ios.tintColor = value;
+    }
+
     public _setNativeImage(nativeImage: any) {
+        if (this.style.color && nativeImage) {
+            nativeImage = nativeImage.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
+            this._templateImageWasCreated = true;
+        } else {
+            this._templateImageWasCreated = false;
+        }
         this.ios.image = nativeImage;
 
         if (this._imageSourceAffectsLayout) {
@@ -135,3 +152,24 @@ export class Image extends imageCommon.Image {
         return { width: scaleW, height: scaleH };
     }
 } 
+
+export class ImageStyler implements style.Styler {
+    //Text color methods
+    private static setColorProperty(view: view.View, newValue: any) {
+        var image = <Image>view;
+        image._setTintColor(newValue);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: any) {
+        var image = <Image>view.ios;
+        image._setTintColor(null);
+    }
+
+    public static registerHandlers() {
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            ImageStyler.setColorProperty,
+            ImageStyler.resetColorProperty), "Image");
+    }
+}
+
+ImageStyler.registerHandlers();
