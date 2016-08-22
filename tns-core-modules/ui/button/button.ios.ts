@@ -297,7 +297,6 @@ export class ButtonStyler implements style.Styler {
             }
 
             if (button.style.color && button.style.color.ios){
-                console.log(`>>>>>>>>>>>>>>>> dict.set(NSForegroundColorAttributeName, ${button.style.color.ios});`);
                 dict.set(NSForegroundColorAttributeName, button.style.color.ios);
             }
             
