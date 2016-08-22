@@ -279,11 +279,10 @@ export class ButtonStyler implements style.Styler {
             let attributes = new Array();
             let range = { location: 0, length: source.length };
 
-            var decorationValues = (decoration + "").split(" ");
+            let decorationValues = (decoration + "").split(" ");
 
+            let dict = new Map<string, number>();
             if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
-                let dict = new Map<string, number>();
-
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
                     dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
                 }
@@ -295,14 +294,21 @@ export class ButtonStyler implements style.Styler {
                 if (hasLetterSpacing) {
                     dict.set(NSKernAttributeName, letterSpacing * button.ios.font.pointSize);
                 }
+            }
 
+            if (button.style.color && button.style.color.ios){
+                console.log(`>>>>>>>>>>>>>>>> dict.set(NSForegroundColorAttributeName, ${button.style.color.ios});`);
+                dict.set(NSForegroundColorAttributeName, button.style.color.ios);
+            }
+            
+            if (dict.size > 0){
                 attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
             }
 
             source = utils.ios.getTransformedText(button, source, transform);
 
+            let result = NSMutableAttributedString.alloc().initWithString(source);
             if (attributes.length > 0) {
-                let result = NSMutableAttributedString.alloc().initWithString(source);
                 for (let i = 0; i < attributes.length; i++) {
                     result.setAttributesRange(attributes[i]["attrs"], attributes[i]["range"].rangeValue);
                 }
@@ -310,6 +316,7 @@ export class ButtonStyler implements style.Styler {
                 button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
             } 
             else {
+                button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
                 button.ios.setTitleForState(source, UIControlState.UIControlStateNormal);
             }
         }
