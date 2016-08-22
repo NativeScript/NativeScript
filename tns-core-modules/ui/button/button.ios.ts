@@ -310,7 +310,6 @@ export class ButtonStyler implements style.Styler {
                 button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
             } 
             else {
-                button.ios.setAttributedTitleForState(NSMutableAttributedString.alloc().initWithString(source), UIControlState.UIControlStateNormal);
                 button.ios.setTitleForState(source, UIControlState.UIControlStateNormal);
             }
         }
