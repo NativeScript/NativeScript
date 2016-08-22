@@ -39,6 +39,20 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
             }
         }
     }
+
+    var backgroundColor = dialogsCommon.getButtonColor();
+    if (backgroundColor) {
+        let buttons : android.widget.Button[] = [];
+        for (var i = 0; i < 3; i++) {
+            var id = dlg.getContext().getResources().getIdentifier("android:id/button" + i, null, null);
+            buttons[i] = <android.widget.Button>dlg.findViewById(id);
+        }
+        buttons.forEach(button => {
+            if (button) {
+                button.setTextColor(backgroundColor.android);
+            }
+        });
+    }
 }
 
 function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
@@ -75,7 +89,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
         }));
     }
     alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
-        onDismiss: function() {
+        onDismiss: function () {
             callback(false);
         }
     }));
@@ -95,7 +109,7 @@ export function alert(arg: any): Promise<void> {
                 }
             }));
             alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
-                onDismiss: function() {
+                onDismiss: function () {
                     resolve();
                 }
             }));
@@ -306,7 +320,7 @@ export function action(arg: any): Promise<string> {
             }
 
             alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
-                onDismiss: function() {
+                onDismiss: function () {
                     if (types.isString(options.cancelButtonText)) {
                         resolve(options.cancelButtonText);
                     } else {
