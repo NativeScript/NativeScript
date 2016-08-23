@@ -25,6 +25,7 @@ export function pageLoaded(args: EventData) {
     examples.set("clipPath", "css/clip-path");
     examples.set("padding", "css/padding");
     examples.set("label-background-image", "css/label-background-image");
+    examples.set("transform-decoration-color", "css/transform-decoration-color");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
