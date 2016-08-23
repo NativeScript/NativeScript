@@ -55,6 +55,12 @@ export class Button extends common.Button {
         // then the property defaults to a system value. Therefore, at a minimum, you should
         // set the value for the normal state.
         this.ios.setTitleForState(data.newValue + "", UIControlState.UIControlStateNormal);
+        
+        //https://github.com/NativeScript/NativeScript/issues/2615
+        let attributedTitle = this.ios.attributedTitleForState(UIControlState.UIControlStateNormal);
+        if (attributedTitle !== null){
+            ButtonStyler._setButtonTextDecorationAndTransform(this, this.style.textDecoration, this.style.textTransform, this.style.letterSpacing);
+        }
     }
 
     public _setFormattedTextPropertyToNative(value) {
@@ -245,7 +251,7 @@ export class ButtonStyler implements style.Styler {
             ButtonStyler.resetWhiteSpaceProperty), "Button");
     }
 
-    private static _setButtonTextDecorationAndTransform(button: Button, decoration: string, transform: string, letterSpacing: number) {
+    public static _setButtonTextDecorationAndTransform(button: Button, decoration: string, transform: string, letterSpacing: number) {
         let hasLetterSpacing = types.isNumber(letterSpacing) && !isNaN(letterSpacing);
 
         if (button.formattedText) {
@@ -276,11 +282,7 @@ export class ButtonStyler implements style.Styler {
         } 
         else {
             let source = button.text;
-            let attributes = new Array();
-            let range = { location: 0, length: source.length };
-
             let decorationValues = (decoration + "").split(" ");
-
             let dict = new Map<string, number>();
             if (decorationValues.indexOf(enums.TextDecoration.none) === -1 || hasLetterSpacing) {
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
@@ -301,22 +303,16 @@ export class ButtonStyler implements style.Styler {
                 dict.set(NSForegroundColorAttributeName, buttonColor.ios);
             }
             
-            if (dict.size > 0){
-                attributes.push({ attrs: dict, range: NSValue.valueWithRange(range) });
-            }
-
             source = utils.ios.getTransformedText(button, source, transform);
 
             let result = NSMutableAttributedString.alloc().initWithString(source);
-            if (attributes.length > 0) {
-                for (let i = 0; i < attributes.length; i++) {
-                    result.setAttributesRange(attributes[i]["attrs"], attributes[i]["range"].rangeValue);
-                }
-
-                button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+            if (dict.size > 0) {
+                result.setAttributesRange(<any>dict, NSValue.valueWithRange({ location: 0, length: source.length }).rangeValue);
             } 
-            else {
-                button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+            
+            button.ios.setAttributedTitleForState(result, UIControlState.UIControlStateNormal);
+            
+            if (dict.size === 0) {
                 button.ios.setTitleForState(source, UIControlState.UIControlStateNormal);
             }
         }
