@@ -47,45 +47,17 @@ var _wrappedValues = [
 
 export class Observable implements definition.Observable {
     public static propertyChangeEvent = "propertyChange";
-    private _map: Map<string, Object>;
+    _map: Map<string, Object>;
 
     private _observers = {};
 
-    public static fromJSON(json: any): Observable {
-        let observable = new Observable();
-        observable.addPropertiesFromJSON(observable, json, false);
-        return observable;
-    }
-
-    public static fromJSONRecursive(json: any): Observable {
-        let observable = new Observable();
-        observable.addPropertiesFromJSON(observable, json, true);
-        return observable;
-    }
-
-    private addPropertiesFromJSON(observable: Observable, json: any, recursive?: boolean) {
-        let isRecursive = recursive || false;
-        observable._map = new Map<string, Object>();
-        for (var prop in json) {
-            if (json.hasOwnProperty(prop)) {
-                if (isRecursive) {
-                    if (!Array.isArray(json[prop]) && typeof json[prop] === 'object' && types.getClass(json[prop]) !== 'ObservableArray') {
-                        json[prop] = Observable.fromJSONRecursive(json[prop]);
-                    }
-                }
-                observable._defineNewProperty(prop);
-                observable.set(prop, json[prop]);
-            }
-        }
-    }
-
     constructor(json?: any) {
         if (json) {
-            this.addPropertiesFromJSON(this, json);
+            addPropertiesFromJSON(this, json);
         }
     }
 
-    private _defineNewProperty(propertyName: string): void {
+    _defineNewProperty(propertyName: string): void {
         Object.defineProperty(this, propertyName, {
             get: function () {
                 return this._map.get(propertyName);
@@ -275,4 +247,32 @@ export class Observable implements definition.Observable {
     public toString(): string {
         return this.typeName;
     }
+}
+
+function addPropertiesFromJSON(observable: Observable, json: any, recursive?: boolean) {
+    let isRecursive = recursive || false;
+    observable._map = new Map<string, Object>();
+    for (var prop in json) {
+        if (json.hasOwnProperty(prop)) {
+            if (isRecursive) {
+                if (!Array.isArray(json[prop]) && typeof json[prop] === 'object' && types.getClass(json[prop]) !== 'ObservableArray') {
+                    json[prop] = fromObjectRecursive(json[prop]);
+                }
+            }
+            observable._defineNewProperty(prop);
+            observable.set(prop, json[prop]);
+        }
+    }
+}
+
+export function fromObject(json: any): Observable {
+    let observable = new Observable();
+    addPropertiesFromJSON(observable, json, false);
+    return observable;
+}
+
+export function fromObjectRecursive(json: any): Observable {
+    let observable = new Observable();
+    addPropertiesFromJSON(observable, json, true);
+    return observable;
 }
