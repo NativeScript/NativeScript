@@ -529,7 +529,7 @@ export function test_CorrectPropertyValueAfterUsingWrappedValue() {
 
 export function test_NestedObservablesWithObservableArrayShouldNotCrash() {
     let someObservableArray = new ObservableArray<any>();
-    let testObservable = observable.Observable.fromJSONRecursive({
+    let testObservable = observable.fromObjectRecursive({
         firstProp: "test string",
         secondProp: someObservableArray
     });
