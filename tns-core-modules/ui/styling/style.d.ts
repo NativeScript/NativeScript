@@ -41,6 +41,7 @@ declare module "ui/styling/style" {
         public scaleX: number;
         public scaleY: number;
         public color: Color;
+        public placeholderColor: Color;
         public backgroundColor: Color;
         public backgroundImage: string;
         public backpublic: string;
@@ -104,6 +105,7 @@ declare module "ui/styling/style" {
     export var scaleXProperty: styleProperty.Property;
     export var scaleYProperty: styleProperty.Property;
     export var colorProperty: styleProperty.Property;
+    export var placeholderColorProperty: styleProperty.Property;
     export var backgroundImageProperty: styleProperty.Property;
     export var backgroundColorProperty: styleProperty.Property;
     export var backgroundRepeatProperty: styleProperty.Property;

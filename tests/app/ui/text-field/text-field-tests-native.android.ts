@@ -25,6 +25,10 @@ export function getNativeColor(textField: textFieldModule.TextField): colorModul
     return new colorModule.Color(textField.android.getTextColors().getDefaultColor());
 }
 
+export function getNativePlaceholderColor(textField: textFieldModule.TextField): colorModule.Color {
+    return new colorModule.Color(textField.android.getHintTextColors().getDefaultColor());
+}
+
 export function getNativeBackgroundColor(textField: textFieldModule.TextField): colorModule.Color {
     var bkg = <any>textField.android.getBackground();
     if (bkg instanceof org.nativescript.widgets.BorderDrawable) {
