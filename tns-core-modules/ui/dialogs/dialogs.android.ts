@@ -40,11 +40,11 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
         }
     }
 
-    var buttonColor = dialogsCommon.getButtonColor();
+    let buttonColor = dialogsCommon.getButtonColor();
     if (buttonColor) {
         let buttons : android.widget.Button[] = [];
-        for (var i = 0; i < 3; i++) {
-            var id = dlg.getContext().getResources().getIdentifier("android:id/button" + i, null, null);
+        for (let i = 0; i < 3; i++) {
+            let id = dlg.getContext().getResources().getIdentifier("android:id/button" + i, null, null);
             buttons[i] = <android.widget.Button>dlg.findViewById(id);
         }
         buttons.forEach(button => {
