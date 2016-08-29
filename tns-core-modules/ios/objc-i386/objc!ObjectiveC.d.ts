@@ -1,8 +1,6 @@
 
 declare class NSObject implements NSObjectProtocol {
 
-	static accessInstanceVariablesDirectly(): boolean;
-
 	static alloc(): NSObject;
 
 	static automaticallyNotifiesObserversForKey(key: string): boolean;
@@ -59,6 +57,8 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityCustomActions: NSArray<UIAccessibilityCustomAction>;
 
+	accessibilityCustomRotors: NSArray<UIAccessibilityCustomRotor>;
+
 	accessibilityElements: NSArray<any>;
 
 	accessibilityElementsHidden: boolean;
@@ -92,6 +92,8 @@ declare class NSObject implements NSObjectProtocol {
 	observationInfo: interop.Pointer | interop.Reference<any>;
 
 	shouldGroupAccessibilityChildren: boolean;
+
+	/* readonly */ static accessInstanceVariablesDirectly: boolean;
 
 	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
@@ -131,13 +133,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityScroll(direction: UIAccessibilityScrollDirection): boolean;
 
-	actionForLayerForKey(layer: CALayer, event: string): CAAction;
-
 	addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: string, options: NSKeyValueObservingOptions, context: interop.Pointer | interop.Reference<any>): void;
-
-	animationDidStart(anim: CAAnimation): void;
-
-	animationDidStopFinished(anim: CAAnimation, flag: boolean): void;
 
 	attemptRecoveryFromErrorOptionIndex(error: NSError, recoveryOptionIndex: number): boolean;
 
@@ -163,11 +159,7 @@ declare class NSObject implements NSObjectProtocol {
 
 	didChangeValuesAtIndexesForKey(changeKind: NSKeyValueChange, indexes: NSIndexSet, key: string): void;
 
-	displayLayer(layer: CALayer): void;
-
 	doesNotRecognizeSelector(aSelector: string): void;
-
-	drawLayerInContext(layer: CALayer, ctx: any): void;
 
 	fileManagerShouldProceedAfterError(fm: NSFileManager, errorInfo: NSDictionary<any, any>): boolean;
 
@@ -188,8 +180,6 @@ declare class NSObject implements NSObjectProtocol {
 	isKindOfClass(aClass: typeof NSObject): boolean;
 
 	isMemberOfClass(aClass: typeof NSObject): boolean;
-
-	layoutSublayersOfLayer(layer: CALayer): void;
 
 	methodForSelector(aSelector: string): interop.FunctionReference<(p1: any, p2: string) => any>;
 
@@ -564,7 +554,11 @@ declare function object_setClass(obj: any, cls: typeof NSObject): typeof NSObjec
 
 declare function object_setInstanceVariable(obj: any, name: string, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
+declare function object_setInstanceVariableWithStrongDefault(obj: any, name: string, value: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
+
 declare function object_setIvar(obj: any, ivar: interop.Pointer | interop.Reference<any>, value: any): void;
+
+declare function object_setIvarWithStrongDefault(obj: any, ivar: interop.Pointer | interop.Reference<any>, value: any): void;
 
 declare function property_copyAttributeList(property: interop.Pointer | interop.Reference<any>, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_property_attribute_t>;
 
@@ -585,6 +579,8 @@ declare function protocol_conformsToProtocol(proto: any /* Protocol */, other: a
 declare function protocol_copyMethodDescriptionList(p: any /* Protocol */, isRequiredMethod: boolean, isInstanceMethod: boolean, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<objc_method_description>;
 
 declare function protocol_copyPropertyList(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
+
+declare function protocol_copyPropertyList2(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>, isRequiredProperty: boolean, isInstanceProperty: boolean): interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>;
 
 declare function protocol_copyProtocolList(proto: any /* Protocol */, outCount: interop.Pointer | interop.Reference<number>): interop.Pointer | interop.Reference<any /* Protocol */>;
 

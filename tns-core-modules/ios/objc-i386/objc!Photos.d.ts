@@ -154,7 +154,7 @@ declare class PHAssetCollectionChangeRequest extends NSObject {
 
 	static changeRequestForAssetCollection(assetCollection: PHAssetCollection): PHAssetCollectionChangeRequest;
 
-	static changeRequestForAssetCollectionAssets(assetCollection: PHAssetCollection, assets: PHFetchResult<any>): PHAssetCollectionChangeRequest;
+	static changeRequestForAssetCollectionAssets(assetCollection: PHAssetCollection, assets: PHFetchResult<PHAsset>): PHAssetCollectionChangeRequest;
 
 	static creationRequestForAssetCollectionWithTitle(title: string): PHAssetCollectionChangeRequest;
 
@@ -373,7 +373,11 @@ declare const enum PHAssetResourceType {
 
 	AdjustmentBasePhoto = 8,
 
-	PairedVideo = 9
+	PairedVideo = 9,
+
+	FullSizePairedVideo = 10,
+
+	AdjustmentBasePairedVideo = 11
 }
 
 declare const enum PHAssetSourceType {
@@ -419,9 +423,9 @@ declare class PHChange extends NSObject {
 
 	static new(): PHChange; // inherited from NSObject
 
-	changeDetailsForFetchResult(object: PHFetchResult<any>): PHFetchResultChangeDetails;
+	changeDetailsForFetchResult(object: PHFetchResult<any>): PHFetchResultChangeDetails<any>;
 
-	changeDetailsForObject(object: PHObject): PHObjectChangeDetails;
+	changeDetailsForObject(object: PHObject): PHObjectChangeDetails<any>;
 }
 
 declare class PHCollection extends PHObject {
@@ -497,7 +501,7 @@ declare class PHCollectionListChangeRequest extends NSObject {
 
 	static changeRequestForCollectionList(collectionList: PHCollectionList): PHCollectionListChangeRequest;
 
-	static changeRequestForCollectionListChildCollections(collectionList: PHCollectionList, childCollections: PHFetchResult<any>): PHCollectionListChangeRequest;
+	static changeRequestForCollectionListChildCollections(collectionList: PHCollectionList, childCollections: PHFetchResult<PHCollection>): PHCollectionListChangeRequest;
 
 	static creationRequestForCollectionListWithTitle(title: string): PHCollectionListChangeRequest;
 
@@ -565,6 +569,8 @@ declare class PHContentEditingInput extends NSObject {
 	/* readonly */ fullSizeImageOrientation: number;
 
 	/* readonly */ fullSizeImageURL: NSURL;
+
+	/* readonly */ livePhoto: PHLivePhoto;
 
 	/* readonly */ location: CLLocation;
 
@@ -673,21 +679,21 @@ declare class PHFetchResult<ObjectType> extends NSObject implements NSCopying, N
 	objectsAtIndexes(indexes: NSIndexSet): NSArray<ObjectType>;
 }
 
-declare class PHFetchResultChangeDetails extends NSObject {
+declare class PHFetchResultChangeDetails<ObjectType> extends NSObject {
 
-	static alloc(): PHFetchResultChangeDetails; // inherited from NSObject
+	static alloc<ObjectType>(): PHFetchResultChangeDetails<ObjectType>; // inherited from NSObject
 
-	static changeDetailsFromFetchResultToFetchResultChangedObjects(fromResult: PHFetchResult<any>, toResult: PHFetchResult<any>, changedObjects: NSArray<PHObject>): PHFetchResultChangeDetails;
+	static changeDetailsFromFetchResultToFetchResultChangedObjects<ObjectType>(fromResult: PHFetchResult<ObjectType>, toResult: PHFetchResult<ObjectType>, changedObjects: NSArray<ObjectType>): PHFetchResultChangeDetails<ObjectType>;
 
-	static new(): PHFetchResultChangeDetails; // inherited from NSObject
+	static new<ObjectType>(): PHFetchResultChangeDetails<ObjectType>; // inherited from NSObject
 
 	/* readonly */ changedIndexes: NSIndexSet;
 
-	/* readonly */ changedObjects: NSArray<PHObject>;
+	/* readonly */ changedObjects: NSArray<ObjectType>;
 
-	/* readonly */ fetchResultAfterChanges: PHFetchResult<any>;
+	/* readonly */ fetchResultAfterChanges: PHFetchResult<ObjectType>;
 
-	/* readonly */ fetchResultBeforeChanges: PHFetchResult<any>;
+	/* readonly */ fetchResultBeforeChanges: PHFetchResult<ObjectType>;
 
 	/* readonly */ hasIncrementalChanges: boolean;
 
@@ -695,11 +701,11 @@ declare class PHFetchResultChangeDetails extends NSObject {
 
 	/* readonly */ insertedIndexes: NSIndexSet;
 
-	/* readonly */ insertedObjects: NSArray<PHObject>;
+	/* readonly */ insertedObjects: NSArray<ObjectType>;
 
 	/* readonly */ removedIndexes: NSIndexSet;
 
-	/* readonly */ removedObjects: NSArray<PHObject>;
+	/* readonly */ removedObjects: NSArray<ObjectType>;
 
 	enumerateMovesWithBlock(handler: (p1: number, p2: number) => void): void;
 }
@@ -812,9 +818,9 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding 
 
 	static requestLivePhotoWithResourceFileURLsPlaceholderImageTargetSizeContentModeResultHandler(fileURLs: NSArray<NSURL>, image: UIImage, targetSize: CGSize, contentMode: PHImageContentMode, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ size: CGSize;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -823,6 +829,57 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding 
 	encodeWithCoder(aCoder: NSCoder): void;
 
 	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class PHLivePhotoEditingContext extends NSObject {
+
+	static alloc(): PHLivePhotoEditingContext; // inherited from NSObject
+
+	static new(): PHLivePhotoEditingContext; // inherited from NSObject
+
+	audioVolume: number;
+
+	/* readonly */ duration: CMTime;
+
+	frameProcessor: (p1: PHLivePhotoFrame, p2: interop.Pointer | interop.Reference<NSError>) => CIImage;
+
+	/* readonly */ fullSizeImage: CIImage;
+
+	/* readonly */ orientation: CGImagePropertyOrientation;
+
+	/* readonly */ photoTime: CMTime;
+
+	constructor(o: { livePhotoEditingInput: PHContentEditingInput; });
+
+	cancel(): void;
+
+	initWithLivePhotoEditingInput(livePhotoInput: PHContentEditingInput): this;
+
+	prepareLivePhotoForPlaybackWithTargetSizeOptionsCompletionHandler(targetSize: CGSize, options: NSDictionary<string, any>, handler: (p1: PHLivePhoto, p2: NSError) => void): void;
+
+	saveLivePhotoToOutputOptionsCompletionHandler(output: PHContentEditingOutput, options: NSDictionary<string, any>, handler: (p1: boolean, p2: NSError) => void): void;
+}
+
+interface PHLivePhotoFrame {
+
+	image: CIImage;
+
+	renderScale: number;
+
+	time: CMTime;
+
+	type: PHLivePhotoFrameType;
+}
+declare var PHLivePhotoFrame: {
+
+	prototype: PHLivePhotoFrame;
+};
+
+declare const enum PHLivePhotoFrameType {
+
+	Photo = 0,
+
+	Video = 1
 }
 
 declare var PHLivePhotoInfoCancelledKey: string;
@@ -845,8 +902,12 @@ declare class PHLivePhotoRequestOptions extends NSObject implements NSCopying {
 
 	progressHandler: (p1: number, p2: NSError, p3: interop.Pointer | interop.Reference<boolean>, p4: NSDictionary<any, any>) => void;
 
+	version: PHImageRequestOptionsVersion;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
+
+declare var PHLivePhotoShouldRenderAtPlaybackTime: string;
 
 declare class PHObject extends NSObject implements NSCopying {
 
@@ -859,17 +920,17 @@ declare class PHObject extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
 
-declare class PHObjectChangeDetails extends NSObject {
+declare class PHObjectChangeDetails<ObjectType> extends NSObject {
 
-	static alloc(): PHObjectChangeDetails; // inherited from NSObject
+	static alloc<ObjectType>(): PHObjectChangeDetails<ObjectType>; // inherited from NSObject
 
-	static new(): PHObjectChangeDetails; // inherited from NSObject
+	static new<ObjectType>(): PHObjectChangeDetails<ObjectType>; // inherited from NSObject
 
 	/* readonly */ assetContentChanged: boolean;
 
-	/* readonly */ objectAfterChanges: PHObject;
+	/* readonly */ objectAfterChanges: ObjectType;
 
-	/* readonly */ objectBeforeChanges: PHObject;
+	/* readonly */ objectBeforeChanges: ObjectType;
 
 	/* readonly */ objectWasDeleted: boolean;
 }

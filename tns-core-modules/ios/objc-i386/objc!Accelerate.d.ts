@@ -1,6 +1,151 @@
 
 declare function ATLU_DestroyThreadMemory(): void;
 
+interface BNNSActivation {
+	function: BNNSActivationFunction;
+	alpha: number;
+	beta: number;
+}
+declare var BNNSActivation: interop.StructType<BNNSActivation>;
+
+declare const enum BNNSActivationFunction {
+
+	Identity = 0,
+
+	RectifiedLinear = 1,
+
+	LeakyRectifiedLinear = 2,
+
+	Sigmoid = 3,
+
+	Tanh = 4,
+
+	ScaledTanh = 5,
+
+	Abs = 6
+}
+
+interface BNNSConvolutionLayerParameters {
+	x_stride: number;
+	y_stride: number;
+	x_padding: number;
+	y_padding: number;
+	k_width: number;
+	k_height: number;
+	in_channels: number;
+	out_channels: number;
+	weights: BNNSLayerData;
+	bias: BNNSLayerData;
+	activation: BNNSActivation;
+}
+declare var BNNSConvolutionLayerParameters: interop.StructType<BNNSConvolutionLayerParameters>;
+
+declare const enum BNNSDataType {
+
+	FloatBit = 65536,
+
+	Float16 = 65552,
+
+	Float32 = 65568,
+
+	IntBit = 131072,
+
+	Int8 = 131080,
+
+	Int16 = 131088,
+
+	Int32 = 131104,
+
+	IndexedBit = 524288,
+
+	Indexed8 = 524296
+}
+
+declare function BNNSFilterApply(filter: interop.Pointer | interop.Reference<any>, _in: interop.Pointer | interop.Reference<any>, out: interop.Pointer | interop.Reference<any>): number;
+
+declare function BNNSFilterApplyBatch(filter: interop.Pointer | interop.Reference<any>, batch_size: number, _in: interop.Pointer | interop.Reference<any>, in_stride: number, out: interop.Pointer | interop.Reference<any>, out_stride: number): number;
+
+declare function BNNSFilterCreateConvolutionLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSConvolutionLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreateFullyConnectedLayer(in_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSVectorDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSFullyConnectedLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterCreatePoolingLayer(in_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, out_desc: interop.Pointer | interop.Reference<BNNSImageStackDescriptor>, layer_params: interop.Pointer | interop.Reference<BNNSPoolingLayerParameters>, filter_params: interop.Pointer | interop.Reference<BNNSFilterParameters>): interop.Pointer | interop.Reference<any>;
+
+declare function BNNSFilterDestroy(filter: interop.Pointer | interop.Reference<any>): void;
+
+interface BNNSFilterParameters {
+	flags: number;
+	n_threads: number;
+	alloc_memory: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, p2: number, p3: number) => number>;
+	free_memory: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
+}
+declare var BNNSFilterParameters: interop.StructType<BNNSFilterParameters>;
+
+declare const enum BNNSFlags {
+
+	UseClientPtr = 1
+}
+
+interface BNNSFullyConnectedLayerParameters {
+	in_size: number;
+	out_size: number;
+	weights: BNNSLayerData;
+	bias: BNNSLayerData;
+	activation: BNNSActivation;
+}
+declare var BNNSFullyConnectedLayerParameters: interop.StructType<BNNSFullyConnectedLayerParameters>;
+
+interface BNNSImageStackDescriptor {
+	width: number;
+	height: number;
+	channels: number;
+	row_stride: number;
+	image_stride: number;
+	data_type: BNNSDataType;
+	data_scale: number;
+	data_bias: number;
+}
+declare var BNNSImageStackDescriptor: interop.StructType<BNNSImageStackDescriptor>;
+
+interface BNNSLayerData {
+	data: interop.Pointer | interop.Reference<any>;
+	data_type: BNNSDataType;
+	data_scale: number;
+	data_bias: number;
+	data_table: interop.Pointer | interop.Reference<number>;
+}
+declare var BNNSLayerData: interop.StructType<BNNSLayerData>;
+
+declare const enum BNNSPoolingFunction {
+
+	Max = 0,
+
+	Average = 1
+}
+
+interface BNNSPoolingLayerParameters {
+	x_stride: number;
+	y_stride: number;
+	x_padding: number;
+	y_padding: number;
+	k_width: number;
+	k_height: number;
+	in_channels: number;
+	out_channels: number;
+	pooling_function: BNNSPoolingFunction;
+	bias: BNNSLayerData;
+	activation: BNNSActivation;
+}
+declare var BNNSPoolingLayerParameters: interop.StructType<BNNSPoolingLayerParameters>;
+
+interface BNNSVectorDescriptor {
+	size: number;
+	data_type: BNNSDataType;
+	data_scale: number;
+	data_bias: number;
+}
+declare var BNNSVectorDescriptor: interop.StructType<BNNSVectorDescriptor>;
+
 declare const enum CBLAS_DIAG {
 
 	CblasNonUnit = 131,
@@ -2131,6 +2276,49 @@ declare function mtrans(__A: interop.Pointer | interop.Reference<number>, __IA: 
 
 declare function mtransD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __M: number, __N: number): void;
 
+declare function quadrature_integrate(__f: interop.Pointer | interop.Reference<quadrature_integrate_function>, __a: number, __b: number, options: interop.Pointer | interop.Reference<quadrature_integrate_options>, status: interop.Pointer | interop.Reference<quadrature_status>, abs_error: interop.Pointer | interop.Reference<number>, workspace_size: number, workspace: interop.Pointer | interop.Reference<any>): number;
+
+interface quadrature_integrate_function {
+	fun: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => void>;
+	fun_arg: interop.Pointer | interop.Reference<any>;
+}
+declare var quadrature_integrate_function: interop.StructType<quadrature_integrate_function>;
+
+interface quadrature_integrate_options {
+	integrator: quadrature_integrator;
+	abs_tolerance: number;
+	rel_tolerance: number;
+	qag_points_per_interval: number;
+	max_intervals: number;
+}
+declare var quadrature_integrate_options: interop.StructType<quadrature_integrate_options>;
+
+declare const enum quadrature_integrator {
+
+	QUADRATURE_INTEGRATE_QNG = 0,
+
+	QUADRATURE_INTEGRATE_QAG = 1,
+
+	QUADRATURE_INTEGRATE_QAGS = 2
+}
+
+declare const enum quadrature_status {
+
+	QUADRATURE_SUCCESS = 0,
+
+	QUADRATURE_ERROR = -1,
+
+	QUADRATURE_INVALID_ARG_ERROR = -2,
+
+	QUADRATURE_ALLOC_ERROR = -3,
+
+	QUADRATURE_INTERNAL_ERROR = -99,
+
+	QUADRATURE_INTEGRATE_MAX_EVAL_ERROR = -101,
+
+	QUADRATURE_INTEGRATE_BAD_BEHAVIOUR_ERROR = -102
+}
+
 declare function sbdsdc_(__uplo: string, __compq: string, __n: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __q: interop.Pointer | interop.Reference<number>, __iq: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __iwork: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
 
 declare function sbdsqr_(__uplo: string, __n: interop.Pointer | interop.Reference<number>, __ncvt: interop.Pointer | interop.Reference<number>, __nru: interop.Pointer | interop.Reference<number>, __ncc: interop.Pointer | interop.Reference<number>, __d__: interop.Pointer | interop.Reference<number>, __e: interop.Pointer | interop.Reference<number>, __vt: interop.Pointer | interop.Reference<number>, __ldvt: interop.Pointer | interop.Reference<number>, __u: interop.Pointer | interop.Reference<number>, __ldu: interop.Pointer | interop.Reference<number>, __c__: interop.Pointer | interop.Reference<number>, __ldc: interop.Pointer | interop.Reference<number>, __work: interop.Pointer | interop.Reference<number>, __info: interop.Pointer | interop.Reference<number>): number;
@@ -2715,6 +2903,10 @@ declare function sparse_matrix_product_dense_double(order: CBLAS_ORDER, transa: 
 
 declare function sparse_matrix_product_dense_float(order: CBLAS_ORDER, transa: CBLAS_TRANSPOSE, n: number, alpha: number, A: interop.Pointer | interop.Reference<any>, B: interop.Pointer | interop.Reference<number>, ldb: number, C: interop.Pointer | interop.Reference<number>, ldc: number): sparse_status;
 
+declare function sparse_matrix_product_sparse_double(order: CBLAS_ORDER, transa: CBLAS_TRANSPOSE, alpha: number, A: interop.Pointer | interop.Reference<any>, B: interop.Pointer | interop.Reference<any>, C: interop.Pointer | interop.Reference<number>, ldc: number): sparse_status;
+
+declare function sparse_matrix_product_sparse_float(order: CBLAS_ORDER, transa: CBLAS_TRANSPOSE, alpha: number, A: interop.Pointer | interop.Reference<any>, B: interop.Pointer | interop.Reference<any>, C: interop.Pointer | interop.Reference<number>, ldc: number): sparse_status;
+
 declare const enum sparse_matrix_property {
 
 	SPARSE_UPPER_TRIANGULAR = 1,
@@ -2786,9 +2978,9 @@ declare const enum sparse_status {
 	SPARSE_SYSTEM_ERROR = -1002
 }
 
-declare function sparse_unpack_vector_double(N: number, nz: number, zero: boolean, x: interop.Pointer | interop.Reference<number>, indx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: number): void;
+declare function sparse_unpack_vector_double(N: number, nz: number, zero: interop.FunctionReference<(p1: number) => number>, x: interop.Pointer | interop.Reference<number>, indx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: number): void;
 
-declare function sparse_unpack_vector_float(N: number, nz: number, zero: boolean, x: interop.Pointer | interop.Reference<number>, indx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: number): void;
+declare function sparse_unpack_vector_float(N: number, nz: number, zero: interop.FunctionReference<(p1: number) => number>, x: interop.Pointer | interop.Reference<number>, indx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: number): void;
 
 declare function sparse_vector_add_with_scale_dense_double(nz: number, alpha: number, x: interop.Pointer | interop.Reference<number>, indx: interop.Pointer | interop.Reference<number>, y: interop.Pointer | interop.Reference<number>, incy: number): void;
 
@@ -3144,7 +3336,7 @@ declare function vDSP_biquadm_ResetState(__setup: interop.Pointer | interop.Refe
 
 declare function vDSP_biquadm_ResetStateD(__setup: interop.Pointer | interop.Reference<any>): void;
 
-declare function vDSP_biquadm_SetActiveFilters(__setup: interop.Pointer | interop.Reference<any>, __filter_states: interop.Pointer | interop.Reference<boolean>): void;
+declare function vDSP_biquadm_SetActiveFilters(__setup: interop.Pointer | interop.Reference<any>, __filter_states: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => number>>): void;
 
 declare function vDSP_biquadm_SetCoefficientsDouble(__setup: interop.Pointer | interop.Reference<any>, __coeffs: interop.Pointer | interop.Reference<number>, __start_sec: number, __start_chn: number, __nsec: number, __nchn: number): void;
 
@@ -3188,19 +3380,19 @@ declare function vDSP_distancesqD(__A: interop.Pointer | interop.Reference<numbe
 
 declare function vDSP_dotpr(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
 
-declare function vDSP_dotpr2(__A0: interop.Pointer | interop.Reference<number>, __A0Stride: number, __A1: interop.Pointer | interop.Reference<number>, __A1Stride: number, __B: interop.Pointer | interop.Reference<number>, __BStride: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __Length: number): void;
+declare function vDSP_dotpr2(__A0: interop.Pointer | interop.Reference<number>, __IA0: number, __A1: interop.Pointer | interop.Reference<number>, __IA1: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __N: number): void;
 
-declare function vDSP_dotpr2D(__A0: interop.Pointer | interop.Reference<number>, __A0Stride: number, __A1: interop.Pointer | interop.Reference<number>, __A1Stride: number, __B: interop.Pointer | interop.Reference<number>, __BStride: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __Length: number): void;
+declare function vDSP_dotpr2D(__A0: interop.Pointer | interop.Reference<number>, __IA0: number, __A1: interop.Pointer | interop.Reference<number>, __IA1: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __N: number): void;
 
-declare function vDSP_dotpr2_s1_15(__A0: interop.Pointer | interop.Reference<number>, __A0Stride: number, __A1: interop.Pointer | interop.Reference<number>, __A1Stride: number, __B: interop.Pointer | interop.Reference<number>, __BStride: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __N: number): void;
+declare function vDSP_dotpr2_s1_15(__A0: interop.Pointer | interop.Reference<number>, __IA0: number, __A1: interop.Pointer | interop.Reference<number>, __IA1: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __N: number): void;
 
-declare function vDSP_dotpr2_s8_24(__A0: interop.Pointer | interop.Reference<number>, __A0Stride: number, __A1: interop.Pointer | interop.Reference<number>, __A1Stride: number, __B: interop.Pointer | interop.Reference<number>, __BStride: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __N: number): void;
+declare function vDSP_dotpr2_s8_24(__A0: interop.Pointer | interop.Reference<number>, __IA0: number, __A1: interop.Pointer | interop.Reference<number>, __IA1: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C0: interop.Pointer | interop.Reference<number>, __C1: interop.Pointer | interop.Reference<number>, __N: number): void;
 
 declare function vDSP_dotprD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
 
-declare function vDSP_dotpr_s1_15(__A: interop.Pointer | interop.Reference<number>, __AStride: number, __B: interop.Pointer | interop.Reference<number>, __BStride: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
+declare function vDSP_dotpr_s1_15(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
 
-declare function vDSP_dotpr_s8_24(__A: interop.Pointer | interop.Reference<number>, __AStride: number, __B: interop.Pointer | interop.Reference<number>, __BStride: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
+declare function vDSP_dotpr_s8_24(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __N: number): void;
 
 declare function vDSP_f3x3(__A: interop.Pointer | interop.Reference<number>, __NR: number, __NC: number, __F: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>): void;
 
@@ -3496,9 +3688,9 @@ declare function vDSP_vdbcon(__A: interop.Pointer | interop.Reference<number>, _
 
 declare function vDSP_vdbconD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number, __F: number): void;
 
-declare function vDSP_vdist(__A: interop.Pointer | interop.Reference<number>, __I: number, __B: interop.Pointer | interop.Reference<number>, __J: number, __C: interop.Pointer | interop.Reference<number>, __K: number, __N: number): void;
+declare function vDSP_vdist(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
-declare function vDSP_vdistD(__A: interop.Pointer | interop.Reference<number>, __I: number, __B: interop.Pointer | interop.Reference<number>, __J: number, __C: interop.Pointer | interop.Reference<number>, __K: number, __N: number): void;
+declare function vDSP_vdistD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
 declare function vDSP_vdiv(__B: interop.Pointer | interop.Reference<number>, __IB: number, __A: interop.Pointer | interop.Reference<number>, __IA: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
@@ -3514,7 +3706,7 @@ declare function vDSP_venvlpD(__A: interop.Pointer | interop.Reference<number>, 
 
 declare function vDSP_veqvi(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __IB: number, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
-declare function vDSP_vfill(__A: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IA: number, __N: number): void;
+declare function vDSP_vfill(__A: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
 declare function vDSP_vfillD(__A: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
@@ -3782,11 +3974,11 @@ declare function vDSP_vsmfixu24(__A: interop.Pointer | interop.Reference<number>
 
 declare function vDSP_vsmsa(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
 
-declare function vDSP_vsmsaD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __ID: interop.Pointer | interop.Reference<number>, __L: number, __N: number): void;
+declare function vDSP_vsmsaD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
 
-declare function vDSP_vsmsb(__A: interop.Pointer | interop.Reference<number>, __I: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __K: number, __D: interop.Pointer | interop.Reference<number>, __L: number, __N: number): void;
+declare function vDSP_vsmsb(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
 
-declare function vDSP_vsmsbD(__A: interop.Pointer | interop.Reference<number>, __I: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __K: number, __D: interop.Pointer | interop.Reference<number>, __L: number, __N: number): void;
+declare function vDSP_vsmsbD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
 
 declare function vDSP_vsmsma(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __D: interop.Pointer | interop.Reference<number>, __E: interop.Pointer | interop.Reference<number>, __IE: number, __N: number): void;
 
@@ -3832,7 +4024,7 @@ declare function vDSP_vswsumD(__A: interop.Pointer | interop.Reference<number>, 
 
 declare function vDSP_vtabi(__A: interop.Pointer | interop.Reference<number>, __IA: number, __S1: interop.Pointer | interop.Reference<number>, __S2: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __M: number, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
 
-declare function vDSP_vtabiD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __S1: interop.Pointer | interop.Reference<number>, __S2: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __M: number, __ID: interop.Pointer | interop.Reference<number>, __L: number, __N: number): void;
+declare function vDSP_vtabiD(__A: interop.Pointer | interop.Reference<number>, __IA: number, __S1: interop.Pointer | interop.Reference<number>, __S2: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __M: number, __D: interop.Pointer | interop.Reference<number>, __ID: number, __N: number): void;
 
 declare function vDSP_vthr(__A: interop.Pointer | interop.Reference<number>, __IA: number, __B: interop.Pointer | interop.Reference<number>, __C: interop.Pointer | interop.Reference<number>, __IC: number, __N: number): void;
 
@@ -4075,6 +4267,10 @@ declare function vImageBufferFill_ARGB8888(dest: interop.Pointer | interop.Refer
 
 declare function vImageBufferFill_ARGBFFFF(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
 
+declare function vImageBufferFill_CbCr16U(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
+
+declare function vImageBufferFill_CbCr8(dest: interop.Pointer | interop.Reference<vImage_Buffer>, color: interop.Reference<number>, flags: number): number;
+
 declare function vImageBuffer_CopyToCVPixelBuffer(buffer: interop.Pointer | interop.Reference<vImage_Buffer>, bufferFormat: interop.Pointer | interop.Reference<vImage_CGImageFormat>, cvPixelBuffer: any, cvImageFormat: any, backgroundColor: interop.Pointer | interop.Reference<number>, flags: number): number;
 
 declare function vImageBuffer_GetSize(buf: interop.Pointer | interop.Reference<vImage_Buffer>): CGSize;
@@ -4165,7 +4361,13 @@ declare function vImageContrastStretch_Planar8(src: interop.Pointer | interop.Re
 
 declare function vImageContrastStretch_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, histogram_entries: number, minVal: number, maxVal: number, flags: number): number;
 
+declare function vImageConvert_12UTo16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_16Fto16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageConvert_16Fto16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_16Q12to16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_16Q12to16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
@@ -4174,6 +4376,8 @@ declare function vImageConvert_16Q12to8(src: interop.Pointer | interop.Reference
 declare function vImageConvert_16Q12toF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_16SToF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, offset: number, scale: number, flags: number): number;
+
+declare function vImageConvert_16UTo12U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_16UToF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, offset: number, scale: number, flags: number): number;
 
@@ -4227,19 +4431,39 @@ declare function vImageConvert_ARGB16Q12To422CrYpCbYpCbYpCbYpCrYpCrYp10(src: int
 
 declare function vImageConvert_ARGB16Q12To444CrYpCb10(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, info: interop.Pointer | interop.Reference<vImage_ARGBToYpCbCr>, permuteMap: interop.Reference<number>, flags: number): number;
 
+declare function vImageConvert_ARGB16Q12ToARGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, RGB101010Min: number, RGB101010Max: number, permuteMap: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvert_ARGB16Q12ToRGBA1010102(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, RGB101010Min: number, RGB101010Max: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGB16Q12ToXRGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, RGB101010Min: number, RGB101010Max: number, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_ARGB16UTo422CbYpCrYp16(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, info: interop.Pointer | interop.Reference<vImage_ARGBToYpCbCr>, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_ARGB16UTo444AYpCbCr16(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, info: interop.Pointer | interop.Reference<vImage_ARGBToYpCbCr>, permuteMap: interop.Reference<number>, flags: number): number;
 
+declare function vImageConvert_ARGB16UToARGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvert_ARGB16UToARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_ARGB16UToRGBA1010102(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
 
+declare function vImageConvert_ARGB16UToXRGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGB16UtoARGB8888_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, dither: number, permuteMap: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvert_ARGB16UtoPlanar16U(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aDest: interop.Pointer | interop.Reference<vImage_Buffer>, rDest: interop.Pointer | interop.Reference<vImage_Buffer>, gDest: interop.Pointer | interop.Reference<vImage_Buffer>, bDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_ARGB16UtoRGB16U(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_ARGB2101010ToARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGB2101010ToARGB16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGB2101010ToARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGB2101010ToARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGB2101010ToARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_ARGB8888To420Yp8_Cb8_Cr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, destYp: interop.Pointer | interop.Reference<vImage_Buffer>, destCb: interop.Pointer | interop.Reference<vImage_Buffer>, destCr: interop.Pointer | interop.Reference<vImage_Buffer>, info: interop.Pointer | interop.Reference<vImage_ARGBToYpCbCr>, permuteMap: interop.Reference<number>, flags: number): number;
 
@@ -4267,11 +4491,17 @@ declare function vImageConvert_ARGB8888To444CrYpCb8(src: interop.Pointer | inter
 
 declare function vImageConvert_ARGB8888ToARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageConvert_ARGB8888ToARGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvert_ARGB8888ToRGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_ARGB8888ToRGBA1010102(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
 
+declare function vImageConvert_ARGB8888ToXRGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
 declare function vImageConvert_ARGB8888toARGB1555(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_ARGB8888toARGB1555_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, dither: number, flags: number): number;
 
 declare function vImageConvert_ARGB8888toPlanar16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: interop.Pointer | interop.Reference<vImage_Buffer>, red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
@@ -4281,7 +4511,13 @@ declare function vImageConvert_ARGB8888toPlanarF(src: interop.Pointer | interop.
 
 declare function vImageConvert_ARGB8888toRGB565(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImageConvert_ARGB8888toRGB565_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, dither: number, flags: number): number;
+
 declare function vImageConvert_ARGB8888toRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number): number;
+
+declare function vImageConvert_ARGBFFFFToARGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_ARGBFFFFToXRGB2101010(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_ARGBFFFFtoARGB8888_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, maxFloat: interop.Reference<number>, minFloat: interop.Reference<number>, dither: number, permuteMap: interop.Reference<number>, flags: number): number;
 
@@ -4298,6 +4534,8 @@ declare function vImageConvert_AnyToAny(converter: any, srcs: interop.Pointer | 
 declare function vImageConvert_BGRA16UtoRGB16U(bgraSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_BGRA8888toRGB565(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_BGRA8888toRGB565_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, dither: number, flags: number): number;
 
 declare function vImageConvert_BGRA8888toRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number): number;
 
@@ -4327,11 +4565,17 @@ declare function vImageConvert_Planar16FtoPlanar8(src: interop.Pointer | interop
 
 declare function vImageConvert_Planar16FtoPlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImageConvert_Planar16Q12toARGB16F(alpha: interop.Pointer | interop.Reference<vImage_Buffer>, red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageConvert_Planar16Q12toARGB8888(alpha: interop.Pointer | interop.Reference<vImage_Buffer>, red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_Planar16Q12toRGB16F(red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_Planar16Q12toRGB888(red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_Planar16UtoARGB16U(aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rSrc: interop.Pointer | interop.Reference<vImage_Buffer>, gSrc: interop.Pointer | interop.Reference<vImage_Buffer>, bSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_Planar16UtoPlanar8_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, dither: number, flags: number): number;
 
 declare function vImageConvert_Planar16UtoRGB16U(rSrc: interop.Pointer | interop.Reference<vImage_Buffer>, gSrc: interop.Pointer | interop.Reference<vImage_Buffer>, bSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
@@ -4403,13 +4647,15 @@ declare function vImageConvert_PlanarToChunkyF(srcPlanarBuffers: interop.Referen
 
 declare function vImageConvert_RGB16UToARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
-declare function vImageConvert_RGB16UtoARGB16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, argbDest: interop.Pointer | interop.Reference<vImage_Buffer>, premultiply: boolean, flags: number): number;
+declare function vImageConvert_RGB16UtoARGB16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, argbDest: interop.Pointer | interop.Reference<vImage_Buffer>, premultiply: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageConvert_RGB16UtoBGRA16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, bgraDest: interop.Pointer | interop.Reference<vImage_Buffer>, premultiply: boolean, flags: number): number;
+declare function vImageConvert_RGB16UtoBGRA16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, bgraDest: interop.Pointer | interop.Reference<vImage_Buffer>, premultiply: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
 declare function vImageConvert_RGB16UtoPlanar16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rDest: interop.Pointer | interop.Reference<vImage_Buffer>, gDest: interop.Pointer | interop.Reference<vImage_Buffer>, bDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
-declare function vImageConvert_RGB16UtoRGBA16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, rgbaDest: interop.Pointer | interop.Reference<vImage_Buffer>, premultiply: boolean, flags: number): number;
+declare function vImageConvert_RGB16UtoRGB888_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, dither: number, flags: number): number;
+
+declare function vImageConvert_RGB16UtoRGBA16U(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, aSrc: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, rgbaDest: interop.Pointer | interop.Reference<vImage_Buffer>, premultiply: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
 declare function vImageConvert_RGB565toARGB1555(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, dither: number, flags: number): number;
 
@@ -4425,15 +4671,17 @@ declare function vImageConvert_RGB565toRGBA5551(src: interop.Pointer | interop.R
 
 declare function vImageConvert_RGB565toRGBA8888(alpha: number, src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
-declare function vImageConvert_RGB888toARGB8888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: boolean, p6: number): number;
+declare function vImageConvert_RGB888toARGB8888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: interop.FunctionReference<(p1: number) => number>, p6: number): number;
 
-declare function vImageConvert_RGB888toBGRA8888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: boolean, p6: number): number;
+declare function vImageConvert_RGB888toBGRA8888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: interop.FunctionReference<(p1: number) => number>, p6: number): number;
 
 declare function vImageConvert_RGB888toPlanar16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_RGB888toPlanar8(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, redDest: interop.Pointer | interop.Reference<vImage_Buffer>, greenDest: interop.Pointer | interop.Reference<vImage_Buffer>, blueDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
-declare function vImageConvert_RGB888toRGBA8888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: boolean, p6: number): number;
+declare function vImageConvert_RGB888toRGB565_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, dither: number, flags: number): number;
+
+declare function vImageConvert_RGB888toRGBA8888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: interop.FunctionReference<(p1: number) => number>, p6: number): number;
 
 declare function vImageConvert_RGBA1010102ToARGB16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
 
@@ -4445,21 +4693,39 @@ declare function vImageConvert_RGBA16UtoRGB16U(rgbaSrc: interop.Pointer | intero
 
 declare function vImageConvert_RGBA5551toRGB565(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
+declare function vImageConvert_RGBA5551toRGBA8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
 declare function vImageConvert_RGBA8888toRGB565(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_RGBA8888toRGB565_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, dither: number, flags: number): number;
 
 declare function vImageConvert_RGBA8888toRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number): number;
 
+declare function vImageConvert_RGBA8888toRGBA5551(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
+
+declare function vImageConvert_RGBA8888toRGBA5551_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, dither: number, flags: number): number;
+
 declare function vImageConvert_RGBAFFFFtoRGBFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
-declare function vImageConvert_RGBFFFtoARGBFFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: boolean, flags: number): number;
+declare function vImageConvert_RGBFFFtoARGBFFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageConvert_RGBFFFtoBGRAFFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: boolean, flags: number): number;
+declare function vImageConvert_RGBFFFtoBGRAFFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
 declare function vImageConvert_RGBFFFtoPlanarF(rgbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, redDest: interop.Pointer | interop.Reference<vImage_Buffer>, greenDest: interop.Pointer | interop.Reference<vImage_Buffer>, blueDest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
 declare function vImageConvert_RGBFFFtoRGB888_dithered(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, maxFloat: interop.Reference<number>, minFloat: interop.Reference<number>, dither: number, flags: number): number;
 
-declare function vImageConvert_RGBFFFtoRGBAFFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: boolean, flags: number): number;
+declare function vImageConvert_RGBFFFtoRGBAFFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: number, p4: interop.Pointer | interop.Reference<vImage_Buffer>, p5: interop.FunctionReference<(p1: number) => number>, flags: number): number;
+
+declare function vImageConvert_XRGB2101010ToARGB16F(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_XRGB2101010ToARGB16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_XRGB2101010ToARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_XRGB2101010ToARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
+
+declare function vImageConvert_XRGB2101010ToARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, alpha: number, dest: interop.Pointer | interop.Reference<vImage_Buffer>, RGB101010RangeMin: number, RGB101010RangeMax: number, permuteMap: interop.Reference<number>, flags: number): number;
 
 declare function vImageConvert_XRGB8888ToPlanar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, red: interop.Pointer | interop.Reference<vImage_Buffer>, green: interop.Pointer | interop.Reference<vImage_Buffer>, blue: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
@@ -4561,33 +4827,33 @@ declare function vImageExtractChannel_ARGB8888(src: interop.Pointer | interop.Re
 
 declare function vImageExtractChannel_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, channelIndex: number, flags: number): number;
 
-declare function vImageFlatten_ARGB16Q12(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_ARGB16Q12(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_ARGB16U(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_ARGB16U(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_ARGB8888(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_ARGB8888(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_ARGB8888ToRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
+declare function vImageFlatten_ARGB8888ToRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: interop.FunctionReference<(p1: number) => number>, p5: number): number;
 
-declare function vImageFlatten_ARGBFFFF(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_ARGBFFFF(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_ARGBFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
+declare function vImageFlatten_ARGBFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: interop.FunctionReference<(p1: number) => number>, p5: number): number;
 
-declare function vImageFlatten_BGRA8888ToRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
+declare function vImageFlatten_BGRA8888ToRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: interop.FunctionReference<(p1: number) => number>, p5: number): number;
 
-declare function vImageFlatten_BGRAFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
+declare function vImageFlatten_BGRAFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: interop.FunctionReference<(p1: number) => number>, p5: number): number;
 
-declare function vImageFlatten_RGBA16Q12(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_RGBA16Q12(argbSrc: interop.Pointer | interop.Reference<vImage_Buffer>, argbDst: interop.Pointer | interop.Reference<vImage_Buffer>, argbBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_RGBA16U(rgbaSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaDst: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_RGBA16U(rgbaSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaDst: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_RGBA8888(rgbaSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaDst: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_RGBA8888(rgbaSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaDst: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_RGBA8888ToRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
+declare function vImageFlatten_RGBA8888ToRGB888(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: interop.FunctionReference<(p1: number) => number>, p5: number): number;
 
-declare function vImageFlatten_RGBAFFFF(rgbaSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaDst: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: boolean, flags: number): number;
+declare function vImageFlatten_RGBAFFFF(rgbaSrc: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaDst: interop.Pointer | interop.Reference<vImage_Buffer>, rgbaBackgroundColorPtr: interop.Reference<number>, isImagePremultiplied: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImageFlatten_RGBAFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: boolean, p5: number): number;
+declare function vImageFlatten_RGBAFFFFToRGBFFF(p1: interop.Pointer | interop.Reference<vImage_Buffer>, p2: interop.Pointer | interop.Reference<vImage_Buffer>, p3: interop.Reference<number>, p4: interop.FunctionReference<(p1: number) => number>, p5: number): number;
 
 declare function vImageGamma_Planar8toPlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, gamma: interop.Pointer | interop.Reference<any>, flags: number): number;
 
@@ -4649,6 +4915,10 @@ declare function vImageHorizontalShear_ARGB8888(src: interop.Pointer | interop.R
 
 declare function vImageHorizontalShear_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageHorizontalShear_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageHorizontalShear_CbCr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageHorizontalShear_Planar16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageHorizontalShear_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
@@ -4657,11 +4927,23 @@ declare function vImageHorizontalShear_Planar8(src: interop.Pointer | interop.Re
 
 declare function vImageHorizontalShear_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
+declare function vImageHorizontalShear_XRGB2101010W(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, xTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
+
 declare function vImageInterpolatedLookupTable_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Pointer | interop.Reference<number>, tableEntries: number, maxFloat: number, minFloat: number, flags: number): number;
 
 declare function vImageLookupTable_8to64U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, LUT: interop.Reference<number>, flags: number): number;
 
+declare function vImageLookupTable_Planar16(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<number>, flags: number): number;
+
+declare function vImageLookupTable_Planar8toPlanar128(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<interop.Reference<number>>, flags: number): number;
+
 declare function vImageLookupTable_Planar8toPlanar16(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<number>, flags: number): number;
+
+declare function vImageLookupTable_Planar8toPlanar24(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<number>, flags: number): number;
+
+declare function vImageLookupTable_Planar8toPlanar48(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<number>, flags: number): number;
+
+declare function vImageLookupTable_Planar8toPlanar96(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<interop.Reference<number>>, flags: number): number;
 
 declare function vImageLookupTable_Planar8toPlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, table: interop.Reference<number>, flags: number): number;
 
@@ -4742,6 +5024,8 @@ declare function vImageOverwriteChannels_ARGBFFFF(newSrc: interop.Pointer | inte
 
 declare function vImagePNGDecompressionFilter(buffer: interop.Pointer | interop.Reference<vImage_Buffer>, startScanline: number, scanlineCount: number, bitsPerPixel: number, filterMethodNumber: number, filterType: number, flags: number): number;
 
+declare function vImagePermuteChannelsWithMaskedInsert_ARGB16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
+
 declare function vImagePermuteChannelsWithMaskedInsert_ARGB8888(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
 
 declare function vImagePermuteChannelsWithMaskedInsert_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, copyMask: number, backgroundColor: interop.Reference<number>, flags: number): number;
@@ -4784,9 +5068,9 @@ declare function vImagePremultipliedAlphaBlendMultiply_RGBA8888(srcTop: interop.
 
 declare function vImagePremultipliedAlphaBlendScreen_RGBA8888(srcTop: interop.Pointer | interop.Reference<vImage_Buffer>, srcBottom: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
-declare function vImagePremultipliedAlphaBlendWithPermute_ARGB8888(srcTop: interop.Pointer | interop.Reference<vImage_Buffer>, srcBottom: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, makeDestAlphaOpaque: boolean, flags: number): number;
+declare function vImagePremultipliedAlphaBlendWithPermute_ARGB8888(srcTop: interop.Pointer | interop.Reference<vImage_Buffer>, srcBottom: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, makeDestAlphaOpaque: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
-declare function vImagePremultipliedAlphaBlendWithPermute_RGBA8888(srcTop: interop.Pointer | interop.Reference<vImage_Buffer>, srcBottom: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, makeDestAlphaOpaque: boolean, flags: number): number;
+declare function vImagePremultipliedAlphaBlendWithPermute_RGBA8888(srcTop: interop.Pointer | interop.Reference<vImage_Buffer>, srcBottom: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, permuteMap: interop.Reference<number>, makeDestAlphaOpaque: interop.FunctionReference<(p1: number) => number>, flags: number): number;
 
 declare function vImagePremultipliedAlphaBlend_ARGB8888(srcTop: interop.Pointer | interop.Reference<vImage_Buffer>, srcBottom: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, flags: number): number;
 
@@ -4882,6 +5166,10 @@ declare function vImageScale_ARGB8888(src: interop.Pointer | interop.Reference<v
 
 declare function vImageScale_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
+declare function vImageScale_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
+
+declare function vImageScale_CbCr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
+
 declare function vImageScale_Planar16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
 declare function vImageScale_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
@@ -4890,9 +5178,15 @@ declare function vImageScale_Planar8(src: interop.Pointer | interop.Reference<vI
 
 declare function vImageScale_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
 
+declare function vImageScale_XRGB2101010W(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, tempBuffer: interop.Pointer | interop.Reference<any>, flags: number): number;
+
 declare function vImageSelectChannels_ARGB8888(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
 
 declare function vImageSelectChannels_ARGBFFFF(newSrc: interop.Pointer | interop.Reference<vImage_Buffer>, origSrc: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, copyMask: number, flags: number): number;
+
+declare function vImageSymmetricPiecewiseGamma_Planar16Q12(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, exponentialCoeffs: interop.Reference<number>, gamma: number, linearCoeffs: interop.Reference<number>, boundary: number, flags: number): number;
+
+declare function vImageSymmetricPiecewiseGamma_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, exponentialCoeffs: interop.Reference<number>, gamma: number, linearCoeffs: interop.Reference<number>, boundary: number, flags: number): number;
 
 declare function vImageSymmetricPiecewisePolynomial_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, coefficients: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<number>>, boundaries: interop.Pointer | interop.Reference<number>, order: number, log2segments: number, flags: number): number;
 
@@ -4970,6 +5264,10 @@ declare function vImageVerticalShear_ARGB8888(src: interop.Pointer | interop.Ref
 
 declare function vImageVerticalShear_ARGBFFFF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
 
+declare function vImageVerticalShear_CbCr16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
+declare function vImageVerticalShear_CbCr8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: interop.Reference<number>, flags: number): number;
+
 declare function vImageVerticalShear_Planar16S(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageVerticalShear_Planar16U(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
@@ -4977,6 +5275,8 @@ declare function vImageVerticalShear_Planar16U(src: interop.Pointer | interop.Re
 declare function vImageVerticalShear_Planar8(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 declare function vImageVerticalShear_PlanarF(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
+
+declare function vImageVerticalShear_XRGB2101010W(src: interop.Pointer | interop.Reference<vImage_Buffer>, dest: interop.Pointer | interop.Reference<vImage_Buffer>, srcOffsetToROI_X: number, srcOffsetToROI_Y: number, yTranslate: number, shearSlope: number, filter: interop.Pointer | interop.Reference<any>, backColor: number, flags: number): number;
 
 interface vImageWhitePoint {
 	white_x: number;

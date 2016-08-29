@@ -215,9 +215,9 @@ declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): MCPeerID; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ displayName: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

@@ -20,7 +20,7 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	animationEvents: NSArray<SCNAnimationEvent>;
 
-	delegate: any;
+	delegate: CAAnimationDelegate;
 
 	fadeInDuration: number;
 
@@ -60,6 +60,17 @@ declare class CAAnimation extends NSObject implements CAAction, CAMediaTiming, N
 
 	shouldArchiveValueForKey(key: string): boolean;
 }
+
+interface CAAnimationDelegate extends NSObjectProtocol {
+
+	animationDidStart?(anim: CAAnimation): void;
+
+	animationDidStopFinished?(anim: CAAnimation, flag: boolean): void;
+}
+declare var CAAnimationDelegate: {
+
+	prototype: CAAnimationDelegate;
+};
 
 declare class CAAnimationGroup extends CAAnimation {
 
@@ -104,6 +115,10 @@ declare class CADisplayLink extends NSObject {
 	frameInterval: number;
 
 	paused: boolean;
+
+	preferredFramesPerSecond: number;
+
+	/* readonly */ targetTimestamp: number;
 
 	/* readonly */ timestamp: number;
 
@@ -397,6 +412,8 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	contentsCenter: CGRect;
 
+	contentsFormat: string;
+
 	contentsGravity: string;
 
 	contentsRect: CGRect;
@@ -405,7 +422,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	cornerRadius: number;
 
-	delegate: any;
+	delegate: CALayerDelegate;
 
 	doubleSided: boolean;
 
@@ -541,7 +558,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	layoutSublayers(): void;
 
-	modelLayer(): any;
+	modelLayer(): this;
 
 	needsDisplay(): boolean;
 
@@ -549,7 +566,7 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	preferredFrameSize(): CGSize;
 
-	presentationLayer(): any;
+	presentationLayer(): this;
 
 	removeAllAnimations(): void;
 
@@ -575,6 +592,23 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	shouldArchiveValueForKey(key: string): boolean;
 }
+
+interface CALayerDelegate extends NSObjectProtocol {
+
+	actionForLayerForKey?(layer: CALayer, event: string): CAAction;
+
+	displayLayer?(layer: CALayer): void;
+
+	drawLayerInContext?(layer: CALayer, ctx: any): void;
+
+	layerWillDraw?(layer: CALayer): void;
+
+	layoutSublayersOfLayer?(layer: CALayer): void;
+}
+declare var CALayerDelegate: {
+
+	prototype: CALayerDelegate;
+};
 
 interface CAMediaTiming {
 
@@ -838,7 +872,7 @@ declare var CATransform3D: interop.StructType<CATransform3D>;
 
 declare function CATransform3DConcat(a: CATransform3D, b: CATransform3D): CATransform3D;
 
-declare function CATransform3DEqualToTransform(a: CATransform3D, b: CATransform3D): boolean;
+declare function CATransform3DEqualToTransform(a: CATransform3D, b: CATransform3D): number;
 
 declare function CATransform3DGetAffineTransform(t: CATransform3D): CGAffineTransform;
 
@@ -846,9 +880,9 @@ declare var CATransform3DIdentity: CATransform3D;
 
 declare function CATransform3DInvert(t: CATransform3D): CATransform3D;
 
-declare function CATransform3DIsAffine(t: CATransform3D): boolean;
+declare function CATransform3DIsAffine(t: CATransform3D): number;
 
-declare function CATransform3DIsIdentity(t: CATransform3D): boolean;
+declare function CATransform3DIsIdentity(t: CATransform3D): number;
 
 declare function CATransform3DMakeAffineTransform(m: CGAffineTransform): CATransform3D;
 
@@ -941,6 +975,12 @@ declare var kCAAnimationRotateAuto: string;
 
 declare var kCAAnimationRotateAutoReverse: string;
 
+declare var kCAContentsFormatGray8Uint: string;
+
+declare var kCAContentsFormatRGBA16Float: string;
+
+declare var kCAContentsFormatRGBA8Uint: string;
+
 declare var kCAEmitterBehaviorAlignToMotion: string;
 
 declare var kCAEmitterBehaviorAttractor: string;
@@ -950,6 +990,8 @@ declare var kCAEmitterBehaviorColorOverLife: string;
 declare var kCAEmitterBehaviorDrag: string;
 
 declare var kCAEmitterBehaviorLight: string;
+
+declare var kCAEmitterBehaviorSimpleAttractor: string;
 
 declare var kCAEmitterBehaviorValueOverLife: string;
 

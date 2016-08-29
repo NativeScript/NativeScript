@@ -243,6 +243,10 @@ declare var kVTDecompressionResolutionKey_Height: string;
 
 declare var kVTDecompressionResolutionKey_Width: string;
 
+declare var kVTDownsamplingMode_Average: string;
+
+declare var kVTDownsamplingMode_Decimate: string;
+
 declare var kVTEncodeFrameOptionKey_ForceKeyFrame: string;
 
 declare var kVTH264EntropyMode_CABAC: string;
@@ -250,6 +254,22 @@ declare var kVTH264EntropyMode_CABAC: string;
 declare var kVTH264EntropyMode_CAVLC: string;
 
 declare var kVTMultiPassStorageCreationOption_DoNotDelete: string;
+
+declare var kVTPixelTransferPropertyKey_DestinationCleanAperture: string;
+
+declare var kVTPixelTransferPropertyKey_DestinationColorPrimaries: string;
+
+declare var kVTPixelTransferPropertyKey_DestinationICCProfile: string;
+
+declare var kVTPixelTransferPropertyKey_DestinationPixelAspectRatio: string;
+
+declare var kVTPixelTransferPropertyKey_DestinationTransferFunction: string;
+
+declare var kVTPixelTransferPropertyKey_DestinationYCbCrMatrix: string;
+
+declare var kVTPixelTransferPropertyKey_DownsamplingMode: string;
+
+declare var kVTPixelTransferPropertyKey_ScalingMode: string;
 
 declare var kVTProfileLevel_H263_Profile0_Level10: string;
 
@@ -370,6 +390,14 @@ declare var kVTPropertyType_Boolean: string;
 declare var kVTPropertyType_Enumeration: string;
 
 declare var kVTPropertyType_Number: string;
+
+declare var kVTScalingMode_CropSourceToCleanAperture: string;
+
+declare var kVTScalingMode_Letterbox: string;
+
+declare var kVTScalingMode_Normal: string;
+
+declare var kVTScalingMode_Trim: string;
 
 declare var kVTVideoEncoderList_CodecName: string;
 

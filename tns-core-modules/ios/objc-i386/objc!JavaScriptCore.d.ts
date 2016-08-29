@@ -1,5 +1,5 @@
 
-declare function JSCheckScriptSyntax(ctx: interop.Pointer | interop.Reference<any>, script: interop.Pointer | interop.Reference<any>, sourceURL: interop.Pointer | interop.Reference<any>, startingLineNumber: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function JSCheckScriptSyntax(ctx: interop.Pointer | interop.Reference<any>, script: interop.Pointer | interop.Reference<any>, sourceURL: interop.Pointer | interop.Reference<any>, startingLineNumber: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function JSClassCreate(definition: interop.Pointer | interop.Reference<JSClassDefinition>): interop.Pointer | interop.Reference<any>;
 
@@ -12,14 +12,14 @@ interface JSClassDefinition {
 	staticFunctions: interop.Pointer | interop.Reference<JSStaticFunction>;
 	initialize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>;
 	finalize: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
-	hasProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => boolean>;
+	hasProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => number>;
 	getProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
-	setProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>;
-	deleteProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>;
+	setProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
+	deleteProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 	getPropertyNames: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>;
 	callAsFunction: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: number, p5: interop.Reference<interop.Pointer | interop.Reference<any>>, p6: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
 	callAsConstructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
-	hasInstance: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>;
+	hasInstance: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 	convertToType: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: JSType, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
 }
 declare var JSClassDefinition: interop.StructType<JSClassDefinition>;
@@ -127,7 +127,11 @@ declare function JSObjectCallAsFunction(ctx: interop.Pointer | interop.Reference
 
 declare function JSObjectCopyPropertyNames(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function JSObjectDeleteProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function JSObjectDeleteProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function JSObjectGetArrayBufferByteLength(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function JSObjectGetArrayBufferBytesPtr(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectGetPrivate(object: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -137,15 +141,27 @@ declare function JSObjectGetPropertyAtIndex(ctx: interop.Pointer | interop.Refer
 
 declare function JSObjectGetPrototype(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function JSObjectHasProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSObjectGetTypedArrayBuffer(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function JSObjectIsConstructor(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSObjectGetTypedArrayByteLength(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function JSObjectIsFunction(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSObjectGetTypedArrayByteOffset(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function JSObjectGetTypedArrayBytesPtr(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+declare function JSObjectGetTypedArrayLength(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
+
+declare function JSObjectHasProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>): number;
+
+declare function JSObjectIsConstructor(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): number;
+
+declare function JSObjectIsFunction(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>): number;
 
 declare function JSObjectMake(ctx: interop.Pointer | interop.Reference<any>, jsClass: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectMakeArray(ctx: interop.Pointer | interop.Reference<any>, argumentCount: number, _arguments: interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+declare function JSObjectMakeArrayBufferWithBytesNoCopy(ctx: interop.Pointer | interop.Reference<any>, bytes: interop.Pointer | interop.Reference<any>, byteLength: number, bytesDeallocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, deallocatorContext: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
 declare function JSObjectMakeConstructor(ctx: interop.Pointer | interop.Reference<any>, jsClass: interop.Pointer | interop.Reference<any>, callAsConstructor: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: number, p4: interop.Reference<interop.Pointer | interop.Reference<any>>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
@@ -159,7 +175,15 @@ declare function JSObjectMakeFunctionWithCallback(ctx: interop.Pointer | interop
 
 declare function JSObjectMakeRegExp(ctx: interop.Pointer | interop.Reference<any>, argumentCount: number, _arguments: interop.Reference<interop.Pointer | interop.Reference<any>>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
 
-declare function JSObjectSetPrivate(object: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSObjectMakeTypedArray(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, length: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+declare function JSObjectMakeTypedArrayWithArrayBuffer(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, buffer: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+declare function JSObjectMakeTypedArrayWithArrayBufferAndOffset(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, buffer: interop.Pointer | interop.Reference<any>, byteOffset: number, length: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+declare function JSObjectMakeTypedArrayWithBytesNoCopy(ctx: interop.Pointer | interop.Reference<any>, arrayType: JSTypedArrayType, bytes: interop.Pointer | interop.Reference<any>, byteLength: number, bytesDeallocator: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => void>, deallocatorContext: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): interop.Pointer | interop.Reference<any>;
+
+declare function JSObjectSetPrivate(object: interop.Pointer | interop.Reference<any>, data: interop.Pointer | interop.Reference<any>): number;
 
 declare function JSObjectSetProperty(ctx: interop.Pointer | interop.Reference<any>, object: interop.Pointer | interop.Reference<any>, propertyName: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, attributes: number, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): void;
 
@@ -199,7 +223,7 @@ declare var JSStaticFunction: interop.StructType<JSStaticFunction>;
 interface JSStaticValue {
 	name: string;
 	getProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => interop.Pointer | interop.Reference<any>>;
-	setProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => boolean>;
+	setProperty: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>, p4: interop.Pointer | interop.Reference<any>, p5: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>) => number>;
 	attributes: number;
 }
 declare var JSStaticValue: interop.StructType<JSStaticValue>;
@@ -220,9 +244,9 @@ declare function JSStringGetMaximumUTF8CStringSize(string: interop.Pointer | int
 
 declare function JSStringGetUTF8CString(string: interop.Pointer | interop.Reference<any>, buffer: string, bufferSize: number): number;
 
-declare function JSStringIsEqual(a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSStringIsEqual(a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSStringIsEqualToUTF8CString(a: interop.Pointer | interop.Reference<any>, b: string): boolean;
+declare function JSStringIsEqualToUTF8CString(a: interop.Pointer | interop.Reference<any>, b: string): number;
 
 declare function JSStringRelease(string: interop.Pointer | interop.Reference<any>): void;
 
@@ -241,6 +265,31 @@ declare const enum JSType {
 	kJSTypeString = 4,
 
 	kJSTypeObject = 5
+}
+
+declare const enum JSTypedArrayType {
+
+	kJSTypedArrayTypeInt8Array = 0,
+
+	kJSTypedArrayTypeInt16Array = 1,
+
+	kJSTypedArrayTypeInt32Array = 2,
+
+	kJSTypedArrayTypeUint8Array = 3,
+
+	kJSTypedArrayTypeUint8ClampedArray = 4,
+
+	kJSTypedArrayTypeUint16Array = 5,
+
+	kJSTypedArrayTypeUint32Array = 6,
+
+	kJSTypedArrayTypeFloat32Array = 7,
+
+	kJSTypedArrayTypeFloat64Array = 8,
+
+	kJSTypedArrayTypeArrayBuffer = 9,
+
+	kJSTypedArrayTypeNone = 10
 }
 
 declare class JSValue extends NSObject {
@@ -371,31 +420,33 @@ declare function JSValueCreateJSONString(ctx: interop.Pointer | interop.Referenc
 
 declare function JSValueGetType(ctx: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>): JSType;
 
-declare function JSValueIsArray(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueGetTypedArrayType(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): JSTypedArrayType;
 
-declare function JSValueIsBoolean(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsArray(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsDate(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsBoolean(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsEqual(ctx: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function JSValueIsDate(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsInstanceOfConstructor(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, constructor: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function JSValueIsEqual(ctx: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function JSValueIsNull(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsInstanceOfConstructor(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, constructor: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function JSValueIsNumber(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsNull(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsObject(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsNumber(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsObjectOfClass(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, jsClass: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsObject(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsStrictEqual(ctx: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsObjectOfClass(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, jsClass: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsStrictEqual(ctx: interop.Pointer | interop.Reference<any>, a: interop.Pointer | interop.Reference<any>, b: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueIsUndefined(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueIsString(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
-declare function JSValueMakeBoolean(ctx: interop.Pointer | interop.Reference<any>, boolean: boolean): interop.Pointer | interop.Reference<any>;
+declare function JSValueIsUndefined(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
+
+declare function JSValueMakeBoolean(ctx: interop.Pointer | interop.Reference<any>, boolean: interop.FunctionReference<(p1: number) => number>): interop.Pointer | interop.Reference<any>;
 
 declare function JSValueMakeFromJSONString(ctx: interop.Pointer | interop.Reference<any>, string: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
@@ -409,7 +460,7 @@ declare function JSValueMakeUndefined(ctx: interop.Pointer | interop.Reference<a
 
 declare function JSValueProtect(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): void;
 
-declare function JSValueToBoolean(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function JSValueToBoolean(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>): number;
 
 declare function JSValueToNumber(ctx: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<any>, exception: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 

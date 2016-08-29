@@ -5,8 +5,6 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 
 	static new(): CSCustomAttributeKey; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ keyName: string;
 
 	/* readonly */ multiValued: boolean;
@@ -16,6 +14,8 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 	/* readonly */ searchableByDefault: boolean;
 
 	/* readonly */ unique: boolean;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -153,8 +153,6 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CSPerson; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	contactIdentifier: string;
 
 	/* readonly */ displayName: string;
@@ -162,6 +160,8 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ handleIdentifier: string;
 
 	/* readonly */ handles: NSArray<string>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -175,6 +175,48 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithDisplayNameHandlesHandleIdentifier(displayName: string, handles: NSArray<string>, handleIdentifier: string): this;
 }
+
+declare var CSQueryContinuationActionType: string;
+
+declare class CSSearchQuery extends NSObject {
+
+	static alloc(): CSSearchQuery; // inherited from NSObject
+
+	static new(): CSSearchQuery; // inherited from NSObject
+
+	/* readonly */ cancelled: boolean;
+
+	completionHandler: (p1: NSError) => void;
+
+	/* readonly */ foundItemCount: number;
+
+	foundItemsHandler: (p1: NSArray<CSSearchableItem>) => void;
+
+	protectionClasses: NSArray<string>;
+
+	constructor(o: { queryString: string; attributes: NSArray<string>; });
+
+	cancel(): void;
+
+	initWithQueryStringAttributes(queryString: string, attributes: NSArray<string>): this;
+
+	start(): void;
+}
+
+declare const enum CSSearchQueryErrorCode {
+
+	Unknown = -2000,
+
+	IndexUnreachable = -2001,
+
+	InvalidQuery = -2002,
+
+	Cancelled = -2003
+}
+
+declare var CSSearchQueryErrorDomain: string;
+
+declare var CSSearchQueryString: string;
 
 declare class CSSearchableIndex extends NSObject {
 
@@ -232,8 +274,6 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): CSSearchableItem; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	attributeSet: CSSearchableItemAttributeSet;
 
 	domainIdentifier: string;
@@ -241,6 +281,8 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 	expirationDate: Date;
 
 	uniqueIdentifier: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -264,8 +306,6 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	static alloc(): CSSearchableItemAttributeSet; // inherited from NSObject
 
 	static new(): CSSearchableItemAttributeSet; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
 
 	EXIFGPSVersion: string;
 
@@ -405,6 +445,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	displayName: string;
 
+	domainIdentifier: string;
+
 	downloadedDate: Date;
 
 	dueDate: Date;
@@ -440,6 +482,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	focalLength35mm: number;
 
 	fontNames: NSArray<string>;
+
+	fullyFormattedAddress: string;
 
 	generalMIDISequence: number;
 
@@ -535,6 +579,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	playCount: number;
 
+	postalCode: string;
+
 	primaryRecipients: NSArray<CSPerson>;
 
 	producer: string;
@@ -579,6 +625,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	streamable: number;
 
+	subThoroughfare: string;
+
 	subject: string;
 
 	supportsNavigation: number;
@@ -590,6 +638,8 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 	textContent: string;
 
 	theme: string;
+
+	thoroughfare: string;
 
 	thumbnailData: NSData;
 
@@ -607,7 +657,11 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	videoBitRate: number;
 
+	weakRelatedUniqueIdentifier: string;
+
 	whiteBalance: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
