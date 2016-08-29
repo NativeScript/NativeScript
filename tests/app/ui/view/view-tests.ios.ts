@@ -24,7 +24,7 @@ export function checkNativeBackgroundColor(v: view.View): boolean {
     if (v.ios instanceof UILabel) {
         var cgColor1 = (<UILabel>v.ios).layer.backgroundColor;
         var cgColor2 = (<UIColor>v.backgroundColor.ios).CGColor;
-        return v.backgroundColor && CGColorEqualToColor(cgColor1, cgColor2);
+        return v.backgroundColor && !!CGColorEqualToColor(cgColor1, cgColor2);
     }
 
     return v.backgroundColor && (<UIView>v.ios).backgroundColor.isEqual(v.backgroundColor.ios);

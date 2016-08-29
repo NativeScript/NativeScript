@@ -11,7 +11,7 @@ export module ios {
     }
 
     export function getStatusBarHeight(): number {
-        var app = UIApplication.sharedApplication();
+        var app = UIApplication.sharedApplication;
         if (!app || app.statusBarHidden) {
             return 0;
         }

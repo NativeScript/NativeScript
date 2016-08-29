@@ -175,7 +175,7 @@ export class SegmentedBarStyler implements style.Styler {
         else {
             attrs = NSMutableDictionary.new();
         }
-        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize()));
+        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize));
         attrs.setValueForKey(newFont, NSFontAttributeName);
         bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
@@ -202,7 +202,7 @@ export class SegmentedBarStyler implements style.Styler {
             currentFont = currentAttrs.objectForKey(NSFontAttributeName);
         }
         if (!currentFont) {
-            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize);
         }
         return currentFont;
     }

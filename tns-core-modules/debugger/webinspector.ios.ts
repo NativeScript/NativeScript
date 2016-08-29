@@ -212,9 +212,9 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Loads a resource in the context of a frame on the inspected page without cross origin checks.
      */
     loadResource(params: inspectorCommandTypes.NetworkDomain.LoadResourceMethodArguments): { content: string, mimeType: string, status: number } {
-        let appPath = NSBundle.mainBundle().bundlePath;
+        let appPath = NSBundle.mainBundle.bundlePath;
         let pathUrl = params.url.replace("file://", appPath);
-        let fileManager = NSFileManager.defaultManager();
+        let fileManager = NSFileManager.defaultManager;
         let data = fileManager.fileExistsAtPath(pathUrl) ? fileManager.contentsAtPath(pathUrl) : undefined;
         let content = data ? NSString.alloc().initWithDataEncoding(data, NSUTF8StringEncoding) : "";
 

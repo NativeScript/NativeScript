@@ -45,7 +45,7 @@ export function ensureSystemFontSets() {
         return;
     }
 
-    var nsFontFamilies = UIFont.familyNames();
+    var nsFontFamilies = UIFont.familyNames;
     for (var i = 0; i < nsFontFamilies.count; i++) {
         var family = nsFontFamilies.objectAtIndex(i);
         systemFontFamilies.add(family);
@@ -98,7 +98,7 @@ function createUIFont(font: Font, defaultFont: UIFont) {
     }
 
     if (!descriptor) {
-        descriptor = defaultFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
+        descriptor = defaultFont.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
     }
 
     return UIFont.fontWithDescriptorSize(descriptor, size);
@@ -115,19 +115,19 @@ function tryResolveWithSystemFont(font: Font, size: number, symbolicTraits: numb
             else {
                 systemFont = UIFont.systemFontOfSize(size);
             }
-            result = systemFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
+            result = systemFont.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
             break;
 
         case common.genericFontFamilies.monospace:
             if ((<any>UIFont).monospacedDigitSystemFontOfSizeWeight) {// This method is available on iOS 9.0 and later.
                 systemFont = (<any>UIFont).monospacedDigitSystemFontOfSizeWeight(size, getiOSFontWeight(font.fontWeight));
-                result = systemFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
+                result = systemFont.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
             }
             break;
     }
 
     if (systemFont) {
-        var result = systemFont.fontDescriptor().fontDescriptorWithSymbolicTraits(symbolicTraits);
+        var result = systemFont.fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits);
         return result;
     }
 
@@ -291,7 +291,7 @@ export module ios {
         if (!fs.File.exists(filePath)) {
             filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
         }
-        var fontData = NSFileManager.defaultManager().contentsAtPath(filePath);
+        var fontData = NSFileManager.defaultManager.contentsAtPath(filePath);
         if (!fontData) {
             throw new Error("Could not load font from: " + fontFile);
         }

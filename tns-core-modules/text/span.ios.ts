@@ -16,7 +16,7 @@ export class Span extends spanCommon.Span {
         if (realFontAttributes || realFontFamily || realFontSize) {
             var font;
             if (!realFontSize) {
-                realFontSize = UIFont.systemFontSize();
+                realFontSize = UIFont.systemFontSize;
             }
             if (realFontFamily) {
                 font = UIFont.fontWithNameSize(realFontFamily, realFontSize);

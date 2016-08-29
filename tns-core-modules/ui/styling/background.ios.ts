@@ -193,7 +193,7 @@ function drawClipPath(view: viewModule.View) {
             borderLayer.path = path;
             borderLayer.lineWidth = view.borderWidth * 2;
             borderLayer.strokeColor = view.borderColor.ios.CGColor;
-            borderLayer.fillColor = UIColor.clearColor().CGColor;
+            borderLayer.fillColor = UIColor.clearColor.CGColor;
 
             borderLayer.frame = nativeView.bounds;
 

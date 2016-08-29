@@ -377,7 +377,7 @@ export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: numbe
         var waitTime = 20 / 1000;
         var totalWaitTime = 0;
         while (true) {
-            NSRunLoop.currentRunLoop().runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));
+            NSRunLoop.currentRunLoop.runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));
             if (isReady()) {
                 break;
             }
