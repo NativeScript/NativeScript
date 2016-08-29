@@ -27,9 +27,9 @@ class MemmoryWarningHandler extends NSObject {
         return <MemmoryWarningHandler>super.new();
     }
 
-    private _cache: NSCache;
+    private _cache: NSCache<any, any>;
 
-    public initWithCache(cache: NSCache): MemmoryWarningHandler {
+    public initWithCache(cache: NSCache<any, any>): MemmoryWarningHandler {
         this._cache = cache;
 
         NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
@@ -62,14 +62,14 @@ class MemmoryWarningHandler extends NSObject {
 }
 
 export class Cache extends common.Cache {
-    private _cache: NSCache;
+    private _cache: NSCache<any, any>;
     //private _delegate: NSCacheDelegate;
     private _memoryWarningHandler: MemmoryWarningHandler;
 
     constructor() {
         super();
 
-        this._cache = new NSCache();
+        this._cache = new NSCache<any, any>();
         
         //this._delegate = NSCacheDelegateImpl.new();
         //this._cache.delegate = this._delegate;

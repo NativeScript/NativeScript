@@ -19,7 +19,7 @@ export class FileSystemAccess {
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
             var fileManager = NSFileManager.defaultManager();
-            var nsString = NSString.alloc().initWithString(path);
+            var nsString = NSString.stringWithString(path);
 
             var parentPath = nsString.stringByDeletingLastPathComponent;
             var name = fileManager.displayNameAtPath(parentPath);
@@ -218,11 +218,11 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        return this.getKnownPath(NSSearchPathDirectory.NSDocumentDirectory);
+        return this.getKnownPath(NSSearchPathDirectory.DocumentDirectory);
     }
 
     public getTempFolderPath(): string {
-        return this.getKnownPath(NSSearchPathDirectory.NSCachesDirectory);
+        return this.getKnownPath(NSSearchPathDirectory.CachesDirectory);
     }
     
     public getCurrentAppPath(): string {
@@ -268,7 +268,7 @@ export class FileSystemAccess {
     }
 
     public writeText(path: string, content: string, onError?: (error: any) => any, encoding?: any) {
-        var nsString = NSString.alloc().initWithString(content);
+        var nsString = NSString.stringWithString(content);
 
         var actualEncoding = encoding;
         if (!actualEncoding) {
@@ -299,7 +299,7 @@ export class FileSystemAccess {
 
     private getKnownPath(folderType: number): string {
         var fileManager = NSFileManager.defaultManager();
-        var paths = fileManager.URLsForDirectoryInDomains(folderType, NSSearchPathDirectory.NSApplicationDirectory);
+        var paths = fileManager.URLsForDirectoryInDomains(folderType, NSSearchPathDomainMask.UserDomainMask);
 
         var url = paths.objectAtIndex(0);
         return url.path;
@@ -403,7 +403,7 @@ export class FileSystemAccess {
             return "";
         }
 
-        var nsArray = NSMutableArray.alloc().initWithCapacity(paths.length);
+        var nsArray = NSMutableArray.alloc<string>().initWithCapacity(paths.length);
 
         var i;
         for (i = 0; i < paths.length; i++) {

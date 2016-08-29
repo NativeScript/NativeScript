@@ -136,7 +136,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
             // in iOS 7.1 (or iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated:) this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
             let cell = this._measureCell;
             if (!cell) {
-                this._measureCell = tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER) || ListViewCell.new();
+                this._measureCell = (<any>tableView.dequeueReusableCellWithIdentifier(CELLIDENTIFIER)) || ListViewCell.new();
                 cell = this._measureCell;
             }
 
@@ -213,9 +213,9 @@ export class ListView extends common.ListView {
 
     constructor() {
         super();
-        this._ios = new UITableView();
+        this._ios = UITableView.new();
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), CELLIDENTIFIER);
-        this._ios.autoresizingMask = UIViewAutoresizing.UIViewAutoresizingNone;
+        this._ios.autoresizingMask = UIViewAutoresizing.None;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
         this._ios.rowHeight = UITableViewAutomaticDimension;
         this._ios.dataSource = this._dataSource = DataSource.initWithOwner(new WeakRef(this));
@@ -254,7 +254,7 @@ export class ListView extends common.ListView {
     public scrollToIndex(index: number) {
         if (this._ios) {
             this._ios.scrollToRowAtIndexPathAtScrollPositionAnimated(NSIndexPath.indexPathForItemInSection(index, 0),
-                UITableViewScrollPosition.UITableViewScrollPositionTop, false);
+                UITableViewScrollPosition.Top, false);
         }
     }
 

@@ -1,6 +1,7 @@
 ﻿import application = require("application");
+declare var CACurrentMediaTime;
 
- global.time = function(): number {
+global.time = function(): number {
     if (global.android) {
         return java.lang.System.nanoTime() / 1000000; // 1 ms = 1000000 ns
     }

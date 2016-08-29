@@ -512,7 +512,7 @@ export module knownFolders {
         export var library = function(): Folder {
             _checkPlatform("library");
             if (!_library) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSLibraryDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.LibraryDirectory);
                 _library = Folder.fromPath(path);
                 _library[pathProperty] = path;
                 _library[isKnownProperty] = true;
@@ -525,7 +525,7 @@ export module knownFolders {
         export var developer = function(): Folder {
             _checkPlatform("developer");
             if (!_developer) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSDeveloperDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.DeveloperDirectory);
                 _developer = Folder.fromPath(path);
                 _developer[pathProperty] = path;
                 _developer[isKnownProperty] = true;
@@ -538,7 +538,7 @@ export module knownFolders {
         export var desktop = function(): Folder {
             _checkPlatform("desktop");
             if (!_desktop) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSDesktopDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.DesktopDirectory);
                 _desktop = Folder.fromPath(path);
                 _desktop[pathProperty] = path;
                 _desktop[isKnownProperty] = true;
@@ -551,7 +551,7 @@ export module knownFolders {
         export var downloads = function(): Folder {
             _checkPlatform("downloads");
             if (!_downloads) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSDownloadsDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.DownloadsDirectory);
                 _downloads = Folder.fromPath(path);
                 _downloads[pathProperty] = path;
                 _downloads[isKnownProperty] = true;
@@ -564,7 +564,7 @@ export module knownFolders {
         export var movies = function(): Folder {
             _checkPlatform("movies");
             if (!_movies) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSMoviesDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.MoviesDirectory);
                 _movies = Folder.fromPath(path);
                 _movies[pathProperty] = path;
                 _movies[isKnownProperty] = true;
@@ -577,7 +577,7 @@ export module knownFolders {
         export var music = function(): Folder {
             _checkPlatform("music");
             if (!_music) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSMusicDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.MusicDirectory);
                 _music = Folder.fromPath(path);
                 _music[pathProperty] = path;
                 _music[isKnownProperty] = true;
@@ -590,7 +590,7 @@ export module knownFolders {
         export var pictures = function(): Folder {
             _checkPlatform("pictures");
             if (!_pictures) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSPicturesDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.PicturesDirectory);
                 _pictures = Folder.fromPath(path);
                 _pictures[pathProperty] = path;
                 _pictures[isKnownProperty] = true;
@@ -603,7 +603,7 @@ export module knownFolders {
         export var sharedPublic = function(): Folder {
             _checkPlatform("sharedPublic");
             if (!_sharedPublic) {
-                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.NSSharedPublicDirectory);
+                var path = (<any>getFileAccess()).getKnownPath(NSSearchPathDirectory.SharedPublicDirectory);
                 _sharedPublic = Folder.fromPath(path);
                 _sharedPublic[pathProperty] = path;
                 _sharedPublic[isKnownProperty] = true;

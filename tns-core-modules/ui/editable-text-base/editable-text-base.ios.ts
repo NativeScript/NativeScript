@@ -11,22 +11,22 @@ export class EditableTextBase extends common.EditableTextBase {
         var newKeyboardType: UIKeyboardType;
         switch (data.newValue) {
             case enums.KeyboardType.datetime:
-                newKeyboardType = UIKeyboardType.UIKeyboardTypeNumbersAndPunctuation;
+                newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
                 break;
             case enums.KeyboardType.phone:
-                newKeyboardType = UIKeyboardType.UIKeyboardTypePhonePad;
+                newKeyboardType = UIKeyboardType.PhonePad;
                 break;
             case enums.KeyboardType.number:
-                newKeyboardType = UIKeyboardType.UIKeyboardTypeNumbersAndPunctuation;
+                newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
                 break;
             case enums.KeyboardType.url:
-                newKeyboardType = UIKeyboardType.UIKeyboardTypeURL;
+                newKeyboardType = UIKeyboardType.URL;
                 break;
             case enums.KeyboardType.email:
-                newKeyboardType = UIKeyboardType.UIKeyboardTypeEmailAddress;
+                newKeyboardType = UIKeyboardType.EmailAddress;
                 break;
             default:
-                newKeyboardType = UIKeyboardType.UIKeyboardTypeDefault;
+                newKeyboardType = UIKeyboardType.Default;
                 break;
         }
 
@@ -37,22 +37,22 @@ export class EditableTextBase extends common.EditableTextBase {
         var newValue;
         switch (data.newValue) {
             case enums.ReturnKeyType.done:
-                newValue = UIReturnKeyType.UIReturnKeyDone;
+                newValue = UIReturnKeyType.Done;
                 break;
             case enums.ReturnKeyType.go:
-                newValue = UIReturnKeyType.UIReturnKeyGo;
+                newValue = UIReturnKeyType.Go;
                 break;
             case enums.ReturnKeyType.next:
-                newValue = UIReturnKeyType.UIReturnKeyNext;
+                newValue = UIReturnKeyType.Next;
                 break;
             case enums.ReturnKeyType.search:
-                newValue = UIReturnKeyType.UIReturnKeySearch;
+                newValue = UIReturnKeyType.Search;
                 break;
             case enums.ReturnKeyType.send:
-                newValue = UIReturnKeyType.UIReturnKeySend;
+                newValue = UIReturnKeyType.Send;
                 break;
             default:
-                newValue = UIReturnKeyType.UIReturnKeyDefault;
+                newValue = UIReturnKeyType.Default;
                 break;
         }
 
@@ -63,19 +63,19 @@ export class EditableTextBase extends common.EditableTextBase {
         var newValue: UITextAutocapitalizationType;
         switch (data.newValue) {
             case enums.AutocapitalizationType.none:
-                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeNone;
+                newValue = UITextAutocapitalizationType.None;
                 break;
             case enums.AutocapitalizationType.words:
-                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeWords;
+                newValue = UITextAutocapitalizationType.Words;
                 break;
             case enums.AutocapitalizationType.sentences:
-                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences;
+                newValue = UITextAutocapitalizationType.Sentences;
                 break;
             case enums.AutocapitalizationType.allCharacters:
-                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeAllCharacters;
+                newValue = UITextAutocapitalizationType.AllCharacters;
                 break;
             default:
-                newValue = UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences;
+                newValue = UITextAutocapitalizationType.Sentences;
                 break;
         }
 
@@ -86,13 +86,13 @@ export class EditableTextBase extends common.EditableTextBase {
         var newValue: UITextAutocorrectionType;
         switch (data.newValue) {
             case true:
-                newValue = UITextAutocorrectionType.UITextAutocorrectionTypeYes;
+                newValue = UITextAutocorrectionType.Yes;
                 break;
             case false:
-                newValue = UITextAutocorrectionType.UITextAutocorrectionTypeNo;
+                newValue = UITextAutocorrectionType.No;
                 break;
             default:
-                newValue = UITextAutocorrectionType.UITextAutocorrectionTypeDefault;
+                newValue = UITextAutocorrectionType.Default;
                 break;
         }
 

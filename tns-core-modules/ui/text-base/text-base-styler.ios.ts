@@ -137,15 +137,15 @@ export class TextBaseStyler implements style.Styler {
             if (textBase.style.textDecoration.indexOf(enums.TextDecoration.none) === -1) {
 
                 if (textBase.style.textDecoration.indexOf(enums.TextDecoration.underline) !== -1) {
-                    textBase.formattedText.underline = NSUnderlineStyle.NSUnderlineStyleSingle;
+                    textBase.formattedText.underline = NSUnderlineStyle.StyleSingle;
                 }
 
                 if (textBase.style.textDecoration.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    textBase.formattedText.strikethrough = NSUnderlineStyle.NSUnderlineStyleSingle;
+                    textBase.formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
                 }
             } 
             else {
-                textBase.formattedText.underline = NSUnderlineStyle.NSUnderlineStyleNone;
+                textBase.formattedText.underline = NSUnderlineStyle.StyleSingle;
             }
 
             for (let i = 0; i < textBase.formattedText.spans.length; i++) {
@@ -170,11 +170,11 @@ export class TextBaseStyler implements style.Styler {
                 let dict = new Map<string, number>();
 
                 if (decorationValues.indexOf(enums.TextDecoration.underline) !== -1) {
-                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                    dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 }
 
                 if (decorationValues.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.NSUnderlineStyleSingle);
+                    dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 }
 
                 if (hasLetterSpacing) {

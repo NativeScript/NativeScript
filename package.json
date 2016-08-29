@@ -43,6 +43,7 @@
     "pretest": "npm run link-tests && npm run tsc",
     "test-android": "tns run android --path tests --justlaunch",
     "test-ios": "tns run ios --path tests --justlaunch",
-    "test": "npm run test-android && npm run test-ios"
+    "test": "npm run test-android && npm run test-ios",
+    "dts-ios": "npm run link-tests && rm -rf tns-core-modules/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-core-modules/ios/objc tns build ios --path tests"
   }
 }
