@@ -10,12 +10,3 @@ interface SymbolConstructor {
 }
 
 declare var Symbol: SymbolConstructor;
-
-interface ObjectConstructor {
-    assign(target: any, ...sources: any[]): any;
-    is(value1: any, value2: any): boolean;
-    setPrototypeOf(o: any, proto: any): any;
-    getOwnPropertySymbols(o: any): symbol[];
-}
-
-declare var Object: ObjectConstructor;
