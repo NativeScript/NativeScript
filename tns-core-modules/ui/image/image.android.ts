@@ -108,6 +108,17 @@ export class ImageStyler implements style.Styler {
         background.ad.onBackgroundOrBorderPropertyChanged(v);
     }
 
+    // tint color
+    private static setColorProperty(view: view.View, newValue: any) {
+        var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
+        imageView.setColorFilter(newValue);
+    }
+
+    private static resetColorProperty(view: view.View, nativeValue: number) {
+        var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
+        imageView.clearColorFilter();
+    }
+
     public static registerHandlers() {
         // Use the same handler for all background/border properties
         // Note: There is no default value getter - the default value is handled in background.ad.onBackgroundOrBorderPropertyChanged
@@ -119,6 +130,10 @@ export class ImageStyler implements style.Styler {
         style.registerHandler(style.borderWidthProperty, new style.StylePropertyChangedHandler(
             ImageStyler.setBorderWidthProperty,
             ImageStyler.resetBorderWidthProperty), "Image");
+
+        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+            ImageStyler.setColorProperty,
+            ImageStyler.resetColorProperty), "Image");
     }
 }
 
