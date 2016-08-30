@@ -51,9 +51,9 @@ export class Observable implements definition.Observable {
 
     private _observers = {};
 
-    constructor(json?: any) {
-        if (json) {
-            addPropertiesFromJSON(this, json);
+    constructor(source?: any) {
+        if (source) {
+            addPropertiesFromObject(this, source);
         }
     }
 
@@ -249,30 +249,30 @@ export class Observable implements definition.Observable {
     }
 }
 
-function addPropertiesFromJSON(observable: Observable, json: any, recursive?: boolean) {
+function addPropertiesFromObject(observable: Observable, source: any, recursive?: boolean) {
     let isRecursive = recursive || false;
     observable._map = new Map<string, Object>();
-    for (var prop in json) {
-        if (json.hasOwnProperty(prop)) {
+    for (let prop in source) {
+        if (source.hasOwnProperty(prop)) {
             if (isRecursive) {
-                if (!Array.isArray(json[prop]) && typeof json[prop] === 'object' && types.getClass(json[prop]) !== 'ObservableArray') {
-                    json[prop] = fromObjectRecursive(json[prop]);
+                if (!Array.isArray(source[prop]) && source[prop] && typeof source[prop] === 'object' && types.getClass(source[prop]) !== 'ObservableArray') {
+                    source[prop] = fromObjectRecursive(source[prop]);
                 }
             }
             observable._defineNewProperty(prop);
-            observable.set(prop, json[prop]);
+            observable.set(prop, source[prop]);
         }
     }
 }
 
-export function fromObject(json: any): Observable {
+export function fromObject(source: any): Observable {
     let observable = new Observable();
-    addPropertiesFromJSON(observable, json, false);
+    addPropertiesFromObject(observable, source, false);
     return observable;
 }
 
-export function fromObjectRecursive(json: any): Observable {
+export function fromObjectRecursive(source: any): Observable {
     let observable = new Observable();
-    addPropertiesFromJSON(observable, json, true);
+    addPropertiesFromObject(observable, source, true);
     return observable;
 }

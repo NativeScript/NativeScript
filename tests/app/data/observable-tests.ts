@@ -535,3 +535,10 @@ export function test_NestedObservablesWithObservableArrayShouldNotCrash() {
     });
     TKUnit.assert(testObservable !== undefined);
 }
+
+export function test_NestedObservableWithNullShouldNotCrash() {
+    let testObservable = observable.fromObjectRecursive({
+        someProperty: null
+    });
+    TKUnit.assert(testObservable !== undefined);
+}
