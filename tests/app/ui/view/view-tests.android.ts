@@ -8,6 +8,7 @@ import stack = require("ui/layouts/stack-layout");
 import labelModule = require("ui/label");
 import frame = require("ui/frame");
 import trace = require("trace");
+import { Color } from "color";
 // enable the trace, it is disabled by default
 trace.enable();
 
@@ -267,22 +268,19 @@ export var test_StylePropertiesDefaultValuesCache = function () {
     helper.do_PageTest_WithStackLayout_AndButton(test);
 }
 
-export function getNativeBorderWidth(v: view.View): number {
+export function getUniformNativeBorderWidth(v: view.View): number {
     var bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
-
-    return bkg ? bkg.getBorderWidth() : -1;
+    return bkg ? bkg.getUniformBorderWidth() : 0;
 }
 
-export function getNativeCornerRadius(v: view.View): number {
-    var bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
-
-    return bkg ? bkg.getBorderRadius() : -1;
-}
-
-export function checkNativeBorderColor(v: view.View): boolean {
+export function checkUniformNativeBorderColor(v: view.View): boolean {
     var bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
+    return bkg && bkg.getUniformBorderColor() === (<Color>v.borderColor).android;
+}
 
-    return v.borderColor && bkg && bkg.getBorderColor() === v.borderColor.android;
+export function getUniformNativeCornerRadius(v: view.View): number {
+    var bkg = <org.nativescript.widgets.BorderDrawable>v.android.getBackground();
+    return bkg ? bkg.getUniformBorderRadius() : 0
 }
 
 export function checkNativeBackgroundColor(v: view.View): boolean {

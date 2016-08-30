@@ -63,6 +63,11 @@ function parseMargin(value: any): ThicknessValue {
             top = bottom = arr[0];
             right = left = arr[1];
         }
+        else if (arr.length === 3) {
+            top = arr[0];
+            right = left = arr[1];
+            bottom = arr[2];
+        }
         else if (arr.length === 4) {
             top = arr[0];
             right = arr[1];
@@ -91,37 +96,6 @@ function parseMargin(value: any): ThicknessValue {
     else {
         return value;
     }
-}
-
-function parseThickness(value: any): definition.Thickness {
-    var result: definition.Thickness = { top: 0, right: 0, bottom: 0, left: 0 };
-    if (types.isString(value)) {
-        var arr = value.split(/[ ,]+/);
-        var top = parseInt(arr[0]);
-        top = isNaN(top) ? 0 : top;
-
-        var right = parseInt(arr[1]);
-        right = isNaN(right) ? top : right;
-
-        var bottom = parseInt(arr[2]);
-        bottom = isNaN(bottom) ? top : bottom;
-
-        var left = parseInt(arr[3]);
-        left = isNaN(left) ? right : left;
-
-        result.top = top;
-        result.right = right;
-        result.bottom = bottom;
-        result.left = left;
-
-    } else if (types.isNumber(value)) {
-        result.top = result.right = result.bottom = result.left = value;
-    }
-    else {
-        result = value;
-    }
-
-    return result;
 }
 
 function layoutParamsComparer(x: definition.CommonLayoutParams, y: definition.CommonLayoutParams): boolean {
@@ -271,123 +245,6 @@ function isWidthHeightValid(value: Object): boolean {
 
 function isMinWidthHeightValid(value: number): boolean {
     return !isNaN(value) && value >= 0.0 && isFinite(value);
-}
-
-function onBackgroundColorPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (!Color.equals(currentBackground.color, data.newValue)) {
-        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
-    }
-}
-
-function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var url: string = data.newValue;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    var isValid = false;
-
-    if (types.isString(data.newValue)) {
-        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
-        var match = url.match(pattern);
-        if (match && match[2]) {
-            url = match[2];
-        }
-
-        ensureImageSource();
-
-        if (utils.isDataURI(url)) {
-            var base64Data = url.split(",")[1];
-            if (types.isDefined(base64Data)) {
-                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
-                isValid = true;
-            }
-        }
-        else if (utils.isFileOrResourcePath(url)) {
-            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
-            isValid = true;
-        }
-        else if (url.indexOf("http") !== -1) {
-            style["_url"] = url;
-            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
-            imageSource.fromUrl(url).then((r) => {
-                if (style && style["_url"] === url) {
-                    // Get the current background again, as it might have changed while doing the request.
-                    currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
-                }
-            });
-            isValid = true;
-        }
-    }
-
-    if (!isValid) {
-        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
-    }
-}
-
-function onBackgroundRepeatPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.repeat) {
-        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
-    }
-}
-
-function onBackgroundPositionPropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.position) {
-        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
-    }
-}
-
-function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
-    var style = <Style>data.object;
-    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-    if (data.newValue !== currentBackground.size) {
-        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
-    }
-}
-
-function onBorderWidthPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid) {
-        var style = <Style>data.object;
-        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-        if (data.newValue !== currentBackground.borderWidth) {
-            style._setValue(backgroundInternalProperty, currentBackground.withBorderWidth(data.newValue));
-        }
-    }
-}
-
-function onBorderColorPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid) {
-        var style = <Style>data.object;
-        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-        if (data.newValue !== currentBackground.borderColor) {
-            style._setValue(backgroundInternalProperty, currentBackground.withBorderColor(data.newValue));
-        }
-    }
-}
-
-function onBorderRadiusPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid) {
-        var style = <Style>data.object;
-        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-        if (data.newValue !== currentBackground.borderRadius) {
-            style._setValue(backgroundInternalProperty, currentBackground.withBorderRadius(data.newValue));
-        }
-    }
-}
-
-function onClipPathPropertyChanged(data: PropertyChangeData) {
-    if (platform.isAndroid) {
-        var style = <Style>data.object;
-        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
-        if (data.newValue !== currentBackground.clipPath) {
-            style._setValue(backgroundInternalProperty, currentBackground.withClipPath(data.newValue));
-        }
-    }
 }
 
 function getHandlerInternal(propertyId: number, classInfo: types.ClassInfo): definition.StylePropertyChangedHandler {
@@ -632,25 +489,133 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(backgroundPositionProperty, value);
     }
 
-    get borderColor(): Color {
-        return this._getValue(borderColorProperty);
+    get borderColor(): string | Color {
+        if (Color.equals(this.borderTopColor, this.borderRightColor) && 
+            Color.equals(this.borderTopColor, this.borderBottomColor) && 
+            Color.equals(this.borderTopColor, this.borderLeftColor)){
+            return this.borderTopColor;
+        }
+        else {
+            return `${this.borderTopColor} ${this.borderRightColor} ${this.borderBottomColor} ${this.borderLeftColor}`;
+        }
     }
-    set borderColor(value: Color) {
-        this._setValue(borderColorProperty, value);
+    set borderColor(value: string | Color) {
+        if (value instanceof Color){
+            value = (<Color>value).hex;
+        }
+        this._setShorthandProperty("border-color", value);
+        }
+
+    get borderTopColor(): Color {
+        return this._getValue(borderTopColorProperty);
+    }
+    set borderTopColor(value: Color) {
+        this._setValue(borderTopColorProperty, value);
     }
 
-    get borderWidth(): number {
-        return this._getValue(borderWidthProperty);
+    get borderRightColor(): Color {
+        return this._getValue(borderRightColorProperty);
     }
-    set borderWidth(value: number) {
-        this._setValue(borderWidthProperty, value);
+    set borderRightColor(value: Color) {
+        this._setValue(borderRightColorProperty, value);
     }
 
-    get borderRadius(): number {
-        return this._getValue(borderRadiusProperty);
+    get borderBottomColor(): Color {
+        return this._getValue(borderBottomColorProperty);
     }
-    set borderRadius(value: number) {
-        this._setValue(borderRadiusProperty, value);
+    set borderBottomColor(value: Color) {
+        this._setValue(borderBottomColorProperty, value);
+    }
+
+    get borderLeftColor(): Color {
+        return this._getValue(borderLeftColorProperty);
+    }
+    set borderLeftColor(value: Color) {
+        this._setValue(borderLeftColorProperty, value);
+    }
+
+    get borderWidth(): string | number {
+        if (this.borderTopWidth === this.borderRightWidth && 
+            this.borderTopWidth === this.borderBottomWidth && 
+            this.borderTopWidth === this.borderLeftWidth){
+                return this.borderTopWidth;
+        }
+        else {
+            return `${this.borderTopWidth} ${this.borderRightWidth} ${this.borderBottomWidth} ${this.borderLeftWidth}`;
+        }
+    }
+    set borderWidth(value: string | number) {
+        this._setShorthandProperty("border-width", value.toString());
+        }
+
+    get borderTopWidth(): number {
+        return this._getValue(borderTopWidthProperty);
+    }
+    set borderTopWidth(value: number) {
+        this._setValue(borderTopWidthProperty, value);
+    }
+
+    get borderRightWidth(): number {
+        return this._getValue(borderRightWidthProperty);
+    }
+    set borderRightWidth(value: number) {
+        this._setValue(borderRightWidthProperty, value);
+    }
+
+    get borderBottomWidth(): number {
+        return this._getValue(borderBottomWidthProperty);
+    }
+    set borderBottomWidth(value: number) {
+        this._setValue(borderBottomWidthProperty, value);
+    }
+
+    get borderLeftWidth(): number {
+        return this._getValue(borderLeftWidthProperty);
+    }
+    set borderLeftWidth(value: number) {
+        this._setValue(borderLeftWidthProperty, value);
+    }
+
+    get borderRadius(): string | number {
+        if (this.borderTopLeftRadius === this.borderTopRightRadius && 
+            this.borderTopLeftRadius === this.borderBottomRightRadius && 
+            this.borderTopLeftRadius === this.borderBottomLeftRadius){
+                return this.borderTopLeftRadius;
+        }
+        else {
+            return `${this.borderTopLeftRadius} ${this.borderTopRightRadius} ${this.borderBottomRightRadius} ${this.borderBottomLeftRadius}`;
+        }
+    }
+    set borderRadius(value: string | number) {
+        this._setShorthandProperty("border-radius", value.toString());
+        }
+
+    get borderTopLeftRadius(): number {
+        return this._getValue(borderTopLeftRadiusProperty);
+    }
+    set borderTopLeftRadius(value: number) {
+        this._setValue(borderTopLeftRadiusProperty, value);
+    }
+
+    get borderTopRightRadius(): number {
+        return this._getValue(borderTopRightRadiusProperty);
+    }
+    set borderTopRightRadius(value: number) {
+        this._setValue(borderTopRightRadiusProperty, value);
+    }
+
+    get borderBottomRightRadius(): number {
+        return this._getValue(borderBottomRightRadiusProperty);
+    }
+    set borderBottomRightRadius(value: number) {
+        this._setValue(borderBottomRightRadiusProperty, value);
+    }
+
+    get borderBottomLeftRadius(): number {
+        return this._getValue(borderBottomLeftRadiusProperty);
+    }
+    set borderBottomLeftRadius(value: number) {
+        this._setValue(borderBottomLeftRadiusProperty, value);
     }
 
     get clipPath(): string {
@@ -1076,36 +1041,6 @@ export var placeholderColorProperty = new styleProperty.Property("placeholderCol
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
 
-export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
-
-export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
-
-export var backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundRepeatPropertyChanged));
-
-export var backgroundSizeProperty = new styleProperty.Property("backgroundSize", "background-size",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundSizePropertyChanged));
-
-export var backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
-
-export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
-    new PropertyMetadata(0, AffectsLayout, onBorderWidthPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
-
-export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
-
-export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
-    new PropertyMetadata(0, AffectsLayout, onBorderRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
-
-export var clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
-    new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));
-
-export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
-    new PropertyMetadata(background.Background.default, PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
-
 export var fontSizeProperty = new styleProperty.Property("fontSize", "font-size",
     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, onFontSizeChanged), converters.fontSizeConverter);
 
@@ -1386,3 +1321,380 @@ export var ignorePropertyHandler = new StylePropertyChangedHandler(
     });
 
 registerNoStylingClass("Frame");
+
+function onBackgroundColorPropertyChanged(data: PropertyChangeData) {
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (!Color.equals(currentBackground.color, data.newValue)) {
+        style._setValue(backgroundInternalProperty, currentBackground.withColor(data.newValue));
+        }
+    }
+
+function onBackgroundImagePropertyChanged(data: PropertyChangeData) {
+        var style = <Style>data.object;
+    var url: string = data.newValue;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    var isValid = false;
+
+    if (types.isString(data.newValue)) {
+        var pattern: RegExp = /url\(('|")(.*?)\1\)/;
+        var match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
+
+        ensureImageSource();
+
+        if (utils.isDataURI(url)) {
+            var base64Data = url.split(",")[1];
+            if (types.isDefined(base64Data)) {
+                style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromBase64(base64Data)));
+                isValid = true;
+    }
+}
+        else if (utils.isFileOrResourcePath(url)) {
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(imageSource.fromFileOrResource(url)));
+            isValid = true;
+        }
+        else if (url.indexOf("http") !== -1) {
+            style["_url"] = url;
+            style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+            imageSource.fromUrl(url).then((r) => {
+                if (style && style["_url"] === url) {
+                    // Get the current background again, as it might have changed while doing the request.
+                    currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+                    style._setValue(backgroundInternalProperty, currentBackground.withImage(r));
+                }
+            });
+            isValid = true;
+        }
+    }
+
+    if (!isValid) {
+        style._setValue(backgroundInternalProperty, currentBackground.withImage(undefined));
+    }
+}
+
+function onBackgroundRepeatPropertyChanged(data: PropertyChangeData) {
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.repeat) {
+        style._setValue(backgroundInternalProperty, currentBackground.withRepeat(data.newValue));
+        }
+    }
+
+function onBackgroundPositionPropertyChanged(data: PropertyChangeData) {
+    var style = <Style>data.object;
+    var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.position) {
+        style._setValue(backgroundInternalProperty, currentBackground.withPosition(data.newValue));
+}
+}
+
+function onBackgroundSizePropertyChanged(data: PropertyChangeData) {
+        var style = <Style>data.object;
+        var currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.size) {
+        style._setValue(backgroundInternalProperty, currentBackground.withSize(data.newValue));
+        }
+    }
+
+function onBorderTopColorPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderTopColor) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderTopColor(data.newValue));
+}
+}
+
+function onBorderRightColorPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderRightColor) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderRightColor(data.newValue));
+    }
+}
+
+function onBorderBottomColorPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderBottomColor) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderBottomColor(data.newValue));
+    }
+}
+
+function onBorderLeftColorPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderLeftColor) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderLeftColor(data.newValue));
+    }
+}
+
+function onBorderTopWidthPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderTopWidth) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderTopWidth(data.newValue));
+    }
+}
+
+function onBorderRightWidthPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderRightWidth) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderRightWidth(data.newValue));
+    }
+}
+
+function onBorderBottomWidthPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderBottomWidth) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderBottomWidth(data.newValue));
+    }
+}
+
+function onBorderLeftWidthPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderLeftWidth) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderLeftWidth(data.newValue));
+    }
+}
+
+function onBorderTopLeftRadiusPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderTopLeftRadius) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderTopLeftRadius(data.newValue));
+    }
+}
+
+function onBorderTopRightRadiusPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderTopRightRadius) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderTopRightRadius(data.newValue));
+    }
+}
+
+function onBorderBottomRightRadiusPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderBottomRightRadius) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderBottomRightRadius(data.newValue));
+    }
+}
+
+function onBorderBottomLeftRadiusPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.borderBottomLeftRadius) {
+        style._setValue(backgroundInternalProperty, currentBackground.withBorderBottomLeftRadius(data.newValue));
+    }
+        }
+
+function onClipPathPropertyChanged(data: PropertyChangeData) {
+    let style = <Style>data.object;
+    let currentBackground = <background.Background>style._getValue(backgroundInternalProperty);
+    if (data.newValue !== currentBackground.clipPath) {
+        style._setValue(backgroundInternalProperty, currentBackground.withClipPath(data.newValue));
+    }
+}
+
+export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
+    new PropertyMetadata(background.Background.default, PropertyMetadataSettings.None, undefined, undefined, background.Background.equals));
+
+export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
+
+export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
+
+export var backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundRepeatPropertyChanged));
+
+export var backgroundSizeProperty = new styleProperty.Property("backgroundSize", "background-size",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundSizePropertyChanged));
+
+export var backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
+
+export var borderTopColorProperty = new styleProperty.Property("borderTopColor", "border-top-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderTopColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
+
+export var borderRightColorProperty = new styleProperty.Property("borderRightColor", "border-right-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderRightColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
+
+export var borderBottomColorProperty = new styleProperty.Property("borderBottomColor", "border-bottom-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderBottomColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
+
+export var borderLeftColorProperty = new styleProperty.Property("borderLeftColor", "border-left-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderLeftColorPropertyChanged, Color.isValid, Color.equals), converters.colorConverter);
+
+export var borderTopWidthProperty = new styleProperty.Property("borderTopWidth", "border-top-width",
+     new PropertyMetadata(0, AffectsLayout, onBorderTopWidthPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderRightWidthProperty = new styleProperty.Property("borderRightWidth", "border-right-width",
+     new PropertyMetadata(0, AffectsLayout, onBorderRightWidthPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderBottomWidthProperty = new styleProperty.Property("borderBottomWidth", "border-bottom-width",
+     new PropertyMetadata(0, AffectsLayout, onBorderBottomWidthPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderLeftWidthProperty = new styleProperty.Property("borderLeftWidth", "border-left-width",
+     new PropertyMetadata(0, AffectsLayout, onBorderLeftWidthPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderTopLeftRadiusProperty = new styleProperty.Property("borderTopLeftRadius", "border-top-left-radius",
+    new PropertyMetadata(0, AffectsLayout, onBorderTopLeftRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderTopRightRadiusProperty = new styleProperty.Property("borderTopRightRadius", "border-top-right-radius",
+    new PropertyMetadata(0, AffectsLayout, onBorderTopRightRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderBottomRightRadiusProperty = new styleProperty.Property("borderBottomRightRadius", "border-bottom-right-radius",
+    new PropertyMetadata(0, AffectsLayout, onBorderBottomRightRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var borderBottomLeftRadiusProperty = new styleProperty.Property("borderBottomLeftRadius", "border-bottom-left-radius",
+    new PropertyMetadata(0, AffectsLayout, onBorderBottomLeftRadiusPropertyChanged, isNonNegativeFiniteNumber), converters.numberConverter);
+
+export var clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
+    new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));
+
+function parseThickness(value: any): definition.Thickness {
+    let result: definition.Thickness = { top: 0, right: 0, bottom: 0, left: 0 };
+    if (types.isString(value)) {
+        let arr = value.split(/[ ,]+/);
+        if (arr.length === 1){
+            let arr0 = parseInt(arr[0]);  
+            result.top = arr0;
+            result.right = arr0;
+            result.bottom = arr0;
+            result.left = arr0;
+        }
+        else if (arr.length === 2){
+            let arr0 = parseInt(arr[0]);  
+            let arr1 = parseInt(arr[1]);  
+            result.top = arr0;
+            result.right = arr1;
+            result.bottom = arr0;
+            result.left = arr1;
+        }
+        else if (arr.length === 3){
+            let arr0 = parseInt(arr[0]);  
+            let arr1 = parseInt(arr[1]);  
+            let arr2 = parseInt(arr[2]);  
+            result.top = arr0;
+            result.right = arr1;
+            result.bottom = arr2;
+            result.left = arr1;
+        }
+        else if (arr.length === 4){
+            let arr0 = parseInt(arr[0]);  
+            let arr1 = parseInt(arr[1]);  
+            let arr2 = parseInt(arr[2]);  
+            let arr3 = parseInt(arr[3]);  
+            result.top = arr0;
+            result.right = arr1;
+            result.bottom = arr2;
+            result.left = arr3;
+        }
+    } 
+    else if (types.isNumber(value)) {
+        result.top = result.right = result.bottom = result.left = value;
+    }
+    else {
+        result = value;
+    }
+
+    return result;
+}
+
+function parseBorderColor(value: any): definition.BorderColor {
+    var result: definition.BorderColor = { top: undefined, right: undefined, bottom: undefined, left: undefined };
+    try {
+        if (types.isString(value)) {
+            let arr = value.split(/[ ,]+/);
+            if (arr.length === 1){
+                let arr0 = new Color(arr[0]);
+                result.top = arr0;
+                result.right = arr0;
+                result.bottom = arr0;
+                result.left = arr0;
+            }
+            else if (arr.length === 2){
+                let arr0 = new Color(arr[0]);
+                let arr1 = new Color(arr[1]);
+                result.top = arr0;
+                result.right = arr1;
+                result.bottom = arr0;
+                result.left = arr1;
+            }
+            else if (arr.length === 3){
+                let arr0 = new Color(arr[0]);
+                let arr1 = new Color(arr[1]);
+                let arr2 = new Color(arr[2]);
+                result.top = arr0;
+                result.right = arr1;
+                result.bottom = arr2;
+                result.left = arr1;
+            }
+            else if (arr.length === 4){
+                let arr0 = new Color(arr[0]);
+                let arr1 = new Color(arr[1]);
+                let arr2 = new Color(arr[2]);
+                let arr3 = new Color(arr[3]);
+                result.top = arr0;
+                result.right = arr1;
+                result.bottom = arr2;
+                result.left = arr3;
+            }
+        } 
+        else if (value instanceof Color) {
+        result.top = result.right = result.bottom = result.left = value;
+    }
+    else {
+        result = value;
+    }
+    }
+    catch(ex){
+        if (trace.enabled) {
+            trace.write(`Error parsing border color ${value}: ${ex}'`, trace.categories.Style, trace.messageType.error);
+        }
+    }
+
+    return result;
+}
+
+function onBorderColorChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
+    let fourColors = parseBorderColor(value);
+    let array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
+    array.push({ property: borderTopColorProperty, value: fourColors.top });
+    array.push({ property: borderRightColorProperty, value: fourColors.right });
+    array.push({ property: borderBottomColorProperty, value: fourColors.bottom });
+    array.push({ property: borderLeftColorProperty, value: fourColors.left });
+    return array;
+}
+
+function onBorderWidthChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
+    var thickness = parseThickness(value);
+    var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
+    array.push({ property: borderTopWidthProperty, value: thickness.top });
+    array.push({ property: borderRightWidthProperty, value: thickness.right });
+    array.push({ property: borderBottomWidthProperty, value: thickness.bottom });
+    array.push({ property: borderLeftWidthProperty, value: thickness.left });
+    return array;
+}
+
+function onBorderRadiusChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
+    var thickness = parseThickness(value);
+    var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
+    array.push({ property: borderTopLeftRadiusProperty, value: thickness.top });
+    array.push({ property: borderTopRightRadiusProperty, value: thickness.right });
+    array.push({ property: borderBottomRightRadiusProperty, value: thickness.bottom });
+    array.push({ property: borderBottomLeftRadiusProperty, value: thickness.left });
+    return array;
+}
+
+styleProperty.registerShorthandCallback("border-color", onBorderColorChanged);
+styleProperty.registerShorthandCallback("border-width", onBorderWidthChanged);
+styleProperty.registerShorthandCallback("border-radius", onBorderRadiusChanged);

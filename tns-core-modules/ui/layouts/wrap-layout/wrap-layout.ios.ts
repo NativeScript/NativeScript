@@ -33,8 +33,8 @@ export class WrapLayout extends common.WrapLayout {
 
         var density = utils.layout.getDisplayDensity();
 
-        var horizontalPadding = (this.paddingLeft + this.paddingRight) * density;
-        var verticalPadding = (this.paddingTop + this.paddingBottom) * density;
+        var horizontalPadding = (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
+        var verticalPadding = (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
 
         var availableWidth = widthMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : utils.layout.getMeasureSpecSize(widthMeasureSpec) - horizontalPadding;
         var availableHeight = heightMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : utils.layout.getMeasureSpecSize(heightMeasureSpec) - verticalPadding;
@@ -129,14 +129,19 @@ export class WrapLayout extends common.WrapLayout {
 
         var density = utils.layout.getDisplayDensity();
 
-        var childLeft = this.paddingLeft * density;
-        var childTop = this.paddingTop * density;
+        const topPadding = (this.borderTopWidth + this.paddingTop) * density;
+        const leftPadding = (this.borderLeftWidth + this.paddingLeft) * density; 
+        const bottomPadding = (this.paddingBottom + this.borderBottomWidth) * density;
+        const rightPadding = (this.paddingRight + this.borderRightWidth) * density;
+
+        var childLeft = leftPadding;
+        var childTop = topPadding;
         var childrenLength: number;
         if (isVertical) {
-            childrenLength = bottom - top - (this.paddingBottom * density);
+            childrenLength = bottom - top - bottomPadding;
         }
         else {
-            childrenLength = right - left - (this.paddingRight * density);
+            childrenLength = right - left - rightPadding;
         }
 
         var rowOrColumn = 0;
@@ -152,10 +157,10 @@ export class WrapLayout extends common.WrapLayout {
             if (isVertical) {
                 childWidth = length;
                 childHeight = this.itemHeight > 0 ? this.itemHeight * density : childHeight;
-                let isFirst = childTop === this.paddingTop * density;
+                let isFirst = childTop === topPadding;
                 if (childTop + childHeight > childrenLength) {
                     // Move to top.
-                    childTop = this.paddingTop * density;
+                    childTop = topPadding;
 
                     if (!isFirst) {
                     // Move to right with current column width.
@@ -172,10 +177,10 @@ export class WrapLayout extends common.WrapLayout {
             else {
                 childWidth = this.itemWidth > 0 ? this.itemWidth * density : childWidth;
                 childHeight = length;
-                let isFirst = childLeft === this.paddingLeft * density;
+                let isFirst = childLeft === leftPadding;
                 if (childLeft + childWidth > childrenLength) {
                     // Move to left.
-                    childLeft = this.paddingLeft * density;
+                    childLeft = leftPadding;
 
                     if (!isFirst) {
                         // Move to bottom with current row height.

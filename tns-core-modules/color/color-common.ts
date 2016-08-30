@@ -167,6 +167,10 @@ export class Color implements definition.Color {
         }
         return hexStr;
     }
+
+    public toString(): string {
+        return this.hex;
+    }
 }
 
 function isRgbOrRgba(value: string): boolean {

@@ -2,11 +2,15 @@
 import contentView = require("ui/content-view");
 import viewModule = require("ui/core/view");
 import utils = require("utils/utils");
+import types = require("utils/types");
 
 @Deprecated
 export class Border extends contentView.ContentView implements definition.Border {
     get cornerRadius(): number {
-        return this.borderRadius;
+        if (types.isNumber(this.borderRadius)){
+            return <number>this.borderRadius;
+        }
+        return 0;
     }
     set cornerRadius(value: number) {
         this.borderRadius = value;
@@ -20,7 +24,11 @@ export class Border extends contentView.ContentView implements definition.Border
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         var density = utils.layout.getDisplayDensity();
-        var borderSize = (2 * this.borderWidth) * density;
+        let borderWidth = 0;
+        if (types.isNumber(this.borderWidth)){
+            borderWidth = <number>this.borderWidth;
+        }
+        var borderSize = (2 * borderWidth) * density;
 
         var result = viewModule.View.measureChild(this, this.layoutView,
             utils.layout.makeMeasureSpec(width - borderSize, widthMode),
@@ -34,7 +42,11 @@ export class Border extends contentView.ContentView implements definition.Border
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         var density = utils.layout.getDisplayDensity();
-        var borderSize = this.borderWidth * density;
+        let borderWidth = 0;
+        if (types.isNumber(this.borderWidth)){
+            borderWidth = <number>this.borderWidth;
+        }
+        var borderSize = borderWidth * density;
         viewModule.View.layoutChild(this, this.layoutView, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
     }
 }

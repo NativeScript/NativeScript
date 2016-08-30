@@ -73,19 +73,79 @@ declare module "ui/core/view" {
      */
     export class View extends proxy.ProxyObject implements ApplyXmlAttributes {
         /**
-         * Gets or sets the corner radius of the view.
+         * Gets or sets the border color of the view.
          */
-        borderRadius: number;
+        borderColor: string | color.Color;
+        
+        /**
+         * Gets or sets the top border color of the view.
+         */
+        borderTopColor: color.Color;
+        
+        /**
+         * Gets or sets the right border color of the view.
+         */
+        borderRightColor: color.Color;
+        
+        /**
+         * Gets or sets the bottom border color of the view.
+         */
+        borderBottomColor: color.Color;
+        
+        /**
+         * Gets or sets the left border color of the view.
+         */
+        borderLeftColor: color.Color;
 
         /**
          * Gets or sets the border width of the view.
          */
-        borderWidth: number;
+        borderWidth: string | number;
 
         /**
-         * Gets or sets the border color of the view.
+         * Gets or sets the top border width of the view.
          */
-        borderColor: color.Color;
+        borderTopWidth: number;
+
+        /**
+         * Gets or sets the right border width of the view.
+         */
+        borderRightWidth: number;
+
+        /**
+         * Gets or sets the bottom border width of the view.
+         */
+        borderBottomWidth: number;
+
+        /**
+         * Gets or sets the left border width of the view.
+         */
+        borderLeftWidth: number;
+
+        /**
+         * Gets or sets the border radius of the view.
+         */
+        borderRadius: string | number;
+
+        /**
+         * Gets or sets the top left border radius of the view.
+         */
+        borderTopLeftRadius: number;
+
+        /**
+         * Gets or sets the top right border radius of the view.
+         */
+        borderTopRightRadius: number;
+
+        /**
+         * Gets or sets the bottom right border radius of the view.
+         */
+        borderBottomRightRadius: number;
+
+        /**
+         * Gets or sets the bottom left border radius of the view.
+         */
+        borderBottomLeftRadius: number;
 
         /**
          * Gets or sets the automation text of the view.

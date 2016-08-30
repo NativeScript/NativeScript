@@ -81,18 +81,77 @@
         /**
          * Gets or sets the border-color style property.
          */
-        borderColor: color.Color 
+        borderColor: string | color.Color; 
+
+        /**
+         * Gets or sets the border-top-color style property.
+         */
+        borderTopColor: color.Color; 
+
+        /**
+         * Gets or sets the border-right-color style property.
+         */
+        borderRightColor: color.Color; 
+
+        /**
+         * Gets or sets the border-bottom-color style property.
+         */
+        borderBottomColor: color.Color; 
+
+        /**
+         * Gets or sets the border-left-color style property.
+         */
+        borderLeftColor: color.Color; 
 
         /**
          * Gets or sets the border-width style property.
          */
-        borderWidth: number
+        borderWidth: string | number
+
+        /**
+         * Gets or sets the border-top-width style property.
+         */
+        borderTopWidth: number
+
+        /**
+         * Gets or sets the border-right-width style property.
+         */
+        borderRightWidth: number
+
+        /**
+         * Gets or sets the border-bottom-width style property.
+         */
+        borderBottomWidth: number
+
+        /**
+         * Gets or sets the border-left-width style property.
+         */
+        borderLeftWidth: number
 
         /**
          * Gets or sets the border-radius style property.
          */
-        borderRadius: number;
+        borderRadius: string | number;
         
+        /**
+         * Gets or sets the border-top-left-radius style property.
+         */
+        borderTopLeftRadius: number;
+
+        /**
+         * Gets or sets the border-top-right-radius style property.
+         */
+        borderTopRightRadius: number;
+
+        /**
+         * Gets or sets the border-bottm-right-radius style property.
+         */
+        borderBottomRightRadius: number;
+
+        /**
+         * Gets or sets the border-bottom-left-radius style property.
+         */
+        borderBottomLeftRadius: number;
         /**
          * Gets or sets the clip-path style property.
          */

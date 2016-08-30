@@ -71,43 +71,6 @@ export class Image extends imageCommon.Image {
 }
 
 export class ImageStyler implements style.Styler {
-    // Corner radius
-    private static setBorderRadiusProperty(v: view.View, newValue: any, defaultValue?: any) {
-        if (!v._nativeView) {
-            return;
-        }
-        var val = Math.round(newValue * utils.layout.getDisplayDensity());
-        (<org.nativescript.widgets.ImageView>v._nativeView).setCornerRadius(val);
-        background.ad.onBackgroundOrBorderPropertyChanged(v);
-    }
-
-    private static resetBorderRadiusProperty(v: view.View, nativeValue: any) {
-        if (!v._nativeView) {
-            return;
-        }
-        (<org.nativescript.widgets.ImageView>v._nativeView).setCornerRadius(0);
-        background.ad.onBackgroundOrBorderPropertyChanged(v);
-    }
-
-    // Border width
-    private static setBorderWidthProperty(v: view.View, newValue: any, defaultValue?: any) {
-        if (!v._nativeView) {
-            return;
-        }
-
-        var val = Math.round(newValue * utils.layout.getDisplayDensity());
-        (<org.nativescript.widgets.ImageView>v._nativeView).setBorderWidth(val);
-        background.ad.onBackgroundOrBorderPropertyChanged(v);
-    }
-
-    private static resetBorderWidthProperty(v: view.View, nativeValue: any) {
-        if (!v._nativeView) {
-            return;
-        }
-        (<org.nativescript.widgets.ImageView>v._nativeView).setBorderWidth(0);
-        background.ad.onBackgroundOrBorderPropertyChanged(v);
-    }
-
     // tint color
     private static setTintColorProperty(view: view.View, newValue: any) {
         var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
@@ -120,17 +83,6 @@ export class ImageStyler implements style.Styler {
     }
 
     public static registerHandlers() {
-        // Use the same handler for all background/border properties
-        // Note: There is no default value getter - the default value is handled in background.ad.onBackgroundOrBorderPropertyChanged
-
-        style.registerHandler(style.borderRadiusProperty, new style.StylePropertyChangedHandler(
-            ImageStyler.setBorderRadiusProperty,
-            ImageStyler.resetBorderRadiusProperty), "Image");
-
-        style.registerHandler(style.borderWidthProperty, new style.StylePropertyChangedHandler(
-            ImageStyler.setBorderWidthProperty,
-            ImageStyler.resetBorderWidthProperty), "Image");
-
         style.registerHandler(style.tintColorProperty, new style.StylePropertyChangedHandler(
             ImageStyler.setTintColorProperty,
             ImageStyler.resetTintColorProperty), "Image");

@@ -4,7 +4,6 @@ import enums = require("ui/enums");
 import definition = require("ui/styling/background");
 import cssValue = require("css-value");
 import utils = require("utils/utils");
-import { isAndroid }  from "platform"; 
 
 import * as typesModule from "utils/types";
 var types: typeof typesModule;
@@ -22,75 +21,158 @@ interface CSSValue {
 }
 
 export class Background implements definition.Background {
-    public static default = new Background(undefined, undefined, undefined, undefined, undefined, 0, undefined, 0, undefined);
+    public static default = new Background();
+    
+    public color: colorModule.Color;
+    public image: imageSource.ImageSource;
+    public repeat: string;
+    public position: string;
+    public size: string;
+    public borderTopColor: colorModule.Color;
+    public borderRightColor: colorModule.Color;
+    public borderBottomColor: colorModule.Color;
+    public borderLeftColor: colorModule.Color;
+    public borderTopWidth: number = 0;
+    public borderRightWidth: number = 0;
+    public borderBottomWidth: number = 0;
+    public borderLeftWidth: number = 0;
+    public borderTopLeftRadius: number = 0;
+    public borderTopRightRadius: number = 0;
+    public borderBottomLeftRadius: number = 0;
+    public borderBottomRightRadius: number = 0;
+    public clipPath: string;
 
-    color: colorModule.Color;
-    image: imageSource.ImageSource;
-    repeat: string;
-    position: string;
-    size: string;
-    // The ones below are used on Android only
-    borderWidth: number = 0;
-    borderColor: colorModule.Color;
-    borderRadius: number = 0;
-    clipPath: string;
-
-    constructor(
-        color: colorModule.Color,
-        image: imageSource.ImageSource,
-        repeat: string,
-        position: string,
-        size: string,
-        borderWidth: number,
-        borderColor: colorModule.Color,
-        borderRadius: number,
-        clipPath: string
-    ) {
-        this.color = color;
-        this.image = image;
-        this.repeat = repeat;
-        this.position = position;
-        this.size = size;
-        this.borderWidth = borderWidth;
-        this.borderColor = borderColor;
-        this.borderRadius = borderRadius;
-        this.clipPath = clipPath;
+    private clone(): Background{
+        let clone = new Background();
+        
+        clone.color = this.color;
+        clone.image = this.image;
+        clone.repeat = this.repeat;
+        clone.position = this.position;
+        clone.size = this.size;
+        clone.borderTopColor = this.borderTopColor;
+        clone.borderRightColor = this.borderRightColor;
+        clone.borderBottomColor = this.borderBottomColor;
+        clone.borderLeftColor = this.borderLeftColor;
+        clone.borderTopWidth = this.borderTopWidth;
+        clone.borderRightWidth = this.borderRightWidth;
+        clone.borderBottomWidth = this.borderBottomWidth;
+        clone.borderLeftWidth = this.borderLeftWidth;
+        clone.borderTopLeftRadius = this.borderTopLeftRadius;
+        clone.borderTopRightRadius = this.borderTopRightRadius;
+        clone.borderBottomRightRadius = this.borderBottomRightRadius;
+        clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
+        clone.clipPath = this.clipPath;
+        
+        return clone;        
     }
 
     public withColor(value: colorModule.Color): Background {
-        return new Background(value, this.image, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
+        let clone = this.clone();
+        clone.color = value;
+        return clone;
     }
 
     public withImage(value: imageSource.ImageSource): Background {
-        return new Background(this.color, value, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
+        let clone = this.clone();
+        clone.image = value;
+        return clone;
     }
 
     public withRepeat(value: string): Background {
-        return new Background(this.color, this.image, value, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
+        let clone = this.clone();
+        clone.repeat = value;
+        return clone;
     }
 
     public withPosition(value: string): Background {
-        return new Background(this.color, this.image, this.repeat, value, this.size, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
+        let clone = this.clone();
+        clone.position = value;
+        return clone;
     }
 
     public withSize(value: string): Background {
-        return new Background(this.color, this.image, this.repeat, this.position, value, this.borderWidth, this.borderColor, this.borderRadius, this.clipPath);
+        let clone = this.clone();
+        clone.size = value;
+        return clone;
     }
     
-    public withBorderWidth(value: number): Background {
-        return new Background(this.color, this.image, this.repeat, this.position, this.size, value, this.borderColor, this.borderRadius, this.clipPath);
+    public withBorderTopColor(value: colorModule.Color): Background {
+        let clone = this.clone();
+        clone.borderTopColor = value;
+        return clone;
+    }
+    
+    public withBorderRightColor(value: colorModule.Color): Background {
+        let clone = this.clone();
+        clone.borderRightColor = value;
+        return clone;
+    }
+    
+    public withBorderBottomColor(value: colorModule.Color): Background {
+        let clone = this.clone();
+        clone.borderBottomColor = value;
+        return clone;
+    }
+    
+    public withBorderLeftColor(value: colorModule.Color): Background {
+        let clone = this.clone();
+        clone.borderLeftColor = value;
+        return clone;
     }
 
-    public withBorderColor(value: colorModule.Color): Background {
-        return new Background(this.color, this.image, this.repeat, this.position, this.size, this.borderWidth, value, this.borderRadius, this.clipPath);
+    public withBorderTopWidth(value: number): Background {
+        let clone = this.clone();
+        clone.borderTopWidth = value;
+        return clone;
     }
 
-    public withBorderRadius(value: number): Background {
-        return new Background(this.color, this.image, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, value, this.clipPath);
+    public withBorderRightWidth(value: number): Background {
+        let clone = this.clone();
+        clone.borderRightWidth = value;
+        return clone;
+    }
+
+    public withBorderBottomWidth(value: number): Background {
+        let clone = this.clone();
+        clone.borderBottomWidth = value;
+        return clone;
+    }
+
+    public withBorderLeftWidth(value: number): Background {
+        let clone = this.clone();
+        clone.borderLeftWidth = value;
+        return clone;
+    }
+
+    public withBorderTopLeftRadius(value: number): Background {
+        let clone = this.clone();
+        clone.borderTopLeftRadius = value;
+        return clone;
+    }
+
+    public withBorderTopRightRadius(value: number): Background {
+        let clone = this.clone();
+        clone.borderTopRightRadius = value;
+        return clone;
+    }
+
+    public withBorderBottomRightRadius(value: number): Background {
+        let clone = this.clone();
+        clone.borderBottomRightRadius = value;
+        return clone;
+    }
+
+    public withBorderBottomLeftRadius(value: number): Background {
+        let clone = this.clone();
+        clone.borderBottomLeftRadius = value;
+        return clone;
     }
 
     public withClipPath(value: string): Background {
-        return new Background(this.color, this.image, this.repeat, this.position, this.size, this.borderWidth, this.borderColor, this.borderRadius, value);
+        let clone = this.clone();
+        clone.clipPath = value;
+        return clone;
     }
 
     public getDrawParams(width: number, height: number): definition.BackgroundDrawParams {
@@ -252,17 +334,11 @@ export class Background implements definition.Background {
     public isEmpty(): boolean {
         ensureTypes();
 
-        if (isAndroid){
-            return types.isNullOrUndefined(this.image) 
-                && types.isNullOrUndefined(this.color)
-                && !this.borderWidth
-                && !this.borderRadius
-                && !this.clipPath;
-        }
-        else {
-            return types.isNullOrUndefined(this.image) 
-                && types.isNullOrUndefined(this.color);    
-        }
+        return types.isNullOrUndefined(this.color)
+            && types.isNullOrUndefined(this.image) 
+            && !this.hasBorderWidth()
+            && !this.hasBorderRadius()
+            && !this.clipPath;
     }
 
     public static equals(value1: Background, value2: Background): boolean {
@@ -276,29 +352,94 @@ export class Background implements definition.Background {
             return false;
         }
 
-        if (isAndroid){
-            return value1.image === value2.image 
-                && value1.position === value2.position 
-                && value1.repeat === value2.repeat 
-                && value1.size === value2.size 
-                && colorModule.Color.equals(value1.color, value2.color)
-                && value1.borderWidth === value2.borderWidth
-                && colorModule.Color.equals(value1.borderColor, value2.borderColor) 
-                && value1.borderRadius === value2.borderRadius
-                && value1.clipPath === value2.clipPath;
-        }
-        else {
-            return value1.image === value2.image 
-                && value1.position === value2.position 
-                && value1.repeat === value2.repeat 
-                && value1.size === value2.size 
-                && colorModule.Color.equals(value1.color, value2.color);
-        }
-        
+        return colorModule.Color.equals(value1.color, value2.color)
+            && value1.image === value2.image 
+            && value1.position === value2.position 
+            && value1.repeat === value2.repeat 
+            && value1.size === value2.size 
+            && colorModule.Color.equals(value1.borderTopColor, value2.borderTopColor) 
+            && colorModule.Color.equals(value1.borderRightColor, value2.borderRightColor) 
+            && colorModule.Color.equals(value1.borderBottomColor, value2.borderBottomColor) 
+            && colorModule.Color.equals(value1.borderLeftColor, value2.borderLeftColor) 
+            && value1.borderTopWidth === value2.borderTopWidth
+            && value1.borderRightWidth === value2.borderRightWidth
+            && value1.borderBottomWidth === value2.borderBottomWidth
+            && value1.borderLeftWidth === value2.borderLeftWidth
+            && value1.borderTopLeftRadius === value2.borderTopLeftRadius
+            && value1.borderTopRightRadius === value2.borderTopRightRadius
+            && value1.borderBottomRightRadius === value2.borderBottomRightRadius
+            && value1.borderBottomLeftRadius === value2.borderBottomLeftRadius
+            && value1.clipPath === value2.clipPath;
+    }
+
+    public hasBorderColor(): boolean {
+        return !types.isNullOrUndefined(this.borderTopColor) 
+            || !types.isNullOrUndefined(this.borderRightColor) 
+            || !types.isNullOrUndefined(this.borderBottomColor) 
+            || !types.isNullOrUndefined(this.borderLeftColor);
+    }
+
+    public hasBorderWidth(): boolean {
+        return this.borderTopWidth > 0 
+            || this.borderRightWidth > 0 
+            || this.borderBottomWidth > 0 
+            || this.borderLeftWidth > 0
     }
     
+    public hasBorderRadius(): boolean {
+        return this.borderTopLeftRadius > 0 
+            || this.borderTopRightRadius > 0 
+            || this.borderBottomRightRadius > 0 
+            || this.borderBottomLeftRadius > 0
+    }
+
+    public hasUniformBorderColor(): boolean {
+        return colorModule.Color.equals(this.borderTopColor, this.borderRightColor) 
+            && colorModule.Color.equals(this.borderTopColor, this.borderBottomColor)
+            && colorModule.Color.equals(this.borderTopColor, this.borderLeftColor); 
+    }
+    
+    public hasUniformBorderWidth(): boolean {
+        return this.borderTopWidth === this.borderRightWidth 
+            && this.borderTopWidth === this.borderBottomWidth
+            && this.borderTopWidth === this.borderLeftWidth;
+    }
+    
+    public hasUniformBorderRadius(): boolean {
+        return this.borderTopLeftRadius === this.borderTopRightRadius 
+            && this.borderTopLeftRadius === this.borderBottomRightRadius
+            && this.borderTopLeftRadius === this.borderBottomLeftRadius;
+    }
+    
+    public hasUniformBorder(): boolean {
+        return this.hasUniformBorderColor() 
+            && this.hasUniformBorderWidth() 
+            && this.hasUniformBorderRadius();
+    }
+    
+    public getUniformBorderColor(): colorModule.Color {
+        if (this.hasUniformBorderColor()){
+            return this.borderTopColor;
+        }
+        return undefined;
+    };
+
+    public getUniformBorderWidth(): number {
+        if (this.hasUniformBorderWidth()){
+            return this.borderTopWidth;
+        }
+        return 0;
+    };
+
+    public getUniformBorderRadius(): number {
+        if (this.hasUniformBorderRadius()){
+            return this.borderTopLeftRadius;
+        }
+        return 0;
+    };
+
     public toString(): string {
-        return `isEmpty: ${this.isEmpty()}; color: ${this.color}; image: ${this.image}; repeat: ${this.repeat}; position: ${this.position}; size: ${this.size}; borderWidth: ${this.borderWidth}; borderColor: ${this.borderColor}; borderRadius: ${this.borderRadius}; clipPath: ${this.clipPath};`;
+        return `isEmpty: ${this.isEmpty()}; color: ${this.color}; image: ${this.image}; repeat: ${this.repeat}; position: ${this.position}; size: ${this.size}; borderTopColor: ${this.borderTopColor}; borderRightColor: ${this.borderRightColor}; borderBottomColor: ${this.borderBottomColor}; borderLeftColor: ${this.borderLeftColor}; borderTopWidth: ${this.borderTopWidth}; borderRightWidth: ${this.borderRightWidth}; borderBottomWidth: ${this.borderBottomWidth}; borderLeftWidth: ${this.borderLeftWidth}; borderTopLeftRadius: ${this.borderTopLeftRadius}; borderTopRightRadius: ${this.borderTopRightRadius}; borderBottomRightRadius: ${this.borderBottomRightRadius}; borderBottomLeftRadius: ${this.borderBottomLeftRadius}; clipPath: ${this.clipPath};`;
     }
 }
 

@@ -14,9 +14,18 @@ export function resetStyles(args) {
         v.style._resetValue(style.paddingRightProperty);
         v.style._resetValue(style.paddingTopProperty);
         v.style._resetValue(style.paddingBottomProperty);
-        v.style._resetValue(style.borderColorProperty);
-        v.style._resetValue(style.borderWidthProperty);
-        v.style._resetValue(style.borderRadiusProperty);
+        v.style._resetValue(style.borderTopColorProperty);
+        v.style._resetValue(style.borderRightColorProperty);
+        v.style._resetValue(style.borderBottomColorProperty);
+        v.style._resetValue(style.borderLeftColorProperty);
+        v.style._resetValue(style.borderTopWidthProperty);
+        v.style._resetValue(style.borderRightWidthProperty);
+        v.style._resetValue(style.borderBottomWidthProperty);
+        v.style._resetValue(style.borderLeftWidthProperty);
+        v.style._resetValue(style.borderTopLeftRadiusProperty);
+        v.style._resetValue(style.borderTopRightRadiusProperty);
+        v.style._resetValue(style.borderBottomRightRadiusProperty);
+        v.style._resetValue(style.borderBottomLeftRadiusProperty);
         return true;
     });
 }

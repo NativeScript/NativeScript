@@ -26,6 +26,15 @@ export function pageLoaded(args: EventData) {
     examples.set("padding", "css/padding");
     examples.set("label-background-image", "css/label-background-image");
     examples.set("transform-decoration-color", "css/transform-decoration-color");
+    examples.set("layout-border", "css/layout-border");
+    examples.set("label-border", "css/label-border");
+    examples.set("button-border", "css/button-border");
+    examples.set("text-field-border", "css/text-field-border");
+    examples.set("text-view-border", "css/text-view-border");
+    examples.set("image-border", "css/image-border");
+    examples.set("layouts-border-overlap", "css/layouts-border-overlap");
+    examples.set("measure-tests", "css/measure-tests");
+    //examples.set("border-playground", "css/border-playground");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;

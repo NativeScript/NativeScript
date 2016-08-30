@@ -24,8 +24,8 @@ export class StackLayout extends common.StackLayout {
         var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         var isVertical = this.orientation === Orientation.vertical;
-        var verticalPadding = (this.paddingTop + this.paddingBottom) * density;
-        var horizontalPadding = (this.paddingLeft + this.paddingRight) * density;
+        var verticalPadding = (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
+        var horizontalPadding = (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
 
         var measureSpec: number;
 
@@ -100,10 +100,10 @@ export class StackLayout extends common.StackLayout {
 
     private layoutVertical(left: number, top: number, right: number, bottom: number): void {
         var density = utils.layout.getDisplayDensity();
-        var paddingLeft = this.paddingLeft * density;
-        var paddingRight = this.paddingRight * density;
-        var paddingTop = this.paddingTop * density;
-        var paddingBottom = this.paddingBottom * density;
+        var paddingLeft = (this.borderLeftWidth + this.paddingLeft) * density;
+        var paddingRight = (this.borderRightWidth + this.paddingRight) * density;
+        var paddingTop = (this.borderTopWidth + this.paddingTop) * density;
+        var paddingBottom = (this.borderBottomWidth + this.paddingBottom) * density;
 
         var childTop: number;
         var childLeft: number = paddingLeft;
@@ -137,10 +137,10 @@ export class StackLayout extends common.StackLayout {
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number): void {
         var density = utils.layout.getDisplayDensity();
-        var paddingLeft = this.paddingLeft * density;
-        var paddingRight = this.paddingRight * density;
-        var paddingTop = this.paddingTop * density;
-        var paddingBottom = this.paddingBottom * density;
+        var paddingLeft = (this.borderLeftWidth + this.paddingLeft) * density;
+        var paddingRight = (this.borderRightWidth + this.paddingRight) * density;
+        var paddingTop = (this.borderTopWidth + this.paddingTop) * density;
+        var paddingBottom = (this.borderBottomWidth + this.paddingBottom) * density;
 
         var childTop: number = paddingTop;
         var childLeft: number;

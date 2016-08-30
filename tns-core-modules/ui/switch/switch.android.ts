@@ -81,9 +81,21 @@ export class SwitchStyler implements style.Styler {
             SwitchStyler.setBackgroundAndBorderProperty,
             SwitchStyler.resetBackgroundAndBorderProperty), "Switch");
 
-        style.registerHandler(style.borderWidthProperty, style.ignorePropertyHandler, "Switch");
-        style.registerHandler(style.borderColorProperty, style.ignorePropertyHandler, "Switch");
-        style.registerHandler(style.borderRadiusProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderTopColorProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderRightColorProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderBottomColorProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderLeftColorProperty, style.ignorePropertyHandler, "Switch");
+
+        style.registerHandler(style.borderTopWidthProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderRightWidthProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderBottomWidthProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderLeftWidthProperty, style.ignorePropertyHandler, "Switch");
+        
+        style.registerHandler(style.borderTopLeftRadiusProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderTopRightRadiusProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderBottomRightRadiusProperty, style.ignorePropertyHandler, "Switch");
+        style.registerHandler(style.borderBottomLeftRadiusProperty, style.ignorePropertyHandler, "Switch");
+
         style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Switch");
     }
 }
