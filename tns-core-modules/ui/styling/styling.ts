@@ -11,6 +11,7 @@ export var Style = styleModule.Style;
 export module properties {
     export var fontSizeProperty = styleModule.fontSizeProperty;
     export var colorProperty = styleModule.colorProperty;
+    export var placeholderColorProperty = styleModule.placeholderColorProperty;
     export var backgroundColorProperty = styleModule.backgroundColorProperty;
     export var textAlignmentProperty = styleModule.textAlignmentProperty;
 

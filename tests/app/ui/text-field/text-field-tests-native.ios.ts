@@ -23,6 +23,10 @@ export function getNativeColor(textField: textFieldModule.TextField): colorModul
     return utilsModule.ios.getColor(textField.ios.textColor);
 }
 
+export function getNativePlaceholderColor(textField: textFieldModule.TextField): colorModule.Color {
+    return utilsModule.ios.getColor(textField.ios.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null));
+}
+
 export function getNativeBackgroundColor(textField: textFieldModule.TextField): colorModule.Color {
     return utilsModule.ios.getColor(textField.ios.backgroundColor);
 }

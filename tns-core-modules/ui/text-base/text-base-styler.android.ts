@@ -6,6 +6,19 @@ import enums = require("ui/enums");
 import {device} from "platform";
 
 export class TextBaseStyler implements style.Styler {
+    // hintcolor
+    private static setPlaceholderColorProperty(view: view.View, newValue: any) {
+        (<android.widget.TextView>view._nativeView).setHintTextColor(newValue);
+    }
+
+    private static resetPlaceholderColorProperty(view: view.View, nativeValue: any) {
+        (<android.widget.TextView>view._nativeView).setHintTextColor(nativeValue);
+    }
+
+    private static getNativePlaceholderColorValue(view: view.View): any {
+        return (<android.widget.TextView>view._nativeView).getHintTextColors().getDefaultColor();
+    }
+
     // color
     private static setColorProperty(view: view.View, newValue: any) {
         (<android.widget.TextView>view._nativeView).setTextColor(newValue);
@@ -127,6 +140,11 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.setColorProperty,
             TextBaseStyler.resetColorProperty,
             TextBaseStyler.getNativeColorValue), "TextBase");
+
+        style.registerHandler(style.placeholderColorProperty, new style.StylePropertyChangedHandler(
+            TextBaseStyler.setPlaceholderColorProperty,
+            TextBaseStyler.resetPlaceholderColorProperty,
+            TextBaseStyler.getNativePlaceholderColorValue), "TextBase");
 
         style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setFontInternalProperty,

@@ -565,3 +565,14 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }
+
+export function test_set_placeholder_color() {
+    let view = new textFieldModule.TextField();
+    let expectedColorHex = "#ffff0000";
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.hint = "Some text for hint";
+        view.setInlineStyle("placeholder-color: " + expectedColorHex + ";");
+        let actualColorHex = textFieldTestsNative.getNativePlaceholderColor(view).hex;
+        TKUnit.assertEqual(actualColorHex, expectedColorHex);
+    });
+}

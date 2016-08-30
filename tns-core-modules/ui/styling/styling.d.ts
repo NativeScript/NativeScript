@@ -42,6 +42,12 @@
          * Gets or sets the color style property.
          */
         color: color.Color;
+
+        /**
+         * Gets or sets the color of the placeholder element.
+         */
+        placeholderColor: color.Color;
+        
         /**
          * Gets or sets the background-color style property.
          */

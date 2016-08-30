@@ -583,6 +583,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(colorProperty, value);
     }
 
+    get placeholderColor(): Color {
+        return this._getValue(placeholderColorProperty);
+    }
+    set placeholderColor(value: Color) {
+        this._setValue(placeholderColorProperty, value);
+    }
+
     get backgroundColor(): Color {
         return this._getValue(backgroundColorProperty);
     }
@@ -1052,6 +1059,10 @@ export var translateYProperty = new styleProperty.Property("translateY", "transl
 
 export var colorProperty = new styleProperty.Property("color", "color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+export var placeholderColorProperty = new styleProperty.Property("placeholderColor", "placeholder-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
 
 export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image",

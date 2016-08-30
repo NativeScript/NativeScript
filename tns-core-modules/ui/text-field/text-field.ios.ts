@@ -188,11 +188,36 @@ export class TextFieldStyler implements style.Styler {
         return tf.tintColor;
     }
 
+    // placeholder-color
+    private static setPlaceholderColorProperty(textBase: View, newValue: any) {
+        let ios = <UITextField>textBase._nativeView;
+        let colorAttibutes = NSMutableDictionary.alloc().init();
+        colorAttibutes.setValueForKey(newValue, NSForegroundColorAttributeName);
+        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(ios.placeholder, colorAttibutes.copy());
+    }
+
+    private static resetPlaceholderColorProperty(textBase: View, nativeValue: any) {
+        var ios = <UITextField>textBase._nativeView;
+        let colorAttibutes = NSMutableDictionary.alloc().init();
+        colorAttibutes.setValueForKey(nativeValue, NSForegroundColorAttributeName);
+        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(ios.placeholder, colorAttibutes.copy());
+    }
+
+    private static getNativePlaceholderColorValue(textBase: View): any {
+        var ios = <UITextField>textBase._nativeView;
+        return ios.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null);
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             TextFieldStyler.setColorProperty,
             TextFieldStyler.resetColorProperty,
             TextFieldStyler.getNativeColorValue), "TextField");
+
+        style.registerHandler(style.placeholderColorProperty, new style.StylePropertyChangedHandler(
+            TextFieldStyler.setPlaceholderColorProperty,
+            TextFieldStyler.resetPlaceholderColorProperty,
+            TextFieldStyler.getNativePlaceholderColorValue), "TextField");
     }
 }
 
