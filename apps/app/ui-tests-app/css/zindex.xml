@@ -15,7 +15,7 @@
     <AbsoluteLayout style="background-color: brown;" row="1">
       <TextField text="TextField" style="height: 60; width: 100; z-index: 999;  background-color: red;" />
       <TextView text="TextView" left="10" top="30" style="height: 70; width: 100; padding-top:40; z-index:1; background-color: yellow;"/>
-      <Image src="~/ui-tests-app/image-view/gravatar.png" left="30" top="70" style="height: 60; width: 100; z-index:0; background-color: blue; color: black;"/>
+      <Image src="~/ui-tests-app/image-view/gravatar.png" left="30" top="70" style="height: 60; width: 100; z-index:0; background-color: blue;"/>
       <TimePicker hour="5" minute="30" minHour="3" maxHour="7" top="90" style="z-index:-1; background-color: orange; width: auto;"/>
     </AbsoluteLayout>
     <AbsoluteLayout row="1" col="1" style="background-color: red;"> 
