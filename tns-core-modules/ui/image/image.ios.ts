@@ -161,7 +161,7 @@ export class ImageStyler implements style.Styler {
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
-        var image = <Image>view.ios;
+        var image = <Image>view;
         image._setTintColor(null);
     }
 
