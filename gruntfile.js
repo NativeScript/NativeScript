@@ -175,6 +175,7 @@ module.exports = function(grunt) {
     ]);
     localCfg.srcTsdFiles = [
         "tns-core-modules/**/*.d.ts",
+        "!tns-core-modules/ios/**",
         "!**/org.nativescript.widgets.d.ts",
         "!**/android17.d.ts",
         "!**/*.android.d.ts",
