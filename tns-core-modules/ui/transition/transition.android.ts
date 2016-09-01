@@ -422,13 +422,18 @@ function _toShortString(nativeTransition: any): string {
 }
 
 function _addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
-    let expandedFragment = <ExpandedFragment>fragment;
+    let expandedFragmentRef = new WeakRef(<ExpandedFragment>fragment);
+    let nativeTransitionRef = new WeakRef(nativeTransition);
     let transitionListener = new (<any>android).transition.Transition.TransitionListener({
         onTransitionCancel: function (transition: any): void {
-            if (trace.enabled) {
-                trace.write(`CANCEL ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
+            let expandedFragment = expandedFragmentRef.get();
+            if (!expandedFragment) {
+                return;
             }
-            if (expandedFragment.completePageRemovalWhenTransitionEnds) {
+            if (trace.enabled) {
+                trace.write(`CANCEL ${_toShortString(nativeTransitionRef.get())} transition for ${fragment}`, trace.categories.Transition);
+            }
+            if ( expandedFragment.completePageRemovalWhenTransitionEnds) {
                 _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
             }
             if (expandedFragment.completePageAdditionWhenTransitionEnds) {
@@ -436,8 +441,12 @@ function _addNativeTransitionListener(fragment: any, nativeTransition: any/*andr
             }
         },
         onTransitionEnd: function (transition: any): void {
+            let expandedFragment = expandedFragmentRef.get();
+            if (!expandedFragment) {
+                return;
+            }
             if (trace.enabled) {
-                trace.write(`END ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`END ${_toShortString(nativeTransitionRef.get())} transition for ${fragment}`, trace.categories.Transition);
             }
             if (expandedFragment.completePageRemovalWhenTransitionEnds) {
                 _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
@@ -448,26 +457,25 @@ function _addNativeTransitionListener(fragment: any, nativeTransition: any/*andr
         },
         onTransitionPause: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`PAUSE ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`PAUSE ${_toShortString(nativeTransitionRef.get())} transition for ${fragment}`, trace.categories.Transition);
             }
         },
         onTransitionResume: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`RESUME ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`RESUME ${_toShortString(nativeTransitionRef.get())} transition for ${fragment}`, trace.categories.Transition);
             }
         },
         onTransitionStart: function (transition: any): void {
             if (trace.enabled) {
-                trace.write(`START ${_toShortString(nativeTransition)} transition for ${fragment}`, trace.categories.Transition);
+                trace.write(`START ${_toShortString(nativeTransitionRef.get())} transition for ${fragment}`, trace.categories.Transition);
             }
         }
     });
     nativeTransition.addListener(transitionListener);
 }
 
-export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): android.animation.Animator {
-    let expandedFragment = <ExpandedFragment>fragment;
-    let transitionType;
+export function _onFragmentCreateAnimator(fragment: ExpandedFragment, nextAnim: number): android.animation.Animator {
+    let transitionType: string;
     switch (nextAnim) {
         case enterFakeResourceId: transitionType = AndroidTransitionType.enter; break;
         case exitFakeResourceId: transitionType = AndroidTransitionType.exit; break;
@@ -476,7 +484,7 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
     }
 
     // Clear history hack.
-    if ((nextAnim === popExitFakeResourceId || !nextAnim) && expandedFragment.exitHack) {
+    if ((nextAnim === popExitFakeResourceId || !nextAnim) && fragment.exitHack) {
         // fragment is the current fragment and was popped due to clear history.
         // We have to simulate moving forward with the fragment's exit transition.
         // nextAnim can be null if the transaction which brought us to the fragment 
@@ -489,11 +497,11 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
     switch (transitionType) {
         case AndroidTransitionType.enter:
         case AndroidTransitionType.popExit:
-            transition = expandedFragment.enterPopExitTransition;
+            transition = fragment.enterPopExitTransition;
             break;
         case AndroidTransitionType.exit:
         case AndroidTransitionType.popEnter:
-            transition = expandedFragment.exitPopEnterTransition;
+            transition = fragment.exitPopEnterTransition;
             break;
     }
     
@@ -501,37 +509,55 @@ export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): andr
     if (transition) {
         animator = <android.animation.Animator>transition.createAndroidAnimator(transitionType);
         trace.write(`${transition}.createAndroidAnimator(${transitionType}): ${animator}`, trace.categories.Transition);
+
+        let transitionRef = new WeakRef(transition);
+        let fragmentRef = new WeakRef(fragment);
+
         let transitionListener = new android.animation.Animator.AnimatorListener({
             onAnimationStart: function (animator: android.animation.Animator): void {
                 if (trace.enabled) {
-                    trace.write(`START ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
+                    trace.write(`START ${transitionType} ${transitionRef.get()} for ${fragmentRef.get()}`, trace.categories.Transition);
                 }
             },
             onAnimationRepeat: function (animator: android.animation.Animator): void {
                 if (trace.enabled) {
-                    trace.write(`REPEAT ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
+                    trace.write(`REPEAT ${transitionType} ${transitionRef.get()} for ${fragmentRef.get()}`, trace.categories.Transition);
                 }
             },
             onAnimationEnd: function (animator: android.animation.Animator): void {
+                let fragmentValue = fragmentRef.get();
+                if (!fragmentValue) {
+                    return;
+                }
+
                 if (trace.enabled) {
-                    trace.write(`END ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
+                    trace.write(`END ${transitionType} ${transitionRef.get()} for ${fragmentValue}`, trace.categories.Transition);
                 }
-                if (expandedFragment.completePageRemovalWhenTransitionEnds) {
-                    _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
+
+                if (fragmentValue.completePageRemovalWhenTransitionEnds) {
+                    _completePageRemoval(fragmentValue, fragmentValue.completePageRemovalWhenTransitionEnds.isBack);
                 }
-                if (expandedFragment.completePageAdditionWhenTransitionEnds) {
-                    _completePageAddition(fragment, expandedFragment.completePageAdditionWhenTransitionEnds.isBack);
+
+                if (fragmentValue.completePageAdditionWhenTransitionEnds) {
+                    _completePageAddition(fragmentValue, fragmentValue.completePageAdditionWhenTransitionEnds.isBack);
                 }
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
+                let fragmentValue = fragmentRef.get();
+                if (!fragmentValue) {
+                    return;
+                }
+
                 if (trace.enabled) {
-                    trace.write(`CANCEL ${transitionType} ${transition} for ${fragment}`, trace.categories.Transition);
+                    trace.write(`CANCEL ${transitionType} ${transitionRef.get()} for ${fragmentValue}`, trace.categories.Transition);
                 }
-                if (expandedFragment.completePageRemovalWhenTransitionEnds) {
-                    _completePageRemoval(fragment, expandedFragment.completePageRemovalWhenTransitionEnds.isBack);
+
+                if (fragmentValue.completePageRemovalWhenTransitionEnds) {
+                    _completePageRemoval(fragmentValue, fragmentValue.completePageRemovalWhenTransitionEnds.isBack);
                 }
-                if (expandedFragment.completePageAdditionWhenTransitionEnds) {
-                    _completePageAddition(fragment, expandedFragment.completePageAdditionWhenTransitionEnds.isBack);
+
+                if (fragmentValue.completePageAdditionWhenTransitionEnds) {
+                    _completePageAddition(fragmentValue, fragmentValue.completePageAdditionWhenTransitionEnds.isBack);
                 }
             }
         });
