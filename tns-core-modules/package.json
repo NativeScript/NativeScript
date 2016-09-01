@@ -24,7 +24,7 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "next"
+    "tns-core-modules-widgets": "2.3.0"
   },
   "nativescript": {
     "platforms": {
