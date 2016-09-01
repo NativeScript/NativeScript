@@ -20,6 +20,7 @@ import helper = require("../helper");
 import ObservableModule = require("data/observable");
 import enumsModule = require("ui/enums");
 import fs = require("file-system");
+import color = require("color");
 
 var imagePath = fs.path.join(__dirname, "../../logo.png");
 
@@ -357,3 +358,35 @@ export var test_DimensionsAreRoundedAfterScale = function() {
     TKUnit.assertEqual(image.getMeasuredWidth(), hostWidth, "Actual width is different from expected width.");
     TKUnit.assertEqual(image.getMeasuredHeight(), expectedHeight, "Actual height is different from expected height.");
 };
+
+export var test_tintColor = function () {
+    var colorRed = new color.Color("red");
+    var image = new ImageModule.Image();
+    image.imageSource = ImageSourceModule.fromFile(imagePath);
+
+    var testFunc = function (views: Array<ViewModule.View>) {
+        var testImage = <ImageModule.Image> views[0];
+
+        if (image.android) {
+            var tintColor = testImage.android.getColorFilter();
+            TKUnit.assert(tintColor === null, "tintColor expected to be set to null");
+        }
+        else if (image.ios) {
+            var tintColor = testImage.ios.tintColor;
+            var imageColor = utils.ios.getColor(testImage.ios.tintColor);
+            TKUnit.assert(!imageColor.equals(colorRed), "imageColor expected to be different than tintColor");
+        }
+
+        image.color = colorRed;
+
+        if (image.android) {
+            TKUnit.assert(testImage.android.getColorFilter() !== null, "tintColor expected to be set to a nonnull value");
+        }
+        else if (image.ios) {
+            var imageColor = utils.ios.getColor(testImage.ios.tintColor);
+            TKUnit.assert(imageColor.equals(colorRed), "tintColor expected to be set to: " + colorRed);
+        }
+    }
+
+    helper.buildUIAndRunTest(image, testFunc);
+}
