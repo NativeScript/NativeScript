@@ -111,6 +111,13 @@ declare function Experimental(target: Object, key?: string | symbol, value?: any
  */
 declare function JavaProxy(nativeClassName: string): ClassDecorator;
 
+/**
+ * Important: Not applicable to Objective-C classes (iOS platform)
+ * Decorates class that extends native Java class
+ * @param interfaces An array of fully-classified Java interface names that the class must implement.
+ */ 
+declare function Interfaces(interfaces: any[]): ClassDecorator;
+
 declare function Log(data: any): void;
 declare function log(data: any): void;
 declare function float(num: number): any;
