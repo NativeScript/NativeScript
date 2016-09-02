@@ -124,11 +124,15 @@ export class ActionBar extends common.ActionBar {
 
     public _createUI() {
         this._toolbar = new android.support.v7.widget.Toolbar(this._context);
-        var owner = this;
+        let ownerRef = new WeakRef(this);
         this._toolbar.setOnMenuItemClickListener(new android.support.v7.widget.Toolbar.OnMenuItemClickListener({
             onMenuItemClick: function (item: android.view.IMenuItem): boolean {
-                var itemId = item.getItemId();
-                return owner._onAndroidItemSelected(itemId);
+                let ownerValue = ownerRef.get();
+                if (!ownerValue) {
+                    return false;
+                }
+                let itemId = item.getItemId();
+                return ownerValue._onAndroidItemSelected(itemId);
             }
         }));
     }
