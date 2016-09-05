@@ -61,12 +61,32 @@ export class Image extends imageCommon.Image {
         return this._android;
     }
 
+    public onUnloaded() {
+        super.onUnloaded();
+        if(!this._isNativeSource) {
+            this._recycle();
+        }
+    }
+
     public _createUI() {
         this._android = new org.nativescript.widgets.ImageView(this._context);
     }
 
     public _setNativeImage(nativeImage: any) {
+        if(!this._wasNativeSource) {
+            this._recycle();
+        }
         this.android.setImageBitmap(nativeImage);
+    }
+
+    private _recycle() {
+        let drawable: any = this.android.getDrawable();
+        if(drawable) {
+            let bitmap = drawable.getBitmap();
+            if(bitmap) {
+                drawable.getBitmap().recycle();
+            }
+        }
     }
 }
 
