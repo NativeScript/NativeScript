@@ -21,6 +21,7 @@ global.moduleMerge(viewCommon, exports);
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
     view._nativeView.accessibilityIdentifier = data.newValue;
+    view._nativeView.accessibilityLabel = data.newValue;
 }
 (<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
 
