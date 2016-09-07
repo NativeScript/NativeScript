@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.nativescript.widget;
+package org.nativescript.widgets;
 
 import java.util.ArrayList;
 import java.util.List;

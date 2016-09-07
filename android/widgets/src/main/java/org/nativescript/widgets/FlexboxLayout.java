@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.nativescript.widget;
+package org.nativescript.widgets;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -117,7 +117,7 @@ public class FlexboxLayout extends ViewGroup {
      * </ul>
      * The default value is {@link #FLEX_DIRECTION_ROW}.
      */
-    private int mFlexDirection;
+    private int mFlexDirection = FLEX_DIRECTION_ROW;
 
 
     @IntDef({FLEX_WRAP_NOWRAP, FLEX_WRAP_WRAP, FLEX_WRAP_WRAP_REVERSE})
@@ -143,7 +143,7 @@ public class FlexboxLayout extends ViewGroup {
      * </ul>
      * The default value is {@link #FLEX_WRAP_NOWRAP}.
      */
-    private int mFlexWrap;
+    private int mFlexWrap = FLEX_WRAP_NOWRAP;
 
 
     @IntDef({JUSTIFY_CONTENT_FLEX_START, JUSTIFY_CONTENT_FLEX_END, JUSTIFY_CONTENT_CENTER,
@@ -167,7 +167,7 @@ public class FlexboxLayout extends ViewGroup {
      * This attribute controls the alignment along the main axis.
      * The default value is {@link #JUSTIFY_CONTENT_FLEX_START}.
      */
-    private int mJustifyContent;
+    private int mJustifyContent = JUSTIFY_CONTENT_FLEX_START;
 
 
     @IntDef({ALIGN_ITEMS_FLEX_START, ALIGN_ITEMS_FLEX_END, ALIGN_ITEMS_CENTER,
@@ -191,7 +191,7 @@ public class FlexboxLayout extends ViewGroup {
      * This attribute controls the alignment along the cross axis.
      * The default value is {@link #ALIGN_ITEMS_STRETCH}.
      */
-    private int mAlignItems;
+    private int mAlignItems = ALIGN_ITEMS_STRETCH;
 
 
     @IntDef({ALIGN_CONTENT_FLEX_START, ALIGN_CONTENT_FLEX_END, ALIGN_CONTENT_CENTER,
@@ -217,7 +217,7 @@ public class FlexboxLayout extends ViewGroup {
      * This attribute controls the alignment of the flex lines in the flex container.
      * The default value is {@link #ALIGN_CONTENT_STRETCH}.
      */
-    private int mAlignContent;
+    private int mAlignContent = ALIGN_CONTENT_STRETCH;
 
     /**
      * The int definition to be used as the arguments for the {@link #setShowDivider(int)},
@@ -352,6 +352,8 @@ public class FlexboxLayout extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        CommonLayoutParams.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
+
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         if (isOrderChangedFromLastMeasurement()) {
             mReorderedIndices = createReorderedIndices();
@@ -577,10 +579,11 @@ public class FlexboxLayout extends ViewGroup {
                 }
                 int childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec,
                         getPaddingLeft() + getPaddingRight() + lp.leftMargin
-                                + lp.rightMargin, childWidth);
+                                + lp.rightMargin, childWidth < 0 ? LayoutParams.WRAP_CONTENT : childWidth);
                 int childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec,
                         getPaddingTop() + getPaddingBottom() + lp.topMargin
-                                + lp.bottomMargin, lp.height);
+                                + lp.bottomMargin, lp.height < 0 ? LayoutParams.WRAP_CONTENT : lp.height);
+
                 child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
                 // Check the size constraint after the first measurement for the child
@@ -739,10 +742,11 @@ public class FlexboxLayout extends ViewGroup {
 
             int childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec,
                     getPaddingLeft() + getPaddingRight() + lp.leftMargin
-                            + lp.rightMargin, lp.width);
+                            + lp.rightMargin, lp.width < 0 ? LayoutParams.WRAP_CONTENT : lp.width);
             int childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec,
                     getPaddingTop() + getPaddingBottom() + lp.topMargin
-                            + lp.bottomMargin, childHeight);
+                            + lp.bottomMargin, childHeight < 0 ? LayoutParams.WRAP_CONTENT : childHeight);
+
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
             // Check the size constraint after the first measurement for the child
@@ -1607,6 +1611,8 @@ public class FlexboxLayout extends ViewGroup {
             default:
                 throw new IllegalStateException("Invalid flex direction is set: " + mFlexDirection);
         }
+
+        CommonLayoutParams.restoreOriginalParams(this);
     }
 
     /**
@@ -2254,12 +2260,12 @@ public class FlexboxLayout extends ViewGroup {
 
     @Override
     public LayoutParams generateLayoutParams(AttributeSet attrs) {
-        return new FlexboxLayout.LayoutParams(getContext(), attrs);
+        return new FlexboxLayout.LayoutParams();
     }
 
     @Override
     protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) {
-        return new LayoutParams(p);
+        return new FlexboxLayout.LayoutParams();
     }
 
     @FlexDirection
@@ -2564,7 +2570,7 @@ public class FlexboxLayout extends ViewGroup {
     /**
      * Per child parameters for children views of the {@link FlexboxLayout}.
      */
-    public static class LayoutParams extends ViewGroup.MarginLayoutParams {
+    public static class LayoutParams extends CommonLayoutParams {
 
         private static final int ORDER_DEFAULT = 1;
 
@@ -2665,54 +2671,8 @@ public class FlexboxLayout extends ViewGroup {
          */
         public boolean wrapBefore;
 
-        public LayoutParams(Context context, AttributeSet attrs) {
-            super(context, attrs);
-
-            // // NOTE: We do not support android xml.
-            // TypedArray a = context
-            //         .obtainStyledAttributes(attrs, R.styleable.FlexboxLayout_Layout);
-            // order = a.getInt(R.styleable.FlexboxLayout_Layout_layout_order, ORDER_DEFAULT);
-            // flexGrow = a
-            //         .getFloat(R.styleable.FlexboxLayout_Layout_layout_flexGrow, FLEX_GROW_DEFAULT);
-            // flexShrink = a.getFloat(R.styleable.FlexboxLayout_Layout_layout_flexShrink,
-            //         FLEX_SHRINK_DEFAULT);
-            // alignSelf = a
-            //         .getInt(R.styleable.FlexboxLayout_Layout_layout_alignSelf, ALIGN_SELF_AUTO);
-            // flexBasisPercent = a
-            //         .getFraction(R.styleable.FlexboxLayout_Layout_layout_flexBasisPercent, 1, 1,
-            //                 FLEX_BASIS_PERCENT_DEFAULT);
-            // minWidth = a.getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_minWidth, 0);
-            // minHeight = a
-            //         .getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_minHeight, 0);
-            // maxWidth = a.getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_maxWidth,
-            //         MAX_SIZE);
-            // maxHeight = a.getDimensionPixelSize(R.styleable.FlexboxLayout_Layout_layout_maxHeight,
-            //         MAX_SIZE);
-            // wrapBefore = a.getBoolean(R.styleable.FlexboxLayout_Layout_layout_wrapBefore, false);
-            // a.recycle();
-        }
-
-        public LayoutParams(LayoutParams source) {
-            super(source);
-
-            order = source.order;
-            flexGrow = source.flexGrow;
-            flexShrink = source.flexShrink;
-            alignSelf = source.alignSelf;
-            flexBasisPercent = source.flexBasisPercent;
-            minWidth = source.minWidth;
-            minHeight = source.minHeight;
-            maxWidth = source.maxWidth;
-            maxHeight = source.maxHeight;
-            wrapBefore = source.wrapBefore;
-        }
-
-        public LayoutParams(ViewGroup.LayoutParams source) {
-            super(source);
-        }
-
-        public LayoutParams(int width, int height) {
-            super(new ViewGroup.LayoutParams(width, height));
+        public LayoutParams() {
+            super();
         }
     }
 
