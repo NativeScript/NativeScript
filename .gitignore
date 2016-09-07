@@ -45,3 +45,4 @@ local.properties
 .DS_Store?
 ios/TNSWidgets/TNSWidgets.xcodeproj/project.xcworkspace/xcuserdata/
 ios/TNSWidgets/TNSWidgets.xcodeproj/xcuserdata/
+ios/TNSWidgets/DerivedData/
