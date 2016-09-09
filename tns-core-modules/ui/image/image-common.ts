@@ -86,7 +86,16 @@ export class Image extends view.View implements definition.Image {
     /**
      * @internal
      */
+    
+    // Track the source of the image to fix a memory leak on Android
+    // FALSE for file, resource, or URL
+    // These will be recycled when the src changes or the component is unloaded
+    // TRUE for a passed in ImageSource or NativeImage. These will be left alone.
+    _wasNativeSource: boolean;
+    _isNativeSource: boolean;
+
     _createImageSourceFromSrc(): void {
+        this._wasNativeSource = this._isNativeSource || false;
         var value = this.src;
         if (types.isString(value)) {
             value = value.trim();
@@ -101,6 +110,7 @@ export class Image extends view.View implements definition.Image {
                 if (!types.isString(this.src) || value !== currentValue.trim()) {
                     return;
                 }
+                this._isNativeSource = false;
                 this.imageSource = source;
                 this._setValue(Image.isLoadingProperty, false);
             }
@@ -145,11 +155,13 @@ export class Image extends view.View implements definition.Image {
             }
         }
         else if (value instanceof imageSource.ImageSource) {
+            this._isNativeSource = true;
             // Support binding the imageSource trough the src property
             this.imageSource = value;
             this._setValue(Image.isLoadingProperty, false);
         }
         else {
+            this._isNativeSource = true;
             this.imageSource = imageSource.fromNativeSource(value);
             this._setValue(Image.isLoadingProperty, false);
         }
