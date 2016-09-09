@@ -107,6 +107,30 @@ export class FileSystemAccess {
         }
     }
 
+     public getExistingFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
+        try {
+            var fileManager = NSFileManager.defaultManager();
+            var exists = this.folderExists(path);
+
+            if (exists) {
+                var dirName = fileManager.displayNameAtPath(path);
+
+                return {
+                    path: path,
+                    name: dirName
+                };
+            }
+            return undefined;
+        }
+        catch (ex) {
+            if (onError) {
+                onError(new Error("Failed to get folder at path '" + path + "'"));
+            }
+
+            return undefined;
+        }
+     }
+
     public eachEntity(path: string, onEntity: (file: { path: string; name: string; extension: string }) => any, onError?: (error: any) => any) {
         if (!onEntity) {
             return;
