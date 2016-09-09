@@ -357,10 +357,10 @@ declare module "ui/frame" {
         //@endprivate
     }
 
+    export function setActivityCallbacks(activity: any /*android.app.Activity*/): void;
     //@private
     function reloadPage(): void;
     function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
     function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
-    function setActivityCallbacks(activity: any /*android.app.Activity*/): void;
     //@endprivate
 }
