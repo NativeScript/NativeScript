@@ -28,6 +28,8 @@ declare class GCController extends NSObject {
 
 	handlerQueue: NSObject;
 
+	/* readonly */ microGamepad: GCMicroGamepad;
+
 	/* readonly */ motion: GCMotion;
 
 	playerIndex: GCControllerPlayerIndex;
@@ -116,6 +118,15 @@ interface GCEulerAngles {
 	roll: number;
 }
 declare var GCEulerAngles: interop.StructType<GCEulerAngles>;
+
+declare class GCEventViewController extends UIViewController {
+
+	static alloc(): GCEventViewController; // inherited from NSObject
+
+	static new(): GCEventViewController; // inherited from NSObject
+
+	controllerUserInteractionEnabled: boolean;
+}
 
 declare class GCExtendedGamepad extends NSObject {
 
@@ -251,6 +262,58 @@ declare class GCGamepadSnapshot extends GCGamepad {
 	initWithSnapshotData(data: NSData): this;
 }
 
+declare class GCMicroGamepad extends NSObject {
+
+	static alloc(): GCMicroGamepad; // inherited from NSObject
+
+	static new(): GCMicroGamepad; // inherited from NSObject
+
+	allowsRotation: boolean;
+
+	/* readonly */ buttonA: GCControllerButtonInput;
+
+	/* readonly */ buttonX: GCControllerButtonInput;
+
+	/* readonly */ controller: GCController;
+
+	/* readonly */ dpad: GCControllerDirectionPad;
+
+	reportsAbsoluteDpadValues: boolean;
+
+	valueChangedHandler: (p1: GCMicroGamepad, p2: GCControllerElement) => void;
+
+	saveSnapshot(): GCMicroGamepadSnapshot;
+}
+
+interface GCMicroGamepadSnapShotDataV100 {
+	version: number;
+	size: number;
+	dpadX: number;
+	dpadY: number;
+	buttonA: number;
+	buttonX: number;
+}
+declare var GCMicroGamepadSnapShotDataV100: interop.StructType<GCMicroGamepadSnapShotDataV100>;
+
+declare function GCMicroGamepadSnapShotDataV100FromNSData(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>, data: NSData): boolean;
+
+declare class GCMicroGamepadSnapshot extends GCMicroGamepad {
+
+	static alloc(): GCMicroGamepadSnapshot; // inherited from NSObject
+
+	static new(): GCMicroGamepadSnapshot; // inherited from NSObject
+
+	snapshotData: NSData;
+
+	constructor(o: { controller: GCController; snapshotData: NSData; });
+
+	constructor(o: { snapshotData: NSData; });
+
+	initWithControllerSnapshotData(controller: GCController, data: NSData): this;
+
+	initWithSnapshotData(data: NSData): this;
+}
+
 declare class GCMotion extends NSObject {
 
 	static alloc(): GCMotion; // inherited from NSObject
@@ -288,3 +351,5 @@ declare var GCRotationRate: interop.StructType<GCRotationRate>;
 declare function NSDataFromGCExtendedGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCExtendedGamepadSnapShotDataV100>): NSData;
 
 declare function NSDataFromGCGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCGamepadSnapShotDataV100>): NSData;
+
+declare function NSDataFromGCMicroGamepadSnapShotDataV100(snapshotData: interop.Pointer | interop.Reference<GCMicroGamepadSnapShotDataV100>): NSData;

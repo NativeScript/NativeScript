@@ -487,7 +487,7 @@ export class TabViewStyler implements style.Styler {
         }
 
         if (!currentFont) {
-            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize);
         }
 
         return currentFont;

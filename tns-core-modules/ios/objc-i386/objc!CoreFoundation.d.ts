@@ -377,11 +377,11 @@ declare function CFCalendarCopyLocale(calendar: NSCalendar): NSLocale;
 
 declare function CFCalendarCopyTimeZone(calendar: NSCalendar): NSTimeZone;
 
-declare function CFCalendarCreateWithIdentifier(allocator: any, identifier: string): NSCalendar;
+declare function CFCalendarCreateWithIdentifier(allocator: any, identifier: any): NSCalendar;
 
 declare function CFCalendarGetFirstWeekday(calendar: NSCalendar): number;
 
-declare function CFCalendarGetIdentifier(calendar: NSCalendar): string;
+declare function CFCalendarGetIdentifier(calendar: NSCalendar): any;
 
 declare function CFCalendarGetMaximumRangeOfUnit(calendar: NSCalendar, unit: CFCalendarUnit): CFRange;
 
@@ -569,13 +569,15 @@ declare function CFDateCompare(theDate: Date, otherDate: Date, context: interop.
 
 declare function CFDateCreate(allocator: any, at: number): Date;
 
-declare function CFDateFormatterCopyProperty(formatter: any, key: string): any;
+declare function CFDateFormatterCopyProperty(formatter: any, key: any): any;
 
 declare function CFDateFormatterCreate(allocator: any, locale: NSLocale, dateStyle: CFDateFormatterStyle, timeStyle: CFDateFormatterStyle): any;
 
 declare function CFDateFormatterCreateDateFormatFromTemplate(allocator: any, tmplate: string, options: number, locale: NSLocale): string;
 
 declare function CFDateFormatterCreateDateFromString(allocator: any, formatter: any, string: string, rangep: interop.Pointer | interop.Reference<CFRange>): Date;
+
+declare function CFDateFormatterCreateISO8601Formatter(allocator: any, formatOptions: CFISO8601DateFormatOptions): any;
 
 declare function CFDateFormatterCreateStringWithAbsoluteTime(allocator: any, formatter: any, at: number): string;
 
@@ -683,13 +685,13 @@ declare function CFErrorCopyRecoverySuggestion(err: NSError): string;
 
 declare function CFErrorCopyUserInfo(err: NSError): NSDictionary<any, any>;
 
-declare function CFErrorCreate(allocator: any, domain: string, code: number, userInfo: NSDictionary<any, any>): NSError;
+declare function CFErrorCreate(allocator: any, domain: any, code: number, userInfo: NSDictionary<any, any>): NSError;
 
-declare function CFErrorCreateWithUserInfoKeysAndValues(allocator: any, domain: string, code: number, userInfoKeys: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, userInfoValues: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, numUserInfoValues: number): NSError;
+declare function CFErrorCreateWithUserInfoKeysAndValues(allocator: any, domain: any, code: number, userInfoKeys: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, userInfoValues: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>, numUserInfoValues: number): NSError;
 
 declare function CFErrorGetCode(err: NSError): number;
 
-declare function CFErrorGetDomain(err: NSError): string;
+declare function CFErrorGetDomain(err: NSError): any;
 
 declare function CFErrorGetTypeID(): number;
 
@@ -816,13 +818,42 @@ declare var CFGregorianUnits: interop.StructType<CFGregorianUnits>;
 
 declare function CFHash(cf: any): number;
 
+declare const enum CFISO8601DateFormatOptions {
+
+	kCFISO8601DateFormatWithYear = 1,
+
+	kCFISO8601DateFormatWithMonth = 2,
+
+	kCFISO8601DateFormatWithWeekOfYear = 4,
+
+	kCFISO8601DateFormatWithDay = 16,
+
+	kCFISO8601DateFormatWithTime = 32,
+
+	kCFISO8601DateFormatWithTimeZone = 64,
+
+	kCFISO8601DateFormatWithSpaceBetweenDateAndTime = 128,
+
+	kCFISO8601DateFormatWithDashSeparatorInDate = 256,
+
+	kCFISO8601DateFormatWithColonSeparatorInTime = 512,
+
+	kCFISO8601DateFormatWithColonSeparatorInTimeZone = 1024,
+
+	kCFISO8601DateFormatWithFullDate = 275,
+
+	kCFISO8601DateFormatWithFullTime = 1632,
+
+	kCFISO8601DateFormatWithInternetDateTime = 1907
+}
+
 declare function CFLocaleCopyAvailableLocaleIdentifiers(): NSArray<any>;
 
 declare function CFLocaleCopyCommonISOCurrencyCodes(): NSArray<any>;
 
 declare function CFLocaleCopyCurrent(): NSLocale;
 
-declare function CFLocaleCopyDisplayNameForPropertyValue(displayLocale: NSLocale, key: string, value: string): string;
+declare function CFLocaleCopyDisplayNameForPropertyValue(displayLocale: NSLocale, key: any, value: string): string;
 
 declare function CFLocaleCopyISOCountryCodes(): NSArray<any>;
 
@@ -832,23 +863,23 @@ declare function CFLocaleCopyISOLanguageCodes(): NSArray<any>;
 
 declare function CFLocaleCopyPreferredLanguages(): NSArray<any>;
 
-declare function CFLocaleCreate(allocator: any, localeIdentifier: string): NSLocale;
+declare function CFLocaleCreate(allocator: any, localeIdentifier: any): NSLocale;
 
-declare function CFLocaleCreateCanonicalLanguageIdentifierFromString(allocator: any, localeIdentifier: string): string;
+declare function CFLocaleCreateCanonicalLanguageIdentifierFromString(allocator: any, localeIdentifier: string): any;
 
-declare function CFLocaleCreateCanonicalLocaleIdentifierFromScriptManagerCodes(allocator: any, lcode: number, rcode: number): string;
+declare function CFLocaleCreateCanonicalLocaleIdentifierFromScriptManagerCodes(allocator: any, lcode: number, rcode: number): any;
 
-declare function CFLocaleCreateCanonicalLocaleIdentifierFromString(allocator: any, localeIdentifier: string): string;
+declare function CFLocaleCreateCanonicalLocaleIdentifierFromString(allocator: any, localeIdentifier: string): any;
 
-declare function CFLocaleCreateComponentsFromLocaleIdentifier(allocator: any, localeID: string): NSDictionary<any, any>;
+declare function CFLocaleCreateComponentsFromLocaleIdentifier(allocator: any, localeID: any): NSDictionary<any, any>;
 
 declare function CFLocaleCreateCopy(allocator: any, locale: NSLocale): NSLocale;
 
-declare function CFLocaleCreateLocaleIdentifierFromComponents(allocator: any, dictionary: NSDictionary<any, any>): string;
+declare function CFLocaleCreateLocaleIdentifierFromComponents(allocator: any, dictionary: NSDictionary<any, any>): any;
 
-declare function CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode(allocator: any, lcid: number): string;
+declare function CFLocaleCreateLocaleIdentifierFromWindowsLocaleCode(allocator: any, lcid: number): any;
 
-declare function CFLocaleGetIdentifier(locale: NSLocale): string;
+declare function CFLocaleGetIdentifier(locale: NSLocale): any;
 
 declare function CFLocaleGetLanguageCharacterDirection(isoLangCode: string): CFLocaleLanguageDirection;
 
@@ -858,9 +889,9 @@ declare function CFLocaleGetSystem(): NSLocale;
 
 declare function CFLocaleGetTypeID(): number;
 
-declare function CFLocaleGetValue(locale: NSLocale, key: string): any;
+declare function CFLocaleGetValue(locale: NSLocale, key: any): any;
 
-declare function CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier(localeIdentifier: string): number;
+declare function CFLocaleGetWindowsLocaleCodeFromLocaleIdentifier(localeIdentifier: any): number;
 
 declare const enum CFLocaleLanguageDirection {
 
@@ -943,7 +974,7 @@ declare function CFMessagePortSetInvalidationCallBack(ms: NSMessagePort, callout
 
 declare function CFMessagePortSetName(ms: NSMessagePort, newName: string): boolean;
 
-declare function CFNotificationCenterAddObserver(center: any, observer: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: string, p4: interop.Pointer | interop.Reference<any>, p5: NSDictionary<any, any>) => void>, name: string, object: interop.Pointer | interop.Reference<any>, suspensionBehavior: CFNotificationSuspensionBehavior): void;
+declare function CFNotificationCenterAddObserver(center: any, observer: interop.Pointer | interop.Reference<any>, callBack: interop.FunctionReference<(p1: any, p2: interop.Pointer | interop.Reference<any>, p3: any, p4: interop.Pointer | interop.Reference<any>, p5: NSDictionary<any, any>) => void>, name: string, object: interop.Pointer | interop.Reference<any>, suspensionBehavior: CFNotificationSuspensionBehavior): void;
 
 declare function CFNotificationCenterGetDarwinNotifyCenter(): any;
 
@@ -951,13 +982,13 @@ declare function CFNotificationCenterGetLocalCenter(): any;
 
 declare function CFNotificationCenterGetTypeID(): number;
 
-declare function CFNotificationCenterPostNotification(center: any, name: string, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, deliverImmediately: boolean): void;
+declare function CFNotificationCenterPostNotification(center: any, name: any, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, deliverImmediately: boolean): void;
 
-declare function CFNotificationCenterPostNotificationWithOptions(center: any, name: string, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, options: number): void;
+declare function CFNotificationCenterPostNotificationWithOptions(center: any, name: any, object: interop.Pointer | interop.Reference<any>, userInfo: NSDictionary<any, any>, options: number): void;
 
 declare function CFNotificationCenterRemoveEveryObserver(center: any, observer: interop.Pointer | interop.Reference<any>): void;
 
-declare function CFNotificationCenterRemoveObserver(center: any, observer: interop.Pointer | interop.Reference<any>, name: string, object: interop.Pointer | interop.Reference<any>): void;
+declare function CFNotificationCenterRemoveObserver(center: any, observer: interop.Pointer | interop.Reference<any>, name: any, object: interop.Pointer | interop.Reference<any>): void;
 
 declare const enum CFNotificationSuspensionBehavior {
 
@@ -976,7 +1007,7 @@ declare function CFNumberCompare(number: number, otherNumber: number, context: i
 
 declare function CFNumberCreate(allocator: any, theType: CFNumberType, valuePtr: interop.Pointer | interop.Reference<any>): number;
 
-declare function CFNumberFormatterCopyProperty(formatter: any, key: string): any;
+declare function CFNumberFormatterCopyProperty(formatter: any, key: any): any;
 
 declare function CFNumberFormatterCreate(allocator: any, locale: NSLocale, style: CFNumberFormatterStyle): any;
 
@@ -1033,7 +1064,7 @@ declare const enum CFNumberFormatterRoundingMode {
 
 declare function CFNumberFormatterSetFormat(formatter: any, formatString: string): void;
 
-declare function CFNumberFormatterSetProperty(formatter: any, key: string, value: any): void;
+declare function CFNumberFormatterSetProperty(formatter: any, key: any, value: any): void;
 
 declare const enum CFNumberFormatterStyle {
 
@@ -1225,7 +1256,7 @@ declare function CFReadStreamCopyDispatchQueue(stream: NSInputStream): NSObject;
 
 declare function CFReadStreamCopyError(stream: NSInputStream): NSError;
 
-declare function CFReadStreamCopyProperty(stream: NSInputStream, propertyName: string): any;
+declare function CFReadStreamCopyProperty(stream: NSInputStream, propertyName: any): any;
 
 declare function CFReadStreamCreateWithBytesNoCopy(alloc: any, bytes: string, length: number, bytesDeallocator: any): NSInputStream;
 
@@ -1245,15 +1276,15 @@ declare function CFReadStreamOpen(stream: NSInputStream): boolean;
 
 declare function CFReadStreamRead(stream: NSInputStream, buffer: string, bufferLength: number): number;
 
-declare function CFReadStreamScheduleWithRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: string): void;
+declare function CFReadStreamScheduleWithRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: any): void;
 
 declare function CFReadStreamSetClient(stream: NSInputStream, streamEvents: number, clientCB: interop.FunctionReference<(p1: NSInputStream, p2: CFStreamEventType, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): boolean;
 
 declare function CFReadStreamSetDispatchQueue(stream: NSInputStream, q: NSObject): void;
 
-declare function CFReadStreamSetProperty(stream: NSInputStream, propertyName: string, propertyValue: any): boolean;
+declare function CFReadStreamSetProperty(stream: NSInputStream, propertyName: any, propertyValue: any): boolean;
 
-declare function CFReadStreamUnscheduleFromRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: string): void;
+declare function CFReadStreamUnscheduleFromRunLoop(stream: NSInputStream, runLoop: any, runLoopMode: any): void;
 
 declare function CFRelease(cf: any): void;
 
@@ -1276,29 +1307,29 @@ declare const enum CFRunLoopActivity {
 	kCFRunLoopAllActivities = 268435455
 }
 
-declare function CFRunLoopAddCommonMode(rl: any, mode: string): void;
+declare function CFRunLoopAddCommonMode(rl: any, mode: any): void;
 
-declare function CFRunLoopAddObserver(rl: any, observer: any, mode: string): void;
+declare function CFRunLoopAddObserver(rl: any, observer: any, mode: any): void;
 
-declare function CFRunLoopAddSource(rl: any, source: any, mode: string): void;
+declare function CFRunLoopAddSource(rl: any, source: any, mode: any): void;
 
-declare function CFRunLoopAddTimer(rl: any, timer: NSTimer, mode: string): void;
+declare function CFRunLoopAddTimer(rl: any, timer: NSTimer, mode: any): void;
 
-declare function CFRunLoopContainsObserver(rl: any, observer: any, mode: string): boolean;
+declare function CFRunLoopContainsObserver(rl: any, observer: any, mode: any): boolean;
 
-declare function CFRunLoopContainsSource(rl: any, source: any, mode: string): boolean;
+declare function CFRunLoopContainsSource(rl: any, source: any, mode: any): boolean;
 
-declare function CFRunLoopContainsTimer(rl: any, timer: NSTimer, mode: string): boolean;
+declare function CFRunLoopContainsTimer(rl: any, timer: NSTimer, mode: any): boolean;
 
 declare function CFRunLoopCopyAllModes(rl: any): NSArray<any>;
 
-declare function CFRunLoopCopyCurrentMode(rl: any): string;
+declare function CFRunLoopCopyCurrentMode(rl: any): any;
 
 declare function CFRunLoopGetCurrent(): any;
 
 declare function CFRunLoopGetMain(): any;
 
-declare function CFRunLoopGetNextTimerFireDate(rl: any, mode: string): number;
+declare function CFRunLoopGetNextTimerFireDate(rl: any, mode: any): number;
 
 declare function CFRunLoopGetTypeID(): number;
 
@@ -1333,15 +1364,15 @@ declare function CFRunLoopObserverIsValid(observer: any): boolean;
 
 declare function CFRunLoopPerformBlock(rl: any, mode: any, block: () => void): void;
 
-declare function CFRunLoopRemoveObserver(rl: any, observer: any, mode: string): void;
+declare function CFRunLoopRemoveObserver(rl: any, observer: any, mode: any): void;
 
-declare function CFRunLoopRemoveSource(rl: any, source: any, mode: string): void;
+declare function CFRunLoopRemoveSource(rl: any, source: any, mode: any): void;
 
-declare function CFRunLoopRemoveTimer(rl: any, timer: NSTimer, mode: string): void;
+declare function CFRunLoopRemoveTimer(rl: any, timer: NSTimer, mode: any): void;
 
 declare function CFRunLoopRun(): void;
 
-declare function CFRunLoopRunInMode(mode: string, seconds: number, returnAfterSourceHandled: boolean): CFRunLoopRunResult;
+declare function CFRunLoopRunInMode(mode: any, seconds: number, returnAfterSourceHandled: boolean): CFRunLoopRunResult;
 
 declare const enum CFRunLoopRunResult {
 
@@ -1362,8 +1393,8 @@ interface CFRunLoopSourceContext {
 	copyDescription: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => string>;
 	equal: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: interop.Pointer | interop.Reference<any>) => boolean>;
 	hash: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => number>;
-	schedule: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: string) => void>;
-	cancel: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: string) => void>;
+	schedule: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: any) => void>;
+	cancel: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: any, p3: any) => void>;
 	perform: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>;
 }
 declare var CFRunLoopSourceContext: interop.StructType<CFRunLoopSourceContext>;
@@ -2576,7 +2607,7 @@ declare function CFWriteStreamCopyDispatchQueue(stream: NSOutputStream): NSObjec
 
 declare function CFWriteStreamCopyError(stream: NSOutputStream): NSError;
 
-declare function CFWriteStreamCopyProperty(stream: NSOutputStream, propertyName: string): any;
+declare function CFWriteStreamCopyProperty(stream: NSOutputStream, propertyName: any): any;
 
 declare function CFWriteStreamCreateWithAllocatedBuffers(alloc: any, bufferAllocator: any): NSOutputStream;
 
@@ -2592,15 +2623,15 @@ declare function CFWriteStreamGetTypeID(): number;
 
 declare function CFWriteStreamOpen(stream: NSOutputStream): boolean;
 
-declare function CFWriteStreamScheduleWithRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: string): void;
+declare function CFWriteStreamScheduleWithRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: any): void;
 
 declare function CFWriteStreamSetClient(stream: NSOutputStream, streamEvents: number, clientCB: interop.FunctionReference<(p1: NSOutputStream, p2: CFStreamEventType, p3: interop.Pointer | interop.Reference<any>) => void>, clientContext: interop.Pointer | interop.Reference<CFStreamClientContext>): boolean;
 
 declare function CFWriteStreamSetDispatchQueue(stream: NSOutputStream, q: NSObject): void;
 
-declare function CFWriteStreamSetProperty(stream: NSOutputStream, propertyName: string, propertyValue: any): boolean;
+declare function CFWriteStreamSetProperty(stream: NSOutputStream, propertyName: any, propertyValue: any): boolean;
 
-declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: string): void;
+declare function CFWriteStreamUnscheduleFromRunLoop(stream: NSOutputStream, runLoop: any, runLoopMode: any): void;
 
 declare function CFWriteStreamWrite(stream: NSOutputStream, buffer: string, bufferLength: number): number;
 
@@ -2645,7 +2676,7 @@ declare var kCFBooleanFalse: number;
 
 declare var kCFBooleanTrue: number;
 
-declare var kCFBuddhistCalendar: string;
+declare var kCFBuddhistCalendar: any;
 
 declare var kCFBundleDevelopmentRegionKey: string;
 
@@ -2661,7 +2692,7 @@ declare var kCFBundleNameKey: string;
 
 declare var kCFBundleVersionKey: string;
 
-declare var kCFChineseCalendar: string;
+declare var kCFChineseCalendar: any;
 
 declare var kCFCopyStringBagCallBacks: CFBagCallBacks;
 
@@ -2671,73 +2702,73 @@ declare var kCFCopyStringSetCallBacks: CFSetCallBacks;
 
 declare var kCFCoreFoundationVersionNumber: number;
 
-declare var kCFDateFormatterAMSymbol: string;
+declare var kCFDateFormatterAMSymbol: any;
 
-declare var kCFDateFormatterCalendar: string;
+declare var kCFDateFormatterCalendar: any;
 
-declare var kCFDateFormatterCalendarName: string;
+declare var kCFDateFormatterCalendarName: any;
 
-declare var kCFDateFormatterDefaultDate: string;
+declare var kCFDateFormatterDefaultDate: any;
 
-declare var kCFDateFormatterDefaultFormat: string;
+declare var kCFDateFormatterDefaultFormat: any;
 
-declare var kCFDateFormatterDoesRelativeDateFormattingKey: string;
+declare var kCFDateFormatterDoesRelativeDateFormattingKey: any;
 
-declare var kCFDateFormatterEraSymbols: string;
+declare var kCFDateFormatterEraSymbols: any;
 
-declare var kCFDateFormatterGregorianStartDate: string;
+declare var kCFDateFormatterGregorianStartDate: any;
 
-declare var kCFDateFormatterIsLenient: string;
+declare var kCFDateFormatterIsLenient: any;
 
-declare var kCFDateFormatterLongEraSymbols: string;
+declare var kCFDateFormatterLongEraSymbols: any;
 
-declare var kCFDateFormatterMonthSymbols: string;
+declare var kCFDateFormatterMonthSymbols: any;
 
-declare var kCFDateFormatterPMSymbol: string;
+declare var kCFDateFormatterPMSymbol: any;
 
-declare var kCFDateFormatterQuarterSymbols: string;
+declare var kCFDateFormatterQuarterSymbols: any;
 
-declare var kCFDateFormatterShortMonthSymbols: string;
+declare var kCFDateFormatterShortMonthSymbols: any;
 
-declare var kCFDateFormatterShortQuarterSymbols: string;
+declare var kCFDateFormatterShortQuarterSymbols: any;
 
-declare var kCFDateFormatterShortStandaloneMonthSymbols: string;
+declare var kCFDateFormatterShortStandaloneMonthSymbols: any;
 
-declare var kCFDateFormatterShortStandaloneQuarterSymbols: string;
+declare var kCFDateFormatterShortStandaloneQuarterSymbols: any;
 
-declare var kCFDateFormatterShortStandaloneWeekdaySymbols: string;
+declare var kCFDateFormatterShortStandaloneWeekdaySymbols: any;
 
-declare var kCFDateFormatterShortWeekdaySymbols: string;
+declare var kCFDateFormatterShortWeekdaySymbols: any;
 
-declare var kCFDateFormatterStandaloneMonthSymbols: string;
+declare var kCFDateFormatterStandaloneMonthSymbols: any;
 
-declare var kCFDateFormatterStandaloneQuarterSymbols: string;
+declare var kCFDateFormatterStandaloneQuarterSymbols: any;
 
-declare var kCFDateFormatterStandaloneWeekdaySymbols: string;
+declare var kCFDateFormatterStandaloneWeekdaySymbols: any;
 
-declare var kCFDateFormatterTimeZone: string;
+declare var kCFDateFormatterTimeZone: any;
 
-declare var kCFDateFormatterTwoDigitStartDate: string;
+declare var kCFDateFormatterTwoDigitStartDate: any;
 
-declare var kCFDateFormatterVeryShortMonthSymbols: string;
+declare var kCFDateFormatterVeryShortMonthSymbols: any;
 
-declare var kCFDateFormatterVeryShortStandaloneMonthSymbols: string;
+declare var kCFDateFormatterVeryShortStandaloneMonthSymbols: any;
 
-declare var kCFDateFormatterVeryShortStandaloneWeekdaySymbols: string;
+declare var kCFDateFormatterVeryShortStandaloneWeekdaySymbols: any;
 
-declare var kCFDateFormatterVeryShortWeekdaySymbols: string;
+declare var kCFDateFormatterVeryShortWeekdaySymbols: any;
 
-declare var kCFDateFormatterWeekdaySymbols: string;
+declare var kCFDateFormatterWeekdaySymbols: any;
 
 declare var kCFErrorDescriptionKey: string;
 
-declare var kCFErrorDomainCocoa: string;
+declare var kCFErrorDomainCocoa: any;
 
-declare var kCFErrorDomainMach: string;
+declare var kCFErrorDomainMach: any;
 
-declare var kCFErrorDomainOSStatus: string;
+declare var kCFErrorDomainOSStatus: any;
 
-declare var kCFErrorDomainPOSIX: string;
+declare var kCFErrorDomainPOSIX: any;
 
 declare var kCFErrorFilePathKey: string;
 
@@ -2751,145 +2782,145 @@ declare var kCFErrorURLKey: string;
 
 declare var kCFErrorUnderlyingErrorKey: string;
 
-declare var kCFGregorianCalendar: string;
+declare var kCFGregorianCalendar: any;
 
-declare var kCFHebrewCalendar: string;
+declare var kCFHebrewCalendar: any;
 
-declare var kCFISO8601Calendar: string;
+declare var kCFISO8601Calendar: any;
 
-declare var kCFIndianCalendar: string;
+declare var kCFIndianCalendar: any;
 
-declare var kCFIslamicCalendar: string;
+declare var kCFIslamicCalendar: any;
 
-declare var kCFIslamicCivilCalendar: string;
+declare var kCFIslamicCivilCalendar: any;
 
-declare var kCFIslamicTabularCalendar: string;
+declare var kCFIslamicTabularCalendar: any;
 
-declare var kCFIslamicUmmAlQuraCalendar: string;
+declare var kCFIslamicUmmAlQuraCalendar: any;
 
-declare var kCFJapaneseCalendar: string;
+declare var kCFJapaneseCalendar: any;
 
-declare var kCFLocaleAlternateQuotationBeginDelimiterKey: string;
+declare var kCFLocaleAlternateQuotationBeginDelimiterKey: any;
 
-declare var kCFLocaleAlternateQuotationEndDelimiterKey: string;
+declare var kCFLocaleAlternateQuotationEndDelimiterKey: any;
 
-declare var kCFLocaleCalendar: string;
+declare var kCFLocaleCalendar: any;
 
-declare var kCFLocaleCalendarIdentifier: string;
+declare var kCFLocaleCalendarIdentifier: any;
 
-declare var kCFLocaleCollationIdentifier: string;
+declare var kCFLocaleCollationIdentifier: any;
 
-declare var kCFLocaleCollatorIdentifier: string;
+declare var kCFLocaleCollatorIdentifier: any;
 
-declare var kCFLocaleCountryCode: string;
+declare var kCFLocaleCountryCode: any;
 
-declare var kCFLocaleCurrencyCode: string;
+declare var kCFLocaleCurrencyCode: any;
 
-declare var kCFLocaleCurrencySymbol: string;
+declare var kCFLocaleCurrencySymbol: any;
 
-declare var kCFLocaleCurrentLocaleDidChangeNotification: string;
+declare var kCFLocaleCurrentLocaleDidChangeNotification: any;
 
-declare var kCFLocaleDecimalSeparator: string;
+declare var kCFLocaleDecimalSeparator: any;
 
-declare var kCFLocaleExemplarCharacterSet: string;
+declare var kCFLocaleExemplarCharacterSet: any;
 
-declare var kCFLocaleGroupingSeparator: string;
+declare var kCFLocaleGroupingSeparator: any;
 
-declare var kCFLocaleIdentifier: string;
+declare var kCFLocaleIdentifier: any;
 
-declare var kCFLocaleLanguageCode: string;
+declare var kCFLocaleLanguageCode: any;
 
-declare var kCFLocaleMeasurementSystem: string;
+declare var kCFLocaleMeasurementSystem: any;
 
-declare var kCFLocaleQuotationBeginDelimiterKey: string;
+declare var kCFLocaleQuotationBeginDelimiterKey: any;
 
-declare var kCFLocaleQuotationEndDelimiterKey: string;
+declare var kCFLocaleQuotationEndDelimiterKey: any;
 
-declare var kCFLocaleScriptCode: string;
+declare var kCFLocaleScriptCode: any;
 
-declare var kCFLocaleUsesMetricSystem: string;
+declare var kCFLocaleUsesMetricSystem: any;
 
-declare var kCFLocaleVariantCode: string;
+declare var kCFLocaleVariantCode: any;
 
 declare var kCFNotFound: number;
 
 declare var kCFNull: NSNull;
 
-declare var kCFNumberFormatterAlwaysShowDecimalSeparator: string;
+declare var kCFNumberFormatterAlwaysShowDecimalSeparator: any;
 
-declare var kCFNumberFormatterCurrencyCode: string;
+declare var kCFNumberFormatterCurrencyCode: any;
 
-declare var kCFNumberFormatterCurrencyDecimalSeparator: string;
+declare var kCFNumberFormatterCurrencyDecimalSeparator: any;
 
-declare var kCFNumberFormatterCurrencyGroupingSeparator: string;
+declare var kCFNumberFormatterCurrencyGroupingSeparator: any;
 
-declare var kCFNumberFormatterCurrencySymbol: string;
+declare var kCFNumberFormatterCurrencySymbol: any;
 
-declare var kCFNumberFormatterDecimalSeparator: string;
+declare var kCFNumberFormatterDecimalSeparator: any;
 
-declare var kCFNumberFormatterDefaultFormat: string;
+declare var kCFNumberFormatterDefaultFormat: any;
 
-declare var kCFNumberFormatterExponentSymbol: string;
+declare var kCFNumberFormatterExponentSymbol: any;
 
-declare var kCFNumberFormatterFormatWidth: string;
+declare var kCFNumberFormatterFormatWidth: any;
 
-declare var kCFNumberFormatterGroupingSeparator: string;
+declare var kCFNumberFormatterGroupingSeparator: any;
 
-declare var kCFNumberFormatterGroupingSize: string;
+declare var kCFNumberFormatterGroupingSize: any;
 
-declare var kCFNumberFormatterInfinitySymbol: string;
+declare var kCFNumberFormatterInfinitySymbol: any;
 
-declare var kCFNumberFormatterInternationalCurrencySymbol: string;
+declare var kCFNumberFormatterInternationalCurrencySymbol: any;
 
-declare var kCFNumberFormatterIsLenient: string;
+declare var kCFNumberFormatterIsLenient: any;
 
-declare var kCFNumberFormatterMaxFractionDigits: string;
+declare var kCFNumberFormatterMaxFractionDigits: any;
 
-declare var kCFNumberFormatterMaxIntegerDigits: string;
+declare var kCFNumberFormatterMaxIntegerDigits: any;
 
-declare var kCFNumberFormatterMaxSignificantDigits: string;
+declare var kCFNumberFormatterMaxSignificantDigits: any;
 
-declare var kCFNumberFormatterMinFractionDigits: string;
+declare var kCFNumberFormatterMinFractionDigits: any;
 
-declare var kCFNumberFormatterMinIntegerDigits: string;
+declare var kCFNumberFormatterMinIntegerDigits: any;
 
-declare var kCFNumberFormatterMinSignificantDigits: string;
+declare var kCFNumberFormatterMinSignificantDigits: any;
 
-declare var kCFNumberFormatterMinusSign: string;
+declare var kCFNumberFormatterMinusSign: any;
 
-declare var kCFNumberFormatterMultiplier: string;
+declare var kCFNumberFormatterMultiplier: any;
 
-declare var kCFNumberFormatterNaNSymbol: string;
+declare var kCFNumberFormatterNaNSymbol: any;
 
-declare var kCFNumberFormatterNegativePrefix: string;
+declare var kCFNumberFormatterNegativePrefix: any;
 
-declare var kCFNumberFormatterNegativeSuffix: string;
+declare var kCFNumberFormatterNegativeSuffix: any;
 
-declare var kCFNumberFormatterPaddingCharacter: string;
+declare var kCFNumberFormatterPaddingCharacter: any;
 
-declare var kCFNumberFormatterPaddingPosition: string;
+declare var kCFNumberFormatterPaddingPosition: any;
 
-declare var kCFNumberFormatterPerMillSymbol: string;
+declare var kCFNumberFormatterPerMillSymbol: any;
 
-declare var kCFNumberFormatterPercentSymbol: string;
+declare var kCFNumberFormatterPercentSymbol: any;
 
-declare var kCFNumberFormatterPlusSign: string;
+declare var kCFNumberFormatterPlusSign: any;
 
-declare var kCFNumberFormatterPositivePrefix: string;
+declare var kCFNumberFormatterPositivePrefix: any;
 
-declare var kCFNumberFormatterPositiveSuffix: string;
+declare var kCFNumberFormatterPositiveSuffix: any;
 
-declare var kCFNumberFormatterRoundingIncrement: string;
+declare var kCFNumberFormatterRoundingIncrement: any;
 
-declare var kCFNumberFormatterRoundingMode: string;
+declare var kCFNumberFormatterRoundingMode: any;
 
-declare var kCFNumberFormatterSecondaryGroupingSize: string;
+declare var kCFNumberFormatterSecondaryGroupingSize: any;
 
-declare var kCFNumberFormatterUseGroupingSeparator: string;
+declare var kCFNumberFormatterUseGroupingSeparator: any;
 
-declare var kCFNumberFormatterUseSignificantDigits: string;
+declare var kCFNumberFormatterUseSignificantDigits: any;
 
-declare var kCFNumberFormatterZeroSymbol: string;
+declare var kCFNumberFormatterZeroSymbol: any;
 
 declare var kCFNumberNaN: number;
 
@@ -2897,7 +2928,7 @@ declare var kCFNumberNegativeInfinity: number;
 
 declare var kCFNumberPositiveInfinity: number;
 
-declare var kCFPersianCalendar: string;
+declare var kCFPersianCalendar: any;
 
 declare var kCFPlugInDynamicRegisterFunctionKey: string;
 
@@ -2921,11 +2952,11 @@ declare var kCFPreferencesCurrentHost: string;
 
 declare var kCFPreferencesCurrentUser: string;
 
-declare var kCFRepublicOfChinaCalendar: string;
+declare var kCFRepublicOfChinaCalendar: any;
 
-declare var kCFRunLoopCommonModes: string;
+declare var kCFRunLoopCommonModes: any;
 
-declare var kCFRunLoopDefaultMode: string;
+declare var kCFRunLoopDefaultMode: any;
 
 declare var kCFSocketCommandKey: string;
 
@@ -2941,17 +2972,17 @@ declare var kCFSocketRetrieveCommand: string;
 
 declare var kCFSocketValueKey: string;
 
-declare var kCFStreamPropertyAppendToFile: string;
+declare var kCFStreamPropertyAppendToFile: any;
 
-declare var kCFStreamPropertyDataWritten: string;
+declare var kCFStreamPropertyDataWritten: any;
 
-declare var kCFStreamPropertyFileCurrentOffset: string;
+declare var kCFStreamPropertyFileCurrentOffset: any;
 
-declare var kCFStreamPropertySocketNativeHandle: string;
+declare var kCFStreamPropertySocketNativeHandle: any;
 
-declare var kCFStreamPropertySocketRemoteHostName: string;
+declare var kCFStreamPropertySocketRemoteHostName: any;
 
-declare var kCFStreamPropertySocketRemotePortNumber: string;
+declare var kCFStreamPropertySocketRemotePortNumber: any;
 
 declare var kCFStringBinaryHeapCallBacks: CFBinaryHeapCallBacks;
 
@@ -2987,7 +3018,7 @@ declare var kCFStringTransformToUnicodeName: string;
 
 declare var kCFStringTransformToXMLHex: string;
 
-declare var kCFTimeZoneSystemTimeZoneDidChangeNotification: string;
+declare var kCFTimeZoneSystemTimeZoneDidChangeNotification: any;
 
 declare var kCFTypeArrayCallBacks: CFArrayCallBacks;
 
@@ -3002,6 +3033,8 @@ declare var kCFTypeSetCallBacks: CFSetCallBacks;
 declare var kCFURLAddedToDirectoryDateKey: string;
 
 declare var kCFURLAttributeModificationDateKey: string;
+
+declare var kCFURLCanonicalPathKey: string;
 
 declare var kCFURLContentAccessDateKey: string;
 
@@ -3169,6 +3202,8 @@ declare var kCFURLVolumeIsBrowsableKey: string;
 
 declare var kCFURLVolumeIsEjectableKey: string;
 
+declare var kCFURLVolumeIsEncryptedKey: string;
+
 declare var kCFURLVolumeIsInternalKey: string;
 
 declare var kCFURLVolumeIsJournalingKey: string;
@@ -3178,6 +3213,8 @@ declare var kCFURLVolumeIsLocalKey: string;
 declare var kCFURLVolumeIsReadOnlyKey: string;
 
 declare var kCFURLVolumeIsRemovableKey: string;
+
+declare var kCFURLVolumeIsRootFileSystemKey: string;
 
 declare var kCFURLVolumeLocalizedFormatDescriptionKey: string;
 
@@ -3195,7 +3232,13 @@ declare var kCFURLVolumeSupportsCasePreservedNamesKey: string;
 
 declare var kCFURLVolumeSupportsCaseSensitiveNamesKey: string;
 
+declare var kCFURLVolumeSupportsCompressionKey: string;
+
+declare var kCFURLVolumeSupportsExclusiveRenamingKey: string;
+
 declare var kCFURLVolumeSupportsExtendedSecurityKey: string;
+
+declare var kCFURLVolumeSupportsFileCloningKey: string;
 
 declare var kCFURLVolumeSupportsHardLinksKey: string;
 
@@ -3208,6 +3251,8 @@ declare var kCFURLVolumeSupportsRenamingKey: string;
 declare var kCFURLVolumeSupportsRootDirectoryDatesKey: string;
 
 declare var kCFURLVolumeSupportsSparseFilesKey: string;
+
+declare var kCFURLVolumeSupportsSwapRenamingKey: string;
 
 declare var kCFURLVolumeSupportsSymbolicLinksKey: string;
 

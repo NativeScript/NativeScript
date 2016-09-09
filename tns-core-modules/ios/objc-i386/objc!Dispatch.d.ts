@@ -87,6 +87,8 @@ declare var _dispatch_source_type_vnode: void;
 
 declare var _dispatch_source_type_write: void;
 
+declare function dispatch_activate(object: NSObject): void;
+
 declare function dispatch_after(when: number, queue: NSObject, block: () => void): void;
 
 declare function dispatch_after_f(when: number, queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
@@ -95,9 +97,24 @@ declare function dispatch_apply(iterations: number, queue: NSObject, block: (p1:
 
 declare function dispatch_apply_f(iterations: number, queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>, p2: number) => void>): void;
 
+declare function dispatch_assert_queue(queue: NSObject): void;
+
+declare function dispatch_assert_queue_barrier(queue: NSObject): void;
+
+declare function dispatch_assert_queue_not(queue: NSObject): void;
+
 declare function dispatch_async(queue: NSObject, block: () => void): void;
 
 declare function dispatch_async_f(queue: NSObject, context: interop.Pointer | interop.Reference<any>, work: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
+
+declare const enum dispatch_autorelease_frequency_t {
+
+	DISPATCH_AUTORELEASE_FREQUENCY_INHERIT = 0,
+
+	DISPATCH_AUTORELEASE_FREQUENCY_WORK_ITEM = 1,
+
+	DISPATCH_AUTORELEASE_FREQUENCY_NEVER = 2
+}
 
 declare function dispatch_barrier_async(queue: NSObject, block: () => void): void;
 
@@ -136,7 +153,7 @@ declare function dispatch_block_testcancel(block: () => void): number;
 
 declare function dispatch_block_wait(block: () => void, timeout: number): number;
 
-declare function dispatch_data_apply(data: NSObject, applier: (p1: NSObject, p2: number, p3: interop.Pointer | interop.Reference<any>, p4: number) => boolean): boolean;
+declare function dispatch_data_apply(data: NSObject, applier: number): number;
 
 declare function dispatch_data_copy_region(data: NSObject, location: number, offset_ptr: interop.Pointer | interop.Reference<number>): NSObject;
 
@@ -174,20 +191,6 @@ declare function dispatch_group_notify_f(group: NSObject, queue: NSObject, conte
 
 declare function dispatch_group_wait(group: NSObject, timeout: number): number;
 
-declare function dispatch_introspection_hook_queue_callout_begin(queue: NSObject, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
-
-declare function dispatch_introspection_hook_queue_callout_end(queue: NSObject, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
-
-declare function dispatch_introspection_hook_queue_create(queue: NSObject): void;
-
-declare function dispatch_introspection_hook_queue_destroy(queue: NSObject): void;
-
-declare function dispatch_introspection_hook_queue_item_complete(item: NSObject): void;
-
-declare function dispatch_introspection_hook_queue_item_dequeue(queue: NSObject, item: NSObject): void;
-
-declare function dispatch_introspection_hook_queue_item_enqueue(queue: NSObject, item: NSObject): void;
-
 declare function dispatch_io_barrier(channel: NSObject, barrier: () => void): void;
 
 declare function dispatch_io_close(channel: NSObject, flags: number): void;
@@ -200,7 +203,7 @@ declare function dispatch_io_create_with_path(type: number, path: string, oflag:
 
 declare function dispatch_io_get_descriptor(channel: NSObject): number;
 
-declare function dispatch_io_read(channel: NSObject, offset: number, length: number, queue: NSObject, io_handler: (p1: boolean, p2: NSObject, p3: number) => void): void;
+declare function dispatch_io_read(channel: NSObject, offset: number, length: number, queue: NSObject, io_handler: (p1: interop.FunctionReference<(p1: number) => number>, p2: NSObject, p3: number) => void): void;
 
 declare function dispatch_io_set_high_water(channel: NSObject, high_water: number): void;
 
@@ -208,7 +211,7 @@ declare function dispatch_io_set_interval(channel: NSObject, interval: number, f
 
 declare function dispatch_io_set_low_water(channel: NSObject, low_water: number): void;
 
-declare function dispatch_io_write(channel: NSObject, offset: number, data: NSObject, queue: NSObject, io_handler: (p1: boolean, p2: NSObject, p3: number) => void): void;
+declare function dispatch_io_write(channel: NSObject, offset: number, data: NSObject, queue: NSObject, io_handler: (p1: interop.FunctionReference<(p1: number) => number>, p2: NSObject, p3: number) => void): void;
 
 declare function dispatch_main(): void;
 
@@ -216,9 +219,15 @@ declare function dispatch_once(predicate: interop.Pointer | interop.Reference<nu
 
 declare function dispatch_once_f(predicate: interop.Pointer | interop.Reference<number>, context: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: interop.Pointer | interop.Reference<any>) => void>): void;
 
+declare function dispatch_queue_attr_make_initially_inactive(attr: NSObject): NSObject;
+
+declare function dispatch_queue_attr_make_with_autorelease_frequency(attr: NSObject, frequency: dispatch_autorelease_frequency_t): NSObject;
+
 declare function dispatch_queue_attr_make_with_qos_class(attr: NSObject, qos_class: qos_class_t, relative_priority: number): NSObject;
 
 declare function dispatch_queue_create(label: string, attr: NSObject): NSObject;
+
+declare function dispatch_queue_create_with_target(label: string, attr: NSObject, target: NSObject): NSObject;
 
 declare function dispatch_queue_get_label(queue: NSObject): string;
 

@@ -29,7 +29,7 @@ declare class PKPushRegistry extends NSObject {
 
 	delegate: PKPushRegistryDelegate;
 
-	desiredPushTypes: NSSet<any>;
+	desiredPushTypes: NSSet<string>;
 
 	constructor(o: { queue: NSObject; });
 

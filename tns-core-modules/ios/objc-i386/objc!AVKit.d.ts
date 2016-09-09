@@ -78,6 +78,8 @@ declare class AVPlayerViewController extends UIViewController {
 
 	showsPlaybackControls: boolean;
 
+	updatesNowPlayingInfoCenter: boolean;
+
 	/* readonly */ videoBounds: CGRect;
 
 	videoGravity: string;

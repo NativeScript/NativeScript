@@ -35,10 +35,10 @@ export class FPSCallback implements definition.FPSCallback {
 
         this.displayLink = CADisplayLink.displayLinkWithTargetSelector(this.impl, "handleFrame");
         this.displayLink.paused = true;
-        this.displayLink.addToRunLoopForMode(NSRunLoop.currentRunLoop(), NSDefaultRunLoopMode);
+        this.displayLink.addToRunLoopForMode(NSRunLoop.currentRunLoop, NSDefaultRunLoopMode);
         // UIScrollView (including in UIITableView) will run a loop in UITrackingRunLoopMode during scrolling.
         // If we do not add the CADisplayLink in this mode, it would appear paused during scrolling.
-        this.displayLink.addToRunLoopForMode(NSRunLoop.currentRunLoop(), UITrackingRunLoopMode);
+        this.displayLink.addToRunLoopForMode(NSRunLoop.currentRunLoop, UITrackingRunLoopMode);
     }
 
     public start() {

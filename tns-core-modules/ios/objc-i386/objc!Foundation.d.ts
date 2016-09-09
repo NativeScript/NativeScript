@@ -44,8 +44,6 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	static new<ObjectType>(): NSArray<ObjectType>; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ count: number;
 
 	/* readonly */ firstObject: ObjectType;
@@ -65,6 +63,8 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -196,6 +196,10 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	self(): this;
 
+	shuffledArray(): NSArray<ObjectType>;
+
+	shuffledArrayWithRandomSource(randomSource: GKRandomSource): NSArray<ObjectType>;
+
 	sortedArrayUsingComparator(cmptr: (p1: any, p2: any) => NSComparisonResult): NSArray<ObjectType>;
 
 	sortedArrayUsingDescriptors(sortDescriptors: NSArray<NSSortDescriptor>): NSArray<ObjectType>;
@@ -219,9 +223,9 @@ declare class NSAssertionHandler extends NSObject {
 
 	static alloc(): NSAssertionHandler; // inherited from NSObject
 
-	static currentHandler(): NSAssertionHandler;
-
 	static new(): NSAssertionHandler; // inherited from NSObject
+
+	/* readonly */ static currentHandler: NSAssertionHandler;
 }
 
 declare var NSAssertionHandlerKey: string;
@@ -234,11 +238,11 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSMutabl
 
 	static new(): NSAttributedString; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ length: number;
 
 	/* readonly */ string: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { attributedString: NSAttributedString; });
 
@@ -359,10 +363,6 @@ declare class NSBundle extends NSObject {
 
 	static URLsForResourcesWithExtensionSubdirectoryInBundleWithURL(ext: string, subpath: string, bundleURL: NSURL): NSArray<NSURL>;
 
-	static allBundles(): NSArray<NSBundle>;
-
-	static allFrameworks(): NSArray<NSBundle>;
-
 	static alloc(): NSBundle; // inherited from NSObject
 
 	static bundleForClass(aClass: typeof NSObject): NSBundle;
@@ -372,8 +372,6 @@ declare class NSBundle extends NSObject {
 	static bundleWithPath(path: string): NSBundle;
 
 	static bundleWithURL(url: NSURL): NSBundle;
-
-	static mainBundle(): NSBundle;
 
 	static new(): NSBundle; // inherited from NSObject
 
@@ -432,6 +430,12 @@ declare class NSBundle extends NSObject {
 	/* readonly */ sharedSupportPath: string;
 
 	/* readonly */ sharedSupportURL: NSURL;
+
+	/* readonly */ static allBundles: NSArray<NSBundle>;
+
+	/* readonly */ static allFrameworks: NSArray<NSBundle>;
+
+	/* readonly */ static mainBundle: NSBundle;
 
 	constructor(o: { path: string; });
 
@@ -662,8 +666,6 @@ declare class NSCachedURLResponse extends NSObject implements NSCopying, NSSecur
 
 	static new(): NSCachedURLResponse; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ data: NSData;
 
 	/* readonly */ response: NSURLResponse;
@@ -671,6 +673,8 @@ declare class NSCachedURLResponse extends NSObject implements NSCopying, NSSecur
 	/* readonly */ storagePolicy: NSURLCacheStoragePolicy;
 
 	/* readonly */ userInfo: NSDictionary<any, any>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -706,15 +710,9 @@ declare class NSCalendar extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): NSCalendar; // inherited from NSObject
 
-	static autoupdatingCurrentCalendar(): NSCalendar;
-
 	static calendarWithIdentifier(calendarIdentifierConstant: string): NSCalendar;
 
-	static currentCalendar(): NSCalendar;
-
 	static new(): NSCalendar; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
 
 	/* readonly */ AMSymbol: string;
 
@@ -765,6 +763,12 @@ declare class NSCalendar extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ veryShortWeekdaySymbols: NSArray<string>;
 
 	/* readonly */ weekdaySymbols: NSArray<string>;
+
+	/* readonly */ static autoupdatingCurrentCalendar: NSCalendar;
+
+	/* readonly */ static currentCalendar: NSCalendar;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { calendarIdentifier: string; });
 
@@ -971,25 +975,9 @@ declare const enum NSCalendarUnit {
 
 declare var NSCharacterConversionException: string;
 
-declare class NSCharacterSet extends NSObject implements NSCoding, NSCopying, NSMutableCopying {
-
-	static URLFragmentAllowedCharacterSet(): NSCharacterSet;
-
-	static URLHostAllowedCharacterSet(): NSCharacterSet;
-
-	static URLPasswordAllowedCharacterSet(): NSCharacterSet;
-
-	static URLPathAllowedCharacterSet(): NSCharacterSet;
-
-	static URLQueryAllowedCharacterSet(): NSCharacterSet;
-
-	static URLUserAllowedCharacterSet(): NSCharacterSet;
+declare class NSCharacterSet extends NSObject implements NSCopying, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): NSCharacterSet; // inherited from NSObject
-
-	static alphanumericCharacterSet(): NSCharacterSet;
-
-	static capitalizedLetterCharacterSet(): NSCharacterSet;
 
 	static characterSetWithBitmapRepresentation(data: NSData): NSCharacterSet;
 
@@ -999,37 +987,55 @@ declare class NSCharacterSet extends NSObject implements NSCoding, NSCopying, NS
 
 	static characterSetWithRange(aRange: NSRange): NSCharacterSet;
 
-	static controlCharacterSet(): NSCharacterSet;
-
-	static decimalDigitCharacterSet(): NSCharacterSet;
-
-	static decomposableCharacterSet(): NSCharacterSet;
-
-	static illegalCharacterSet(): NSCharacterSet;
-
-	static letterCharacterSet(): NSCharacterSet;
-
-	static lowercaseLetterCharacterSet(): NSCharacterSet;
-
 	static new(): NSCharacterSet; // inherited from NSObject
-
-	static newlineCharacterSet(): NSCharacterSet;
-
-	static nonBaseCharacterSet(): NSCharacterSet;
-
-	static punctuationCharacterSet(): NSCharacterSet;
-
-	static symbolCharacterSet(): NSCharacterSet;
-
-	static uppercaseLetterCharacterSet(): NSCharacterSet;
-
-	static whitespaceAndNewlineCharacterSet(): NSCharacterSet;
-
-	static whitespaceCharacterSet(): NSCharacterSet;
 
 	/* readonly */ bitmapRepresentation: NSData;
 
 	/* readonly */ invertedSet: NSCharacterSet;
+
+	/* readonly */ static URLFragmentAllowedCharacterSet: NSCharacterSet;
+
+	/* readonly */ static URLHostAllowedCharacterSet: NSCharacterSet;
+
+	/* readonly */ static URLPasswordAllowedCharacterSet: NSCharacterSet;
+
+	/* readonly */ static URLPathAllowedCharacterSet: NSCharacterSet;
+
+	/* readonly */ static URLQueryAllowedCharacterSet: NSCharacterSet;
+
+	/* readonly */ static URLUserAllowedCharacterSet: NSCharacterSet;
+
+	/* readonly */ static alphanumericCharacterSet: NSCharacterSet;
+
+	/* readonly */ static capitalizedLetterCharacterSet: NSCharacterSet;
+
+	/* readonly */ static controlCharacterSet: NSCharacterSet;
+
+	/* readonly */ static decimalDigitCharacterSet: NSCharacterSet;
+
+	/* readonly */ static decomposableCharacterSet: NSCharacterSet;
+
+	/* readonly */ static illegalCharacterSet: NSCharacterSet;
+
+	/* readonly */ static letterCharacterSet: NSCharacterSet;
+
+	/* readonly */ static lowercaseLetterCharacterSet: NSCharacterSet;
+
+	/* readonly */ static newlineCharacterSet: NSCharacterSet;
+
+	/* readonly */ static nonBaseCharacterSet: NSCharacterSet;
+
+	/* readonly */ static punctuationCharacterSet: NSCharacterSet;
+
+	/* readonly */ static symbolCharacterSet: NSCharacterSet;
+
+	/* readonly */ static uppercaseLetterCharacterSet: NSCharacterSet;
+
+	/* readonly */ static whitespaceAndNewlineCharacterSet: NSCharacterSet;
+
+	/* readonly */ static whitespaceCharacterSet: NSCharacterSet;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1065,6 +1071,10 @@ declare class NSCoder extends NSObject {
 	/* readonly */ allowedClasses: NSSet<typeof NSObject>;
 
 	/* readonly */ allowsKeyedCoding: boolean;
+
+	/* readonly */ decodingFailurePolicy: NSDecodingFailurePolicy;
+
+	/* readonly */ error: NSError;
 
 	/* readonly */ requiresSecureCoding: boolean;
 
@@ -1445,8 +1455,6 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	static new(): NSData; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ bytes: interop.Pointer | interop.Reference<any>;
 
 	/* readonly */ length: number;
@@ -1462,6 +1470,8 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { base64EncodedData: NSData; options: NSDataBase64DecodingOptions; });
 
@@ -1662,21 +1672,19 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 
 	static dateWithTimeIntervalSinceReferenceDate(ti: number): NSDate;
 
-	static distantFuture(): Date;
-
-	static distantPast(): Date;
-
 	static new(): NSDate; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
-
-	static timeIntervalSinceReferenceDate(): number;
 
 	/* readonly */ timeIntervalSince1970: number;
 
 	/* readonly */ timeIntervalSinceNow: number;
 
 	/* readonly */ timeIntervalSinceReferenceDate: number;
+
+	/* readonly */ static distantFuture: Date;
+
+	/* readonly */ static distantPast: Date;
+
+	/* readonly */ static timeIntervalSinceReferenceDate: number;
 
 	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
@@ -1689,6 +1697,8 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1759,8 +1769,6 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): NSDateComponents; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	calendar: NSCalendar;
 
 	/* readonly */ date: Date;
@@ -1798,6 +1806,8 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 	year: number;
 
 	yearForWeekOfYear: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1863,7 +1873,9 @@ declare const enum NSDateComponentsFormatterUnitsStyle {
 
 	Full = 3,
 
-	SpellOut = 4
+	SpellOut = 4,
+
+	Brief = 5
 }
 
 declare const enum NSDateComponentsFormatterZeroFormattingBehavior {
@@ -1889,13 +1901,9 @@ declare class NSDateFormatter extends NSFormatter {
 
 	static dateFormatFromTemplateOptionsLocale(tmplate: string, opts: number, locale: NSLocale): string;
 
-	static defaultFormatterBehavior(): NSDateFormatterBehavior;
-
 	static localizedStringFromDateDateStyleTimeStyle(date: Date, dstyle: NSDateFormatterStyle, tstyle: NSDateFormatterStyle): string;
 
 	static new(): NSDateFormatter; // inherited from NSObject
-
-	static setDefaultFormatterBehavior(behavior: NSDateFormatterBehavior): void;
 
 	AMSymbol: string;
 
@@ -1965,6 +1973,8 @@ declare class NSDateFormatter extends NSFormatter {
 
 	weekdaySymbols: NSArray<string>;
 
+	static defaultFormatterBehavior: NSDateFormatterBehavior;
+
 	dateFromString(string: string): Date;
 
 	getObjectValueForStringRangeError(obj: interop.Pointer | interop.Reference<any>, string: string, rangep: interop.Pointer | interop.Reference<NSRange>): boolean;
@@ -1994,6 +2004,47 @@ declare const enum NSDateFormatterStyle {
 	FullStyle = 4
 }
 
+declare class NSDateInterval extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSDateInterval; // inherited from NSObject
+
+	static new(): NSDateInterval; // inherited from NSObject
+
+	/* readonly */ duration: number;
+
+	/* readonly */ endDate: Date;
+
+	/* readonly */ startDate: Date;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { startDate: Date; duration: number; });
+
+	constructor(o: { startDate: Date; endDate: Date; });
+
+	compare(dateInterval: NSDateInterval): NSComparisonResult;
+
+	containsDate(date: Date): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithStartDateDuration(startDate: Date, duration: number): this;
+
+	initWithStartDateEndDate(startDate: Date, endDate: Date): this;
+
+	intersectionWithDateInterval(dateInterval: NSDateInterval): NSDateInterval;
+
+	intersectsDateInterval(dateInterval: NSDateInterval): boolean;
+
+	isEqualToDateInterval(dateInterval: NSDateInterval): boolean;
+}
+
 declare class NSDateIntervalFormatter extends NSFormatter {
 
 	static alloc(): NSDateIntervalFormatter; // inherited from NSObject
@@ -2011,6 +2062,8 @@ declare class NSDateIntervalFormatter extends NSFormatter {
 	timeStyle: NSDateIntervalFormatterStyle;
 
 	timeZone: NSTimeZone;
+
+	stringFromDateInterval(dateInterval: NSDateInterval): string;
 
 	stringFromDateToDate(fromDate: Date, toDate: Date): string;
 }
@@ -2070,21 +2123,19 @@ declare class NSDecimalNumber extends NSNumber {
 
 	static decimalNumberWithStringLocale(numberValue: string, locale: any): NSDecimalNumber;
 
-	static defaultBehavior(): NSDecimalNumberBehaviors;
-
-	static maximumDecimalNumber(): NSDecimalNumber;
-
-	static minimumDecimalNumber(): NSDecimalNumber;
-
 	static new(): NSDecimalNumber; // inherited from NSObject
 
-	static notANumber(): NSDecimalNumber;
+	static defaultBehavior: NSDecimalNumberBehaviors;
 
-	static one(): NSDecimalNumber;
+	/* readonly */ static maximumDecimalNumber: NSDecimalNumber;
 
-	static setDefaultBehavior(behavior: NSDecimalNumberBehaviors): void;
+	/* readonly */ static minimumDecimalNumber: NSDecimalNumber;
 
-	static zero(): NSDecimalNumber;
+	/* readonly */ static notANumber: NSDecimalNumber;
+
+	/* readonly */ static one: NSDecimalNumber;
+
+	/* readonly */ static zero: NSDecimalNumber;
 
 	constructor(o: { decimal: NSDecimal; });
 
@@ -2185,6 +2236,13 @@ declare function NSDecimalString(dcm: interop.Pointer | interop.Reference<NSDeci
 
 declare function NSDecimalSubtract(result: interop.Pointer | interop.Reference<NSDecimal>, leftOperand: interop.Pointer | interop.Reference<NSDecimal>, rightOperand: interop.Pointer | interop.Reference<NSDecimal>, roundingMode: NSRoundingMode): NSCalculationError;
 
+declare const enum NSDecodingFailurePolicy {
+
+	RaiseException = 0,
+
+	SetErrorAndReturn = 1
+}
+
 declare function NSDecrementExtraRefCountWasZero(object: any): boolean;
 
 declare function NSDefaultMallocZone(): interop.Pointer | interop.Reference<any>;
@@ -2193,7 +2251,7 @@ declare var NSDefaultRunLoopMode: string;
 
 declare var NSDestinationInvalidException: string;
 
-declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCopying, NSFastEnumeration, NSMutableCopying, NSSecureCoding {
+declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCopying, NSFastEnumeration, NSFetchRequestResult, NSMutableCopying, NSSecureCoding {
 
 	static alloc<KeyType, ObjectType>(): NSDictionary<KeyType, ObjectType>; // inherited from NSObject
 
@@ -2217,8 +2275,6 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	static sharedKeySetForKeys(keys: NSArray<any>): any;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ allKeys: NSArray<KeyType>;
 
 	/* readonly */ allValues: NSArray<ObjectType>;
@@ -2226,6 +2282,20 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	/* readonly */ count: number;
 
 	/* readonly */ descriptionInStringsFileFormat: string;
+
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -2245,6 +2315,10 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 	constructor(o: { objects: interop.Reference<ObjectType>; forKeys: interop.Reference<any>; count: number; });
 
 	allKeysForObject(anObject: ObjectType): NSArray<KeyType>;
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2310,7 +2384,13 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	initWithObjectsForKeysCount(objects: interop.Reference<ObjectType>, keys: interop.Reference<any>, cnt: number): this;
 
+	isEqual(object: any): boolean;
+
 	isEqualToDictionary(otherDictionary: NSDictionary<KeyType, ObjectType>): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
 	keyEnumerator(): NSEnumerator<KeyType>;
 
@@ -2334,6 +2414,18 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	objectsForKeysNotFoundMarker(keys: NSArray<KeyType>, marker: ObjectType): NSArray<ObjectType>;
 
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
+
 	valueForKey(key: string): ObjectType;
 
 	writeToFileAtomically(path: string, useAuxiliaryFile: boolean): boolean;
@@ -2342,6 +2434,29 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 }
 
 declare var NSDidBecomeSingleThreadedNotification: string;
+
+declare class NSDimension extends NSUnit implements NSSecureCoding {
+
+	static alloc(): NSDimension; // inherited from NSObject
+
+	static baseUnit(): NSDimension;
+
+	static new(): NSDimension; // inherited from NSObject
+
+	/* readonly */ converter: NSUnitConverter;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { symbol: string; converter: NSUnitConverter; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithSymbolConverter(symbol: string, converter: NSUnitConverter): this;
+}
 
 declare const enum NSDirectoryEnumerationOptions {
 
@@ -2451,8 +2566,6 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	static setUserInfoValueProviderForDomainProvider(errorDomain: string, provider: (p1: NSError, p2: string) => any): void;
 
-	static supportsSecureCoding(): boolean;
-
 	static userInfoValueProviderForDomain(errorDomain: string): (p1: NSError, p2: string) => any;
 
 	/* readonly */ code: number;
@@ -2472,6 +2585,8 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ recoveryAttempter: any;
 
 	/* readonly */ userInfo: NSDictionary<any, any>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2557,8 +2672,6 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): NSExpression; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ arguments: NSArray<NSExpression>;
 
 	/* readonly */ collection: any;
@@ -2586,6 +2699,8 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 	/* readonly */ trueExpression: NSExpression;
 
 	/* readonly */ variable: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2639,13 +2754,31 @@ declare class NSExtensionContext extends NSObject {
 
 	static new(): NSExtensionContext; // inherited from NSObject
 
+	/* readonly */ hostedViewMaximumAllowedSize: CGSize;
+
+	/* readonly */ hostedViewMinimumAllowedSize: CGSize;
+
 	/* readonly */ inputItems: NSArray<any>;
+
+	/* readonly */ widgetActiveDisplayMode: NCWidgetDisplayMode;
+
+	widgetLargestAvailableDisplayMode: NCWidgetDisplayMode;
 
 	cancelRequestWithError(error: NSError): void;
 
 	completeRequestReturningItemsCompletionHandler(items: NSArray<any>, completionHandler: (p1: boolean) => void): void;
 
+	completeRequestWithBroadcastURLBroadcastConfigurationSetupInfo(broadcastURL: NSURL, broadcastConfiguration: RPBroadcastConfiguration, setupInfo: NSDictionary<string, NSObject>): void;
+
+	loadBroadcastingApplicationInfoWithCompletion(handler: (p1: string, p2: string, p3: UIImage) => void): void;
+
+	mediaPlayingPaused(): void;
+
+	mediaPlayingStarted(): void;
+
 	openURLCompletionHandler(URL: NSURL, completionHandler: (p1: boolean) => void): void;
+
+	widgetMaximumSizeForDisplayMode(displayMode: NCWidgetDisplayMode): CGSize;
 }
 
 declare var NSExtensionHostDidBecomeActiveNotification: string;
@@ -2662,8 +2795,6 @@ declare class NSExtensionItem extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NSExtensionItem; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	attachments: NSArray<any>;
 
 	attributedContentText: NSAttributedString;
@@ -2671,6 +2802,8 @@ declare class NSExtensionItem extends NSObject implements NSCopying, NSSecureCod
 	attributedTitle: NSAttributedString;
 
 	userInfo: NSDictionary<any, any>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2742,13 +2875,13 @@ declare class NSFileCoordinator extends NSObject {
 
 	static alloc(): NSFileCoordinator; // inherited from NSObject
 
-	static filePresenters(): NSArray<NSFilePresenter>;
-
 	static new(): NSFileCoordinator; // inherited from NSObject
 
 	static removeFilePresenter(filePresenter: NSFilePresenter): void;
 
 	purposeIdentifier: string;
+
+	/* readonly */ static filePresenters: NSArray<NSFilePresenter>;
 
 	constructor(o: { filePresenter: NSFilePresenter; });
 
@@ -2827,17 +2960,7 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	static fileHandleForWritingToURLError(url: NSURL): NSFileHandle;
 
-	static fileHandleWithNullDevice(): NSFileHandle;
-
-	static fileHandleWithStandardError(): NSFileHandle;
-
-	static fileHandleWithStandardInput(): NSFileHandle;
-
-	static fileHandleWithStandardOutput(): NSFileHandle;
-
 	static new(): NSFileHandle; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
 
 	/* readonly */ availableData: NSData;
 
@@ -2848,6 +2971,16 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 	readabilityHandler: (p1: NSFileHandle) => void;
 
 	writeabilityHandler: (p1: NSFileHandle) => void;
+
+	/* readonly */ static fileHandleWithNullDevice: NSFileHandle;
+
+	/* readonly */ static fileHandleWithStandardError: NSFileHandle;
+
+	/* readonly */ static fileHandleWithStandardInput: NSFileHandle;
+
+	/* readonly */ static fileHandleWithStandardOutput: NSFileHandle;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2918,15 +3051,17 @@ declare class NSFileManager extends NSObject {
 
 	static alloc(): NSFileManager; // inherited from NSObject
 
-	static defaultManager(): NSFileManager;
-
 	static new(): NSFileManager; // inherited from NSObject
 
 	/* readonly */ currentDirectoryPath: string;
 
 	delegate: NSFileManagerDelegate;
 
+	/* readonly */ temporaryDirectory: NSURL;
+
 	/* readonly */ ubiquityIdentityToken: any;
+
+	/* readonly */ static defaultManager: NSFileManager;
 
 	URLForDirectoryInDomainAppropriateForURLCreateError(directory: NSSearchPathDirectory, domain: NSSearchPathDomainMask, url: NSURL, shouldCreate: boolean): NSURL;
 
@@ -3480,11 +3615,11 @@ declare class NSHTTPCookieStorage extends NSObject {
 
 	static sharedCookieStorageForGroupContainerIdentifier(identifier: string): NSHTTPCookieStorage;
 
-	static sharedHTTPCookieStorage(): NSHTTPCookieStorage;
-
 	cookieAcceptPolicy: NSHTTPCookieAcceptPolicy;
 
 	/* readonly */ cookies: NSArray<NSHTTPCookie>;
+
+	/* readonly */ static sharedHTTPCookieStorage: NSHTTPCookieStorage;
 
 	cookiesForURL(URL: NSURL): NSArray<NSHTTPCookie>;
 
@@ -3604,6 +3739,60 @@ declare function NSHomeDirectoryForUser(userName: string): string;
 
 declare var NSISO8601Calendar: string;
 
+declare const enum NSISO8601DateFormatOptions {
+
+	WithYear = 1,
+
+	WithMonth = 2,
+
+	WithWeekOfYear = 4,
+
+	WithDay = 16,
+
+	WithTime = 32,
+
+	WithTimeZone = 64,
+
+	WithSpaceBetweenDateAndTime = 128,
+
+	WithDashSeparatorInDate = 256,
+
+	WithColonSeparatorInTime = 512,
+
+	WithColonSeparatorInTimeZone = 1024,
+
+	WithFullDate = 275,
+
+	WithFullTime = 1632,
+
+	WithInternetDateTime = 1907
+}
+
+declare class NSISO8601DateFormatter extends NSFormatter implements NSSecureCoding {
+
+	static alloc(): NSISO8601DateFormatter; // inherited from NSObject
+
+	static new(): NSISO8601DateFormatter; // inherited from NSObject
+
+	static stringFromDateTimeZoneFormatOptions(date: Date, timeZone: NSTimeZone, formatOptions: NSISO8601DateFormatOptions): string;
+
+	formatOptions: NSISO8601DateFormatOptions;
+
+	timeZone: NSTimeZone;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	dateFromString(string: string): Date;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	stringFromDate(date: Date): string;
+}
+
 declare function NSIncrementExtraRefCount(object: any): void;
 
 declare class NSIndexPath extends NSObject implements NSCopying, NSSecureCoding {
@@ -3620,8 +3809,6 @@ declare class NSIndexPath extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): NSIndexPath; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ item: number;
 
 	/* readonly */ length: number;
@@ -3629,6 +3816,8 @@ declare class NSIndexPath extends NSObject implements NSCopying, NSSecureCoding 
 	/* readonly */ row: number;
 
 	/* readonly */ section: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3671,13 +3860,13 @@ declare class NSIndexSet extends NSObject implements NSCopying, NSMutableCopying
 
 	static new(): NSIndexSet; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ count: number;
 
 	/* readonly */ firstIndex: number;
 
 	/* readonly */ lastIndex: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3995,6 +4184,8 @@ declare class NSKeyedArchiver extends NSCoder {
 
 	delegate: NSKeyedArchiverDelegate;
 
+	/* readonly */ encodedData: NSData;
+
 	outputFormat: NSPropertyListFormat;
 
 	requiresSecureCoding: boolean;
@@ -4044,6 +4235,8 @@ declare class NSKeyedUnarchiver extends NSCoder {
 	static unarchiveObjectWithFile(path: string): any;
 
 	static unarchiveTopLevelObjectWithDataError(data: NSData): any;
+
+	decodingFailurePolicy: NSDecodingFailurePolicy;
 
 	delegate: NSKeyedUnarchiverDelegate;
 
@@ -4243,17 +4436,7 @@ declare var NSLoadedClasses: string;
 
 declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
-	static ISOCountryCodes(): NSArray<string>;
-
-	static ISOCurrencyCodes(): NSArray<string>;
-
-	static ISOLanguageCodes(): NSArray<string>;
-
 	static alloc(): NSLocale; // inherited from NSObject
-
-	static autoupdatingCurrentLocale(): NSLocale;
-
-	static availableLocaleIdentifiers(): NSArray<string>;
 
 	static canonicalLanguageIdentifierFromString(string: string): string;
 
@@ -4261,11 +4444,7 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	static characterDirectionForLanguage(isoLangCode: string): NSLocaleLanguageDirection;
 
-	static commonISOCurrencyCodes(): NSArray<string>;
-
 	static componentsFromLocaleIdentifier(string: string): NSDictionary<string, string>;
-
-	static currentLocale(): NSLocale;
 
 	static lineDirectionForLanguage(isoLangCode: string): NSLocaleLanguageDirection;
 
@@ -4277,15 +4456,63 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NSLocale; // inherited from NSObject
 
-	static preferredLanguages(): NSArray<string>;
-
-	static supportsSecureCoding(): boolean;
-
-	static systemLocale(): NSLocale;
-
 	static windowsLocaleCodeFromLocaleIdentifier(localeIdentifier: string): number;
 
+	/* readonly */ alternateQuotationBeginDelimiter: string;
+
+	/* readonly */ alternateQuotationEndDelimiter: string;
+
+	/* readonly */ calendarIdentifier: string;
+
+	/* readonly */ collationIdentifier: string;
+
+	/* readonly */ collatorIdentifier: string;
+
+	/* readonly */ countryCode: string;
+
+	/* readonly */ currencyCode: string;
+
+	/* readonly */ currencySymbol: string;
+
+	/* readonly */ decimalSeparator: string;
+
+	/* readonly */ exemplarCharacterSet: NSCharacterSet;
+
+	/* readonly */ groupingSeparator: string;
+
+	/* readonly */ languageCode: string;
+
 	/* readonly */ localeIdentifier: string;
+
+	/* readonly */ quotationBeginDelimiter: string;
+
+	/* readonly */ quotationEndDelimiter: string;
+
+	/* readonly */ scriptCode: string;
+
+	/* readonly */ usesMetricSystem: boolean;
+
+	/* readonly */ variantCode: string;
+
+	/* readonly */ static ISOCountryCodes: NSArray<string>;
+
+	/* readonly */ static ISOCurrencyCodes: NSArray<string>;
+
+	/* readonly */ static ISOLanguageCodes: NSArray<string>;
+
+	/* readonly */ static autoupdatingCurrentLocale: NSLocale;
+
+	/* readonly */ static availableLocaleIdentifiers: NSArray<string>;
+
+	/* readonly */ static commonISOCurrencyCodes: NSArray<string>;
+
+	/* readonly */ static currentLocale: NSLocale;
+
+	/* readonly */ static preferredLanguages: NSArray<string>;
+
+	/* readonly */ static systemLocale: NSLocale;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -4293,7 +4520,7 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
-	displayNameForKeyValue(key: any, value: any): string;
+	displayNameForKeyValue(key: string, value: any): string;
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
@@ -4301,7 +4528,25 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	initWithLocaleIdentifier(string: string): this;
 
-	objectForKey(key: any): any;
+	localizedStringForCalendarIdentifier(calendarIdentifier: string): string;
+
+	localizedStringForCollationIdentifier(collationIdentifier: string): string;
+
+	localizedStringForCollatorIdentifier(collatorIdentifier: string): string;
+
+	localizedStringForCountryCode(countryCode: string): string;
+
+	localizedStringForCurrencyCode(currencyCode: string): string;
+
+	localizedStringForLanguageCode(languageCode: string): string;
+
+	localizedStringForLocaleIdentifier(localeIdentifier: string): string;
+
+	localizedStringForScriptCode(scriptCode: string): string;
+
+	localizedStringForVariantCode(variantCode: string): string;
+
+	objectForKey(key: string): any;
 }
 
 declare var NSLocaleAlternateQuotationBeginDelimiterKey: string;
@@ -4565,6 +4810,75 @@ declare const enum NSMatchingOptions {
 }
 
 declare var NSMaximumKeyValueOperator: string;
+
+declare class NSMeasurement<UnitType> extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc<UnitType>(): NSMeasurement<UnitType>; // inherited from NSObject
+
+	static new<UnitType>(): NSMeasurement<UnitType>; // inherited from NSObject
+
+	/* readonly */ doubleValue: number;
+
+	/* readonly */ unit: UnitType;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { doubleValue: number; unit: UnitType; });
+
+	canBeConvertedToUnit(unit: NSUnit): boolean;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithDoubleValueUnit(doubleValue: number, unit: UnitType): this;
+
+	measurementByAddingMeasurement(measurement: NSMeasurement<UnitType>): NSMeasurement<UnitType>;
+
+	measurementByConvertingToUnit(unit: NSUnit): NSMeasurement<any>;
+
+	measurementBySubtractingMeasurement(measurement: NSMeasurement<UnitType>): NSMeasurement<UnitType>;
+}
+
+declare class NSMeasurementFormatter extends NSFormatter implements NSSecureCoding {
+
+	static alloc(): NSMeasurementFormatter; // inherited from NSObject
+
+	static new(): NSMeasurementFormatter; // inherited from NSObject
+
+	locale: NSLocale;
+
+	numberFormatter: NSNumberFormatter;
+
+	unitOptions: NSMeasurementFormatterUnitOptions;
+
+	unitStyle: NSFormattingUnitStyle;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	stringFromMeasurement(measurement: NSMeasurement<any>): string;
+
+	stringFromUnit(unit: NSUnit): string;
+}
+
+declare const enum NSMeasurementFormatterUnitOptions {
+
+	ProvidedUnit = 1,
+
+	NaturalScale = 2,
+
+	TemperatureWithoutUnit = 4
+}
 
 declare class NSMessagePort extends NSPort {
 
@@ -4909,49 +5223,15 @@ declare class NSMutableAttributedString extends NSAttributedString {
 	setAttributesRange(attrs: NSDictionary<string, any>, range: NSRange): void;
 }
 
-declare class NSMutableCharacterSet extends NSCharacterSet implements NSCopying, NSMutableCopying {
+declare class NSMutableCharacterSet extends NSCharacterSet implements NSCopying, NSMutableCopying, NSSecureCoding {
 
 	static alloc(): NSMutableCharacterSet; // inherited from NSObject
 
-	static alphanumericCharacterSet(): NSMutableCharacterSet;
-
-	static capitalizedLetterCharacterSet(): NSMutableCharacterSet;
-
-	static characterSetWithBitmapRepresentation(data: NSData): NSMutableCharacterSet;
-
-	static characterSetWithCharactersInString(aString: string): NSMutableCharacterSet;
-
-	static characterSetWithContentsOfFile(fName: string): NSMutableCharacterSet;
-
-	static characterSetWithRange(aRange: NSRange): NSMutableCharacterSet;
-
-	static controlCharacterSet(): NSMutableCharacterSet;
-
-	static decimalDigitCharacterSet(): NSMutableCharacterSet;
-
-	static decomposableCharacterSet(): NSMutableCharacterSet;
-
-	static illegalCharacterSet(): NSMutableCharacterSet;
-
-	static letterCharacterSet(): NSMutableCharacterSet;
-
-	static lowercaseLetterCharacterSet(): NSMutableCharacterSet;
-
 	static new(): NSMutableCharacterSet; // inherited from NSObject
 
-	static newlineCharacterSet(): NSMutableCharacterSet;
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
-	static nonBaseCharacterSet(): NSMutableCharacterSet;
-
-	static punctuationCharacterSet(): NSMutableCharacterSet;
-
-	static symbolCharacterSet(): NSMutableCharacterSet;
-
-	static uppercaseLetterCharacterSet(): NSMutableCharacterSet;
-
-	static whitespaceAndNewlineCharacterSet(): NSMutableCharacterSet;
-
-	static whitespaceCharacterSet(): NSMutableCharacterSet;
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	addCharactersInRange(aRange: NSRange): void;
 
@@ -4959,9 +5239,13 @@ declare class NSMutableCharacterSet extends NSCharacterSet implements NSCopying,
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
+	encodeWithCoder(aCoder: NSCoder): void;
+
 	formIntersectionWithCharacterSet(otherSet: NSCharacterSet): void;
 
 	formUnionWithCharacterSet(otherSet: NSCharacterSet): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	invert(): void;
 
@@ -5527,9 +5811,9 @@ declare class NSNotificationCenter extends NSObject {
 
 	static alloc(): NSNotificationCenter; // inherited from NSObject
 
-	static defaultCenter(): NSNotificationCenter;
-
 	static new(): NSNotificationCenter; // inherited from NSObject
+
+	/* readonly */ static defaultCenter: NSNotificationCenter;
 
 	addObserverForNameObjectQueueUsingBlock(name: string, obj: any, queue: NSOperationQueue, block: (p1: NSNotification) => void): NSObjectProtocol;
 
@@ -5559,9 +5843,9 @@ declare class NSNotificationQueue extends NSObject {
 
 	static alloc(): NSNotificationQueue; // inherited from NSObject
 
-	static defaultQueue(): NSNotificationQueue;
-
 	static new(): NSNotificationQueue; // inherited from NSObject
+
+	/* readonly */ static defaultQueue: NSNotificationQueue;
 
 	constructor(o: { notificationCenter: NSNotificationCenter; });
 
@@ -5582,7 +5866,7 @@ declare class NSNull extends NSObject implements CAAction, NSCopying, NSSecureCo
 
 	static null(): NSNull;
 
-	static supportsSecureCoding(): boolean;
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -5595,7 +5879,7 @@ declare class NSNull extends NSObject implements CAAction, NSCopying, NSSecureCo
 	runActionForKeyObjectArguments(event: string, anObject: any, dict: NSDictionary<any, any>): void;
 }
 
-declare class NSNumber extends NSValue implements CKRecordValue {
+declare class NSNumber extends NSValue implements CKRecordValue, NSFetchRequestResult {
 
 	static alloc(): NSNumber; // inherited from NSObject
 
@@ -6021,10 +6305,6 @@ declare class NSOperationQueue extends NSObject {
 
 	static alloc(): NSOperationQueue; // inherited from NSObject
 
-	static currentQueue(): NSOperationQueue;
-
-	static mainQueue(): NSOperationQueue;
-
 	static new(): NSOperationQueue; // inherited from NSObject
 
 	maxConcurrentOperationCount: number;
@@ -6040,6 +6320,10 @@ declare class NSOperationQueue extends NSObject {
 	suspended: boolean;
 
 	underlyingQueue: NSObject;
+
+	/* readonly */ static currentQueue: NSOperationQueue;
+
+	/* readonly */ static mainQueue: NSOperationQueue;
 
 	addOperation(op: NSOperation): void;
 
@@ -6093,8 +6377,6 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 
 	static orderedSetWithSetCopyItems<ObjectType>(set: NSSet<ObjectType>, flag: boolean): NSOrderedSet<ObjectType>;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ array: NSArray<ObjectType>;
 
 	/* readonly */ count: number;
@@ -6106,6 +6388,8 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 	/* readonly */ reversedOrderedSet: NSOrderedSet<ObjectType>;
 
 	/* readonly */ set: NSSet<ObjectType>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -6230,8 +6514,6 @@ declare class NSOrthography extends NSObject implements NSCopying, NSSecureCodin
 
 	static orthographyWithDominantScriptLanguageMap(script: string, map: NSDictionary<string, NSArray<string>>): NSOrthography;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ allLanguages: NSArray<string>;
 
 	/* readonly */ allScripts: NSArray<string>;
@@ -6241,6 +6523,8 @@ declare class NSOrthography extends NSObject implements NSCopying, NSSecureCodin
 	/* readonly */ dominantScript: string;
 
 	/* readonly */ languageMap: NSDictionary<string, NSArray<string>>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6324,8 +6608,6 @@ declare class NSPersonNameComponents extends NSObject implements NSCopying, NSSe
 
 	static new(): NSPersonNameComponents; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	familyName: string;
 
 	givenName: string;
@@ -6339,6 +6621,8 @@ declare class NSPersonNameComponents extends NSObject implements NSCopying, NSSe
 	nickname: string;
 
 	phoneticRepresentation: NSPersonNameComponents;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6362,6 +6646,8 @@ declare class NSPersonNameComponentsFormatter extends NSFormatter {
 	style: NSPersonNameComponentsFormatterStyle;
 
 	annotatedStringFromPersonNameComponents(components: NSPersonNameComponents): NSAttributedString;
+
+	personNameComponentsFromString(string: string): NSPersonNameComponents;
 
 	stringFromPersonNameComponents(components: NSPersonNameComponents): string;
 }
@@ -6576,9 +6862,9 @@ declare class NSPredicate extends NSObject implements NSCopying, NSSecureCoding 
 
 	static predicateWithValue(value: boolean): NSPredicate;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ predicateFormat: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6634,8 +6920,6 @@ declare class NSProcessInfo extends NSObject {
 
 	static new(): NSProcessInfo; // inherited from NSObject
 
-	static processInfo(): NSProcessInfo;
-
 	/* readonly */ activeProcessorCount: number;
 
 	/* readonly */ arguments: NSArray<string>;
@@ -6661,6 +6945,8 @@ declare class NSProcessInfo extends NSObject {
 	/* readonly */ processorCount: number;
 
 	/* readonly */ systemUptime: number;
+
+	/* readonly */ static processInfo: NSProcessInfo;
 
 	beginActivityWithOptionsReason(options: NSActivityOptions, reason: string): NSObjectProtocol;
 
@@ -6721,7 +7007,7 @@ declare class NSProgress extends NSObject {
 
 	totalUnitCount: number;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	/* readonly */ userInfo: NSDictionary<string, any>;
 
 	constructor(o: { parent: NSProgress; userInfo: NSDictionary<any, any>; });
 
@@ -6962,13 +7248,13 @@ declare class NSRegularExpression extends NSObject implements NSCopying, NSSecur
 
 	static regularExpressionWithPatternOptionsError(pattern: string, options: NSRegularExpressionOptions): NSRegularExpression;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ numberOfCaptureGroups: number;
 
 	/* readonly */ options: NSRegularExpressionOptions;
 
 	/* readonly */ pattern: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -7037,13 +7323,13 @@ declare class NSRunLoop extends NSObject {
 
 	static alloc(): NSRunLoop; // inherited from NSObject
 
-	static currentRunLoop(): NSRunLoop;
-
-	static mainRunLoop(): NSRunLoop;
-
 	static new(): NSRunLoop; // inherited from NSObject
 
 	/* readonly */ currentMode: string;
+
+	/* readonly */ static currentRunLoop: NSRunLoop;
+
+	/* readonly */ static mainRunLoop: NSRunLoop;
 
 	acceptInputForModeBeforeDate(mode: string, limitDate: Date): void;
 
@@ -7058,6 +7344,10 @@ declare class NSRunLoop extends NSObject {
 	getCFRunLoop(): any;
 
 	limitDateForMode(mode: string): Date;
+
+	performBlock(block: () => void): void;
+
+	performInModesBlock(modes: NSArray<string>, block: () => void): void;
 
 	performSelectorTargetArgumentOrderModes(aSelector: string, target: any, arg: any, order: number, modes: NSArray<string>): void;
 
@@ -7208,8 +7498,6 @@ interface NSSecureCoding extends NSCoding {
 declare var NSSecureCoding: {
 
 	prototype: NSSecureCoding;
-
-	supportsSecureCoding(): boolean;
 };
 
 declare function NSSelectorFromString(aSelectorName: string): string;
@@ -7232,11 +7520,11 @@ declare class NSSet<ObjectType> extends NSObject implements NSCopying, NSFastEnu
 
 	static setWithSet<ObjectType>(set: NSSet<ObjectType>): NSSet<ObjectType>;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ allObjects: NSArray<ObjectType>;
 
 	/* readonly */ count: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { array: NSArray<ObjectType>; });
@@ -7388,8 +7676,6 @@ declare class NSSortDescriptor extends NSObject implements NSCopying, NSSecureCo
 
 	static sortDescriptorWithKeyAscendingSelector(key: string, ascending: boolean, selector: string): NSSortDescriptor;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ ascending: boolean;
 
 	/* readonly */ comparator: (p1: any, p2: any) => NSComparisonResult;
@@ -7399,6 +7685,8 @@ declare class NSSortDescriptor extends NSObject implements NSCopying, NSSecureCo
 	/* readonly */ reversedSortDescriptor: any;
 
 	/* readonly */ selector: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -7493,6 +7781,8 @@ declare var NSStreamNetworkServiceType: string;
 
 declare var NSStreamNetworkServiceTypeBackground: string;
 
+declare var NSStreamNetworkServiceTypeCallSignaling: string;
+
 declare var NSStreamNetworkServiceTypeVideo: string;
 
 declare var NSStreamNetworkServiceTypeVoIP: string;
@@ -7554,11 +7844,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static alloc(): NSString; // inherited from NSObject
 
-	static availableStringEncodings(): interop.Pointer | interop.Reference<number>;
-
-	static defaultCStringEncoding(): number;
-
 	static localizedNameOfStringEncoding(encoding: number): string;
+
+	static localizedUserNotificationStringForKeyArguments(key: string, _arguments: NSArray<any>): string;
 
 	static new(): NSString; // inherited from NSObject
 
@@ -7591,8 +7879,6 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	static stringWithString(string: string): NSString;
 
 	static stringWithUTF8String(nullTerminatedCString: string): NSString;
-
-	static supportsSecureCoding(): boolean;
 
 	/* readonly */ UTF8String: string;
 
@@ -7658,6 +7944,10 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	/* readonly */ uppercaseString: string;
 
+	/* readonly */ static availableStringEncodings: interop.Pointer | interop.Reference<number>;
+
+	/* readonly */ static defaultCStringEncoding: number;
+
 	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
 
 	/* readonly */ description: string; // inherited from NSObjectProtocol
@@ -7669,6 +7959,8 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { bytes: interop.Pointer | interop.Reference<any>; length: number; encoding: number; });
 
@@ -7730,9 +8022,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	compareOptions(string: string, mask: NSStringCompareOptions): NSComparisonResult;
 
-	compareOptionsRange(string: string, mask: NSStringCompareOptions, compareRange: NSRange): NSComparisonResult;
+	compareOptionsRange(string: string, mask: NSStringCompareOptions, rangeOfReceiverToCompare: NSRange): NSComparisonResult;
 
-	compareOptionsRangeLocale(string: string, mask: NSStringCompareOptions, compareRange: NSRange, locale: any): NSComparisonResult;
+	compareOptionsRangeLocale(string: string, mask: NSStringCompareOptions, rangeOfReceiverToCompare: NSRange, locale: any): NSComparisonResult;
 
 	completePathIntoStringCaseSensitiveMatchesIntoArrayFilterTypes(outputName: interop.Pointer | interop.Reference<string>, flag: boolean, outputArray: interop.Pointer | interop.Reference<NSArray<string>>, filterTypes: NSArray<string>): number;
 
@@ -7888,7 +8180,7 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	rangeOfCharacterFromSetOptions(searchSet: NSCharacterSet, mask: NSStringCompareOptions): NSRange;
 
-	rangeOfCharacterFromSetOptionsRange(searchSet: NSCharacterSet, mask: NSStringCompareOptions, searchRange: NSRange): NSRange;
+	rangeOfCharacterFromSetOptionsRange(searchSet: NSCharacterSet, mask: NSStringCompareOptions, rangeOfReceiverToSearch: NSRange): NSRange;
 
 	rangeOfComposedCharacterSequenceAtIndex(index: number): NSRange;
 
@@ -7898,9 +8190,9 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	rangeOfStringOptions(searchString: string, mask: NSStringCompareOptions): NSRange;
 
-	rangeOfStringOptionsRange(searchString: string, mask: NSStringCompareOptions, searchRange: NSRange): NSRange;
+	rangeOfStringOptionsRange(searchString: string, mask: NSStringCompareOptions, rangeOfReceiverToSearch: NSRange): NSRange;
 
-	rangeOfStringOptionsRangeLocale(searchString: string, mask: NSStringCompareOptions, searchRange: NSRange, locale: NSLocale): NSRange;
+	rangeOfStringOptionsRangeLocale(searchString: string, mask: NSStringCompareOptions, rangeOfReceiverToSearch: NSRange, locale: NSLocale): NSRange;
 
 	respondsToSelector(aSelector: string): boolean;
 
@@ -8120,7 +8412,7 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	static dateCheckingResultWithRangeDateTimeZoneDuration(range: NSRange, date: Date, timeZone: NSTimeZone, duration: number): NSTextCheckingResult;
 
-	static grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray<string>): NSTextCheckingResult;
+	static grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray<NSDictionary<string, any>>): NSTextCheckingResult;
 
 	static linkCheckingResultWithRangeURL(range: NSRange, url: NSURL): NSTextCheckingResult;
 
@@ -8138,8 +8430,6 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	static spellCheckingResultWithRange(range: NSRange): NSTextCheckingResult;
 
-	static supportsSecureCoding(): boolean;
-
 	static transitInformationCheckingResultWithRangeComponents(range: NSRange, components: NSDictionary<string, string>): NSTextCheckingResult;
 
 	/* readonly */ URL: NSURL;
@@ -8154,7 +8444,7 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	/* readonly */ duration: number;
 
-	/* readonly */ grammarDetails: NSArray<string>;
+	/* readonly */ grammarDetails: NSArray<NSDictionary<string, any>>;
 
 	/* readonly */ numberOfRanges: number;
 
@@ -8171,6 +8461,8 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 	/* readonly */ resultType: NSTextCheckingType;
 
 	/* readonly */ timeZone: NSTimeZone;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -8224,21 +8516,13 @@ declare class NSThread extends NSObject {
 
 	static alloc(): NSThread; // inherited from NSObject
 
-	static callStackReturnAddresses(): NSArray<number>;
-
-	static callStackSymbols(): NSArray<string>;
-
-	static currentThread(): NSThread;
-
 	static detachNewThreadSelectorToTargetWithObject(selector: string, target: any, argument: any): void;
+
+	static detachNewThreadWithBlock(block: () => void): void;
 
 	static exit(): void;
 
-	static isMainThread(): boolean;
-
 	static isMultiThreaded(): boolean;
-
-	static mainThread(): NSThread;
 
 	static new(): NSThread; // inherited from NSObject
 
@@ -8268,9 +8552,23 @@ declare class NSThread extends NSObject {
 
 	threadPriority: number;
 
+	/* readonly */ static callStackReturnAddresses: NSArray<number>;
+
+	/* readonly */ static callStackSymbols: NSArray<string>;
+
+	/* readonly */ static currentThread: NSThread;
+
+	/* readonly */ static isMainThread: boolean;
+
+	/* readonly */ static mainThread: NSThread;
+
+	constructor(o: { block: () => void; });
+
 	constructor(o: { target: any; selector: string; object: any; });
 
 	cancel(): void;
+
+	initWithBlock(block: () => void): this;
 
 	initWithTargetSelectorObject(target: any, selector: string, argument: any): this;
 
@@ -8285,29 +8583,11 @@ declare var NSThumbnail1024x1024SizeKey: string;
 
 declare class NSTimeZone extends NSObject implements NSCopying, NSSecureCoding {
 
-	static abbreviationDictionary(): NSDictionary<string, string>;
-
 	static alloc(): NSTimeZone; // inherited from NSObject
-
-	static defaultTimeZone(): NSTimeZone;
-
-	static knownTimeZoneNames(): NSArray<string>;
-
-	static localTimeZone(): NSTimeZone;
 
 	static new(): NSTimeZone; // inherited from NSObject
 
 	static resetSystemTimeZone(): void;
-
-	static setAbbreviationDictionary(dict: NSDictionary<string, string>): void;
-
-	static setDefaultTimeZone(aTimeZone: NSTimeZone): void;
-
-	static supportsSecureCoding(): boolean;
-
-	static systemTimeZone(): NSTimeZone;
-
-	static timeZoneDataVersion(): string;
 
 	static timeZoneForSecondsFromGMT(seconds: number): NSTimeZone;
 
@@ -8330,6 +8610,20 @@ declare class NSTimeZone extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ nextDaylightSavingTimeTransition: Date;
 
 	/* readonly */ secondsFromGMT: number;
+
+	static abbreviationDictionary: NSDictionary<string, string>;
+
+	static defaultTimeZone: NSTimeZone;
+
+	/* readonly */ static knownTimeZoneNames: NSArray<string>;
+
+	/* readonly */ static localTimeZone: NSTimeZone;
+
+	/* readonly */ static systemTimeZone: NSTimeZone;
+
+	/* readonly */ static timeZoneDataVersion: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -8385,9 +8679,13 @@ declare class NSTimer extends NSObject {
 
 	static scheduledTimerWithTimeIntervalInvocationRepeats(ti: number, invocation: NSInvocation, yesOrNo: boolean): NSTimer;
 
+	static scheduledTimerWithTimeIntervalRepeatsBlock(interval: number, repeats: boolean, block: (p1: NSTimer) => void): NSTimer;
+
 	static scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(ti: number, aTarget: any, aSelector: string, userInfo: any, yesOrNo: boolean): NSTimer;
 
 	static timerWithTimeIntervalInvocationRepeats(ti: number, invocation: NSInvocation, yesOrNo: boolean): NSTimer;
+
+	static timerWithTimeIntervalRepeatsBlock(interval: number, repeats: boolean, block: (p1: NSTimer) => void): NSTimer;
 
 	static timerWithTimeIntervalTargetSelectorUserInfoRepeats(ti: number, aTarget: any, aSelector: string, userInfo: any, yesOrNo: boolean): NSTimer;
 
@@ -8401,9 +8699,13 @@ declare class NSTimer extends NSObject {
 
 	/* readonly */ valid: boolean;
 
+	constructor(o: { fireDate: Date; interval: number; repeats: boolean; block: (p1: NSTimer) => void; });
+
 	constructor(o: { fireDate: Date; interval: number; target: any; selector: string; userInfo: any; repeats: boolean; });
 
 	fire(): void;
+
+	initWithFireDateIntervalRepeatsBlock(date: Date, interval: number, repeats: boolean, block: (p1: NSTimer) => void): this;
 
 	initWithFireDateIntervalTargetSelectorUserInfoRepeats(date: Date, ti: number, t: any, s: string, ui: any, rep: boolean): this;
 
@@ -8443,8 +8745,6 @@ declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPre
 	static new(): NSURL; // inherited from NSObject
 
 	static resourceValuesForKeysFromBookmarkData(keys: NSArray<string>, bookmarkData: NSData): NSDictionary<string, any>;
-
-	static supportsSecureCoding(): boolean;
 
 	static writeBookmarkDataToURLOptionsError(bookmarkData: NSData, bookmarkFileURL: NSURL, options: number): boolean;
 
@@ -8519,6 +8819,8 @@ declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPre
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { absoluteURLWithDataRepresentation: NSData; relativeToURL: NSURL; });
 
@@ -8645,8 +8947,6 @@ declare class NSURLAuthenticationChallenge extends NSObject implements NSSecureC
 
 	static new(): NSURLAuthenticationChallenge; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ error: NSError;
 
 	/* readonly */ failureResponse: NSURLResponse;
@@ -8658,6 +8958,8 @@ declare class NSURLAuthenticationChallenge extends NSObject implements NSSecureC
 	/* readonly */ protectionSpace: NSURLProtectionSpace;
 
 	/* readonly */ sender: NSURLAuthenticationChallengeSender;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { authenticationChallenge: NSURLAuthenticationChallenge; sender: NSURLAuthenticationChallengeSender; });
 
@@ -8735,10 +9037,6 @@ declare class NSURLCache extends NSObject {
 
 	static new(): NSURLCache; // inherited from NSObject
 
-	static setSharedURLCache(cache: NSURLCache): void;
-
-	static sharedURLCache(): NSURLCache;
-
 	/* readonly */ currentDiskUsage: number;
 
 	/* readonly */ currentMemoryUsage: number;
@@ -8746,6 +9044,8 @@ declare class NSURLCache extends NSObject {
 	diskCapacity: number;
 
 	memoryCapacity: number;
+
+	static sharedURLCache: NSURLCache;
 
 	constructor(o: { memoryCapacity: number; diskCapacity: number; diskPath: string; });
 
@@ -8776,6 +9076,8 @@ declare const enum NSURLCacheStoragePolicy {
 
 	NotAllowed = 2
 }
+
+declare var NSURLCanonicalPathKey: string;
 
 declare class NSURLComponents extends NSObject implements NSCopying {
 
@@ -8960,8 +9262,6 @@ declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NSURLCredential; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ certificates: NSArray<any>;
 
 	/* readonly */ hasPassword: boolean;
@@ -8973,6 +9273,8 @@ declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCod
 	/* readonly */ persistence: NSURLCredentialPersistence;
 
 	/* readonly */ user: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9012,9 +9314,9 @@ declare class NSURLCredentialStorage extends NSObject {
 
 	static new(): NSURLCredentialStorage; // inherited from NSObject
 
-	static sharedCredentialStorage(): NSURLCredentialStorage;
-
 	/* readonly */ allCredentials: NSDictionary<NSURLProtectionSpace, NSDictionary<string, NSURLCredential>>;
+
+	/* readonly */ static sharedCredentialStorage: NSURLCredentialStorage;
 
 	credentialsForProtectionSpace(space: NSURLProtectionSpace): NSDictionary<string, NSURLCredential>;
 
@@ -9163,8 +9465,6 @@ declare class NSURLProtectionSpace extends NSObject implements NSCopying, NSSecu
 
 	static new(): NSURLProtectionSpace; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ authenticationMethod: string;
 
 	/* readonly */ distinguishedNames: NSArray<NSData>;
@@ -9184,6 +9484,8 @@ declare class NSURLProtectionSpace extends NSObject implements NSCopying, NSSecu
 	/* readonly */ receivesCredentialSecurely: boolean;
 
 	/* readonly */ serverTrust: any;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9292,11 +9594,11 @@ declare class NSURLQueryItem extends NSObject implements NSCopying, NSSecureCodi
 
 	static queryItemWithNameValue(name: string, value: string): NSURLQueryItem;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ name: string;
 
 	/* readonly */ value: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9330,8 +9632,6 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 
 	static requestWithURLCachePolicyTimeoutInterval(URL: NSURL, cachePolicy: NSURLRequestCachePolicy, timeoutInterval: number): NSURLRequest;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ HTTPBody: NSData;
 
 	/* readonly */ HTTPBodyStream: NSInputStream;
@@ -9355,6 +9655,8 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 	/* readonly */ networkServiceType: NSURLRequestNetworkServiceType;
 
 	/* readonly */ timeoutInterval: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9404,7 +9706,9 @@ declare const enum NSURLRequestNetworkServiceType {
 
 	NetworkServiceTypeBackground = 3,
 
-	NetworkServiceTypeVoice = 4
+	NetworkServiceTypeVoice = 4,
+
+	NetworkServiceTypeCallSignaling = 11
 }
 
 declare class NSURLResponse extends NSObject implements NSCopying, NSSecureCoding {
@@ -9412,8 +9716,6 @@ declare class NSURLResponse extends NSObject implements NSCopying, NSSecureCodin
 	static alloc(): NSURLResponse; // inherited from NSObject
 
 	static new(): NSURLResponse; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
 
 	/* readonly */ MIMEType: string;
 
@@ -9424,6 +9726,8 @@ declare class NSURLResponse extends NSObject implements NSCopying, NSSecureCodin
 	/* readonly */ suggestedFilename: string;
 
 	/* readonly */ textEncodingName: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9448,8 +9752,6 @@ declare class NSURLSession extends NSObject {
 
 	static sessionWithConfigurationDelegateDelegateQueue(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate, queue: NSOperationQueue): NSURLSession;
 
-	static sharedSession(): NSURLSession;
-
 	/* readonly */ configuration: NSURLSessionConfiguration;
 
 	/* readonly */ delegate: NSURLSessionDelegate;
@@ -9457,6 +9759,8 @@ declare class NSURLSession extends NSObject {
 	/* readonly */ delegateQueue: NSOperationQueue;
 
 	sessionDescription: string;
+
+	/* readonly */ static sharedSession: NSURLSession;
 
 	dataTaskWithRequest(request: NSURLRequest): NSURLSessionDataTask;
 
@@ -9524,10 +9828,6 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	static backgroundSessionConfigurationWithIdentifier(identifier: string): NSURLSessionConfiguration;
 
-	static defaultSessionConfiguration(): NSURLSessionConfiguration;
-
-	static ephemeralSessionConfiguration(): NSURLSessionConfiguration;
-
 	static new(): NSURLSessionConfiguration; // inherited from NSObject
 
 	HTTPAdditionalHeaders: NSDictionary<any, any>;
@@ -9573,6 +9873,10 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 	timeoutIntervalForRequest: number;
 
 	timeoutIntervalForResource: number;
+
+	/* readonly */ static defaultSessionConfiguration: NSURLSessionConfiguration;
+
+	/* readonly */ static ephemeralSessionConfiguration: NSURLSessionConfiguration;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -9728,6 +10032,8 @@ interface NSURLSessionTaskDelegate extends NSURLSessionDelegate {
 
 	URLSessionTaskDidCompleteWithError?(session: NSURLSession, task: NSURLSessionTask, error: NSError): void;
 
+	URLSessionTaskDidFinishCollectingMetrics?(session: NSURLSession, task: NSURLSessionTask, metrics: NSURLSessionTaskMetrics): void;
+
 	URLSessionTaskDidReceiveChallengeCompletionHandler?(session: NSURLSession, task: NSURLSessionTask, challenge: NSURLAuthenticationChallenge, completionHandler: (p1: NSURLSessionAuthChallengeDisposition, p2: NSURLCredential) => void): void;
 
 	URLSessionTaskDidSendBodyDataTotalBytesSentTotalBytesExpectedToSend?(session: NSURLSession, task: NSURLSessionTask, bytesSent: number, totalBytesSent: number, totalBytesExpectedToSend: number): void;
@@ -9740,6 +10046,30 @@ declare var NSURLSessionTaskDelegate: {
 
 	prototype: NSURLSessionTaskDelegate;
 };
+
+declare class NSURLSessionTaskMetrics extends NSObject {
+
+	static alloc(): NSURLSessionTaskMetrics; // inherited from NSObject
+
+	static new(): NSURLSessionTaskMetrics; // inherited from NSObject
+
+	/* readonly */ redirectCount: number;
+
+	/* readonly */ taskInterval: NSDateInterval;
+
+	/* readonly */ transactionMetrics: NSArray<NSURLSessionTaskTransactionMetrics>;
+}
+
+declare const enum NSURLSessionTaskMetricsResourceFetchType {
+
+	Unknown = 0,
+
+	NetworkLoad = 1,
+
+	ServerPush = 2,
+
+	LocalCache = 3
+}
 
 declare var NSURLSessionTaskPriorityDefault: number;
 
@@ -9756,6 +10086,47 @@ declare const enum NSURLSessionTaskState {
 	Canceling = 2,
 
 	Completed = 3
+}
+
+declare class NSURLSessionTaskTransactionMetrics extends NSObject {
+
+	static alloc(): NSURLSessionTaskTransactionMetrics; // inherited from NSObject
+
+	static new(): NSURLSessionTaskTransactionMetrics; // inherited from NSObject
+
+	/* readonly */ connectEndDate: Date;
+
+	/* readonly */ connectStartDate: Date;
+
+	/* readonly */ domainLookupEndDate: Date;
+
+	/* readonly */ domainLookupStartDate: Date;
+
+	/* readonly */ fetchStartDate: Date;
+
+	/* readonly */ networkProtocolName: string;
+
+	/* readonly */ proxyConnection: boolean;
+
+	/* readonly */ request: NSURLRequest;
+
+	/* readonly */ requestEndDate: Date;
+
+	/* readonly */ requestStartDate: Date;
+
+	/* readonly */ resourceFetchType: NSURLSessionTaskMetricsResourceFetchType;
+
+	/* readonly */ response: NSURLResponse;
+
+	/* readonly */ responseEndDate: Date;
+
+	/* readonly */ responseStartDate: Date;
+
+	/* readonly */ reusedConnection: boolean;
+
+	/* readonly */ secureConnectionEndDate: Date;
+
+	/* readonly */ secureConnectionStartDate: Date;
 }
 
 declare var NSURLSessionTransferSizeUnknown: number;
@@ -9817,6 +10188,8 @@ declare var NSURLVolumeIsBrowsableKey: string;
 
 declare var NSURLVolumeIsEjectableKey: string;
 
+declare var NSURLVolumeIsEncryptedKey: string;
+
 declare var NSURLVolumeIsInternalKey: string;
 
 declare var NSURLVolumeIsJournalingKey: string;
@@ -9826,6 +10199,8 @@ declare var NSURLVolumeIsLocalKey: string;
 declare var NSURLVolumeIsReadOnlyKey: string;
 
 declare var NSURLVolumeIsRemovableKey: string;
+
+declare var NSURLVolumeIsRootFileSystemKey: string;
 
 declare var NSURLVolumeLocalizedFormatDescriptionKey: string;
 
@@ -9843,7 +10218,13 @@ declare var NSURLVolumeSupportsCasePreservedNamesKey: string;
 
 declare var NSURLVolumeSupportsCaseSensitiveNamesKey: string;
 
+declare var NSURLVolumeSupportsCompressionKey: string;
+
+declare var NSURLVolumeSupportsExclusiveRenamingKey: string;
+
 declare var NSURLVolumeSupportsExtendedSecurityKey: string;
+
+declare var NSURLVolumeSupportsFileCloningKey: string;
 
 declare var NSURLVolumeSupportsHardLinksKey: string;
 
@@ -9856,6 +10237,8 @@ declare var NSURLVolumeSupportsRenamingKey: string;
 declare var NSURLVolumeSupportsRootDirectoryDatesKey: string;
 
 declare var NSURLVolumeSupportsSparseFilesKey: string;
+
+declare var NSURLVolumeSupportsSwapRenamingKey: string;
 
 declare var NSURLVolumeSupportsSymbolicLinksKey: string;
 
@@ -9879,9 +10262,9 @@ declare class NSUUID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NSUUID; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ UUIDString: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9958,6 +10341,8 @@ declare var NSUbiquitousKeyValueStoreDidChangeExternallyNotification: string;
 declare var NSUbiquitousUserDefaultsCompletedInitialSyncNotification: string;
 
 declare var NSUbiquitousUserDefaultsDidChangeAccountsNotification: string;
+
+declare var NSUbiquitousUserDefaultsNoCloudAccountNotification: string;
 
 declare var NSUbiquityIdentityDidChangeNotification: string;
 
@@ -10064,6 +10449,752 @@ declare var NSUnionOfSetsKeyValueOperator: string;
 
 declare function NSUnionRange(range1: NSRange, range2: NSRange): NSRange;
 
+declare class NSUnit extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): NSUnit; // inherited from NSObject
+
+	static new(): NSUnit; // inherited from NSObject
+
+	/* readonly */ symbol: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { symbol: string; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithSymbol(symbol: string): this;
+}
+
+declare class NSUnitAcceleration extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitAcceleration; // inherited from NSObject
+
+	static baseUnit(): NSUnitAcceleration; // inherited from NSDimension
+
+	static new(): NSUnitAcceleration; // inherited from NSObject
+
+	/* readonly */ static gravity: NSUnitAcceleration;
+
+	/* readonly */ static metersPerSecondSquared: NSUnitAcceleration;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitAngle extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitAngle; // inherited from NSObject
+
+	static baseUnit(): NSUnitAngle; // inherited from NSDimension
+
+	static new(): NSUnitAngle; // inherited from NSObject
+
+	/* readonly */ static arcMinutes: NSUnitAngle;
+
+	/* readonly */ static arcSeconds: NSUnitAngle;
+
+	/* readonly */ static degrees: NSUnitAngle;
+
+	/* readonly */ static gradians: NSUnitAngle;
+
+	/* readonly */ static radians: NSUnitAngle;
+
+	/* readonly */ static revolutions: NSUnitAngle;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitArea extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitArea; // inherited from NSObject
+
+	static baseUnit(): NSUnitArea; // inherited from NSDimension
+
+	static new(): NSUnitArea; // inherited from NSObject
+
+	/* readonly */ static acres: NSUnitArea;
+
+	/* readonly */ static ares: NSUnitArea;
+
+	/* readonly */ static hectares: NSUnitArea;
+
+	/* readonly */ static squareCentimeters: NSUnitArea;
+
+	/* readonly */ static squareFeet: NSUnitArea;
+
+	/* readonly */ static squareInches: NSUnitArea;
+
+	/* readonly */ static squareKilometers: NSUnitArea;
+
+	/* readonly */ static squareMegameters: NSUnitArea;
+
+	/* readonly */ static squareMeters: NSUnitArea;
+
+	/* readonly */ static squareMicrometers: NSUnitArea;
+
+	/* readonly */ static squareMiles: NSUnitArea;
+
+	/* readonly */ static squareMillimeters: NSUnitArea;
+
+	/* readonly */ static squareNanometers: NSUnitArea;
+
+	/* readonly */ static squareYards: NSUnitArea;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitConcentrationMass extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitConcentrationMass; // inherited from NSObject
+
+	static baseUnit(): NSUnitConcentrationMass; // inherited from NSDimension
+
+	static millimolesPerLiterWithGramsPerMole(gramsPerMole: number): NSUnitConcentrationMass;
+
+	static new(): NSUnitConcentrationMass; // inherited from NSObject
+
+	/* readonly */ static gramsPerLiter: NSUnitConcentrationMass;
+
+	/* readonly */ static milligramsPerDeciliter: NSUnitConcentrationMass;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitConverter extends NSObject {
+
+	static alloc(): NSUnitConverter; // inherited from NSObject
+
+	static new(): NSUnitConverter; // inherited from NSObject
+
+	baseUnitValueFromValue(value: number): number;
+
+	valueFromBaseUnitValue(baseUnitValue: number): number;
+}
+
+declare class NSUnitConverterLinear extends NSUnitConverter implements NSSecureCoding {
+
+	static alloc(): NSUnitConverterLinear; // inherited from NSObject
+
+	static new(): NSUnitConverterLinear; // inherited from NSObject
+
+	/* readonly */ coefficient: number;
+
+	/* readonly */ constant: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { coefficient: number; });
+
+	constructor(o: { coefficient: number; constant: number; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithCoefficient(coefficient: number): this;
+
+	initWithCoefficientConstant(coefficient: number, constant: number): this;
+}
+
+declare class NSUnitDispersion extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitDispersion; // inherited from NSObject
+
+	static baseUnit(): NSUnitDispersion; // inherited from NSDimension
+
+	static new(): NSUnitDispersion; // inherited from NSObject
+
+	/* readonly */ static partsPerMillion: NSUnitDispersion;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitDuration extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitDuration; // inherited from NSObject
+
+	static baseUnit(): NSUnitDuration; // inherited from NSDimension
+
+	static new(): NSUnitDuration; // inherited from NSObject
+
+	/* readonly */ static hours: NSUnitDuration;
+
+	/* readonly */ static minutes: NSUnitDuration;
+
+	/* readonly */ static seconds: NSUnitDuration;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitElectricCharge extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitElectricCharge; // inherited from NSObject
+
+	static baseUnit(): NSUnitElectricCharge; // inherited from NSDimension
+
+	static new(): NSUnitElectricCharge; // inherited from NSObject
+
+	/* readonly */ static ampereHours: NSUnitElectricCharge;
+
+	/* readonly */ static coulombs: NSUnitElectricCharge;
+
+	/* readonly */ static kiloampereHours: NSUnitElectricCharge;
+
+	/* readonly */ static megaampereHours: NSUnitElectricCharge;
+
+	/* readonly */ static microampereHours: NSUnitElectricCharge;
+
+	/* readonly */ static milliampereHours: NSUnitElectricCharge;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitElectricCurrent extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitElectricCurrent; // inherited from NSObject
+
+	static baseUnit(): NSUnitElectricCurrent; // inherited from NSDimension
+
+	static new(): NSUnitElectricCurrent; // inherited from NSObject
+
+	/* readonly */ static amperes: NSUnitElectricCurrent;
+
+	/* readonly */ static kiloamperes: NSUnitElectricCurrent;
+
+	/* readonly */ static megaamperes: NSUnitElectricCurrent;
+
+	/* readonly */ static microamperes: NSUnitElectricCurrent;
+
+	/* readonly */ static milliamperes: NSUnitElectricCurrent;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitElectricPotentialDifference extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitElectricPotentialDifference; // inherited from NSObject
+
+	static baseUnit(): NSUnitElectricPotentialDifference; // inherited from NSDimension
+
+	static new(): NSUnitElectricPotentialDifference; // inherited from NSObject
+
+	/* readonly */ static kilovolts: NSUnitElectricPotentialDifference;
+
+	/* readonly */ static megavolts: NSUnitElectricPotentialDifference;
+
+	/* readonly */ static microvolts: NSUnitElectricPotentialDifference;
+
+	/* readonly */ static millivolts: NSUnitElectricPotentialDifference;
+
+	/* readonly */ static volts: NSUnitElectricPotentialDifference;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitElectricResistance extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitElectricResistance; // inherited from NSObject
+
+	static baseUnit(): NSUnitElectricResistance; // inherited from NSDimension
+
+	static new(): NSUnitElectricResistance; // inherited from NSObject
+
+	/* readonly */ static kiloohms: NSUnitElectricResistance;
+
+	/* readonly */ static megaohms: NSUnitElectricResistance;
+
+	/* readonly */ static microohms: NSUnitElectricResistance;
+
+	/* readonly */ static milliohms: NSUnitElectricResistance;
+
+	/* readonly */ static ohms: NSUnitElectricResistance;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitEnergy extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitEnergy; // inherited from NSObject
+
+	static baseUnit(): NSUnitEnergy; // inherited from NSDimension
+
+	static new(): NSUnitEnergy; // inherited from NSObject
+
+	/* readonly */ static calories: NSUnitEnergy;
+
+	/* readonly */ static joules: NSUnitEnergy;
+
+	/* readonly */ static kilocalories: NSUnitEnergy;
+
+	/* readonly */ static kilojoules: NSUnitEnergy;
+
+	/* readonly */ static kilowattHours: NSUnitEnergy;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitFrequency extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitFrequency; // inherited from NSObject
+
+	static baseUnit(): NSUnitFrequency; // inherited from NSDimension
+
+	static new(): NSUnitFrequency; // inherited from NSObject
+
+	/* readonly */ static gigahertz: NSUnitFrequency;
+
+	/* readonly */ static hertz: NSUnitFrequency;
+
+	/* readonly */ static kilohertz: NSUnitFrequency;
+
+	/* readonly */ static megahertz: NSUnitFrequency;
+
+	/* readonly */ static microhertz: NSUnitFrequency;
+
+	/* readonly */ static millihertz: NSUnitFrequency;
+
+	/* readonly */ static nanohertz: NSUnitFrequency;
+
+	/* readonly */ static terahertz: NSUnitFrequency;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitFuelEfficiency extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitFuelEfficiency; // inherited from NSObject
+
+	static baseUnit(): NSUnitFuelEfficiency; // inherited from NSDimension
+
+	static new(): NSUnitFuelEfficiency; // inherited from NSObject
+
+	/* readonly */ static litersPer100Kilometers: NSUnitFuelEfficiency;
+
+	/* readonly */ static milesPerGallon: NSUnitFuelEfficiency;
+
+	/* readonly */ static milesPerImperialGallon: NSUnitFuelEfficiency;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitIlluminance extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitIlluminance; // inherited from NSObject
+
+	static baseUnit(): NSUnitIlluminance; // inherited from NSDimension
+
+	static new(): NSUnitIlluminance; // inherited from NSObject
+
+	/* readonly */ static lux: NSUnitIlluminance;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitLength extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitLength; // inherited from NSObject
+
+	static baseUnit(): NSUnitLength; // inherited from NSDimension
+
+	static new(): NSUnitLength; // inherited from NSObject
+
+	/* readonly */ static astronomicalUnits: NSUnitLength;
+
+	/* readonly */ static centimeters: NSUnitLength;
+
+	/* readonly */ static decameters: NSUnitLength;
+
+	/* readonly */ static decimeters: NSUnitLength;
+
+	/* readonly */ static fathoms: NSUnitLength;
+
+	/* readonly */ static feet: NSUnitLength;
+
+	/* readonly */ static furlongs: NSUnitLength;
+
+	/* readonly */ static hectometers: NSUnitLength;
+
+	/* readonly */ static inches: NSUnitLength;
+
+	/* readonly */ static kilometers: NSUnitLength;
+
+	/* readonly */ static lightyears: NSUnitLength;
+
+	/* readonly */ static megameters: NSUnitLength;
+
+	/* readonly */ static meters: NSUnitLength;
+
+	/* readonly */ static micrometers: NSUnitLength;
+
+	/* readonly */ static miles: NSUnitLength;
+
+	/* readonly */ static millimeters: NSUnitLength;
+
+	/* readonly */ static nanometers: NSUnitLength;
+
+	/* readonly */ static nauticalMiles: NSUnitLength;
+
+	/* readonly */ static parsecs: NSUnitLength;
+
+	/* readonly */ static picometers: NSUnitLength;
+
+	/* readonly */ static scandinavianMiles: NSUnitLength;
+
+	/* readonly */ static yards: NSUnitLength;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitMass extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitMass; // inherited from NSObject
+
+	static baseUnit(): NSUnitMass; // inherited from NSDimension
+
+	static new(): NSUnitMass; // inherited from NSObject
+
+	/* readonly */ static carats: NSUnitMass;
+
+	/* readonly */ static centigrams: NSUnitMass;
+
+	/* readonly */ static decigrams: NSUnitMass;
+
+	/* readonly */ static grams: NSUnitMass;
+
+	/* readonly */ static kilograms: NSUnitMass;
+
+	/* readonly */ static metricTons: NSUnitMass;
+
+	/* readonly */ static micrograms: NSUnitMass;
+
+	/* readonly */ static milligrams: NSUnitMass;
+
+	/* readonly */ static nanograms: NSUnitMass;
+
+	/* readonly */ static ounces: NSUnitMass;
+
+	/* readonly */ static ouncesTroy: NSUnitMass;
+
+	/* readonly */ static picograms: NSUnitMass;
+
+	/* readonly */ static poundsMass: NSUnitMass;
+
+	/* readonly */ static shortTons: NSUnitMass;
+
+	/* readonly */ static slugs: NSUnitMass;
+
+	/* readonly */ static stones: NSUnitMass;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitPower extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitPower; // inherited from NSObject
+
+	static baseUnit(): NSUnitPower; // inherited from NSDimension
+
+	static new(): NSUnitPower; // inherited from NSObject
+
+	/* readonly */ static femtowatts: NSUnitPower;
+
+	/* readonly */ static gigawatts: NSUnitPower;
+
+	/* readonly */ static horsepower: NSUnitPower;
+
+	/* readonly */ static kilowatts: NSUnitPower;
+
+	/* readonly */ static megawatts: NSUnitPower;
+
+	/* readonly */ static microwatts: NSUnitPower;
+
+	/* readonly */ static milliwatts: NSUnitPower;
+
+	/* readonly */ static nanowatts: NSUnitPower;
+
+	/* readonly */ static picowatts: NSUnitPower;
+
+	/* readonly */ static terawatts: NSUnitPower;
+
+	/* readonly */ static watts: NSUnitPower;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitPressure extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitPressure; // inherited from NSObject
+
+	static baseUnit(): NSUnitPressure; // inherited from NSDimension
+
+	static new(): NSUnitPressure; // inherited from NSObject
+
+	/* readonly */ static bars: NSUnitPressure;
+
+	/* readonly */ static gigapascals: NSUnitPressure;
+
+	/* readonly */ static hectopascals: NSUnitPressure;
+
+	/* readonly */ static inchesOfMercury: NSUnitPressure;
+
+	/* readonly */ static kilopascals: NSUnitPressure;
+
+	/* readonly */ static megapascals: NSUnitPressure;
+
+	/* readonly */ static millibars: NSUnitPressure;
+
+	/* readonly */ static millimetersOfMercury: NSUnitPressure;
+
+	/* readonly */ static newtonsPerMetersSquared: NSUnitPressure;
+
+	/* readonly */ static poundsForcePerSquareInch: NSUnitPressure;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitSpeed extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitSpeed; // inherited from NSObject
+
+	static baseUnit(): NSUnitSpeed; // inherited from NSDimension
+
+	static new(): NSUnitSpeed; // inherited from NSObject
+
+	/* readonly */ static kilometersPerHour: NSUnitSpeed;
+
+	/* readonly */ static knots: NSUnitSpeed;
+
+	/* readonly */ static metersPerSecond: NSUnitSpeed;
+
+	/* readonly */ static milesPerHour: NSUnitSpeed;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitTemperature extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitTemperature; // inherited from NSObject
+
+	static baseUnit(): NSUnitTemperature; // inherited from NSDimension
+
+	static new(): NSUnitTemperature; // inherited from NSObject
+
+	/* readonly */ static celsius: NSUnitTemperature;
+
+	/* readonly */ static fahrenheit: NSUnitTemperature;
+
+	/* readonly */ static kelvin: NSUnitTemperature;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class NSUnitVolume extends NSDimension implements NSSecureCoding {
+
+	static alloc(): NSUnitVolume; // inherited from NSObject
+
+	static baseUnit(): NSUnitVolume; // inherited from NSDimension
+
+	static new(): NSUnitVolume; // inherited from NSObject
+
+	/* readonly */ static acreFeet: NSUnitVolume;
+
+	/* readonly */ static bushels: NSUnitVolume;
+
+	/* readonly */ static centiliters: NSUnitVolume;
+
+	/* readonly */ static cubicCentimeters: NSUnitVolume;
+
+	/* readonly */ static cubicDecimeters: NSUnitVolume;
+
+	/* readonly */ static cubicFeet: NSUnitVolume;
+
+	/* readonly */ static cubicInches: NSUnitVolume;
+
+	/* readonly */ static cubicKilometers: NSUnitVolume;
+
+	/* readonly */ static cubicMeters: NSUnitVolume;
+
+	/* readonly */ static cubicMiles: NSUnitVolume;
+
+	/* readonly */ static cubicMillimeters: NSUnitVolume;
+
+	/* readonly */ static cubicYards: NSUnitVolume;
+
+	/* readonly */ static cups: NSUnitVolume;
+
+	/* readonly */ static deciliters: NSUnitVolume;
+
+	/* readonly */ static fluidOunces: NSUnitVolume;
+
+	/* readonly */ static gallons: NSUnitVolume;
+
+	/* readonly */ static imperialFluidOunces: NSUnitVolume;
+
+	/* readonly */ static imperialGallons: NSUnitVolume;
+
+	/* readonly */ static imperialPints: NSUnitVolume;
+
+	/* readonly */ static imperialQuarts: NSUnitVolume;
+
+	/* readonly */ static imperialTablespoons: NSUnitVolume;
+
+	/* readonly */ static imperialTeaspoons: NSUnitVolume;
+
+	/* readonly */ static kiloliters: NSUnitVolume;
+
+	/* readonly */ static liters: NSUnitVolume;
+
+	/* readonly */ static megaliters: NSUnitVolume;
+
+	/* readonly */ static metricCups: NSUnitVolume;
+
+	/* readonly */ static milliliters: NSUnitVolume;
+
+	/* readonly */ static pints: NSUnitVolume;
+
+	/* readonly */ static quarts: NSUnitVolume;
+
+	/* readonly */ static tablespoons: NSUnitVolume;
+
+	/* readonly */ static teaspoons: NSUnitVolume;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
 declare class NSUserActivity extends NSObject {
 
 	static alloc(): NSUserActivity; // inherited from NSObject
@@ -10084,7 +11215,11 @@ declare class NSUserActivity extends NSObject {
 
 	expirationDate: Date;
 
+	/* readonly */ interaction: INInteraction;
+
 	keywords: NSSet<string>;
+
+	mapItem: MKMapItem;
 
 	needsSave: boolean;
 
@@ -10136,9 +11271,9 @@ declare class NSUserDefaults extends NSObject {
 
 	static resetStandardUserDefaults(): void;
 
-	static standardUserDefaults(): NSUserDefaults;
-
 	/* readonly */ volatileDomainNames: NSArray<string>;
+
+	/* readonly */ static standardUserDefaults: NSUserDefaults;
 
 	constructor(o: { suiteName: string; });
 
@@ -10225,8 +11360,6 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NSValue; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	static valueWithBytesObjCType(value: interop.Pointer | interop.Reference<any>, type: string): NSValue;
 
 	static valueWithCATransform3D(t: CATransform3D): NSValue;
@@ -10271,6 +11404,16 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ CATransform3DValue: CATransform3D;
 
+	/* readonly */ CGAffineTransformValue: CGAffineTransform;
+
+	/* readonly */ CGPointValue: CGPoint;
+
+	/* readonly */ CGRectValue: CGRect;
+
+	/* readonly */ CGSizeValue: CGSize;
+
+	/* readonly */ CGVectorValue: CGVector;
+
 	/* readonly */ CMTimeMappingValue: CMTimeMapping;
 
 	/* readonly */ CMTimeRangeValue: CMTimeRange;
@@ -10287,6 +11430,10 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ SCNVector4Value: SCNVector4;
 
+	/* readonly */ UIEdgeInsetsValue: UIEdgeInsets;
+
+	/* readonly */ UIOffsetValue: UIOffset;
+
 	/* readonly */ nonretainedObjectValue: any;
 
 	/* readonly */ objCType: string;
@@ -10295,23 +11442,11 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ rangeValue: NSRange;
 
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { bytes: interop.Pointer | interop.Reference<any>; objCType: string; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
-
-	CGAffineTransformValue(): CGAffineTransform;
-
-	CGPointValue(): CGPoint;
-
-	CGRectValue(): CGRect;
-
-	CGSizeValue(): CGSize;
-
-	CGVectorValue(): CGVector;
-
-	UIEdgeInsetsValue(): UIEdgeInsets;
-
-	UIOffsetValue(): UIOffset;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

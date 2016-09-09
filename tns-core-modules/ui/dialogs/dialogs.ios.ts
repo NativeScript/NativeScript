@@ -476,7 +476,7 @@ export function action(arg: any): Promise<string> {
                 });
 
                 actionSheet.delegate = delegate;
-                actionSheet.showInView(UIApplication.sharedApplication().keyWindow);
+                actionSheet.showInView(UIApplication.sharedApplication.keyWindow);
             } else {
                 var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
 

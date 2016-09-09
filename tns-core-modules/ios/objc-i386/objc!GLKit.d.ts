@@ -364,9 +364,15 @@ declare class GLKTextureInfo extends NSObject implements NSCopying {
 
 	/* readonly */ alphaState: GLKTextureInfoAlphaState;
 
+	/* readonly */ arrayLength: number;
+
 	/* readonly */ containsMipmaps: boolean;
 
+	/* readonly */ depth: number;
+
 	/* readonly */ height: number;
+
+	/* readonly */ mimapLevelCount: number;
 
 	/* readonly */ name: number;
 
@@ -417,6 +423,8 @@ declare class GLKTextureLoader extends NSObject {
 
 	static textureWithContentsOfURLOptionsError(url: NSURL, options: NSDictionary<string, number>): GLKTextureInfo;
 
+	static textureWithNameScaleFactorBundleOptionsError(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>): GLKTextureInfo;
+
 	constructor(o: { sharegroup: EAGLSharegroup; });
 
 	cubeMapWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
@@ -434,6 +442,8 @@ declare class GLKTextureLoader extends NSObject {
 	textureWithContentsOfFileOptionsQueueCompletionHandler(path: string, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 
 	textureWithContentsOfURLOptionsQueueCompletionHandler(url: NSURL, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
+
+	textureWithNameScaleFactorBundleOptionsQueueCompletionHandler(name: string, scaleFactor: number, bundle: NSBundle, options: NSDictionary<string, number>, queue: NSObject, block: (p1: GLKTextureInfo, p2: NSError) => void): void;
 }
 
 declare var GLKTextureLoaderApplyPremultiplication: string;
@@ -476,7 +486,9 @@ declare const enum GLKTextureLoaderError {
 
 	InvalidEAGLContext = 17,
 
-	IncompatibleFormatSRGB = 18
+	IncompatibleFormatSRGB = 18,
+
+	UnsupportedTextureTarget = 19
 }
 
 declare var GLKTextureLoaderErrorDomain: string;
@@ -701,6 +713,42 @@ declare const enum GLKViewDrawableStencilFormat {
 
 	Format8 = 1
 }
+
+declare function compare(p1: number): number;
+
+declare function compareFunction(p1: number): number;
+
+declare function compareFunction10(p1: number): number;
+
+declare function compareFunction11(p1: number): number;
+
+declare function compareFunction12(p1: number): number;
+
+declare function compareFunction13(p1: number): number;
+
+declare function compareFunction14(p1: number): number;
+
+declare function compareFunction15(p1: number): number;
+
+declare function compareFunction16(p1: number): number;
+
+declare function compareFunction17(p1: number): number;
+
+declare function compareFunction2(p1: number): number;
+
+declare function compareFunction3(p1: number): number;
+
+declare function compareFunction4(p1: number): number;
+
+declare function compareFunction5(p1: number): number;
+
+declare function compareFunction6(p1: number): number;
+
+declare function compareFunction7(p1: number): number;
+
+declare function compareFunction8(p1: number): number;
+
+declare function compareFunction9(p1: number): number;
 
 declare var kGLKModelErrorDomain: string;
 

@@ -1,4 +1,15 @@
 
+declare const enum WKAudiovisualMediaTypes {
+
+	None = 0,
+
+	Audio = 1,
+
+	Video = 2,
+
+	All = 4294967295
+}
+
 declare class WKBackForwardList extends NSObject {
 
 	static alloc(): WKBackForwardList; // inherited from NSObject
@@ -29,6 +40,29 @@ declare class WKBackForwardListItem extends NSObject {
 	/* readonly */ initialURL: NSURL;
 
 	/* readonly */ title: string;
+}
+
+declare const enum WKDataDetectorTypes {
+
+	None = 0,
+
+	PhoneNumber = 1,
+
+	Link = 2,
+
+	Address = 4,
+
+	CalendarEvent = 8,
+
+	TrackingNumber = 16,
+
+	FlightNumber = 32,
+
+	LookupSuggestion = 64,
+
+	All = 4294967295,
+
+	SpotlightSuggestion = 64
 }
 
 declare const enum WKErrorCode {
@@ -152,7 +186,7 @@ declare const enum WKNavigationType {
 	Other = -1
 }
 
-declare class WKPreferences extends NSObject {
+declare class WKPreferences extends NSObject implements NSCoding {
 
 	static alloc(): WKPreferences; // inherited from NSObject
 
@@ -163,13 +197,53 @@ declare class WKPreferences extends NSObject {
 	javaScriptEnabled: boolean;
 
 	minimumFontSize: number;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
-declare class WKProcessPool extends NSObject {
+interface WKPreviewActionItem extends UIPreviewActionItem {
+
+	identifier: string;
+}
+declare var WKPreviewActionItem: {
+
+	prototype: WKPreviewActionItem;
+};
+
+declare var WKPreviewActionItemIdentifierAddToReadingList: string;
+
+declare var WKPreviewActionItemIdentifierCopy: string;
+
+declare var WKPreviewActionItemIdentifierOpen: string;
+
+declare var WKPreviewActionItemIdentifierShare: string;
+
+declare class WKPreviewElementInfo extends NSObject implements NSCopying {
+
+	static alloc(): WKPreviewElementInfo; // inherited from NSObject
+
+	static new(): WKPreviewElementInfo; // inherited from NSObject
+
+	/* readonly */ linkURL: NSURL;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+}
+
+declare class WKProcessPool extends NSObject implements NSCoding {
 
 	static alloc(): WKProcessPool; // inherited from NSObject
 
 	static new(): WKProcessPool; // inherited from NSObject
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class WKScriptMessage extends NSObject {
@@ -218,22 +292,28 @@ declare const enum WKSelectionGranularity {
 
 interface WKUIDelegate extends NSObjectProtocol {
 
+	webViewCommitPreviewingViewController?(webView: WKWebView, previewingViewController: UIViewController): void;
+
 	webViewCreateWebViewWithConfigurationForNavigationActionWindowFeatures?(webView: WKWebView, configuration: WKWebViewConfiguration, navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures): WKWebView;
 
 	webViewDidClose?(webView: WKWebView): void;
+
+	webViewPreviewingViewControllerForElementDefaultActions?(webView: WKWebView, elementInfo: WKPreviewElementInfo, previewActions: NSArray<WKPreviewActionItem>): UIViewController;
 
 	webViewRunJavaScriptAlertPanelWithMessageInitiatedByFrameCompletionHandler?(webView: WKWebView, message: string, frame: WKFrameInfo, completionHandler: () => void): void;
 
 	webViewRunJavaScriptConfirmPanelWithMessageInitiatedByFrameCompletionHandler?(webView: WKWebView, message: string, frame: WKFrameInfo, completionHandler: (p1: boolean) => void): void;
 
 	webViewRunJavaScriptTextInputPanelWithPromptDefaultTextInitiatedByFrameCompletionHandler?(webView: WKWebView, prompt: string, defaultText: string, frame: WKFrameInfo, completionHandler: (p1: string) => void): void;
+
+	webViewShouldPreviewElement?(webView: WKWebView, elementInfo: WKPreviewElementInfo): boolean;
 }
 declare var WKUIDelegate: {
 
 	prototype: WKUIDelegate;
 };
 
-declare class WKUserContentController extends NSObject {
+declare class WKUserContentController extends NSObject implements NSCoding {
 
 	static alloc(): WKUserContentController; // inherited from NSObject
 
@@ -241,9 +321,15 @@ declare class WKUserContentController extends NSObject {
 
 	/* readonly */ userScripts: NSArray<WKUserScript>;
 
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	addScriptMessageHandlerName(scriptMessageHandler: WKScriptMessageHandler, name: string): void;
 
 	addUserScript(userScript: WKUserScript): void;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	removeAllUserScripts(): void;
 
@@ -324,6 +410,8 @@ declare class WKWebView extends UIView {
 
 	/* readonly */ scrollView: UIScrollView;
 
+	/* readonly */ serverTrust: any;
+
 	/* readonly */ title: string;
 
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
@@ -353,7 +441,7 @@ declare class WKWebView extends UIView {
 	stopLoading(): void;
 }
 
-declare class WKWebViewConfiguration extends NSObject implements NSCopying {
+declare class WKWebViewConfiguration extends NSObject implements NSCoding, NSCopying {
 
 	static alloc(): WKWebViewConfiguration; // inherited from NSObject
 
@@ -367,9 +455,15 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying {
 
 	applicationNameForUserAgent: string;
 
+	dataDetectorTypes: WKDataDetectorTypes;
+
+	ignoresViewportScaleLimits: boolean;
+
 	mediaPlaybackAllowsAirPlay: boolean;
 
 	mediaPlaybackRequiresUserAction: boolean;
+
+	mediaTypesRequiringUserActionForPlayback: WKAudiovisualMediaTypes;
 
 	preferences: WKPreferences;
 
@@ -385,7 +479,13 @@ declare class WKWebViewConfiguration extends NSObject implements NSCopying {
 
 	websiteDataStore: WKWebsiteDataStore;
 
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class WKWebsiteDataRecord extends NSObject {
@@ -399,7 +499,7 @@ declare class WKWebsiteDataRecord extends NSObject {
 	/* readonly */ displayName: string;
 }
 
-declare class WKWebsiteDataStore extends NSObject {
+declare class WKWebsiteDataStore extends NSObject implements NSCoding {
 
 	static allWebsiteDataTypes(): NSSet<string>;
 
@@ -413,7 +513,13 @@ declare class WKWebsiteDataStore extends NSObject {
 
 	/* readonly */ persistent: boolean;
 
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
 	fetchDataRecordsOfTypesCompletionHandler(dataTypes: NSSet<string>, completionHandler: (p1: NSArray<WKWebsiteDataRecord>) => void): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	removeDataOfTypesForDataRecordsCompletionHandler(dataTypes: NSSet<string>, dataRecords: NSArray<WKWebsiteDataRecord>, completionHandler: () => void): void;
 

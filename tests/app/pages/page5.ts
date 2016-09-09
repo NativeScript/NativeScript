@@ -27,7 +27,7 @@ function printDeviceInfoAndroid() {
 }
 
 function printDeviceInfoIOS() {
-    var device = UIDevice.currentDevice();
+    var device = UIDevice.currentDevice;
     console.log("device.name = " + device.name);                             //device.name = iPhone Simulator
     console.log("device.systemName = " + device.systemName);                 //device.systemName = iPhone OS
     console.log("device.systemVersion = " + device.systemVersion);           //device.systemVersion = 8.1
@@ -35,7 +35,7 @@ function printDeviceInfoIOS() {
     console.log("device.localizedModel = " + device.localizedModel);         //device.localizedModel = iPhone Simulator
     console.log("device.userInterfaceIdiom = " + device.userInterfaceIdiom); //device.userInterfaceIdiom = 0
     console.log("device.batteryLevel = " + device.batteryLevel);             //device.batteryLevel = -1
-    var screen = UIScreen.mainScreen();
+    var screen = UIScreen.mainScreen;
     console.log("screen = " + screen);
     console.log("screen.nativeBounds = " + screen.nativeBounds.size.width + ", " + screen.nativeBounds.size.height); //screen.nativeBounds = 640, 1136
     console.log("screen.scale = " + screen.scale);                                                                   //screen.scale = 2

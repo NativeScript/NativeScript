@@ -56,6 +56,8 @@ declare class WCSession extends NSObject {
 
 	delegate: WCSessionDelegate;
 
+	/* readonly */ hasContentPending: boolean;
+
 	/* readonly */ outstandingFileTransfers: NSArray<WCSessionFileTransfer>;
 
 	/* readonly */ outstandingUserInfoTransfers: NSArray<WCSessionUserInfoTransfer>;
@@ -65,6 +67,8 @@ declare class WCSession extends NSObject {
 	/* readonly */ reachable: boolean;
 
 	/* readonly */ receivedApplicationContext: NSDictionary<string, any>;
+
+	/* readonly */ remainingComplicationUserInfoTransfers: number;
 
 	/* readonly */ watchAppInstalled: boolean;
 
@@ -96,11 +100,11 @@ declare const enum WCSessionActivationState {
 
 interface WCSessionDelegate extends NSObjectProtocol {
 
-	sessionActivationDidCompleteWithStateError?(session: WCSession, activationState: WCSessionActivationState, error: NSError): void;
+	sessionActivationDidCompleteWithStateError(session: WCSession, activationState: WCSessionActivationState, error: NSError): void;
 
-	sessionDidBecomeInactive?(session: WCSession): void;
+	sessionDidBecomeInactive(session: WCSession): void;
 
-	sessionDidDeactivate?(session: WCSession): void;
+	sessionDidDeactivate(session: WCSession): void;
 
 	sessionDidFinishFileTransferError?(session: WCSession, fileTransfer: WCSessionFileTransfer, error: NSError): void;
 
@@ -159,13 +163,13 @@ declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCodi
 
 	static new(): WCSessionUserInfoTransfer; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ currentComplicationInfo: boolean;
 
 	/* readonly */ transferring: boolean;
 
 	/* readonly */ userInfo: NSDictionary<string, any>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

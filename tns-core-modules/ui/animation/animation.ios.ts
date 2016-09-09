@@ -239,7 +239,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 };
                 originalValue = nativeView.layer.backgroundColor;
                 if (nativeView instanceof UILabel) {
-                    nativeView.setValueForKey(UIColor.clearColor(), "backgroundColor");
+                    nativeView.setValueForKey(UIColor.clearColor, "backgroundColor");
                 }
                 value = value.CGColor;
                 break;

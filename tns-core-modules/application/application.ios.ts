@@ -32,7 +32,7 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        uiUtils.ios._layoutRootView(this._content, UIScreen.mainScreen().bounds);
+        uiUtils.ios._layoutRootView(this._content, UIScreen.mainScreen.bounds);
     }
 }
 
@@ -61,7 +61,7 @@ class IOSApplication implements definition.iOSApplication {
     public rootController: any;
 
     private _delegate: typeof UIApplicationDelegate;
-    private _currentOrientation = UIDevice.currentDevice().orientation;
+    private _currentOrientation = UIDevice.currentDevice.orientation;
     private _window: Window;
     private _observers: Array<NotificationObserver>;
 
@@ -76,7 +76,7 @@ class IOSApplication implements definition.iOSApplication {
     }
 
     get nativeApp(): UIApplication {
-        return UIApplication.sharedApplication();
+        return UIApplication.sharedApplication;
     }
 
     get delegate(): typeof UIApplicationDelegate {
@@ -90,7 +90,7 @@ class IOSApplication implements definition.iOSApplication {
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
         var observer = NotificationObserver.new().initWithCallback(onReceiveCallback);
-        NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
+        NSNotificationCenter.defaultCenter.addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
         this._observers.push(observer);
         return observer;
     }
@@ -99,13 +99,13 @@ class IOSApplication implements definition.iOSApplication {
         var index = this._observers.indexOf(observer);
         if (index >= 0) {
             this._observers.splice(index, 1);
-            NSNotificationCenter.defaultCenter().removeObserverNameObject(observer, notificationName, null);
+            NSNotificationCenter.defaultCenter.removeObserverNameObject(observer, notificationName, null);
         }
     }
 
     private didFinishLaunchingWithOptions(notification: NSNotification) {
-        this._window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen().bounds);
-        this._window.backgroundColor = UIColor.whiteColor();
+        this._window = <Window>Window.alloc().initWithFrame(UIScreen.mainScreen.bounds);
+        this._window.backgroundColor = UIColor.whiteColor;
 
         if (typedExports.onLaunch) {
             typedExports.onLaunch(undefined);
@@ -165,7 +165,7 @@ class IOSApplication implements definition.iOSApplication {
             typedExports.onResume();
         }
 
-        typedExports.notify({ eventName: typedExports.resumeEvent, object: this, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.resumeEvent, object: this, ios: UIApplication.sharedApplication });
     }
 
     private didEnterBackground(notification: NSNotification) {
@@ -173,7 +173,7 @@ class IOSApplication implements definition.iOSApplication {
             typedExports.onSuspend();
         }
 
-        typedExports.notify({ eventName: typedExports.suspendEvent, object: this, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.suspendEvent, object: this, ios: UIApplication.sharedApplication });
     }
 
     private willTerminate(notification: NSNotification) {
@@ -181,7 +181,7 @@ class IOSApplication implements definition.iOSApplication {
             typedExports.onExit();
         }
 
-        typedExports.notify({ eventName: typedExports.exitEvent, object: this, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.exitEvent, object: this, ios: UIApplication.sharedApplication });
     }
 
     private didReceiveMemoryWarning(notification: NSNotification) {
@@ -189,11 +189,11 @@ class IOSApplication implements definition.iOSApplication {
             typedExports.onLowMemory();
         }
 
-        typedExports.notify({ eventName: typedExports.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication() });
+        typedExports.notify({ eventName: typedExports.lowMemoryEvent, object: this, android: undefined, ios: UIApplication.sharedApplication });
     }
 
     private orientationDidChange(notification: NSNotification) {
-        var orientation = UIDevice.currentDevice().orientation;
+        var orientation = UIDevice.currentDevice.orientation;
 
         if (this._currentOrientation !== orientation) {
             this._currentOrientation = orientation;

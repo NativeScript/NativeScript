@@ -361,6 +361,8 @@ declare class MKGeodesicPolyline extends MKPolyline {
 
 declare var MKLaunchOptionsCameraKey: string;
 
+declare var MKLaunchOptionsDirectionsModeDefault: string;
+
 declare var MKLaunchOptionsDirectionsModeDriving: string;
 
 declare var MKLaunchOptionsDirectionsModeKey: string;
@@ -481,8 +483,6 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): MKMapCamera; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	altitude: number;
 
 	centerCoordinate: CLLocationCoordinate2D;
@@ -490,6 +490,8 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 	heading: number;
 
 	pitch: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1088,6 +1090,8 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 
 	static new(): MKPlacemark; // inherited from NSObject
 
+	static placemarkWithLocationNamePostalAddress(location: CLLocation, name: string, postalAddress: CNPostalAddress): MKPlacemark; // inherited from CLPlacemark
+
 	/* readonly */ countryCode: string;
 
 	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
@@ -1108,13 +1112,21 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 
 	/* readonly */  // inherited from NSObjectProtocol
 
+	constructor(o: { coordinate: CLLocationCoordinate2D; });
+
 	constructor(o: { coordinate: CLLocationCoordinate2D; addressDictionary: NSDictionary<string, any>; });
+
+	constructor(o: { coordinate: CLLocationCoordinate2D; postalAddress: CNPostalAddress; });
 
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	initWithCoordinate(coordinate: CLLocationCoordinate2D): this;
+
 	initWithCoordinateAddressDictionary(coordinate: CLLocationCoordinate2D, addressDictionary: NSDictionary<string, any>): this;
+
+	initWithCoordinatePostalAddress(coordinate: CLLocationCoordinate2D, postalAddress: CNPostalAddress): this;
 
 	isEqual(object: any): boolean;
 

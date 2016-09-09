@@ -6,11 +6,11 @@ function getDate(hour: number, minute: number): Date {
     var comps = NSDateComponents.alloc().init();
     comps.hour = hour;
     comps.minute = minute;
-    return NSCalendar.currentCalendar().dateFromComponents(<any>comps);
+    return NSCalendar.currentCalendar.dateFromComponents(<any>comps);
 }
 
 function getComponents(date: Date | NSDate): NSDateComponents {
-    return NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
+    return NSCalendar.currentCalendar.componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
 global.moduleMerge(common, exports);

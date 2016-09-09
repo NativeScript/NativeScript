@@ -131,13 +131,13 @@ export module ios {
     }
 
     export function isLandscape(): boolean {
-        var device = UIDevice.currentDevice();
-        var statusBarOrientation = UIApplication.sharedApplication().statusBarOrientation;
+        var device = UIDevice.currentDevice;
+        var statusBarOrientation = UIApplication.sharedApplication.statusBarOrientation;
         var isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
         return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
     }
 
-    export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice().systemVersion).intValue;
+    export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice.systemVersion).intValue;
 
     export function openFile(filePath: string): boolean {
         try {
@@ -163,8 +163,8 @@ export function GC() {
 export function openUrl(location: string): boolean {
     try {
         var url = NSURL.URLWithString(location.trim());
-        if (UIApplication.sharedApplication().canOpenURL(url)) {
-            return UIApplication.sharedApplication().openURL(url);
+        if (UIApplication.sharedApplication.canOpenURL(url)) {
+            return UIApplication.sharedApplication.openURL(url);
         }
     }
     catch (e) {

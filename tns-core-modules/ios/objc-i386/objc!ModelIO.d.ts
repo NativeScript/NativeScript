@@ -9,6 +9,8 @@ declare class MDLAreaLight extends MDLPhysicallyPlausibleLight {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLAreaLight; // inherited from MDLObject
 
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLAreaLight; // inherited from MDLObject
+
 	areaRadius: number;
 
 	aspect: number;
@@ -20,11 +22,15 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	static assetWithSCNScene(scnScene: SCNScene): MDLAsset;
 
+	static assetWithSCNSceneBufferAllocator(scnScene: SCNScene, bufferAllocator: MDLMeshBufferAllocator): MDLAsset;
+
 	static canExportFileExtension(extension: string): boolean;
 
 	static canImportFileExtension(extension: string): boolean;
 
 	static new(): MDLAsset; // inherited from NSObject
+
+	static placeLightProbesWithDensityHeuristicUsingIrradianceDataSource(value: number, type: MDLProbePlacement, dataSource: MDLLightProbeIrradianceDataSource): NSArray<MDLLightProbe>;
 
 	/* readonly */ URL: NSURL;
 
@@ -36,11 +42,15 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	frameInterval: number;
 
+	masters: MDLObjectContainerComponent;
+
 	startTime: number;
 
 	/* readonly */ vertexDescriptor: MDLVertexDescriptor;
 	[index: number]: MDLObject;
 	[Symbol.iterator](): Iterator<any>;
+
+	constructor(o: { bufferAllocator: MDLMeshBufferAllocator; });
 
 	constructor(o: { URL: NSURL; });
 
@@ -50,11 +60,15 @@ declare class MDLAsset extends NSObject implements NSCopying, NSFastEnumeration 
 
 	addObject(object: MDLObject): void;
 
+	childObjectsOfClass(objectClass: typeof NSObject): NSArray<MDLObject>;
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	exportAssetToURL(URL: NSURL): boolean;
 
 	exportAssetToURLError(URL: NSURL): boolean;
+
+	initWithBufferAllocator(bufferAllocator: MDLMeshBufferAllocator): this;
 
 	initWithURL(URL: NSURL): this;
 
@@ -78,6 +92,8 @@ declare class MDLCamera extends MDLObject {
 	static new(): MDLCamera; // inherited from NSObject
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLCamera; // inherited from MDLObject
+
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLCamera; // inherited from MDLObject
 
 	apertureBladeCount: number;
 
@@ -103,6 +119,8 @@ declare class MDLCamera extends MDLObject {
 
 	opticalVignetting: number;
 
+	projection: MDLCameraProjection;
+
 	sensorAspect: number;
 
 	sensorVerticalAperture: number;
@@ -110,6 +128,13 @@ declare class MDLCamera extends MDLObject {
 	shutterOpenInterval: number;
 
 	worldToMetersConversionScale: number;
+}
+
+declare const enum MDLCameraProjection {
+
+	Perspective = 0,
+
+	Orthographic = 1
 }
 
 declare class MDLCheckerboardTexture extends MDLTexture {
@@ -157,27 +182,17 @@ declare var MDLComponent: {
 
 declare const enum MDLGeometryType {
 
-	TypePoints = 0,
+	Points = 0,
 
-	TypeLines = 1,
+	Lines = 1,
 
-	TypeTriangles = 2,
+	Triangles = 2,
 
-	TypeTriangleStrips = 3,
+	TriangleStrips = 3,
 
-	TypeQuads = 4,
+	Quads = 4,
 
-	TypeVariableTopology = 5,
-
-	KindPoints = 0,
-
-	KindLines = 1,
-
-	KindTriangles = 2,
-
-	KindTriangleStrips = 3,
-
-	KindQuads = 4
+	VariableTopology = 5
 }
 
 declare const enum MDLIndexBitDepth {
@@ -207,6 +222,10 @@ declare class MDLLight extends MDLObject {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLLight; // inherited from MDLObject
 
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLLight; // inherited from MDLObject
+
+	colorSpace: string;
+
 	lightType: MDLLightType;
 }
 
@@ -222,6 +241,8 @@ declare class MDLLightProbe extends MDLLight {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLLightProbe; // inherited from MDLObject
 
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLLightProbe; // inherited from MDLObject
+
 	/* readonly */ irradianceTexture: MDLTexture;
 
 	/* readonly */ reflectiveTexture: MDLTexture;
@@ -236,6 +257,15 @@ declare class MDLLightProbe extends MDLLight {
 
 	initWithReflectiveTextureIrradianceTexture(reflectiveTexture: MDLTexture, irradianceTexture: MDLTexture): this;
 }
+
+interface MDLLightProbeIrradianceDataSource extends NSObjectProtocol {
+
+	sphericalHarmonicsLevel?: number;
+}
+declare var MDLLightProbeIrradianceDataSource: {
+
+	prototype: MDLLightProbeIrradianceDataSource;
+};
 
 declare const enum MDLLightType {
 
@@ -276,6 +306,8 @@ declare class MDLMaterial extends NSObject implements MDLNamed, NSFastEnumeratio
 
 	/* readonly */ count: number;
 
+	materialFace: MDLMaterialFace;
+
 	/* readonly */ scatteringFunction: MDLScatteringFunction;
 
 	name: string; // inherited from MDLNamed
@@ -301,6 +333,15 @@ declare class MDLMaterial extends NSObject implements MDLNamed, NSFastEnumeratio
 	setProperty(property: MDLMaterialProperty): void;
 }
 
+declare const enum MDLMaterialFace {
+
+	Front = 0,
+
+	Back = 1,
+
+	DoubleSided = 2
+}
+
 declare const enum MDLMaterialMipMapFilterMode {
 
 	Nearest = 0,
@@ -308,7 +349,7 @@ declare const enum MDLMaterialMipMapFilterMode {
 	Linear = 1
 }
 
-declare class MDLMaterialProperty extends NSObject implements MDLNamed {
+declare class MDLMaterialProperty extends NSObject implements MDLNamed, NSCopying {
 
 	static alloc(): MDLMaterialProperty; // inherited from NSObject
 
@@ -319,6 +360,8 @@ declare class MDLMaterialProperty extends NSObject implements MDLNamed {
 	color: any;
 
 	floatValue: number;
+
+	luminance: number;
 
 	semantic: MDLMaterialSemantic;
 
@@ -342,6 +385,8 @@ declare class MDLMaterialProperty extends NSObject implements MDLNamed {
 
 	constructor(o: { name: string; semantic: MDLMaterialSemantic; URL: NSURL; });
 
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
 	initWithNameSemantic(name: string, semantic: MDLMaterialSemantic): this;
 
 	initWithNameSemanticColor(name: string, semantic: MDLMaterialSemantic, color: any): this;
@@ -355,6 +400,59 @@ declare class MDLMaterialProperty extends NSObject implements MDLNamed {
 	initWithNameSemanticURL(name: string, semantic: MDLMaterialSemantic, URL: NSURL): this;
 
 	setProperties(property: MDLMaterialProperty): void;
+}
+
+declare class MDLMaterialPropertyConnection extends NSObject implements MDLNamed {
+
+	static alloc(): MDLMaterialPropertyConnection; // inherited from NSObject
+
+	static new(): MDLMaterialPropertyConnection; // inherited from NSObject
+
+	/* readonly */ input: MDLMaterialProperty;
+
+	/* readonly */ output: MDLMaterialProperty;
+
+	name: string; // inherited from MDLNamed
+
+	constructor(o: { output: MDLMaterialProperty; input: MDLMaterialProperty; });
+
+	initWithOutputInput(output: MDLMaterialProperty, input: MDLMaterialProperty): this;
+}
+
+declare class MDLMaterialPropertyGraph extends MDLMaterialPropertyNode {
+
+	static alloc(): MDLMaterialPropertyGraph; // inherited from NSObject
+
+	static new(): MDLMaterialPropertyGraph; // inherited from NSObject
+
+	/* readonly */ connections: NSArray<MDLMaterialPropertyConnection>;
+
+	/* readonly */ nodes: NSArray<MDLMaterialPropertyNode>;
+
+	constructor(o: { nodes: NSArray<MDLMaterialPropertyNode>; connections: NSArray<MDLMaterialPropertyConnection>; });
+
+	evaluate(): void;
+
+	initWithNodesConnections(nodes: NSArray<MDLMaterialPropertyNode>, connections: NSArray<MDLMaterialPropertyConnection>): this;
+}
+
+declare class MDLMaterialPropertyNode extends NSObject implements MDLNamed {
+
+	static alloc(): MDLMaterialPropertyNode; // inherited from NSObject
+
+	static new(): MDLMaterialPropertyNode; // inherited from NSObject
+
+	evaluationFunction: (p1: MDLMaterialPropertyNode) => void;
+
+	/* readonly */ inputs: NSArray<MDLMaterialProperty>;
+
+	/* readonly */ outputs: NSArray<MDLMaterialProperty>;
+
+	name: string; // inherited from MDLNamed
+
+	constructor(o: { inputs: NSArray<MDLMaterialProperty>; outputs: NSArray<MDLMaterialProperty>; evaluationFunction: (p1: MDLMaterialPropertyNode) => void; });
+
+	initWithInputsOutputsEvaluationFunction(inputs: NSArray<MDLMaterialProperty>, outputs: NSArray<MDLMaterialProperty>, _function: (p1: MDLMaterialPropertyNode) => void): this;
 }
 
 declare const enum MDLMaterialPropertyType {
@@ -457,6 +555,8 @@ declare class MDLMesh extends MDLObject {
 
 	static meshWithSCNGeometry(scnGeometry: SCNGeometry): MDLMesh;
 
+	static meshWithSCNGeometryBufferAllocator(scnGeometry: SCNGeometry, bufferAllocator: MDLMeshBufferAllocator): MDLMesh;
+
 	static new(): MDLMesh; // inherited from NSObject
 
 	static newIcosahedronWithRadiusInwardNormalsAllocator(radius: number, inwardNormals: boolean, allocator: MDLMeshBufferAllocator): MDLMesh;
@@ -465,13 +565,21 @@ declare class MDLMesh extends MDLObject {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLMesh; // inherited from MDLObject
 
-	/* readonly */ submeshes: NSMutableArray<MDLSubmesh>;
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLMesh; // inherited from MDLObject
+
+	/* readonly */ allocator: MDLMeshBufferAllocator;
+
+	submeshes: NSMutableArray<MDLSubmesh>;
 
 	/* readonly */ vertexBuffers: NSArray<MDLMeshBuffer>;
 
-	/* readonly */ vertexCount: number;
+	vertexCount: number;
 
 	vertexDescriptor: MDLVertexDescriptor;
+
+	constructor(o: { meshBySubdividingMesh: MDLMesh; submeshIndex: number; subdivisionLevels: number; allocator: MDLMeshBufferAllocator; });
+
+	constructor(o: { bufferAllocator: MDLMeshBufferAllocator; });
 
 	constructor(o: { vertexBuffer: MDLMeshBuffer; vertexCount: number; descriptor: MDLVertexDescriptor; submeshes: NSArray<MDLSubmesh>; });
 
@@ -479,11 +587,17 @@ declare class MDLMesh extends MDLObject {
 
 	addAttributeWithNameFormat(name: string, format: MDLVertexFormat): void;
 
+	addAttributeWithNameFormatTypeDataStride(name: string, format: MDLVertexFormat, type: string, data: NSData, stride: number): void;
+
+	addAttributeWithNameFormatTypeDataStrideTime(name: string, format: MDLVertexFormat, type: string, data: NSData, stride: number, time: number): void;
+
 	addNormalsWithAttributeNamedCreaseThreshold(attributeName: string, creaseThreshold: number): void;
 
-	addTangentBasisForTextureCoordinateAttributeNamedNormalAttributeNamedTangentAttributeNamed(textureCoordinateAttributeName: string, normalAttributeName: string, tangentAttributeName: string): void;
+	addTangentBasisForTextureCoordinateAttributeNamedNormalAttributeNamedTangentAttributeNamed(textureCoordinateAttributeName: string, normalAttributeNamed: string, tangentAttributeNamed: string): void;
 
-	addTangentBasisForTextureCoordinateAttributeNamedTangentAttributeNamedBitangentAttributeNamed(textureCoordinateAttributeName: string, tangentAttributeName: string, bitangentAttributeName: string): void;
+	addTangentBasisForTextureCoordinateAttributeNamedTangentAttributeNamedBitangentAttributeNamed(textureCoordinateAttributeName: string, tangentAttributeNamed: string, bitangentAttributeName: string): void;
+
+	addUnwrappedTextureCoordinatesForAttributeNamed(textureCoordinateAttributeName: string): void;
 
 	generateAmbientOcclusionTextureWithQualityAttenuationFactorObjectsToConsiderVertexAttributeNamedMaterialPropertyNamed(bakeQuality: number, attenuationFactor: number, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string, materialPropertyName: string): boolean;
 
@@ -495,13 +609,25 @@ declare class MDLMesh extends MDLObject {
 
 	generateLightMapVertexColorsWithLightsToConsiderObjectsToConsiderVertexAttributeNamed(lightsToConsider: NSArray<MDLLight>, objectsToConsider: NSArray<MDLObject>, vertexAttributeName: string): boolean;
 
+	initMeshBySubdividingMeshSubmeshIndexSubdivisionLevelsAllocator(mesh: MDLMesh, submeshIndex: number, subdivisionLevels: number, allocator: MDLMeshBufferAllocator): this;
+
+	initWithBufferAllocator(bufferAllocator: MDLMeshBufferAllocator): this;
+
 	initWithVertexBufferVertexCountDescriptorSubmeshes(vertexBuffer: MDLMeshBuffer, vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh>): this;
 
 	initWithVertexBuffersVertexCountDescriptorSubmeshes(vertexBuffers: NSArray<MDLMeshBuffer>, vertexCount: number, descriptor: MDLVertexDescriptor, submeshes: NSArray<MDLSubmesh>): this;
 
 	makeVerticesUnique(): void;
 
+	removeAttributeNamed(name: string): void;
+
+	replaceAttributeNamedWithData(name: string, newData: MDLVertexAttributeData): void;
+
+	updateAttributeNamedWithData(name: string, newData: MDLVertexAttributeData): void;
+
 	vertexAttributeDataForAttributeNamed(name: string): MDLVertexAttributeData;
+
+	vertexAttributeDataForAttributeNamedAsFormat(name: string, format: MDLVertexFormat): MDLVertexAttributeData;
 }
 
 interface MDLMeshBuffer extends NSCopying, NSObjectProtocol {
@@ -785,9 +911,17 @@ declare class MDLObject extends NSObject implements MDLNamed {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLObject;
 
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLObject;
+
 	children: MDLObjectContainerComponent;
 
+	hidden: boolean;
+
+	instance: MDLObject;
+
 	parent: MDLObject;
+
+	/* readonly */ path: string;
 
 	transform: MDLTransformComponent;
 
@@ -796,6 +930,8 @@ declare class MDLObject extends NSObject implements MDLNamed {
 	addChild(child: MDLObject): void;
 
 	componentConformingToProtocol(protocol: any /* Protocol */): MDLComponent;
+
+	objectAtPath(path: string): MDLObject;
 
 	setComponentForProtocol(component: MDLComponent, protocol: any /* Protocol */): void;
 }
@@ -871,6 +1007,8 @@ declare class MDLPhotometricLight extends MDLPhysicallyPlausibleLight {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLPhotometricLight; // inherited from MDLObject
 
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLPhotometricLight; // inherited from MDLObject
+
 	/* readonly */ lightCubeMap: MDLTexture;
 
 	/* readonly */ sphericalHarmonicsCoefficients: NSData;
@@ -895,6 +1033,8 @@ declare class MDLPhysicallyPlausibleLight extends MDLLight {
 	static new(): MDLPhysicallyPlausibleLight; // inherited from NSObject
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLPhysicallyPlausibleLight; // inherited from MDLObject
+
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLPhysicallyPlausibleLight; // inherited from MDLObject
 
 	attenuationEndDistance: number;
 
@@ -940,6 +1080,13 @@ declare class MDLPhysicallyPlausibleScatteringFunction extends MDLScatteringFunc
 	/* readonly */ subsurface: MDLMaterialProperty;
 
 	/* readonly */ version: number;
+}
+
+declare const enum MDLProbePlacement {
+
+	UniformGrid = 0,
+
+	IrradianceDistribution = 1
 }
 
 declare class MDLScatteringFunction extends NSObject implements MDLNamed {
@@ -1016,6 +1163,8 @@ declare class MDLStereoscopicCamera extends MDLCamera {
 
 	static objectWithSCNNode(scnNode: SCNNode): MDLStereoscopicCamera; // inherited from MDLObject
 
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLStereoscopicCamera; // inherited from MDLObject
+
 	interPupillaryDistance: number;
 
 	leftVergence: number;
@@ -1032,6 +1181,8 @@ declare class MDLSubmesh extends NSObject implements MDLNamed {
 	static new(): MDLSubmesh; // inherited from NSObject
 
 	static submeshWithSCNGeometryElement(scnGeometryElement: SCNGeometryElement): MDLSubmesh;
+
+	static submeshWithSCNGeometryElementBufferAllocator(scnGeometryElement: SCNGeometryElement, bufferAllocator: MDLMeshBufferAllocator): MDLSubmesh;
 
 	/* readonly */ geometryType: MDLGeometryType;
 
@@ -1054,6 +1205,8 @@ declare class MDLSubmesh extends NSObject implements MDLNamed {
 	constructor(o: { name: string; indexBuffer: MDLMeshBuffer; indexCount: number; indexType: MDLIndexBitDepth; geometryType: MDLGeometryType; material: MDLMaterial; });
 
 	constructor(o: { name: string; indexBuffer: MDLMeshBuffer; indexCount: number; indexType: MDLIndexBitDepth; geometryType: MDLGeometryType; material: MDLMaterial; topology: MDLSubmeshTopology; });
+
+	indexBufferAsIndexType(indexType: MDLIndexBitDepth): MDLMeshBuffer;
 
 	initWithIndexBufferIndexCountIndexTypeGeometryTypeMaterial(indexBuffer: MDLMeshBuffer, indexCount: number, indexType: MDLIndexBitDepth, geometryType: MDLGeometryType, material: MDLMaterial): this;
 
@@ -1108,6 +1261,8 @@ declare class MDLTexture extends NSObject implements MDLNamed {
 	/* readonly */ channelCount: number;
 
 	/* readonly */ channelEncoding: MDLTextureChannelEncoding;
+
+	hasAlphaValues: boolean;
 
 	isCube: boolean;
 
@@ -1187,7 +1342,7 @@ declare class MDLTextureSampler extends NSObject {
 	transform: MDLTransform;
 }
 
-declare class MDLTransform extends NSObject implements MDLTransformComponent {
+declare class MDLTransform extends NSObject implements MDLTransformComponent, NSCopying {
 
 	static alloc(): MDLTransform; // inherited from NSObject
 
@@ -1201,9 +1356,13 @@ declare class MDLTransform extends NSObject implements MDLTransformComponent {
 
 	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
 
+	/* readonly */ keyTimes: NSArray<number>; // inherited from MDLTransformComponent
+
 	/* readonly */ maximumTime: number; // inherited from MDLTransformComponent
 
 	/* readonly */ minimumTime: number; // inherited from MDLTransformComponent
+
+	resetsTransform: boolean; // inherited from MDLTransformComponent
 
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
@@ -1213,13 +1372,19 @@ declare class MDLTransform extends NSObject implements MDLTransformComponent {
 
 	constructor(o: { transformComponent: MDLTransformComponent; });
 
+	constructor(o: { transformComponent: MDLTransformComponent; resetsTransform: boolean; });
+
 	class(): typeof NSObject;
 
 	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
 	initWithIdentity(): this;
 
 	initWithTransformComponent(component: MDLTransformComponent): this;
+
+	initWithTransformComponentResetsTransform(component: MDLTransformComponent, resetsTransform: boolean): this;
 
 	isEqual(object: any): boolean;
 
@@ -1244,9 +1409,13 @@ declare class MDLTransform extends NSObject implements MDLTransformComponent {
 
 interface MDLTransformComponent extends MDLComponent {
 
+	keyTimes: NSArray<number>;
+
 	maximumTime: number;
 
 	minimumTime: number;
+
+	resetsTransform: boolean;
 }
 declare var MDLTransformComponent: {
 
@@ -1287,6 +1456,8 @@ declare class MDLVertexAttribute extends NSObject implements NSCopying {
 	name: string;
 
 	offset: number;
+
+	time: number;
 
 	constructor(o: { name: string; format: MDLVertexFormat; offset: number; bufferIndex: number; });
 
@@ -1348,7 +1519,11 @@ declare class MDLVertexBufferLayout extends NSObject implements NSCopying {
 
 	stride: number;
 
+	constructor(o: { stride: number; });
+
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	initWithStride(stride: number): this;
 }
 
 declare class MDLVertexDescriptor extends NSObject implements NSCopying {
@@ -1370,6 +1545,8 @@ declare class MDLVertexDescriptor extends NSObject implements NSCopying {
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
 	initWithVertexDescriptor(vertexDescriptor: MDLVertexDescriptor): this;
+
+	removeAttributeNamed(name: string): void;
 
 	reset(): void;
 
@@ -1509,31 +1686,41 @@ declare const enum MDLVertexFormat {
 	UInt1010102Normalized = 593924
 }
 
-declare class MDLVoxelArray extends NSObject {
+declare class MDLVoxelArray extends MDLObject {
 
 	static alloc(): MDLVoxelArray; // inherited from NSObject
 
 	static new(): MDLVoxelArray; // inherited from NSObject
 
+	static objectWithSCNNode(scnNode: SCNNode): MDLVoxelArray; // inherited from MDLObject
+
+	static objectWithSCNNodeBufferAllocator(scnNode: SCNNode, bufferAllocator: MDLMeshBufferAllocator): MDLVoxelArray; // inherited from MDLObject
+
 	/* readonly */ count: number;
 
-	constructor(o: { asset: MDLAsset; divisions: number; interiorNBWidth: number; exteriorNBWidth: number; patchRadius: number; });
+	/* readonly */ isValidSignedShellField: boolean;
 
-	constructor(o: { asset: MDLAsset; divisions: number; interiorShells: number; exteriorShells: number; patchRadius: number; });
+	shellFieldExteriorThickness: number;
+
+	shellFieldInteriorThickness: number;
+
+	constructor(o: { asset: MDLAsset; divisions: number; patchRadius: number; });
+
+	coarseMesh(): MDLMesh;
+
+	coarseMeshUsingAllocator(allocator: MDLMeshBufferAllocator): MDLMesh;
+
+	convertToSignedShellField(): void;
 
 	differenceWithVoxels(voxels: MDLVoxelArray): void;
 
-	initWithAssetDivisionsInteriorNBWidthExteriorNBWidthPatchRadius(asset: MDLAsset, divisions: number, interiorNBWidth: number, exteriorNBWidth: number, patchRadius: number): this;
-
-	initWithAssetDivisionsInteriorShellsExteriorShellsPatchRadius(asset: MDLAsset, divisions: number, interiorShells: number, exteriorShells: number, patchRadius: number): this;
+	initWithAssetDivisionsPatchRadius(asset: MDLAsset, divisions: number, patchRadius: number): this;
 
 	intersectWithVoxels(voxels: MDLVoxelArray): void;
 
 	meshUsingAllocator(allocator: MDLMeshBufferAllocator): MDLMesh;
 
-	setVoxelsForMeshDivisionsInteriorNBWidthExteriorNBWidthPatchRadius(mesh: MDLMesh, divisions: number, interiorNBWidth: number, exteriorNBWidth: number, patchRadius: number): void;
-
-	setVoxelsForMeshDivisionsInteriorShellsExteriorShellsPatchRadius(mesh: MDLMesh, divisions: number, interiorShells: number, exteriorShells: number, patchRadius: number): void;
+	setVoxelsForMeshDivisionsPatchRadius(mesh: MDLMesh, divisions: number, patchRadius: number): void;
 
 	unionWithVoxels(voxels: MDLVoxelArray): void;
 
@@ -1547,3 +1734,5 @@ declare var kUTTypeAlembic: string;
 declare var kUTTypePolygon: string;
 
 declare var kUTTypeStereolithography: string;
+
+declare var kUTTypeUniversalSceneDescription: string;

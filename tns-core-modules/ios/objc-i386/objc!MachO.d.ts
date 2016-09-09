@@ -77,6 +77,8 @@ declare function NXCombineCpuSubtypes(cputype: number, cpusubtype1: number, cpus
 
 declare function NXFindBestFatArch(cputype: number, cpusubtype: number, fat_archs: interop.Pointer | interop.Reference<fat_arch>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch>;
 
+declare function NXFindBestFatArch_64(cputype: number, cpusubtype: number, fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_archs: number): interop.Pointer | interop.Reference<fat_arch_64>;
+
 declare function NXGetAllArchInfos(): interop.Pointer | interop.Reference<NXArchInfo>;
 
 declare function NXGetArchInfoFromCpuType(cputype: number, cpusubtype: number): interop.Pointer | interop.Reference<NXArchInfo>;
@@ -119,8 +121,8 @@ interface dyld_all_image_infos {
 	infoArrayCount: number;
 	infoArray: interop.Pointer | interop.Reference<dyld_image_info>;
 	notification: interop.FunctionReference<(p1: dyld_image_mode, p2: number, p3: interop.Reference<dyld_image_info>) => void>;
-	processDetachedFromSharedRegion: boolean;
-	libSystemInitialized: boolean;
+	processDetachedFromSharedRegion: interop.FunctionReference<(p1: number) => number>;
+	libSystemInitialized: interop.FunctionReference<(p1: number) => number>;
 	dyldImageLoadAddress: interop.Pointer | interop.Reference<mach_header>;
 	jitInfo: interop.Pointer | interop.Reference<any>;
 	dyldVersion: string;
@@ -138,6 +140,10 @@ interface dyld_all_image_infos {
 	errorSymbol: string;
 	sharedCacheSlide: number;
 	sharedCacheUUID: interop.Reference<number>;
+	sharedCacheBaseAddress: number;
+	infoArrayChangeTimestamp: number;
+	dyldPath: string;
+	notifyPorts: interop.Reference<number>;
 	reserved: interop.Reference<number>;
 }
 declare var dyld_all_image_infos: interop.StructType<dyld_all_image_infos>;
@@ -293,6 +299,16 @@ interface fat_arch {
 	align: number;
 }
 declare var fat_arch: interop.StructType<fat_arch>;
+
+interface fat_arch_64 {
+	cputype: number;
+	cpusubtype: number;
+	offset: number;
+	size: number;
+	align: number;
+	reserved: number;
+}
+declare var fat_arch_64: interop.StructType<fat_arch_64>;
 
 interface fat_header {
 	magic: number;
@@ -537,6 +553,8 @@ declare function swap_encryption_command_64(ec: interop.Pointer | interop.Refere
 declare function swap_entry_point_command(ep: interop.Pointer | interop.Reference<entry_point_command>, target_byte_sex: NXByteOrder): void;
 
 declare function swap_fat_arch(fat_archs: interop.Pointer | interop.Reference<fat_arch>, nfat_arch: number, target_byte_order: NXByteOrder): void;
+
+declare function swap_fat_arch_64(fat_archs64: interop.Pointer | interop.Reference<fat_arch_64>, nfat_arch: number, target_byte_order: NXByteOrder): void;
 
 declare function swap_fat_header(fat_header: interop.Pointer | interop.Reference<fat_header>, target_byte_order: NXByteOrder): void;
 

@@ -7,7 +7,11 @@ declare const enum LAAccessControlOperation {
 
 	CreateKey = 2,
 
-	UseKeySign = 3
+	UseKeySign = 3,
+
+	UseKeyDecrypt = 4,
+
+	UseKeyKeyExchange = 5
 }
 
 declare class LAContext extends NSObject {
@@ -17,6 +21,8 @@ declare class LAContext extends NSObject {
 	static new(): LAContext; // inherited from NSObject
 
 	/* readonly */ evaluatedPolicyDomainState: NSData;
+
+	localizedCancelTitle: string;
 
 	localizedFallbackTitle: string;
 
