@@ -30,8 +30,6 @@ declare class CNContact extends NSObject implements NSCopying, NSMutableCopying,
 
 	static predicateForContactsWithIdentifiers(identifiers: NSArray<string>): NSPredicate;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ birthday: NSDateComponents;
 
 	/* readonly */ contactRelations: NSArray<CNLabeledValue<CNContactRelation>>;
@@ -80,6 +78,8 @@ declare class CNContact extends NSObject implements NSCopying, NSMutableCopying,
 
 	/* readonly */ phoneticMiddleName: string;
 
+	/* readonly */ phoneticOrganizationName: string;
+
 	/* readonly */ postalAddresses: NSArray<CNLabeledValue<CNPostalAddress>>;
 
 	/* readonly */ previousFamilyName: string;
@@ -89,6 +89,8 @@ declare class CNContact extends NSObject implements NSCopying, NSMutableCopying,
 	/* readonly */ thumbnailImageData: NSData;
 
 	/* readonly */ urlAddresses: NSArray<CNLabeledValue<string>>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -126,7 +128,7 @@ declare var CNContactEmailAddressesKey: string;
 
 declare var CNContactFamilyNameKey: string;
 
-declare class CNContactFetchRequest extends NSObject {
+declare class CNContactFetchRequest extends NSObject implements NSSecureCoding {
 
 	static alloc(): CNContactFetchRequest; // inherited from NSObject
 
@@ -142,7 +144,15 @@ declare class CNContactFetchRequest extends NSObject {
 
 	unifyResults: boolean;
 
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
 	constructor(o: { keysToFetch: NSArray<CNKeyDescriptor>; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 
 	initWithKeysToFetch(keysToFetch: NSArray<CNKeyDescriptor>): this;
 }
@@ -211,6 +221,8 @@ declare var CNContactPhoneticGivenNameKey: string;
 
 declare var CNContactPhoneticMiddleNameKey: string;
 
+declare var CNContactPhoneticOrganizationNameKey: string;
+
 declare var CNContactPostalAddressesKey: string;
 
 declare var CNContactPreviousFamilyNameKey: string;
@@ -221,8 +233,6 @@ declare class CNContactProperty extends NSObject implements NSCopying, NSSecureC
 
 	static new(): CNContactProperty; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ contact: CNContact;
 
 	/* readonly */ identifier: string;
@@ -232,6 +242,8 @@ declare class CNContactProperty extends NSObject implements NSCopying, NSSecureC
 	/* readonly */ label: string;
 
 	/* readonly */ value: any;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -254,9 +266,9 @@ declare class CNContactRelation extends NSObject implements NSCopying, NSSecureC
 
 	static new(): CNContactRelation; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ name: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -330,9 +342,9 @@ declare class CNContactVCardSerialization extends NSObject {
 
 	static alloc(): CNContactVCardSerialization; // inherited from NSObject
 
-	static contactsWithDataError(data: NSData): NSArray<any>;
+	static contactsWithDataError(data: NSData): NSArray<CNContact>;
 
-	static dataWithContactsError(contacts: NSArray<any>): NSData;
+	static dataWithContactsError(contacts: NSArray<CNContact>): NSData;
 
 	static descriptorForRequiredKeys(): CNKeyDescriptor;
 
@@ -364,13 +376,13 @@ declare class CNContainer extends NSObject implements NSCopying, NSSecureCoding 
 
 	static predicateForContainersWithIdentifiers(identifiers: NSArray<string>): NSPredicate;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ identifier: string;
 
 	/* readonly */ name: string;
 
 	/* readonly */ type: CNContainerType;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -452,11 +464,11 @@ declare class CNGroup extends NSObject implements NSCopying, NSMutableCopying, N
 
 	static predicateForGroupsWithIdentifiers(identifiers: NSArray<string>): NSPredicate;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ identifier: string;
 
 	/* readonly */ name: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -483,11 +495,11 @@ declare class CNInstantMessageAddress extends NSObject implements NSCopying, NSS
 
 	static new(): CNInstantMessageAddress; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ service: string;
 
 	/* readonly */ username: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -531,8 +543,6 @@ interface CNKeyDescriptor extends NSCopying, NSObjectProtocol, NSSecureCoding {
 declare var CNKeyDescriptor: {
 
 	prototype: CNKeyDescriptor;
-
-	supportsSecureCoding(): boolean;
 };
 
 declare var CNLabelContactRelationAssistant: string;
@@ -593,13 +603,13 @@ declare class CNLabeledValue<ValueType> extends NSObject implements NSCopying, N
 
 	static new<ValueType>(): CNLabeledValue<ValueType>; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ identifier: string;
 
 	/* readonly */ label: string;
 
 	/* readonly */ value: ValueType;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -670,6 +680,8 @@ declare class CNMutableContact extends CNContact {
 
 	phoneticMiddleName: string;
 
+	phoneticOrganizationName: string;
+
 	postalAddresses: NSArray<CNLabeledValue<CNPostalAddress>>;
 
 	previousFamilyName: string;
@@ -715,9 +727,9 @@ declare class CNPhoneNumber extends NSObject implements NSCopying, NSSecureCodin
 
 	static phoneNumberWithStringValue(stringValue: string): CNPhoneNumber;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ stringValue: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -740,8 +752,6 @@ declare class CNPostalAddress extends NSObject implements NSCopying, NSMutableCo
 
 	static new(): CNPostalAddress; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ ISOCountryCode: string;
 
 	/* readonly */ city: string;
@@ -753,6 +763,8 @@ declare class CNPostalAddress extends NSObject implements NSCopying, NSMutableCo
 	/* readonly */ state: string;
 
 	/* readonly */ street: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -836,8 +848,6 @@ declare class CNSocialProfile extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): CNSocialProfile; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ service: string;
 
 	/* readonly */ urlString: string;
@@ -845,6 +855,8 @@ declare class CNSocialProfile extends NSObject implements NSCopying, NSSecureCod
 	/* readonly */ userIdentifier: string;
 
 	/* readonly */ username: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

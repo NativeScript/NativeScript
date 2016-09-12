@@ -582,6 +582,8 @@ declare var kCFStreamNetworkServiceType: string;
 
 declare var kCFStreamNetworkServiceTypeBackground: string;
 
+declare var kCFStreamNetworkServiceTypeCallSignaling: string;
+
 declare var kCFStreamNetworkServiceTypeVideo: string;
 
 declare var kCFStreamNetworkServiceTypeVoIP: string;

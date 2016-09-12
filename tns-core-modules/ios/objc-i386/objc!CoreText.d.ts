@@ -164,7 +164,7 @@ declare function CTFontDescriptorCreateWithNameAndSize(name: string, size: numbe
 
 declare function CTFontDescriptorGetTypeID(): number;
 
-declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any>, mandatoryAttributes: NSSet<any>, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => boolean): boolean;
+declare function CTFontDescriptorMatchFontDescriptorsWithProgressHandler(descriptors: NSArray<any>, mandatoryAttributes: NSSet<any>, progressBlock: (p1: CTFontDescriptorMatchingState, p2: NSDictionary<any, any>) => number): number;
 
 declare const enum CTFontDescriptorMatchingState {
 
@@ -220,7 +220,7 @@ declare function CTFontGetGlyphCount(font: UIFont): number;
 
 declare function CTFontGetGlyphWithName(font: UIFont, glyphName: string): number;
 
-declare function CTFontGetGlyphsForCharacters(font: UIFont, characters: interop.Reference<number>, glyphs: interop.Reference<number>, count: number): boolean;
+declare function CTFontGetGlyphsForCharacters(font: UIFont, characters: interop.Reference<number>, glyphs: interop.Reference<number>, count: number): number;
 
 declare function CTFontGetLeading(font: UIFont): number;
 
@@ -261,6 +261,10 @@ declare const enum CTFontManagerAutoActivationSetting {
 	kCTFontManagerAutoActivationPromptUser = 3
 }
 
+declare function CTFontManagerCopyAvailableFontFamilyNames(): NSArray<any>;
+
+declare function CTFontManagerCopyAvailablePostScriptNames(): NSArray<any>;
+
 declare function CTFontManagerCreateFontDescriptorFromData(data: NSData): UIFontDescriptor;
 
 declare function CTFontManagerCreateFontDescriptorsFromURL(fileURL: NSURL): NSArray<any>;
@@ -284,11 +288,11 @@ declare const enum CTFontManagerError {
 	kCTFontManagerErrorSystemRequired = 203
 }
 
-declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerRegisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerRegisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
-declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerRegisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare const enum CTFontManagerScope {
 
@@ -301,11 +305,11 @@ declare const enum CTFontManagerScope {
 	kCTFontManagerScopeSession = 3
 }
 
-declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerUnregisterFontsForURL(fontURL: NSURL, scope: CTFontManagerScope, error: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): boolean;
+declare function CTFontManagerUnregisterFontsForURLs(fontURLs: NSArray<any>, scope: CTFontManagerScope, errors: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
-declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CTFontManagerUnregisterGraphicsFont(font: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare const enum CTFontOptions {
 
@@ -639,7 +643,7 @@ declare function CTLineCreateWithAttributedString(attrString: NSAttributedString
 
 declare function CTLineDraw(line: any, context: any): void;
 
-declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: boolean, p4: interop.Pointer | interop.Reference<boolean>) => void): void;
+declare function CTLineEnumerateCaretOffsets(line: any, block: (p1: number, p2: number, p3: interop.FunctionReference<(p1: number) => number>, p4: interop.Pointer | interop.Reference<interop.FunctionReference<(p1: number) => number>>) => void): void;
 
 declare function CTLineGetBoundsWithOptions(line: any, options: CTLineBoundsOptions): CGRect;
 
@@ -678,7 +682,7 @@ declare function CTParagraphStyleCreateCopy(paragraphStyle: any): any;
 
 declare function CTParagraphStyleGetTypeID(): number;
 
-declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer | interop.Reference<any>): boolean;
+declare function CTParagraphStyleGetValueForSpecifier(paragraphStyle: any, spec: CTParagraphStyleSpecifier, valueBufferSize: number, valueBuffer: interop.Pointer | interop.Reference<any>): number;
 
 interface CTParagraphStyleSetting {
 	spec: CTParagraphStyleSpecifier;
@@ -750,6 +754,8 @@ declare const enum CTRubyAlignment {
 declare function CTRubyAnnotationCreate(alignment: CTRubyAlignment, overhang: CTRubyOverhang, sizeFactor: number, text: interop.Reference<string>): any;
 
 declare function CTRubyAnnotationCreateCopy(rubyAnnotation: any): any;
+
+declare function CTRubyAnnotationCreateWithAttributes(alignment: CTRubyAlignment, overhang: CTRubyOverhang, position: CTRubyPosition, string: string, attributes: NSDictionary<any, any>): any;
 
 declare function CTRubyAnnotationGetAlignment(rubyAnnotation: any): CTRubyAlignment;
 
@@ -1118,15 +1124,13 @@ interface KerxCoordinateAction {
 declare var KerxCoordinateAction: interop.StructType<KerxCoordinateAction>;
 
 interface KerxIndexArrayHeader {
-	glyphCount: number;
-	kernValueCount: number;
-	leftClassCount: number;
-	rightClassCount: number;
 	flags: number;
-	kernValue: interop.Reference<number>;
-	leftClass: interop.Reference<number>;
-	rightClass: interop.Reference<number>;
-	kernIndex: interop.Reference<number>;
+	rowCount: number;
+	columnCount: number;
+	rowIndexTableOffset: number;
+	columnIndexTableOffset: number;
+	kerningArrayOffset: number;
+	kerningVectorOffset: number;
 }
 declare var KerxIndexArrayHeader: interop.StructType<KerxIndexArrayHeader>;
 
@@ -1364,6 +1368,14 @@ interface SFNTLookupTrimmedArrayHeader {
 }
 declare var SFNTLookupTrimmedArrayHeader: interop.StructType<SFNTLookupTrimmedArrayHeader>;
 
+interface SFNTLookupVectorHeader {
+	valueSize: number;
+	firstGlyph: number;
+	count: number;
+	values: interop.Reference<number>;
+}
+declare var SFNTLookupVectorHeader: interop.StructType<SFNTLookupVectorHeader>;
+
 interface STClassTable {
 	firstGlyph: number;
 	nGlyphs: number;
@@ -1452,6 +1464,8 @@ interface TrakTableEntry {
 	sizesOffset: number;
 }
 declare var TrakTableEntry: interop.StructType<TrakTableEntry>;
+
+declare var kCTBackgroundColorAttributeName: string;
 
 declare var kCTBaselineClassAttributeName: string;
 
@@ -1641,6 +1655,8 @@ declare var kCTFrameProgressionAttributeName: string;
 
 declare var kCTGlyphInfoAttributeName: string;
 
+declare var kCTHorizontalInVerticalFormsAttributeName: string;
+
 declare var kCTKernAttributeName: string;
 
 declare var kCTLanguageAttributeName: string;
@@ -1650,6 +1666,10 @@ declare var kCTLigatureAttributeName: string;
 declare var kCTParagraphStyleAttributeName: string;
 
 declare var kCTRubyAnnotationAttributeName: string;
+
+declare var kCTRubyAnnotationScaleToFitAttributeName: string;
+
+declare var kCTRubyAnnotationSizeFactorAttributeName: string;
 
 declare var kCTRunDelegateAttributeName: string;
 

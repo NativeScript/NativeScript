@@ -52,6 +52,10 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static animateWithTexturesTimePerFrameResizeRestore(textures: NSArray<SKTexture>, sec: number, resize: boolean, restore: boolean): SKAction;
 
+	static animateWithWarpsTimes(warps: NSArray<SKWarpGeometry>, times: NSArray<number>): SKAction;
+
+	static animateWithWarpsTimesRestore(warps: NSArray<SKWarpGeometry>, times: NSArray<number>, restore: boolean): SKAction;
+
 	static applyAngularImpulseDuration(impulse: number, sec: number): SKAction;
 
 	static applyForceAtPointDuration(force: CGVector, point: CGPoint, sec: number): SKAction;
@@ -180,6 +184,8 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static scaleToDuration(scale: number, sec: number): SKAction;
 
+	static scaleToSizeDuration(size: CGSize, sec: number): SKAction;
+
 	static scaleXByYDuration(xScale: number, yScale: number, sec: number): SKAction;
 
 	static scaleXToDuration(scale: number, sec: number): SKAction;
@@ -218,6 +224,8 @@ declare class SKAction extends NSObject implements NSCoding, NSCopying {
 
 	static waitForDurationWithRange(sec: number, durationRange: number): SKAction;
 
+	static warpToDuration(warp: SKWarpGeometry, duration: number): SKAction;
+
 	duration: number;
 
 	speed: number;
@@ -246,6 +254,67 @@ declare const enum SKActionTimingMode {
 	EaseOut = 2,
 
 	EaseInEaseOut = 3
+}
+
+declare class SKAttribute extends NSObject implements NSCoding {
+
+	static alloc(): SKAttribute; // inherited from NSObject
+
+	static attributeWithNameType(name: string, type: SKAttributeType): SKAttribute;
+
+	static new(): SKAttribute; // inherited from NSObject
+
+	/* readonly */ name: string;
+
+	/* readonly */ type: SKAttributeType;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { name: string; type: SKAttributeType; });
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithNameType(name: string, type: SKAttributeType): this;
+}
+
+declare const enum SKAttributeType {
+
+	None = 0,
+
+	Float = 1,
+
+	VectorFloat2 = 2,
+
+	VectorFloat3 = 3,
+
+	VectorFloat4 = 4,
+
+	HalfFloat = 5,
+
+	VectorHalfFloat2 = 6,
+
+	VectorHalfFloat3 = 7,
+
+	VectorHalfFloat4 = 8
+}
+
+declare class SKAttributeValue extends NSObject implements NSCoding {
+
+	static alloc(): SKAttributeValue; // inherited from NSObject
+
+	static new(): SKAttributeValue; // inherited from NSObject
+
+	static valueWithFloat(value: number): SKAttributeValue;
+
+	floatValue: number;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
 }
 
 declare class SKAudioNode extends SKNode implements NSCoding {
@@ -367,7 +436,7 @@ declare class SKCropNode extends SKNode {
 	maskNode: SKNode;
 }
 
-declare class SKEffectNode extends SKNode {
+declare class SKEffectNode extends SKNode implements SKWarpable {
 
 	static alloc(): SKEffectNode; // inherited from NSObject
 
@@ -388,6 +457,44 @@ declare class SKEffectNode extends SKNode {
 	shouldEnableEffects: boolean;
 
 	shouldRasterize: boolean;
+
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	subdivisionLevels: number; // inherited from SKWarpable
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	warpGeometry: SKWarpGeometry; // inherited from SKWarpable
+
+	/* readonly */  // inherited from NSObjectProtocol
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	self(): this;
 }
 
 declare class SKEmitterNode extends SKNode {
@@ -710,6 +817,8 @@ declare class SKMutableTexture extends SKTexture {
 
 	static textureWithImageNamed(name: string): SKMutableTexture; // inherited from SKTexture
 
+	static textureWithNoiseMap(noiseMap: GKNoiseMap): SKMutableTexture; // inherited from SKTexture
+
 	static textureWithRectInTexture(rect: CGRect, texture: SKTexture): SKMutableTexture; // inherited from SKTexture
 
 	constructor(o: { size: CGSize; });
@@ -723,7 +832,7 @@ declare class SKMutableTexture extends SKTexture {
 	modifyPixelDataWithBlock(block: (p1: interop.Pointer | interop.Reference<any>, p2: number) => void): void;
 }
 
-declare class SKNode extends UIResponder implements NSCoding, NSCopying {
+declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocusItem {
 
 	static alloc(): SKNode; // inherited from NSObject
 
@@ -741,9 +850,13 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 
 	alpha: number;
 
+	attributeValues: NSDictionary<string, SKAttributeValue>;
+
 	/* readonly */ children: NSArray<SKNode>;
 
 	constraints: NSArray<SKConstraint>;
+
+	entity: GKEntity;
 
 	/* readonly */ frame: CGRect;
 
@@ -777,6 +890,24 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 
 	zRotation: number;
 
+	/* readonly */ canBecomeFocused: boolean; // inherited from UIFocusItem
+
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
+
+	/* readonly */ preferredFocusedView: UIView; // inherited from UIFocusEnvironment
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	actionForKey(key: string): SKAction;
@@ -787,6 +918,10 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 
 	childNodeWithName(name: string): SKNode;
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	containsPoint(p: CGPoint): boolean;
 
 	convertPointFromNode(point: CGPoint, node: SKNode): CGPoint;
@@ -794,6 +929,8 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 	convertPointToNode(point: CGPoint, node: SKNode): CGPoint;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	didUpdateFocusInContextWithAnimationCoordinator(context: UIFocusUpdateContext, coordinator: UIFocusAnimationCoordinator): void;
 
 	encodeWithCoder(aCoder: NSCoder): void;
 
@@ -809,7 +946,13 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 
 	intersectsNode(node: SKNode): boolean;
 
+	isEqual(object: any): boolean;
+
 	isEqualToNode(node: SKNode): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
 
 	moveToParent(parent: SKNode): void;
 
@@ -818,6 +961,12 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 	nodesAtPoint(p: CGPoint): NSArray<SKNode>;
 
 	objectForKeyedSubscript(name: string): NSArray<SKNode>;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
 	removeActionForKey(key: string): void;
 
@@ -829,13 +978,29 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying {
 
 	removeFromParent(): void;
 
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
 	runAction(action: SKAction): void;
 
 	runActionCompletion(action: SKAction, block: () => void): void;
 
 	runActionWithKey(action: SKAction, key: string): void;
 
+	self(): this;
+
+	setNeedsFocusUpdate(): void;
+
 	setScale(scale: number): void;
+
+	setValueForAttributeNamed(value: SKAttributeValue, key: string): void;
+
+	shouldUpdateFocusInContext(context: UIFocusUpdateContext): boolean;
+
+	updateFocusIfNeeded(): void;
+
+	valueForAttributeNamed(key: string): SKAttributeValue;
 }
 
 declare const enum SKParticleRenderOrder {
@@ -1228,7 +1393,7 @@ declare const enum SKRepeatMode {
 	Loop = 2
 }
 
-declare class SKScene extends SKEffectNode {
+declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	static alloc(): SKScene; // inherited from NSObject
 
@@ -1260,7 +1425,23 @@ declare class SKScene extends SKEffectNode {
 
 	/* readonly */ view: SKView;
 
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	/* readonly */  // inherited from NSObjectProtocol
+
 	constructor(o: { size: CGSize; });
+
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
 
 	convertPointFromView(point: CGPoint): CGPoint;
 
@@ -1279,6 +1460,26 @@ declare class SKScene extends SKEffectNode {
 	didSimulatePhysics(): void;
 
 	initWithSize(size: CGSize): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	sceneDidLoad(): void;
+
+	self(): this;
 
 	update(currentTime: number): void;
 
@@ -1326,6 +1527,8 @@ declare class SKShader extends NSObject implements NSCoding, NSCopying {
 	static shaderWithSource(source: string): SKShader;
 
 	static shaderWithSourceUniforms(source: string, uniforms: NSArray<SKUniform>): SKShader;
+
+	attributes: NSArray<SKAttribute>;
 
 	source: string;
 
@@ -1417,7 +1620,7 @@ declare class SKShapeNode extends SKNode {
 	strokeTexture: SKTexture;
 }
 
-declare class SKSpriteNode extends SKNode {
+declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	static alloc(): SKSpriteNode; // inherited from NSObject
 
@@ -1463,6 +1666,22 @@ declare class SKSpriteNode extends SKNode {
 
 	texture: SKTexture;
 
+	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+
+	/* readonly */ description: string; // inherited from NSObjectProtocol
+
+	/* readonly */ hash: number; // inherited from NSObjectProtocol
+
+	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+
+	subdivisionLevels: number; // inherited from SKWarpable
+
+	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+
+	warpGeometry: SKWarpGeometry; // inherited from SKWarpable
+
+	/* readonly */  // inherited from NSObjectProtocol
+
 	constructor(o: { color: UIColor; size: CGSize; });
 
 	constructor(o: { imageNamed: string; });
@@ -1471,6 +1690,10 @@ declare class SKSpriteNode extends SKNode {
 
 	constructor(o: { texture: SKTexture; color: UIColor; size: CGSize; });
 
+	class(): typeof NSObject;
+
+	conformsToProtocol(aProtocol: any /* Protocol */): boolean;
+
 	initWithColorSize(color: UIColor, size: CGSize): this;
 
 	initWithImageNamed(name: string): this;
@@ -1478,6 +1701,26 @@ declare class SKSpriteNode extends SKNode {
 	initWithTexture(texture: SKTexture): this;
 
 	initWithTextureColorSize(texture: SKTexture, color: UIColor, size: CGSize): this;
+
+	isEqual(object: any): boolean;
+
+	isKindOfClass(aClass: typeof NSObject): boolean;
+
+	isMemberOfClass(aClass: typeof NSObject): boolean;
+
+	performSelector(aSelector: string): any;
+
+	performSelectorWithObject(aSelector: string, object: any): any;
+
+	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
+
+	respondsToSelector(aSelector: string): boolean;
+
+	retainCount(): number;
+
+	scaleToSize(size: CGSize): void;
+
+	self(): this;
 }
 
 declare class SKTexture extends NSObject implements NSCoding, NSCopying {
@@ -1503,6 +1746,8 @@ declare class SKTexture extends NSObject implements NSCoding, NSCopying {
 	static textureWithImage(image: UIImage): SKTexture;
 
 	static textureWithImageNamed(name: string): SKTexture;
+
+	static textureWithNoiseMap(noiseMap: GKNoiseMap): SKTexture;
 
 	static textureWithRectInTexture(rect: CGRect, texture: SKTexture): SKTexture;
 
@@ -1565,6 +1810,346 @@ declare const enum SKTextureFilteringMode {
 	Nearest = 0,
 
 	Linear = 1
+}
+
+declare const enum SKTileAdjacencyMask {
+
+	AdjacencyUp = 1,
+
+	AdjacencyUpperRight = 2,
+
+	AdjacencyRight = 4,
+
+	AdjacencyLowerRight = 8,
+
+	AdjacencyDown = 16,
+
+	AdjacencyLowerLeft = 32,
+
+	AdjacencyLeft = 64,
+
+	AdjacencyUpperLeft = 128,
+
+	AdjacencyAll = 255,
+
+	HexFlatAdjacencyUp = 1,
+
+	HexFlatAdjacencyUpperRight = 2,
+
+	HexFlatAdjacencyLowerRight = 4,
+
+	HexFlatAdjacencyDown = 8,
+
+	HexFlatAdjacencyLowerLeft = 16,
+
+	HexFlatAdjacencyUpperLeft = 32,
+
+	HexFlatAdjacencyAll = 63,
+
+	HexPointyAdjacencyUpperLeft = 1,
+
+	HexPointyAdjacencyUpperRight = 2,
+
+	HexPointyAdjacencyRight = 4,
+
+	HexPointyAdjacencyLowerRight = 8,
+
+	HexPointyAdjacencyLowerLeft = 16,
+
+	HexPointyAdjacencyLeft = 32,
+
+	HexPointyAdjacencyAdd = 63,
+
+	AdjacencyUpEdge = 124,
+
+	AdjacencyUpperRightEdge = 112,
+
+	AdjacencyRightEdge = 241,
+
+	AdjacencyLowerRightEdge = 193,
+
+	AdjacencyDownEdge = 199,
+
+	AdjacencyLowerLeftEdge = 7,
+
+	AdjacencyLeftEdge = 31,
+
+	AdjacencyUpperLeftEdge = 28,
+
+	AdjacencyUpperRightCorner = 223,
+
+	AdjacencyLowerRightCorner = 127,
+
+	AdjacencyLowerLeftCorner = 253,
+
+	AdjacencyUpperLeftCorner = 247
+}
+
+declare class SKTileDefinition extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): SKTileDefinition; // inherited from NSObject
+
+	static new(): SKTileDefinition; // inherited from NSObject
+
+	static tileDefinitionWithTexture(texture: SKTexture): SKTileDefinition;
+
+	static tileDefinitionWithTextureNormalTextureSize(texture: SKTexture, normalTexture: SKTexture, size: CGSize): SKTileDefinition;
+
+	static tileDefinitionWithTextureSize(texture: SKTexture, size: CGSize): SKTileDefinition;
+
+	static tileDefinitionWithTexturesNormalTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, normalTextures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): SKTileDefinition;
+
+	static tileDefinitionWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): SKTileDefinition;
+
+	flipHorizontally: boolean;
+
+	flipVertically: boolean;
+
+	name: string;
+
+	normalTextures: NSArray<SKTexture>;
+
+	placementWeight: number;
+
+	rotation: SKTileDefinitionRotation;
+
+	size: CGSize;
+
+	textures: NSArray<SKTexture>;
+
+	timePerFrame: number;
+
+	userData: NSMutableDictionary<any, any>;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { texture: SKTexture; });
+
+	constructor(o: { texture: SKTexture; normalTexture: SKTexture; size: CGSize; });
+
+	constructor(o: { texture: SKTexture; size: CGSize; });
+
+	constructor(o: { textures: NSArray<SKTexture>; normalTextures: NSArray<SKTexture>; size: CGSize; timePerFrame: number; });
+
+	constructor(o: { textures: NSArray<SKTexture>; size: CGSize; timePerFrame: number; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithTexture(texture: SKTexture): this;
+
+	initWithTextureNormalTextureSize(texture: SKTexture, normalTexture: SKTexture, size: CGSize): this;
+
+	initWithTextureSize(texture: SKTexture, size: CGSize): this;
+
+	initWithTexturesNormalTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, normalTextures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): this;
+
+	initWithTexturesSizeTimePerFrame(textures: NSArray<SKTexture>, size: CGSize, timePerFrame: number): this;
+}
+
+declare const enum SKTileDefinitionRotation {
+
+	Rotation0 = 0,
+
+	Rotation90 = 1,
+
+	Rotation180 = 2,
+
+	Rotation270 = 3
+}
+
+declare class SKTileGroup extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): SKTileGroup; // inherited from NSObject
+
+	static emptyTileGroup(): SKTileGroup;
+
+	static new(): SKTileGroup; // inherited from NSObject
+
+	static tileGroupWithRules(rules: NSArray<SKTileGroupRule>): SKTileGroup;
+
+	static tileGroupWithTileDefinition(tileDefinition: SKTileDefinition): SKTileGroup;
+
+	name: string;
+
+	rules: NSArray<SKTileGroupRule>;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { rules: NSArray<SKTileGroupRule>; });
+
+	constructor(o: { tileDefinition: SKTileDefinition; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithRules(rules: NSArray<SKTileGroupRule>): this;
+
+	initWithTileDefinition(tileDefinition: SKTileDefinition): this;
+}
+
+declare class SKTileGroupRule extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): SKTileGroupRule; // inherited from NSObject
+
+	static new(): SKTileGroupRule; // inherited from NSObject
+
+	static tileGroupRuleWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition>): SKTileGroupRule;
+
+	adjacency: SKTileAdjacencyMask;
+
+	name: string;
+
+	tileDefinitions: NSArray<SKTileDefinition>;
+
+	constructor(o: { adjacency: SKTileAdjacencyMask; tileDefinitions: NSArray<SKTileDefinition>; });
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithAdjacencyTileDefinitions(adjacency: SKTileAdjacencyMask, tileDefinitions: NSArray<SKTileDefinition>): this;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
+
+	static alloc(): SKTileMapNode; // inherited from NSObject
+
+	static new(): SKTileMapNode; // inherited from NSObject
+
+	static node(): SKTileMapNode; // inherited from SKNode
+
+	static nodeWithFileNamed(filename: string): SKTileMapNode; // inherited from SKNode
+
+	static tileMapNodeWithTileSetColumnsRowsTileSize(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize): SKTileMapNode;
+
+	static tileMapNodeWithTileSetColumnsRowsTileSizeFillWithTileGroup(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroup: SKTileGroup): SKTileMapNode;
+
+	static tileMapNodeWithTileSetColumnsRowsTileSizeTileGroupLayout(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroupLayout: NSArray<SKTileGroup>): SKTileMapNode;
+
+	static tileMapNodesWithTileSetColumnsRowsTileSizeFromNoiseMapTileTypeNoiseMapThresholds(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, noiseMap: GKNoiseMap, thresholds: NSArray<number>): NSArray<SKTileMapNode>;
+
+	anchorPoint: CGPoint;
+
+	blendMode: SKBlendMode;
+
+	color: UIColor;
+
+	colorBlendFactor: number;
+
+	enableAutomapping: boolean;
+
+	lightingBitMask: number;
+
+	/* readonly */ mapSize: CGSize;
+
+	numberOfColumns: number;
+
+	numberOfRows: number;
+
+	shader: SKShader;
+
+	tileSet: SKTileSet;
+
+	tileSize: CGSize;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { tileSet: SKTileSet; columns: number; rows: number; tileSize: CGSize; });
+
+	constructor(o: { tileSet: SKTileSet; columns: number; rows: number; tileSize: CGSize; fillWithTileGroup: SKTileGroup; });
+
+	constructor(o: { tileSet: SKTileSet; columns: number; rows: number; tileSize: CGSize; tileGroupLayout: NSArray<SKTileGroup>; });
+
+	centerOfTileAtColumnRow(column: number, row: number): CGPoint;
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	fillWithTileGroup(tileGroup: SKTileGroup): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithTileSetColumnsRowsTileSize(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize): this;
+
+	initWithTileSetColumnsRowsTileSizeFillWithTileGroup(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroup: SKTileGroup): this;
+
+	initWithTileSetColumnsRowsTileSizeTileGroupLayout(tileSet: SKTileSet, columns: number, rows: number, tileSize: CGSize, tileGroupLayout: NSArray<SKTileGroup>): this;
+
+	setTileGroupAndTileDefinitionForColumnRow(tileGroup: SKTileGroup, tileDefinition: SKTileDefinition, column: number, row: number): void;
+
+	setTileGroupForColumnRow(tileGroup: SKTileGroup, column: number, row: number): void;
+
+	tileColumnIndexFromPosition(position: CGPoint): number;
+
+	tileDefinitionAtColumnRow(column: number, row: number): SKTileDefinition;
+
+	tileGroupAtColumnRow(column: number, row: number): SKTileGroup;
+
+	tileRowIndexFromPosition(position: CGPoint): number;
+}
+
+declare class SKTileSet extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): SKTileSet; // inherited from NSObject
+
+	static new(): SKTileSet; // inherited from NSObject
+
+	static tileSetFromURL(url: NSURL): SKTileSet;
+
+	static tileSetNamed(name: string): SKTileSet;
+
+	static tileSetWithTileGroups(tileGroups: NSArray<SKTileGroup>): SKTileSet;
+
+	static tileSetWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup>, tileSetType: SKTileSetType): SKTileSet;
+
+	defaultTileGroup: SKTileGroup;
+
+	defaultTileSize: CGSize;
+
+	name: string;
+
+	tileGroups: NSArray<SKTileGroup>;
+
+	type: SKTileSetType;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	constructor(o: { tileGroups: NSArray<SKTileGroup>; });
+
+	constructor(o: { tileGroups: NSArray<SKTileGroup>; tileSetType: SKTileSetType; });
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+
+	initWithTileGroups(tileGroups: NSArray<SKTileGroup>): this;
+
+	initWithTileGroupsTileSetType(tileGroups: NSArray<SKTileGroup>, tileSetType: SKTileSetType): this;
+}
+
+declare const enum SKTileSetType {
+
+	Grid = 0,
+
+	Isometric = 1,
+
+	HexagonalFlat = 2,
+
+	HexagonalPointy = 3
 }
 
 declare class SKTransition extends NSObject implements NSCopying {
@@ -1752,11 +2337,17 @@ declare class SKView extends UIView {
 
 	asynchronous: boolean;
 
+	delegate: NSObject;
+
 	frameInterval: number;
 
 	ignoresSiblingOrder: boolean;
 
 	paused: boolean;
+
+	preferredFrameRate: number;
+
+	preferredFramesPerSecond: number;
 
 	/* readonly */ scene: SKScene;
 
@@ -1786,3 +2377,61 @@ declare class SKView extends UIView {
 
 	textureFromNodeCrop(node: SKNode, crop: CGRect): SKTexture;
 }
+
+interface SKViewDelegate extends NSObjectProtocol {
+
+	viewShouldRenderAtTime?(view: SKView, time: number): boolean;
+}
+declare var SKViewDelegate: {
+
+	prototype: SKViewDelegate;
+};
+
+declare class SKWarpGeometry extends NSObject implements NSCoding, NSCopying {
+
+	static alloc(): SKWarpGeometry; // inherited from NSObject
+
+	static new(): SKWarpGeometry; // inherited from NSObject
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSCoding {
+
+	static alloc(): SKWarpGeometryGrid; // inherited from NSObject
+
+	static grid(): SKWarpGeometryGrid;
+
+	static gridWithColumnsRows(cols: number, rows: number): SKWarpGeometryGrid;
+
+	static new(): SKWarpGeometryGrid; // inherited from NSObject
+
+	/* readonly */ numberOfColumns: number;
+
+	/* readonly */ numberOfRows: number;
+
+	/* readonly */ vertexCount: number;
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+interface SKWarpable extends NSObjectProtocol {
+
+	subdivisionLevels: number;
+
+	warpGeometry: SKWarpGeometry;
+}
+declare var SKWarpable: {
+
+	prototype: SKWarpable;
+};

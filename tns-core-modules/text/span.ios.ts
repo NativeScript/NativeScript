@@ -2,6 +2,8 @@ import spanCommon = require("./span-common");
 import enums = require("ui/enums");
 import formattedString = require("text/formatted-string");
 
+import * as utils from "utils/utils";
+
 global.moduleMerge(spanCommon, exports);
 
 export class Span extends spanCommon.Span {
@@ -16,7 +18,7 @@ export class Span extends spanCommon.Span {
         if (realFontAttributes || realFontFamily || realFontSize) {
             var font;
             if (!realFontSize) {
-                realFontSize = UIFont.systemFontSize();
+                realFontSize = utils.ios.getter(UIFont, UIFont.systemFontSize);
             }
             if (realFontFamily) {
                 font = UIFont.fontWithNameSize(realFontFamily, realFontSize);

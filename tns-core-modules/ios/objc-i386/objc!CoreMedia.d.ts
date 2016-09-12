@@ -468,7 +468,7 @@ declare function CMTimeMakeFromDictionary(dict: NSDictionary<any, any>): CMTime;
 
 declare function CMTimeMakeWithEpoch(value: number, timescale: number, epoch: number): CMTime;
 
-declare function CMTimeMakeWithSeconds(seconds: number, preferredTimeScale: number): CMTime;
+declare function CMTimeMakeWithSeconds(seconds: number, preferredTimescale: number): CMTime;
 
 declare function CMTimeMapDurationFromRangeToRange(dur: CMTime, fromRange: CMTimeRange, toRange: CMTimeRange): CMTime;
 
@@ -757,6 +757,8 @@ declare var kCMFormatDescriptionTransferFunction_ITU_R_709_2: string;
 
 declare var kCMFormatDescriptionTransferFunction_SMPTE_240M_1995: string;
 
+declare var kCMFormatDescriptionTransferFunction_SMPTE_ST_428_1: string;
+
 declare var kCMFormatDescriptionTransferFunction_UseGamma: string;
 
 declare var kCMFormatDescriptionVendor_Apple: string;
@@ -841,6 +843,8 @@ declare var kCMMetadataFormatDescriptionKey_LocalID: string;
 
 declare var kCMMetadataFormatDescriptionKey_Namespace: string;
 
+declare var kCMMetadataFormatDescriptionKey_SetupData: string;
+
 declare var kCMMetadataFormatDescriptionKey_StructuralDependency: string;
 
 declare var kCMMetadataFormatDescriptionKey_Value: string;
@@ -850,6 +854,8 @@ declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_DataType: strin
 declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_ExtendedLanguageTag: string;
 
 declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_Identifier: string;
+
+declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_SetupData: string;
 
 declare var kCMMetadataFormatDescriptionMetadataSpecificationKey_StructuralDependency: string;
 

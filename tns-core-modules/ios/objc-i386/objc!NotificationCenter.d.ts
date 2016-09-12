@@ -19,7 +19,16 @@ declare class NCWidgetController extends NSObject {
 	setHasContentForWidgetWithBundleIdentifier(flag: boolean, bundleID: string): void;
 }
 
+declare const enum NCWidgetDisplayMode {
+
+	Compact = 0,
+
+	Expanded = 1
+}
+
 interface NCWidgetProviding extends NSObjectProtocol {
+
+	widgetActiveDisplayModeDidChangeWithMaximumSize?(activeDisplayMode: NCWidgetDisplayMode, maxSize: CGSize): void;
 
 	widgetMarginInsetsForProposedMarginInsets?(defaultMarginInsets: UIEdgeInsets): UIEdgeInsets;
 

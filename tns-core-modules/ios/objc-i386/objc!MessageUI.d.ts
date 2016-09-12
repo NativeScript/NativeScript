@@ -69,6 +69,8 @@ declare class MFMessageComposeViewController extends UINavigationController {
 
 	body: string;
 
+	message: MSMessage;
+
 	messageComposeDelegate: MFMessageComposeViewControllerDelegate;
 
 	recipients: NSArray<string>;

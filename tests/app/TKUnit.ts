@@ -15,6 +15,9 @@ import timer = require("timer");
 import trace = require("trace");
 import types = require("utils/types");
 import platform = require("platform");
+
+import * as utils from "utils/utils";
+
 var sdkVersion = parseInt(platform.device.sdkVersion);
 
 trace.enable();
@@ -377,7 +380,8 @@ export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: numbe
         var waitTime = 20 / 1000;
         var totalWaitTime = 0;
         while (true) {
-            NSRunLoop.currentRunLoop().runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));
+            utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));
+
             if (isReady()) {
                 break;
             }

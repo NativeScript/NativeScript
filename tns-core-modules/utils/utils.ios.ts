@@ -56,6 +56,14 @@ export module ios {
         }
     }
 
+    export function getter<T>(_this: any, property: T | {(): T}): T {
+        if (typeof property === "function") {
+            return (<{(): T}>property).call(_this);
+        } else {
+            return <T>property;
+        }
+    }
+
     export function getTransformedText(view, source: string, transform: string): string {
         let result = source;
 
@@ -131,13 +139,13 @@ export module ios {
     }
 
     export function isLandscape(): boolean {
-        var device = UIDevice.currentDevice();
-        var statusBarOrientation = UIApplication.sharedApplication().statusBarOrientation;
+        var device = getter(UIDevice, UIDevice.currentDevice);
+        var statusBarOrientation = getter(UIApplication, UIApplication.sharedApplication).statusBarOrientation;
         var isStatusBarOrientationLandscape = isOrientationLandscape(statusBarOrientation);
         return isOrientationLandscape(device.orientation) || isStatusBarOrientationLandscape;
     }
 
-    export var MajorVersion = NSString.stringWithString(UIDevice.currentDevice().systemVersion).intValue;
+    export var MajorVersion = NSString.stringWithString(getter(UIDevice, UIDevice.currentDevice).systemVersion).intValue;
 
     export function openFile(filePath: string): boolean {
         try {
@@ -163,8 +171,8 @@ export function GC() {
 export function openUrl(location: string): boolean {
     try {
         var url = NSURL.URLWithString(location.trim());
-        if (UIApplication.sharedApplication().canOpenURL(url)) {
-            return UIApplication.sharedApplication().openURL(url);
+        if (ios.getter(UIApplication, UIApplication.sharedApplication).canOpenURL(url)) {
+            return ios.getter(UIApplication, UIApplication.sharedApplication).openURL(url);
         }
     }
     catch (e) {

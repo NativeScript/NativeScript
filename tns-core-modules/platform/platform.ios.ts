@@ -1,11 +1,13 @@
 ﻿/* tslint:disable:class-name */
 import definition = require("platform");
 
+import * as utils from "utils/utils";
+
 export module platformNames {
     export var android = "Android";
     export var ios = "iOS";
 }
-  
+
 class Device implements definition.Device {
     private _model: string;
     private _osVersion: string;
@@ -24,7 +26,7 @@ class Device implements definition.Device {
 
     get osVersion(): string {
         if (!this._osVersion) {
-            this._osVersion = UIDevice.currentDevice().systemVersion;
+            this._osVersion = utils.ios.getter(UIDevice, UIDevice.currentDevice).systemVersion;
         }
 
         return this._osVersion;
@@ -32,7 +34,7 @@ class Device implements definition.Device {
 
     get model(): string {
         if (!this._model) {
-            this._model = UIDevice.currentDevice().model;
+            this._model = utils.ios.getter(UIDevice, UIDevice.currentDevice).model;
         }
 
         return this._model;
@@ -40,7 +42,7 @@ class Device implements definition.Device {
 
     get sdkVersion(): string {
         if (!this._sdkVersion) {
-            this._sdkVersion = UIDevice.currentDevice().systemVersion;
+            this._sdkVersion = utils.ios.getter(UIDevice, UIDevice.currentDevice).systemVersion;
         }
 
         return this._sdkVersion;
@@ -50,7 +52,7 @@ class Device implements definition.Device {
         if (!this._deviceType) {
             var enums = require("ui/enums");
 
-            if (UIDevice.currentDevice().userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
+            if (utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
                 this._deviceType = enums.DeviceType.Phone;
             }
             else {
@@ -62,7 +64,7 @@ class Device implements definition.Device {
     }
 
     get uuid(): string {
-        var userDefaults = NSUserDefaults.standardUserDefaults();
+        var userDefaults = utils.ios.getter(NSUserDefaults, NSUserDefaults.standardUserDefaults);
         var uuid_key = "TNSUUID";
         var app_uuid = userDefaults.stringForKey(uuid_key);
 
@@ -78,7 +80,7 @@ class Device implements definition.Device {
 
     get language(): string {
         if (!this._language) {
-            var languages = NSLocale.preferredLanguages();
+            var languages = utils.ios.getter(NSLocale, NSLocale.preferredLanguages);
             this._language = languages[0];
         }
         
@@ -87,7 +89,7 @@ class Device implements definition.Device {
 
     get region(): string {
         if(!this._region) {
-            this._region = NSLocale.currentLocale().objectForKey(NSLocaleCountryCode);
+            this._region = utils.ios.getter(NSLocale, NSLocale.currentLocale).objectForKey(NSLocaleCountryCode);
         }
 
         return this._region;
@@ -98,7 +100,7 @@ class MainScreen implements definition.ScreenMetrics {
     private _screen: UIScreen;
     private get screen(): UIScreen {
         if (!this._screen) {
-            this._screen = UIScreen.mainScreen();
+            this._screen = utils.ios.getter(UIScreen, UIScreen.mainScreen);
         }
 
         return this._screen;

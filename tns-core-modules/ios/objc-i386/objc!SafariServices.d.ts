@@ -14,10 +14,32 @@ declare class SFContentBlockerManager extends NSObject {
 
 	static alloc(): SFContentBlockerManager; // inherited from NSObject
 
+	static getStateOfContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: SFContentBlockerState, p2: NSError) => void): void;
+
 	static new(): SFContentBlockerManager; // inherited from NSObject
 
 	static reloadContentBlockerWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
 }
+
+declare class SFContentBlockerState extends NSObject {
+
+	static alloc(): SFContentBlockerState; // inherited from NSObject
+
+	static new(): SFContentBlockerState; // inherited from NSObject
+
+	/* readonly */ enabled: boolean;
+}
+
+declare const enum SFErrorCode {
+
+	NoExtensionFound = 1,
+
+	NoAttachmentFound = 2,
+
+	LoadingInterrupted = 3
+}
+
+declare var SFErrorDomain: string;
 
 declare class SFSafariViewController extends UIViewController {
 
@@ -26,6 +48,10 @@ declare class SFSafariViewController extends UIViewController {
 	static new(): SFSafariViewController; // inherited from NSObject
 
 	delegate: SFSafariViewControllerDelegate;
+
+	preferredBarTintColor: UIColor;
+
+	preferredControlTintColor: UIColor;
 
 	constructor(o: { URL: NSURL; });
 

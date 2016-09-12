@@ -2,9 +2,11 @@
 import {View} from "ui/core/view";
 import trace = require("trace");
 import uiUtils = require("ui/utils");
-import utils = require("utils/utils");
 import {device} from "platform";
 import {DeviceType} from "ui/enums";
+
+import * as utils from "utils/utils";
+import getter = utils.ios.getter;
 
 global.moduleMerge(pageCommon, exports);
 const ENTRY = "_entry";
@@ -79,7 +81,7 @@ class UIViewControllerImpl extends UIViewController {
         if (owner._modalParent) {
             let isTablet = device.deviceType === DeviceType.Tablet;
             let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
-            let frame = isFullScreen ? UIScreen.mainScreen().bounds : this.view.frame;
+            let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
             let size = frame.size;
             let width = size.width;
             let height = size.height;
@@ -99,7 +101,7 @@ class UIViewControllerImpl extends UIViewController {
 
             let bottom = height;
             let statusBarHeight = uiUtils.ios.getStatusBarHeight();
-            let statusBarVisible = !UIApplication.sharedApplication().statusBarHidden;
+            let statusBarVisible = !getter(UIApplication, UIApplication.sharedApplication).statusBarHidden;
             let backgroundSpanUnderStatusBar = owner.backgroundSpanUnderStatusBar;
             if (statusBarVisible && !backgroundSpanUnderStatusBar) {
                 height -= statusBarHeight;
@@ -396,7 +398,7 @@ export class Page extends pageCommon.Page {
         super._raiseShowingModallyEvent();
 
         parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 7, null);
-        let transitionCoordinator = parent.ios.transitionCoordinator();
+        let transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
         }

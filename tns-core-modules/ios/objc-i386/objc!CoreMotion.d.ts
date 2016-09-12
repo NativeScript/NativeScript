@@ -45,8 +45,6 @@ declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CMAttitude; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ pitch: number;
 
 	/* readonly */ quaternion: CMQuaternion;
@@ -56,6 +54,8 @@ declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ rotationMatrix: CMRotationMatrix;
 
 	/* readonly */ yaw: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -146,9 +146,9 @@ declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CMLogItem; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ timestamp: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -318,13 +318,19 @@ declare class CMPedometer extends NSObject {
 
 	static isPaceAvailable(): boolean;
 
+	static isPedometerEventTrackingAvailable(): boolean;
+
 	static isStepCountingAvailable(): boolean;
 
 	static new(): CMPedometer; // inherited from NSObject
 
 	queryPedometerDataFromDateToDateWithHandler(start: Date, end: Date, handler: (p1: CMPedometerData, p2: NSError) => void): void;
 
+	startPedometerEventUpdatesWithHandler(handler: (p1: CMPedometerEvent, p2: NSError) => void): void;
+
 	startPedometerUpdatesFromDateWithHandler(start: Date, handler: (p1: CMPedometerData, p2: NSError) => void): void;
+
+	stopPedometerEventUpdates(): void;
 
 	stopPedometerUpdates(): void;
 }
@@ -335,7 +341,7 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): CMPedometerData; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
+	/* readonly */ averageActivePace: number;
 
 	/* readonly */ currentCadence: number;
 
@@ -353,6 +359,8 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 
 	/* readonly */ startDate: Date;
 
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -360,6 +368,34 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 	encodeWithCoder(aCoder: NSCoder): void;
 
 	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare class CMPedometerEvent extends NSObject implements NSCopying, NSSecureCoding {
+
+	static alloc(): CMPedometerEvent; // inherited from NSObject
+
+	static new(): CMPedometerEvent; // inherited from NSObject
+
+	/* readonly */ date: Date;
+
+	/* readonly */ type: CMPedometerEventType;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
+	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
+
+	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
+
+	encodeWithCoder(aCoder: NSCoder): void;
+
+	initWithCoder(aDecoder: NSCoder): this;
+}
+
+declare const enum CMPedometerEventType {
+
+	Pause = 0,
+
+	Resume = 1
 }
 
 interface CMQuaternion {

@@ -86,6 +86,8 @@ declare class WKInterfaceController extends NSObject {
 
 	handleActionWithIdentifierForLocalNotification(identifier: string, localNotification: UILocalNotification): void;
 
+	handleActionWithIdentifierForNotification(identifier: string, notification: UNNotification): void;
+
 	handleActionWithIdentifierForRemoteNotification(identifier: string, remoteNotification: NSDictionary<any, any>): void;
 
 	handleUserActivity(userInfo: NSDictionary<any, any>): void;
@@ -475,6 +477,8 @@ declare class WKUserNotificationInterfaceController extends WKInterfaceControlle
 	static new(): WKUserNotificationInterfaceController; // inherited from NSObject
 
 	didReceiveLocalNotificationWithCompletion(localNotification: UILocalNotification, completionHandler: (p1: WKUserNotificationInterfaceType) => void): void;
+
+	didReceiveNotificationWithCompletion(notification: UNNotification, completionHandler: (p1: WKUserNotificationInterfaceType) => void): void;
 
 	didReceiveRemoteNotificationWithCompletion(remoteNotification: NSDictionary<any, any>, completionHandler: (p1: WKUserNotificationInterfaceType) => void): void;
 }
