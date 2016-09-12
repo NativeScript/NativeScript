@@ -31,8 +31,6 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLBeacon; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ accuracy: number;
 
 	/* readonly */ major: number;
@@ -44,6 +42,8 @@ declare class CLBeacon extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ proximityUUID: NSUUID;
 
 	/* readonly */ rssi: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -156,9 +156,9 @@ declare class CLFloor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLFloor; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ level: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -194,8 +194,6 @@ declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLHeading; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ headingAccuracy: number;
 
 	/* readonly */ magneticHeading: number;
@@ -209,6 +207,8 @@ declare class CLHeading extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ y: number;
 
 	/* readonly */ z: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -224,8 +224,6 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 	static alloc(): CLLocation; // inherited from NSObject
 
 	static new(): CLLocation; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
 
 	/* readonly */ altitude: number;
 
@@ -254,6 +252,8 @@ declare class CLLocation extends NSObject implements CKRecordValue, NSCopying, N
 	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	/* readonly */  // inherited from NSObjectProtocol
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -458,7 +458,7 @@ declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): CLPlacemark; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
+	static placemarkWithLocationNamePostalAddress(location: CLLocation, name: string, postalAddress: CNPostalAddress): CLPlacemark;
 
 	/* readonly */ ISOcountryCode: string;
 
@@ -494,6 +494,8 @@ declare class CLPlacemark extends NSObject implements NSCopying, NSSecureCoding 
 
 	/* readonly */ timeZone: NSTimeZone;
 
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
 	constructor(o: { placemark: CLPlacemark; });
@@ -524,8 +526,6 @@ declare class CLRegion extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLRegion; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ center: CLLocationCoordinate2D;
 
 	/* readonly */ identifier: string;
@@ -535,6 +535,8 @@ declare class CLRegion extends NSObject implements NSCopying, NSSecureCoding {
 	notifyOnExit: boolean;
 
 	/* readonly */ radius: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { circularRegionWithCenter: CLLocationCoordinate2D; radius: number; identifier: string; });
 
@@ -568,8 +570,6 @@ declare class CLVisit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CLVisit; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ arrivalDate: Date;
 
 	/* readonly */ coordinate: CLLocationCoordinate2D;
@@ -577,6 +577,8 @@ declare class CLVisit extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ departureDate: Date;
 
 	/* readonly */ horizontalAccuracy: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

@@ -3,17 +3,39 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static alloc(): CIColor; // inherited from NSObject
 
+	static blackColor(): CIColor;
+
+	static blueColor(): CIColor;
+
+	static clearColor(): CIColor;
+
 	static colorWithCGColor(c: any): CIColor;
 
 	static colorWithRedGreenBlue(r: number, g: number, b: number): CIColor;
 
 	static colorWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): CIColor;
 
+	static colorWithRedGreenBlueAlphaColorSpace(r: number, g: number, b: number, a: number, colorSpace: any): CIColor;
+
+	static colorWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): CIColor;
+
 	static colorWithString(representation: string): CIColor;
+
+	static cyanColor(): CIColor;
+
+	static grayColor(): CIColor;
+
+	static greenColor(): CIColor;
+
+	static magentaColor(): CIColor;
 
 	static new(): CIColor; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
+	static redColor(): CIColor;
+
+	static whiteColor(): CIColor;
+
+	static yellowColor(): CIColor;
 
 	/* readonly */ alpha: number;
 
@@ -31,6 +53,8 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	/* readonly */ stringRepresentation: string;
 
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+
 	constructor(o: { CGColor: any; });
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -40,6 +64,10 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 	constructor(o: { red: number; green: number; blue: number; });
 
 	constructor(o: { red: number; green: number; blue: number; alpha: number; });
+
+	constructor(o: { red: number; green: number; blue: number; alpha: number; colorSpace: any; });
+
+	constructor(o: { red: number; green: number; blue: number; colorSpace: any; });
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -54,6 +82,10 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 	initWithRedGreenBlue(r: number, g: number, b: number): this;
 
 	initWithRedGreenBlueAlpha(r: number, g: number, b: number, a: number): this;
+
+	initWithRedGreenBlueAlphaColorSpace(r: number, g: number, b: number, a: number, colorSpace: any): this;
+
+	initWithRedGreenBlueColorSpace(r: number, g: number, b: number, colorSpace: any): this;
 }
 
 declare class CIColorKernel extends CIKernel {
@@ -71,6 +103,8 @@ declare class CIContext extends NSObject {
 
 	static alloc(): CIContext; // inherited from NSObject
 
+	static context(): CIContext;
+
 	static contextWithCGContextOptions(cgctx: any, options: NSDictionary<string, any>): CIContext;
 
 	static contextWithEAGLContext(eaglContext: EAGLContext): CIContext;
@@ -87,13 +121,27 @@ declare class CIContext extends NSObject {
 
 	/* readonly */ workingColorSpace: any;
 
+	/* readonly */ workingFormat: number;
+
+	constructor(o: { options: NSDictionary<string, any>; });
+
+	JPEGRepresentationOfImageColorSpaceOptions(image: CIImage, colorSpace: any, options: NSDictionary<any, any>): NSData;
+
+	TIFFRepresentationOfImageFormatColorSpaceOptions(image: CIImage, format: number, colorSpace: any, options: NSDictionary<any, any>): NSData;
+
+	clearCaches(): void;
+
 	createCGImageFromRect(image: CIImage, fromRect: CGRect): any;
 
 	createCGImageFromRectFormatColorSpace(image: CIImage, fromRect: CGRect, format: number, colorSpace: any): any;
 
+	createCGImageFromRectFormatColorSpaceDeferred(image: CIImage, fromRect: CGRect, format: number, colorSpace: any, deferred: boolean): any;
+
 	drawImageAtPointFromRect(image: CIImage, atPoint: CGPoint, fromRect: CGRect): void;
 
 	drawImageInRectFromRect(image: CIImage, inRect: CGRect, fromRect: CGRect): void;
+
+	initWithOptions(options: NSDictionary<string, any>): this;
 
 	inputImageMaximumSize(): CGSize;
 
@@ -106,6 +154,10 @@ declare class CIContext extends NSObject {
 	renderToCVPixelBufferBoundsColorSpace(image: CIImage, buffer: any, bounds: CGRect, colorSpace: any): void;
 
 	renderToMTLTextureCommandBufferBoundsColorSpace(image: CIImage, texture: MTLTexture, commandBuffer: MTLCommandBuffer, bounds: CGRect, colorSpace: any): void;
+
+	writeJPEGRepresentationOfImageToURLColorSpaceOptionsError(image: CIImage, url: NSURL, colorSpace: any, options: NSDictionary<any, any>): boolean;
+
+	writeTIFFRepresentationOfImageToURLFormatColorSpaceOptionsError(image: CIImage, url: NSURL, format: number, colorSpace: any, options: NSDictionary<any, any>): boolean;
 }
 
 declare class CIDetector extends NSObject {
@@ -134,6 +186,8 @@ declare var CIDetectorEyeBlink: string;
 declare var CIDetectorFocalLength: string;
 
 declare var CIDetectorImageOrientation: string;
+
+declare var CIDetectorMaxFeatureCount: string;
 
 declare var CIDetectorMinFeatureSize: string;
 
@@ -219,6 +273,12 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static filterNamesInCategory(category: string): NSArray<string>;
 
+	static filterWithCVPixelBufferPropertiesOptions(pixelBuffer: any, properties: NSDictionary<any, any>, options: NSDictionary<any, any>): CIFilter;
+
+	static filterWithImageDataOptions(data: NSData, options: NSDictionary<any, any>): CIFilter;
+
+	static filterWithImageURLOptions(url: NSURL, options: NSDictionary<any, any>): CIFilter;
+
 	static filterWithName(name: string): CIFilter;
 
 	static filterWithNameKeysAndValues(name: string, key0: any): CIFilter;
@@ -239,17 +299,17 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static serializedXMPFromFiltersInputImageExtent(filters: NSArray<CIFilter>, extent: CGRect): NSData;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ attributes: NSDictionary<string, any>;
 
 	/* readonly */ inputKeys: NSArray<string>;
 
-	/* readonly */ name: string;
+	name: string;
 
 	/* readonly */ outputImage: CIImage;
 
 	/* readonly */ outputKeys: NSArray<string>;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -260,6 +320,8 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 	initWithCoder(aDecoder: NSCoder): this;
 
 	setDefaults(): void;
+
+	setName(aString: string): void;
 }
 
 interface CIFilterConstructor {
@@ -338,15 +400,19 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIImage; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
+	/* readonly */ CGImage: any;
 
 	/* readonly */ colorSpace: any;
 
 	/* readonly */ extent: CGRect;
 
+	/* readonly */ pixelBuffer: any;
+
 	/* readonly */ properties: NSDictionary<string, any>;
 
 	/* readonly */ url: NSURL;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { bitmapData: NSData; bytesPerRow: number; size: CGSize; format: number; colorSpace: any; });
 
@@ -384,6 +450,8 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	constructor(o: { texture: number; size: CGSize; flipped: boolean; colorSpace: any; });
 
+	autoAdjustmentFilters(): NSArray<CIFilter>;
+
 	autoAdjustmentFiltersWithOptions(options: NSDictionary<string, any>): NSArray<CIFilter>;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
@@ -392,15 +460,31 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	imageByApplyingFilterWithInputParameters(filterName: string, params: NSDictionary<string, any>): CIImage;
 
+	imageByApplyingGaussianBlurWithSigma(sigma: number): CIImage;
+
 	imageByApplyingOrientation(orientation: number): CIImage;
 
 	imageByApplyingTransform(matrix: CGAffineTransform): CIImage;
 
 	imageByClampingToExtent(): CIImage;
 
+	imageByClampingToRect(rect: CGRect): CIImage;
+
+	imageByColorMatchingColorSpaceToWorkingSpace(colorSpace: any): CIImage;
+
+	imageByColorMatchingWorkingSpaceToColorSpace(colorSpace: any): CIImage;
+
 	imageByCompositingOverImage(dest: CIImage): CIImage;
 
 	imageByCroppingToRect(rect: CGRect): CIImage;
+
+	imageByPremultiplyingAlpha(): CIImage;
+
+	imageBySettingAlphaOneInExtent(extent: CGRect): CIImage;
+
+	imageBySettingProperties(properties: NSDictionary<any, any>): CIImage;
+
+	imageByUnpremultiplyingAlpha(): CIImage;
 
 	imageTransformForOrientation(orientation: number): CGAffineTransform;
 
@@ -473,6 +557,65 @@ declare class CIImageAccumulator extends NSObject {
 
 	setImageDirtyRect(image: CIImage, dirtyRect: CGRect): void;
 }
+
+interface CIImageProcessorInput {
+
+	baseAddress: interop.Pointer | interop.Reference<any>;
+
+	bytesPerRow: number;
+
+	format: number;
+
+	metalTexture: MTLTexture;
+
+	pixelBuffer: any;
+
+	region: CGRect;
+}
+declare var CIImageProcessorInput: {
+
+	prototype: CIImageProcessorInput;
+};
+
+declare class CIImageProcessorKernel extends NSObject {
+
+	static alloc(): CIImageProcessorKernel; // inherited from NSObject
+
+	static applyWithExtentInputsArgumentsError(extent: CGRect, inputs: NSArray<CIImage>, args: NSDictionary<string, any>): CIImage;
+
+	static formatForInputAtIndex(input: number): number;
+
+	static new(): CIImageProcessorKernel; // inherited from NSObject
+
+	static processWithInputsArgumentsOutputError(inputs: NSArray<CIImageProcessorInput>, _arguments: NSDictionary<string, any>, output: CIImageProcessorOutput): boolean;
+
+	static roiForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
+
+	/* readonly */ static outputFormat: number;
+
+	/* readonly */ static synchronizeInputs: interop.FunctionReference<(p1: number) => number>;
+}
+
+interface CIImageProcessorOutput {
+
+	baseAddress: interop.Pointer | interop.Reference<any>;
+
+	bytesPerRow: number;
+
+	format: number;
+
+	metalCommandBuffer: MTLCommandBuffer;
+
+	metalTexture: MTLTexture;
+
+	pixelBuffer: any;
+
+	region: CGRect;
+}
+declare var CIImageProcessorOutput: {
+
+	prototype: CIImageProcessorOutput;
+};
 
 declare class CIKernel extends NSObject {
 
@@ -573,8 +716,6 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIVector; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	static vectorWithCGAffineTransform(t: CGAffineTransform): CIVector;
 
 	static vectorWithCGPoint(p: CGPoint): CIVector;
@@ -610,6 +751,8 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 	/* readonly */ count: number;
 
 	/* readonly */ stringRepresentation: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { CGAffineTransform: CGAffineTransform; });
 
@@ -668,6 +811,8 @@ declare class CIWarpKernel extends CIKernel {
 
 	applyWithExtentRoiCallbackInputImageArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, image: CIImage, args: NSArray<any>): CIImage;
 }
+
+declare var kCIActiveKeys: string;
 
 declare var kCIAttributeClass: string;
 
@@ -777,9 +922,13 @@ declare var kCICategoryTransition: string;
 
 declare var kCICategoryVideo: string;
 
+declare var kCIContextCacheIntermediates: string;
+
 declare var kCIContextHighQualityDownsample: string;
 
 declare var kCIContextOutputColorSpace: string;
+
+declare var kCIContextOutputPremultiplied: string;
 
 declare var kCIContextPriorityRequestLow: string;
 
@@ -843,13 +992,21 @@ declare var kCIImageProviderTileSize: string;
 
 declare var kCIImageProviderUserInfo: string;
 
+declare var kCIInputAllowDraftModeKey: string;
+
 declare var kCIInputAngleKey: string;
 
 declare var kCIInputAspectRatioKey: string;
 
 declare var kCIInputBackgroundImageKey: string;
 
+declare var kCIInputBaselineExposureKey: string;
+
 declare var kCIInputBiasKey: string;
+
+declare var kCIInputBoostKey: string;
+
+declare var kCIInputBoostShadowAmountKey: string;
 
 declare var kCIInputBrightnessKey: string;
 
@@ -857,25 +1014,65 @@ declare var kCIInputCenterKey: string;
 
 declare var kCIInputColorKey: string;
 
+declare var kCIInputColorNoiseReductionAmountKey: string;
+
 declare var kCIInputContrastKey: string;
 
+declare var kCIInputDecoderVersionKey: string;
+
+declare var kCIInputDisableGamutMapKey: string;
+
 declare var kCIInputEVKey: string;
+
+declare var kCIInputEnableChromaticNoiseTrackingKey: string;
+
+declare var kCIInputEnableSharpeningKey: string;
+
+declare var kCIInputEnableVendorLensCorrectionKey: string;
 
 declare var kCIInputExtentKey: string;
 
 declare var kCIInputGradientImageKey: string;
 
+declare var kCIInputIgnoreImageOrientationKey: string;
+
 declare var kCIInputImageKey: string;
+
+declare var kCIInputImageOrientationKey: string;
 
 declare var kCIInputIntensityKey: string;
 
+declare var kCIInputLinearSpaceFilter: string;
+
+declare var kCIInputLuminanceNoiseReductionAmountKey: string;
+
 declare var kCIInputMaskImageKey: string;
+
+declare var kCIInputNeutralChromaticityXKey: string;
+
+declare var kCIInputNeutralChromaticityYKey: string;
+
+declare var kCIInputNeutralLocationKey: string;
+
+declare var kCIInputNeutralTemperatureKey: string;
+
+declare var kCIInputNeutralTintKey: string;
+
+declare var kCIInputNoiseReductionAmountKey: string;
+
+declare var kCIInputNoiseReductionContrastAmountKey: string;
+
+declare var kCIInputNoiseReductionDetailAmountKey: string;
+
+declare var kCIInputNoiseReductionSharpnessAmountKey: string;
 
 declare var kCIInputRadiusKey: string;
 
 declare var kCIInputRefractionKey: string;
 
 declare var kCIInputSaturationKey: string;
+
+declare var kCIInputScaleFactorKey: string;
 
 declare var kCIInputScaleKey: string;
 
@@ -897,6 +1094,8 @@ declare var kCIInputWidthKey: string;
 
 declare var kCIOutputImageKey: string;
 
+declare var kCIOutputNativeSizeKey: string;
+
 declare var kCISamplerAffineMatrix: string;
 
 declare var kCISamplerColorSpace: string;
@@ -912,6 +1111,8 @@ declare var kCISamplerWrapBlack: string;
 declare var kCISamplerWrapClamp: string;
 
 declare var kCISamplerWrapMode: string;
+
+declare var kCISupportedDecoderVersionsKey: string;
 
 declare var kCIUIParameterSet: string;
 

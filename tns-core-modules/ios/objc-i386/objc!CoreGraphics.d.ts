@@ -11,13 +11,13 @@ declare var CGAffineTransform: interop.StructType<CGAffineTransform>;
 
 declare function CGAffineTransformConcat(t1: CGAffineTransform, t2: CGAffineTransform): CGAffineTransform;
 
-declare function CGAffineTransformEqualToTransform(t1: CGAffineTransform, t2: CGAffineTransform): boolean;
+declare function CGAffineTransformEqualToTransform(t1: CGAffineTransform, t2: CGAffineTransform): number;
 
 declare var CGAffineTransformIdentity: CGAffineTransform;
 
 declare function CGAffineTransformInvert(t: CGAffineTransform): CGAffineTransform;
 
-declare function CGAffineTransformIsIdentity(t: CGAffineTransform): boolean;
+declare function CGAffineTransformIsIdentity(t: CGAffineTransform): number;
 
 declare function CGAffineTransformMake(a: number, b: number, c: number, d: number, tx: number, ty: number): CGAffineTransform;
 
@@ -137,19 +137,17 @@ declare const enum CGBlendMode {
 	kCGBlendModePlusLighter = 27
 }
 
-declare function CGColorConverterCreateSimple(from: any, to: any): interop.Pointer | interop.Reference<any>;
+declare function CGColorConversionInfoCreate(src: any, dst: any): any;
 
-declare function CGColorConverterGetTypeID(): number;
+declare function CGColorConversionInfoGetTypeID(): number;
 
-declare function CGColorConverterRelease(p1: interop.Pointer | interop.Reference<any>): void;
+declare const enum CGColorConversionInfoTransformType {
 
-declare const enum CGColorConverterTransformType {
+	kCGColorConversionTransformFromSpace = 0,
 
-	kCGColorConverterTransformFromSpace = 0,
+	kCGColorConversionTransformToSpace = 1,
 
-	kCGColorConverterTransformToSpace = 1,
-
-	kCGColorConverterTransformApplySpace = 2
+	kCGColorConversionTransformApplySpace = 2
 }
 
 declare function CGColorCreate(space: any, components: interop.Pointer | interop.Reference<number>): any;
@@ -162,7 +160,7 @@ declare function CGColorCreateCopyWithAlpha(color: any, alpha: number): any;
 
 declare function CGColorCreateWithPattern(space: any, pattern: any, components: interop.Pointer | interop.Reference<number>): any;
 
-declare function CGColorEqualToColor(color1: any, color2: any): boolean;
+declare function CGColorEqualToColor(color1: any, color2: any): number;
 
 declare function CGColorGetAlpha(color: any): number;
 
@@ -193,7 +191,11 @@ declare const enum CGColorRenderingIntent {
 
 declare function CGColorRetain(color: any): any;
 
+declare function CGColorSpaceCopyICCData(space: any): NSData;
+
 declare function CGColorSpaceCopyICCProfile(space: any): NSData;
+
+declare function CGColorSpaceCopyName(space: any): string;
 
 declare function CGColorSpaceCreateCalibratedGray(whitePoint: interop.Reference<number>, blackPoint: interop.Reference<number>, gamma: number): any;
 
@@ -231,6 +233,8 @@ declare function CGColorSpaceGetNumberOfComponents(space: any): number;
 
 declare function CGColorSpaceGetTypeID(): number;
 
+declare function CGColorSpaceIsWideGamutRGB(p1: any): number;
+
 declare const enum CGColorSpaceModel {
 
 	kCGColorSpaceModelUnknown = -1,
@@ -253,6 +257,8 @@ declare const enum CGColorSpaceModel {
 declare function CGColorSpaceRelease(space: any): void;
 
 declare function CGColorSpaceRetain(space: any): any;
+
+declare function CGColorSpaceSupportsOutput(space: any): number;
 
 declare function CGContextAddArc(c: any, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: number): void;
 
@@ -364,11 +370,11 @@ declare function CGContextGetTypeID(): number;
 
 declare function CGContextGetUserSpaceToDeviceSpaceTransform(c: any): CGAffineTransform;
 
-declare function CGContextIsPathEmpty(c: any): boolean;
+declare function CGContextIsPathEmpty(c: any): number;
 
 declare function CGContextMoveToPoint(c: any, x: number, y: number): void;
 
-declare function CGContextPathContainsPoint(c: any, point: CGPoint, mode: CGPathDrawingMode): boolean;
+declare function CGContextPathContainsPoint(c: any, point: CGPoint, mode: CGPathDrawingMode): number;
 
 declare function CGContextRelease(c: any): void;
 
@@ -386,13 +392,13 @@ declare function CGContextScaleCTM(c: any, sx: number, sy: number): void;
 
 declare function CGContextSelectFont(c: any, name: string, size: number, textEncoding: CGTextEncoding): void;
 
-declare function CGContextSetAllowsAntialiasing(c: any, allowsAntialiasing: boolean): void;
+declare function CGContextSetAllowsAntialiasing(c: any, allowsAntialiasing: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGContextSetAllowsFontSmoothing(c: any, allowsFontSmoothing: boolean): void;
+declare function CGContextSetAllowsFontSmoothing(c: any, allowsFontSmoothing: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGContextSetAllowsFontSubpixelPositioning(c: any, allowsFontSubpixelPositioning: boolean): void;
+declare function CGContextSetAllowsFontSubpixelPositioning(c: any, allowsFontSubpixelPositioning: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGContextSetAllowsFontSubpixelQuantization(c: any, allowsFontSubpixelQuantization: boolean): void;
+declare function CGContextSetAllowsFontSubpixelQuantization(c: any, allowsFontSubpixelQuantization: interop.FunctionReference<(p1: number) => number>): void;
 
 declare function CGContextSetAlpha(c: any, alpha: number): void;
 
@@ -446,13 +452,13 @@ declare function CGContextSetShadow(c: any, offset: CGSize, blur: number): void;
 
 declare function CGContextSetShadowWithColor(c: any, offset: CGSize, blur: number, color: any): void;
 
-declare function CGContextSetShouldAntialias(c: any, shouldAntialias: boolean): void;
+declare function CGContextSetShouldAntialias(c: any, shouldAntialias: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGContextSetShouldSmoothFonts(c: any, shouldSmoothFonts: boolean): void;
+declare function CGContextSetShouldSmoothFonts(c: any, shouldSmoothFonts: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGContextSetShouldSubpixelPositionFonts(c: any, shouldSubpixelPositionFonts: boolean): void;
+declare function CGContextSetShouldSubpixelPositionFonts(c: any, shouldSubpixelPositionFonts: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGContextSetShouldSubpixelQuantizeFonts(c: any, shouldSubpixelQuantizeFonts: boolean): void;
+declare function CGContextSetShouldSubpixelQuantizeFonts(c: any, shouldSubpixelQuantizeFonts: interop.FunctionReference<(p1: number) => number>): void;
 
 declare function CGContextSetStrokeColor(c: any, components: interop.Pointer | interop.Reference<number>): void;
 
@@ -575,7 +581,7 @@ declare const enum CGError {
 	kCGErrorNoneAvailable = 1011
 }
 
-declare function CGFontCanCreatePostScriptSubset(font: any, format: CGFontPostScriptFormat): boolean;
+declare function CGFontCanCreatePostScriptSubset(font: any, format: CGFontPostScriptFormat): number;
 
 declare function CGFontCopyFullName(font: any): string;
 
@@ -609,9 +615,9 @@ declare function CGFontGetDescent(font: any): number;
 
 declare function CGFontGetFontBBox(font: any): CGRect;
 
-declare function CGFontGetGlyphAdvances(font: any, glyphs: interop.Pointer | interop.Reference<number>, count: number, advances: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGFontGetGlyphAdvances(font: any, glyphs: interop.Pointer | interop.Reference<number>, count: number, advances: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGFontGetGlyphBBoxes(font: any, glyphs: interop.Pointer | interop.Reference<number>, count: number, bboxes: interop.Pointer | interop.Reference<CGRect>): boolean;
+declare function CGFontGetGlyphBBoxes(font: any, glyphs: interop.Pointer | interop.Reference<number>, count: number, bboxes: interop.Pointer | interop.Reference<CGRect>): number;
 
 declare function CGFontGetGlyphWithGlyphName(font: any, name: string): number;
 
@@ -700,7 +706,20 @@ declare const enum CGImageAlphaInfo {
 	kCGImageAlphaOnly = 7
 }
 
-declare function CGImageCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare const enum CGImageByteOrderInfo {
+
+	kCGImageByteOrderMask = 28672,
+
+	kCGImageByteOrder16Little = 4096,
+
+	kCGImageByteOrder32Little = 8192,
+
+	kCGImageByteOrder16Big = 12288,
+
+	kCGImageByteOrder32Big = 16384
+}
+
+declare function CGImageCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, space: any, bitmapInfo: CGBitmapInfo, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: interop.FunctionReference<(p1: number) => number>, intent: CGColorRenderingIntent): any;
 
 declare function CGImageCreateCopy(image: any): any;
 
@@ -708,13 +727,13 @@ declare function CGImageCreateCopyWithColorSpace(image: any, space: any): any;
 
 declare function CGImageCreateWithImageInRect(image: any, rect: CGRect): any;
 
-declare function CGImageCreateWithJPEGDataProvider(source: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreateWithJPEGDataProvider(source: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: interop.FunctionReference<(p1: number) => number>, intent: CGColorRenderingIntent): any;
 
 declare function CGImageCreateWithMask(image: any, mask: any): any;
 
 declare function CGImageCreateWithMaskingColors(image: any, components: interop.Pointer | interop.Reference<number>): any;
 
-declare function CGImageCreateWithPNGDataProvider(source: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean, intent: CGColorRenderingIntent): any;
+declare function CGImageCreateWithPNGDataProvider(source: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: interop.FunctionReference<(p1: number) => number>, intent: CGColorRenderingIntent): any;
 
 declare function CGImageGetAlphaInfo(image: any): CGImageAlphaInfo;
 
@@ -736,7 +755,7 @@ declare function CGImageGetHeight(image: any): number;
 
 declare function CGImageGetRenderingIntent(image: any): CGColorRenderingIntent;
 
-declare function CGImageGetShouldInterpolate(image: any): boolean;
+declare function CGImageGetShouldInterpolate(image: any): number;
 
 declare function CGImageGetTypeID(): number;
 
@@ -744,9 +763,9 @@ declare function CGImageGetUTType(image: any): string;
 
 declare function CGImageGetWidth(image: any): number;
 
-declare function CGImageIsMask(image: any): boolean;
+declare function CGImageIsMask(image: any): number;
 
-declare function CGImageMaskCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: boolean): any;
+declare function CGImageMaskCreate(width: number, height: number, bitsPerComponent: number, bitsPerPixel: number, bytesPerRow: number, provider: any, decode: interop.Pointer | interop.Reference<number>, shouldInterpolate: interop.FunctionReference<(p1: number) => number>): any;
 
 declare function CGImageRelease(image: any): void;
 
@@ -795,27 +814,27 @@ declare const enum CGLineJoin {
 	kCGLineJoinBevel = 2
 }
 
-declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetArray(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any>, index: number, value: string): boolean;
+declare function CGPDFArrayGetBoolean(array: interop.Pointer | interop.Reference<any>, index: number, value: string): number;
 
 declare function CGPDFArrayGetCount(array: interop.Pointer | interop.Reference<any>): number;
 
-declare function CGPDFArrayGetDictionary(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetDictionary(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFArrayGetInteger(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFArrayGetInteger(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGPDFArrayGetName(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFArrayGetName(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<string>): number;
 
-declare function CGPDFArrayGetNull(array: interop.Pointer | interop.Reference<any>, index: number): boolean;
+declare function CGPDFArrayGetNull(array: interop.Pointer | interop.Reference<any>, index: number): number;
 
-declare function CGPDFArrayGetNumber(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFArrayGetNumber(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGPDFArrayGetObject(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetObject(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFArrayGetStream(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetStream(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFArrayGetString(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFArrayGetString(array: interop.Pointer | interop.Reference<any>, index: number, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare const enum CGPDFBox {
 
@@ -871,29 +890,29 @@ declare const enum CGPDFDataFormat {
 
 declare function CGPDFDictionaryApplyFunction(dict: interop.Pointer | interop.Reference<any>, _function: interop.FunctionReference<(p1: string, p2: interop.Pointer | interop.Reference<any>, p3: interop.Pointer | interop.Reference<any>) => void>, info: interop.Pointer | interop.Reference<any>): void;
 
-declare function CGPDFDictionaryGetArray(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetArray(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFDictionaryGetBoolean(dict: interop.Pointer | interop.Reference<any>, key: string, value: string): boolean;
+declare function CGPDFDictionaryGetBoolean(dict: interop.Pointer | interop.Reference<any>, key: string, value: string): number;
 
 declare function CGPDFDictionaryGetCount(dict: interop.Pointer | interop.Reference<any>): number;
 
-declare function CGPDFDictionaryGetDictionary(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetDictionary(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFDictionaryGetInteger(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFDictionaryGetName(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<string>): number;
 
-declare function CGPDFDictionaryGetNumber(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFDictionaryGetNumber(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGPDFDictionaryGetObject(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetObject(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFDictionaryGetStream(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetStream(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFDictionaryGetString(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFDictionaryGetString(dict: interop.Pointer | interop.Reference<any>, key: string, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFDocumentAllowsCopying(document: any): boolean;
+declare function CGPDFDocumentAllowsCopying(document: any): number;
 
-declare function CGPDFDocumentAllowsPrinting(document: any): boolean;
+declare function CGPDFDocumentAllowsPrinting(document: any): number;
 
 declare function CGPDFDocumentCreateWithProvider(provider: any): any;
 
@@ -913,19 +932,19 @@ declare function CGPDFDocumentGetTypeID(): number;
 
 declare function CGPDFDocumentGetVersion(document: any, majorVersion: interop.Pointer | interop.Reference<number>, minorVersion: interop.Pointer | interop.Reference<number>): void;
 
-declare function CGPDFDocumentIsEncrypted(document: any): boolean;
+declare function CGPDFDocumentIsEncrypted(document: any): number;
 
-declare function CGPDFDocumentIsUnlocked(document: any): boolean;
+declare function CGPDFDocumentIsUnlocked(document: any): number;
 
 declare function CGPDFDocumentRelease(document: any): void;
 
 declare function CGPDFDocumentRetain(document: any): any;
 
-declare function CGPDFDocumentUnlockWithPassword(document: any, password: string): boolean;
+declare function CGPDFDocumentUnlockWithPassword(document: any, password: string): number;
 
 declare function CGPDFObjectGetType(object: interop.Pointer | interop.Reference<any>): CGPDFObjectType;
 
-declare function CGPDFObjectGetValue(object: interop.Pointer | interop.Reference<any>, type: CGPDFObjectType, value: interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFObjectGetValue(object: interop.Pointer | interop.Reference<any>, type: CGPDFObjectType, value: interop.Pointer | interop.Reference<any>): number;
 
 declare const enum CGPDFObjectType {
 
@@ -962,7 +981,7 @@ declare function CGPDFPageGetDictionary(page: any): interop.Pointer | interop.Re
 
 declare function CGPDFPageGetDocument(page: any): any;
 
-declare function CGPDFPageGetDrawingTransform(page: any, box: CGPDFBox, rect: CGRect, rotate: number, preserveAspectRatio: boolean): CGAffineTransform;
+declare function CGPDFPageGetDrawingTransform(page: any, box: CGPDFBox, rect: CGRect, rotate: number, preserveAspectRatio: interop.FunctionReference<(p1: number) => number>): CGAffineTransform;
 
 declare function CGPDFPageGetPageNumber(page: any): number;
 
@@ -978,29 +997,29 @@ declare function CGPDFScannerCreate(cs: interop.Pointer | interop.Reference<any>
 
 declare function CGPDFScannerGetContentStream(scanner: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function CGPDFScannerPopArray(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopArray(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFScannerPopBoolean(scanner: interop.Pointer | interop.Reference<any>, value: string): boolean;
+declare function CGPDFScannerPopBoolean(scanner: interop.Pointer | interop.Reference<any>, value: string): number;
 
-declare function CGPDFScannerPopDictionary(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopDictionary(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFScannerPopInteger(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFScannerPopInteger(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGPDFScannerPopName(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<string>): boolean;
+declare function CGPDFScannerPopName(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<string>): number;
 
-declare function CGPDFScannerPopNumber(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): boolean;
+declare function CGPDFScannerPopNumber(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<number>): number;
 
-declare function CGPDFScannerPopObject(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopObject(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFScannerPopStream(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopStream(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
-declare function CGPDFScannerPopString(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): boolean;
+declare function CGPDFScannerPopString(scanner: interop.Pointer | interop.Reference<any>, value: interop.Pointer | interop.Reference<interop.Pointer | interop.Reference<any>>): number;
 
 declare function CGPDFScannerRelease(scanner: interop.Pointer | interop.Reference<any>): void;
 
 declare function CGPDFScannerRetain(scanner: interop.Pointer | interop.Reference<any>): interop.Pointer | interop.Reference<any>;
 
-declare function CGPDFScannerScan(scanner: interop.Pointer | interop.Reference<any>): boolean;
+declare function CGPDFScannerScan(scanner: interop.Pointer | interop.Reference<any>): number;
 
 declare function CGPDFStreamCopyData(stream: interop.Pointer | interop.Reference<any>, format: interop.Pointer | interop.Reference<CGPDFDataFormat>): NSData;
 
@@ -1014,7 +1033,7 @@ declare function CGPDFStringGetBytePtr(string: interop.Pointer | interop.Referen
 
 declare function CGPDFStringGetLength(string: interop.Pointer | interop.Reference<any>): number;
 
-declare function CGPathAddArc(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: boolean): void;
+declare function CGPathAddArc(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number, radius: number, startAngle: number, endAngle: number, clockwise: interop.FunctionReference<(p1: number) => number>): void;
 
 declare function CGPathAddArcToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x1: number, y1: number, x2: number, y2: number, radius: number): void;
 
@@ -1042,7 +1061,7 @@ declare function CGPathApply(path: any, info: interop.Pointer | interop.Referenc
 
 declare function CGPathCloseSubpath(path: any): void;
 
-declare function CGPathContainsPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, point: CGPoint, eoFill: boolean): boolean;
+declare function CGPathContainsPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, point: CGPoint, eoFill: interop.FunctionReference<(p1: number) => number>): number;
 
 declare function CGPathCreateCopy(path: any): any;
 
@@ -1096,7 +1115,7 @@ declare const enum CGPathElementType {
 	kCGPathElementCloseSubpath = 4
 }
 
-declare function CGPathEqualToPath(path1: any, path2: any): boolean;
+declare function CGPathEqualToPath(path1: any, path2: any): number;
 
 declare function CGPathGetBoundingBox(path: any): CGRect;
 
@@ -1106,9 +1125,9 @@ declare function CGPathGetPathBoundingBox(path: any): CGRect;
 
 declare function CGPathGetTypeID(): number;
 
-declare function CGPathIsEmpty(path: any): boolean;
+declare function CGPathIsEmpty(path: any): number;
 
-declare function CGPathIsRect(path: any, rect: interop.Pointer | interop.Reference<CGRect>): boolean;
+declare function CGPathIsRect(path: any, rect: interop.Pointer | interop.Reference<CGRect>): number;
 
 declare function CGPathMoveToPoint(path: any, m: interop.Pointer | interop.Reference<CGAffineTransform>, x: number, y: number): void;
 
@@ -1123,7 +1142,7 @@ interface CGPatternCallbacks {
 }
 declare var CGPatternCallbacks: interop.StructType<CGPatternCallbacks>;
 
-declare function CGPatternCreate(info: interop.Pointer | interop.Reference<any>, bounds: CGRect, matrix: CGAffineTransform, xStep: number, yStep: number, tiling: CGPatternTiling, isColored: boolean, callbacks: interop.Pointer | interop.Reference<CGPatternCallbacks>): any;
+declare function CGPatternCreate(info: interop.Pointer | interop.Reference<any>, bounds: CGRect, matrix: CGAffineTransform, xStep: number, yStep: number, tiling: CGPatternTiling, isColored: interop.FunctionReference<(p1: number) => number>, callbacks: interop.Pointer | interop.Reference<CGPatternCallbacks>): any;
 
 declare function CGPatternGetTypeID(): number;
 
@@ -1150,11 +1169,11 @@ declare function CGPointApplyAffineTransform(point: CGPoint, t: CGAffineTransfor
 
 declare function CGPointCreateDictionaryRepresentation(point: CGPoint): NSDictionary<any, any>;
 
-declare function CGPointEqualToPoint(point1: CGPoint, point2: CGPoint): boolean;
+declare function CGPointEqualToPoint(point1: CGPoint, point2: CGPoint): number;
 
 declare function CGPointMake(x: number, y: number): CGPoint;
 
-declare function CGPointMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, point: interop.Pointer | interop.Reference<CGPoint>): boolean;
+declare function CGPointMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, point: interop.Pointer | interop.Reference<CGPoint>): number;
 
 declare var CGPointZero: CGPoint;
 
@@ -1166,9 +1185,9 @@ declare var CGRect: interop.StructType<CGRect>;
 
 declare function CGRectApplyAffineTransform(rect: CGRect, t: CGAffineTransform): CGRect;
 
-declare function CGRectContainsPoint(rect: CGRect, point: CGPoint): boolean;
+declare function CGRectContainsPoint(rect: CGRect, point: CGPoint): number;
 
-declare function CGRectContainsRect(rect1: CGRect, rect2: CGRect): boolean;
+declare function CGRectContainsRect(rect1: CGRect, rect2: CGRect): number;
 
 declare function CGRectCreateDictionaryRepresentation(p1: CGRect): NSDictionary<any, any>;
 
@@ -1185,7 +1204,7 @@ declare const enum CGRectEdge {
 	MaxYEdge = 3
 }
 
-declare function CGRectEqualToRect(rect1: CGRect, rect2: CGRect): boolean;
+declare function CGRectEqualToRect(rect1: CGRect, rect2: CGRect): number;
 
 declare function CGRectGetHeight(rect: CGRect): number;
 
@@ -1211,17 +1230,17 @@ declare function CGRectIntegral(rect: CGRect): CGRect;
 
 declare function CGRectIntersection(r1: CGRect, r2: CGRect): CGRect;
 
-declare function CGRectIntersectsRect(rect1: CGRect, rect2: CGRect): boolean;
+declare function CGRectIntersectsRect(rect1: CGRect, rect2: CGRect): number;
 
-declare function CGRectIsEmpty(rect: CGRect): boolean;
+declare function CGRectIsEmpty(rect: CGRect): number;
 
-declare function CGRectIsInfinite(rect: CGRect): boolean;
+declare function CGRectIsInfinite(rect: CGRect): number;
 
-declare function CGRectIsNull(rect: CGRect): boolean;
+declare function CGRectIsNull(rect: CGRect): number;
 
 declare function CGRectMake(x: number, y: number, width: number, height: number): CGRect;
 
-declare function CGRectMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, rect: interop.Pointer | interop.Reference<CGRect>): boolean;
+declare function CGRectMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, rect: interop.Pointer | interop.Reference<CGRect>): number;
 
 declare var CGRectNull: CGRect;
 
@@ -1233,9 +1252,9 @@ declare function CGRectUnion(r1: CGRect, r2: CGRect): CGRect;
 
 declare var CGRectZero: CGRect;
 
-declare function CGShadingCreateAxial(space: any, start: CGPoint, end: CGPoint, _function: any, extendStart: boolean, extendEnd: boolean): any;
+declare function CGShadingCreateAxial(space: any, start: CGPoint, end: CGPoint, _function: any, extendStart: interop.FunctionReference<(p1: number) => number>, extendEnd: interop.FunctionReference<(p1: number) => number>): any;
 
-declare function CGShadingCreateRadial(space: any, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any, extendStart: boolean, extendEnd: boolean): any;
+declare function CGShadingCreateRadial(space: any, start: CGPoint, startRadius: number, end: CGPoint, endRadius: number, _function: any, extendStart: interop.FunctionReference<(p1: number) => number>, extendEnd: interop.FunctionReference<(p1: number) => number>): any;
 
 declare function CGShadingGetTypeID(): number;
 
@@ -1253,11 +1272,11 @@ declare function CGSizeApplyAffineTransform(size: CGSize, t: CGAffineTransform):
 
 declare function CGSizeCreateDictionaryRepresentation(size: CGSize): NSDictionary<any, any>;
 
-declare function CGSizeEqualToSize(size1: CGSize, size2: CGSize): boolean;
+declare function CGSizeEqualToSize(size1: CGSize, size2: CGSize): number;
 
 declare function CGSizeMake(width: number, height: number): CGSize;
 
-declare function CGSizeMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, size: interop.Pointer | interop.Reference<CGSize>): boolean;
+declare function CGSizeMakeWithDictionaryRepresentation(dict: NSDictionary<any, any>, size: interop.Pointer | interop.Reference<CGSize>): number;
 
 declare var CGSizeZero: CGSize;
 
@@ -1295,6 +1314,8 @@ declare var CGVector: interop.StructType<CGVector>;
 
 declare function CGVectorMake(dx: number, dy: number): CGVector;
 
+declare var kCGColorConversionBlackPointCompensation: string;
+
 declare var kCGColorSpaceACESCGLinear: string;
 
 declare var kCGColorSpaceAdobeRGB1998: string;
@@ -1302,6 +1323,14 @@ declare var kCGColorSpaceAdobeRGB1998: string;
 declare var kCGColorSpaceDCIP3: string;
 
 declare var kCGColorSpaceDisplayP3: string;
+
+declare var kCGColorSpaceExtendedGray: string;
+
+declare var kCGColorSpaceExtendedLinearGray: string;
+
+declare var kCGColorSpaceExtendedLinearSRGB: string;
+
+declare var kCGColorSpaceExtendedSRGB: string;
 
 declare var kCGColorSpaceGenericCMYK: string;
 
@@ -1318,6 +1347,10 @@ declare var kCGColorSpaceGenericXYZ: string;
 declare var kCGColorSpaceITUR_2020: string;
 
 declare var kCGColorSpaceITUR_709: string;
+
+declare var kCGColorSpaceLinearGray: string;
+
+declare var kCGColorSpaceLinearSRGB: string;
 
 declare var kCGColorSpaceROMMRGB: string;
 

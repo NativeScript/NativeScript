@@ -1,7 +1,14 @@
 
-declare function CVBufferGetAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<number>): interop.Unmanaged<any>;
+declare const enum CVAttachmentMode {
 
-declare function CVBufferGetAttachments(buffer: any, attachmentMode: number): interop.Unmanaged<NSDictionary<any, any>>;
+	kCVAttachmentMode_ShouldNotPropagate = 0,
+
+	kCVAttachmentMode_ShouldPropagate = 1
+}
+
+declare function CVBufferGetAttachment(buffer: any, key: string, attachmentMode: interop.Pointer | interop.Reference<CVAttachmentMode>): interop.Unmanaged<any>;
+
+declare function CVBufferGetAttachments(buffer: any, attachmentMode: CVAttachmentMode): NSDictionary<any, any>;
 
 declare function CVBufferPropagateAttachments(sourceBuffer: any, destinationBuffer: any): void;
 
@@ -13,9 +20,9 @@ declare function CVBufferRemoveAttachment(buffer: any, key: string): void;
 
 declare function CVBufferRetain(buffer: any): interop.Unmanaged<any>;
 
-declare function CVBufferSetAttachment(buffer: any, key: string, value: any, attachmentMode: number): void;
+declare function CVBufferSetAttachment(buffer: any, key: string, value: any, attachmentMode: CVAttachmentMode): void;
 
-declare function CVBufferSetAttachments(buffer: any, theAttachments: NSDictionary<any, any>, attachmentMode: number): void;
+declare function CVBufferSetAttachments(buffer: any, theAttachments: NSDictionary<any, any>, attachmentMode: CVAttachmentMode): void;
 
 interface CVFillExtendedPixelsCallBackData {
 	version: number;
@@ -94,7 +101,12 @@ declare function CVPixelBufferGetWidthOfPlane(pixelBuffer: any, planeIndex: numb
 
 declare function CVPixelBufferIsPlanar(pixelBuffer: any): boolean;
 
-declare function CVPixelBufferLockBaseAddress(pixelBuffer: any, lockFlags: number): number;
+declare function CVPixelBufferLockBaseAddress(pixelBuffer: any, lockFlags: CVPixelBufferLockFlags): number;
+
+declare const enum CVPixelBufferLockFlags {
+
+	kCVPixelBufferLock_ReadOnly = 1
+}
 
 declare function CVPixelBufferPoolCreate(allocator: any, poolAttributes: NSDictionary<any, any>, pixelBufferAttributes: NSDictionary<any, any>, poolOut: interop.Pointer | interop.Reference<any>): number;
 
@@ -102,11 +114,16 @@ declare function CVPixelBufferPoolCreatePixelBuffer(allocator: any, pixelBufferP
 
 declare function CVPixelBufferPoolCreatePixelBufferWithAuxAttributes(allocator: any, pixelBufferPool: any, auxAttributes: NSDictionary<any, any>, pixelBufferOut: interop.Pointer | interop.Reference<any>): number;
 
-declare function CVPixelBufferPoolFlush(pool: any, options: number): void;
+declare function CVPixelBufferPoolFlush(pool: any, options: CVPixelBufferPoolFlushFlags): void;
 
-declare function CVPixelBufferPoolGetAttributes(pool: any): interop.Unmanaged<NSDictionary<any, any>>;
+declare const enum CVPixelBufferPoolFlushFlags {
 
-declare function CVPixelBufferPoolGetPixelBufferAttributes(pool: any): interop.Unmanaged<NSDictionary<any, any>>;
+	kCVPixelBufferPoolFlushExcessBuffers = 1
+}
+
+declare function CVPixelBufferPoolGetAttributes(pool: any): NSDictionary<any, any>;
+
+declare function CVPixelBufferPoolGetPixelBufferAttributes(pool: any): NSDictionary<any, any>;
 
 declare function CVPixelBufferPoolGetTypeID(): number;
 
@@ -118,11 +135,11 @@ declare function CVPixelBufferRelease(texture: any): void;
 
 declare function CVPixelBufferRetain(texture: any): interop.Unmanaged<any>;
 
-declare function CVPixelBufferUnlockBaseAddress(pixelBuffer: any, unlockFlags: number): number;
+declare function CVPixelBufferUnlockBaseAddress(pixelBuffer: any, unlockFlags: CVPixelBufferLockFlags): number;
 
-declare function CVPixelFormatDescriptionArrayCreateWithAllPixelFormatTypes(allocator: any): interop.Unmanaged<NSArray<any>>;
+declare function CVPixelFormatDescriptionArrayCreateWithAllPixelFormatTypes(allocator: any): NSArray<any>;
 
-declare function CVPixelFormatDescriptionCreateWithPixelFormatType(allocator: any, pixelFormat: number): interop.Unmanaged<NSDictionary<any, any>>;
+declare function CVPixelFormatDescriptionCreateWithPixelFormatType(allocator: any, pixelFormat: number): NSDictionary<any, any>;
 
 declare function CVPixelFormatDescriptionRegisterDescriptionWithPixelFormatType(description: NSDictionary<any, any>, pixelFormat: number): void;
 
@@ -163,12 +180,43 @@ interface CVSMPTETime {
 }
 declare var CVSMPTETime: interop.StructType<CVSMPTETime>;
 
+declare const enum CVSMPTETimeFlags {
+
+	kCVSMPTETimeValid = 1,
+
+	kCVSMPTETimeRunning = 2
+}
+
+declare const enum CVSMPTETimeType {
+
+	kCVSMPTETimeType24 = 0,
+
+	kCVSMPTETimeType25 = 1,
+
+	kCVSMPTETimeType30Drop = 2,
+
+	kCVSMPTETimeType30 = 3,
+
+	kCVSMPTETimeType2997 = 4,
+
+	kCVSMPTETimeType2997Drop = 5,
+
+	kCVSMPTETimeType60 = 6,
+
+	kCVSMPTETimeType5994 = 7
+}
+
 interface CVTime {
 	timeValue: number;
 	timeScale: number;
 	flags: number;
 }
 declare var CVTime: interop.StructType<CVTime>;
+
+declare const enum CVTimeFlags {
+
+	kCVTimeIsIndefinite = 1
+}
 
 interface CVTimeStamp {
 	version: number;
@@ -182,6 +230,27 @@ interface CVTimeStamp {
 	reserved: number;
 }
 declare var CVTimeStamp: interop.StructType<CVTimeStamp>;
+
+declare const enum CVTimeStampFlags {
+
+	kCVTimeStampVideoTimeValid = 1,
+
+	kCVTimeStampHostTimeValid = 2,
+
+	kCVTimeStampSMPTETimeValid = 4,
+
+	kCVTimeStampVideoRefreshPeriodValid = 8,
+
+	kCVTimeStampRateScalarValid = 16,
+
+	kCVTimeStampTopField = 65536,
+
+	kCVTimeStampBottomField = 131072,
+
+	kCVTimeStampVideoHostTimeValid = 3,
+
+	kCVTimeStampIsInterlaced = 196608
+}
 
 declare var kCVBufferMovieTimeKey: string;
 
@@ -287,6 +356,8 @@ declare var kCVImageBufferTransferFunction_ITU_R_709_2: string;
 
 declare var kCVImageBufferTransferFunction_SMPTE_240M_1995: string;
 
+declare var kCVImageBufferTransferFunction_SMPTE_ST_428_1: string;
+
 declare var kCVImageBufferTransferFunction_UseGamma: string;
 
 declare var kCVImageBufferYCbCrMatrixKey: string;
@@ -304,6 +375,8 @@ declare var kCVImageBufferYCbCrMatrix_P3_D65: string;
 declare var kCVImageBufferYCbCrMatrix_SMPTE_240M_1995: string;
 
 declare var kCVIndefiniteTime: CVTime;
+
+declare var kCVMetalTextureCacheMaximumTextureAgeKey: string;
 
 declare var kCVOpenGLESTextureCacheMaximumTextureAgeKey: string;
 

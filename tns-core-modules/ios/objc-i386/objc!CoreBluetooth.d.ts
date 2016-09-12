@@ -100,7 +100,7 @@ declare class CBCentral extends CBPeer {
 	/* readonly */ maximumUpdateValueLength: number;
 }
 
-declare class CBCentralManager extends NSObject {
+declare class CBCentralManager extends CBManager {
 
 	static alloc(): CBCentralManager; // inherited from NSObject
 
@@ -109,8 +109,6 @@ declare class CBCentralManager extends NSObject {
 	delegate: CBCentralManagerDelegate;
 
 	/* readonly */ isScanning: boolean;
-
-	/* readonly */ state: CBCentralManagerState;
 
 	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject; });
 
@@ -276,6 +274,30 @@ declare const enum CBError {
 
 declare var CBErrorDomain: string;
 
+declare class CBManager extends NSObject {
+
+	static alloc(): CBManager; // inherited from NSObject
+
+	static new(): CBManager; // inherited from NSObject
+
+	/* readonly */ state: CBManagerState;
+}
+
+declare const enum CBManagerState {
+
+	Unknown = 0,
+
+	Resetting = 1,
+
+	Unsupported = 2,
+
+	Unauthorized = 3,
+
+	PoweredOff = 4,
+
+	PoweredOn = 5
+}
+
 declare class CBMutableCharacteristic extends CBCharacteristic {
 
 	static alloc(): CBMutableCharacteristic; // inherited from NSObject
@@ -406,7 +428,7 @@ declare var CBPeripheralDelegate: {
 	prototype: CBPeripheralDelegate;
 };
 
-declare class CBPeripheralManager extends NSObject {
+declare class CBPeripheralManager extends CBManager {
 
 	static alloc(): CBPeripheralManager; // inherited from NSObject
 
@@ -417,8 +439,6 @@ declare class CBPeripheralManager extends NSObject {
 	delegate: CBPeripheralManagerDelegate;
 
 	/* readonly */ isAdvertising: boolean;
-
-	/* readonly */ state: CBPeripheralManagerState;
 
 	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject; });
 
@@ -567,6 +587,8 @@ declare var CBUUIDCharacteristicExtendedPropertiesString: string;
 declare var CBUUIDCharacteristicFormatString: string;
 
 declare var CBUUIDCharacteristicUserDescriptionString: string;
+
+declare var CBUUIDCharacteristicValidRangeString: string;
 
 declare var CBUUIDClientCharacteristicConfigurationString: string;
 

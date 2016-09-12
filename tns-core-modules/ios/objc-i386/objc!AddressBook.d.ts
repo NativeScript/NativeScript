@@ -1,5 +1,5 @@
 
-declare function ABAddressBookAddRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABAddressBookAddRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare function ABAddressBookCopyArrayOfAllGroups(addressBook: any): interop.Unmanaged<NSArray<any>>;
 
@@ -37,17 +37,17 @@ declare function ABAddressBookGetPersonWithRecordID(addressBook: any, recordID: 
 
 declare function ABAddressBookGetSourceWithRecordID(addressBook: any, sourceID: number): interop.Unmanaged<any>;
 
-declare function ABAddressBookHasUnsavedChanges(addressBook: any): boolean;
+declare function ABAddressBookHasUnsavedChanges(addressBook: any): number;
 
 declare function ABAddressBookRegisterExternalChangeCallback(addressBook: any, callback: interop.FunctionReference<(p1: any, p2: NSDictionary<any, any>, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
 
-declare function ABAddressBookRemoveRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABAddressBookRemoveRecord(addressBook: any, record: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function ABAddressBookRequestAccessWithCompletion(addressBook: any, completion: (p1: boolean, p2: NSError) => void): void;
+declare function ABAddressBookRequestAccessWithCompletion(addressBook: any, completion: (p1: interop.FunctionReference<(p1: number) => number>, p2: NSError) => void): void;
 
 declare function ABAddressBookRevert(addressBook: any): void;
 
-declare function ABAddressBookSave(addressBook: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABAddressBookSave(addressBook: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare function ABAddressBookUnregisterExternalChangeCallback(addressBook: any, callback: interop.FunctionReference<(p1: any, p2: NSDictionary<any, any>, p3: interop.Pointer | interop.Reference<any>) => void>, context: interop.Pointer | interop.Reference<any>): void;
 
@@ -62,7 +62,7 @@ declare const enum ABAuthorizationStatus {
 	kABAuthorizationStatusAuthorized = 3
 }
 
-declare function ABGroupAddMember(group: any, person: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABGroupAddMember(group: any, person: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare function ABGroupCopyArrayOfAllMembers(group: any): interop.Unmanaged<NSArray<any>>;
 
@@ -74,9 +74,9 @@ declare function ABGroupCreate(): interop.Unmanaged<any>;
 
 declare function ABGroupCreateInSource(source: any): interop.Unmanaged<any>;
 
-declare function ABGroupRemoveMember(group: any, member: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABGroupRemoveMember(group: any, member: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function ABMultiValueAddValueAndLabel(multiValue: any, value: any, label: string, outIdentifier: interop.Pointer | interop.Reference<number>): boolean;
+declare function ABMultiValueAddValueAndLabel(multiValue: any, value: any, label: string, outIdentifier: interop.Pointer | interop.Reference<number>): number;
 
 declare function ABMultiValueCopyArrayOfAllValues(multiValue: any): interop.Unmanaged<NSArray<any>>;
 
@@ -98,13 +98,13 @@ declare function ABMultiValueGetIndexForIdentifier(multiValue: any, identifier: 
 
 declare function ABMultiValueGetPropertyType(multiValue: any): number;
 
-declare function ABMultiValueInsertValueAndLabelAtIndex(multiValue: any, value: any, label: string, index: number, outIdentifier: interop.Pointer | interop.Reference<number>): boolean;
+declare function ABMultiValueInsertValueAndLabelAtIndex(multiValue: any, value: any, label: string, index: number, outIdentifier: interop.Pointer | interop.Reference<number>): number;
 
-declare function ABMultiValueRemoveValueAndLabelAtIndex(multiValue: any, index: number): boolean;
+declare function ABMultiValueRemoveValueAndLabelAtIndex(multiValue: any, index: number): number;
 
-declare function ABMultiValueReplaceLabelAtIndex(multiValue: any, label: string, index: number): boolean;
+declare function ABMultiValueReplaceLabelAtIndex(multiValue: any, label: string, index: number): number;
 
-declare function ABMultiValueReplaceValueAtIndex(multiValue: any, value: any, index: number): boolean;
+declare function ABMultiValueReplaceValueAtIndex(multiValue: any, value: any, index: number): number;
 
 declare function ABPersonComparePeopleByName(person1: any, person2: any, ordering: number): CFComparisonResult;
 
@@ -136,7 +136,7 @@ declare function ABPersonGetSortOrdering(): number;
 
 declare function ABPersonGetTypeOfProperty(property: number): number;
 
-declare function ABPersonHasImageData(person: any): boolean;
+declare function ABPersonHasImageData(person: any): number;
 
 declare const enum ABPersonImageFormat {
 
@@ -145,9 +145,9 @@ declare const enum ABPersonImageFormat {
 	kABPersonImageFormatOriginalSize = 2
 }
 
-declare function ABPersonRemoveImageData(person: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABPersonRemoveImageData(person: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function ABPersonSetImageData(person: any, imageData: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABPersonSetImageData(person: any, imageData: NSData, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare function ABRecordCopyCompositeName(record: any): interop.Unmanaged<string>;
 
@@ -157,9 +157,9 @@ declare function ABRecordGetRecordID(record: any): number;
 
 declare function ABRecordGetRecordType(record: any): number;
 
-declare function ABRecordRemoveValue(record: any, property: number, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABRecordRemoveValue(record: any, property: number, error: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function ABRecordSetValue(record: any, property: number, value: any, error: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function ABRecordSetValue(record: any, property: number, value: any, error: interop.Pointer | interop.Reference<NSError>): number;
 
 declare var kABGroupNameProperty: number;
 

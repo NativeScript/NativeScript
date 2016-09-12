@@ -36,6 +36,10 @@ declare function SSLCopyDistinguishedNames(context: any, names: interop.Pointer 
 
 declare function SSLCopyPeerTrust(context: any, trust: interop.Pointer | interop.Reference<any>): number;
 
+declare function SSLCopyRequestedPeerName(context: any, peerName: string, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+
+declare function SSLCopyRequestedPeerNameLength(ctx: any, peerNameLen: interop.Pointer | interop.Reference<number>): number;
+
 declare function SSLCreateContext(alloc: any, protocolSide: SSLProtocolSide, connectionType: SSLConnectionType): any;
 
 declare function SSLGetBufferedReadSize(context: any, bufSize: interop.Pointer | interop.Reference<number>): number;
@@ -106,6 +110,8 @@ declare const enum SSLProtocolSide {
 	kSSLClientSide = 1
 }
 
+declare function SSLReHandshake(context: any): number;
+
 declare function SSLRead(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
 declare const enum SSLSessionOption {
@@ -124,7 +130,9 @@ declare const enum SSLSessionOption {
 
 	kSSLSessionOptionFallback = 6,
 
-	kSSLSessionOptionBreakOnClientHello = 7
+	kSSLSessionOptionBreakOnClientHello = 7,
+
+	kSSLSessionOptionAllowRenegotiation = 8
 }
 
 declare const enum SSLSessionState {
@@ -138,15 +146,6 @@ declare const enum SSLSessionState {
 	kSSLClosed = 3,
 
 	kSSLAborted = 4
-}
-
-declare const enum SSLSessionStrengthPolicy {
-
-	kSSLSessionStrengthPolicyDefault = 0,
-
-	kSSLSessionStrengthPolicyATSv1 = 1,
-
-	kSSLSessionStrengthPolicyATSv1_noPFS = 2
 }
 
 declare function SSLSetCertificate(context: any, certRefs: NSArray<any>): number;
@@ -173,9 +172,9 @@ declare function SSLSetProtocolVersionMax(context: any, maxVersion: SSLProtocol)
 
 declare function SSLSetProtocolVersionMin(context: any, minVersion: SSLProtocol): number;
 
-declare function SSLSetSessionOption(context: any, option: SSLSessionOption, value: boolean): number;
+declare function SSLSetSessionConfig(context: any, config: string): number;
 
-declare function SSLSetSessionStrengthPolicy(context: any, policyStrength: SSLSessionStrengthPolicy): number;
+declare function SSLSetSessionOption(context: any, option: SSLSessionOption, value: boolean): number;
 
 declare function SSLWrite(context: any, data: interop.Pointer | interop.Reference<any>, dataLength: number, processed: interop.Pointer | interop.Reference<number>): number;
 
@@ -195,7 +194,7 @@ declare const enum SecAccessControlCreateFlags {
 
 	kSecAccessControlPrivateKeyUsage = 1073741824,
 
-	kSecAccessControlApplicationPassword = -2147483648
+	kSecAccessControlApplicationPassword = 2147483648
 }
 
 declare function SecAccessControlCreateWithFlags(allocator: any, protection: any, flags: SecAccessControlCreateFlags, error: interop.Pointer | interop.Reference<NSError>): any;
@@ -228,6 +227,24 @@ declare function SecItemDelete(query: NSDictionary<any, any>): number;
 
 declare function SecItemUpdate(query: NSDictionary<any, any>, attributesToUpdate: NSDictionary<any, any>): number;
 
+declare function SecKeyCopyAttributes(key: any): NSDictionary<any, any>;
+
+declare function SecKeyCopyExternalRepresentation(key: any, error: interop.Pointer | interop.Reference<NSError>): NSData;
+
+declare function SecKeyCopyKeyExchangeResult(privateKey: any, algorithm: any, publicKey: any, parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): NSData;
+
+declare function SecKeyCopyPublicKey(key: any): any;
+
+declare function SecKeyCreateDecryptedData(key: any, algorithm: any, ciphertext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+
+declare function SecKeyCreateEncryptedData(key: any, algorithm: any, plaintext: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+
+declare function SecKeyCreateRandomKey(parameters: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
+
+declare function SecKeyCreateSignature(key: any, algorithm: any, dataToSign: NSData, error: interop.Pointer | interop.Reference<NSError>): NSData;
+
+declare function SecKeyCreateWithData(keyData: NSData, attributes: NSDictionary<any, any>, error: interop.Pointer | interop.Reference<NSError>): any;
+
 declare function SecKeyDecrypt(key: any, padding: SecPadding, cipherText: string, cipherTextLen: number, plainText: string, plainTextLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function SecKeyEncrypt(key: any, padding: SecPadding, plainText: string, plainTextLen: number, cipherText: string, cipherTextLen: interop.Pointer | interop.Reference<number>): number;
@@ -238,9 +255,26 @@ declare function SecKeyGetBlockSize(key: any): number;
 
 declare function SecKeyGetTypeID(): number;
 
+declare function SecKeyIsAlgorithmSupported(key: any, operation: SecKeyOperationType, algorithm: any): boolean;
+
+declare const enum SecKeyOperationType {
+
+	kSecKeyOperationTypeSign = 0,
+
+	kSecKeyOperationTypeVerify = 1,
+
+	kSecKeyOperationTypeEncrypt = 2,
+
+	kSecKeyOperationTypeDecrypt = 3,
+
+	kSecKeyOperationTypeKeyExchange = 4
+}
+
 declare function SecKeyRawSign(key: any, padding: SecPadding, dataToSign: string, dataToSignLen: number, sig: string, sigLen: interop.Pointer | interop.Reference<number>): number;
 
 declare function SecKeyRawVerify(key: any, padding: SecPadding, signedData: string, signedDataLen: number, sig: string, sigLen: number): number;
+
+declare function SecKeyVerifySignature(key: any, algorithm: any, signedData: NSData, signature: NSData, error: interop.Pointer | interop.Reference<NSError>): boolean;
 
 declare function SecPKCS12Import(pkcs12_data: NSData, options: NSDictionary<any, any>, items: interop.Pointer | interop.Reference<NSArray<any>>): number;
 
@@ -299,9 +333,9 @@ declare function SecTrustCopyResult(trust: any): NSDictionary<any, any>;
 
 declare function SecTrustCreateWithCertificates(certificates: any, policies: any, trust: interop.Pointer | interop.Reference<any>): number;
 
-declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<number>): number;
+declare function SecTrustEvaluate(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
 
-declare function SecTrustEvaluateAsync(trust: any, queue: NSObject, result: (p1: any, p2: number) => void): number;
+declare function SecTrustEvaluateAsync(trust: any, queue: NSObject, result: (p1: any, p2: SecTrustResultType) => void): number;
 
 declare function SecTrustGetCertificateAtIndex(trust: any, ix: number): any;
 
@@ -309,17 +343,36 @@ declare function SecTrustGetCertificateCount(trust: any): number;
 
 declare function SecTrustGetNetworkFetchAllowed(trust: any, allowFetch: string): number;
 
-declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<number>): number;
+declare function SecTrustGetTrustResult(trust: any, result: interop.Pointer | interop.Reference<SecTrustResultType>): number;
 
 declare function SecTrustGetTypeID(): number;
 
 declare function SecTrustGetVerifyTime(trust: any): number;
 
+declare const enum SecTrustResultType {
+
+	kSecTrustResultInvalid = 0,
+
+	kSecTrustResultProceed = 1,
+
+	kSecTrustResultConfirm = 2,
+
+	kSecTrustResultDeny = 3,
+
+	kSecTrustResultUnspecified = 4,
+
+	kSecTrustResultRecoverableTrustFailure = 5,
+
+	kSecTrustResultFatalTrustFailure = 6,
+
+	kSecTrustResultOtherError = 7
+}
+
 declare function SecTrustSetAnchorCertificates(trust: any, anchorCertificates: NSArray<any>): number;
 
 declare function SecTrustSetAnchorCertificatesOnly(trust: any, anchorCertificatesOnly: boolean): number;
 
-declare function SecTrustSetExceptions(trust: any, exceptions: NSData): boolean;
+declare function SecTrustSetExceptions(trust: any, exceptions: NSData): number;
 
 declare function SecTrustSetNetworkFetchAllowed(trust: any, allowFetch: boolean): number;
 
@@ -329,9 +382,31 @@ declare function SecTrustSetPolicies(trust: any, policies: any): number;
 
 declare function SecTrustSetVerifyDate(trust: any, verifyDate: Date): number;
 
+declare var kSSLSessionConfig_ATSv1: string;
+
+declare var kSSLSessionConfig_ATSv1_noPFS: string;
+
+declare var kSSLSessionConfig_RC4_fallback: string;
+
+declare var kSSLSessionConfig_TLSv1_RC4_fallback: string;
+
+declare var kSSLSessionConfig_TLSv1_fallback: string;
+
+declare var kSSLSessionConfig_anonymous: string;
+
+declare var kSSLSessionConfig_default: string;
+
+declare var kSSLSessionConfig_legacy: string;
+
+declare var kSSLSessionConfig_legacy_DHE: string;
+
+declare var kSSLSessionConfig_standard: string;
+
 declare var kSecAttrAccessControl: string;
 
 declare var kSecAttrAccessGroup: string;
+
+declare var kSecAttrAccessGroupToken: string;
 
 declare var kSecAttrAccessible: string;
 
@@ -424,6 +499,8 @@ declare var kSecAttrKeySizeInBits: string;
 declare var kSecAttrKeyType: string;
 
 declare var kSecAttrKeyTypeEC: string;
+
+declare var kSecAttrKeyTypeECSECPrimeRandom: string;
 
 declare var kSecAttrKeyTypeRSA: string;
 
@@ -549,6 +626,126 @@ declare var kSecImportItemLabel: string;
 
 declare var kSecImportItemTrust: string;
 
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactor: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA1: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA224: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA256: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA384: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeCofactorX963SHA512: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeStandard: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA1: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA224: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA256: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA384: any;
+
+declare var kSecKeyAlgorithmECDHKeyExchangeStandardX963SHA512: any;
+
+declare var kSecKeyAlgorithmECDSASignatureDigestX962: any;
+
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA1: any;
+
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA224: any;
+
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA256: any;
+
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA384: any;
+
+declare var kSecKeyAlgorithmECDSASignatureDigestX962SHA512: any;
+
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA1: any;
+
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA224: any;
+
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA256: any;
+
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA384: any;
+
+declare var kSecKeyAlgorithmECDSASignatureMessageX962SHA512: any;
+
+declare var kSecKeyAlgorithmECDSASignatureRFC4754: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA1AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA224AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA256AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA384AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionCofactorX963SHA512AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA1AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA224AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA256AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA384AESGCM: any;
+
+declare var kSecKeyAlgorithmECIESEncryptionStandardX963SHA512AESGCM: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA1: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA1AESGCM: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA224: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA224AESGCM: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA256: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA256AESGCM: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA384: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA384AESGCM: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA512: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionOAEPSHA512AESGCM: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionPKCS1: any;
+
+declare var kSecKeyAlgorithmRSAEncryptionRaw: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15Raw: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA1: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA224: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA256: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA384: any;
+
+declare var kSecKeyAlgorithmRSASignatureDigestPKCS1v15SHA512: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA1: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA224: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA256: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA384: any;
+
+declare var kSecKeyAlgorithmRSASignatureMessagePKCS1v15SHA512: any;
+
+declare var kSecKeyAlgorithmRSASignatureRaw: any;
+
+declare var kSecKeyKeyExchangeParameterRequestedSize: any;
+
+declare var kSecKeyKeyExchangeParameterSharedInfo: any;
+
 declare var kSecMatchCaseInsensitive: string;
 
 declare var kSecMatchEmailAddressIfPresent: string;
@@ -581,6 +778,8 @@ declare var kSecPolicyAppleIDValidation: string;
 
 declare var kSecPolicyAppleIPsec: string;
 
+declare var kSecPolicyApplePassbookSigning: string;
+
 declare var kSecPolicyApplePayIssuerEncryption: string;
 
 declare var kSecPolicyAppleRevocation: string;
@@ -603,6 +802,8 @@ declare var kSecPolicyOid: string;
 
 declare var kSecPolicyRevocationFlags: string;
 
+declare var kSecPolicyTeamIdentifier: string;
+
 declare var kSecPrivateKeyAttrs: string;
 
 declare var kSecPropertyTypeError: string;
@@ -624,6 +825,8 @@ declare var kSecReturnRef: string;
 declare var kSecSharedPassword: string;
 
 declare var kSecTrustCertificateTransparency: string;
+
+declare var kSecTrustCertificateTransparencyWhiteList: string;
 
 declare var kSecTrustEvaluationDate: string;
 

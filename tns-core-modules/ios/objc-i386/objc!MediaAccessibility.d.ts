@@ -1,7 +1,7 @@
 
 declare function MAAudibleMediaCopyPreferredCharacteristics(): interop.Unmanaged<NSArray<any>>;
 
-declare function MACaptionAppearanceAddSelectedLanguage(domain: MACaptionAppearanceDomain, language: string): boolean;
+declare function MACaptionAppearanceAddSelectedLanguage(domain: MACaptionAppearanceDomain, language: string): number;
 
 declare const enum MACaptionAppearanceBehavior {
 

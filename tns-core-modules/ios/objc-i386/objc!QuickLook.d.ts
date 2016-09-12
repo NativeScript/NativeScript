@@ -41,6 +41,8 @@ interface QLPreviewControllerDelegate extends NSObjectProtocol {
 
 	previewControllerTransitionImageForPreviewItemContentRect?(controller: QLPreviewController, item: QLPreviewItem, contentRect: interop.Pointer | interop.Reference<CGRect>): UIImage;
 
+	previewControllerTransitionViewForPreviewItem?(controller: QLPreviewController, item: QLPreviewItem): UIView;
+
 	previewControllerWillDismiss?(controller: QLPreviewController): void;
 }
 declare var QLPreviewControllerDelegate: {

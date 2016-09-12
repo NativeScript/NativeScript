@@ -13,8 +13,6 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	static resetAchievementsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ completed: boolean;
 
 	/* readonly */ hidden: boolean;
@@ -30,6 +28,8 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 	/* readonly */ playerID: string;
 
 	showsCompletionBanner: boolean;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -83,8 +83,6 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 
 	static placeholderCompletedAchievementImage(): UIImage;
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ achievedDescription: string;
 
 	/* readonly */ groupIdentifier: string;
@@ -102,6 +100,8 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 	/* readonly */ title: string;
 
 	/* readonly */ unachievedDescription: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -130,6 +130,17 @@ declare var GKAchievementViewControllerDelegate: {
 	prototype: GKAchievementViewControllerDelegate;
 };
 
+declare class GKBasePlayer extends NSObject {
+
+	static alloc(): GKBasePlayer; // inherited from NSObject
+
+	static new(): GKBasePlayer; // inherited from NSObject
+
+	/* readonly */ displayName: string;
+
+	/* readonly */ playerID: string;
+}
+
 declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 
 	static alloc(): GKChallenge; // inherited from NSObject
@@ -137,8 +148,6 @@ declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 	static loadReceivedChallengesWithCompletionHandler(completionHandler: (p1: NSArray<GKChallenge>, p2: NSError) => void): void;
 
 	static new(): GKChallenge; // inherited from NSObject
-
-	static supportsSecureCoding(): boolean;
 
 	/* readonly */ completionDate: Date;
 
@@ -155,6 +164,8 @@ declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 	/* readonly */ receivingPlayerID: string;
 
 	/* readonly */ state: GKChallengeState;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -223,6 +234,22 @@ declare const enum GKChallengeState {
 	Declined = 3
 }
 
+declare class GKCloudPlayer extends GKBasePlayer {
+
+	static alloc(): GKCloudPlayer; // inherited from NSObject
+
+	static getCurrentSignedInPlayerForContainerCompletionHandler(containerName: string, handler: (p1: GKCloudPlayer, p2: NSError) => void): void;
+
+	static new(): GKCloudPlayer; // inherited from NSObject
+}
+
+declare const enum GKConnectionState {
+
+	NotConnected = 0,
+
+	Connected = 1
+}
+
 declare const enum GKErrorCode {
 
 	Unknown = 1,
@@ -277,7 +304,11 @@ declare const enum GKErrorCode {
 
 	PlayerPhotoFailure = 26,
 
-	UbiquityContainerUnavailable = 27
+	UbiquityContainerUnavailable = 27,
+
+	MatchNotConnected = 28,
+
+	GameSessionRequestInvalid = 29
 }
 
 declare var GKErrorDomain: string;
@@ -350,6 +381,113 @@ declare const enum GKGameCenterViewControllerState {
 
 	Challenges = 2
 }
+
+declare class GKGameSession extends NSObject {
+
+	static addEventListener(listener: NSObject): void;
+
+	static alloc(): GKGameSession; // inherited from NSObject
+
+	static createSessionInContainerWithTitleMaxConnectedPlayersCompletionHandler(containerName: string, title: string, maxPlayers: number, completionHandler: (p1: GKGameSession, p2: NSError) => void): void;
+
+	static loadSessionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: GKGameSession, p2: NSError) => void): void;
+
+	static loadSessionsInContainerCompletionHandler(containerName: string, completionHandler: (p1: NSArray<GKGameSession>, p2: NSError) => void): void;
+
+	static new(): GKGameSession; // inherited from NSObject
+
+	static removeEventListener(listener: NSObject): void;
+
+	static removeSessionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
+
+	/* readonly */ badgedPlayers: NSArray<GKCloudPlayer>;
+
+	/* readonly */ identifier: string;
+
+	/* readonly */ lastModifiedDate: Date;
+
+	/* readonly */ lastModifiedPlayer: GKCloudPlayer;
+
+	/* readonly */ maxNumberOfConnectedPlayers: number;
+
+	/* readonly */ owner: GKCloudPlayer;
+
+	/* readonly */ players: NSArray<GKCloudPlayer>;
+
+	/* readonly */ title: string;
+
+	clearBadgeForPlayersCompletionHandler(players: NSArray<GKCloudPlayer>, completionHandler: (p1: NSError) => void): void;
+
+	getShareURLWithCompletionHandler(completionHandler: (p1: NSURL, p2: NSError) => void): void;
+
+	loadDataWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
+
+	playersWithConnectionState(state: GKConnectionState): NSArray<GKCloudPlayer>;
+
+	saveDataCompletionHandler(data: NSData, completionHandler: (p1: NSData, p2: NSError) => void): void;
+
+	sendDataWithTransportTypeCompletionHandler(data: NSData, transport: GKTransportType, completionHandler: (p1: NSError) => void): void;
+
+	sendMessageWithLocalizedFormatKeyArgumentsDataToPlayersBadgePlayersCompletionHandler(key: string, _arguments: NSArray<string>, data: NSData, players: NSArray<GKCloudPlayer>, badgePlayers: boolean, completionHandler: (p1: NSError) => void): void;
+
+	setConnectionStateCompletionHandler(state: GKConnectionState, completionHandler: (p1: NSError) => void): void;
+}
+
+declare const enum GKGameSessionErrorCode {
+
+	Unknown = 1,
+
+	NotAuthenticated = 2,
+
+	SessionConflict = 3,
+
+	SessionNotShared = 4,
+
+	ConnectionCancelledByUser = 5,
+
+	ConnectionFailed = 6,
+
+	SessionHasMaxConnectedPlayers = 7,
+
+	SendDataNotConnected = 8,
+
+	SendDataNoRecipients = 9,
+
+	SendDataNotReachable = 10,
+
+	SendRateLimitReached = 11,
+
+	BadContainer = 12,
+
+	CloudQuotaExceeded = 13,
+
+	NetworkFailure = 14,
+
+	CloudDriveDisabled = 15,
+
+	InvalidSession = 16
+}
+
+declare var GKGameSessionErrorDomain: string;
+
+interface GKGameSessionEventListener extends NSObjectProtocol {
+
+	sessionDidAddPlayer?(session: GKGameSession, player: GKCloudPlayer): void;
+
+	sessionDidReceiveDataFromPlayer?(session: GKGameSession, data: NSData, player: GKCloudPlayer): void;
+
+	sessionDidReceiveMessageWithDataFromPlayer?(session: GKGameSession, message: string, data: NSData, player: GKCloudPlayer): void;
+
+	sessionDidRemovePlayer?(session: GKGameSession, player: GKCloudPlayer): void;
+
+	sessionPlayerDidChangeConnectionState?(session: GKGameSession, player: GKCloudPlayer, newState: GKConnectionState): void;
+
+	sessionPlayerDidSaveData?(session: GKGameSession, player: GKCloudPlayer, data: NSData): void;
+}
+declare var GKGameSessionEventListener: {
+
+	prototype: GKGameSessionEventListener;
+};
 
 declare class GKInvite extends NSObject {
 
@@ -470,13 +608,13 @@ declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCod
 
 	static new(): GKLeaderboardSet; // inherited from NSObject
 
-	static supportsSecureCoding(): boolean;
-
 	/* readonly */ groupIdentifier: string;
 
 	identifier: string;
 
 	/* readonly */ title: string;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -575,6 +713,8 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 	loadFriendPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
 	loadFriendsWithCompletionHandler(completionHandler: (p1: NSArray<string>, p2: NSError) => void): void;
+
+	loadRecentPlayersWithCompletionHandler(completionHandler: (p1: NSArray<GKPlayer>, p2: NSError) => void): void;
 
 	performSelector(aSelector: string): any;
 
@@ -867,7 +1007,7 @@ declare var GKPeerPickerControllerDelegate: {
 	prototype: GKPeerPickerControllerDelegate;
 };
 
-declare class GKPlayer extends NSObject {
+declare class GKPlayer extends GKBasePlayer {
 
 	static alloc(): GKPlayer; // inherited from NSObject
 
@@ -879,13 +1019,9 @@ declare class GKPlayer extends NSObject {
 
 	/* readonly */ alias: string;
 
-	/* readonly */ displayName: string;
-
 	/* readonly */ guestIdentifier: string;
 
 	/* readonly */ isFriend: boolean;
-
-	/* readonly */ playerID: string;
 
 	loadPhotoForSizeWithCompletionHandler(size: number, completionHandler: (p1: UIImage, p2: NSError) => void): void;
 }
@@ -941,8 +1077,6 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 
 	static reportScoresWithEligibleChallengesWithCompletionHandler(scores: NSArray<GKScore>, challenges: NSArray<GKChallenge>, completionHandler: (p1: NSError) => void): void;
 
-	static supportsSecureCoding(): boolean;
-
 	category: string;
 
 	context: number;
@@ -962,6 +1096,8 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 	shouldSetDefaultLeaderboard: boolean;
 
 	value: number;
+
+	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { category: string; });
 
@@ -1118,6 +1254,13 @@ declare const enum GKSessionMode {
 	Peer = 2
 }
 
+declare const enum GKTransportType {
+
+	Unreliable = 0,
+
+	Reliable = 1
+}
+
 declare class GKTurnBasedEventHandler extends NSObject {
 
 	static alloc(): GKTurnBasedEventHandler; // inherited from NSObject
@@ -1131,7 +1274,7 @@ declare class GKTurnBasedEventHandler extends NSObject {
 
 interface GKTurnBasedEventHandlerDelegate {
 
-	handleInviteFromGameCenter(playersToInvite: NSArray<GKPlayer>): void;
+	handleInviteFromGameCenter(playersToInvite: NSArray<string>): void;
 
 	handleMatchEnded?(match: GKTurnBasedMatch): void;
 
