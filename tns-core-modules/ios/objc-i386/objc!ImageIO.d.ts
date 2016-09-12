@@ -5,7 +5,7 @@ declare function CGImageDestinationAddImageAndMetadata(idst: any, image: any, me
 
 declare function CGImageDestinationAddImageFromSource(idst: any, isrc: any, index: number, properties: NSDictionary<any, any>): void;
 
-declare function CGImageDestinationCopyImageSource(idst: any, isrc: any, options: NSDictionary<any, any>, err: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CGImageDestinationCopyImageSource(idst: any, isrc: any, options: NSDictionary<any, any>, err: interop.Pointer | interop.Reference<NSError>): number;
 
 declare function CGImageDestinationCopyTypeIdentifiers(): NSArray<any>;
 
@@ -15,7 +15,7 @@ declare function CGImageDestinationCreateWithDataConsumer(consumer: any, type: s
 
 declare function CGImageDestinationCreateWithURL(url: NSURL, type: string, count: number, options: NSDictionary<any, any>): any;
 
-declare function CGImageDestinationFinalize(idst: any): boolean;
+declare function CGImageDestinationFinalize(idst: any): number;
 
 declare function CGImageDestinationGetTypeID(): number;
 
@@ -37,7 +37,7 @@ declare function CGImageMetadataCreateMutableCopy(metadata: any): any;
 
 declare function CGImageMetadataCreateXMPData(metadata: any, options: NSDictionary<any, any>): NSData;
 
-declare function CGImageMetadataEnumerateTagsUsingBlock(metadata: any, rootPath: string, options: NSDictionary<any, any>, block: (p1: string, p2: any) => boolean): void;
+declare function CGImageMetadataEnumerateTagsUsingBlock(metadata: any, rootPath: string, options: NSDictionary<any, any>, block: (p1: string, p2: any) => number): void;
 
 declare const enum CGImageMetadataErrors {
 
@@ -54,15 +54,15 @@ declare const enum CGImageMetadataErrors {
 
 declare function CGImageMetadataGetTypeID(): number;
 
-declare function CGImageMetadataRegisterNamespaceForPrefix(metadata: any, xmlns: string, prefix: string, err: interop.Pointer | interop.Reference<NSError>): boolean;
+declare function CGImageMetadataRegisterNamespaceForPrefix(metadata: any, xmlns: string, prefix: string, err: interop.Pointer | interop.Reference<NSError>): number;
 
-declare function CGImageMetadataRemoveTagWithPath(metadata: any, parent: any, path: string): boolean;
+declare function CGImageMetadataRemoveTagWithPath(metadata: any, parent: any, path: string): number;
 
-declare function CGImageMetadataSetTagWithPath(metadata: any, parent: any, path: string, tag: any): boolean;
+declare function CGImageMetadataSetTagWithPath(metadata: any, parent: any, path: string, tag: any): number;
 
-declare function CGImageMetadataSetValueMatchingImageProperty(metadata: any, dictionaryName: string, propertyName: string, value: any): boolean;
+declare function CGImageMetadataSetValueMatchingImageProperty(metadata: any, dictionaryName: string, propertyName: string, value: any): number;
 
-declare function CGImageMetadataSetValueWithPath(metadata: any, parent: any, path: string, value: any): boolean;
+declare function CGImageMetadataSetValueWithPath(metadata: any, parent: any, path: string, value: any): number;
 
 declare function CGImageMetadataTagCopyName(tag: any): string;
 
@@ -165,9 +165,9 @@ declare const enum CGImageSourceStatus {
 	kCGImageStatusComplete = 0
 }
 
-declare function CGImageSourceUpdateData(isrc: any, data: NSData, final: boolean): void;
+declare function CGImageSourceUpdateData(isrc: any, data: NSData, final: interop.FunctionReference<(p1: number) => number>): void;
 
-declare function CGImageSourceUpdateDataProvider(isrc: any, provider: any, final: boolean): void;
+declare function CGImageSourceUpdateDataProvider(isrc: any, provider: any, final: interop.FunctionReference<(p1: number) => number>): void;
 
 declare var kCFErrorDomainCGImageMetadata: string;
 
@@ -184,6 +184,8 @@ declare var kCGImageDestinationLossyCompressionQuality: string;
 declare var kCGImageDestinationMergeMetadata: string;
 
 declare var kCGImageDestinationMetadata: string;
+
+declare var kCGImageDestinationOptimizeColorForSharing: string;
 
 declare var kCGImageDestinationOrientation: string;
 
@@ -295,19 +297,59 @@ declare var kCGImagePropertyColorModelLab: string;
 
 declare var kCGImagePropertyColorModelRGB: string;
 
+declare var kCGImagePropertyDNGAsShotNeutral: string;
+
+declare var kCGImagePropertyDNGAsShotWhiteXY: string;
+
 declare var kCGImagePropertyDNGBackwardVersion: string;
+
+declare var kCGImagePropertyDNGBaselineExposure: string;
+
+declare var kCGImagePropertyDNGBaselineNoise: string;
+
+declare var kCGImagePropertyDNGBaselineSharpness: string;
+
+declare var kCGImagePropertyDNGBlackLevel: string;
+
+declare var kCGImagePropertyDNGCalibrationIlluminant1: string;
+
+declare var kCGImagePropertyDNGCalibrationIlluminant2: string;
+
+declare var kCGImagePropertyDNGCameraCalibration1: string;
+
+declare var kCGImagePropertyDNGCameraCalibration2: string;
+
+declare var kCGImagePropertyDNGCameraCalibrationSignature: string;
 
 declare var kCGImagePropertyDNGCameraSerialNumber: string;
 
+declare var kCGImagePropertyDNGColorMatrix1: string;
+
+declare var kCGImagePropertyDNGColorMatrix2: string;
+
 declare var kCGImagePropertyDNGDictionary: string;
+
+declare var kCGImagePropertyDNGFixVignetteRadial: string;
 
 declare var kCGImagePropertyDNGLensInfo: string;
 
 declare var kCGImagePropertyDNGLocalizedCameraModel: string;
 
+declare var kCGImagePropertyDNGNoiseProfile: string;
+
+declare var kCGImagePropertyDNGPrivateData: string;
+
+declare var kCGImagePropertyDNGProfileCalibrationSignature: string;
+
 declare var kCGImagePropertyDNGUniqueCameraModel: string;
 
 declare var kCGImagePropertyDNGVersion: string;
+
+declare var kCGImagePropertyDNGWarpFisheye: string;
+
+declare var kCGImagePropertyDNGWarpRectilinear: string;
+
+declare var kCGImagePropertyDNGWhiteLevel: string;
 
 declare var kCGImagePropertyDPIHeight: string;
 

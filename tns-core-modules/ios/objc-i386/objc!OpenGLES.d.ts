@@ -27,6 +27,8 @@ declare class EAGLContext extends NSObject {
 
 	presentRenderbuffer(target: number): boolean;
 
+	presentRenderbufferAtTime(target: number, presentationTime: number): boolean;
+
 	renderbufferStorageFromDrawable(target: number, drawable: EAGLDrawable): boolean;
 }
 

@@ -9,6 +9,8 @@ declare class HMAccessory extends NSObject {
 
 	/* readonly */ bridged: boolean;
 
+	/* readonly */ cameraProfiles: NSArray<HMCameraProfile>;
+
 	/* readonly */ category: HMAccessoryCategory;
 
 	delegate: HMAccessoryDelegate;
@@ -81,6 +83,8 @@ declare var HMAccessoryCategoryTypeFan: string;
 
 declare var HMAccessoryCategoryTypeGarageDoorOpener: string;
 
+declare var HMAccessoryCategoryTypeIPCamera: string;
+
 declare var HMAccessoryCategoryTypeLightbulb: string;
 
 declare var HMAccessoryCategoryTypeOther: string;
@@ -98,6 +102,8 @@ declare var HMAccessoryCategoryTypeSensor: string;
 declare var HMAccessoryCategoryTypeSwitch: string;
 
 declare var HMAccessoryCategoryTypeThermostat: string;
+
+declare var HMAccessoryCategoryTypeVideoDoorbell: string;
 
 declare var HMAccessoryCategoryTypeWindow: string;
 
@@ -122,6 +128,19 @@ declare var HMAccessoryDelegate: {
 	prototype: HMAccessoryDelegate;
 };
 
+declare class HMAccessoryProfile extends NSObject {
+
+	static alloc(): HMAccessoryProfile; // inherited from NSObject
+
+	static new(): HMAccessoryProfile; // inherited from NSObject
+
+	/* readonly */ accessory: HMAccessory;
+
+	/* readonly */ services: NSArray<HMService>;
+
+	/* readonly */ uniqueIdentifier: NSUUID;
+}
+
 declare class HMAction extends NSObject {
 
 	static alloc(): HMAction; // inherited from NSObject
@@ -143,6 +162,8 @@ declare class HMActionSet extends NSObject {
 
 	/* readonly */ executing: boolean;
 
+	/* readonly */ lastExecutionDate: Date;
+
 	/* readonly */ name: string;
 
 	/* readonly */ uniqueIdentifier: NSUUID;
@@ -160,9 +181,191 @@ declare var HMActionSetTypeHomeDeparture: string;
 
 declare var HMActionSetTypeSleep: string;
 
+declare var HMActionSetTypeTriggerOwned: string;
+
 declare var HMActionSetTypeUserDefined: string;
 
 declare var HMActionSetTypeWakeUp: string;
+
+declare class HMCameraAudioControl extends HMCameraControl {
+
+	static alloc(): HMCameraAudioControl; // inherited from NSObject
+
+	static new(): HMCameraAudioControl; // inherited from NSObject
+
+	/* readonly */ mute: HMCharacteristic;
+
+	/* readonly */ volume: HMCharacteristic;
+}
+
+declare const enum HMCameraAudioStreamSetting {
+
+	Muted = 1,
+
+	IncomingAudioAllowed = 2,
+
+	BidirectionalAudioAllowed = 3
+}
+
+declare class HMCameraControl extends NSObject {
+
+	static alloc(): HMCameraControl; // inherited from NSObject
+
+	static new(): HMCameraControl; // inherited from NSObject
+}
+
+declare class HMCameraProfile extends HMAccessoryProfile {
+
+	static alloc(): HMCameraProfile; // inherited from NSObject
+
+	static new(): HMCameraProfile; // inherited from NSObject
+
+	/* readonly */ microphoneControl: HMCameraAudioControl;
+
+	/* readonly */ settingsControl: HMCameraSettingsControl;
+
+	/* readonly */ snapshotControl: HMCameraSnapshotControl;
+
+	/* readonly */ speakerControl: HMCameraAudioControl;
+
+	/* readonly */ streamControl: HMCameraStreamControl;
+}
+
+declare class HMCameraSettingsControl extends HMCameraControl {
+
+	static alloc(): HMCameraSettingsControl; // inherited from NSObject
+
+	static new(): HMCameraSettingsControl; // inherited from NSObject
+
+	/* readonly */ currentHorizontalTilt: HMCharacteristic;
+
+	/* readonly */ currentVerticalTilt: HMCharacteristic;
+
+	/* readonly */ digitalZoom: HMCharacteristic;
+
+	/* readonly */ imageMirroring: HMCharacteristic;
+
+	/* readonly */ imageRotation: HMCharacteristic;
+
+	/* readonly */ nightVision: HMCharacteristic;
+
+	/* readonly */ opticalZoom: HMCharacteristic;
+
+	/* readonly */ targetHorizontalTilt: HMCharacteristic;
+
+	/* readonly */ targetVerticalTilt: HMCharacteristic;
+}
+
+declare class HMCameraSnapshot extends HMCameraSource {
+
+	static alloc(): HMCameraSnapshot; // inherited from NSObject
+
+	static new(): HMCameraSnapshot; // inherited from NSObject
+
+	/* readonly */ captureDate: Date;
+}
+
+declare class HMCameraSnapshotControl extends HMCameraControl {
+
+	static alloc(): HMCameraSnapshotControl; // inherited from NSObject
+
+	static new(): HMCameraSnapshotControl; // inherited from NSObject
+
+	delegate: HMCameraSnapshotControlDelegate;
+
+	/* readonly */ mostRecentSnapshot: HMCameraSnapshot;
+
+	takeSnapshot(): void;
+}
+
+interface HMCameraSnapshotControlDelegate extends NSObjectProtocol {
+
+	cameraSnapshotControlDidTakeSnapshotError?(cameraSnapshotControl: HMCameraSnapshotControl, snapshot: HMCameraSnapshot, error: NSError): void;
+}
+declare var HMCameraSnapshotControlDelegate: {
+
+	prototype: HMCameraSnapshotControlDelegate;
+};
+
+declare class HMCameraSource extends NSObject {
+
+	static alloc(): HMCameraSource; // inherited from NSObject
+
+	static new(): HMCameraSource; // inherited from NSObject
+}
+
+declare class HMCameraStream extends HMCameraSource {
+
+	static alloc(): HMCameraStream; // inherited from NSObject
+
+	static new(): HMCameraStream; // inherited from NSObject
+
+	/* readonly */ audioStreamSetting: HMCameraAudioStreamSetting;
+
+	setAudioStreamSetting(audioStreamSetting: HMCameraAudioStreamSetting): void;
+
+	updateAudioStreamSettingCompletionHandler(audioStreamSetting: HMCameraAudioStreamSetting, completion: (p1: NSError) => void): void;
+}
+
+declare class HMCameraStreamControl extends HMCameraControl {
+
+	static alloc(): HMCameraStreamControl; // inherited from NSObject
+
+	static new(): HMCameraStreamControl; // inherited from NSObject
+
+	/* readonly */ cameraStream: HMCameraStream;
+
+	delegate: HMCameraStreamControlDelegate;
+
+	/* readonly */ streamState: HMCameraStreamState;
+
+	startStream(): void;
+
+	stopStream(): void;
+}
+
+interface HMCameraStreamControlDelegate extends NSObjectProtocol {
+
+	cameraStreamControlDidStartStream?(cameraStreamControl: HMCameraStreamControl): void;
+
+	cameraStreamControlDidStopStreamWithError?(cameraStreamControl: HMCameraStreamControl, error: NSError): void;
+}
+declare var HMCameraStreamControlDelegate: {
+
+	prototype: HMCameraStreamControlDelegate;
+};
+
+declare const enum HMCameraStreamState {
+
+	Starting = 1,
+
+	Streaming = 2,
+
+	Stopping = 3,
+
+	NotStreaming = 4
+}
+
+declare class HMCameraView extends UIView {
+
+	static alloc(): HMCameraView; // inherited from NSObject
+
+	static appearance(): HMCameraView; // inherited from UIAppearance
+
+	static appearanceForTraitCollection(trait: UITraitCollection): HMCameraView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedIn(trait: UITraitCollection, ContainerClass: typeof NSObject): HMCameraView; // inherited from UIAppearance
+
+	static appearanceForTraitCollectionWhenContainedInInstancesOfClasses(trait: UITraitCollection, containerTypes: NSArray<typeof NSObject>): HMCameraView; // inherited from UIAppearance
+
+	static appearanceWhenContainedIn(ContainerClass: typeof NSObject): HMCameraView; // inherited from UIAppearance
+
+	static appearanceWhenContainedInInstancesOfClasses(containerTypes: NSArray<typeof NSObject>): HMCameraView; // inherited from UIAppearance
+
+	static new(): HMCameraView; // inherited from NSObject
+
+	cameraSource: HMCameraSource;
+}
 
 declare class HMCharacteristic extends NSObject {
 
@@ -233,6 +436,8 @@ declare class HMCharacteristicMetadata extends NSObject {
 	/* readonly */ stepValue: number;
 
 	/* readonly */ units: string;
+
+	/* readonly */ validValues: NSArray<number>;
 }
 
 declare var HMCharacteristicMetadataFormatArray: string;
@@ -266,6 +471,10 @@ declare var HMCharacteristicMetadataUnitsCelsius: string;
 declare var HMCharacteristicMetadataUnitsFahrenheit: string;
 
 declare var HMCharacteristicMetadataUnitsLux: string;
+
+declare var HMCharacteristicMetadataUnitsMicrogramsPerCubicMeter: string;
+
+declare var HMCharacteristicMetadataUnitsPartsPerMillion: string;
 
 declare var HMCharacteristicMetadataUnitsPercentage: string;
 
@@ -331,6 +540,8 @@ declare var HMCharacteristicTypeCurrentTemperature: string;
 
 declare var HMCharacteristicTypeCurrentVerticalTilt: string;
 
+declare var HMCharacteristicTypeDigitalZoom: string;
+
 declare var HMCharacteristicTypeFirmwareVersion: string;
 
 declare var HMCharacteristicTypeHardwareVersion: string;
@@ -342,6 +553,10 @@ declare var HMCharacteristicTypeHoldPosition: string;
 declare var HMCharacteristicTypeHue: string;
 
 declare var HMCharacteristicTypeIdentify: string;
+
+declare var HMCharacteristicTypeImageMirroring: string;
+
+declare var HMCharacteristicTypeImageRotation: string;
 
 declare var HMCharacteristicTypeInputEvent: string;
 
@@ -361,11 +576,17 @@ declare var HMCharacteristicTypeModel: string;
 
 declare var HMCharacteristicTypeMotionDetected: string;
 
+declare var HMCharacteristicTypeMute: string;
+
 declare var HMCharacteristicTypeName: string;
+
+declare var HMCharacteristicTypeNightVision: string;
 
 declare var HMCharacteristicTypeObstructionDetected: string;
 
 declare var HMCharacteristicTypeOccupancyDetected: string;
+
+declare var HMCharacteristicTypeOpticalZoom: string;
 
 declare var HMCharacteristicTypeOutletInUse: string;
 
@@ -383,7 +604,11 @@ declare var HMCharacteristicTypeSaturation: string;
 
 declare var HMCharacteristicTypeSecuritySystemAlarmType: string;
 
+declare var HMCharacteristicTypeSelectedStreamConfiguration: string;
+
 declare var HMCharacteristicTypeSerialNumber: string;
+
+declare var HMCharacteristicTypeSetupStreamEndpoint: string;
 
 declare var HMCharacteristicTypeSmokeDetected: string;
 
@@ -398,6 +623,14 @@ declare var HMCharacteristicTypeStatusJammed: string;
 declare var HMCharacteristicTypeStatusLowBattery: string;
 
 declare var HMCharacteristicTypeStatusTampered: string;
+
+declare var HMCharacteristicTypeStreamingStatus: string;
+
+declare var HMCharacteristicTypeSupportedAudioStreamConfiguration: string;
+
+declare var HMCharacteristicTypeSupportedRTPConfiguration: string;
+
+declare var HMCharacteristicTypeSupportedVideoStreamConfiguration: string;
 
 declare var HMCharacteristicTypeTargetDoorState: string;
 
@@ -421,6 +654,8 @@ declare var HMCharacteristicTypeTemperatureUnits: string;
 
 declare var HMCharacteristicTypeVersion: string;
 
+declare var HMCharacteristicTypeVolume: string;
+
 declare const enum HMCharacteristicValueAirParticulateSize {
 
 	Size2_5 = 0,
@@ -441,6 +676,41 @@ declare const enum HMCharacteristicValueAirQuality {
 	Inferior = 4,
 
 	Poor = 5
+}
+
+declare const enum HMCharacteristicValueBatteryStatus {
+
+	Normal = 0,
+
+	Low = 1
+}
+
+declare const enum HMCharacteristicValueCarbonDioxideDetectionStatus {
+
+	NotDetected = 0,
+
+	Detected = 1
+}
+
+declare const enum HMCharacteristicValueCarbonMonoxideDetectionStatus {
+
+	NotDetected = 0,
+
+	Detected = 1
+}
+
+declare const enum HMCharacteristicValueChargingState {
+
+	None = 0,
+
+	InProgress = 1
+}
+
+declare const enum HMCharacteristicValueContactState {
+
+	None = 0,
+
+	Detected = 1
 }
 
 declare const enum HMCharacteristicValueCurrentSecuritySystemState {
@@ -480,7 +750,21 @@ declare const enum HMCharacteristicValueHeatingCooling {
 	Auto = 3
 }
 
+declare const enum HMCharacteristicValueJammedStatus {
+
+	None = 0,
+
+	Jammed = 1
+}
+
 declare var HMCharacteristicValueKeyPath: string;
+
+declare const enum HMCharacteristicValueLeakStatus {
+
+	None = 0,
+
+	Detected = 1
+}
 
 declare const enum HMCharacteristicValueLockMechanismLastKnownAction {
 
@@ -518,6 +802,13 @@ declare const enum HMCharacteristicValueLockMechanismState {
 	Unknown = 3
 }
 
+declare const enum HMCharacteristicValueOccupancyStatus {
+
+	NotOccupied = 0,
+
+	Occupied = 1
+}
+
 declare const enum HMCharacteristicValuePositionState {
 
 	Closing = 0,
@@ -532,6 +823,34 @@ declare const enum HMCharacteristicValueRotationDirection {
 	Clockwise = 0,
 
 	CounterClockwise = 1
+}
+
+declare const enum HMCharacteristicValueSecuritySystemAlarmType {
+
+	NoAlarm = 0,
+
+	Unknown = 1
+}
+
+declare const enum HMCharacteristicValueSmokeDetectionStatus {
+
+	None = 0,
+
+	Detected = 1
+}
+
+declare const enum HMCharacteristicValueStatusFault {
+
+	NoFault = 0,
+
+	GeneralFault = 1
+}
+
+declare const enum HMCharacteristicValueTamperedStatus {
+
+	None = 0,
+
+	Tampered = 1
 }
 
 declare const enum HMCharacteristicValueTargetSecuritySystemState {
@@ -741,7 +1060,13 @@ declare const enum HMErrorCode {
 
 	NotAuthorizedForLocationServices = 85,
 
-	ReferToUserManual = 86
+	ReferToUserManual = 86,
+
+	InvalidOrMissingAuthorizationData = 87,
+
+	BridgedAccessoryNotReachable = 88,
+
+	NotAuthorizedForMicrophoneAccess = 89
 }
 
 declare var HMErrorDomain: string;
@@ -821,6 +1146,8 @@ declare class HMHome extends NSObject {
 	addAccessoryCompletionHandler(accessory: HMAccessory, completion: (p1: NSError) => void): void;
 
 	addActionSetWithNameCompletionHandler(actionSetName: string, completion: (p1: HMActionSet, p2: NSError) => void): void;
+
+	addAndSetupAccessoriesWithCompletionHandler(completion: (p1: NSError) => void): void;
 
 	addRoomWithNameCompletionHandler(roomName: string, completion: (p1: HMRoom, p2: NSError) => void): void;
 
@@ -1015,9 +1342,13 @@ declare class HMService extends NSObject {
 
 	/* readonly */ characteristics: NSArray<HMCharacteristic>;
 
+	/* readonly */ linkedServices: NSArray<HMService>;
+
 	/* readonly */ localizedDescription: string;
 
 	/* readonly */ name: string;
+
+	/* readonly */ primaryService: boolean;
 
 	/* readonly */ serviceType: string;
 
@@ -1055,6 +1386,10 @@ declare var HMServiceTypeAirQualitySensor: string;
 
 declare var HMServiceTypeBattery: string;
 
+declare var HMServiceTypeCameraControl: string;
+
+declare var HMServiceTypeCameraRTPStreamManagement: string;
+
 declare var HMServiceTypeCarbonDioxideSensor: string;
 
 declare var HMServiceTypeCarbonMonoxideSensor: string;
@@ -1062,6 +1397,8 @@ declare var HMServiceTypeCarbonMonoxideSensor: string;
 declare var HMServiceTypeContactSensor: string;
 
 declare var HMServiceTypeDoor: string;
+
+declare var HMServiceTypeDoorbell: string;
 
 declare var HMServiceTypeFan: string;
 
@@ -1079,6 +1416,8 @@ declare var HMServiceTypeLockManagement: string;
 
 declare var HMServiceTypeLockMechanism: string;
 
+declare var HMServiceTypeMicrophone: string;
+
 declare var HMServiceTypeMotionSensor: string;
 
 declare var HMServiceTypeOccupancySensor: string;
@@ -1088,6 +1427,8 @@ declare var HMServiceTypeOutlet: string;
 declare var HMServiceTypeSecuritySystem: string;
 
 declare var HMServiceTypeSmokeSensor: string;
+
+declare var HMServiceTypeSpeaker: string;
 
 declare var HMServiceTypeStatefulProgrammableSwitch: string;
 
