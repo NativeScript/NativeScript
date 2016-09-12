@@ -1,13 +1,15 @@
 ﻿import Common = require("./application-settings-common");
 
-var userDefaults = NSUserDefaults.standardUserDefaults();
+import * as utils from "utils/utils";
+
+var userDefaults = utils.ios.getter(NSUserDefaults, NSUserDefaults.standardUserDefaults);
 
 export var hasKey = function (key: string): boolean {
     Common.checkKey(key);
     return userDefaults.objectForKey(key) !== null;
 }
 
-// getters
+// utils.ios.getters
 export var getBoolean = function (key: string, defaultValue?: boolean): boolean {
     Common.checkKey(key);
     if (hasKey(key)) {
@@ -61,5 +63,5 @@ export var remove = function (key: string): void {
 }
 
 export var clear = function (): void {
-    userDefaults.removePersistentDomainForName(NSBundle.mainBundle().bundleIdentifier);
+    userDefaults.removePersistentDomainForName(utils.ios.getter(NSBundle, NSBundle.mainBundle).bundleIdentifier);
 }

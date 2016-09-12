@@ -2,6 +2,8 @@ import viewModule = require("ui/core/view");
 import common = require("./background-common");
 import * as styleModule from "./style";
 
+import * as utils from "utils/utils";
+
 global.moduleMerge(common, exports);
 
 var style: typeof styleModule;
@@ -193,7 +195,7 @@ function drawClipPath(view: viewModule.View) {
             borderLayer.path = path;
             borderLayer.lineWidth = view.borderWidth * 2;
             borderLayer.strokeColor = view.borderColor.ios.CGColor;
-            borderLayer.fillColor = UIColor.clearColor().CGColor;
+            borderLayer.fillColor = utils.ios.getter(UIColor, UIColor.clearColor).CGColor;
 
             borderLayer.frame = nativeView.bounds;
 

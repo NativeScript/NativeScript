@@ -6,6 +6,8 @@ import {View} from "ui/core/view";
 import * as style from "ui/styling/style";
 import {isNullOrUndefined} from "utils/types";
 
+import * as utils from "utils/utils";
+
 global.moduleMerge(common, exports);
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
@@ -119,7 +121,7 @@ export class TextView extends common.TextView {
     }
 
     public _showHint(hint: string) {
-        this.ios.textColor = this.ios.textColor ? this.ios.textColor.colorWithAlphaComponent(0.22) : UIColor.blackColor().colorWithAlphaComponent(0.22);
+        this.ios.textColor = this.ios.textColor ? this.ios.textColor.colorWithAlphaComponent(0.22) : utils.ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
         this.ios.text = isNullOrUndefined(hint) ? "" : hint + "";
         (<any>this.ios).isShowingHint = true;
     }

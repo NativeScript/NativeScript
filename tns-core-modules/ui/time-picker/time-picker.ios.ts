@@ -2,15 +2,17 @@
 import style = require("ui/styling/style");
 import {View} from "ui/core/view";
 
+import * as utils from "utils/utils";
+
 function getDate(hour: number, minute: number): Date {
     var comps = NSDateComponents.alloc().init();
     comps.hour = hour;
     comps.minute = minute;
-    return NSCalendar.currentCalendar().dateFromComponents(<any>comps);
+    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>comps);
 }
 
 function getComponents(date: Date | NSDate): NSDateComponents {
-    return NSCalendar.currentCalendar().componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
+    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
 global.moduleMerge(common, exports);

@@ -6,24 +6,19 @@ import http = require("http");
 
 import * as types from "utils/types";
 import * as imageSourceModule from "image-source";
-import * as utilsModule from "utils/utils";
 import * as fsModule from "file-system";
+
+import * as utils from "utils/utils";
+import getter = utils.ios.getter;
 
 import domainDebugger = require("./../debugger/debugger");
 
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
 var USER_AGENT = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25";
-var sessionConfig = NSURLSessionConfiguration.defaultSessionConfiguration();
-var queue = NSOperationQueue.mainQueue();
+var sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
+var queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
 var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
-
-var utils: typeof utilsModule;
-function ensureUtils() {
-    if (!utils) {
-        utils = require("utils/utils");
-    }
-}
 
 var imageSource: typeof imageSourceModule;
 function ensureImageSource() {
@@ -93,7 +88,6 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 raw: data,
                                 toString: () => { return NSDataToString(data); },
                                 toJSON: () => {
-                                    ensureUtils();
                                     return utils.parseJSON(NSDataToString(data));
                                 },
                                 toImage: () => {

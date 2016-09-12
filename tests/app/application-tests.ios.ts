@@ -3,6 +3,9 @@ import app = require("application");
 import TKUnit = require("./TKUnit");
 import commonTests = require("./application-tests-common");
 
+import * as utils from "utils/utils";
+import getter = utils.ios.getter;
+
 global.moduleMerge(commonTests, exports);
 
 // >> application-ios-observer
@@ -10,7 +13,7 @@ global.moduleMerge(commonTests, exports);
 if (app.ios) {
     var observer = app.ios.addNotificationObserver(UIDeviceBatteryLevelDidChangeNotification,
         function onReceiveCallback(notification: NSNotification) {
-            var percent = UIDevice.currentDevice().batteryLevel * 100;
+            var percent = getter(UIDevice, UIDevice.currentDevice).batteryLevel * 100;
             var message = "Battery: " + percent + "%";
             ////console.log(message);
         });

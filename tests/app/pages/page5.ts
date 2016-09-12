@@ -4,6 +4,8 @@ import buttons = require("ui/button");
 import app = require("application");
 import platform = require("platform");
 
+import * as utils from "utils/utils";
+
 function printDeviceInfoAndroid() {
     console.log("android.os.Build.DEVICE = " + android.os.Build.DEVICE);                     //android.os.Build.DEVICE = hammerhead
     console.log("android.os.Build.VERSION.SDK = " + android.os.Build.VERSION.SDK);         //android.os.Build.VERSION.SDK = 19
@@ -27,7 +29,7 @@ function printDeviceInfoAndroid() {
 }
 
 function printDeviceInfoIOS() {
-    var device = UIDevice.currentDevice();
+    var device = utils.ios.getter(UIDevice, UIDevice.currentDevice);
     console.log("device.name = " + device.name);                             //device.name = iPhone Simulator
     console.log("device.systemName = " + device.systemName);                 //device.systemName = iPhone OS
     console.log("device.systemVersion = " + device.systemVersion);           //device.systemVersion = 8.1
@@ -35,7 +37,7 @@ function printDeviceInfoIOS() {
     console.log("device.localizedModel = " + device.localizedModel);         //device.localizedModel = iPhone Simulator
     console.log("device.userInterfaceIdiom = " + device.userInterfaceIdiom); //device.userInterfaceIdiom = 0
     console.log("device.batteryLevel = " + device.batteryLevel);             //device.batteryLevel = -1
-    var screen = UIScreen.mainScreen();
+    var screen = utils.ios.getter(UIScreen, UIScreen.mainScreen);
     console.log("screen = " + screen);
     console.log("screen.nativeBounds = " + screen.nativeBounds.size.width + ", " + screen.nativeBounds.size.height); //screen.nativeBounds = 640, 1136
     console.log("screen.scale = " + screen.scale);                                                                   //screen.scale = 2

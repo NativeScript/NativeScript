@@ -1,7 +1,9 @@
 ﻿import common = require("./image-cache-common");
-import utils = require("utils/utils");
 import trace = require("trace");
 import * as httpRequestModule from "http/http-request";
+
+import * as utils from "utils/utils";
+import getter = utils.ios.getter;
 
 var httpRequest: typeof httpRequestModule;
 function ensureHttpRequest() {
@@ -32,7 +34,7 @@ class MemmoryWarningHandler extends NSObject {
     public initWithCache(cache: NSCache<any, any>): MemmoryWarningHandler {
         this._cache = cache;
 
-        NSNotificationCenter.defaultCenter().addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
+        getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
         if (trace.enabled) {
             trace.write("[MemmoryWarningHandler] Added low memory observer.", trace.categories.Debug);
         }
@@ -41,7 +43,7 @@ class MemmoryWarningHandler extends NSObject {
     }
 
     public dealloc(): void {
-        NSNotificationCenter.defaultCenter().removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
+        getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
         if (trace.enabled) {
             trace.write("[MemmoryWarningHandler] Removed low memory observer.", trace.categories.Debug);
         }

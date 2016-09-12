@@ -154,6 +154,13 @@
      * Module with ios specific utilities.
      */
     module ios {
+        /**
+         * Checks if the property is a function and if it is, calls it on this.
+         * Designed to support backward compatibility for methods that became properties.
+         * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
+         * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
+         */
+        export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
         export function getTransformedText(view, source: string, transform: string): string;
         export function setWhiteSpace(view, value: string, parentView?: any);
         export function setTextAlignment(view, value: string);

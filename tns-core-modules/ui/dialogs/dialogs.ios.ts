@@ -4,7 +4,9 @@
 import dialogs = require("ui/dialogs");
 import dialogsCommon = require("./dialogs-common");
 import types = require("utils/types");
-import utils = require("utils/utils");
+
+import * as utils from "utils/utils";
+import getter = utils.ios.getter;
 
 global.moduleMerge(dialogsCommon, exports);
 
@@ -476,7 +478,7 @@ export function action(arg: any): Promise<string> {
                 });
 
                 actionSheet.delegate = delegate;
-                actionSheet.showInView(UIApplication.sharedApplication().keyWindow);
+                actionSheet.showInView(getter(UIApplication, UIApplication.sharedApplication).keyWindow);
             } else {
                 var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
 
