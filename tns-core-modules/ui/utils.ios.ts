@@ -1,5 +1,6 @@
 ﻿import {View} from "ui/core/view";
 import * as utils from "utils/utils";
+import getter = utils.ios.getter;
 
 export module ios {
     export function getActualHeight(view: UIView): number {
@@ -11,7 +12,7 @@ export module ios {
     }
 
     export function getStatusBarHeight(): number {
-        var app = UIApplication.sharedApplication();
+        var app = getter(UIApplication, UIApplication.sharedApplication);
         if (!app || app.statusBarHidden) {
             return 0;
         }

@@ -2,7 +2,6 @@
 import definition = require("ui/tab-view");
 import dependencyObservable = require("ui/core/dependency-observable");
 import trace = require("trace");
-import utils = require("utils/utils");
 import view = require("ui/core/view");
 import types = require("utils/types");
 import proxy = require("ui/core/proxy");
@@ -10,6 +9,9 @@ import color = require("color");
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
 import { Page } from "ui/page";
+
+import * as utils from "utils/utils";
+import getter = utils.ios.getter;
 
 global.moduleMerge(common, exports);
 
@@ -487,7 +489,7 @@ export class TabViewStyler implements style.Styler {
         }
 
         if (!currentFont) {
-            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+            currentFont = UIFont.systemFontOfSize(getter(UIFont, UIFont.labelFontSize));
         }
 
         return currentFont;

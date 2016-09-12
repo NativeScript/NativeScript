@@ -1,12 +1,14 @@
 ﻿import textModule = require("text");
 import * as utilsModule from "utils/utils";
 
+import * as utils from "utils/utils";
+
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation
 export class FileSystemAccess {
 
     public getLastModified(path: string): Date {
-        var fileManager = NSFileManager.defaultManager();
+        var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
         var attributes = fileManager.attributesOfItemAtPathError(path);
 
         if (attributes) {
@@ -18,7 +20,7 @@ export class FileSystemAccess {
 
     public getParent(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
-            var fileManager = NSFileManager.defaultManager();
+            var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
             var nsString = NSString.stringWithString(path);
 
             var parentPath = nsString.stringByDeletingLastPathComponent;
@@ -40,7 +42,7 @@ export class FileSystemAccess {
 
     public getFile(path: string, onError?: (error: any) => any): { path: string; name: string; extension: string } {
         try {
-            var fileManager = NSFileManager.defaultManager();
+            var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
             var exists = fileManager.fileExistsAtPath(path);
 
             if (!exists) {
@@ -73,7 +75,7 @@ export class FileSystemAccess {
 
     public getFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
-            var fileManager = NSFileManager.defaultManager();
+            var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
             var exists = this.folderExists(path);
 
             if (!exists) {
@@ -150,7 +152,7 @@ export class FileSystemAccess {
     }
 
     private exists(path: string): { exists: boolean, isDirectory: boolean } {
-        var fileManager = NSFileManager.defaultManager();
+        var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
         var isDirectory = new interop.Reference(interop.types.bool, false);
         var exists = fileManager.fileExistsAtPathIsDirectory(path, isDirectory);
 
@@ -176,7 +178,7 @@ export class FileSystemAccess {
     }
 
     public emptyFolder(path: string, onError?: (error: any) => any) {
-        var fileManager = NSFileManager.defaultManager();
+        var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
         var entities = this.getEntities(path, onError);
 
         if (!entities) {
@@ -199,7 +201,7 @@ export class FileSystemAccess {
     }
 
     public rename(path: string, newPath: string, onError?: (error: any) => any) {
-        var fileManager = NSFileManager.defaultManager();
+        var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
 
         try {
             fileManager.moveItemAtPathToPathError(path, newPath);
@@ -212,7 +214,7 @@ export class FileSystemAccess {
     }
 
     public getLogicalRootPath(): string {
-        let mainBundlePath = NSBundle.mainBundle().bundlePath;
+        let mainBundlePath = utils.ios.getter(NSBundle, NSBundle.mainBundle).bundlePath;
         let resolvedPath = NSString.stringWithString(mainBundlePath).stringByResolvingSymlinksInPath;
         return resolvedPath;
     }
@@ -298,7 +300,7 @@ export class FileSystemAccess {
     }
 
     private getKnownPath(folderType: number): string {
-        var fileManager = NSFileManager.defaultManager();
+        var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
         var paths = fileManager.URLsForDirectoryInDomains(folderType, NSSearchPathDomainMask.UserDomainMask);
 
         var url = paths.objectAtIndex(0);
@@ -326,7 +328,7 @@ export class FileSystemAccess {
     }
 
     private deleteEntity(path: string, onError?: (error: any) => any) {
-        var fileManager = NSFileManager.defaultManager();
+        var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
         try {
             fileManager.removeItemAtPathError(path);
         }
@@ -339,7 +341,7 @@ export class FileSystemAccess {
 
     private enumEntities(path: string, callback: (entity: { path: string; name: string; extension: string }) => boolean, onError?: (error) => any) {
         try {
-            var fileManager = NSFileManager.defaultManager();
+            var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
             try {
                 var files = fileManager.contentsOfDirectoryAtPathError(path);
             }

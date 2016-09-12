@@ -8,6 +8,8 @@ import style = require("ui/styling/style");
 import font = require("ui/styling/font");
 import view = require("ui/core/view");
 
+import * as utils from "utils/utils";
+
 global.moduleMerge(common, exports);
 
 var color: typeof colorModule;
@@ -175,7 +177,7 @@ export class SegmentedBarStyler implements style.Styler {
         else {
             attrs = NSMutableDictionary.new();
         }
-        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(UIFont.labelFontSize()));
+        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(utils.ios.getter(UIFont, UIFont.labelFontSize)));
         attrs.setValueForKey(newFont, NSFontAttributeName);
         bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
@@ -202,7 +204,7 @@ export class SegmentedBarStyler implements style.Styler {
             currentFont = currentAttrs.objectForKey(NSFontAttributeName);
         }
         if (!currentFont) {
-            currentFont = UIFont.systemFontOfSize(UIFont.labelFontSize());
+            currentFont = UIFont.systemFontOfSize(utils.ios.getter(UIFont, UIFont.labelFontSize));
         }
         return currentFont;
     }

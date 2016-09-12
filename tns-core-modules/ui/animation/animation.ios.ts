@@ -6,6 +6,8 @@ import enums = require("ui/enums");
 import style = require("ui/styling/style");
 import dependencyObservable = require("ui/core/dependency-observable");
 
+import * as utils from "utils/utils";
+
 global.moduleMerge(common, exports);
 
 let _transform = "_transform";
@@ -239,7 +241,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 };
                 originalValue = nativeView.layer.backgroundColor;
                 if (nativeView instanceof UILabel) {
-                    nativeView.setValueForKey(UIColor.clearColor(), "backgroundColor");
+                    nativeView.setValueForKey(utils.ios.getter(UIColor, UIColor.clearColor), "backgroundColor");
                 }
                 value = value.CGColor;
                 break;
