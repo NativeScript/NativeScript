@@ -3,7 +3,7 @@
   <GridLayout rows="auto, *, *">
     <StackLayout id="parentLayout">
       <TextView automationText="tv" id="textView" text="{{ exampleName }}"/>
-      <Button automationText="btn" id="btnRun" text="Run" tap="{{ loadOldExmaples }}"/>
+      <Button automationText="Run" id="btnRun" text="Run" tap="{{ loadOldExmaples }}"/>
     </StackLayout>
     <ScrollView row="1">
       <WrapLayout id="wrapLayoutWithExamples"/>
