@@ -222,8 +222,8 @@ function _testIOSSpecificKnownFolder(knownFolderName: string){
     let knownFolder: fs.Folder;
     let createdFile: fs.File;
     let testFunc = function testFunc(){
+        knownFolder = fs.knownFolders.ios[knownFolderName]();
         if (knownFolder) {
-            knownFolder = fs.knownFolders.ios[knownFolderName]();
             createdFile = knownFolder.getFile("createdFile");
             createdFile.writeTextSync("some text");
         }
