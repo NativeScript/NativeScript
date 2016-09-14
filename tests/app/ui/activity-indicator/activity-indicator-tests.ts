@@ -81,6 +81,10 @@ function getNativeBusy(indicator: activityIndicatorModule.ActivityIndicator): bo
         return indicator.android.getVisibility() === android.view.View.VISIBLE;
     }
     else if (indicator.ios) {
-        return indicator.ios.isAnimating();
+        if ((indicator.ios as any).isAnimating) {
+            return (indicator.ios as any).isAnimating();
+        } else {
+            return (indicator.ios as UIActivityIndicatorView).animating;
+        }
     }
 }

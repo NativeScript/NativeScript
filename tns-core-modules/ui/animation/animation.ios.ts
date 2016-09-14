@@ -41,9 +41,11 @@ interface IOSView extends viewModule.View {
     _isPresentationLayerUpdateSuspeneded();
 }
 
-class AnimationDelegateImpl extends NSObject {
+class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 
     public nextAnimation: Function;
+
+    static ObjCProtocols = [CAAnimationDelegate];
 
     private _finishedCallback: Function;
     private _propertyAnimation: PropertyAnimationInfo;
@@ -360,7 +362,7 @@ export class Animation extends common.Animation implements definition.Animation 
         }
 
         let animationDelegate = AnimationDelegateImpl.initWithFinishedCallback(finishedCallback, animation, valueSource);
-        nativeAnimation.setValueForKey(animationDelegate, "delegate");
+        nativeAnimation.delegate = animationDelegate;
 
         nativeView.layer.addAnimationForKey(nativeAnimation, args.propertyNameToAnimate);
 
