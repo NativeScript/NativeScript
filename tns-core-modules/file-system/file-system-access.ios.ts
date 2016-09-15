@@ -109,7 +109,7 @@ export class FileSystemAccess {
 
      public getExistingFolder(path: string, onError?: (error: any) => any): { path: string; name: string } {
         try {
-            var fileManager = NSFileManager.defaultManager();
+            var fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
             var exists = this.folderExists(path);
 
             if (exists) {
