@@ -2,7 +2,7 @@
   <StackLayout>
     <StackLayout loaded="stack0Loaded" orientation="horizontal">
       <TextField id="tf" automationText="tf" text="{{ textSource }}" width="150" />
-      <Button id="btn" automationText="btn" width="150" />
+      <Button id="btn" width="150" />
     </StackLayout>
     <StackLayout loaded="stack1Loaded">
       <Label id="label" automationText="label" text="{{ text }}" />

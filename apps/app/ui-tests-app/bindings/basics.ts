@@ -1,5 +1,5 @@
-﻿import pageModule = require("ui/page");
-import buttonModule = require("ui/button");
+﻿import buttonModule = require("ui/button");
+import pageModule = require("ui/page");
 import textFieldModule = require("ui/text-field");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import observableModule = require("data/observable");
@@ -20,14 +20,14 @@ export function createPage() {
     targetTwoWay.id = "textFieldTwoWay";
     buttonOneWay.id = "buttonOneWay";
     buttonTwoWay.id = "buttonTwoWay";
+    buttonSetText.id = "buttonSetText";    
 
     targetOneWay.automationText = "textFieldOneWay";
     targetTwoWay.automationText = "textFieldTwoWay";
-    buttonOneWay.automationText = "buttonOneWay";
-    buttonTwoWay.automationText = "buttonTwoWay";
-
-    buttonSetText.id = "buttonSetText";
     buttonSetText.automationText = "buttonSetText";
+    //buttonOneWay.automationText = "buttonOneWay";    
+    //buttonTwoWay.automationText = "buttonTwoWay";    
+
     buttonSetText.text = "SetText";
     buttonSetText.on(buttonModule.Button.tapEvent, function () {
         targetOneWay.text = "Test";
