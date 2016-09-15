@@ -223,16 +223,19 @@ function _testIOSSpecificKnownFolder(knownFolderName: string){
     let createdFile: fs.File;
     let testFunc = function testFunc(){
         knownFolder = fs.knownFolders.ios[knownFolderName]();
-        createdFile = knownFolder.getFile("createdFile");
-        createdFile.writeTextSync("some text");
+        if (knownFolder) {
+            createdFile = knownFolder.getFile("createdFile");
+            createdFile.writeTextSync("some text");
+        }
     };
     if (platform.isIOS){
         testFunc();
-        TKUnit.assertNotNull(knownFolder, `Could not retrieve the ${knownFolderName} known folder.`);
-        TKUnit.assertTrue(knownFolder.isKnown, `The ${knownFolderName} folder should have its "isKnown" property set to true.`);
-        TKUnit.assertNotNull(createdFile, `Could not create a new file in the ${knownFolderName} known folder.`);
-        TKUnit.assertTrue(fs.File.exists(createdFile.path), `Could not create a new file in the ${knownFolderName} known folder.`);
-        TKUnit.assertEqual(createdFile.readTextSync(), "some text", `The contents of the new file created in the ${knownFolderName} known folder are not as expected.`);
+        if (knownFolder) {
+            TKUnit.assertTrue(knownFolder.isKnown, `The ${knownFolderName} folder should have its "isKnown" property set to true.`);
+            TKUnit.assertNotNull(createdFile, `Could not create a new file in the ${knownFolderName} known folder.`);
+            TKUnit.assertTrue(fs.File.exists(createdFile.path), `Could not create a new file in the ${knownFolderName} known folder.`);
+            TKUnit.assertEqual(createdFile.readTextSync(), "some text", `The contents of the new file created in the ${knownFolderName} known folder are not as expected.`);
+        }
     }
     else {
         TKUnit.assertThrows(testFunc, 
