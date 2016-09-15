@@ -109,12 +109,12 @@ export class ImageStyler implements style.Styler {
     }
 
     // tint color
-    private static setColorProperty(view: view.View, newValue: any) {
+    private static setTintColorProperty(view: view.View, newValue: any) {
         var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
         imageView.setColorFilter(newValue);
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: number) {
+    private static resetTintColorProperty(view: view.View, nativeValue: number) {
         var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
         imageView.clearColorFilter();
     }
@@ -131,9 +131,9 @@ export class ImageStyler implements style.Styler {
             ImageStyler.setBorderWidthProperty,
             ImageStyler.resetBorderWidthProperty), "Image");
 
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            ImageStyler.setColorProperty,
-            ImageStyler.resetColorProperty), "Image");
+        style.registerHandler(style.tintColorProperty, new style.StylePropertyChangedHandler(
+            ImageStyler.setTintColorProperty,
+            ImageStyler.resetTintColorProperty), "Image");
     }
 }
 

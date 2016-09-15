@@ -583,6 +583,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(colorProperty, value);
     }
 
+    get tintColor(): Color {
+        return this._getValue(tintColorProperty);
+    }
+    set tintColor(value: Color) {
+        this._setValue(tintColorProperty, value);
+    }
+
     get placeholderColor(): Color {
         return this._getValue(placeholderColorProperty);
     }
@@ -1058,6 +1065,10 @@ export var translateYProperty = new styleProperty.Property("translateY", "transl
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
 
 export var colorProperty = new styleProperty.Property("color", "color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+export var tintColorProperty = new styleProperty.Property("tintColor", "tint-color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
 

@@ -6,6 +6,7 @@ import definition = require("ui/image");
 import enums = require("ui/enums");
 import platform = require("platform");
 import utils = require("utils/utils");
+import color = require("color");
 
 import * as types from "utils/types";
 
@@ -78,6 +79,14 @@ export class Image extends view.View implements definition.Image {
     set loadMode(value: "sync" | "async") {
         this._setValue(Image.loadModeProperty, value);
     }
+
+    get tintColor(): color.Color {
+        return this.style.tintColor;
+    }
+
+    set tintColor(value: color.Color) {
+        this.style.tintColor = value;
+    } 
 
     public _setNativeImage(nativeImage: any) {
         //
