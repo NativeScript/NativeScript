@@ -3,6 +3,7 @@ import * as utilsModule from "utils/utils";
 import * as applicationModule from "application";
 import * as imageSourceModule from "image-source";
 import * as cameraCommonModule from "./camera-common";
+import * as platform from "platform";
 
 var REQUEST_IMAGE_CAPTURE = 3453;
 
@@ -56,13 +57,13 @@ export var takePicture = function (options?): Promise<any> {
                         let imageSource: typeof imageSourceModule = require("image-source");
                         let options = new android.graphics.BitmapFactory.Options();
                         options.inJustDecodeBounds = true;
-                        android.graphics.BitmapFactory.decodeFile(picturePath, options);
+                        let bitmap = android.graphics.BitmapFactory.decodeFile(picturePath, options);
 
                         let sampleSize = calculateInSampleSize(options.outWidth, options.outHeight, reqWidth, reqHeight);
 
                         let finalBitmapOptions = new android.graphics.BitmapFactory.Options();
                         finalBitmapOptions.inSampleSize = sampleSize;
-                        let bitmap = android.graphics.BitmapFactory.decodeFile(picturePath, finalBitmapOptions);
+                        bitmap = android.graphics.BitmapFactory.decodeFile(picturePath, finalBitmapOptions);
                         let scaledSizeImage = null;
                         if (reqHeight > 0 && reqWidth > 0) {
                             if (shouldKeepAspectRatio) {
@@ -118,6 +119,10 @@ export var isAvailable = function () {
 
 var calculateInSampleSize = function (imageWidth, imageHeight, reqWidth, reqHeight) {
     let sampleSize = 1;
+    let displayWidth = platform.screen.mainScreen.widthDIPs;
+    let displayHeigth = platform.screen.mainScreen.heightDIPs;
+    reqWidth = (reqWidth > 0 && reqWidth < displayWidth) ? reqWidth : displayWidth;
+    reqHeight = (reqHeight > 0 && reqHeight < displayHeigth) ? reqHeight : displayHeigth;
     if (imageWidth > reqWidth && imageHeight > reqHeight) {
         let halfWidth = imageWidth / 2;
         let halfHeight = imageHeight / 2;
