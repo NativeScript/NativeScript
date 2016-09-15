@@ -1,6 +1,6 @@
 ﻿<Page loaded="pageLoaded">
   <StackLayout>
-    <Label text="{{ name }}" id="label" automationText="label" style="text-align:center;" />
+    <Label text="{{ name }}" id="label" style="text-align:center;" />
     <Button text="action" tap="{{ actionName }}" />
     <Button text="alert" tap="{{ alertName }}" />
     <Button text="confirm" tap="{{ confirmName }}" />
