@@ -44,6 +44,11 @@
         color: color.Color;
 
         /**
+         * A color used to tint template images.
+         */
+        tintColor: color.Color;
+
+        /**
          * Gets or sets the color of the placeholder element.
          */
         placeholderColor: color.Color;
