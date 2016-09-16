@@ -12,7 +12,7 @@
 set cmd [lindex $argv 0];
 set outfile [lindex $argv 1];
 
-set timeout 600
+set timeout 3000
 #spawn (adb logcat | tee ./__TESTRESULT__.txt)
 log_file -noappend $outfile
 eval spawn $cmd
