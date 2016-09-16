@@ -114,7 +114,8 @@ var testsWithLongDelay = {
     testLoadInvalidUrl: 10000,
     testLoadUpperCaseSrc: 10000 * 5,
     test_SettingImageSrc: 30 * 1000,
-    test_ChainingAnimations: 30 * 1000
+    test_ChainingAnimations: 30 * 1000,
+    test_AnimatingProperties: 30 * 1000
 }
 
 var startTime;
