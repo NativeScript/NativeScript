@@ -120,8 +120,6 @@ declare function Interfaces(interfaces: any[]): ClassDecorator;
 
 declare function Log(data: any): void;
 declare function log(data: any): void;
-declare function float(num: number): any;
-declare function long(num: number): any;
 declare function fail(data: any): void;
 
 declare var __dirname: string;

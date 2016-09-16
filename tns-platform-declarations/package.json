@@ -1,0 +1,33 @@
+{
+  "name": "tns-platform-declarations",
+  "version": "1.7.1",
+  "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
+  "main": "",
+  "scripts": {
+    "test": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/NativeScript/NativeScript.git"
+  },
+  "keywords": [
+    "NativeScript",
+    "TypeScript",
+    "declarations",
+    "native",
+    "platform-specific",
+    "tns",
+    "ts",
+    "ns"
+  ],
+  "author": {
+    "name": "Telerik",
+    "email": "support@telerik.com",
+    "url": "http://www.telerik.com"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/NativeScript/NativeScript/issues"
+  },
+  "homepage": "https://github.com/NativeScript/NativeScript#readme"
+}

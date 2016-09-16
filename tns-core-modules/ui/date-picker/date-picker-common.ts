@@ -56,4 +56,4 @@ export class DatePicker extends view.View implements definition.DatePicker {
     set date(value: Date) {
         this._setValue(DatePicker.dateProperty, value);
     }
-} 
+}

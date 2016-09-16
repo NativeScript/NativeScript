@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "experimentalDecorators": true,
+        "noLib": true
+    },
+    "exclude": [
+        "ios/objc-x86_64",
+        "node_modules"
+    ]
+}

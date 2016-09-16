@@ -455,7 +455,7 @@ export function test_PlayPromiseIsResolvedWhenAnimationFinishes(done) {
             TKUnit.assert(animation.isPlaying === false, "Animation.isPlaying should be false when animation play promise is resolved.");
             done();
         }, function onRejected(e) {
-            TKUnit.assert(1 === 2, "Animation play promise should be resolved, not rejected.");
+            TKUnit.assert(false, "Animation play promise should be resolved, not rejected.");
             done(e);
         });
 }
@@ -467,7 +467,7 @@ export function test_PlayPromiseIsRejectedWhenAnimationIsCancelled(done) {
 
     animation.play()
         .then(function onResolved() {
-            TKUnit.assert(1 === 2, "Animation play promise should be rejected, not resolved.");
+            TKUnit.assert(false, "Animation play promise should be rejected, not resolved.");
             done();
         }, function onRejected(e) {
             TKUnit.assert(animation.isPlaying === false, "Animation.isPlaying should be false when animation play promise is rejected.");
