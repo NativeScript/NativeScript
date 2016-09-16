@@ -376,8 +376,7 @@ export var test_tintColor = function () {
             var imageColor = utils.ios.getColor(testImage.ios.tintColor);
             TKUnit.assert(!imageColor.equals(colorRed), "imageColor expected to be different than tintColor");
         }
-
-        image.color = colorRed;
+        image.tintColor = colorRed;
 
         if (image.android) {
             TKUnit.assert(testImage.android.getColorFilter() !== null, "tintColor expected to be set to a nonnull value");
