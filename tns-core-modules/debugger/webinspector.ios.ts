@@ -3,7 +3,19 @@ var inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBacken
 
 import * as debuggerDomains from "./debugger";
 
-import * as utils from "utils/utils";
+/**
+ * Checks if the property is a function and if it is, calls it on this.
+ * Designed to support backward compatibility for methods that became properties.
+ * Will not work on delegates since it checks if the propertyValue is a function, and delegates are marshalled as functions.
+ * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
+ */
+function getter<T>(_this: any, property: T | {(): T}): T {
+    if (typeof property === "function") {
+        return (<{(): T}>property).call(_this);
+    } else {
+        return <T>property;
+    }
+}
 
 declare var __inspectorTimestamp;
 
@@ -214,9 +226,9 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Loads a resource in the context of a frame on the inspected page without cross origin checks.
      */
     loadResource(params: inspectorCommandTypes.NetworkDomain.LoadResourceMethodArguments): { content: string, mimeType: string, status: number } {
-        let appPath = utils.ios.getter(NSBundle, NSBundle.mainBundle).bundlePath;
+        let appPath = getter(NSBundle, NSBundle.mainBundle).bundlePath;
         let pathUrl = params.url.replace("file://", appPath);
-        let fileManager = utils.ios.getter(NSFileManager, NSFileManager.defaultManager);
+        let fileManager = getter(NSFileManager, NSFileManager.defaultManager);
         let data = fileManager.fileExistsAtPath(pathUrl) ? fileManager.contentsAtPath(pathUrl) : undefined;
         let content = data ? NSString.alloc().initWithDataEncoding(data, NSUTF8StringEncoding) : "";
 
