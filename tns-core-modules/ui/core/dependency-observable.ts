@@ -212,10 +212,6 @@ export class DependencyObservable extends Observable implements definition.Depen
     }
 
     public _resetValue(property: Property, valueSource: number = ValueSource.Local): void {
-        if (!property){
-            console.log(`>>>>>>>>>>>>>>>>>>>>>>>>>>>> Someone is passing undefined property!`);
-            console.trace();
-        }
         let entry: PropertyEntry = this._propertyEntries[property.id];
         if (!entry) {
             return;
