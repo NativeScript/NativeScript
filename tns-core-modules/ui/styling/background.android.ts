@@ -100,18 +100,6 @@ export module ad {
                 cache.layerType = undefined;
             }
         }
-
-        let leftPadding = v.style.paddingLeft ?  v.style.paddingLeft : nativeView.getPaddingLeft() / density; 
-        let topPadding = v.style.paddingTop ? v.style.paddingTop : nativeView.getPaddingTop() / density; 
-        let rightPadding = v.style.paddingRight ? v.style.paddingRight : nativeView.getPaddingRight() / density;         
-        let bottomPadding = v.style.paddingBottom ? v.style.paddingBottom : nativeView.getPaddingBottom() / density; 
-
-        nativeView.setPadding(
-            Math.round((background.borderLeftWidth + leftPadding) * density),
-            Math.round((background.borderTopWidth + topPadding) * density),
-            Math.round((background.borderRightWidth + rightPadding) * density),
-            Math.round((background.borderBottomWidth + bottomPadding) * density)
-        );
     }
 }
 
