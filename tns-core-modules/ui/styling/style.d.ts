@@ -13,6 +13,13 @@ declare module "ui/styling/style" {
         bottom: number;
     }
 
+    export interface BorderColor {
+        top: Color;
+        right: Color;
+        bottom: Color;
+        left: Color;
+    }
+
     export interface CommonLayoutParams {
         width: number;
         height: number;
@@ -49,9 +56,21 @@ declare module "ui/styling/style" {
         public backgroundSize: string;
         public backgroundPosition: string;
         public backgroundRepeat: string;
-        public borderColor: Color;
-        public borderWidth: number;
-        public borderRadius: number;
+        public borderColor: string | Color;
+        public borderTopColor: Color;
+        public borderRightColor: Color;
+        public borderBottomColor: Color;
+        public borderLeftColor: Color;
+        public borderWidth: string | number;
+        public borderTopWidth: number;
+        public borderRightWidth: number;
+        public borderBottomWidth: number;
+        public borderLeftWidth: number;
+        public borderRadius: string | number;
+        public borderTopLeftRadius: number;
+        public borderTopRightRadius: number;
+        public borderBottomRightRadius: number;
+        public borderBottomLeftRadius: number;
         public fontSize: number;
         public fontFamily: string;
         public fontStyle: string;
@@ -113,9 +132,22 @@ declare module "ui/styling/style" {
     export var backgroundRepeatProperty: styleProperty.Property;
     export var backgroundSizeProperty: styleProperty.Property;
     export var backgroundPositionProperty: styleProperty.Property;
-    export var borderColorProperty: styleProperty.Property;
-    export var borderWidthProperty: styleProperty.Property;
-    export var borderRadiusProperty: styleProperty.Property;
+    
+    export var borderTopColorProperty: styleProperty.Property;
+    export var borderRightColorProperty: styleProperty.Property;
+    export var borderBottomColorProperty: styleProperty.Property;
+    export var borderLeftColorProperty: styleProperty.Property;
+    
+    export var borderTopWidthProperty: styleProperty.Property;
+    export var borderRightWidthProperty: styleProperty.Property;
+    export var borderBottomWidthProperty: styleProperty.Property;
+    export var borderLeftWidthProperty: styleProperty.Property;
+    
+    export var borderTopLeftRadiusProperty: styleProperty.Property;
+    export var borderTopRightRadiusProperty: styleProperty.Property;
+    export var borderBottomRightRadiusProperty: styleProperty.Property;
+    export var borderBottomLeftRadiusProperty: styleProperty.Property;
+    
     export var clipPathProperty: styleProperty.Property;
     export var backgroundInternalProperty: styleProperty.Property;
     export var fontSizeProperty: styleProperty.Property;

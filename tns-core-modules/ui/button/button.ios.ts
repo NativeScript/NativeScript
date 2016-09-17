@@ -165,12 +165,81 @@ export class ButtonStyler implements style.Styler {
         }
     }
 
+    // Borders
+    private static setBorderTopWidthProperty(view: view.View, newValue: number) {
+        ButtonStyler.setNativeBorderTopWidth(view, newValue);
+    }
+
+    private static resetBorderTopWidthProperty(view: view.View, nativeValue: number) {
+        ButtonStyler.setNativeBorderTopWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderTopWidth(view: view.View, newValue: number) {
+        let nativeButton = <UIButton>view._nativeView; 
+        let top = view.style.paddingTop + newValue;
+        let left = nativeButton.contentEdgeInsets.left;
+        let bottom = nativeButton.contentEdgeInsets.bottom;
+        let right = nativeButton.contentEdgeInsets.right;
+        nativeButton.contentEdgeInsets = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static setBorderRightWidthProperty(view: view.View, newValue: number) {
+        ButtonStyler.setNativeBorderRightWidth(view, newValue);
+    }
+
+    private static resetBorderRightWidthProperty(view: view.View, nativeValue: number) {
+        ButtonStyler.setNativeBorderRightWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderRightWidth(view: view.View, newValue: number) {
+        let nativeButton = <UIButton>view._nativeView; 
+        let top = nativeButton.contentEdgeInsets.top;
+        let left = nativeButton.contentEdgeInsets.left;
+        let bottom = nativeButton.contentEdgeInsets.bottom;
+        let right = view.style.paddingRight + newValue;
+        nativeButton.contentEdgeInsets = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static setBorderBottomWidthProperty(view: view.View, newValue: number) {
+        ButtonStyler.setNativeBorderBottomWidth(view, newValue);
+    }
+
+    private static resetBorderBottomWidthProperty(view: view.View, nativeValue: number) {
+        ButtonStyler.setNativeBorderBottomWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderBottomWidth(view: view.View, newValue: number) {
+        let nativeButton = <UIButton>view._nativeView; 
+        let top = nativeButton.contentEdgeInsets.top;
+        let left = nativeButton.contentEdgeInsets.left;
+        let bottom = view.style.paddingBottom + newValue;
+        let right = nativeButton.contentEdgeInsets.right;
+        nativeButton.contentEdgeInsets = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static setBorderLeftWidthProperty(view: view.View, newValue: number) {
+        ButtonStyler.setNativeBorderLeftWidth(view, newValue);
+    }
+
+    private static resetBorderLeftWidthProperty(view: view.View, nativeValue: number) {
+        ButtonStyler.setNativeBorderLeftWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderLeftWidth(view: view.View, newValue: number) {
+        let nativeButton = <UIButton>view._nativeView; 
+        let top = nativeButton.contentEdgeInsets.top;
+        let left = view.style.paddingLeft + newValue;
+        let bottom = nativeButton.contentEdgeInsets.bottom;
+        let right = nativeButton.contentEdgeInsets.right;
+        nativeButton.contentEdgeInsets = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
     // Padding
     private static setPaddingProperty(view: view.View, newValue: any) {
-        var top = newValue.top + view.borderWidth;
-        var left = newValue.left + view.borderWidth;
-        var bottom = newValue.bottom + view.borderWidth;
-        var right = newValue.right + view.borderWidth;
+        var top = newValue.top + view.borderTopWidth;
+        var left = newValue.left + view.borderLeftWidth;
+        var bottom = newValue.bottom + view.borderBottomWidth;
+        var right = newValue.right + view.borderRightWidth;
         (<UIButton>view._nativeView).contentEdgeInsets = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
     }
 
@@ -229,6 +298,19 @@ export class ButtonStyler implements style.Styler {
             ButtonStyler.setTextAlignmentProperty,
             ButtonStyler.resetTextAlignmentProperty,
             ButtonStyler.getNativeTextAlignmentValue), "Button");
+
+        style.registerHandler(style.borderTopWidthProperty, new style.StylePropertyChangedHandler(
+            ButtonStyler.setBorderTopWidthProperty,
+            ButtonStyler.resetBorderTopWidthProperty), "Button");
+        style.registerHandler(style.borderRightWidthProperty, new style.StylePropertyChangedHandler(
+            ButtonStyler.setBorderRightWidthProperty,
+            ButtonStyler.resetBorderRightWidthProperty), "Button");
+        style.registerHandler(style.borderBottomWidthProperty, new style.StylePropertyChangedHandler(
+            ButtonStyler.setBorderBottomWidthProperty,
+            ButtonStyler.resetBorderBottomWidthProperty), "Button");
+        style.registerHandler(style.borderLeftWidthProperty, new style.StylePropertyChangedHandler(
+            ButtonStyler.setBorderLeftWidthProperty,
+            ButtonStyler.resetBorderLeftWidthProperty), "Button");
 
         style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
             ButtonStyler.setPaddingProperty,

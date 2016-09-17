@@ -114,8 +114,8 @@ export class GridLayout extends common.GridLayout {
         let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
         let density = utils.layout.getDisplayDensity();
-        let verticalPadding = (this.paddingTop + this.paddingBottom) * density;
-        let horizontalPadding = (this.paddingLeft + this.paddingRight) * density;
+        let verticalPadding = (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
+        let horizontalPadding = (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
 
         let infinityWidth = widthMode === utils.layout.UNSPECIFIED;
         let infinityHeight = heightMode === utils.layout.UNSPECIFIED;
@@ -159,8 +159,8 @@ export class GridLayout extends common.GridLayout {
 
         let density = utils.layout.getDisplayDensity();
 
-        let paddingLeft = this.paddingLeft * density;
-        let paddingTop = this.paddingTop * density;
+        let paddingLeft = (this.borderLeftWidth + this.paddingLeft) * density;
+        let paddingTop = (this.borderTopWidth + this.paddingTop) * density;
 
         this.columnOffsets.length = 0;
         this.rowOffsets.length = 0;

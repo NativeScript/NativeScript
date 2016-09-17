@@ -126,28 +126,114 @@ export class LabelStyler implements style.Styler {
         return undefined;
     }
 
-    private static setBorderWidthProperty(view: View, newValue: number) {
-        LabelStyler.setNativeBorderWidth(view, newValue);
+    private static setBorderTopWidthProperty(view: View, newValue: number) {
+        LabelStyler.setNativeBorderTopWidth(view, newValue);
     }
 
-    private static resetBorderWidthProperty(view: View, nativeValue: number) {
-        LabelStyler.setNativeBorderWidth(view, nativeValue);
+    private static resetBorderTopWidthProperty(view: View, nativeValue: number) {
+        LabelStyler.setNativeBorderTopWidth(view, nativeValue);
     }
 
-    private static setNativeBorderWidth(view: View, newValue: number) {
+    private static setNativeBorderTopWidth(view: View, newValue: number) {
         let nativeView = <UIView>view._nativeView;
-        if (nativeView instanceof UIView) {
-            nativeView.layer.borderWidth = newValue;
-        }
         if (nativeView instanceof TNSLabel) {
-            nativeView.borderThickness = { top: newValue, left: newValue, bottom: newValue, right: newValue };
+            nativeView.borderThickness = { 
+                top: newValue, 
+                right: nativeView.borderThickness.right, 
+                bottom: nativeView.borderThickness.bottom, 
+                left: nativeView.borderThickness.left
+            };
         }
     }
 
-    private static getBorderWidthProperty(view: View): number {
+    private static getBorderTopWidthProperty(view: View): number {
         let nativeView = <UIView>view._nativeView;
-        if (nativeView instanceof UIView) {
-            return nativeView.layer.borderWidth;
+        if (nativeView instanceof TNSLabel) {
+            return nativeView.borderThickness.top;
+        }
+        return 0;
+    }
+
+    private static setBorderRightWidthProperty(view: View, newValue: number) {
+        LabelStyler.setNativeBorderRightWidth(view, newValue);
+    }
+
+    private static resetBorderRightWidthProperty(view: View, nativeValue: number) {
+        LabelStyler.setNativeBorderRightWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderRightWidth(view: View, newValue: number) {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            nativeView.borderThickness = { 
+                top: nativeView.borderThickness.top, 
+                right: newValue, 
+                bottom: nativeView.borderThickness.bottom, 
+                left: nativeView.borderThickness.left
+            };
+        }
+    }
+
+    private static getBorderRightWidthProperty(view: View): number {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            return nativeView.borderThickness.right;
+        }
+        return 0;
+    }
+
+    private static setBorderBottomWidthProperty(view: View, newValue: number) {
+        LabelStyler.setNativeBorderBottomWidth(view, newValue);
+    }
+
+    private static resetBorderBottomWidthProperty(view: View, nativeValue: number) {
+        LabelStyler.setNativeBorderBottomWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderBottomWidth(view: View, newValue: number) {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            nativeView.borderThickness = { 
+                top: nativeView.borderThickness.top, 
+                right: nativeView.borderThickness.right, 
+                bottom: newValue, 
+                left: nativeView.borderThickness.left
+            };
+        }
+    }
+
+    private static getBorderBottomWidthProperty(view: View): number {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            return nativeView.borderThickness.bottom;
+        }
+        return 0;
+    }
+
+    private static setBorderLeftWidthProperty(view: View, newValue: number) {
+        LabelStyler.setNativeBorderLeftWidth(view, newValue);
+    }
+
+    private static resetBorderLeftWidthProperty(view: View, nativeValue: number) {
+        LabelStyler.setNativeBorderLeftWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderLeftWidth(view: View, newValue: number) {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            nativeView.borderThickness = { 
+                top: nativeView.borderThickness.top, 
+                right: nativeView.borderThickness.right, 
+                bottom: nativeView.borderThickness.bottom, 
+                left: newValue
+            };
+        }
+    }
+
+    private static getBorderLeftWidthProperty(view: View): number {
+        let nativeView = <UIView>view._nativeView;
+        if (nativeView instanceof TNSLabel) {
+            return nativeView.borderThickness.left;
         }
         return 0;
     }
@@ -180,10 +266,24 @@ export class LabelStyler implements style.Styler {
             LabelStyler.setBackgroundInternalProperty,
             LabelStyler.resetBackgroundInternalProperty,
             LabelStyler.getNativeBackgroundInternalValue), "Label");
-        style.registerHandler(style.borderWidthProperty, new style.StylePropertyChangedHandler(
-            LabelStyler.setBorderWidthProperty,
-            LabelStyler.resetBorderWidthProperty,
-            LabelStyler.getBorderWidthProperty), "Label");
+        
+        style.registerHandler(style.borderTopWidthProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setBorderTopWidthProperty,
+            LabelStyler.resetBorderTopWidthProperty,
+            LabelStyler.getBorderTopWidthProperty), "Label");
+        style.registerHandler(style.borderRightWidthProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setBorderRightWidthProperty,
+            LabelStyler.resetBorderRightWidthProperty,
+            LabelStyler.getBorderRightWidthProperty), "Label");
+        style.registerHandler(style.borderBottomWidthProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setBorderBottomWidthProperty,
+            LabelStyler.resetBorderBottomWidthProperty,
+            LabelStyler.getBorderBottomWidthProperty), "Label");
+        style.registerHandler(style.borderLeftWidthProperty, new style.StylePropertyChangedHandler(
+            LabelStyler.setBorderLeftWidthProperty,
+            LabelStyler.resetBorderLeftWidthProperty,
+            LabelStyler.getBorderLeftWidthProperty), "Label");
+
         style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
             LabelStyler.setPaddingProperty,
             LabelStyler.resetPaddingProperty,

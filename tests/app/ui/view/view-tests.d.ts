@@ -1,11 +1,11 @@
 ﻿//@private
 import view = require("ui/core/view");
 
-export declare function getNativeBorderWidth(v: view.View): number;
+export declare function getUniformNativeBorderWidth(v: view.View): number;
 
-export declare function getNativeCornerRadius(v: view.View): number;
+export declare function getUniformNativeCornerRadius(v: view.View): number;
 
-export declare function checkNativeBorderColor(v: view.View): boolean
+export declare function checkUniformNativeBorderColor(v: view.View): boolean
 
 export declare function checkNativeBackgroundColor(v: view.View): boolean;
 

@@ -9,13 +9,6 @@ import style = require("ui/styling/style");
 import enums = require("ui/enums");
 import * as backgroundModule from "ui/styling/background";
 
-var background: typeof backgroundModule;
-function ensureBackground() {
-    if (!background) {
-        background = require("ui/styling/background");
-    }
-}
-
 global.moduleMerge(viewCommon, exports);
 
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -382,12 +375,12 @@ export class ViewStyler implements style.Styler {
     private static setBackgroundInternalProperty(view: View, newValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
-            ensureBackground();
             var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
                 CATransaction.begin();
             }
-            nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
+            nativeView.backgroundColor = backgroundModule.ios.createBackgroundUIColor(view);
+            
             if (!updateSuspended) {
                 CATransaction.commit();
             }
@@ -446,68 +439,7 @@ export class ViewStyler implements style.Styler {
             return nativeView.alpha = 1.0;
         }
     }
-
-    // Border width methods
-    private static setBorderWidthProperty(view: View, newValue: any) {
-        if (view._nativeView instanceof UIView) {
-            (<UIView>view._nativeView).layer.borderWidth = newValue;
-        }
-    }
-
-    private static resetBorderWidthProperty(view: View, nativeValue: any) {
-        if (view._nativeView instanceof UIView) {
-            (<UIView>view._nativeView).layer.borderWidth = nativeValue;
-        }
-    }
-
-    private static getBorderWidthProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            return (<UIView>view._nativeView).layer.borderWidth;
-        }
-        return 0;
-    }
-
-    // Border color methods
-    private static setBorderColorProperty(view: View, newValue: any) {
-        if (view._nativeView instanceof UIView && newValue instanceof UIColor) {
-            (<UIView>view._nativeView).layer.borderColor = (<UIColor>newValue).CGColor;
-        }
-    }
-
-    private static resetBorderColorProperty(view: View, nativeValue: any) {
-        if (view._nativeView instanceof UIView && nativeValue instanceof UIColor) {
-            (<UIView>view._nativeView).layer.borderColor = nativeValue;
-        }
-    }
-
-    private static getBorderColorProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            return (<UIView>view._nativeView).layer.borderColor;
-        }
-        return undefined;
-    }
-
-    // Border radius methods
-    private static setBorderRadiusProperty(view: View, newValue: any) {
-        if (view._nativeView instanceof UIView) {
-            (<UIView>view._nativeView).layer.cornerRadius = newValue;
-            (<UIView>view._nativeView).clipsToBounds = true;
-        }
-    }
-
-    private static resetBorderRadiusProperty(view: View, nativeValue: any) {
-        if (view._nativeView instanceof UIView) {
-            (<UIView>view._nativeView).layer.cornerRadius = nativeValue;
-        }
-    }
-
-    private static getBorderRadiusProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            return (<UIView>view._nativeView).layer.cornerRadius;
-        }
-        return 0;
-    }
-
+    
     // Rotate
     private static setRotateProperty(view: View, newValue: any) {
         view._updateNativeTransform();
@@ -606,39 +538,11 @@ export class ViewStyler implements style.Styler {
         return view.ios.layer.zPosition;
     }
 
-    // Clip-path methods
-    private static setClipPathProperty(view: View, newValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            ensureBackground();
-            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
-            if (!updateSuspended) {
-                CATransaction.begin();
-            }
-            nativeView.backgroundColor = background.ios.createBackgroundUIColor(view);
-            if (!updateSuspended) {
-                CATransaction.commit();
-            }
-        }
-    }
-
-    private static resetClipPathProperty(view: View, nativeValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            // TODO: Check how to reset.
-        }
-    }
-
     public static registerHandlers() {
-
         style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setBackgroundInternalProperty,
             ViewStyler.resetBackgroundInternalProperty,
             ViewStyler.getNativeBackgroundInternalValue));
-
-        style.registerHandler(style.clipPathProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setClipPathProperty,
-            ViewStyler.resetClipPathProperty));
 
         style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setVisibilityProperty,
@@ -647,22 +551,6 @@ export class ViewStyler implements style.Styler {
         style.registerHandler(style.opacityProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setOpacityProperty,
             ViewStyler.resetOpacityProperty));
-
-        style.registerHandler(style.borderWidthProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setBorderWidthProperty,
-            ViewStyler.resetBorderWidthProperty,
-            ViewStyler.getBorderWidthProperty));
-
-        style.registerHandler(style.borderColorProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setBorderColorProperty,
-            ViewStyler.resetBorderColorProperty,
-            ViewStyler.getBorderColorProperty));
-
-        style.registerHandler(style.borderRadiusProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setBorderRadiusProperty,
-            ViewStyler.resetBorderRadiusProperty,
-            ViewStyler.getBorderRadiusProperty));
-
         style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setRotateProperty,
             ViewStyler.resetRotateProperty,

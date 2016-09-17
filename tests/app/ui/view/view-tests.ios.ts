@@ -8,16 +8,20 @@ import button = require("ui/button");
 
 global.moduleMerge(commonTests, exports);
 
-export function getNativeBorderWidth(v: view.View): number {
+export function getUniformNativeBorderWidth(v: view.View): number {
     return (<UIView>v.ios).layer.borderWidth;
 }
 
-export function getNativeCornerRadius(v: view.View): number {
-    return (<UIView>v.ios).layer.cornerRadius;
+export function checkUniformNativeBorderColor(v: view.View): boolean {
+    if (v.borderColor instanceof color.Color){
+        return (<UIView>v.ios).layer.borderColor === (<color.Color>v.borderColor).ios.CGColor;
+    }
+
+    return undefined;
 }
 
-export function checkNativeBorderColor(v: view.View): boolean {
-    return v.borderColor && (<UIView>v.ios).layer.borderColor === v.borderColor.ios.CGColor;
+export function getUniformNativeCornerRadius(v: view.View): number {
+    return (<UIView>v.ios).layer.cornerRadius;
 }
 
 export function checkNativeBackgroundColor(v: view.View): boolean {

@@ -279,25 +279,109 @@ export class View extends ProxyObject implements definition.View {
     }
 
     // START Style property shortcuts
-    get borderRadius(): number {
-        return this.style.borderRadius;
+    get borderColor(): string | color.Color {
+        return this.style.borderColor;
     }
-    set borderRadius(value: number) {
-        this.style.borderRadius = value;
+    set borderColor(value: string | color.Color) {
+        this.style.borderColor = value;
     }
 
-    get borderWidth(): number {
+    get borderTopColor(): color.Color {
+        return this.style.borderTopColor;
+    }
+    set borderTopColor(value: color.Color) {
+        this.style.borderTopColor = value;
+    }
+
+    get borderRightColor(): color.Color {
+        return this.style.borderRightColor;
+    }
+    set borderRightColor(value: color.Color) {
+        this.style.borderRightColor = value;
+    }
+
+    get borderBottomColor(): color.Color {
+        return this.style.borderBottomColor;
+    }
+    set borderBottomColor(value: color.Color) {
+        this.style.borderBottomColor = value;
+    }
+
+    get borderLeftColor(): color.Color {
+        return this.style.borderLeftColor;
+    }
+    set borderLeftColor(value: color.Color) {
+        this.style.borderLeftColor = value;
+    }
+
+    get borderWidth(): string | number {
         return this.style.borderWidth;
     }
-    set borderWidth(value: number) {
+    set borderWidth(value: string | number) {
         this.style.borderWidth = value;
     }
 
-    get borderColor(): color.Color {
-        return this.style.borderColor;
+    get borderTopWidth(): number {
+        return this.style.borderTopWidth;
     }
-    set borderColor(value: color.Color) {
-        this.style.borderColor = value;
+    set borderTopWidth(value: number) {
+        this.style.borderTopWidth = value;
+    }
+
+    get borderRightWidth(): number {
+        return this.style.borderRightWidth;
+    }
+    set borderRightWidth(value: number) {
+        this.style.borderRightWidth = value;
+    }
+
+    get borderBottomWidth(): number {
+        return this.style.borderBottomWidth;
+    }
+    set borderBottomWidth(value: number) {
+        this.style.borderBottomWidth = value;
+    }
+
+    get borderLeftWidth(): number {
+        return this.style.borderLeftWidth;
+    }
+    set borderLeftWidth(value: number) {
+        this.style.borderLeftWidth = value;
+    }
+
+    get borderRadius(): string | number {
+        return this.style.borderRadius;
+    }
+    set borderRadius(value: string | number) {
+        this.style.borderRadius = value;
+    }
+
+    get borderTopLeftRadius(): number {
+        return this.style.borderTopLeftRadius;
+    }
+    set borderTopLeftRadius(value: number) {
+        this.style.borderTopLeftRadius = value;
+    }
+
+    get borderTopRightRadius(): number {
+        return this.style.borderTopRightRadius;
+    }
+    set borderTopRightRadius(value: number) {
+        this.style.borderTopRightRadius = value;
+    }
+
+    get borderBottomRightRadius(): number {
+        return this.style.borderBottomRightRadius;
+    }
+    set borderBottomRightRadius(value: number) {
+        this.style.borderBottomRightRadius = value;
+    }
+
+    get borderBottomLeftRadius(): number {
+        return this.style.borderBottomLeftRadius;
+    }
+    set borderBottomLeftRadius(value: number) {
+        this.style.borderBottomLeftRadius = value;
     }
 
     get color(): color.Color {

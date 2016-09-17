@@ -166,12 +166,81 @@ export class TextViewStyler implements style.Styler {
         }
     }
 
+    //Border
+    private static setBorderTopWidthProperty(view: View, newValue: number) {
+        TextViewStyler.setNativeBorderTopWidth(view, newValue);
+    }
+
+    private static resetBorderTopWidthProperty(view: View, nativeValue: number) {
+        TextViewStyler.setNativeBorderTopWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderTopWidth(view: View, newValue: number) {
+        let nativeTextView = <UITextView>view._nativeView; 
+        let top = view.style.paddingTop + newValue;
+        let left = nativeTextView.textContainerInset.left;
+        let bottom = nativeTextView.textContainerInset.bottom;
+        let right = nativeTextView.textContainerInset.right;
+        nativeTextView.textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static setBorderRightWidthProperty(view: View, newValue: number) {
+        TextViewStyler.setNativeBorderRightWidth(view, newValue);
+    }
+
+    private static resetBorderRightWidthProperty(view: View, nativeValue: number) {
+        TextViewStyler.setNativeBorderRightWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderRightWidth(view: View, newValue: number) {
+        let nativeTextView = <UITextView>view._nativeView; 
+        let top = nativeTextView.textContainerInset.top;
+        let left = nativeTextView.textContainerInset.left;
+        let bottom = nativeTextView.textContainerInset.bottom;
+        let right = view.style.paddingRight + newValue;
+        nativeTextView.textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static setBorderBottomWidthProperty(view: View, newValue: number) {
+        TextViewStyler.setNativeBorderBottomWidth(view, newValue);
+    }
+
+    private static resetBorderBottomWidthProperty(view: View, nativeValue: number) {
+        TextViewStyler.setNativeBorderBottomWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderBottomWidth(view: View, newValue: number) {
+        let nativeTextView = <UITextView>view._nativeView; 
+        let top = nativeTextView.textContainerInset.top;
+        let left = nativeTextView.textContainerInset.left;
+        let bottom = view.style.paddingBottom + newValue;
+        let right = nativeTextView.textContainerInset.right;
+        nativeTextView.textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
+    private static setBorderLeftWidthProperty(view: View, newValue: number) {
+        TextViewStyler.setNativeBorderLeftWidth(view, newValue);
+    }
+
+    private static resetBorderLeftWidthProperty(view: View, nativeValue: number) {
+        TextViewStyler.setNativeBorderLeftWidth(view, nativeValue);
+    }
+
+    private static setNativeBorderLeftWidth(view: View, newValue: number) {
+        let nativeTextView = <UITextView>view._nativeView; 
+        let top = nativeTextView.textContainerInset.top;
+        let left = view.style.paddingLeft + newValue;
+        let bottom = nativeTextView.textContainerInset.bottom;
+        let right = nativeTextView.textContainerInset.right;
+        nativeTextView.textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
+    }
+
     // Padding
     private static setPaddingProperty(view: View, newValue: any) {
-        var top = newValue.top + view.borderWidth;
-        var left = newValue.left + view.borderWidth;
-        var bottom = newValue.bottom + view.borderWidth;
-        var right = newValue.right + view.borderWidth;
+        var top = newValue.top + view.borderTopWidth;
+        var left = newValue.left + view.borderLeftWidth;
+        var bottom = newValue.bottom + view.borderBottomWidth;
+        var right = newValue.right + view.borderRightWidth;
         (<UITextView>view._nativeView).textContainerInset = UIEdgeInsetsFromString(`{${top},${left},${bottom},${right}}`);
     }
 
@@ -184,6 +253,19 @@ export class TextViewStyler implements style.Styler {
             TextViewStyler.setColorProperty,
             TextViewStyler.resetColorProperty,
             TextViewStyler.getNativeColorValue), "TextView");
+
+        style.registerHandler(style.borderTopWidthProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setBorderTopWidthProperty,
+            TextViewStyler.resetBorderTopWidthProperty), "TextView");
+        style.registerHandler(style.borderRightWidthProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setBorderRightWidthProperty,
+            TextViewStyler.resetBorderRightWidthProperty), "TextView");
+        style.registerHandler(style.borderBottomWidthProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setBorderBottomWidthProperty,
+            TextViewStyler.resetBorderBottomWidthProperty), "TextView");
+        style.registerHandler(style.borderLeftWidthProperty, new style.StylePropertyChangedHandler(
+            TextViewStyler.setBorderLeftWidthProperty,
+            TextViewStyler.resetBorderLeftWidthProperty), "TextView");
 
         style.registerHandler(style.nativePaddingsProperty, new style.StylePropertyChangedHandler(
             TextViewStyler.setPaddingProperty,

@@ -4,10 +4,23 @@
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
                 constructor(density: number);
                 public refresh(
-                    borderWidth: number,
-                    borderColor: number,
-                    borderRadius: number,
+                    borderTopColor: number,
+                    borderRightColor: number,
+                    borderBottomColor: number,
+                    borderLeftColor: number,
+                    
+                    borderTopWidth: number,
+                    borderRightWidth: number,
+                    borderBottomWidth: number,
+                    borderLeftWidth: number,
+                    
+                    borderTopLeftRadius: number,
+                    borderTopRightRadius: number,
+                    borderBottomRightRadius: number,
+                    borderBottomLeftRadius: number,
+                    
                     clipPath: string,
+                    
                     backgroundColor: number,
                     backgroundImage: android.graphics.Bitmap,
                     backgroundRepeat: string,
@@ -16,15 +29,37 @@
                     backgroundSize: string,
                     backgroundSizeParsedCSSValues: native.Array<CSSValue>
                 );
-                public getBorderWidth(): number;
-                public getBorderColor(): number;
-                public getBorderRadius(): number;
+                
+                public getBorderTopColor(): number;
+                public getBorderRightColor(): number;
+                public getBorderBottomColor(): number;
+                public getBorderLeftColor(): number;
+                public getUniformBorderColor(): number;
+                
+                public getBorderTopWidth(): number;
+                public getBorderRightWidth(): number;
+                public getBorderBottomWidth(): number;
+                public getBorderLeftWidth(): number;
+                public getUniformBorderWidth(): number;
+                
+                public getBorderTopLeftRadius(): number;
+                public getBorderTopRightRadius(): number;
+                public getBorderBottomRightRadius(): number;
+                public getBorderBottomLeftRadius(): number;
+                public getUniformBorderRadius(): number;
+                
                 public getClipPath(): string;
+                
                 public getBackgroundColor(): number;
                 public getBackgroundImage(): android.graphics.Bitmap;
                 public getBackgroundRepeat(): string;
                 public getBackgroundPosition(): string;
                 public getBackgroundSize(): string;
+                
+                public hasUniformBorderColor(): boolean;
+                public hasUniformBorderWidth(): boolean;
+                public hasUniformBorderRadius(): boolean;
+                public hasUniformBorder(): boolean;
             }
             
             export class CSSValue {
@@ -183,11 +218,6 @@
 
             export class ImageView extends android.widget.ImageView {
                 constructor(context: android.content.Context);
-                getCornerRadius(): number;
-                setCornerRadius(radius: number): void;
-
-                getBorderWidth(): number;
-                setBorderWidth(width: number): void;
             }
 
             export class TabLayout extends android.widget.HorizontalScrollView {

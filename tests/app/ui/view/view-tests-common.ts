@@ -660,7 +660,7 @@ export var testBorderWidth = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <labelModule.Label>views[0];
         var expectedValue = lbl.borderWidth;
-        var actualValue = definition.getNativeBorderWidth(lbl);
+        var actualValue = definition.getUniformNativeBorderWidth(lbl);
         TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
@@ -669,7 +669,7 @@ export var testCornerRadius = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <labelModule.Label>views[0];
         var expectedValue = lbl.borderRadius;
-        var actualValue = definition.getNativeCornerRadius(lbl);
+        var actualValue = definition.getUniformNativeCornerRadius(lbl);
         TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
@@ -677,7 +677,7 @@ export var testCornerRadius = function () {
 export var testBorderColor = function () {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<viewModule.View>) {
         var lbl = <labelModule.Label>views[0];
-        TKUnit.assertEqual(definition.checkNativeBorderColor(lbl), true, "BorderColor not applied correctly!");
+        TKUnit.assertEqual(definition.checkUniformNativeBorderColor(lbl), true, "BorderColor not applied correctly!");
     });
 }
 

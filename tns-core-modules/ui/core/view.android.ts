@@ -679,7 +679,7 @@ export class ViewStyler implements style.Styler {
     private static setNativePaddingLeft(view: View, value: number): void {
         let nativeView = view._nativeView;
         let density = utils.layout.getDisplayDensity();
-        let left = (value + view.borderWidth) * density;
+        let left = (value + view.borderLeftWidth) * density;
         let top = nativeView.getPaddingTop();
         let right = nativeView.getPaddingRight();
         let bottom = nativeView.getPaddingBottom();
@@ -690,7 +690,7 @@ export class ViewStyler implements style.Styler {
         let nativeView = view._nativeView;
         let density = utils.layout.getDisplayDensity();
         let left = nativeView.getPaddingLeft();
-        let top = (value + view.borderWidth) * density;
+        let top = (value + view.borderTopWidth) * density;
         let right = nativeView.getPaddingRight();
         let bottom = nativeView.getPaddingBottom();
         nativeView.setPadding(left, top, right, bottom);
@@ -701,7 +701,7 @@ export class ViewStyler implements style.Styler {
         let density = utils.layout.getDisplayDensity();
         let left = nativeView.getPaddingLeft();
         let top = nativeView.getPaddingTop();
-        let right = (value + view.borderWidth) * density;
+        let right = (value + view.borderRightWidth) * density;
         let bottom = nativeView.getPaddingBottom();
         nativeView.setPadding(left, top, right, bottom);
     }
@@ -712,7 +712,7 @@ export class ViewStyler implements style.Styler {
         let left = nativeView.getPaddingLeft();
         let top = nativeView.getPaddingTop();
         let right = nativeView.getPaddingRight();
-        let bottom = (value + view.borderWidth) * density;
+        let bottom = (value + view.borderBottomWidth) * density;
         nativeView.setPadding(left, top, right, bottom);
     }
 
@@ -801,11 +801,9 @@ export class ViewStyler implements style.Styler {
 
         // Use the same handler for all background/border properties
         // Note: There is no default value getter - the default value is handled in background.ad.onBackgroundOrBorderPropertyChanged
-        var backgroundAndBorderHandler = new style.StylePropertyChangedHandler(
+        style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setBackgroundAndBorder,
-            ViewStyler.resetBackgroundAndBorder);
-
-        style.registerHandler(style.backgroundInternalProperty, backgroundAndBorderHandler);
+            ViewStyler.resetBackgroundAndBorder));
 
         style.registerHandler(style.nativeLayoutParamsProperty, new style.StylePropertyChangedHandler(
             ViewStyler.setNativeLayoutParamsProperty,

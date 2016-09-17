@@ -36,8 +36,8 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
             measureHeight = Math.max(measureHeight, AbsoluteLayout.getTop(child) * density + childSize.measuredHeight);
         });
 
-        measureWidth += (this.paddingLeft + this.paddingRight) * density;
-        measureHeight += (this.paddingTop + this.paddingBottom) * density;
+        measureWidth += (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
+        measureHeight += (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
 
         measureWidth = Math.max(measureWidth, this.minWidth * density);
         measureHeight = Math.max(measureHeight, this.minHeight * density);
@@ -58,8 +58,8 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
             let childWidth = child.getMeasuredWidth();
             let childHeight = child.getMeasuredHeight();
 
-            let childLeft = (this.paddingLeft + AbsoluteLayout.getLeft(child)) * density;
-            let childTop = (this.paddingTop + AbsoluteLayout.getTop(child)) * density;
+            let childLeft = (this.borderLeftWidth + this.paddingLeft + AbsoluteLayout.getLeft(child)) * density;
+            let childTop = (this.borderTopWidth + this.paddingTop + AbsoluteLayout.getTop(child)) * density;
             let childRight = childLeft + childWidth + (lp.leftMargin + lp.rightMargin) * density;
             let childBottom = childTop + childHeight + (lp.topMargin + lp.bottomMargin) * density;
 

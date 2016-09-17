@@ -17,11 +17,11 @@ declare module "ui/border" {
         /**
          * Gets or sets the border width of the border component.
          */
-        borderWidth: number;
+        borderWidth: string | number;
 
         /**
          * Gets or sets the border color of the border component.
          */
-        borderColor: Color;
+        borderColor: string | Color;
     }
 }

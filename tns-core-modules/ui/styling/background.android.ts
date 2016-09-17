@@ -51,8 +51,8 @@ export module ad {
         if (v instanceof button.Button 
         && !types.isNullOrUndefined(backgroundDrawable) 
         && types.isFunction(backgroundDrawable.setColorFilter) 
-        && background.borderWidth === 0 
-        && background.borderRadius === 0 
+        && !background.hasBorderWidth()
+        && !background.hasBorderRadius()
         && !background.clipPath 
         && types.isNullOrUndefined(background.image) 
         && !types.isNullOrUndefined(background.color)) {
@@ -75,7 +75,7 @@ export module ad {
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
             }
             
-            if ((background.borderWidth || background.borderRadius || background.clipPath) && getSDK() < 18) {
+            if ((background.hasBorderWidth() || background.hasBorderRadius() || background.clipPath) && getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
                 cache.layerType = cache.getLayerType();
@@ -107,10 +107,10 @@ export module ad {
         let bottomPadding = v.style.paddingBottom ? v.style.paddingBottom : nativeView.getPaddingBottom() / density; 
 
         nativeView.setPadding(
-            Math.round((background.borderWidth + leftPadding) * density),
-            Math.round((background.borderWidth + topPadding) * density),
-            Math.round((background.borderWidth + rightPadding) * density),
-            Math.round((background.borderWidth + bottomPadding) * density)
+            Math.round((background.borderLeftWidth + leftPadding) * density),
+            Math.round((background.borderTopWidth + topPadding) * density),
+            Math.round((background.borderRightWidth + rightPadding) * density),
+            Math.round((background.borderBottomWidth + bottomPadding) * density)
         );
     }
 }
@@ -128,10 +128,24 @@ function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript
         }
         
         borderDrawable.refresh(
-            background.borderWidth, 
-            (background.borderColor && background.borderColor.android) ? background.borderColor.android : 0,
-            background.borderRadius,
+            
+            (background.borderTopColor && background.borderTopColor.android) ? background.borderTopColor.android : 0,
+            (background.borderRightColor && background.borderRightColor.android) ? background.borderRightColor.android : 0,
+            (background.borderBottomColor && background.borderBottomColor.android) ? background.borderBottomColor.android : 0,
+            (background.borderLeftColor && background.borderLeftColor.android) ? background.borderLeftColor.android : 0,
+
+            background.borderTopWidth, 
+            background.borderRightWidth, 
+            background.borderBottomWidth, 
+            background.borderLeftWidth,
+
+            background.borderTopLeftRadius,
+            background.borderTopRightRadius,
+            background.borderBottomRightRadius,
+            background.borderBottomLeftRadius,
+
             background.clipPath,
+
             (background.color && background.color.android) ? background.color.android : 0,
             (background.image && background.image.android) ? background.image.android : null,
             background.repeat,

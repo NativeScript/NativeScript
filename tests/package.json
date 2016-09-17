@@ -6,7 +6,7 @@
   "nativescript": {
     "id": "org.nativescript.tests",
     "tns-ios": {
-      "version": "2.3.0"
+      "version": "2.2.1"
     },
     "tns-android": {
       "version": "2.3.0"
