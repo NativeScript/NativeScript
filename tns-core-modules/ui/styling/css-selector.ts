@@ -186,8 +186,6 @@ export class AttributeSelector extends SimpleSelector {
             return;
         }
     }
-    public get specificity(): number { return Specificity.Attribute; }
-    public get rarity(): number { return Specificity.Attribute; }
     public toString(): string { return `[${this.attribute}${wrap(this.test)}${(this.test && this.value) || ''}]${wrap(this.combinator)}`; }
     public match(node: Node): boolean { return false; }
     public mayMatch(node: Node): boolean { return true; }
