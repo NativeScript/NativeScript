@@ -6,15 +6,13 @@ package org.nativescript.widgets;
 import android.content.Context;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
+import android.util.Log;
 
 /**
  * @author hhristov
  * 
  */
 public class ImageView extends android.widget.ImageView {
-    private float cornerRadius = 0;
-    private float borderWidth = 0;
-
     private Path path = new Path();
     private RectF rect = new RectF();
 
@@ -24,28 +22,6 @@ public class ImageView extends android.widget.ImageView {
     public ImageView(Context context) {
         super(context);
         this.setScaleType(ScaleType.FIT_CENTER);
-    }
-
-    public float getCornerRadius() {
-        return this.cornerRadius;
-    }
-
-    public void setCornerRadius(float radius) {
-        if (radius != this.cornerRadius) {
-            this.cornerRadius = radius;
-            this.invalidate();
-        }
-    }
-
-    public float getBorderWidth() {
-        return this.borderWidth;
-    }
-
-    public void setBorderWidth(float radius) {
-        if (radius != this.borderWidth) {
-            this.borderWidth = radius;
-            this.invalidate();
-        }
     }
 
     @Override
@@ -144,13 +120,17 @@ public class ImageView extends android.widget.ImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable)this.getBackground() : null;
+        float uniformBorderWidth = background != null ? background.getUniformBorderWidth() * background.getDensity() : 0;
+        float uniformBorderRadius = background != null ? background.getUniformBorderRadius() * background.getDensity() : 0;
+
         // floor the border width to avoid gaps between the border and the image
-        float roundedBorderWidth = (float) Math.floor(this.borderWidth);
-        float innerRadius = Math.max(0, this.cornerRadius - roundedBorderWidth);
+        float roundedBorderWidth = (float) Math.floor(uniformBorderWidth);
+        float innerRadius = Math.max(0, uniformBorderRadius - roundedBorderWidth);
 
         // The border width is included in the padding so there is no need for
         // clip if there is no inner border radius.
-        if (innerRadius != 0) {
+        if (innerRadius > 0) {
             this.rect.set(
                     roundedBorderWidth,
                     roundedBorderWidth, 

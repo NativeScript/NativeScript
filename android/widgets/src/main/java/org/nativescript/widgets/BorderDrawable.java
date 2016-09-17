@@ -12,6 +12,8 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
+import android.util.Log;
+
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -20,10 +22,24 @@ import java.util.regex.Pattern;
  */
 public class BorderDrawable extends ColorDrawable {
     private float density;
-    private float borderWidth;
-    private int borderColor;
-    private float borderRadius;
+
+    private int borderTopColor;
+    private int borderRightColor;
+    private int borderBottomColor;
+    private int borderLeftColor;
+
+    private float borderTopWidth;
+    private float borderRightWidth;
+    private float borderBottomWidth;
+    private float borderLeftWidth;
+
+    private float borderTopLeftRadius;
+    private float borderTopRightRadius;
+    private float borderBottomRightRadius;
+    private float borderBottomLeftRadius;
+
     private String clipPath;
+
     private int backgroundColor;
     private Bitmap backgroundImage;
     private String backgroundRepeat;
@@ -32,16 +48,80 @@ public class BorderDrawable extends ColorDrawable {
     private String backgroundSize;
     private CSSValue[] backgroundSizeParsedCSSValues;
 
-    public float getBorderWidth() {
-        return borderWidth;
+    public float getDensity() {
+        return density;
     }
 
-    public int getBorderColor() {
-        return borderColor;
+    public int getBorderTopColor() {
+        return borderTopColor;
     }
 
-    public float getBorderRadius() {
-        return borderRadius;
+    public int getBorderRightColor() {
+        return borderRightColor;
+    }
+
+    public int getBorderBottomColor() {
+        return borderBottomColor;
+    }
+
+    public int getBorderLeftColor() {
+        return borderLeftColor;
+    }
+
+    public int getUniformBorderColor() {
+        if (this.hasUniformBorderColor()){
+            return this.borderTopColor;
+        }
+
+        return 0;
+    }
+
+    public float getBorderTopWidth() {
+        return borderTopWidth;
+    }
+
+    public float getBorderRightWidth() {
+        return borderRightWidth;
+    }
+
+    public float getBorderBottomWidth() {
+        return borderBottomWidth;
+    }
+
+    public float getBorderLeftWidth() {
+        return borderLeftWidth;
+    }
+
+    public float getUniformBorderWidth() {
+        if (this.hasUniformBorderWidth()){
+            return this.borderTopWidth;
+        }
+
+        return 0;
+    }
+
+    public float getBorderTopLeftRadius() {
+        return borderTopLeftRadius;
+    }
+
+    public float getBorderTopRightRadius() {
+        return borderTopRightRadius;
+    }
+
+    public float getBorderBottomRightRadius() {
+        return borderBottomRightRadius;
+    }
+
+    public float getBorderBottomLeftRadius() {
+        return borderBottomLeftRadius;
+    }
+
+    public float getUniformBorderRadius() {
+        if (this.hasUniformBorderRadius()){
+            return this.borderTopLeftRadius;
+        }
+
+        return 0;
     }
 
     public String getClipPath() {
@@ -68,11 +148,36 @@ public class BorderDrawable extends ColorDrawable {
         return backgroundSize;
     }
 
+    public boolean hasUniformBorderColor() {
+        return  this.borderTopColor == this.borderRightColor &&
+                this.borderTopColor == this.borderBottomColor &&
+                this.borderTopColor == this.borderLeftColor;
+    }
+
+    public boolean hasUniformBorderWidth() {
+        return  this.borderTopWidth == this.borderRightWidth &&
+                this.borderTopWidth == this.borderBottomWidth &&
+                this.borderTopWidth == this.borderLeftWidth;
+    }
+
+    public boolean hasUniformBorderRadius() {
+        return  this.borderTopLeftRadius == this.borderTopRightRadius &&
+                this.borderTopLeftRadius == this.borderBottomRightRadius &&
+                this.borderTopLeftRadius == this.borderBottomLeftRadius;
+    }
+
+    public boolean hasUniformBorder(){
+        return  this.hasUniformBorderColor() &&
+                this.hasUniformBorderWidth() &&
+                this.hasUniformBorderRadius();
+    }
+
     public BorderDrawable(float density){
         super();
         this.density = density;
     }
 
+    // For backwards compatibility
     public void refresh(float borderWidth,
                         int borderColor,
                         float borderRadius,
@@ -84,10 +189,76 @@ public class BorderDrawable extends ColorDrawable {
                         CSSValue[] backgroundPositionParsedCSSValues,
                         String backgroundSize,
                         CSSValue[] backgroundSizeParsedCSSValues){
-        this.borderWidth = borderWidth;
-        this.borderColor = borderColor;
-        this.borderRadius = borderRadius;
+        this.refresh(
+                borderColor,
+                borderColor,
+                borderColor,
+                borderColor,
+
+                borderWidth,
+                borderWidth,
+                borderWidth,
+                borderWidth,
+
+                borderRadius,
+                borderRadius,
+                borderRadius,
+                borderRadius,
+
+                clipPath,
+
+                backgroundColor,
+                backgroundImage,
+                backgroundRepeat,
+                backgroundPosition,
+                backgroundPositionParsedCSSValues,
+                backgroundSize,
+                backgroundSizeParsedCSSValues
+        );
+    }
+
+    public void refresh(int borderTopColor,
+                        int borderRightColor,
+                        int borderBottomColor,
+                        int borderLeftColor,
+
+                        float borderTopWidth,
+                        float borderRightWidth,
+                        float borderBottomWidth,
+                        float borderLeftWidth,
+
+                        float borderTopLeftRadius,
+                        float borderTopRightRadius,
+                        float borderBottomRightRadius,
+                        float borderBottomLeftRadius,
+
+                        String clipPath,
+
+                        int backgroundColor,
+                        Bitmap backgroundImage,
+                        String backgroundRepeat,
+                        String backgroundPosition,
+                        CSSValue[] backgroundPositionParsedCSSValues,
+                        String backgroundSize,
+                        CSSValue[] backgroundSizeParsedCSSValues){
+
+        this.borderTopColor = borderTopColor;
+        this.borderRightColor = borderRightColor;
+        this.borderBottomColor = borderBottomColor;
+        this.borderLeftColor = borderLeftColor;
+
+        this.borderTopWidth = borderTopWidth;
+        this.borderRightWidth = borderRightWidth;
+        this.borderBottomWidth = borderBottomWidth;
+        this.borderLeftWidth = borderLeftWidth;
+
+        this.borderTopLeftRadius = borderTopLeftRadius;
+        this.borderTopRightRadius = borderTopRightRadius;
+        this.borderBottomRightRadius = borderBottomRightRadius;
+        this.borderBottomLeftRadius = borderBottomLeftRadius;
+
         this.clipPath = clipPath;
+
         this.backgroundColor = backgroundColor;
         this.backgroundImage = backgroundImage;
         this.backgroundRepeat = backgroundRepeat;
@@ -95,22 +266,26 @@ public class BorderDrawable extends ColorDrawable {
         this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
         this.backgroundSize = backgroundSize;
         this.backgroundSizeParsedCSSValues = backgroundSizeParsedCSSValues;
+
         this.invalidateSelf();
     }
 
     @Override
     public void draw(Canvas canvas) {
         Rect bounds = this.getBounds();
-        float borderWidth = this.borderWidth * this.density;
-        float halfBorderWidth = borderWidth / 2.0f;
 
-        // We will inset background colors and images so antialiasing will not color pixels outside the border.
-        // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
-        float normalizedBorderAlpha = ((float)Color.alpha(this.borderColor)) / 255.0f;
-        float backoffAntialias = Math.min(0.5f, halfBorderWidth) * normalizedBorderAlpha;
-        RectF backgroundBoundsF = new RectF(bounds.left + backoffAntialias, bounds.top + backoffAntialias, bounds.right - backoffAntialias, bounds.bottom - backoffAntialias);
+        float topBackoffAntialias = calculateBackoffAntialias(this.borderTopColor, this.borderTopWidth, this.density);
+        float rightBackoffAntialias = calculateBackoffAntialias(this.borderRightColor, this.borderRightWidth, this.density);
+        float bottomBackoffAntialias = calculateBackoffAntialias(this.borderBottomColor, this.borderBottomWidth, this.density);
+        float leftBackoffAntialias = calculateBackoffAntialias(this.borderLeftColor, this.borderLeftWidth, this.density);
 
-        float outerRadius = this.borderRadius * this.density;
+        RectF backgroundBoundsF = new RectF(
+                bounds.left + leftBackoffAntialias,
+                bounds.top + topBackoffAntialias,
+                bounds.right - rightBackoffAntialias,
+                bounds.bottom - bottomBackoffAntialias);
+
+        float outerRadius = this.getUniformBorderRadius() * this.density;
 
         // draw background
         if (this.backgroundColor != 0) {
@@ -138,7 +313,7 @@ public class BorderDrawable extends ColorDrawable {
                 params.sizeX = this.backgroundImage.getWidth();
                 params.sizeY = this.backgroundImage.getHeight();
             }
-            transform.postTranslate(params.posX - backoffAntialias, params.posY - backoffAntialias);
+            transform.postTranslate(params.posX - leftBackoffAntialias, params.posY - topBackoffAntialias);
 
             BitmapShader shader = new BitmapShader(this.backgroundImage, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
             shader.setLocalMatrix(transform);
@@ -164,7 +339,8 @@ public class BorderDrawable extends ColorDrawable {
                     backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, Path.Direction.CCW);
                     intersect(backgroundPath, backgroundNoRepeatPath);
                     canvas.drawPath(backgroundPath, backgroundImagePaint);
-                } else {
+                }
+                else {
                     // Clipping here will not be anti-aliased but at least it won't shine through the rounded corners.
                     canvas.save();
                     canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
@@ -175,37 +351,142 @@ public class BorderDrawable extends ColorDrawable {
         }
 
         // draw border
-        if (borderWidth > 0 && this.borderColor != 0) {
-            RectF middleBoundsF = new RectF(bounds.left + halfBorderWidth, bounds.top + halfBorderWidth, bounds.right - halfBorderWidth, bounds.bottom - halfBorderWidth);
-            Paint borderPaint = new Paint();
-            borderPaint.setColor(this.borderColor);
-            borderPaint.setAntiAlias(true);
+        if (this.hasUniformBorder()){
+            float borderWidth = this.getUniformBorderWidth() * this.density;
+            int borderColor = this.getUniformBorderColor();
 
-            if (this.clipPath != null && !this.clipPath.isEmpty()) {
-                borderPaint.setStyle(Paint.Style.STROKE);
-                borderPaint.setStrokeWidth(borderWidth);
-                drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, density);
-            } else {
-                if (outerRadius <= 0) {
+            // iOS and browsers use black when no color is specified.
+            if (borderColor == Color.TRANSPARENT){
+                borderColor = Color.BLACK;
+            }
+            if (borderWidth > 0) {
+                float halfBorderWidth = borderWidth / 2.0f;
+                RectF middleBoundsF = new RectF(bounds.left + halfBorderWidth, bounds.top + halfBorderWidth, bounds.right - halfBorderWidth, bounds.bottom - halfBorderWidth);
+                Paint borderPaint = new Paint();
+                borderPaint.setColor(borderColor);
+                borderPaint.setAntiAlias(true);
+                if (this.clipPath != null && !this.clipPath.isEmpty()) {
                     borderPaint.setStyle(Paint.Style.STROKE);
                     borderPaint.setStrokeWidth(borderWidth);
-                    canvas.drawRect(middleBoundsF, borderPaint);
-                } else if (outerRadius >= borderWidth) {
-                    borderPaint.setStyle(Paint.Style.STROKE);
-                    borderPaint.setStrokeWidth(borderWidth);
-                    float middleRadius = Math.max(0, outerRadius - halfBorderWidth);
-                    canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
-                } else {
-                    Path borderPath = new Path();
-                    RectF borderOuterBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
-                    borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
-                    RectF borderInnerBoundsF = new RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
-                    borderPath.addRect(borderInnerBoundsF, Path.Direction.CW);
-                    borderPaint.setStyle(Paint.Style.FILL);
-                    canvas.drawPath(borderPath, borderPaint);
+                    drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, density);
+                }
+                else {
+                    if (outerRadius <= 0) {
+                        borderPaint.setStyle(Paint.Style.STROKE);
+                        borderPaint.setStrokeWidth(borderWidth);
+                        canvas.drawRect(middleBoundsF, borderPaint);
+                    }
+                    else if (outerRadius >= borderWidth) {
+                        borderPaint.setStyle(Paint.Style.STROKE);
+                        borderPaint.setStrokeWidth(borderWidth);
+                        float middleRadius = Math.max(0, outerRadius - halfBorderWidth);
+                        canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
+                    }
+                    else {
+                        Path borderPath = new Path();
+                        RectF borderOuterBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
+                        borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
+                        RectF borderInnerBoundsF = new RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
+                        borderPath.addRect(borderInnerBoundsF, Path.Direction.CW);
+                        borderPaint.setStyle(Paint.Style.FILL);
+                        canvas.drawPath(borderPath, borderPaint);
+                    }
                 }
             }
         }
+        else {
+            float top = this.borderTopWidth * this.density;
+            float right = this.borderRightWidth * this.density;
+            float bottom = this.borderBottomWidth * this.density;
+            float left = this.borderLeftWidth * this.density;
+
+            //lto                       rto
+            //   +---------------------+
+            //   |lti               rti|
+            //   |                     |
+            //   |                     |
+            //   |                     |
+            //   |                     |
+            //   |lbi               rbi|
+            //   +---------------------+
+            //lbo                       rbo
+
+            PointF lto = new PointF(0, 0); // left-top-outside
+            PointF lti = new PointF(left, top); // left-top-inside
+
+            PointF rto = new PointF(bounds.right, 0); // right-top-outside
+            PointF rti = new PointF(bounds.right - right, top); // right-top-outside
+
+            PointF rbo = new PointF(bounds.right, bounds.bottom); // right-bottom-outside
+            PointF rbi = new PointF(bounds.right - right, bounds.bottom - bottom); // right-bottom-inside
+
+            PointF lbo = new PointF(0, bounds.bottom); // left-bottom-outside
+            PointF lbi = new PointF(left, bounds.bottom - bottom); // left-bottom-inside
+
+            if (this.borderTopWidth > 0){
+                Paint topBorderPaint = new Paint();
+                topBorderPaint.setColor(this.borderTopColor);
+                topBorderPaint.setAntiAlias(true);
+                Path topBorderPath = new Path();
+                topBorderPath.setFillType(Path.FillType.EVEN_ODD);
+                topBorderPath.moveTo(lto.x, lto.y);
+                topBorderPath.lineTo(rto.x, rto.y);
+                topBorderPath.lineTo(rti.x, rti.y);
+                topBorderPath.lineTo(lti.x, lti.y);
+                topBorderPath.close();
+                canvas.drawPath(topBorderPath, topBorderPaint);
+            }
+
+            if (this.borderRightWidth > 0){
+                Paint rightBorderPaint = new Paint();
+                rightBorderPaint.setColor(this.borderRightColor);
+                rightBorderPaint.setAntiAlias(true);
+                Path rightBorderPath = new Path();
+                rightBorderPath.setFillType(Path.FillType.EVEN_ODD);
+                rightBorderPath.moveTo(rto.x, rto.y);
+                rightBorderPath.lineTo(rbo.x, rbo.y);
+                rightBorderPath.lineTo(rbi.x, rbi.y);
+                rightBorderPath.lineTo(rti.x, rti.y);
+                rightBorderPath.close();
+                canvas.drawPath(rightBorderPath, rightBorderPaint);
+            }
+
+            if (this.borderBottomWidth > 0){
+                Paint bottomBorderPaint = new Paint();
+                bottomBorderPaint.setColor(this.borderBottomColor);
+                bottomBorderPaint.setAntiAlias(true);
+                Path bottomBorderPath = new Path();
+                bottomBorderPath.setFillType(Path.FillType.EVEN_ODD);
+                bottomBorderPath.moveTo(rbo.x, rbo.y);
+                bottomBorderPath.lineTo(lbo.x, lbo.y);
+                bottomBorderPath.lineTo(lbi.x, lbi.y);
+                bottomBorderPath.lineTo(rbi.x, rbi.y);
+                bottomBorderPath.close();
+                canvas.drawPath(bottomBorderPath, bottomBorderPaint);
+            }
+
+            if (this.borderLeftWidth > 0){
+                Paint leftBorderPaint = new Paint();
+                leftBorderPaint.setColor(this.borderLeftColor);
+                leftBorderPaint.setAntiAlias(true);
+                Path leftBorderPath = new Path();
+                leftBorderPath.setFillType(Path.FillType.EVEN_ODD);
+                leftBorderPath.moveTo(lbo.x, lbo.y);
+                leftBorderPath.lineTo(lto.x, lto.y);
+                leftBorderPath.lineTo(lti.x, lti.y);
+                leftBorderPath.lineTo(lbi.x, lbi.y);
+                leftBorderPath.close();
+                canvas.drawPath(leftBorderPath, leftBorderPaint);
+            }
+        }
+    }
+
+    private static float calculateBackoffAntialias(int borderColor, float borderWidth, float density){
+        // We will inset background colors and images so antialiasing will not color pixels outside the border.
+        // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
+        float halfBorderWidth = borderWidth * density / 2.0f;
+        float normalizedBorderAlpha = ((float)Color.alpha(borderColor)) / 255.0f;
+        return Math.min(0.5f, halfBorderWidth) * normalizedBorderAlpha;
     }
 
     @TargetApi(19)
@@ -405,10 +686,10 @@ public class BorderDrawable extends ColorDrawable {
         float result;
         source = source.trim();
 
-        if (source.indexOf("px") > -1) {
+        if (source.contains("px")) {
             result = Float.parseFloat(source.replace("px", ""));
         }
-        else if (source.indexOf("%") > -1 && total > 0) {
+        else if (source.contains("%") && total > 0) {
             result = (Float.parseFloat(source.replace("%", "")) / 100) * (total / density);
         } else {
             result = Float.parseFloat(source);
