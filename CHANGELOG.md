@@ -1,6 +1,30 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.3.0 (2016, September 16)
+
+### Fixed
+
+- [(#2657)](https://github.com/NativeScript/NativeScript/pull/2657) Handle native instances with weak refs in transition closures
+
+- [(#2615)](https://github.com/NativeScript/NativeScript/issues/2615) Button with text-decoration cannot change its text
+
+- [(#2601)](https://github.com/NativeScript/NativeScript/issues/2601) Text color of the Button not applied, when `text-transform` has been set.
+
+- [(#2591)](https://github.com/NativeScript/NativeScript/pull/2591) Label zero height issue fixed.
+
+- [(#2586)](https://github.com/NativeScript/NativeScript/pull/2586) Fixed issue when bind to bindingContext and other property.
+
+### New
+
+- [(#2649)](https://github.com/NativeScript/NativeScript/issues/2649) ImageView CSS color property support
+
+- [(#2593)](https://github.com/NativeScript/NativeScript/issues/2593) Content type with "+json" structured syntax suffix not parsed
+
+- [(#2356)](https://github.com/NativeScript/NativeScript/issues/2356) Integrate the iOS .d.ts generator
+
+- [(#712)](https://github.com/NativeScript/NativeScript/issues/712) Ability to style EditableTextBase's hint property
+
 ##2.2.0 (2016, August 10)
 
 ### Fixed
