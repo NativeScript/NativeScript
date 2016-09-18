@@ -3,7 +3,6 @@ import textBase = require("ui/text-base");
 import {WhiteSpace} from "ui/enums";
 
 export class Label extends textBase.TextBase implements definition.Label {
-
     get textWrap(): boolean {
         return this.style.whiteSpace === WhiteSpace.normal;
     }

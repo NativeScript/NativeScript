@@ -31,7 +31,13 @@
      * A class that serves as a proxy between JavaScript object and native object.
      * Used in cases when native instance is not avaibale yet (stores all properties).
      */
-    class ProxyObject extends bindable.Bindable {
+    class ProxyObject extends dependencyObservable.DependencyObservable {
+
+        /**
+         * Get the nativeView created for this object.
+         */
+        public nativeView: any;
+
         /**
          * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
          */
@@ -45,7 +51,7 @@
         /**
          * A property is changed.
          */
-        public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any): void;
+        // public _onPropertyChanged(property: dependencyObservable.Property, oldValue: any, newValue: any): void;
 
         /**
          * A property has changed on the native side directly - e.g. the user types in a TextField.
@@ -55,6 +61,6 @@
         /**
          * Synchronizes all properties with native values.
          */
-        public _syncNativeProperties(): void;
+        // public _syncNativeProperties(): void;
     }
 } 

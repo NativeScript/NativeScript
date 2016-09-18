@@ -102,6 +102,7 @@ declare module "text/formatted-string" {
         //@private
         createFormattedStringCore(): void;
         _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void;
+        _formattedText: any;
         //@endprivate
     }
 }

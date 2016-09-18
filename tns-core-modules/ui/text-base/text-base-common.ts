@@ -1,82 +1,59 @@
-﻿import definition = require("ui/text-base");
-import view = require("ui/core/view");
-import observable = require("data/observable");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import formattedString = require("text/formatted-string");
+﻿import {TextBase as TextBaseDefinition} from "ui/text-base";
+import {View} from "ui/core/view";
+import {Observable, PropertyChangeData} from "data/observable";
+import {FormattedString, FormattedStringView} from "text/formatted-string";
+import {isIOS} from "platform";
+import {Property} from "ui/core/properties";
 import * as weakEventListenerModule from "ui/core/weak-event-listener";
-import tbs = require("ui/text-base/text-base-styler");
 
-var weakEvents: typeof weakEventListenerModule;
+let weakEvents: typeof weakEventListenerModule;
 function ensureWeakEvents() {
     if (!weakEvents) {
         weakEvents = require("ui/core/weak-event-listener");
     }
 }
 
-var textProperty = new dependencyObservable.Property(
-    "text",
-    "TextBase",
-    new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.None)
-);
+function onFormattedTextPropertyChanged(textBase: TextBase, oldValue: FormattedString, newValue: FormattedString) {
+    ensureWeakEvents();
+    if (oldValue) {
+        oldValue.parent = null;
+        weakEvents.removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
+    }
 
-var formattedTextProperty = new dependencyObservable.Property(
-    "formattedText",
-    "TextBase",
-    new proxy.PropertyMetadata("", dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-);
+    if (newValue) {
+        newValue.parent = textBase;
+        weakEvents.addWeakEventListener(newValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
+    }
 
-function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var textBase = <TextBase>data.object;
+    // textBase._onFormattedTextPropertyChanged(newValue);
+}
+function onTextPropertyChanged(textBase: TextBase, oldValue: string, newValue: string) {
+    // textBase._onTextPropertyChanged(newValue);
 
-    textBase._onTextPropertyChanged(data);
-
-    //RemoveThisDoubleCall
-    textBase.style._updateTextTransform();
-    textBase.style._updateTextDecoration();
+    // //RemoveThisDoubleCall
+    // textBase.style._updateTextTransform();
+    // textBase.style._updateTextDecoration();
 }
 
-(<proxy.PropertyMetadata>textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
+// (<proxy.PropertyMetadata>textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
+// (<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
 
-function onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var textBase = <TextBase>data.object;
-    textBase._onFormattedTextPropertyChanged(data);
-}
+export class TextBase extends View implements TextBaseDefinition, FormattedStringView {
 
-(<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
+    // public _onBindingContextChanged(oldValue: any, newValue: any) {
+    //     super._onBindingContextChanged(oldValue, newValue);
+    //     if (this.formattedText) {
+    //         this.formattedText.updateSpansBindingContext(newValue);
+    //     }
 
-let styleHandlersInitialized: boolean;
-export class TextBase extends view.View implements definition.TextBase, formattedString.FormattedStringView {
-    public static textProperty = textProperty;
-    public static formattedTextProperty = formattedTextProperty;
+    //     //This is because of ListView virtualization
+    //     //RemoveThisDoubleCall        
+    //     this.style._updateTextTransform();
+    //     this.style._updateTextDecoration();
+    // }
 
-    constructor() {
-        super();
-        if (!styleHandlersInitialized) {
-            styleHandlersInitialized = true;
-            tbs.TextBaseStyler.registerHandlers();
-        }
-    }
-
-    public _onBindingContextChanged(oldValue: any, newValue: any) {
-        super._onBindingContextChanged(oldValue, newValue);
-        if (this.formattedText) {
-            this.formattedText.updateSpansBindingContext(newValue);
-        }
-
-        //This is because of ListView virtualization
-        //RemoveThisDoubleCall        
-        this.style._updateTextTransform();
-        this.style._updateTextDecoration();
-    }
-
-    get text(): string {
-        return this._getValue(TextBase.textProperty);
-    }
-
-    set text(value: string) {
-        this._setValue(TextBase.textProperty, value);
-    }
+    public text: string;
+    public formattedText: FormattedString;
 
     get fontSize(): number {
         return this.style.fontSize;
@@ -92,32 +69,13 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         this.style.textAlignment = value;
     }
 
-    get formattedText(): formattedString.FormattedString {
-        return this._getValue(TextBase.formattedTextProperty);
-    }
-
-    set formattedText(value: formattedString.FormattedString) {
-        if (this.formattedText !== value) {
-            ensureWeakEvents();
-
-            if (this.formattedText) {
-                weakEvents.removeWeakEventListener(this.formattedText, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
-            }
-            this._setValue(TextBase.formattedTextProperty, value);
-            if (value) {
-                weakEvents.addWeakEventListener(value, observable.Observable.propertyChangeEvent, this.onFormattedTextChanged, this);
-            }
-        }
-    }
-
-    private onFormattedTextChanged(eventData: observable.PropertyChangeData) {
-        var value = (<formattedString.FormattedString>eventData.value);
+    public onFormattedTextChanged(data: PropertyChangeData) {
+        let value = data.value;
         this._setFormattedTextPropertyToNative(value);
-
-        this._onPropertyChangedFromNative(TextBase.textProperty, value.toString());
+        this.nativePropertyChanged(textProperty, value.toString());
     }
 
-    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    public _onTextPropertyChanged(newValue: string) {
         //
     }
 
@@ -125,22 +83,23 @@ export class TextBase extends view.View implements definition.TextBase, formatte
         //
     }
 
-    public _onFormattedTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue = (<formattedString.FormattedString>data.newValue);
-        if (newValue) {
-            newValue.parent = this;
-        }
+    public _onFormattedTextPropertyChanged(newValue: FormattedString) {
         this._setFormattedTextPropertyToNative(newValue);
-
-        var newText = newValue ? newValue.toString() : "";
-        this._onPropertyChangedFromNative(TextBase.textProperty, newText);
+        let newText = newValue ? newValue.toString() : "";
+        this.nativePropertyChanged(textProperty, newText);
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        formattedString.FormattedString.addFormattedStringToView(this, name, value);
+        FormattedString.addFormattedStringToView(this, name, value);
     }
 
     _requestLayoutOnTextChanged(): void {
         this.requestLayout();
     }
 }
+
+export let textProperty = new Property<TextBase, string>({ name: "text", defaultValue: "", valueChanged: onTextPropertyChanged });
+textProperty.register(TextBase);
+
+export let formattedTextProperty = new Property<TextBase, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
+formattedTextProperty.register(TextBase);

@@ -1,18 +1,18 @@
-﻿import definition = require("ui/animation");
-import common = require("./animation-common");
-import utils = require("utils/utils");
-import color = require("color");
-import trace = require("trace");
-import types = require("utils/types");
-import enums = require("ui/enums");
-import styleModule = require("ui/styling/style");
+﻿import {AnimationDefinition} from "ui/animation";
+import {AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise} from "./animation-common";
+import {Color} from "color";
+import {isNullOrUndefined} from "utils/types";
+import {AnimationCurve} from "ui/enums";
 import lazy from "utils/lazy";
-import { CacheLayerType } from "utils/utils";
-import dependencyObservable = require("ui/core/dependency-observable");
+import { CacheLayerType, layout } from "utils/utils";
+import {opacityProperty, backgroundColorProperty, rotateProperty,
+    translateXProperty, translateYProperty,
+    scaleXProperty, scaleYProperty } from "ui/styling/style";
+import * as trace from "trace";
 
-global.moduleMerge(common, exports);
+export * from "./animation-common";
 
-interface AnimationDefinitionInternal extends definition.AnimationDefinition {
+interface AnimationDefinitionInternal extends AnimationDefinition {
     valueSource?: number;
 }
 
@@ -23,15 +23,21 @@ function ensureArgbEvaluator() {
     }
 }
 
+let easeIn = lazy(() => new android.view.animation.AccelerateInterpolator(1));
+let easeOut = lazy(() => new android.view.animation.DecelerateInterpolator(1));
+let easeInOut = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
+let linear = lazy(() => new android.view.animation.LinearInterpolator());
+let bounce = lazy(() => new android.view.animation.BounceInterpolator());
+
 let keyPrefix = "ui.animation.";
 let propertyKeys = {};
-propertyKeys[common.Properties.backgroundColor] = Symbol(keyPrefix + common.Properties.backgroundColor);
-propertyKeys[common.Properties.opacity] = Symbol(keyPrefix + common.Properties.opacity);
-propertyKeys[common.Properties.rotate] = Symbol(keyPrefix + common.Properties.rotate);
-propertyKeys[common.Properties.scale] = Symbol(keyPrefix + common.Properties.scale);
-propertyKeys[common.Properties.translate] = Symbol(keyPrefix + common.Properties.translate);
+propertyKeys[Properties.backgroundColor] = Symbol(keyPrefix + Properties.backgroundColor);
+propertyKeys[Properties.opacity] = Symbol(keyPrefix + Properties.opacity);
+propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
+propertyKeys[Properties.scale] = Symbol(keyPrefix + Properties.scale);
+propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
 
-export class Animation extends common.Animation implements definition.Animation {
+export class Animation extends AnimationBase {
     private _animatorListener: android.animation.Animator.AnimatorListener;
     private _nativeAnimatorsArray: any;
     private _animatorSet: android.animation.AnimatorSet;
@@ -40,7 +46,41 @@ export class Animation extends common.Animation implements definition.Animation 
     private _propertyResetCallbacks: Array<Function>;
     private _valueSource: number;
 
-    public play(): definition.AnimationPromise {
+    constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
+        super(animationDefinitions, playSequentially);
+
+        if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
+            this._valueSource = animationDefinitions[0].valueSource;
+        }
+
+        let that = new WeakRef(this);
+        this._animatorListener = new android.animation.Animator.AnimatorListener({
+            onAnimationStart: function (animator: android.animation.Animator): void {
+                if (trace.enabled) {
+                    trace.write("MainAnimatorListener.onAndroidAnimationStart(" + animator + ")", trace.categories.Animation);
+                }
+            },
+            onAnimationRepeat: function (animator: android.animation.Animator): void {
+                if (trace.enabled) {
+                    trace.write("MainAnimatorListener.onAnimationRepeat(" + animator + ")", trace.categories.Animation);
+                }
+            },
+            onAnimationEnd: function (animator: android.animation.Animator): void {
+                if (trace.enabled) {
+                    trace.write("MainAnimatorListener.onAnimationEnd(" + animator + ")", trace.categories.Animation);
+                }
+                that.get()._onAndroidAnimationEnd();
+            },
+            onAnimationCancel: function (animator: android.animation.Animator): void {
+                if (trace.enabled) {
+                    trace.write("MainAnimatorListener.onAnimationCancel(" + animator + ")", trace.categories.Animation);
+                }
+                that.get()._onAndroidAnimationCancel();
+            }
+        });
+    }
+
+    public play(): AnimationPromise {
         let animationFinishedPromise = super.play();
 
         this._animators = new Array<android.animation.Animator>();
@@ -51,7 +91,7 @@ export class Animation extends common.Animation implements definition.Animation 
             this._createAnimators(this._propertyAnimations[i]);
         }
 
-        this._nativeAnimatorsArray = (<any>Array).create(android.animation.Animator, this._animators.length);
+        this._nativeAnimatorsArray = Array.create(android.animation.Animator, this._animators.length);
         for (let i = 0, length = this._animators.length; i < length; i++) {
             this._nativeAnimatorsArray[i] = this._animators[i];
         }
@@ -85,38 +125,48 @@ export class Animation extends common.Animation implements definition.Animation 
         this._animatorSet.cancel();
     }
 
-    constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
-        super(animationDefinitions, playSequentially);
-
-        if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
-            this._valueSource = animationDefinitions[0].valueSource;
+    public _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
+        switch (curve) {
+            case AnimationCurve.easeIn:
+                if (trace.enabled) {
+                    trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
+                }
+                return easeIn();
+            case AnimationCurve.easeOut:
+                if (trace.enabled) {
+                    trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
+                }
+                return easeOut();
+            case AnimationCurve.easeInOut:
+                if (trace.enabled) {
+                    trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
+                }
+                return easeInOut();
+            case AnimationCurve.linear:
+                if (trace.enabled) {
+                    trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
+                }
+                return linear();
+            case AnimationCurve.spring:
+                if (trace.enabled) {
+                    trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
+                }
+                return bounce();
+            case AnimationCurve.ease:
+                return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
+            default:
+                if (trace.enabled) {
+                    trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+                }
+                if (curve instanceof CubicBezierAnimationCurve) {
+                    return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
+                } else if (curve instanceof android.view.animation.Interpolator) {
+                    return curve;
+                }
+                else {
+                    throw new Error("Invalid android.view.animation.Interpolator.");
+                }
         }
-
-        let that = this;
-        this._animatorListener = new android.animation.Animator.AnimatorListener({
-            onAnimationStart: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAndroidAnimationStart(" + animator +")", trace.categories.Animation);
-                }
-            },
-            onAnimationRepeat: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAnimationRepeat(" + animator + ")", trace.categories.Animation);
-                }
-            },
-            onAnimationEnd: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAnimationEnd(" + animator + ")", trace.categories.Animation);
-                }
-                that._onAndroidAnimationEnd();
-            },
-            onAnimationCancel: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAnimationCancel(" + animator + ")", trace.categories.Animation);
-                }
-                that._onAndroidAnimationCancel();
-            }
-        });
     }
 
     private _onAndroidAnimationEnd() {
@@ -144,24 +194,24 @@ export class Animation extends common.Animation implements definition.Animation 
         this._rejectAnimationFinishedPromise();
     }
 
-    private _createAnimators(propertyAnimation: common.PropertyAnimation): void {
+    private _createAnimators(propertyAnimation: PropertyAnimation): void {
         if (!propertyAnimation.target._nativeView) {
             return;
         }
 
         if (trace.enabled) {
-            trace.write("Creating ObjectAnimator(s) for animation: " + common.Animation._getAnimationInfo(propertyAnimation) + "...", trace.categories.Animation);
+            trace.write("Creating ObjectAnimator(s) for animation: " + Animation._getAnimationInfo(propertyAnimation) + "...", trace.categories.Animation);
         }
 
-        if (types.isNullOrUndefined(propertyAnimation.target)) {
+        if (isNullOrUndefined(propertyAnimation.target)) {
             throw new Error("Animation target cannot be null or undefined!");
         }
 
-        if (types.isNullOrUndefined(propertyAnimation.property)) {
+        if (isNullOrUndefined(propertyAnimation.property)) {
             throw new Error("Animation property cannot be null or undefined!");
         }
 
-        if (types.isNullOrUndefined(propertyAnimation.value)) {
+        if (isNullOrUndefined(propertyAnimation.value)) {
             throw new Error("Animation value cannot be null or undefined!");
         }
 
@@ -172,7 +222,7 @@ export class Animation extends common.Animation implements definition.Animation 
         let propertyResetCallbacks = new Array<Function>();
         let originalValue1;
         let originalValue2;
-        let density = utils.layout.getDisplayDensity();
+        let density = layout.getDisplayDensity();
         let xyObjectAnimators: any;
         let animatorSet: android.animation.AnimatorSet;
 
@@ -189,55 +239,54 @@ export class Animation extends common.Animation implements definition.Animation 
             }
         }
 
-        let valueSource = this._valueSource !== undefined ? this._valueSource : dependencyObservable.ValueSource.Local;
+        // let valueSource = this._valueSource !== undefined ? this._valueSource : dependencyObservable.ValueSource.Local;
 
         switch (propertyAnimation.property) {
-
-            case common.Properties.opacity:
+            case Properties.opacity:
                 originalValue1 = nativeView.getAlpha();
-                nativeArray = (<any>Array).create("float", 1);
+                nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.opacityProperty, propertyAnimation.value, valueSource);
+                    propertyAnimation.target.style[opacityProperty.cssName] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.opacityProperty, originalValue1, valueSource);
+                    propertyAnimation.target.style[opacityProperty.cssName] = originalValue1;
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 break;
 
-            case common.Properties.backgroundColor:
+            case Properties.backgroundColor:
                 ensureArgbEvaluator();
                 originalValue1 = propertyAnimation.target.backgroundColor;
-                nativeArray = (<any>Array).create(java.lang.Object, 2);
-                nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<color.Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
-                nativeArray[1] = java.lang.Integer.valueOf((<color.Color>propertyAnimation.value).argb);
+                nativeArray = Array.create(java.lang.Object, 2);
+                nativeArray[0] = propertyAnimation.target.backgroundColor ? java.lang.Integer.valueOf((<Color>propertyAnimation.target.backgroundColor).argb) : java.lang.Integer.valueOf(-1);
+                nativeArray[1] = java.lang.Integer.valueOf((<Color>propertyAnimation.value).argb);
                 let animator = android.animation.ValueAnimator.ofObject(argbEvaluator, nativeArray);
                 animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
                     onAnimationUpdate(animator: android.animation.ValueAnimator) {
                         let argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
-                        propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, new color.Color(argb), valueSource);
+                        propertyAnimation.target.style[backgroundColorProperty.cssName] = new Color(argb);
                     }
                 }));
 
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, propertyAnimation.value, valueSource);
+                    propertyAnimation.target.style[backgroundColorProperty.cssName] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.backgroundColorProperty, originalValue1, valueSource);
+                    propertyAnimation.target.style[backgroundColorProperty.cssName] = originalValue1;
                 }));
                 animators.push(animator);
                 break;
 
-            case common.Properties.translate:
-                xyObjectAnimators = (<any>Array).create(android.animation.Animator, 2);
+            case Properties.translate:
+                xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
-                nativeArray = (<any>Array).create("float", 1);
+                nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value.x * density;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
 
-                nativeArray = (<any>Array).create("float", 1);
+                nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value.y * density;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
@@ -246,13 +295,13 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue2 = nativeView.getTranslationY();
 
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.translateXProperty, propertyAnimation.value.x, valueSource);
-                    propertyAnimation.target.style._setValue(styleModule.translateYProperty, propertyAnimation.value.y, valueSource);
+                    propertyAnimation.target.style[translateXProperty.cssName] = propertyAnimation.value.x;
+                    propertyAnimation.target.style[translateYProperty.cssName] = propertyAnimation.value.y;
                 }));
 
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.translateXProperty, originalValue1, valueSource);
-                    propertyAnimation.target.style._setValue(styleModule.translateYProperty, originalValue2, valueSource);
+                    propertyAnimation.target.style[translateXProperty.cssName] = originalValue1;
+                    propertyAnimation.target.style[translateYProperty.cssName] = originalValue2;
                 }));
 
                 animatorSet = new android.animation.AnimatorSet();
@@ -261,15 +310,15 @@ export class Animation extends common.Animation implements definition.Animation 
                 animators.push(animatorSet);
                 break;
 
-            case common.Properties.scale:
-                xyObjectAnimators = (<any>Array).create(android.animation.Animator, 2);
+            case Properties.scale:
+                xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
-                nativeArray = (<any>Array).create("float", 1);
+                nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value.x;
                 xyObjectAnimators[0] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleX", nativeArray);
                 xyObjectAnimators[0].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
 
-                nativeArray = (<any>Array).create("float", 1);
+                nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value.y;
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "scaleY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
@@ -278,13 +327,13 @@ export class Animation extends common.Animation implements definition.Animation 
                 originalValue2 = nativeView.getScaleY();
 
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.scaleXProperty, propertyAnimation.value.x, valueSource);
-                    propertyAnimation.target.style._setValue(styleModule.scaleYProperty, propertyAnimation.value.y, valueSource);
+                    propertyAnimation.target.style[scaleXProperty.cssName] = propertyAnimation.value.x;
+                    propertyAnimation.target.style[scaleYProperty.cssName] = propertyAnimation.value.y;
                 }));
 
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.scaleXProperty, originalValue1, valueSource);
-                    propertyAnimation.target.style._setValue(styleModule.scaleYProperty, originalValue2, valueSource);
+                    propertyAnimation.target.style[scaleXProperty.cssName] = originalValue1;
+                    propertyAnimation.target.style[scaleYProperty.cssName] = originalValue2;
                 }));
 
                 animatorSet = new android.animation.AnimatorSet();
@@ -293,15 +342,15 @@ export class Animation extends common.Animation implements definition.Animation 
                 animators.push(animatorSet);
                 break;
 
-            case common.Properties.rotate:
+            case Properties.rotate:
                 originalValue1 = nativeView.getRotation();
-                nativeArray = (<any>Array).create("float", 1);
+                nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.rotateProperty, propertyAnimation.value, valueSource);
+                    propertyAnimation.target.style[rotateProperty.cssName] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style._setValue(styleModule.rotateProperty, originalValue1, valueSource);
+                    propertyAnimation.target.style[rotateProperty.cssName] = originalValue1;
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;
@@ -310,9 +359,7 @@ export class Animation extends common.Animation implements definition.Animation 
                 throw new Error("Cannot animate " + propertyAnimation.property);
         }
 
-        let i = 0;
-        let length = animators.length;
-        for (; i < length; i++) {
+        for (let i = 0, length = animators.length; i < length; i++) {
 
             // Duration
             if (propertyAnimation.duration !== undefined) {
@@ -351,7 +398,7 @@ export class Animation extends common.Animation implements definition.Animation 
     private _enableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
             let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
-            if (cache){
+            if (cache) {
                 let layerType = cache.getLayerType();
                 if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
                     cache.layerType = layerType;
@@ -371,50 +418,3 @@ export class Animation extends common.Animation implements definition.Animation 
         }
     }
 }
-
-let easeIn = lazy(() => new android.view.animation.AccelerateInterpolator(1));
-let easeOut = lazy(() => new android.view.animation.DecelerateInterpolator(1));
-let easeInOut = lazy(() => new android.view.animation.AccelerateDecelerateInterpolator());
-let linear = lazy(() => new android.view.animation.LinearInterpolator());
-let bounce = lazy(() => new android.view.animation.BounceInterpolator());
-export function _resolveAnimationCurve(curve: any): any {
-    switch (curve) {
-        case enums.AnimationCurve.easeIn:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
-            }
-            return easeIn();
-        case enums.AnimationCurve.easeOut:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
-            }
-            return easeOut();
-        case enums.AnimationCurve.easeInOut:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
-            }
-            return easeInOut();
-        case enums.AnimationCurve.linear:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
-            }
-            return linear();
-        case enums.AnimationCurve.spring:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
-            }
-            return bounce();
-        case enums.AnimationCurve.ease:
-            return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
-        default:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
-            }
-            if (curve instanceof common.CubicBezierAnimationCurve) {
-                let animationCurve = <common.CubicBezierAnimationCurve>curve;
-                let interpolator = (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
-                return interpolator;
-            }
-            return curve;
-    }
-} 

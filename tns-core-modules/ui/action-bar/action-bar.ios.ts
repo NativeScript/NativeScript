@@ -1,25 +1,48 @@
-﻿import common = require("./action-bar-common");
-import dts = require("ui/action-bar");
-import imageSource = require("image-source");
-import frameModule = require("ui/frame");
-import enums = require("ui/enums");
-import view = require("ui/core/view");
+import {IOSActionItemSettings, ActionItem as ActionItemDefinition} from "ui/action-bar";
+import {ActionItemBase, ActionBarBase, isVisible} from "./action-bar-common";
 import utils = require("utils/utils");
-import types = require("utils/types");
-import style = require("ui/styling/style");
-import frame = require("ui/frame");
+import {isNumber} from "utils/types";
+import {Frame, topmost as topmostFrame} from "ui/frame";
+import {View} from "ui/core/view";
+import {ImageSource, fromFileOrResource} from "image-source";
+import {IOSActionItemPosition} from "ui/enums";
+import {colorProperty, backgroundColorProperty, backgroundInternalProperty} from "ui/styling/style";
+import {Color} from "color";
+import {Background} from "ui/styling/background";
 
-global.moduleMerge(common, exports);
+export * from "./action-bar-common";
 
-export class ActionItem extends common.ActionItem {
-    private _ios: dts.IOSActionItemSettings = {
-        position: enums.IOSActionItemPosition.left,
+class TapBarItemHandlerImpl extends NSObject {
+    private _owner: WeakRef<ActionItemDefinition>;
+
+    public static initWithOwner(owner: WeakRef<ActionItemDefinition>): TapBarItemHandlerImpl {
+        let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
+        handler._owner = owner;
+        return handler;
+    }
+
+    public tap(args) {
+        let owner = this._owner.get();
+        if (owner) {
+            owner._raiseTap();
+        }
+    }
+
+    public static ObjCExposedMethods = {
+        "tap": { returns: interop.types.void, params: [interop.types.id] }
+    };
+}
+
+export class ActionItem extends ActionItemBase {
+    private _ios: IOSActionItemSettings = {
+        position: IOSActionItemPosition.left,
         systemIcon: undefined
     };
-    public get ios(): dts.IOSActionItemSettings {
+
+    public get ios(): IOSActionItemSettings {
         return this._ios;
     }
-    public set ios(value: dts.IOSActionItemSettings) {
+    public set ios(value: IOSActionItemSettings) {
         throw new Error("ActionItem.android is read-only");
     }
 }
@@ -28,32 +51,34 @@ export class NavigationButton extends ActionItem {
 
 }
 
-export class ActionBar extends common.ActionBar {
+export class ActionBar extends ActionBarBase {
 
-     get ios(): UIView {
+    get ios(): UIView {
+        let page = this.page;
+        if (!page || !page.parent) {
+            return;
+        }
 
-        if (!(this.page && this.page.parent)) {
+        let viewController = (<UIViewController>page.ios);
+        if (viewController.navigationController !== null) {
+            return viewController.navigationController.navigationBar;
+        }
+
+        return null;
+    }
+
+    public update() {
+        let page = this.page;
+        // Page should be attached to frame to update the action bar.
+        if (!page || !page.parent) {
             return;
         }
 
         let viewController = (<UIViewController>this.page.ios);
-        if (viewController.navigationController !== null) {
-            return viewController.navigationController.navigationBar;
-        }
-        return null;
-     }
-
-     public update() {
-        // Page should be attached to frame to update the action bar.
-        if (!(this.page && this.page.parent)) {
-            return;
-        }
-
-        var viewController = (<UIViewController>this.page.ios);
-        var navigationItem: UINavigationItem = viewController.navigationItem;
-        var navController = frameModule.topmost().ios.controller; 
-        var navigationBar = navController ? <UINavigationBar>navController.navigationBar : null;
-        var previousController: UIViewController;
+        let navigationItem: UINavigationItem = viewController.navigationItem;
+        let navController = <UINavigationController>page.frame.ios.controller;
+        let navigationBar = navController ? navController.navigationBar : null;
+        let previousController: UIViewController;
 
         // Set Title
         navigationItem.title = this.title;
@@ -63,7 +88,7 @@ export class ActionBar extends common.ActionBar {
         }
 
         // Find previous ViewController in the navigation stack
-        var indexOfViewController = navController.viewControllers.indexOfObject(viewController);
+        let indexOfViewController = navController.viewControllers.indexOfObject(viewController);
         if (indexOfViewController < navController.viewControllers.count && indexOfViewController > 0) {
             previousController = navController.viewControllers[indexOfViewController - 1];
         }
@@ -71,8 +96,8 @@ export class ActionBar extends common.ActionBar {
         // Set back button text
         if (previousController) {
             if (this.navigationButton) {
-                var tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
-                var barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
+                let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
+                let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
             }
             else {
@@ -81,16 +106,16 @@ export class ActionBar extends common.ActionBar {
         }
 
         // Set back button image
-        var img: imageSource.ImageSource;
-        if (this.navigationButton && common.isVisible(this.navigationButton) && this.navigationButton.icon) {
-            img = imageSource.fromFileOrResource(this.navigationButton.icon);
+        let img: ImageSource;
+        if (this.navigationButton && isVisible(this.navigationButton) && this.navigationButton.icon) {
+            img = fromFileOrResource(this.navigationButton.icon);
         }
 
         // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to 
         // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
         // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
         if (img && img.ios) {
-            var image = img.ios.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal)
+            let image = img.ios.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
             navigationBar.backIndicatorImage = image;
             navigationBar.backIndicatorTransitionMaskImage = image;
         }
@@ -101,7 +126,7 @@ export class ActionBar extends common.ActionBar {
 
         // Set back button visibility 
         if (this.navigationButton) {
-            navigationItem.setHidesBackButtonAnimated(!common.isVisible(this.navigationButton), true);
+            navigationItem.setHidesBackButtonAnimated(!isVisible(this.navigationButton), true);
         }
 
         // Populate action items
@@ -117,13 +142,14 @@ export class ActionBar extends common.ActionBar {
         let rightBarItems = [];
         for (let i = 0; i < items.length; i++) {
             let barButtonItem = this.createBarButtonItem(items[i]);
-            if (items[i].ios.position === enums.IOSActionItemPosition.left) {
+            if (items[i].ios.position === IOSActionItemPosition.left) {
                 leftBarItems.push(barButtonItem);
             }
             else {
                 rightBarItems.splice(0, 0, barButtonItem);
             }
         }
+
         navigationItem.setLeftBarButtonItemsAnimated(<any>leftBarItems, false);
         navigationItem.setRightBarButtonItemsAnimated(<any>rightBarItems, false);
         if (leftBarItems.length > 0) {
@@ -131,23 +157,22 @@ export class ActionBar extends common.ActionBar {
         }
     }
 
-    private createBarButtonItem(item: dts.ActionItem): UIBarButtonItem {
-        var tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
+    private createBarButtonItem(item: ActionItemDefinition): UIBarButtonItem {
+        let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
         // associate handler with menuItem or it will get collected by JSC.
         (<any>item).handler = tapHandler;
 
-        var barButtonItem: UIBarButtonItem;
-
+        let barButtonItem: UIBarButtonItem;
         if (item.actionView && item.actionView.ios) {
-            var recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
+            let recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
             item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
         }
-        else if (types.isNumber(item.ios.systemIcon)) {
+        else if (isNumber(item.ios.systemIcon)) {
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
         }
         else if (item.icon) {
-            var img = imageSource.fromFileOrResource(item.icon);
+            let img = fromFileOrResource(item.icon);
             if (img && img.ios) {
                 barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(img.ios, UIBarButtonItemStyle.Plain, tapHandler, "tap");
             }
@@ -169,7 +194,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     private updateColors(navBar: UINavigationBar) {
-        var color = this.color;
+        let color = this.color;
         if (color) {
             navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
             navBar.tintColor = color.ios;
@@ -179,26 +204,26 @@ export class ActionBar extends common.ActionBar {
             navBar.tintColor = null;
         }
 
-        var bgColor = this.backgroundColor;
+        let bgColor = this.backgroundColor;
         navBar.barTintColor = bgColor ? bgColor.ios : null;
     }
 
     public _onTitlePropertyChanged() {
-        if (!this.page) {
+        let page = this.page;
+        if (!page) {
             return;
         }
 
-        if (this.page.frame) {
-            this.page.frame._updateActionBar();
+        if (page.frame) {
+            page.frame._updateActionBar();
         }
 
-        var navigationItem: UINavigationItem = (<UIViewController>this.page.ios).navigationItem;
+        let navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
         navigationItem.title = this.title;
     }
 
     private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -208,7 +233,7 @@ export class ActionBar extends common.ActionBar {
         let navBarWidth = 0;
         let navBarHeight = 0;
 
-        let frame = <frameModule.Frame>this.page.frame;
+        let frame = this.page.frame;
         if (frame) {
             let navBar: UIView = frame.ios.controller.navigationBar;
             if (!navBar.hidden) {
@@ -222,14 +247,14 @@ export class ActionBar extends common.ActionBar {
 
         this._navigationBarHeight = navBarHeight;
         if (this.titleView) {
-            view.View.measureChild(this, this.titleView,
+            View.measureChild(this, this.titleView,
                 utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
                 utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView) {
-                view.View.measureChild(this, actionItem.actionView, 
+                View.measureChild(this, actionItem.actionView,
                     utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
                     utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
             }
@@ -240,12 +265,12 @@ export class ActionBar extends common.ActionBar {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {
-        view.View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
+        View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView && actionItem.actionView.ios) {
                 let measuredWidth = actionItem.actionView.getMeasuredWidth();
                 let measuredHeight = actionItem.actionView.getMeasuredHeight();
-                view.View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
+                View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
             }
         });
 
@@ -260,81 +285,48 @@ export class ActionBar extends common.ActionBar {
         return;
     }
 
-    public _shouldApplyStyleHandlers() {
-        var topFrame = frameModule.topmost();
-        return !!topFrame;
+    // public _shouldApplyStyleHandlers() {
+    //     let topFrame = frameModule.topmost();
+    //     return !!topFrame;
+    // }
+
+    private get navBar(): UINavigationBar {
+        let page = this.page;
+        // Page should be attached to frame to update the action bar.
+        if (!page || !page.frame) {
+            return;
+        }
+
+        return (<UINavigationController>page.frame.ios.controller).navigationBar;
+    }
+
+    get [colorProperty.native](): UIColor {
+        return null;
+    }
+    set [colorProperty.native](color: UIColor) {
+        let navBar = this.navBar;
+        navBar.tintColor = color;
+        navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color };
+    }
+
+    get [backgroundColorProperty.native](): UIColor {
+        let navBar = this.navBar;
+        if (navBar) {
+            return navBar.barTintColor;
+        }
+        return null;
+    }
+    set [backgroundColorProperty.native](value: UIColor) {
+        let navBar = this.navBar;
+        if (navBar) {
+            navBar.barTintColor = value;
+        }
+    }
+
+    get [backgroundInternalProperty.native](): UIColor {
+        return null;
+    }
+    set [backgroundInternalProperty.native](value: UIColor) {
+        
     }
 }
-
-class TapBarItemHandlerImpl extends NSObject {
-    private _owner: WeakRef<dts.ActionItem>;
-
-    public static initWithOwner(owner: WeakRef<dts.ActionItem>): TapBarItemHandlerImpl {
-        let handler = <TapBarItemHandlerImpl>TapBarItemHandlerImpl.new();
-        handler._owner = owner;
-        return handler;
-    }
-
-    public tap(args) {
-        let owner = this._owner.get();
-        if (owner) {
-            owner._raiseTap();
-        }
-    }
-
-    public static ObjCExposedMethods = {
-        "tap": { returns: interop.types.void, params: [interop.types.id] }
-    };
-}
-
-export class ActionBarStyler implements style.Styler {
-    // color
-    private static setColorProperty(v: view.View, newValue: any) {
-        var topFrame = frame.topmost();
-        if (topFrame) {
-            var navBar = topFrame.ios.controller.navigationBar;
-            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: newValue };
-            navBar.tintColor = newValue;
-        }
-    }
-
-    private static resetColorProperty(v: view.View, nativeValue: any) {
-        var topFrame = frame.topmost();
-        if (topFrame) {
-            var navBar = topFrame.ios.controller.navigationBar;
-            navBar.titleTextAttributes = null;
-            navBar.tintColor = null;
-        }
-    }
-
-    // background-color
-    private static setBackgroundColorProperty(v: view.View, newValue: any) {
-        var topFrame = frame.topmost();
-        if (topFrame) {
-            var navBar = topFrame.ios.controller.navigationBar;
-            navBar.barTintColor = newValue;
-        }
-    }
-
-    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
-        var topFrame = frame.topmost();
-        if (topFrame) {
-            var navBar = topFrame.ios.controller.navigationBar;
-            navBar.barTintColor = null;
-        }
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            ActionBarStyler.setColorProperty,
-            ActionBarStyler.resetColorProperty), "ActionBar");
-
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            ActionBarStyler.setBackgroundColorProperty,
-            ActionBarStyler.resetBackgroundColorProperty), "ActionBar");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "ActionBar");
-    }
-}
-
-ActionBarStyler.registerHandlers();

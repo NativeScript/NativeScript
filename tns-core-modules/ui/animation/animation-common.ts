@@ -1,15 +1,12 @@
-﻿import definition = require("ui/animation");
-import viewModule = require("ui/core/view");
-import colorModule = require("color");
-import types = require("utils/types");
-import * as traceModule from "trace";
-
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
+﻿import {CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
+        AnimationPromise as AnimationPromiseDefinition,
+        Animation as AnimationBaseDefinition,
+        AnimationDefinition,
+        Pair} from "ui/animation";
+import {View} from "ui/core/view";
+import {Color} from "color";
+import {isDefined, isNumber, isString} from "utils/types";
+import * as trace from "trace";
 
 export module Properties {
     export var opacity = "opacity";
@@ -20,7 +17,7 @@ export module Properties {
 }
 
 export interface PropertyAnimation {
-    target: viewModule.View;
+    target: View;
     property: string;
     value: any;
     duration?: number;
@@ -29,7 +26,7 @@ export interface PropertyAnimation {
     curve?: any;
 }
 
-export class CubicBezierAnimationCurve implements definition.CubicBezierAnimationCurve {
+export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefinition {
 
     public x1: number;
     public y1: number;
@@ -46,18 +43,46 @@ export class CubicBezierAnimationCurve implements definition.CubicBezierAnimatio
 
 // This is a BOGUS Class to make TypeScript happy - This is not needed other than to make TS happy.
 // We didn't want to actually modify Promise; as the cancel() is ONLY valid for animations "Promise"
-export class AnimationPromise implements definition.AnimationPromise {
+export class AnimationPromise implements AnimationPromiseDefinition {
     public cancel(): void { /* Do Nothing */ }
     public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
     public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
 }
 
-export class Animation implements definition.Animation {
+export abstract class AnimationBase implements AnimationBaseDefinition {
     public _propertyAnimations: Array<PropertyAnimation>;
     public _playSequentially: boolean;
     private _isPlaying: boolean;
     private _resolve;
     private _reject;
+
+    constructor(animationDefinitions: Array<AnimationDefinition>, playSequentially?: boolean) {
+        if (!animationDefinitions || animationDefinitions.length === 0) {
+            throw new Error("No animation definitions specified");
+        }
+
+        if (trace.enabled) {
+            trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
+        }
+        this._propertyAnimations = new Array<PropertyAnimation>();
+        var i = 0;
+        var length = animationDefinitions.length;
+        for (; i < length; i++) {
+            animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+            this._propertyAnimations = this._propertyAnimations.concat(AnimationBase._createPropertyAnimations(animationDefinitions[i]));
+        }
+
+        if (this._propertyAnimations.length === 0) {
+            throw new Error("Nothing to animate.");
+        }
+        if (trace.enabled) {
+            trace.write("Created " + this._propertyAnimations.length + " individual property animations.", trace.categories.Animation);
+        }
+
+        this._playSequentially = playSequentially;
+    }
+
+    abstract _resolveAnimationCurve(curve: any): any;
 
     public play(): AnimationPromise {
         if (this.isPlaying) {
@@ -107,34 +132,6 @@ export class Animation implements definition.Animation {
         return this._isPlaying;
     }
 
-    constructor(animationDefinitions: Array<definition.AnimationDefinition>, playSequentially?: boolean) {
-        if (!animationDefinitions || animationDefinitions.length === 0) {
-            throw new Error("No animation definitions specified");
-        }
-
-        ensureTrace();
-
-        if (trace.enabled) {
-            trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
-        }
-        this._propertyAnimations = new Array<PropertyAnimation>();
-        var i = 0;
-        var length = animationDefinitions.length;
-        for (; i < length; i++) {
-            animationDefinitions[i].curve = definition._resolveAnimationCurve(animationDefinitions[i].curve);
-            this._propertyAnimations = this._propertyAnimations.concat(Animation._createPropertyAnimations(animationDefinitions[i]));
-        }
-
-        if (this._propertyAnimations.length === 0) {
-            throw new Error("Nothing to animate.");
-        }
-        if (trace.enabled) {
-            trace.write("Created " + this._propertyAnimations.length + " individual property animations.", trace.categories.Animation);
-        }
-
-        this._playSequentially = playSequentially;
-    }
-
     public _resolveAnimationFinishedPromise() {
         this._isPlaying = false;
         this._resolve();
@@ -145,13 +142,13 @@ export class Animation implements definition.Animation {
         this._reject(new Error("Animation cancelled."));
     }
 
-    private static _createPropertyAnimations(animationDefinition: definition.AnimationDefinition): Array<PropertyAnimation> {
+    private static _createPropertyAnimations(animationDefinition: AnimationDefinition): Array<PropertyAnimation> {
         if (!animationDefinition.target) {
             throw new Error("No animation target specified.");
         }
 
         for (let item in animationDefinition) {
-            if (!types.isDefined(animationDefinition[item])) {
+            if (!isDefined(animationDefinition[item])) {
                 continue;
             }
 
@@ -159,14 +156,14 @@ export class Animation implements definition.Animation {
                 item === Properties.rotate ||
                 item === "duration" ||
                 item === "delay" ||
-                item === "iterations") && !types.isNumber(animationDefinition[item])) {
+                item === "iterations") && !isNumber(animationDefinition[item])) {
                 throw new Error(`Property ${item} must be valid number. Value: ${animationDefinition[item]}`);
             } else if ((item === Properties.scale ||
                 item === Properties.translate) &&
-                (!types.isNumber((<definition.Pair>animationDefinition[item]).x) ||
-                    !types.isNumber((<definition.Pair>animationDefinition[item]).y))) {
+                (!isNumber((<Pair>animationDefinition[item]).x) ||
+                    !isNumber((<Pair>animationDefinition[item]).y))) {
                 throw new Error(`Property ${item} must be valid Pair. Value: ${animationDefinition[item]}`);
-            } else if (item === Properties.backgroundColor && !colorModule.Color.isValid(animationDefinition.backgroundColor)) {
+            } else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
                 throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
             }
         }
@@ -191,8 +188,8 @@ export class Animation implements definition.Animation {
             propertyAnimations.push({
                 target: animationDefinition.target,
                 property: Properties.backgroundColor,
-                value: types.isString(animationDefinition.backgroundColor) ? 
-                    new colorModule.Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
+                value: isString(animationDefinition.backgroundColor) ? 
+                    new Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
                 duration: animationDefinition.duration,
                 delay: animationDefinition.delay,
                 iterations: animationDefinition.iterations,

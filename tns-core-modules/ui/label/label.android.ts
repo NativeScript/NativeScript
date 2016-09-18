@@ -1,4 +1,7 @@
 ﻿import common = require("./label-common");
+import {textProperty, formattedTextProperty} from "../text-base/text-base-common";
+import {FormattedString} from "text/formatted-string";
+
 global.moduleMerge(common, exports);
 
 export class Label extends common.Label {
@@ -16,5 +19,20 @@ export class Label extends common.Label {
         // TODO: Think of a more uniform approach of configuring native controls when creating them.
         this._android.setSingleLine(true);
         this._android.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    }
+
+    get [textProperty.native](): string {
+        return this._android.getText();
+    }
+    set [textProperty.native](value: string) {
+        this._android.setText(value);
+    }
+
+    get [formattedTextProperty.native](): string {
+        return this._android.getText();
+    }
+    set [formattedTextProperty.native](value: FormattedString) {
+        let text = value ? value._formattedText : ""
+        this._android.setText(text);
     }
 }

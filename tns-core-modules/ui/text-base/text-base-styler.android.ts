@@ -1,183 +1,165 @@
-﻿import view = require("ui/core/view");
-import utils = require("utils/utils");
-import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import enums = require("ui/enums");
-import {device} from "platform";
+// import view = require("ui/core/view");
+// import utils = require("utils/utils");
+// import style = require("ui/styling/style");
+// import font = require("ui/styling/font");
+// import enums = require("ui/enums");
+// import {device} from "platform";
 
-export class TextBaseStyler implements style.Styler {
-    // hintcolor
-    private static setPlaceholderColorProperty(view: view.View, newValue: any) {
-        (<android.widget.TextView>view._nativeView).setHintTextColor(newValue);
-    }
+// export class TextBaseStyler implements style.Styler {
+//     // color
+//     private static setColorProperty(view: view.View, newValue: any) {
+//         (<android.widget.TextView>view._nativeView).setTextColor(newValue);
+//     }
 
-    private static resetPlaceholderColorProperty(view: view.View, nativeValue: any) {
-        (<android.widget.TextView>view._nativeView).setHintTextColor(nativeValue);
-    }
+//     private static resetColorProperty(view: view.View, nativeValue: any) {
+//         (<android.widget.TextView>view._nativeView).setTextColor(nativeValue);
+//     }
 
-    private static getNativePlaceholderColorValue(view: view.View): any {
-        return (<android.widget.TextView>view._nativeView).getHintTextColors().getDefaultColor();
-    }
+//     private static getNativeColorValue(view: view.View): any {
+//         return (<android.widget.TextView>view._nativeView).getTextColors().getDefaultColor();
+//     }
 
-    // color
-    private static setColorProperty(view: view.View, newValue: any) {
-        (<android.widget.TextView>view._nativeView).setTextColor(newValue);
-    }
+//     // font
+//     private static setFontInternalProperty(view: view.View, newValue: any, nativeValue?: any) {
+//         var tv = <android.widget.TextView>view._nativeView;
+//         var fontValue = <font.Font>newValue;
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        (<android.widget.TextView>view._nativeView).setTextColor(nativeValue);
-    }
+//         var typeface = fontValue.getAndroidTypeface();
+//         if (typeface) {
+//             tv.setTypeface(typeface);
+//         }
+//         else {
+//             tv.setTypeface(nativeValue.typeface);
+//         }
 
-    private static getNativeColorValue(view: view.View): any {
-        return (<android.widget.TextView>view._nativeView).getTextColors().getDefaultColor();
-    }
+//         if (fontValue.fontSize) {
+//             tv.setTextSize(fontValue.fontSize);
+//         }
+//         else {
+//             tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+//         }
+//     }
 
-    // font
-    private static setFontInternalProperty(view: view.View, newValue: any, nativeValue?: any) {
-        var tv = <android.widget.TextView>view._nativeView;
-        var fontValue = <font.Font>newValue;
+//     private static resetFontInternalProperty(view: view.View, nativeValue: any) {
+//         var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
+//         if (tv && nativeValue) {
+//             tv.setTypeface(nativeValue.typeface);
+//             tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
+//         }
+//     }
 
-        var typeface = fontValue.getAndroidTypeface();
-        if (typeface) {
-            tv.setTypeface(typeface);
-        }
-        else {
-            tv.setTypeface(nativeValue.typeface);
-        }
+//     private static getNativeFontInternalValue(view: view.View): any {
+//         var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
+//         return {
+//             typeface: tv.getTypeface(),
+//             size: tv.getTextSize()
+//         };
+//     }
 
-        if (fontValue.fontSize) {
-            tv.setTextSize(fontValue.fontSize);
-        }
-        else {
-            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
-        }
-    }
+//     // text-align
+//     private static setTextAlignmentProperty(view: view.View, newValue: any) {
+//         var verticalGravity = view._nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+//         switch (newValue) {
+//             case enums.TextAlignment.left:
+//                 view._nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
+//                 break;
+//             case enums.TextAlignment.center:
+//                 view._nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+//                 break;
+//             case enums.TextAlignment.right:
+//                 view._nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+//                 break;
+//             default:
+//                 break;
+//         }
+//     }
 
-    private static resetFontInternalProperty(view: view.View, nativeValue: any) {
-        var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
-        if (tv && nativeValue) {
-            tv.setTypeface(nativeValue.typeface);
-            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
-        }
-    }
+//     private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
+//         view._nativeView.setGravity(nativeValue);
+//     }
 
-    private static getNativeFontInternalValue(view: view.View): any {
-        var tv: android.widget.TextView = <android.widget.TextView>view._nativeView;
-        return {
-            typeface: tv.getTypeface(),
-            size: tv.getTextSize()
-        };
-    }
+//     private static getNativeTextAlignmentValue(view: view.View): any {
+//         return view._nativeView.getGravity();
+//     }
 
-    // text-align
-    private static setTextAlignmentProperty(view: view.View, newValue: any) {
-        var verticalGravity = view._nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
-        switch (newValue) {
-            case enums.TextAlignment.left:
-                view._nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
-                break;
-            case enums.TextAlignment.center:
-                view._nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
-                break;
-            case enums.TextAlignment.right:
-                view._nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
-                break;
-            default:
-                break;
-        }
-    }
+//     // text-decoration
+//     private static setTextDecorationProperty(view: view.View, newValue: any) {
+//         utils.ad.setTextDecoration(view._nativeView, newValue);
+//     }
 
-    private static resetTextAlignmentProperty(view: view.View, nativeValue: any) {
-        view._nativeView.setGravity(nativeValue);
-    }
+//     private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
+//         utils.ad.setTextDecoration(view._nativeView, enums.TextDecoration.none);
+//     }
 
-    private static getNativeTextAlignmentValue(view: view.View): any {
-        return view._nativeView.getGravity();
-    }
+//     // text-transform
+//     private static setTextTransformProperty(view: view.View, newValue: any) {
+//         utils.ad.setTextTransform(view, newValue);
+//     }
 
-    // text-decoration
-    private static setTextDecorationProperty(view: view.View, newValue: any) {
-        utils.ad.setTextDecoration(view._nativeView, newValue);
-    }
+//     private static resetTextTransformProperty(view: view.View, nativeValue: any) {
+//         utils.ad.setTextTransform(view, enums.TextTransform.none);
+//     }
 
-    private static resetTextDecorationProperty(view: view.View, nativeValue: any) {
-        utils.ad.setTextDecoration(view._nativeView, enums.TextDecoration.none);
-    }
+//     // white-space
+//     private static setWhiteSpaceProperty(view: view.View, newValue: any) {
+//         utils.ad.setWhiteSpace(view._nativeView, newValue);
+//     }
 
-    // text-transform
-    private static setTextTransformProperty(view: view.View, newValue: any) {
-        utils.ad.setTextTransform(view, newValue);
-    }
+//     private static resetWhiteSpaceProperty(view: view.View, nativeValue: any) {
+//         utils.ad.setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
+//     }
 
-    private static resetTextTransformProperty(view: view.View, nativeValue: any) {
-        utils.ad.setTextTransform(view, enums.TextTransform.none);
-    }
+//     // letter-spacing
+//     private static getLetterSpacingProperty(view: view.View): any {
+//         return view.android.getLetterSpacing();
+//     }
 
-    // white-space
-    private static setWhiteSpaceProperty(view: view.View, newValue: any) {
-        utils.ad.setWhiteSpace(view._nativeView, newValue);
-    }
+//     private static setLetterSpacingProperty(view: view.View, newValue: any) {
+//         view.android.setLetterSpacing(newValue);
+//     }
 
-    private static resetWhiteSpaceProperty(view: view.View, nativeValue: any) {
-        utils.ad.setWhiteSpace(view._nativeView, enums.WhiteSpace.normal);
-    }
+//     private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
+//         view.android.setLetterSpacing(nativeValue);
+//     }
 
-    // letter-spacing
-    private static getLetterSpacingProperty(view: view.View): any {
-        return view.android.getLetterSpacing();
-    }
+//     public static registerHandlers() {
+//         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
+//             TextBaseStyler.setColorProperty,
+//             TextBaseStyler.resetColorProperty,
+//             TextBaseStyler.getNativeColorValue), "TextBase");
 
-    private static setLetterSpacingProperty(view: view.View, newValue: any) {
-        view.android.setLetterSpacing(newValue);
-    }
+//         style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
+//             TextBaseStyler.setFontInternalProperty,
+//             TextBaseStyler.resetFontInternalProperty,
+//             TextBaseStyler.getNativeFontInternalValue), "TextBase");
 
-    private static resetLetterSpacingProperty(view: view.View, nativeValue: any) {
-        view.android.setLetterSpacing(nativeValue);
-    }
+//         style.registerHandler(style.textAlignmentProperty, new style.StylePropertyChangedHandler(
+//             TextBaseStyler.setTextAlignmentProperty,
+//             TextBaseStyler.resetTextAlignmentProperty,
+//             TextBaseStyler.getNativeTextAlignmentValue), "TextBase");
 
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setColorProperty,
-            TextBaseStyler.resetColorProperty,
-            TextBaseStyler.getNativeColorValue), "TextBase");
+//         style.registerHandler(style.textDecorationProperty, new style.StylePropertyChangedHandler(
+//             TextBaseStyler.setTextDecorationProperty,
+//             TextBaseStyler.resetTextDecorationProperty), "TextBase");
 
-        style.registerHandler(style.placeholderColorProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setPlaceholderColorProperty,
-            TextBaseStyler.resetPlaceholderColorProperty,
-            TextBaseStyler.getNativePlaceholderColorValue), "TextBase");
+//         style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
+//             TextBaseStyler.setTextTransformProperty,
+//             TextBaseStyler.resetTextTransformProperty), "TextBase");
 
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setFontInternalProperty,
-            TextBaseStyler.resetFontInternalProperty,
-            TextBaseStyler.getNativeFontInternalValue), "TextBase");
+//         style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
+//             TextBaseStyler.setWhiteSpaceProperty,
+//             TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
 
-        style.registerHandler(style.textAlignmentProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextAlignmentProperty,
-            TextBaseStyler.resetTextAlignmentProperty,
-            TextBaseStyler.getNativeTextAlignmentValue), "TextBase");
+//         if (parseInt(device.sdkVersion, 10) >= 21) {
+//             style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
+//                 TextBaseStyler.setLetterSpacingProperty,
+//                 TextBaseStyler.resetLetterSpacingProperty,
+//                 TextBaseStyler.getLetterSpacingProperty), "TextBase");
+//         }
 
-        style.registerHandler(style.textDecorationProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextDecorationProperty,
-            TextBaseStyler.resetTextDecorationProperty), "TextBase");
-
-        style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextTransformProperty,
-            TextBaseStyler.resetTextTransformProperty), "TextBase");
-
-        style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setWhiteSpaceProperty,
-            TextBaseStyler.resetWhiteSpaceProperty), "TextBase");
-
-        if (parseInt(device.sdkVersion, 10) >= 21) {
-            style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
-                TextBaseStyler.setLetterSpacingProperty,
-                TextBaseStyler.resetLetterSpacingProperty,
-                TextBaseStyler.getLetterSpacingProperty), "TextBase");
-        }
-
-        // !!! IMPORTANT !!! Button registrations were moved to button.android.ts to make sure they 
-        // are executed when there is a Button on the page: https://github.com/NativeScript/NativeScript/issues/1902
-        // If there is no TextBase on the Page, the TextBaseStyler.registerHandlers
-        // method was never called because the file it is called from was never required.
-    }
-}
+//         // !!! IMPORTANT !!! Button registrations were moved to button.android.ts to make sure they 
+//         // are executed when there is a Button on the page: https://github.com/NativeScript/NativeScript/issues/1902
+//         // If there is no TextBase on the Page, the TextBaseStyler.registerHandlers
+//         // method was never called because the file it is called from was never required.
+//     }
+// }

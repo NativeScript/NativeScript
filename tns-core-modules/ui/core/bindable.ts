@@ -90,11 +90,11 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
             trace.write(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, trace.categories.Binding);
         }
         super._onPropertyChanged(property, oldValue, newValue);
-        if (this instanceof viewModule.View) {
-            if (property.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
-                return;
-            }
-        }
+        // if (this instanceof viewModule.View) {
+        //     if (property.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
+        //         return;
+        //     }
+        // }
 
         let binding = this.bindings.get(property.name);
         if (binding && !binding.updating) {

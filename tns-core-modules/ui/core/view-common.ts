@@ -1,29 +1,35 @@
 ﻿import types = require("utils/types");
 import definition = require("ui/core/view");
-import style = require("../styling/style");
-import styling = require("ui/styling");
+import {Style} from "ui/styling/style";
 import trace = require("trace");
 import gestures = require("ui/gestures");
 import styleScope = require("../styling/style-scope");
-import enums = require("ui/enums");
+import {VerticalAlignment, HorizontalAlignment} from "ui/enums";
 import utils = require("utils/utils");
-import color = require("color");
-import observable = require("data/observable");
-import keyframeAnimationModule = require("ui/animation/keyframe-animation");
-import { PropertyMetadata, ProxyObject } from "ui/core/proxy";
-import { PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata } from "ui/core/dependency-observable";
-import { registerSpecialProperty } from "ui/builder/special-properties";
-import { CommonLayoutParams, nativeLayoutParamsProperty } from "ui/styling/style";
+import {Color} from "color";
+import {KeyframeAnimation} from "ui/animation/keyframe-animation";
 import * as animModule from "ui/animation";
-import { CssState } from "ui/styling/style-scope";
-import { Source } from "utils/debug";
+import {CssState} from "ui/styling/style-scope";
+import {Source} from "utils/debug";
+import {Observable, EventData} from "data/observable";
+import {ViewBase} from "./view-base";
 
-registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
-    instance.className = propertyValue;
-});
-registerSpecialProperty("text", (instance, propertyValue) => {
-    instance.set("text", propertyValue);
-});
+import {propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty} from "./properties";
+import bindable = require("ui/core/bindable");
+// registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
+//     instance.className = propertyValue;
+// });
+// registerSpecialProperty("text", (instance, propertyValue) => {
+//     instance.set("text", propertyValue);
+// });
+
+
+let animationModule: typeof animModule;
+function ensureAnimationModule() {
+    if (!animationModule) {
+        animationModule = require("ui/animation");
+    }
+}
 
 function getEventOrGestureName(name: string): string {
     return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
@@ -90,7 +96,7 @@ export function getAncestor(view: View, criterion: string | Function): definitio
         matcher = (view: definition.View) => view instanceof criterion;
     }
 
-    for (let parent: definition.View = view.parent; parent != null; parent = parent.parent) {
+    for (let parent = view.parent; parent != null; parent = parent.parent) {
         if (matcher(parent)) {
             return parent;
         }
@@ -116,27 +122,62 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
     }
 }
 
-var viewIdCounter = 0;
+let viewIdCounter = 0;
 
-function onCssClassPropertyChanged(data: PropertyChangeData) {
-    var view = <View>data.object;
-    var classes = view.cssClasses;
+function onCssClassPropertyChanged(view: View, oldValue: string, newValue: string) {
+    let classes = view.cssClasses;
     classes.clear();
-    if (types.isString(data.newValue)) {
-        data.newValue.split(" ").forEach(c => classes.add(c));
+    if (types.isString(newValue)) {
+        newValue.split(" ").forEach(c => classes.add(c));
     }
 }
 
-var cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
-var classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
-var idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
-var automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
-var originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
-var originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
-var isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
-var isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
+// var cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
+let cssClassProperty = new Property<View, string>({ name: "cssClass", valueChanged: onCssClassPropertyChanged });
+cssClassProperty.register(View);
 
-export class View extends ProxyObject implements definition.View {
+// var classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
+let classNameProperty = new Property<View, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
+classNameProperty.register(View);
+
+function resetStyles(view: View): void {
+    // view.style._resetCssValues();
+    // view._applyStyleFromScope();
+    view._eachChildView((child) => {
+        resetStyles(child);
+        return true;
+    });
+}
+// var idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
+let idProperty = new Property<View, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
+idProperty.register(View);
+
+// var automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
+let automationTextProperty = new Property<View, string>({ name: "automationText" });
+automationTextProperty.register(View);
+
+// var originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
+let originXProperty = new Property<View, number>({ name: "originX", defaultValue: 0.5 });
+originXProperty.register(View);
+
+// var originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
+let originYProperty = new Property<View, number>({ name: "originY", defaultValue: 0.5 });
+originYProperty.register(View);
+
+// var isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
+let isEnabledProperty = new Property<View, boolean>({ name: "isEnabled", defaultValue: true });
+isEnabledProperty.register(View);
+
+// var isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
+let isUserInteractionEnabledProperty = new Property<View, boolean>({ name: "isUserInteractionEnabled", defaultValue: true });
+isUserInteractionEnabledProperty.register(View);
+
+let bindingContextProperty = new InheritedProperty<View, any>({ name: "bindingContext" })
+bindingContextProperty.register(View);
+
+let defaultBindingSource = {};
+
+export class View extends ViewBase implements definition.View {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
@@ -149,7 +190,6 @@ export class View extends ProxyObject implements definition.View {
     public static isEnabledProperty = isEnabledProperty;
     public static isUserInteractionEnabledProperty = isUserInteractionEnabledProperty;
 
-    private _isVisibleCache: boolean = true;
     private _measuredWidth: number = Number.NaN;
     private _measuredHeight: number = Number.NaN;
 
@@ -160,15 +200,15 @@ export class View extends ProxyObject implements definition.View {
     private _oldRight: number = 0;
     private _oldBottom: number = 0;
 
-    private _parent: definition.View;
-    private _style: style.Style;
+    private _parent: View;
+
     private _visualState: string;
     private _isLoaded: boolean;
     private _isLayoutValid: boolean = false;
     private _cssType: string;
 
     private _updatingInheritedProperties: boolean;
-    private _registeredAnimations: Array<keyframeAnimationModule.KeyframeAnimation>;
+    private _registeredAnimations: Array<KeyframeAnimation>;
 
     public _domId: number;
     public _isAddedToNativeVisualTree = false;
@@ -178,15 +218,24 @@ export class View extends ProxyObject implements definition.View {
     public cssPseudoClasses: Set<string> = new Set();
 
     public _cssState: CssState;
+    public isVisible = true;
+
+
 
     public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver> {
         return this._gestureObservers[type];
     }
 
-    constructor() {
-        super({});
 
-        this._style = new style.Style(this);
+
+
+
+
+
+
+    constructor() {
+        super();
+
         this._domId = viewIdCounter++;
         this._goToVisualState("normal");
     }
@@ -199,15 +248,15 @@ export class View extends ProxyObject implements definition.View {
         this._gestureObservers[type].push(gestures.observe(this, type, callback, thisArg));
     }
 
-    public addEventListener(arg: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any) {
+    public addEventListener(arg: string | gestures.GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
         if (types.isString(arg)) {
             arg = getEventOrGestureName(<string>arg);
 
-            var gesture = gestures.fromString(<string>arg);
+            let gesture = gestures.fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this.observe(gesture, callback, thisArg);
             } else {
-                var events = (<string>arg).split(",");
+                let events = (<string>arg).split(",");
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
@@ -229,11 +278,11 @@ export class View extends ProxyObject implements definition.View {
 
     public removeEventListener(arg: string | gestures.GestureTypes, callback?: any, thisArg?: any) {
         if (types.isString(arg)) {
-            var gesture = gestures.fromString(<string>arg);
+            let gesture = gestures.fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this._disconnectGestureObservers(gesture);
             } else {
-                var events = (<string>arg).split(",");
+                let events = (<string>arg).split(",");
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
@@ -254,6 +303,10 @@ export class View extends ProxyObject implements definition.View {
         }
     }
 
+    public eachChild(callback: (child: View) => boolean): void {
+        this._eachChildView(callback);
+    }
+
     private _isEvent(name: string): boolean {
         return this.constructor && `${name}Event` in this.constructor;
     }
@@ -271,46 +324,41 @@ export class View extends ProxyObject implements definition.View {
         return <T>getViewById(this, id);
     }
 
-    get automationText(): string {
-        return this._getValue(View.automationTextProperty);
-    }
-    set automationText(value: string) {
-        this._setValue(View.automationTextProperty, value);
-    }
+    public automationText: string;
 
     // START Style property shortcuts
-    get borderColor(): string | color.Color {
+    get borderColor(): string | Color {
         return this.style.borderColor;
     }
-    set borderColor(value: string | color.Color) {
+    set borderColor(value: string | Color) {
         this.style.borderColor = value;
     }
 
-    get borderTopColor(): color.Color {
+    get borderTopColor(): Color {
         return this.style.borderTopColor;
     }
-    set borderTopColor(value: color.Color) {
+    set borderTopColor(value: Color) {
         this.style.borderTopColor = value;
     }
 
-    get borderRightColor(): color.Color {
+    get borderRightColor(): Color {
         return this.style.borderRightColor;
     }
-    set borderRightColor(value: color.Color) {
+    set borderRightColor(value: Color) {
         this.style.borderRightColor = value;
     }
 
-    get borderBottomColor(): color.Color {
+    get borderBottomColor(): Color {
         return this.style.borderBottomColor;
     }
-    set borderBottomColor(value: color.Color) {
+    set borderBottomColor(value: Color) {
         this.style.borderBottomColor = value;
     }
 
-    get borderLeftColor(): color.Color {
+    get borderLeftColor(): Color {
         return this.style.borderLeftColor;
     }
-    set borderLeftColor(value: color.Color) {
+    set borderLeftColor(value: Color) {
         this.style.borderLeftColor = value;
     }
 
@@ -384,17 +432,17 @@ export class View extends ProxyObject implements definition.View {
         this.style.borderBottomLeftRadius = value;
     }
 
-    get color(): color.Color {
+    get color(): Color {
         return this.style.color;
     }
-    set color(value: color.Color) {
+    set color(value: Color) {
         this.style.color = value;
     }
 
-    get backgroundColor(): color.Color {
+    get backgroundColor(): Color {
         return this.style.backgroundColor;
     }
-    set backgroundColor(value: color.Color) {
+    set backgroundColor(value: Color) {
         this.style.backgroundColor = value;
     }
 
@@ -496,7 +544,12 @@ export class View extends ProxyObject implements definition.View {
         this.style.opacity = value;
     }
 
-    //END Style property shortcuts
+    get rotate(): number {
+        return this.style.rotate;
+    }
+    set rotate(value: number) {
+        this.style.rotate = value;
+    }
 
     get translateX(): number {
         return this.style.translateX;
@@ -526,38 +579,8 @@ export class View extends ProxyObject implements definition.View {
         this.style.scaleY = value;
     }
 
-    get originX(): number {
-        return this._getValue(View.originXProperty);
-    }
-    set originX(value: number) {
-        this._setValue(View.originXProperty, value);
-    }
+    //END Style property shortcuts
 
-    get originY(): number {
-        return this._getValue(View.originYProperty);
-    }
-    set originY(value: number) {
-        this._setValue(View.originYProperty, value);
-    }
-
-    get rotate(): number {
-        return this.style.rotate;
-    }
-    set rotate(value: number) {
-        this.style.rotate = value;
-    }
-
-    get isEnabled(): boolean {
-        return this._getValue(View.isEnabledProperty);
-    }
-    set isEnabled(value: boolean) {
-        this._setValue(View.isEnabledProperty, value);
-        if (value === false) {
-            this._goToVisualState('disabled');
-        } else {
-            this._goToVisualState('normal');
-        }
-    }
 
     get page(): definition.View {
         if (this.parent) {
@@ -567,40 +590,20 @@ export class View extends ProxyObject implements definition.View {
         return null;
     }
 
-    get isUserInteractionEnabled(): boolean {
-        return this._getValue(View.isUserInteractionEnabledProperty);
-    }
-    set isUserInteractionEnabled(value: boolean) {
-        this._setValue(View.isUserInteractionEnabledProperty, value);
-    }
+    public originX: number;
+    public originY: number;
+    public isEnabled: boolean;
+    public isUserInteractionEnabled: boolean;
+    public id: string;
+    public cssClass: string;
+    public className: string;
 
-    get id(): string {
-        return this._getValue(View.idProperty);
-    }
-    set id(value: string) {
-        this._setValue(View.idProperty, value);
-    }
-
-    get cssClass(): string {
-        return this._getValue(View.cssClassProperty);
-    }
-    set cssClass(value: string) {
-        this._setValue(View.cssClassProperty, value);
-    }
-
-    get className(): string {
-        return this._getValue(View.cssClassProperty);
-    }
-    set className(value: string) {
-        this._setValue(View.cssClassProperty, value);
-    }
-
-    get style(): style.Style {
-        return this._style;
-    }
-    set style(value) {
-        throw new Error("View.style property is read-only.");
-    }
+    // get style(): Style {
+    //     return this._style;
+    // }
+    // set style(value) {
+    //     throw new Error("View.style property is read-only.");
+    // }
 
     get isLayoutRequired(): boolean {
         return true;
@@ -620,7 +623,7 @@ export class View extends ProxyObject implements definition.View {
         return this._cssType;
     }
 
-    get parent(): definition.View {
+    get parent(): View {
         return this._parent;
     }
 
@@ -667,53 +670,53 @@ export class View extends ProxyObject implements definition.View {
         }
     }
 
-    public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-        super._onPropertyChanged(property, oldValue, newValue);
+    // public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
+    //     super._onPropertyChanged(property, oldValue, newValue);
 
-        if (this._childrenCount > 0) {
-            let shouldUpdateInheritableProps = (property.inheritable && !(property instanceof styling.Property));
-            if (shouldUpdateInheritableProps) {
-                this._updatingInheritedProperties = true;
-                this._eachChildView((child) => {
-                    child._setValue(property, this._getValue(property), ValueSource.Inherited);
-                    return true;
-                });
-                this._updatingInheritedProperties = false;
-            }
-        }
+    //     if (this._childrenCount > 0) {
+    //         let shouldUpdateInheritableProps = (property.inheritable && !(property instanceof styling.Property));
+    //         if (shouldUpdateInheritableProps) {
+    //             this._updatingInheritedProperties = true;
+    //             this._eachChildView((child) => {
+    //                 child._setValue(property, this._getValue(property), ValueSource.Inherited);
+    //                 return true;
+    //             });
+    //             this._updatingInheritedProperties = false;
+    //         }
+    //     }
 
-        this._checkMetadataOnPropertyChanged(property.metadata);
-    }
+    //     this._checkMetadataOnPropertyChanged(property.metadata);
+    // }
 
-    public _isInheritedChange() {
-        if (this._updatingInheritedProperties) {
-            return true;
-        }
-        var parentView: View;
-        parentView = <View>(this.parent);
-        while (parentView) {
-            if (parentView._updatingInheritedProperties) {
-                return true;
-            }
-            parentView = <View>(parentView.parent);
-        }
-        return false;
-    }
+    // public _isInheritedChange() {
+    //     if (this._updatingInheritedProperties) {
+    //         return true;
+    //     }
+    //     var parentView: View;
+    //     parentView = <View>(this.parent);
+    //     while (parentView) {
+    //         if (parentView._updatingInheritedProperties) {
+    //             return true;
+    //         }
+    //         parentView = <View>(parentView.parent);
+    //     }
+    //     return false;
+    // }
 
-    public _checkMetadataOnPropertyChanged(metadata: doPropertyMetadata) {
-        if (metadata.affectsLayout) {
-            this.requestLayout();
-        }
+    // public _checkMetadataOnPropertyChanged(metadata: doPropertyMetadata) {
+    //     if (metadata.affectsLayout) {
+    //         this.requestLayout();
+    //     }
 
-        if (metadata.affectsStyle) {
-            this.style._resetCssValues();
-            this._applyStyleFromScope();
-            this._eachChildView((v) => {
-                v._checkMetadataOnPropertyChanged(metadata);
-                return true;
-            });
-        }
-    }
+    //     if (metadata.affectsStyle) {
+    //         this.style._resetCssValues();
+    //         this._applyStyleFromScope();
+    //         this._eachChildView((v) => {
+    //             v._checkMetadataOnPropertyChanged(metadata);
+    //             return true;
+    //         });
+    //     }
+    // }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
@@ -724,11 +727,11 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public getMeasuredWidth(): number {
-        return this._measuredWidth & utils.layout.MEASURED_SIZE_MASK;
+        return this._measuredWidth & utils.layout.MEASURED_SIZE_MASK || 0;
     }
 
     public getMeasuredHeight(): number {
-        return this._measuredHeight & utils.layout.MEASURED_SIZE_MASK;
+        return this._measuredHeight & utils.layout.MEASURED_SIZE_MASK || 0;
     }
 
     public getMeasuredState(): number {
@@ -825,83 +828,83 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void {
-        if (!child || !child._isVisible) {
+        if (!child || !child.isVisible) {
             return;
         }
 
-        var density = utils.layout.getDisplayDensity();
-        let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
+        let density = utils.layout.getDisplayDensity();
+        let childStyle = child.style;
 
-        var childTop: number;
-        var childLeft: number;
+        let childTop: number;
+        let childLeft: number;
 
-        var childWidth = child.getMeasuredWidth();
-        var childHeight = child.getMeasuredHeight();
+        let childWidth = child.getMeasuredWidth();
+        let childHeight = child.getMeasuredHeight();
 
-        var vAlignment: string;
-        if (lp.height >= 0 && lp.verticalAlignment === enums.VerticalAlignment.stretch) {
-            vAlignment = enums.VerticalAlignment.center;
+        let vAlignment: string;
+        if (childStyle.height >= 0 && childStyle.verticalAlignment === VerticalAlignment.stretch) {
+            vAlignment = VerticalAlignment.center;
         }
         else {
-            vAlignment = lp.verticalAlignment;
+            vAlignment = childStyle.verticalAlignment;
         }
 
-        let marginTop = lp.topMargin;
-        let marginBottom = lp.bottomMargin;
-        let marginLeft = lp.leftMargin;
-        let marginRight = lp.rightMargin;
+        let marginTop = childStyle.marginTop;
+        let marginBottom = childStyle.marginBottom;
+        let marginLeft = childStyle.marginLeft;
+        let marginRight = childStyle.marginRight;
 
         switch (vAlignment) {
-            case enums.VerticalAlignment.top:
+            case VerticalAlignment.top:
                 childTop = top + marginTop * density;
                 break;
 
-            case enums.VerticalAlignment.center:
-            case enums.VerticalAlignment.middle:
+            case VerticalAlignment.center:
+            case VerticalAlignment.middle:
                 childTop = top + (bottom - top - childHeight + (marginTop - marginBottom) * density) / 2;
                 break;
 
-            case enums.VerticalAlignment.bottom:
+            case VerticalAlignment.bottom:
                 childTop = bottom - childHeight - (marginBottom * density);
                 break;
 
-            case enums.VerticalAlignment.stretch:
+            case VerticalAlignment.stretch:
             default:
                 childTop = top + marginTop * density;
                 childHeight = bottom - top - (marginTop + marginBottom) * density;
                 break;
         }
 
-        var hAlignment: string;
-        if (lp.width >= 0 && lp.horizontalAlignment === enums.HorizontalAlignment.stretch) {
-            hAlignment = enums.HorizontalAlignment.center;
+        let hAlignment: string;
+        if (childStyle.width >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.stretch) {
+            hAlignment = HorizontalAlignment.center;
         }
         else {
-            hAlignment = lp.horizontalAlignment;
+            hAlignment = childStyle.horizontalAlignment;
         }
 
         switch (hAlignment) {
-            case enums.HorizontalAlignment.left:
+            case HorizontalAlignment.left:
                 childLeft = left + marginLeft * density;
                 break;
 
-            case enums.HorizontalAlignment.center:
+            case HorizontalAlignment.center:
                 childLeft = left + (right - left - childWidth + (marginLeft - marginRight) * density) / 2;
                 break;
 
-            case enums.HorizontalAlignment.right:
+            case HorizontalAlignment.right:
                 childLeft = right - childWidth - (marginRight * density);
                 break;
 
-            case enums.HorizontalAlignment.stretch:
+            case HorizontalAlignment.stretch:
             default:
                 childLeft = left + marginLeft * density;
                 childWidth = right - left - (marginLeft + marginRight) * density;
                 break;
         }
 
-        var childRight = Math.round(childLeft + childWidth);
-        var childBottom = Math.round(childTop + childHeight);
+        let childRight = Math.round(childLeft + childWidth);
+        let childBottom = Math.round(childTop + childHeight);
         childLeft = Math.round(childLeft);
         childTop = Math.round(childTop);
 
@@ -913,18 +916,18 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public static measureChild(parent: View, child: View, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
-        var measureWidth = 0;
-        var measureHeight = 0;
+        let measureWidth = 0;
+        let measureHeight = 0;
 
-        if (child && child._isVisible) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        if (child && child.isVisible) {
+            let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+            let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+            let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+            let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-            var childWidthMeasureSpec = View.getMeasureSpec(child, width, widthMode, true);
-            var childHeightMeasureSpec = View.getMeasureSpec(child, height, heightMode, false);
+            let childWidthMeasureSpec = View.getMeasureSpec(child, width, widthMode, true);
+            let childHeightMeasureSpec = View.getMeasureSpec(child, height, heightMode, false);
 
             if (trace.enabled) {
                 trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
@@ -934,32 +937,31 @@ export class View extends ProxyObject implements definition.View {
             measureWidth = child.getMeasuredWidth();
             measureHeight = child.getMeasuredHeight();
 
-            var density = utils.layout.getDisplayDensity();
-            let lp: CommonLayoutParams = child.style._getValue(style.nativeLayoutParamsProperty);
+            let density = utils.layout.getDisplayDensity();
+            let childStyle = child.style;
 
             // Convert to pixels.
-            measureWidth = Math.round(measureWidth + (lp.leftMargin + lp.rightMargin) * density);
-            measureHeight = Math.round(measureHeight + (lp.topMargin + lp.bottomMargin) * density);
+            measureWidth = Math.round(measureWidth + (childStyle.marginLeft + childStyle.marginRight) * density);
+            measureHeight = Math.round(measureHeight + (childStyle.marginTop + childStyle.marginBottom) * density);
         }
 
         return { measuredWidth: measureWidth, measuredHeight: measureHeight };
     }
 
     private static getMeasureSpec(view: View, parentLength: number, parentSpecMode: number, horizontal: boolean): number {
+        let childStyle = view.style;
 
-        let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
-
-        var density = utils.layout.getDisplayDensity();
-        var margins = horizontal ? lp.leftMargin + lp.rightMargin : lp.topMargin + lp.bottomMargin;
+        let density = utils.layout.getDisplayDensity();
+        let margins = horizontal ? childStyle.marginLeft + childStyle.marginRight : childStyle.marginTop + childStyle.marginBottom;
         margins = Math.round(margins * density);
 
-        var resultSize = 0;
-        var resultMode = 0;
+        let resultSize = 0;
+        let resultMode = 0;
 
-        var measureLength = Math.max(0, parentLength - margins);
+        let measureLength = Math.max(0, parentLength - margins);
 
         // Convert to pixels.
-        var childLength = Math.round((horizontal ? lp.width : lp.height) * density);
+        let childLength = Math.round((horizontal ? childStyle.width : childStyle.height) * density);
 
         // We want a specific size... let be it.
         if (childLength >= 0) {
@@ -977,7 +979,7 @@ export class View extends ProxyObject implements definition.View {
                 // Parent has imposed an exact size on us
                 case utils.layout.EXACTLY:
                     resultSize = measureLength;
-                    var stretched = horizontal ? lp.horizontalAlignment === enums.HorizontalAlignment.stretch : lp.verticalAlignment === enums.VerticalAlignment.stretch;
+                    let stretched = horizontal ? childStyle.horizontalAlignment === HorizontalAlignment.stretch : childStyle.verticalAlignment === VerticalAlignment.stretch;
 
                     // if stretched - nativeView wants to be our size. So be it.
                     // else - nativeView wants to determine its own size. It can't be bigger than us.
@@ -1002,7 +1004,7 @@ export class View extends ProxyObject implements definition.View {
     }
 
     _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean {
-        var changed: boolean = this._oldWidthMeasureSpec !== widthMeasureSpec || this._oldHeightMeasureSpec !== heightMeasureSpec;
+        let changed: boolean = this._oldWidthMeasureSpec !== widthMeasureSpec || this._oldHeightMeasureSpec !== heightMeasureSpec;
         this._oldWidthMeasureSpec = widthMeasureSpec;
         this._oldHeightMeasureSpec = heightMeasureSpec;
         return changed;
@@ -1086,8 +1088,8 @@ export class View extends ProxyObject implements definition.View {
      */
     _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): { boundsChanged: boolean, sizeChanged: boolean } {
         this._isLayoutValid = true;
-        var boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
-        var sizeChanged: boolean = (this._oldRight - this._oldLeft !== right - left) || (this._oldBottom - this._oldTop !== bottom - top);
+        let boundsChanged: boolean = this._oldLeft !== left || this._oldTop !== top || this._oldRight !== right || this._oldBottom !== bottom;
+        let sizeChanged: boolean = (this._oldRight - this._oldLeft !== right - left) || (this._oldBottom - this._oldTop !== bottom - top);
         this._oldLeft = left;
         this._oldTop = top;
         this._oldRight = right;
@@ -1096,21 +1098,21 @@ export class View extends ProxyObject implements definition.View {
     }
 
     private _applyStyleFromScope() {
-        var rootPage = this.page;
+        let rootPage = this.page;
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }
-        var scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
+        let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
         scope.applySelectors(this);
     }
 
     private _applyInlineStyle(inlineStyle) {
         if (types.isString(inlineStyle)) {
             try {
-                this.style._beginUpdate();
+                // this.style._beginUpdate();
                 styleScope.applyInlineSyle(this, <string>inlineStyle);
             } finally {
-                this.style._endUpdate();
+                // this.style._endUpdate();
             }
         }
     }
@@ -1209,19 +1211,20 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public _propagateInheritableProperties(view: View) {
-        view._inheritProperties(this);
-        view.style._inheritStyleProperties(this);
+        propagateInheritedProperties(this);
+        // view._inheritProperties(this);
+        // view.style._inheritStyleProperties(this);
     }
 
-    public _inheritProperties(parentView: View) {
-        parentView._eachSetProperty((property) => {
-            if (!(property instanceof styling.Property) && property.inheritable) {
-                let baseValue = parentView._getValue(property);
-                this._setValue(property, baseValue, ValueSource.Inherited);
-            }
-            return true;
-        });
-    }
+    // public _inheritProperties(parentView: View) {
+    //     parentView._eachSetProperty((property) => {
+    //         if (!(property instanceof styling.Property) && property.inheritable) {
+    //             let baseValue = parentView._getValue(property);
+    //             this._setValue(property, baseValue, ValueSource.Inherited);
+    //         }
+    //         return true;
+    //     });
+    // }
 
     /**
      * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
@@ -1255,17 +1258,21 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public unsetInheritedProperties(): void {
-        this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
-        this._eachSetProperty((property) => {
-            if (!(property instanceof styling.Property) && property.inheritable) {
-                this._resetValue(property, ValueSource.Inherited);
-            }
-            return true;
-        });
+        // this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
+        // this._eachSetProperty((property) => {
+        //     if (!(property instanceof styling.Property) && property.inheritable) {
+        //         this._resetValue(property, ValueSource.Inherited);
+        //     }
+        //     return true;
+        // });
     }
 
     public _parentChanged(oldParent: View): void {
         //Overridden
+        if (oldParent) {
+            // Move these method in property class.
+            clearInheritedProperties(this);
+        }
     }
 
     /**
@@ -1284,14 +1291,6 @@ export class View extends ProxyObject implements definition.View {
      */
     public _removeViewFromNativeVisualTree(view: View) {
         view._isAddedToNativeVisualTree = false;
-    }
-
-    public _syncNativeProperties() {
-        super._syncNativeProperties();
-
-        // loop all style properties and call the _applyStyleProperty method
-        // TODO: Potential performance bottle-neck
-        this.style._syncNativeProperties();
     }
 
     public _goToVisualState(state: string) {
@@ -1332,10 +1331,6 @@ export class View extends ProxyObject implements definition.View {
         return undefined;
     }
 
-    get _isVisible(): boolean {
-        return this._isVisibleCache;
-    }
-
     public _shouldApplyStyleHandlers() {
         // If we have native view we are ready to apply style handelr;
         return !!this._nativeView;
@@ -1374,20 +1369,19 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public createAnimation(animation: any): any {
-        let animationModule: typeof animModule = require("ui/animation");
-        let that = this;
-        animation.target = that;
+        ensureAnimationModule();
+        animation.target = this;
         return new animationModule.Animation([animation]);
     }
 
-    public _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation) {
+    public _registerAnimation(animation: KeyframeAnimation) {
         if (this._registeredAnimations === undefined) {
-            this._registeredAnimations = new Array<keyframeAnimationModule.KeyframeAnimation>();
+            this._registeredAnimations = new Array<KeyframeAnimation>();
         }
         this._registeredAnimations.push(animation);
     }
 
-    public _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation) {
+    public _unregisterAnimation(animation: KeyframeAnimation) {
         if (this._registeredAnimations) {
             let index = this._registeredAnimations.indexOf(animation);
             if (index >= 0) {
@@ -1423,14 +1417,14 @@ export class View extends ProxyObject implements definition.View {
         //
     }
 
-    public _onStylePropertyChanged(property: Property): void {
-        //
-    }
+    // public _onStylePropertyChanged(property: Property): void {
+    //     //
+    // }
 
-    protected _canApplyNativeProperty(): boolean {
-        // Check for a valid _nativeView instance
-        return !!this._nativeView;
-    }
+    // protected _canApplyNativeProperty(): boolean {
+    //     // Check for a valid _nativeView instance
+    //     return !!this._nativeView;
+    // }
 
     private notifyPseudoClassChanged(pseudoClass: string): void {
         this.notify({ eventName: ":" + pseudoClass, object: this });
@@ -1509,8 +1503,8 @@ export class View extends ProxyObject implements definition.View {
             return;
         }
 
-        this.style._beginUpdate();
+        // this.style._beginUpdate();
         this._cssState.apply();
-        this.style._endUpdate();
+        // this.style._endUpdate();
     }
 }

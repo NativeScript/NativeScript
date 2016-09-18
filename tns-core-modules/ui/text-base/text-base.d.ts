@@ -1,22 +1,21 @@
 ﻿declare module "ui/text-base" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import formattedString = require("text/formatted-string");
+    import {View, AddChildFromBuilder} from "ui/core/view";
+    import {FormattedString, FormattedStringView} from "text/formatted-string";
+    import {Property} from "ui/core/properties";
 
     /**
      * Represents the base class for all text views.
      */
-    export class TextBase extends view.View implements view.AddChildFromBuilder, formattedString.FormattedStringView {
+    export class TextBase extends View implements AddChildFromBuilder, FormattedStringView {
+        // /**
+        //  * Dependency property used to support binding operations for the text of the current text-base instance.
+        //  */
+        // public static textProperty: dependencyObservable.Property;
 
-        /**
-         * Dependency property used to support binding operations for the text of the current text-base instance.
-         */
-        public static textProperty: dependencyObservable.Property;
-
-        /**
-         * Dependency property used to support binding operations for the formatted text of the current text-base instance.
-         */
-        public static formattedTextProperty: dependencyObservable.Property;
+        // /**
+        //  * Dependency property used to support binding operations for the formatted text of the current text-base instance.
+        //  */
+        // public static formattedTextProperty: dependencyObservable.Property;
 
         /**
          * Gets or sets the text.
@@ -36,7 +35,7 @@
         /**
          * Gets or sets a formatted string.
          */
-        formattedText: formattedString.FormattedString;
+        formattedText: FormattedString;
 
         /**
          * Called for every child element declared in xml.
@@ -47,7 +46,7 @@
         _addChildFromBuilder(name: string, value: any): void;
 
         //@private
-        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
+        _onTextPropertyChanged(value: string): void;
         _setFormattedTextPropertyToNative(value: any): void;
         /**
          * @private
@@ -56,4 +55,7 @@
         _requestLayoutOnTextChanged(): void;
         //@endprivate
     }
+
+    export let textProperty: Property<TextBase, string>;
+    export let formattedTextProperty: Property<TextBase, FormattedString>;
 }

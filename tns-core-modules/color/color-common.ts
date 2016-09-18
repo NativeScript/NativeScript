@@ -14,6 +14,9 @@ export class Color implements definition.Color {
     private _argb: number;
     private _name: string;
 
+    constructor(color: number);
+    constructor(color: string);
+    constructor(a: number, r: number, g: number, b: number);
     constructor() {
         if (arguments.length === 1) {
             var arg = arguments[0];

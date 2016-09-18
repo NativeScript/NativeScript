@@ -2,25 +2,15 @@
  * Contains the Button class, which represents a standard button widget.
  */
 declare module "ui/button" {
-    import observable = require("data/observable");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import view = require("ui/core/view");
-    import formattedString = require("text/formatted-string");
+    import {EventData} from "data/observable";
+    import {Property} from "ui/core/properties";
+    import {TextBase} from "ui/text-base";
+    import {FormattedString, FormattedStringView} from "text/formatted-string";
 
     /**
      * Represents a standard Button widget.
      */
-    export class Button extends view.View implements formattedString.FormattedStringView, view.AddChildFromBuilder {
-        /**
-         * Represents the observable property backing the text property of each Button instance.
-         */
-        public static textProperty: dependencyObservable.Property;
-
-        /**
-         * Dependency property used to support binding operations for the text wrapping of the current button instance.
-         */
-        public static textWrapProperty: dependencyObservable.Property;
-
+    export class Button extends TextBase {
         /**
          * String value used when hooking to tap event.
          */
@@ -37,19 +27,9 @@ declare module "ui/button" {
         ios: any /* UIButton */;
 
         /**
-         * Gets or sets the text (label) displayed by this instance.
-         */
-        text: string;
-
-        /**
          * Gets or sets whether the Button wraps text or not.
          */
         textWrap: boolean;
-
-        /**
-         * Gets or sets the formatted text (label) displayed by this instance.
-         */
-        formattedText: formattedString.FormattedString;
 
         /**
          * Gets or sets text whiteSpace.
@@ -63,24 +43,11 @@ declare module "ui/button" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a tap event occurs.
          */
-        on(event: "tap", callback: (args: observable.EventData) => void, thisArg?: any);
-
-        /**
-         * Called for every child element declared in xml.
-         * This method will add a child element (value) to current element.
-         * @param name - Name of the element.
-         * @param value - Value of the element.
-         */
-        _addChildFromBuilder(name: string, value: any): void;
-
-        //@private
-        _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData): void;
-        _setFormattedTextPropertyToNative(value: any): void;
-        //@endprivate
+        on(event: "tap", callback: (args: EventData) => void, thisArg?: any);
     }
 }

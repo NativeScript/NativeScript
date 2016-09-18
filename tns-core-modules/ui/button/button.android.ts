@@ -1,53 +1,46 @@
-﻿import common = require("./button-common");
-import utils = require("utils/utils")
-import dependencyObservable = require("ui/core/dependency-observable");
-import style = require("ui/styling/style");
-import { TextBaseStyler as TBS } from "ui/text-base/text-base-styler";
-import {device} from "platform";
-import {GestureTypes, TouchGestureEventData, TouchAction} from "ui/gestures";
-import {PseudoClassHandler} from "ui/core/view";
+﻿import { ButtonBase, textProperty, formattedTextProperty, FormattedString } from "./button-common";
+import { device } from "platform";
 
-let styleHandlersInitialized: boolean;
 
-global.moduleMerge(common, exports);
+export * from "./button-common";
 
-export class Button extends common.Button {
-    private _android: android.widget.Button;
-    private _isPressed: boolean;
-    private _highlightedHandler: (args: TouchGestureEventData) => void;
+@Implements([android.view.View.OnClickListener])
+class ClickListener implements android.view.View.OnClickListener {
+    constructor(public owner: WeakRef<Button>) { }
 
-    constructor() {
-        super();
-
-        this._isPressed = false;
-        if(!styleHandlersInitialized) {
-            styleHandlersInitialized = true;
-            ButtonStyler.registerHandlers();
-        }
+    public onClick(v: android.view.View): void {
+        this.owner.get()._emit(ButtonBase.tapEvent);
     }
+}
+
+@Implements([android.view.View.OnTouchListener])
+class TouchListener implements android.view.View.OnTouchListener {
+    constructor(public owner: WeakRef<Button>) { }
+
+    public onTouch(v: android.view.View, event: android.view.MotionEvent): boolean {
+        if (event.getAction() === 0) { // down
+            this.owner.get()._goToVisualState("highlighted");
+        }
+        else if (event.getAction() === 1) { // up
+            this.owner.get()._goToVisualState("normal");
+        }
+        return false;
+    }
+}
+
+export class Button extends ButtonBase {
+    nativeView: android.widget.Button;
+    private _isPressed: boolean = false;
+    private _transformationMethod;
 
     get android(): android.widget.Button {
-        return this._android;
+        return this.nativeView;
     }
 
     public _createUI() {
-
-        var that = new WeakRef(this);
-
-        this._android = new android.widget.Button(this._context);
-
-        this._android.setOnClickListener(new android.view.View.OnClickListener(
-            <utils.Owned & android.view.View.IOnClickListener>{
-                get owner() {
-                    return that.get();
-                },
-
-                onClick: function (v) {
-                    if (this.owner) {
-                        this.owner._emit(common.Button.tapEvent);
-                    }
-                }
-            }));
+        this.nativeView = new android.widget.Button(this._context);
+        this.nativeView.setOnClickListener(new ClickListener(new WeakRef(this)));
+        this.nativeView.setOnTouchListener(new TouchListener(new WeakRef(this)));
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -56,24 +49,37 @@ export class Button extends common.Button {
         }
     }
 
-    private _transformationMethod;
-    public _setFormattedTextPropertyToNative(value) {
-        var newText = value ? value._formattedText : null;
-        if (this.android) {
-            if (newText) {
-                if (!this._transformationMethod) {
-                    this._transformationMethod = this.android.getTransformationMethod();
-                }
-                this.android.setTransformationMethod(null);
-            } else {
-                if (this._transformationMethod && !this.android.getTransformationMethod()) {
-                    this.android.setTransformationMethod(this._transformationMethod);
-                }
-            }
 
-            this.android.setText(newText);
-        }
+    public _setFormattedTextPropertyToNative(value) {
+
     }
+
+    get [textProperty.native](): string {
+        return this.nativeView.getText();
+    }
+    set [textProperty.native](value: string) {
+        this.nativeView.setText(value);
+    }
+
+    get [formattedTextProperty.native](): string {
+        return this.nativeView.getText();
+    }
+    set [formattedTextProperty.native](value: FormattedString) {
+        let newText = value ? value._formattedText : null;
+        if (newText) {
+            if (!this._transformationMethod) {
+                this._transformationMethod = this.android.getTransformationMethod();
+            }
+            this.android.setTransformationMethod(null);
+        } else {
+            if (this._transformationMethod && !this.android.getTransformationMethod()) {
+                this.android.setTransformationMethod(this._transformationMethod);
+            }
+        }
+
+        this.android.setText(newText);
+    }
+}
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
     _updateHandler(subscribe: boolean) {
@@ -95,47 +101,3 @@ export class Button extends common.Button {
     }
 }
 
-export class ButtonStyler implements style.Styler {
-    public static registerHandlers() {
-        // !!! IMPORTANT !!! This was moved here because of the following bug: https://github.com/NativeScript/NativeScript/issues/1902
-        // If there is no TextBase on the Page, the TextBaseStyler.registerHandlers
-        // method was never called because the file it is called from was never required.
-
-        // Register the same stylers for Button.
-        // It also derives from TextView but is not under TextBase in our View hierarchy.
-        var TextBaseStyler = <any>TBS;
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setColorProperty,
-            TextBaseStyler.resetColorProperty,
-            TextBaseStyler.getNativeColorValue), "Button");
-
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setFontInternalProperty,
-            TextBaseStyler.resetFontInternalProperty,
-            TextBaseStyler.getNativeFontInternalValue), "Button");
-
-        style.registerHandler(style.textAlignmentProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextAlignmentProperty,
-            TextBaseStyler.resetTextAlignmentProperty,
-            TextBaseStyler.getNativeTextAlignmentValue), "Button");
-
-        style.registerHandler(style.textDecorationProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextDecorationProperty,
-            TextBaseStyler.resetTextDecorationProperty), "Button");
-
-        style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextTransformProperty,
-            TextBaseStyler.resetTextTransformProperty), "Button");
-
-        style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setWhiteSpaceProperty,
-            TextBaseStyler.resetWhiteSpaceProperty), "Button");
-
-        if (parseInt(device.sdkVersion, 10) >= 21) {
-            style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
-                TextBaseStyler.setLetterSpacingProperty,
-                TextBaseStyler.resetLetterSpacingProperty,
-                TextBaseStyler.getLetterSpacingProperty), "Button");
-        }
-    }
-}

@@ -2,8 +2,8 @@
  * Contains the Border class, which represents a UI border component.
  */
 declare module "ui/border" {
-    import {ContentView} from "ui/content-view";
     import {Color} from "color";
+    import {ContentView} from "ui/content-view";
 
     /**
      * Represents a UI border component.

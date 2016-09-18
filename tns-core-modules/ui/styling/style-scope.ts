@@ -1,43 +1,51 @@
-﻿import view = require("ui/core/view");
+﻿import {View} from "ui/core/view";
 import trace = require("trace");
 import cssSelector = require("ui/styling/css-selector");
 import cssParser = require("css");
 import application = require("application");
-import * as typesModule from "utils/types";
-import * as fileSystemModule from "file-system";
 
-import keyframeAnimation = require("ui/animation/keyframe-animation");
+import {KeyframeAnimationInfo, KeyframeAnimation} from "ui/animation/keyframe-animation";
 import cssAnimationParser = require("./css-animation-parser");
-import observable = require("ui/core/dependency-observable");
+// import observable = require("ui/core/dependency-observable");
 
-import { convertString } from "utils/utils";
-import { RuleSet, Node, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap } from "ui/styling/css-selector";
-import { StyleProperty, withStyleProperty } from "ui/styling/style-property";
-import { getSpecialPropertySetter } from "ui/builder/special-properties";
+import {convertString} from "utils/utils";
+import {RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap } from "ui/styling/css-selector";
+// import {StyleProperty, withStyleProperty} from "ui/styling/style-property";
+// import {getSpecialPropertySetter} from "ui/builder/special-properties";
+// import * as typesModule from "utils/types";
+// import * as utilsModule from "utils/utils";
+// import * as fileSystemModule from "file-system";
 
 const animationsSymbol: symbol = Symbol("animations");
 
-var types: typeof typesModule;
+let types: typeof typesModule;
 function ensureTypes() {
     if (!types) {
         types = require("utils/types");
     }
 }
 
-var fs: typeof fileSystemModule;
+let utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+let fs: typeof fileSystemModule;
 function ensureFS() {
     if (!fs) {
         fs = require("file-system");
     }
 }
 
-var pattern: RegExp = /('|")(.*?)\1/;
+let pattern: RegExp = /('|")(.*?)\1/;
 
 export class CssState {
-    constructor(private view: view.View, private match: SelectorsMatch<view.View>) {
+    constructor(private view: View, private match: SelectorsMatch<View>) {
     }
 
-    public get changeMap(): ChangeMap<view.View> {
+    public get changeMap(): ChangeMap<View> {
         return this.match.changeMap;
     }
 
@@ -98,10 +106,10 @@ export class StyleScope {
         this.ensureSelectors();
     }
 
-    public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
+    public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
         let keyframes = this._keyframes[animationName];
         if (keyframes !== undefined) {
-            let animation = new keyframeAnimation.KeyframeAnimationInfo();
+            let animation = new KeyframeAnimationInfo();
             animation.keyframes = cssAnimationParser.CssAnimationParser.keyframesArrayFromCSS(keyframes);
             return animation;
         }
@@ -182,7 +190,7 @@ export class StyleScope {
         return true;
     }
 
-    public applySelectors(view: view.View): void {
+    public applySelectors(view: View): void {
         this.ensureSelectors();
 
         let state = this._selectors.query(view);
@@ -226,7 +234,7 @@ export class StyleScope {
         }
     }
 
-    public getAnimations(ruleset: RuleSet): keyframeAnimation.KeyframeAnimationInfo[] {
+    public getAnimations(ruleset: RuleSet): KeyframeAnimationInfo[] {
         return ruleset[animationsSymbol];
     }
 }
@@ -251,7 +259,7 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     return null;
 }
 
-export function applyInlineSyle(view: view.View, style: string) {
+export function applyInlineSyle(view: View, style: string) {
     try {
         let syntaxTree = cssParser.parse("local { " + style + " }", undefined);
         let filteredDeclarations = <cssParser.Declaration[]>(<cssParser.Rule[]>syntaxTree.stylesheet.rules.filter(isRule))[0].declarations.filter(isDeclaration);
@@ -271,52 +279,71 @@ function isKeyframe(node: cssParser.Node): node is cssParser.Keyframes {
     return node.type === "keyframes";
 }
 
-function applyDescriptors(view: view.View, ruleset: RuleSet): void {
-    let modifier = observable.ValueSource.Css;
-
-    ruleset.declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
-        if (types.isString(property)) {
-            const propertyName = <string>property;
-            let attrHandled = false;
-            let specialSetter = getSpecialPropertySetter(propertyName);
-
-            if (!attrHandled && specialSetter) {
-                specialSetter(view, value);
-                attrHandled = true;
-            }
-
-            if (!attrHandled && propertyName in view) {
-                view[propertyName] = convertString(value);
-            }
+function applyDescriptors(view: View, ruleset: RuleSet): void {
+    let style = view.style;
+    ruleset.declarations.forEach(d =>  {
+        let name = `css-${d.property}`;
+        if (name in style) {
+            style[name] = d.value;
         } else {
-            const resolvedProperty = <StyleProperty>property;
-            try {
-                view.style._setValue(resolvedProperty, value, modifier);
-            } catch (ex) {
-                if (trace.enabled) {
-                    trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
-                }
-            }
+            view[name] = d.value;
         }
-    }));
+    });
 
-    let ruleAnimations: keyframeAnimation.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
-    if (ruleAnimations && view.isLoaded && view._nativeView !== undefined) {
+    // let modifier = observable.ValueSource.Css;
+    // ruleset.declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
+    //     if (types.isString(property)) {
+    //         const propertyName = <string>property;
+    //         let attrHandled = false;
+    //         let specialSetter = getSpecialPropertySetter(propertyName);
+
+    //         if (!attrHandled && specialSetter) {
+    //             specialSetter(view, value);
+    //             attrHandled = true;
+    //         }
+
+    //         if (!attrHandled && propertyName in view) {
+    //             view[propertyName] = convertString(value);
+    //         }
+    //     } else {
+    //         const resolvedProperty = <StyleProperty>property;
+    //         try {
+    //             view.style._setValue(resolvedProperty, value, modifier);
+    //         } catch (ex) {
+    //             if (trace.enabled) {
+    //                 trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+    //             }
+    //         }
+    //     }
+    // }));
+
+    let ruleAnimations: KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+    if (ruleAnimations && view.isLoaded && view.nativeView !== undefined) {
         for (let animationInfo of ruleAnimations) {
-            let animation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo, modifier);
+            let animation = KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
             if (animation) {
                 view._registerAnimation(animation);
                 animation.play(view)
-                    .then(() => { view._unregisterAnimation(animation);  })
+                    .then(() => { view._unregisterAnimation(animation); })
                     .catch((e) => { view._unregisterAnimation(animation); });
             }
         }
     }
 }
 
-function applyInlineStyle(view: view.View, declarations: cssSelector.Declaration[]): void {
-    declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
-        const resolvedProperty = <StyleProperty>property;
-        view.style._setValue(resolvedProperty, value, observable.ValueSource.Local);
-    }));
+function applyInlineStyle(view: View, declarations: cssSelector.Declaration[]): void {
+    let style = view.style;
+    declarations.forEach(d =>  {
+        let name = d.property;
+        if (name in style) {
+            style[name] = d.value;
+        } else {
+            view[name] = d.value;
+        }
+    });
+
+    // declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
+    //     const resolvedProperty = <StyleProperty>property;
+    //     view.style._setValue(resolvedProperty, value, observable.ValueSource.Local);
+    // }));
 }

@@ -26,4 +26,4 @@ export class Color extends common.Color {
 
         return intVal;
     }
-} 
+}

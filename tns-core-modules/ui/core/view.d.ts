@@ -1,12 +1,15 @@
 declare module "ui/core/view" {
-    import style = require("ui/styling");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import proxy = require("ui/core/proxy");
+    import {Style} from "ui/styling/style";
+    import {Observable} from "data/observable";
+    // import proxy = require("ui/core/proxy");
     import gestures = require("ui/gestures");
     import color = require("color");
-    import observable = require("data/observable");
+    import {EventData} from "data/observable";
     import animation = require("ui/animation");
     import keyframeAnimationModule = require("ui/animation/keyframe-animation");
+    import {Property} from "ui/core/properties";
+    import {BindingOptions} from "ui/core/bindable";
+    import {ViewBase} from "ui/core/view-base";
 
     /**
      * Gets a child view by id.
@@ -33,7 +36,7 @@ declare module "ui/core/view" {
 
     export function isEventOrGesture(name: string, view: View): boolean;
 
-    export function PseudoClassHandler(... pseudoClasses: string[]): MethodDecorator;
+    export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
     /**
      * The Point interface describes a two dimensional location. 
@@ -44,7 +47,7 @@ declare module "ui/core/view" {
          * Represents the x coordinate of the location.
          */
         x: number;
-        
+
         /**
          * Represents the y coordinate of the location.
          */
@@ -60,7 +63,7 @@ declare module "ui/core/view" {
          * Represents the width of the size.
          */
         width: number;
-        
+
         /**
          * Represents the height of the size.
          */
@@ -71,7 +74,28 @@ declare module "ui/core/view" {
      * This class is the base class for all UI components. 
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
-    export class View extends proxy.ProxyObject implements ApplyXmlAttributes {
+    export class View extends ViewBase implements ApplyXmlAttributes {
+
+        /**
+         * Get the nativeView created for this object.
+         */
+        public nativeView: any;
+
+        /**
+         * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
+         */
+        public android: any;
+
+        /**
+         * Gets the ios-specific native instance that lies behind this proxy. Will be available if running on an iOS platform.
+         */
+        public ios: any;
+
+        /**
+         * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
+         */
+        bindingContext: any;
+
         /**
          * Gets or sets the border color of the view.
          */
@@ -165,32 +189,32 @@ declare module "ui/core/view" {
         /**
          * Represents the observable property backing the automationText property of each View.
          */
-        public static automationTextProperty: dependencyObservable.Property;
+        // public static automationTextProperty: dependencyObservable.Property;
 
         /**
          * Represents the observable property backing the id property of each View.
          */
-        public static idProperty: dependencyObservable.Property;
+        // public static idProperty: dependencyObservable.Property;
 
         /**
          * [Deprecated. Please use className instead.] Represents the observable property backing the cssClass property of each View.
          */
-        public static cssClassProperty: dependencyObservable.Property;
+        // public static cssClassProperty: dependencyObservable.Property;
 
         /**
          * Represents the observable property backing the className property of each View.
          */
-        public static classNameProperty: dependencyObservable.Property;
+        // public static classNameProperty: dependencyObservable.Property;
 
         /**
          * Represents the observable property backing the isEnabled property of each View.
          */
-        public static isEnabledProperty: dependencyObservable.Property;
+        // public static isEnabledProperty: dependencyObservable.Property;
 
         /**
          * Represents the observable property backing the isUserInteractionEnabled property of each View.
          */
-        public static isUserInteractionEnabledProperty: dependencyObservable.Property;
+        // public static isUserInteractionEnabledProperty: dependencyObservable.Property;
 
         //----------Style property shortcuts----------
 
@@ -198,7 +222,7 @@ declare module "ui/core/view" {
          * Gets or sets the color of the view.
          */
         color: color.Color;
-        
+
         /**
          * Gets or sets the background color of the view.
          */
@@ -208,7 +232,7 @@ declare module "ui/core/view" {
          * Gets or sets the background image of the view.
          */
         backgroundImage: string;
-                
+
         /**
          * Gets or sets the minimum width the view may grow to.
          */
@@ -273,7 +297,7 @@ declare module "ui/core/view" {
          * Gets or sets the opacity style property.
          */
         opacity: number;
-        
+
         //----------Style property shortcuts----------
 
         /**
@@ -335,11 +359,6 @@ declare module "ui/core/view" {
          * Gets or sets the CSS class name for this view.
          */
         className: string;
-
-        /**
-         * Gets the style object associated to this view.
-         */
-        style: style.Style;
 
         /**
          * Gets the View instance that parents this view. This property is read-only.
@@ -443,7 +462,7 @@ declare module "ui/core/view" {
          * @param measuredHeight	The measured height that the parent layout specifies for this view.
          */
         public static measureChild(parent: View, child: View, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number };
-        
+
         /**
          * Layout a child by taking into account its margins, horizontal and vertical alignments and a given bounds.
          * @param parent    This parameter is not used. You can pass null.
@@ -512,31 +531,31 @@ declare module "ui/core/view" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any);
-        
+        on(eventNames: string | gestures.GestureTypes, callback: (data: EventData) => void, thisArg?: any);
+
         /**
          * Removes listener(s) for the specified event name.
          * @param eventNames Comma delimited names of the events or gesture types the specified listener is associated with.
          * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
          * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
          */
-        off(eventNames: string | gestures.GestureTypes, callback?: (data: observable.EventData) => void, thisArg?: any);
+        off(eventNames: string | gestures.GestureTypes, callback?: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a loaded event occurs.
          */
-        on(event: "loaded", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
 
         /**
          * Raised when an unloaded event occurs.
          */
-        on(event: "unloaded", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
 
         /**
          * Animates one or more properties of the view based on the supplied options. 
          */
         public animate(options: animation.AnimationDefinition): animation.AnimationPromise;
-        
+
         /**
          * Creates an Animation object based on the supplied options. 
          */
@@ -575,7 +594,7 @@ declare module "ui/core/view" {
          * A widget can call this method to discard mathing css pseudo class.
          */
         public deletePseudoClass(name: string): void;
-        
+
         // Lifecycle events
         onLoaded(): void;
         onUnloaded(): void;
@@ -583,7 +602,7 @@ declare module "ui/core/view" {
 
         _addView(view: View, atIndex?: number);
         _propagateInheritableProperties(view: View);
-        _inheritProperties(parentView: View);
+        // _inheritProperties(parentView: View);
         _removeView(view: View);
         _context: any /* android.content.Context */;
 
@@ -598,10 +617,18 @@ declare module "ui/core/view" {
         public _applyXmlAttribute(attribute: string, value: any): boolean;
 
         //@private
+        /**
+         * A property has changed on the native side directly - e.g. the user types in a TextField.
+         */
+        public nativePropertyChanged(property: Property<any, any>, newValue: any): void;
+        public bind(options: BindingOptions, source: any): void;
+        public unbind(property: string): void;
+
+        isVisible: boolean;
         isLayoutRequired: boolean;
         _parentChanged(oldParent: View): void;
         _gestureObservers: any;
-        _isInheritedChange(): boolean;
+        // _isInheritedChange(): boolean;
         _domId: number;
 
         _cssState: any /* "ui/styling/style-scope" */;
@@ -628,7 +655,7 @@ declare module "ui/core/view" {
         _createUI(): void;
 
         _shouldApplyStyleHandlers();
-        _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata);
+        // _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata);
 
         _updateLayout(): void;
 
@@ -649,9 +676,8 @@ declare module "ui/core/view" {
 
         _goToVisualState(state: string);
         _nativeView: any;
-        _isVisible: boolean;
         _setNativeViewFrame(nativeView: any, frame: any): void;
-        _onStylePropertyChanged(property: dependencyObservable.Property): void;
+        // _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
     }
 

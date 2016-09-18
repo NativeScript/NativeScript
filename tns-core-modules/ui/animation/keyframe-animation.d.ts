@@ -1,6 +1,6 @@
 declare module "ui/animation/keyframe-animation" {
 
-import view = require("ui/core/view");
+    import {View} from "ui/core/view";
 
     export interface KeyframeDeclaration {
         property: string;
@@ -84,7 +84,7 @@ import view = require("ui/core/view");
         /**
          * Plays the animation.
          */
-        public play: (view: view.View) => Promise<void>;
+        public play: (view: View) => Promise<void>;
 
         /**
          * Cancels a playing animation.
@@ -94,6 +94,6 @@ import view = require("ui/core/view");
         /**
          * Creates a keyframe animation from animation definition.
          */
-        public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number);
+        public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo);
     }
 }
