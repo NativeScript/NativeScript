@@ -101,16 +101,16 @@ export module ad {
             }
         }
 
-        let leftPadding = v.style.paddingLeft ?  v.style.paddingLeft : nativeView.getPaddingLeft() / density; 
-        let topPadding = v.style.paddingTop ? v.style.paddingTop : nativeView.getPaddingTop() / density; 
-        let rightPadding = v.style.paddingRight ? v.style.paddingRight : nativeView.getPaddingRight() / density;         
-        let bottomPadding = v.style.paddingBottom ? v.style.paddingBottom : nativeView.getPaddingBottom() / density; 
+        let leftPadding = Math.round(((background.borderLeftWidth || 0) + (v.style.paddingLeft || 0)) * density); 
+        let topPadding = Math.round(((background.borderTopWidth || 0) + (v.style.paddingTop || 0)) * density); 
+        let rightPadding = Math.round(((background.borderRightWidth || 0) + (v.style.paddingRight || 0)) * density);         
+        let bottomPadding = Math.round(((background.borderBottomWidth || 0) + (v.style.paddingBottom || 0)) * density); 
 
         nativeView.setPadding(
-            Math.round((background.borderLeftWidth + leftPadding) * density),
-            Math.round((background.borderTopWidth + topPadding) * density),
-            Math.round((background.borderRightWidth + rightPadding) * density),
-            Math.round((background.borderBottomWidth + bottomPadding) * density)
+            leftPadding,
+            topPadding,
+            rightPadding,
+            bottomPadding
         );
     }
 }
