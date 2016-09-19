@@ -3,7 +3,7 @@ nav-title: "HtmlView How-To"
 title: "html-view"
 environment: nativescript
 description: "Examples for using HtmlView"
-previous_url: /ApiReference/ui/html-view/HOW-TO
+previous_url: /ApiReference/ui/html-view/HOW-TO,/cookbook/ui/htm-view
 ---
 # HtmlView
 Using a HtmlView requires the html-view module.
