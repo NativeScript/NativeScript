@@ -4,6 +4,7 @@ import common = require("./image-source-common");
 import * as utilsModule from "utils/utils";
 import * as fileSystemModule from "file-system";
 import * as enumsModule from "ui/enums";
+import * as imageAssetModule from "image-asset";
 
 global.moduleMerge(common, exports);
 
@@ -32,6 +33,21 @@ export class ImageSource implements definition.ImageSource {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
 
+    public fromAsset(asset: imageAssetModule.ImageAsset): Promise<definition.ImageSource> {
+        return new Promise<definition.ImageSource>((resolve, reject) => {
+            asset.getImageAsync((image, err) => {
+                if (image) {
+                    this.setRotationAngleFromFile(asset.android);
+                    this.setNativeSource(image);
+                    resolve(this);
+                }
+                else {
+                    reject(err);
+                }
+            });
+        });
+    }
+
     public loadFromResource(name: string): boolean {
         this.android = null;
 
@@ -58,6 +74,24 @@ export class ImageSource implements definition.ImageSource {
         });
     }
 
+    private setRotationAngleFromFile(filename: string) {
+        this.rotationAngle = 0;
+        let ei = new android.media.ExifInterface(filename);
+        let orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+
+        switch (orientation) {
+            case android.media.ExifInterface.ORIENTATION_ROTATE_90:
+                this.rotationAngle = 90;
+                break;
+            case android.media.ExifInterface.ORIENTATION_ROTATE_180:
+                this.rotationAngle = 180;
+                break;
+            case android.media.ExifInterface.ORIENTATION_ROTATE_270:
+                this.rotationAngle = 270;
+                break;
+        }
+    }
+
     public loadFromFile(path: string): boolean {
         ensureFS();
 
@@ -66,7 +100,9 @@ export class ImageSource implements definition.ImageSource {
             fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
         }
 
+        this.setRotationAngleFromFile(fileName);
         this.android = android.graphics.BitmapFactory.decodeFile(fileName, null);
+
         return this.android != null;
     }
 
@@ -153,6 +189,15 @@ export class ImageSource implements definition.ImageSource {
         }
 
         return NaN;
+    }
+
+    private _rotationAngle: number;
+    get rotationAngle(): number {
+        return this._rotationAngle;
+    }
+
+    set rotationAngle(value: number) {
+        this._rotationAngle = value;
     }
 }
 
