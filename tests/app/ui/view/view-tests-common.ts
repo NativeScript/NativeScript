@@ -113,6 +113,12 @@ export var test_domId_IsUnique = function () {
     TKUnit.assert(btn._domId !== topframe.currentPage._domId);
 }
 
+export var test_Id_WillNotCrash_WhenSetToNumber = function () {
+    var btn = new button.Button();
+    btn.id = "1";
+    TKUnit.assert(btn.id === "1");
+}
+
 export var test_event_LoadedUnloaded_IsRaised = function () {
     var test = function (views: Array<viewModule.View>) {
         var i;
