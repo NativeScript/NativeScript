@@ -354,6 +354,11 @@
          * The Joint Photographic Experts Group (JPEG) image format.
          */
         export var jpeg: string;
+
+        /**
+         * The Joint Photographic Experts Group (JPEG) image format.
+         */
+        export var jpg: string;
     }
 
     /**

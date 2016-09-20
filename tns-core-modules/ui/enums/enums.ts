@@ -138,6 +138,7 @@ export module IOSActionItemPosition {
 export module ImageFormat {
     export var png: string = "png";
     export var jpeg: string = "jpeg";
+    export var jpg: string = "jpg";
 }
 
 export module FontStyle {
