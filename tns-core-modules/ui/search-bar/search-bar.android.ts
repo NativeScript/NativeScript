@@ -278,6 +278,8 @@ export class SearchBarStyler implements style.Styler {
             SearchBarStyler.setFontInternalProperty,
             SearchBarStyler.resetFontInternalProperty,
             SearchBarStyler.getNativeFontInternalValue), "SearchBar");
+
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "SearchBar");
     }
 
     private static _getSearchViewTextView(bar: android.widget.SearchView): android.widget.TextView {

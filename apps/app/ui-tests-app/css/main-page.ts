@@ -34,6 +34,8 @@ export function pageLoaded(args: EventData) {
     examples.set("image-border", "css/image-border");
     examples.set("layouts-border-overlap", "css/layouts-border-overlap");
     examples.set("measure-tests", "css/measure-tests");
+    examples.set("all-uniform-border", "css/all-uniform-border");
+    examples.set("all-non-uniform-border", "css/all-non-uniform-border");
     //examples.set("border-playground", "css/border-playground");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);

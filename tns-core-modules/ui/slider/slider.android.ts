@@ -127,21 +127,6 @@ export class SliderStyler implements style.Styler {
             SliderStyler.setBackgroundAndBorderProperty,
             SliderStyler.resetBackgroundAndBorderProperty), "Slider");
 
-        style.registerHandler(style.borderTopColorProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderRightColorProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderBottomColorProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderLeftColorProperty, style.ignorePropertyHandler, "Slider");
-
-        style.registerHandler(style.borderTopWidthProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderRightWidthProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderBottomWidthProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderLeftWidthProperty, style.ignorePropertyHandler, "Slider");
-        
-        style.registerHandler(style.borderTopLeftRadiusProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderTopRightRadiusProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderBottomRightRadiusProperty, style.ignorePropertyHandler, "Slider");
-        style.registerHandler(style.borderBottomLeftRadiusProperty, style.ignorePropertyHandler, "Slider");
-
         style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Slider");
     }
 }

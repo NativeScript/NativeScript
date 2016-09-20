@@ -78,21 +78,6 @@ export class ProgressStyler implements style.Styler {
             ProgressStyler.setBackgroundAndBorderProperty,
             ProgressStyler.resetBackgroundAndBorderProperty), "Progress");
 
-        style.registerHandler(style.borderTopColorProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderRightColorProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderBottomColorProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderLeftColorProperty, style.ignorePropertyHandler, "Progress");
-
-        style.registerHandler(style.borderTopWidthProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderRightWidthProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderBottomWidthProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderLeftWidthProperty, style.ignorePropertyHandler, "Progress");
-        
-        style.registerHandler(style.borderTopLeftRadiusProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderTopRightRadiusProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderBottomRightRadiusProperty, style.ignorePropertyHandler, "Progress");
-        style.registerHandler(style.borderBottomLeftRadiusProperty, style.ignorePropertyHandler, "Progress");
-        
         style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Progress");
     }
 }
