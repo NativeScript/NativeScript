@@ -160,7 +160,7 @@ function getTargetFormat(format: string): android.graphics.Bitmap.CompressFormat
     ensureEnums();
 
     switch (format) {
-        case enums.ImageFormat.jpeg:
+        case enums.ImageFormat.jpeg || enums.ImageFormat.jpg:
             return android.graphics.Bitmap.CompressFormat.JPEG;
         default:
             return android.graphics.Bitmap.CompressFormat.PNG;

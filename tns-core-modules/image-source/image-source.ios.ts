@@ -165,10 +165,9 @@ function getImageData(instance: UIImage, format: string, quality = 1.0): NSData 
         case enums.ImageFormat.png: // PNG
             data = UIImagePNGRepresentation(instance);
             break;
-        case enums.ImageFormat.jpeg: // JPEG
+        case enums.ImageFormat.jpeg || enums.ImageFormat.jpg: // JPEG
             data = UIImageJPEGRepresentation(instance, quality);
             break;
-
     }
     return data;
 }
