@@ -107,7 +107,6 @@ export class SwitchStyler implements style.Styler {
             SwitchStyler.resetBackgroundColorProperty,
             SwitchStyler.getBackgroundColorProperty), "Switch");
 
-        // Ignore the default backgroundInternalProperty handler
         style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Switch");
     }
 }

@@ -76,6 +76,8 @@ export class ProgressStyler implements style.Styler {
             ProgressStyler.setBackgroundColorProperty,
             ProgressStyler.resetBackgroundColorProperty,
             ProgressStyler.getBackgroundColorProperty), "Progress");
+
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Progress");
     }
 }
 
