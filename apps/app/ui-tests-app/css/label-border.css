@@ -9,7 +9,7 @@ Label {
 }
 
 #s1 {
-    border-width: 5; border-color: red;
+    border-width: 5; border-color: rgba(255,0,0,1);
 }
 
 #s2 {
@@ -25,7 +25,7 @@ Label {
 }
 
 #s5 {
-    border-width: 5 10 15 20; border-color: red;
+    border-width: 5 10 15 20; border-color: rgb(255, 0, 0); 
 }
 
 #s6 {
