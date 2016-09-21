@@ -81,6 +81,14 @@ export function test_setting_borderColor_property_from_CSS_is_applied_to_Style()
     test_property_from_CSS_is_applied_to_style("borderColor", "border-color", new color.Color("#FF0000"), "#FF0000");
 }
 
+export function test_setting_borderColorRGB_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderColor", "border-color", new color.Color("#FF0000"), "rgb(255, 0, 0)");
+}
+
+export function test_setting_borderColorRGBA_property_from_CSS_is_applied_to_Style() {
+    test_property_from_CSS_is_applied_to_style("borderColor", "border-color", new color.Color("#FF0000"), "rgba(255,0,0,1)");
+}
+
 export function test_setting_borderRadius_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", 20);
 }

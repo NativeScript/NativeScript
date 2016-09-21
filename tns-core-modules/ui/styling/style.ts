@@ -1613,6 +1613,11 @@ function parseBorderColor(value: any): definition.BorderColor {
     var result: definition.BorderColor = { top: undefined, right: undefined, bottom: undefined, left: undefined };
     try {
         if (types.isString(value)) {
+            if (value.indexOf("rgb") === 0){
+                result.top = result.right = result.bottom = result.left = new Color(value);
+                return result;    
+            }
+
             let arr = value.split(/[ ,]+/);
             if (arr.length === 1){
                 let arr0 = new Color(arr[0]);
@@ -1650,11 +1655,11 @@ function parseBorderColor(value: any): definition.BorderColor {
             }
         } 
         else if (value instanceof Color) {
-        result.top = result.right = result.bottom = result.left = value;
-    }
-    else {
-        result = value;
-    }
+            result.top = result.right = result.bottom = result.left = value;
+        }
+        else {
+            result = value;
+        }
     }
     catch(ex){
         if (trace.enabled) {
