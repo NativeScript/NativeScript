@@ -159,6 +159,12 @@ export class ActionBar extends common.ActionBar {
             barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
         }
 
+        if (item.text) {
+            barButtonItem.isAccessibilityElement = true;
+            barButtonItem.accessibilityLabel = item.text;
+            barButtonItem.accessibilityTraits = UIAccessibilityTraitButton;
+        }
+
         return barButtonItem;
     }
 
