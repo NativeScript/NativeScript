@@ -29,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/NativeScript/NativeScript/issues"
   },
-  "homepage": "https://github.com/NativeScript/NativeScript#readme"
+  "homepage": "https://github.com/NativeScript/NativeScript#readme",
+  "devDependencies": {
+    "typescript": "^2.0.3"
+  }
 }
