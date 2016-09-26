@@ -771,7 +771,7 @@ export class ViewStyler implements style.Styler {
             view.android.setZ(newValue);
 
             if (view.android instanceof android.widget.Button) {
-                view.android.setStateListAnimator(null);
+                (<any>view.android).setStateListAnimator(null);
             }
         }
     }

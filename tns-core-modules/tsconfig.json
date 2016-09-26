@@ -8,6 +8,9 @@
         "noImplicitAny": false,
         "noImplicitUseStrict": true,
         "experimentalDecorators": true,
-        "diagnostics": true
+        "diagnostics": true,
+        "lib": [
+            "es2016"
+        ]
     }
 }

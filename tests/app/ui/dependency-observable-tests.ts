@@ -254,7 +254,7 @@ export function test_DependencyObservable_get_set_AreOverriden() {
     TKUnit.assert(dO.get("test") === true, "DependencyObservable should override Observable.get");
 
     dO.set("test", false);
-    TKUnit.assert(dO.test === false, "DependencyObservable should override Observable.set");
+    TKUnit.assert(<any>dO.test === false, "DependencyObservable should override Observable.set");
 }
 
 export function test_DependencyObservable_getValue_setValue() {

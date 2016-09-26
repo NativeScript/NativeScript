@@ -33,7 +33,8 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     return new Promise<http.HttpResponse>((resolve, reject) => {
 
         try {
-            var debugRequest = domainDebugger.network && domainDebugger.network.create();
+            var network = domainDebugger.getNetwork();
+            var debugRequest = network && network.create();
 
             var urlRequest = NSMutableURLRequest.requestWithURL(
                 NSURL.URLWithString(options.url));
