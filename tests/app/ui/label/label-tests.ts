@@ -74,7 +74,9 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         else {
             this.waitUntilTestElementIsLoaded();
             actualNative = testLabel.android.getText();
-            android.util.Log.d("XXX", ((actualNative) ? actualNative.getClass().getName() : ""));
+            if (typeof actualNative !== 'string') {
+                android.util.Log.d("XXX", ((actualNative) ? actualNative.getClass().getName() : ""));
+            }
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
@@ -92,7 +94,9 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         else {
             this.waitUntilTestElementIsLoaded();
             actualNative = testLabel.android.getText();
-            android.util.Log.d("XXX", ((actualNative) ? actualNative.getClass().getName() : ""));
+            if (typeof actualNative !== 'string') {
+                android.util.Log.d("XXX", ((actualNative) ? actualNative.getClass().getName() : ""));
+            }
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
@@ -110,7 +114,9 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         else {
             this.waitUntilTestElementIsLoaded();
             actualNative = testLabel.android.getText();
-            android.util.Log.d("XXX", ((actualNative) ? actualNative.getClass().getName() : ""));
+            if (typeof actualNative !== 'string') {
+                android.util.Log.d("XXX", ((actualNative) ? actualNative.getClass().getName() : ""));
+            }
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
