@@ -82,7 +82,7 @@ tns run android --path tests
 ```
 
 ## Platform declarations
-To update the platform declarations you can run:
+To update the platform declarations (the ios.d.ts-es) you can run:
 ```
 npm install
 npm run dev-declarations

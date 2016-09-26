@@ -50,6 +50,7 @@
     "test-android": "tns run android --path tests --justlaunch",
     "test-ios": "tns run ios --path tests --justlaunch",
     "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
-    "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\""
+    "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
+    "prepublish": "echo \"If you are about to develop run:\nnpm run setup\nFor more information check DevelopmentWorkflow.md\""
   }
 }

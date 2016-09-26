@@ -10,22 +10,30 @@
         "experimentalDecorators": true,
         "diagnostics": true,
         "sourceMap": true,
-        "noLib": true
+        "lib": [
+            "es2016"
+        ]
     },
     "exclude": [
-        "node_modules",
-        "tns-platform-declarations/node_modules",
-        "tns-core-modules/node_modules",
+        "tns-platform-declarations/node_modules/",
+        "tns-platform-declarations/package/",
+        "tns-core-modules/node_modules/",
+        "tns-core-modules/package/",
         "tests/node_modules",
+        "tests/package/",
         "tests/platforms",
         "apps/node_modules",
+        "apps/package/",
         "apps/platforms",
+        "node_modules/",
+        "package/",
         "bin",
         "build",
         "Deploy",
         "out",
         "obj",
-        "**/references.d.ts",
+        "tns-platform-declarations/references.d.ts",
+        "tns-core-modules/references.d.ts",
         "tns-platform-declarations/ios/objc-x86_64/"
     ]
 }

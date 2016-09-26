@@ -3,10 +3,13 @@
         "module": "commonjs",
         "target": "es5",
         "experimentalDecorators": true,
-        "noLib": true
+        "lib": [
+            "es2016"
+        ]
     },
     "exclude": [
         "ios/objc-x86_64",
-        "node_modules"
+        "node_modules",
+        "package"
     ]
 }
