@@ -4,7 +4,8 @@
   "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
   "main": "",
   "scripts": {
-    "test": "tsc"
+    "test": "tsc",
+    "package-tag": "npm version $npm_package_version-$PACKAGE_VERSION --no-git-tag-version"
   },
   "repository": {
     "type": "git",
