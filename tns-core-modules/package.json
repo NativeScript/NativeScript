@@ -27,7 +27,7 @@
     "tns-core-modules-widgets": "next"
   },
   "devDependencies": {
-    "tns-platform-declarations": "next"
+    "tns-platform-declarations": "*"
   },
   "nativescript": {
     "platforms": {
