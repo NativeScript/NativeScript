@@ -1,6 +1,12 @@
 {
   "name": "tns-platform-declarations",
   "version": "2.4.0",
+  "nativescript": {
+    "platforms": {
+      "ios": "2.4.0",
+      "android": "2.4.0"
+    }
+  },
   "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
   "main": "",
   "scripts": {
