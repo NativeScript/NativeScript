@@ -3,7 +3,7 @@
         <Button class="s0" row="0" col="0" text="Button"/>
         <Label class="s0" row="0" col="1" text="Label"/>
         <TextField class="s0" row="0" col="2" text="TextField"/>
-        <TextView class="s0" row="1" col="0" text="TextView"/>
+        <TextView class="s0" row="1" col="0" text="TextView Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec blandit, tortor vitae imperdiet gravida, eros neque scelerisque sapien, vel ultricies turpis ipsum vitae nisi. Sed ut consequat magna, scelerisque malesuada elit. Proin posuere purus dolor, semper sagittis dolor tempus ut. Praesent lorem mauris, ultricies eu faucibus quis, auctor ut leo. Mauris tincidunt justo id urna malesuada, at dapibus orci tincidunt. Suspendisse sollicitudin eget lorem porttitor pharetra. Phasellus cursus mauris ut urna sollicitudin pharetra."/>
         <SearchBar class="s0" row="1" col="1" text="SearchBar"/>
         <Switch class="s0" row="1" col="2" checked="true"/>
         <Slider class="s0" row="2" col="0" minValue="0" maxValue="100" value="50"/>
