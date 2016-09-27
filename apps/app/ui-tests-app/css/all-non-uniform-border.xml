@@ -8,7 +8,7 @@
         <Switch class="s0" row="1" col="2" checked="true"/>
         <Slider class="s0" row="2" col="0" minValue="0" maxValue="100" value="50"/>
         <Progress class="s0" row="2" col="1" maxValue="100" value="50"/>
-        <ActivityIndicator class="s0" row="2" col="2" busy="true"/>
+        <ActivityIndicator class="s0" row="2" col="2" busy="false"/>
         <Image class="s0" row="3" col="0" src="~/ui-tests-app/image-view/gravatar.png" stretch="fill"/>
         <ListView class="s0" row="3" col="1" items="ListView"/>
         <HtmlView class="s0" row="3" col="2" html="<h1>HtmlView</h1>"/>
