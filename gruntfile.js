@@ -113,6 +113,7 @@ module.exports = function(grunt) {
             "!**/*.ios.d.ts",
             "!tns-core-modules.d.ts",
             "!tns-core-modules.es6.d.ts",
+            "!tns-core-modules.es2016.d.ts",
             "!tns-core-modules.base.d.ts",
             "!references.d.ts"
         ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
@@ -171,6 +172,7 @@ module.exports = function(grunt) {
         "!tns-core-modules/libjs.d.ts",
         "!tns-core-modules/lib.core.es6.d.ts",
         "!tns-core-modules/lib.dom.d.ts",
+        "!tns-core-modules.es2016.d.ts",
         "!tns-platform-declarations/**/*"
     ]);
     localCfg.srcTsdFiles = [
