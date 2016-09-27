@@ -33,6 +33,29 @@ export module ios {
         }
 
         // Borders
+
+        // Clear all borders
+        nativeView.layer.borderColor = undefined; 
+        nativeView.layer.borderWidth = 0;
+        nativeView.layer.cornerRadius = 0;
+        nativeView.clipsToBounds = true;
+
+        if (nativeView["topBorderLayer"]){
+            (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
+        }
+        
+        if (nativeView["rightBorderLayer"]){
+            (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
+        }
+        
+        if (nativeView["bottomBorderLayer"]){
+            (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
+        }
+        
+        if (nativeView["leftBorderLayer"]){
+            (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
+        }
+        
         if (background.hasUniformBorder()){
             let borderColor = background.getUniformBorderColor();
             if (borderColor && borderColor.ios){
@@ -43,37 +66,13 @@ export module ios {
             }
             nativeView.layer.borderWidth = background.getUniformBorderWidth();
             nativeView.layer.cornerRadius = background.getUniformBorderRadius();
-            nativeView.clipsToBounds = (nativeView.layer.cornerRadius > 0);
         }
         else { // Draw non-uniform borders
-            // Clear everything
-            nativeView.layer.borderColor = undefined; 
-            nativeView.layer.borderWidth = 0;
-            nativeView.layer.cornerRadius = 0;
-            nativeView.clipsToBounds = false;
-            
-            if (nativeView["topBorderLayer"]){
-                (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
-            }
-            
-            if (nativeView["rightBorderLayer"]){
-                (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
-            }
-            
-            if (nativeView["bottomBorderLayer"]){
-                (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
-            }
-            
-            if (nativeView["leftBorderLayer"]){
-                (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
-            }
-            
-            // Draw borders
-            let nativeViewBounds = {
-                left: nativeView.bounds.origin.x,
-                top: nativeView.bounds.origin.y,
-                bottom: nativeView.bounds.size.height,
-                right: nativeView.bounds.size.width
+            let nativeViewLayerBounds = {
+                left: nativeView.layer.bounds.origin.x,
+                top: nativeView.layer.bounds.origin.y,
+                bottom: nativeView.layer.bounds.size.height,
+                right: nativeView.layer.bounds.size.width
             };
 
             let top = background.borderTopWidth;
@@ -81,17 +80,17 @@ export module ios {
             let bottom = background.borderBottomWidth;
             let left = background.borderLeftWidth;
             
-            let lto: viewModule.Point = {x: nativeViewBounds.left, y: nativeViewBounds.top};// left-top-outside
-            let lti: viewModule.Point = {x: nativeViewBounds.left + left, y: nativeViewBounds.top + top}; // left-top-inside
+            let lto: viewModule.Point = {x: nativeViewLayerBounds.left, y: nativeViewLayerBounds.top};// left-top-outside
+            let lti: viewModule.Point = {x: nativeViewLayerBounds.left + left, y: nativeViewLayerBounds.top + top}; // left-top-inside
 
-            let rto: viewModule.Point = {x: nativeViewBounds.right, y: nativeViewBounds.top}; // right-top-outside
-            let rti: viewModule.Point = {x: nativeViewBounds.right - right, y: nativeViewBounds.top + top}; // right-top-inside
+            let rto: viewModule.Point = {x: nativeViewLayerBounds.right, y: nativeViewLayerBounds.top}; // right-top-outside
+            let rti: viewModule.Point = {x: nativeViewLayerBounds.right - right, y: nativeViewLayerBounds.top + top}; // right-top-inside
             
-            let rbo: viewModule.Point = {x: nativeViewBounds.right, y: nativeViewBounds.bottom}; // right-bottom-outside
-            let rbi: viewModule.Point = {x: nativeViewBounds.right - right, y: nativeViewBounds.bottom - bottom}; // right-bottom-inside
+            let rbo: viewModule.Point = {x: nativeViewLayerBounds.right, y: nativeViewLayerBounds.bottom}; // right-bottom-outside
+            let rbi: viewModule.Point = {x: nativeViewLayerBounds.right - right, y: nativeViewLayerBounds.bottom - bottom}; // right-bottom-inside
 
-            let lbo: viewModule.Point = {x: nativeViewBounds.left, y: nativeViewBounds.bottom}; // left-bottom-outside
-            let lbi: viewModule.Point = {x: nativeViewBounds.left + left, y: nativeViewBounds.bottom - bottom}; // left-bottom-inside
+            let lbo: viewModule.Point = {x: nativeViewLayerBounds.left, y: nativeViewLayerBounds.bottom}; // left-bottom-outside
+            let lbi: viewModule.Point = {x: nativeViewLayerBounds.left + left, y: nativeViewLayerBounds.bottom - bottom}; // left-bottom-inside
             
             if (top > 0 && background.borderTopColor && background.borderTopColor.ios){
                 let topBorderPath = CGPathCreateMutable();
