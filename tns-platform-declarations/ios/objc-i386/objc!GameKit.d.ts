@@ -13,23 +13,23 @@ declare class GKAchievement extends NSObject implements NSCoding, NSSecureCoding
 
 	static resetAchievementsWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
-	/* readonly */ completed: boolean;
+	readonly completed: boolean;
 
-	/* readonly */ hidden: boolean;
+	readonly hidden: boolean;
 
 	identifier: string;
 
-	/* readonly */ lastReportedDate: Date;
+	readonly lastReportedDate: Date;
 
 	percentComplete: number;
 
-	/* readonly */ player: GKPlayer;
+	readonly player: GKPlayer;
 
-	/* readonly */ playerID: string;
+	readonly playerID: string;
 
 	showsCompletionBanner: boolean;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -68,7 +68,7 @@ declare class GKAchievementChallenge extends GKChallenge {
 
 	static new(): GKAchievementChallenge; // inherited from NSObject
 
-	/* readonly */ achievement: GKAchievement;
+	readonly achievement: GKAchievement;
 }
 
 declare class GKAchievementDescription extends NSObject implements NSCoding, NSSecureCoding {
@@ -83,25 +83,25 @@ declare class GKAchievementDescription extends NSObject implements NSCoding, NSS
 
 	static placeholderCompletedAchievementImage(): UIImage;
 
-	/* readonly */ achievedDescription: string;
+	readonly achievedDescription: string;
 
-	/* readonly */ groupIdentifier: string;
+	readonly groupIdentifier: string;
 
-	/* readonly */ hidden: boolean;
+	readonly hidden: boolean;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ image: UIImage;
+	readonly image: UIImage;
 
-	/* readonly */ maximumPoints: number;
+	readonly maximumPoints: number;
 
-	/* readonly */ replayable: boolean;
+	readonly replayable: boolean;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ unachievedDescription: string;
+	readonly unachievedDescription: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -136,9 +136,9 @@ declare class GKBasePlayer extends NSObject {
 
 	static new(): GKBasePlayer; // inherited from NSObject
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ playerID: string;
+	readonly playerID: string;
 }
 
 declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
@@ -149,23 +149,23 @@ declare class GKChallenge extends NSObject implements NSCoding, NSSecureCoding {
 
 	static new(): GKChallenge; // inherited from NSObject
 
-	/* readonly */ completionDate: Date;
+	readonly completionDate: Date;
 
-	/* readonly */ issueDate: Date;
+	readonly issueDate: Date;
 
-	/* readonly */ issuingPlayer: GKPlayer;
+	readonly issuingPlayer: GKPlayer;
 
-	/* readonly */ issuingPlayerID: string;
+	readonly issuingPlayerID: string;
 
-	/* readonly */ message: string;
+	readonly message: string;
 
-	/* readonly */ receivingPlayer: GKPlayer;
+	readonly receivingPlayer: GKPlayer;
 
-	/* readonly */ receivingPlayerID: string;
+	readonly receivingPlayerID: string;
 
-	/* readonly */ state: GKChallengeState;
+	readonly state: GKChallengeState;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -400,21 +400,21 @@ declare class GKGameSession extends NSObject {
 
 	static removeSessionWithIdentifierCompletionHandler(identifier: string, completionHandler: (p1: NSError) => void): void;
 
-	/* readonly */ badgedPlayers: NSArray<GKCloudPlayer>;
+	readonly badgedPlayers: NSArray<GKCloudPlayer>;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ lastModifiedDate: Date;
+	readonly lastModifiedDate: Date;
 
-	/* readonly */ lastModifiedPlayer: GKCloudPlayer;
+	readonly lastModifiedPlayer: GKCloudPlayer;
 
-	/* readonly */ maxNumberOfConnectedPlayers: number;
+	readonly maxNumberOfConnectedPlayers: number;
 
-	/* readonly */ owner: GKCloudPlayer;
+	readonly owner: GKCloudPlayer;
 
-	/* readonly */ players: NSArray<GKCloudPlayer>;
+	readonly players: NSArray<GKCloudPlayer>;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
 	clearBadgeForPlayersCompletionHandler(players: NSArray<GKCloudPlayer>, completionHandler: (p1: NSError) => void): void;
 
@@ -495,15 +495,15 @@ declare class GKInvite extends NSObject {
 
 	static new(): GKInvite; // inherited from NSObject
 
-	/* readonly */ hosted: boolean;
+	readonly hosted: boolean;
 
-	/* readonly */ inviter: string;
+	readonly inviter: string;
 
-	/* readonly */ playerAttributes: number;
+	readonly playerAttributes: number;
 
-	/* readonly */ playerGroup: number;
+	readonly playerGroup: number;
 
-	/* readonly */ sender: GKPlayer;
+	readonly sender: GKPlayer;
 }
 
 interface GKInviteEventListener {
@@ -560,25 +560,25 @@ declare class GKLeaderboard extends NSObject {
 
 	category: string;
 
-	/* readonly */ groupIdentifier: string;
+	readonly groupIdentifier: string;
 
 	identifier: string;
 
-	/* readonly */ loading: boolean;
+	readonly loading: boolean;
 
-	/* readonly */ localPlayerScore: GKScore;
+	readonly localPlayerScore: GKScore;
 
-	/* readonly */ maxRange: number;
+	readonly maxRange: number;
 
 	playerScope: GKLeaderboardPlayerScope;
 
 	range: NSRange;
 
-	/* readonly */ scores: NSArray<GKScore>;
+	readonly scores: NSArray<GKScore>;
 
 	timeScope: GKLeaderboardTimeScope;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
 	constructor(o: { playerIDs: NSArray<string>; });
 
@@ -608,13 +608,13 @@ declare class GKLeaderboardSet extends NSObject implements NSCoding, NSSecureCod
 
 	static new(): GKLeaderboardSet; // inherited from NSObject
 
-	/* readonly */ groupIdentifier: string;
+	readonly groupIdentifier: string;
 
 	identifier: string;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -670,23 +670,23 @@ declare class GKLocalPlayer extends GKPlayer implements GKSavedGameListener {
 
 	authenticateHandler: (p1: UIViewController, p2: NSError) => void;
 
-	/* readonly */ authenticated: boolean;
+	readonly authenticated: boolean;
 
-	/* readonly */ friends: NSArray<string>;
+	readonly friends: NSArray<string>;
 
-	/* readonly */ underage: boolean;
+	readonly underage: boolean;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	authenticateWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
@@ -762,11 +762,11 @@ declare class GKMatch extends NSObject {
 
 	delegate: GKMatchDelegate;
 
-	/* readonly */ expectedPlayerCount: number;
+	readonly expectedPlayerCount: number;
 
-	/* readonly */ playerIDs: NSArray<string>;
+	readonly playerIDs: NSArray<string>;
 
-	/* readonly */ players: NSArray<GKPlayer>;
+	readonly players: NSArray<GKPlayer>;
 
 	chooseBestHostPlayerWithCompletionHandler(completionHandler: (p1: string) => void): void;
 
@@ -902,7 +902,7 @@ declare class GKMatchmakerViewController extends UINavigationController {
 
 	hosted: boolean;
 
-	/* readonly */ matchRequest: GKMatchRequest;
+	readonly matchRequest: GKMatchRequest;
 
 	matchmakerDelegate: GKMatchmakerViewControllerDelegate;
 
@@ -985,7 +985,7 @@ declare class GKPeerPickerController extends NSObject {
 
 	delegate: GKPeerPickerControllerDelegate;
 
-	/* readonly */ visible: boolean;
+	readonly visible: boolean;
 
 	dismiss(): void;
 
@@ -1021,11 +1021,11 @@ declare class GKPlayer extends GKBasePlayer {
 
 	static new(): GKPlayer; // inherited from NSObject
 
-	/* readonly */ alias: string;
+	readonly alias: string;
 
-	/* readonly */ guestIdentifier: string;
+	readonly guestIdentifier: string;
 
-	/* readonly */ isFriend: boolean;
+	readonly isFriend: boolean;
 
 	loadPhotoForSizeWithCompletionHandler(size: number, completionHandler: (p1: UIImage, p2: NSError) => void): void;
 }
@@ -1049,11 +1049,11 @@ declare class GKSavedGame extends NSObject implements NSCopying {
 
 	static new(): GKSavedGame; // inherited from NSObject
 
-	/* readonly */ deviceName: string;
+	readonly deviceName: string;
 
-	/* readonly */ modificationDate: Date;
+	readonly modificationDate: Date;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -1085,23 +1085,23 @@ declare class GKScore extends NSObject implements NSCoding, NSSecureCoding {
 
 	context: number;
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ formattedValue: string;
+	readonly formattedValue: string;
 
 	leaderboardIdentifier: string;
 
-	/* readonly */ player: GKPlayer;
+	readonly player: GKPlayer;
 
-	/* readonly */ playerID: string;
+	readonly playerID: string;
 
-	/* readonly */ rank: number;
+	readonly rank: number;
 
 	shouldSetDefaultLeaderboard: boolean;
 
 	value: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { category: string; });
 
@@ -1140,7 +1140,7 @@ declare class GKScoreChallenge extends GKChallenge {
 
 	static new(): GKScoreChallenge; // inherited from NSObject
 
-	/* readonly */ score: GKScore;
+	readonly score: GKScore;
 }
 
 declare const enum GKSendDataMode {
@@ -1162,13 +1162,13 @@ declare class GKSession extends NSObject {
 
 	disconnectTimeout: number;
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ peerID: string;
+	readonly peerID: string;
 
-	/* readonly */ sessionID: string;
+	readonly sessionID: string;
 
-	/* readonly */ sessionMode: GKSessionMode;
+	readonly sessionMode: GKSessionMode;
 
 	constructor(o: { sessionID: string; displayName: string; sessionMode: GKSessionMode; });
 
@@ -1320,25 +1320,25 @@ declare class GKTurnBasedExchange extends NSObject {
 
 	static new(): GKTurnBasedExchange; // inherited from NSObject
 
-	/* readonly */ completionDate: Date;
+	readonly completionDate: Date;
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ exchangeID: string;
+	readonly exchangeID: string;
 
-	/* readonly */ message: string;
+	readonly message: string;
 
-	/* readonly */ recipients: NSArray<GKTurnBasedParticipant>;
+	readonly recipients: NSArray<GKTurnBasedParticipant>;
 
-	/* readonly */ replies: NSArray<GKTurnBasedExchangeReply>;
+	readonly replies: NSArray<GKTurnBasedExchangeReply>;
 
-	/* readonly */ sendDate: Date;
+	readonly sendDate: Date;
 
-	/* readonly */ sender: GKTurnBasedParticipant;
+	readonly sender: GKTurnBasedParticipant;
 
-	/* readonly */ status: GKTurnBasedExchangeStatus;
+	readonly status: GKTurnBasedExchangeStatus;
 
-	/* readonly */ timeoutDate: Date;
+	readonly timeoutDate: Date;
 
 	cancelWithLocalizableMessageKeyArgumentsCompletionHandler(key: string, _arguments: NSArray<string>, completionHandler: (p1: NSError) => void): void;
 
@@ -1351,13 +1351,13 @@ declare class GKTurnBasedExchangeReply extends NSObject {
 
 	static new(): GKTurnBasedExchangeReply; // inherited from NSObject
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ message: string;
+	readonly message: string;
 
-	/* readonly */ recipient: GKTurnBasedParticipant;
+	readonly recipient: GKTurnBasedParticipant;
 
-	/* readonly */ replyDate: Date;
+	readonly replyDate: Date;
 }
 
 declare const enum GKTurnBasedExchangeStatus {
@@ -1385,31 +1385,31 @@ declare class GKTurnBasedMatch extends NSObject {
 
 	static new(): GKTurnBasedMatch; // inherited from NSObject
 
-	/* readonly */ activeExchanges: NSArray<GKTurnBasedExchange>;
+	readonly activeExchanges: NSArray<GKTurnBasedExchange>;
 
-	/* readonly */ completedExchanges: NSArray<GKTurnBasedExchange>;
+	readonly completedExchanges: NSArray<GKTurnBasedExchange>;
 
-	/* readonly */ creationDate: Date;
+	readonly creationDate: Date;
 
-	/* readonly */ currentParticipant: GKTurnBasedParticipant;
+	readonly currentParticipant: GKTurnBasedParticipant;
 
-	/* readonly */ exchangeDataMaximumSize: number;
+	readonly exchangeDataMaximumSize: number;
 
-	/* readonly */ exchangeMaxInitiatedExchangesPerPlayer: number;
+	readonly exchangeMaxInitiatedExchangesPerPlayer: number;
 
-	/* readonly */ exchanges: NSArray<GKTurnBasedExchange>;
+	readonly exchanges: NSArray<GKTurnBasedExchange>;
 
-	/* readonly */ matchData: NSData;
+	readonly matchData: NSData;
 
-	/* readonly */ matchDataMaximumSize: number;
+	readonly matchDataMaximumSize: number;
 
-	/* readonly */ matchID: string;
+	readonly matchID: string;
 
 	message: string;
 
-	/* readonly */ participants: NSArray<GKTurnBasedParticipant>;
+	readonly participants: NSArray<GKTurnBasedParticipant>;
 
-	/* readonly */ status: GKTurnBasedMatchStatus;
+	readonly status: GKTurnBasedMatchStatus;
 
 	acceptInviteWithCompletionHandler(completionHandler: (p1: GKTurnBasedMatch, p2: NSError) => void): void;
 
@@ -1518,17 +1518,17 @@ declare class GKTurnBasedParticipant extends NSObject {
 
 	static new(): GKTurnBasedParticipant; // inherited from NSObject
 
-	/* readonly */ lastTurnDate: Date;
+	readonly lastTurnDate: Date;
 
 	matchOutcome: GKTurnBasedMatchOutcome;
 
-	/* readonly */ player: GKPlayer;
+	readonly player: GKPlayer;
 
-	/* readonly */ playerID: string;
+	readonly playerID: string;
 
-	/* readonly */ status: GKTurnBasedParticipantStatus;
+	readonly status: GKTurnBasedParticipantStatus;
 
-	/* readonly */ timeoutDate: Date;
+	readonly timeoutDate: Date;
 }
 
 declare const enum GKTurnBasedParticipantStatus {
@@ -1560,15 +1560,15 @@ declare class GKVoiceChat extends NSObject {
 
 	active: boolean;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ playerIDs: NSArray<string>;
+	readonly playerIDs: NSArray<string>;
 
 	playerStateUpdateHandler: (p1: string, p2: GKVoiceChatPlayerState) => void;
 
 	playerVoiceChatStateDidChangeHandler: (p1: GKPlayer, p2: GKVoiceChatPlayerState) => void;
 
-	/* readonly */ players: NSArray<GKPlayer>;
+	readonly players: NSArray<GKPlayer>;
 
 	volume: number;
 
@@ -1627,13 +1627,13 @@ declare class GKVoiceChatService extends NSObject {
 
 	client: GKVoiceChatClient;
 
-	/* readonly */ inputMeterLevel: number;
+	readonly inputMeterLevel: number;
 
 	inputMeteringEnabled: boolean;
 
 	microphoneMuted: boolean;
 
-	/* readonly */ outputMeterLevel: number;
+	readonly outputMeterLevel: number;
 
 	outputMeteringEnabled: boolean;
 

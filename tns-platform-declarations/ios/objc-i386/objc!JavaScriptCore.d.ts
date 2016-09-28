@@ -44,17 +44,17 @@ declare class JSContext extends NSObject {
 
 	static new(): JSContext; // inherited from NSObject
 
-	/* readonly */ JSGlobalContextRef: interop.Pointer | interop.Reference<any>;
+	readonly JSGlobalContextRef: interop.Pointer | interop.Reference<any>;
 
 	exception: JSValue;
 
 	exceptionHandler: (p1: JSContext, p2: JSValue) => void;
 
-	/* readonly */ globalObject: JSValue;
+	readonly globalObject: JSValue;
 
 	name: string;
 
-	/* readonly */ virtualMachine: JSVirtualMachine;
+	readonly virtualMachine: JSVirtualMachine;
 
 	constructor(o: { virtualMachine: JSVirtualMachine; });
 
@@ -114,7 +114,7 @@ declare class JSManagedValue extends NSObject {
 
 	static new(): JSManagedValue; // inherited from NSObject
 
-	/* readonly */ value: JSValue;
+	readonly value: JSValue;
 
 	constructor(o: { value: JSValue; });
 
@@ -330,25 +330,25 @@ declare class JSValue extends NSObject {
 
 	static valueWithUndefinedInContext(context: JSContext): JSValue;
 
-	/* readonly */ JSValueRef: interop.Pointer | interop.Reference<any>;
+	readonly JSValueRef: interop.Pointer | interop.Reference<any>;
 
-	/* readonly */ context: JSContext;
+	readonly context: JSContext;
 
-	/* readonly */ isArray: boolean;
+	readonly isArray: boolean;
 
-	/* readonly */ isBoolean: boolean;
+	readonly isBoolean: boolean;
 
-	/* readonly */ isDate: boolean;
+	readonly isDate: boolean;
 
-	/* readonly */ isNull: boolean;
+	readonly isNull: boolean;
 
-	/* readonly */ isNumber: boolean;
+	readonly isNumber: boolean;
 
-	/* readonly */ isObject: boolean;
+	readonly isObject: boolean;
 
-	/* readonly */ isString: boolean;
+	readonly isString: boolean;
 
-	/* readonly */ isUndefined: boolean;
+	readonly isUndefined: boolean;
 	[index: number]: JSValue;
 
 	callWithArguments(_arguments: NSArray<any>): JSValue;

@@ -48,31 +48,31 @@ declare class WCSession extends NSObject {
 
 	static new(): WCSession; // inherited from NSObject
 
-	/* readonly */ activationState: WCSessionActivationState;
+	readonly activationState: WCSessionActivationState;
 
-	/* readonly */ applicationContext: NSDictionary<string, any>;
+	readonly applicationContext: NSDictionary<string, any>;
 
-	/* readonly */ complicationEnabled: boolean;
+	readonly complicationEnabled: boolean;
 
 	delegate: WCSessionDelegate;
 
-	/* readonly */ hasContentPending: boolean;
+	readonly hasContentPending: boolean;
 
-	/* readonly */ outstandingFileTransfers: NSArray<WCSessionFileTransfer>;
+	readonly outstandingFileTransfers: NSArray<WCSessionFileTransfer>;
 
-	/* readonly */ outstandingUserInfoTransfers: NSArray<WCSessionUserInfoTransfer>;
+	readonly outstandingUserInfoTransfers: NSArray<WCSessionUserInfoTransfer>;
 
-	/* readonly */ paired: boolean;
+	readonly paired: boolean;
 
-	/* readonly */ reachable: boolean;
+	readonly reachable: boolean;
 
-	/* readonly */ receivedApplicationContext: NSDictionary<string, any>;
+	readonly receivedApplicationContext: NSDictionary<string, any>;
 
-	/* readonly */ remainingComplicationUserInfoTransfers: number;
+	readonly remainingComplicationUserInfoTransfers: number;
 
-	/* readonly */ watchAppInstalled: boolean;
+	readonly watchAppInstalled: boolean;
 
-	/* readonly */ watchDirectoryURL: NSURL;
+	readonly watchDirectoryURL: NSURL;
 
 	activateSession(): void;
 
@@ -139,9 +139,9 @@ declare class WCSessionFile extends NSObject {
 
 	static new(): WCSessionFile; // inherited from NSObject
 
-	/* readonly */ fileURL: NSURL;
+	readonly fileURL: NSURL;
 
-	/* readonly */ metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any>;
 }
 
 declare class WCSessionFileTransfer extends NSObject {
@@ -150,9 +150,9 @@ declare class WCSessionFileTransfer extends NSObject {
 
 	static new(): WCSessionFileTransfer; // inherited from NSObject
 
-	/* readonly */ file: WCSessionFile;
+	readonly file: WCSessionFile;
 
-	/* readonly */ transferring: boolean;
+	readonly transferring: boolean;
 
 	cancel(): void;
 }
@@ -163,13 +163,13 @@ declare class WCSessionUserInfoTransfer extends NSObject implements NSSecureCodi
 
 	static new(): WCSessionUserInfoTransfer; // inherited from NSObject
 
-	/* readonly */ currentComplicationInfo: boolean;
+	readonly currentComplicationInfo: boolean;
 
-	/* readonly */ transferring: boolean;
+	readonly transferring: boolean;
 
-	/* readonly */ userInfo: NSDictionary<string, any>;
+	readonly userInfo: NSDictionary<string, any>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

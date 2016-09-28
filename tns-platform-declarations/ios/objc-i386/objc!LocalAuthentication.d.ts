@@ -20,7 +20,7 @@ declare class LAContext extends NSObject {
 
 	static new(): LAContext; // inherited from NSObject
 
-	/* readonly */ evaluatedPolicyDomainState: NSData;
+	readonly evaluatedPolicyDomainState: NSData;
 
 	localizedCancelTitle: string;
 

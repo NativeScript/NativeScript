@@ -5,13 +5,13 @@ declare class CXAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CXAction; // inherited from NSObject
 
-	/* readonly */ UUID: NSUUID;
+	readonly UUID: NSUUID;
 
-	/* readonly */ complete: boolean;
+	readonly complete: boolean;
 
-	/* readonly */ timeoutDate: Date;
+	readonly timeoutDate: Date;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -41,15 +41,15 @@ declare class CXCall extends NSObject {
 
 	static new(): CXCall; // inherited from NSObject
 
-	/* readonly */ UUID: NSUUID;
+	readonly UUID: NSUUID;
 
-	/* readonly */ hasConnected: boolean;
+	readonly hasConnected: boolean;
 
-	/* readonly */ hasEnded: boolean;
+	readonly hasEnded: boolean;
 
-	/* readonly */ onHold: boolean;
+	readonly onHold: boolean;
 
-	/* readonly */ outgoing: boolean;
+	readonly outgoing: boolean;
 
 	isEqualToCall(call: CXCall): boolean;
 }
@@ -60,7 +60,7 @@ declare class CXCallAction extends CXAction {
 
 	static new(): CXCallAction; // inherited from NSObject
 
-	/* readonly */ callUUID: NSUUID;
+	readonly callUUID: NSUUID;
 
 	constructor(o: { callUUID: NSUUID; });
 
@@ -73,7 +73,7 @@ declare class CXCallController extends NSObject {
 
 	static new(): CXCallController; // inherited from NSObject
 
-	/* readonly */ callObserver: CXCallObserver;
+	readonly callObserver: CXCallObserver;
 
 	constructor(o: { queue: NSObject; });
 
@@ -121,7 +121,7 @@ declare class CXCallDirectoryManager extends NSObject {
 
 	static new(): CXCallDirectoryManager; // inherited from NSObject
 
-	/* readonly */ static sharedInstance: CXCallDirectoryManager;
+	static readonly sharedInstance: CXCallDirectoryManager;
 
 	getEnabledStatusForExtensionWithIdentifierCompletionHandler(identifier: string, completion: (p1: CXCallDirectoryEnabledStatus, p2: NSError) => void): void;
 
@@ -136,17 +136,17 @@ declare class CXCallDirectoryProvider extends NSObject implements NSExtensionReq
 
 	static new(): CXCallDirectoryProvider; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	beginRequestWithExtensionContext(context: CXCallDirectoryExtensionContext): void;
 
@@ -192,7 +192,7 @@ declare class CXCallObserver extends NSObject {
 
 	static new(): CXCallObserver; // inherited from NSObject
 
-	/* readonly */ calls: NSArray<CXCall>;
+	readonly calls: NSArray<CXCall>;
 
 	setDelegateQueue(delegate: CXCallObserverDelegate, queue: NSObject): void;
 }
@@ -306,11 +306,11 @@ declare class CXHandle extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CXHandle; // inherited from NSObject
 
-	/* readonly */ type: CXHandleType;
+	readonly type: CXHandleType;
 
-	/* readonly */ value: string;
+	readonly value: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -368,7 +368,7 @@ declare class CXProvider extends NSObject {
 
 	configuration: CXProviderConfiguration;
 
-	/* readonly */ pendingTransactions: NSArray<CXTransaction>;
+	readonly pendingTransactions: NSArray<CXTransaction>;
 
 	constructor(o: { configuration: CXProviderConfiguration; });
 
@@ -399,7 +399,7 @@ declare class CXProviderConfiguration extends NSObject implements NSCopying {
 
 	iconTemplateImageData: NSData;
 
-	/* readonly */ localizedName: string;
+	readonly localizedName: string;
 
 	maximumCallGroups: number;
 
@@ -515,13 +515,13 @@ declare class CXTransaction extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): CXTransaction; // inherited from NSObject
 
-	/* readonly */ UUID: NSUUID;
+	readonly UUID: NSUUID;
 
-	/* readonly */ actions: NSArray<CXAction>;
+	readonly actions: NSArray<CXAction>;
 
-	/* readonly */ complete: boolean;
+	readonly complete: boolean;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { action: CXAction; });
 

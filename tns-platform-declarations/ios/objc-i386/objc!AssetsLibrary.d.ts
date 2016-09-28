@@ -5,9 +5,9 @@ declare class ALAsset extends NSObject {
 
 	static new(): ALAsset; // inherited from NSObject
 
-	/* readonly */ editable: boolean;
+	readonly editable: boolean;
 
-	/* readonly */ originalAsset: ALAsset;
+	readonly originalAsset: ALAsset;
 
 	aspectRatioThumbnail(): any;
 
@@ -127,7 +127,7 @@ declare class ALAssetsGroup extends NSObject {
 
 	static new(): ALAssetsGroup; // inherited from NSObject
 
-	/* readonly */ editable: boolean;
+	readonly editable: boolean;
 
 	addAsset(asset: ALAsset): boolean;
 

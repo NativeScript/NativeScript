@@ -5,7 +5,7 @@ declare class SFSpeechAudioBufferRecognitionRequest extends SFSpeechRecognitionR
 
 	static new(): SFSpeechAudioBufferRecognitionRequest; // inherited from NSObject
 
-	/* readonly */ nativeAudioFormat: AVAudioFormat;
+	readonly nativeAudioFormat: AVAudioFormat;
 
 	appendAudioPCMBuffer(audioPCMBuffer: AVAudioPCMBuffer): void;
 
@@ -35,13 +35,13 @@ declare class SFSpeechRecognitionResult extends NSObject implements NSCopying, N
 
 	static new(): SFSpeechRecognitionResult; // inherited from NSObject
 
-	/* readonly */ bestTranscription: SFTranscription;
+	readonly bestTranscription: SFTranscription;
 
-	/* readonly */ final: boolean;
+	readonly final: boolean;
 
-	/* readonly */ transcriptions: NSArray<SFTranscription>;
+	readonly transcriptions: NSArray<SFTranscription>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -58,13 +58,13 @@ declare class SFSpeechRecognitionTask extends NSObject {
 
 	static new(): SFSpeechRecognitionTask; // inherited from NSObject
 
-	/* readonly */ cancelled: boolean;
+	readonly cancelled: boolean;
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ finishing: boolean;
+	readonly finishing: boolean;
 
-	/* readonly */ state: SFSpeechRecognitionTaskState;
+	readonly state: SFSpeechRecognitionTaskState;
 
 	cancel(): void;
 
@@ -126,13 +126,13 @@ declare class SFSpeechRecognizer extends NSObject {
 
 	static supportedLocales(): NSSet<NSLocale>;
 
-	/* readonly */ available: boolean;
+	readonly available: boolean;
 
 	defaultTaskHint: SFSpeechRecognitionTaskHint;
 
 	delegate: SFSpeechRecognizerDelegate;
 
-	/* readonly */ locale: NSLocale;
+	readonly locale: NSLocale;
 
 	queue: NSOperationQueue;
 
@@ -171,7 +171,7 @@ declare class SFSpeechURLRecognitionRequest extends SFSpeechRecognitionRequest {
 
 	static new(): SFSpeechURLRecognitionRequest; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
 	constructor(o: { URL: NSURL; });
 
@@ -184,11 +184,11 @@ declare class SFTranscription extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): SFTranscription; // inherited from NSObject
 
-	/* readonly */ formattedString: string;
+	readonly formattedString: string;
 
-	/* readonly */ segments: NSArray<SFTranscriptionSegment>;
+	readonly segments: NSArray<SFTranscriptionSegment>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -205,19 +205,19 @@ declare class SFTranscriptionSegment extends NSObject implements NSCopying, NSSe
 
 	static new(): SFTranscriptionSegment; // inherited from NSObject
 
-	/* readonly */ alternativeSubstrings: NSArray<string>;
+	readonly alternativeSubstrings: NSArray<string>;
 
-	/* readonly */ confidence: number;
+	readonly confidence: number;
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
-	/* readonly */ substring: string;
+	readonly substring: string;
 
-	/* readonly */ substringRange: NSRange;
+	readonly substringRange: NSRange;
 
-	/* readonly */ timestamp: number;
+	readonly timestamp: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

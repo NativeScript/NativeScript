@@ -12,7 +12,7 @@ declare class CMAccelerometerData extends CMLogItem {
 
 	static new(): CMAccelerometerData; // inherited from NSObject
 
-	/* readonly */ acceleration: CMAcceleration;
+	readonly acceleration: CMAcceleration;
 }
 
 declare class CMAltimeter extends NSObject {
@@ -34,9 +34,9 @@ declare class CMAltitudeData extends CMLogItem {
 
 	static new(): CMAltitudeData; // inherited from NSObject
 
-	/* readonly */ pressure: number;
+	readonly pressure: number;
 
-	/* readonly */ relativeAltitude: number;
+	readonly relativeAltitude: number;
 }
 
 declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
@@ -45,17 +45,17 @@ declare class CMAttitude extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CMAttitude; // inherited from NSObject
 
-	/* readonly */ pitch: number;
+	readonly pitch: number;
 
-	/* readonly */ quaternion: CMQuaternion;
+	readonly quaternion: CMQuaternion;
 
-	/* readonly */ roll: number;
+	readonly roll: number;
 
-	/* readonly */ rotationMatrix: CMRotationMatrix;
+	readonly rotationMatrix: CMRotationMatrix;
 
-	/* readonly */ yaw: number;
+	readonly yaw: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -91,15 +91,15 @@ declare class CMDeviceMotion extends CMLogItem {
 
 	static new(): CMDeviceMotion; // inherited from NSObject
 
-	/* readonly */ attitude: CMAttitude;
+	readonly attitude: CMAttitude;
 
-	/* readonly */ gravity: CMAcceleration;
+	readonly gravity: CMAcceleration;
 
-	/* readonly */ magneticField: CMCalibratedMagneticField;
+	readonly magneticField: CMCalibratedMagneticField;
 
-	/* readonly */ rotationRate: CMRotationRate;
+	readonly rotationRate: CMRotationRate;
 
-	/* readonly */ userAcceleration: CMAcceleration;
+	readonly userAcceleration: CMAcceleration;
 }
 
 declare const enum CMError {
@@ -137,7 +137,7 @@ declare class CMGyroData extends CMLogItem {
 
 	static new(): CMGyroData; // inherited from NSObject
 
-	/* readonly */ rotationRate: CMRotationRate;
+	readonly rotationRate: CMRotationRate;
 }
 
 declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
@@ -146,9 +146,9 @@ declare class CMLogItem extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CMLogItem; // inherited from NSObject
 
-	/* readonly */ timestamp: number;
+	readonly timestamp: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -183,7 +183,7 @@ declare class CMMagnetometerData extends CMLogItem {
 
 	static new(): CMMagnetometerData; // inherited from NSObject
 
-	/* readonly */ magneticField: CMMagneticField;
+	readonly magneticField: CMMagneticField;
 }
 
 declare class CMMotionActivity extends CMLogItem {
@@ -192,21 +192,21 @@ declare class CMMotionActivity extends CMLogItem {
 
 	static new(): CMMotionActivity; // inherited from NSObject
 
-	/* readonly */ automotive: boolean;
+	readonly automotive: boolean;
 
-	/* readonly */ confidence: CMMotionActivityConfidence;
+	readonly confidence: CMMotionActivityConfidence;
 
-	/* readonly */ cycling: boolean;
+	readonly cycling: boolean;
 
-	/* readonly */ running: boolean;
+	readonly running: boolean;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 
-	/* readonly */ stationary: boolean;
+	readonly stationary: boolean;
 
-	/* readonly */ unknown: boolean;
+	readonly unknown: boolean;
 
-	/* readonly */ walking: boolean;
+	readonly walking: boolean;
 }
 
 declare const enum CMMotionActivityConfidence {
@@ -241,37 +241,37 @@ declare class CMMotionManager extends NSObject {
 
 	static new(): CMMotionManager; // inherited from NSObject
 
-	/* readonly */ accelerometerActive: boolean;
+	readonly accelerometerActive: boolean;
 
-	/* readonly */ accelerometerAvailable: boolean;
+	readonly accelerometerAvailable: boolean;
 
-	/* readonly */ accelerometerData: CMAccelerometerData;
+	readonly accelerometerData: CMAccelerometerData;
 
 	accelerometerUpdateInterval: number;
 
-	/* readonly */ attitudeReferenceFrame: CMAttitudeReferenceFrame;
+	readonly attitudeReferenceFrame: CMAttitudeReferenceFrame;
 
-	/* readonly */ deviceMotion: CMDeviceMotion;
+	readonly deviceMotion: CMDeviceMotion;
 
-	/* readonly */ deviceMotionActive: boolean;
+	readonly deviceMotionActive: boolean;
 
-	/* readonly */ deviceMotionAvailable: boolean;
+	readonly deviceMotionAvailable: boolean;
 
 	deviceMotionUpdateInterval: number;
 
-	/* readonly */ gyroActive: boolean;
+	readonly gyroActive: boolean;
 
-	/* readonly */ gyroAvailable: boolean;
+	readonly gyroAvailable: boolean;
 
-	/* readonly */ gyroData: CMGyroData;
+	readonly gyroData: CMGyroData;
 
 	gyroUpdateInterval: number;
 
-	/* readonly */ magnetometerActive: boolean;
+	readonly magnetometerActive: boolean;
 
-	/* readonly */ magnetometerAvailable: boolean;
+	readonly magnetometerAvailable: boolean;
 
-	/* readonly */ magnetometerData: CMMagnetometerData;
+	readonly magnetometerData: CMMagnetometerData;
 
 	magnetometerUpdateInterval: number;
 
@@ -341,25 +341,25 @@ declare class CMPedometerData extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): CMPedometerData; // inherited from NSObject
 
-	/* readonly */ averageActivePace: number;
+	readonly averageActivePace: number;
 
-	/* readonly */ currentCadence: number;
+	readonly currentCadence: number;
 
-	/* readonly */ currentPace: number;
+	readonly currentPace: number;
 
-	/* readonly */ distance: number;
+	readonly distance: number;
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ floorsAscended: number;
+	readonly floorsAscended: number;
 
-	/* readonly */ floorsDescended: number;
+	readonly floorsDescended: number;
 
-	/* readonly */ numberOfSteps: number;
+	readonly numberOfSteps: number;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -376,11 +376,11 @@ declare class CMPedometerEvent extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): CMPedometerEvent; // inherited from NSObject
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ type: CMPedometerEventType;
+	readonly type: CMPedometerEventType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -412,9 +412,9 @@ declare class CMRecordedAccelerometerData extends CMAccelerometerData {
 
 	static new(): CMRecordedAccelerometerData; // inherited from NSObject
 
-	/* readonly */ identifier: number;
+	readonly identifier: number;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 }
 
 interface CMRotationMatrix {

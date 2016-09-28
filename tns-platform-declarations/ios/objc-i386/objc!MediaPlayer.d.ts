@@ -5,9 +5,9 @@ declare class MPChangeLanguageOptionCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPChangeLanguageOptionCommandEvent; // inherited from NSObject
 
-	/* readonly */ languageOption: MPNowPlayingInfoLanguageOption;
+	readonly languageOption: MPNowPlayingInfoLanguageOption;
 
-	/* readonly */ setting: MPChangeLanguageOptionSetting;
+	readonly setting: MPChangeLanguageOptionSetting;
 }
 
 declare const enum MPChangeLanguageOptionSetting {
@@ -32,7 +32,7 @@ declare class MPChangePlaybackPositionCommandEvent extends MPRemoteCommandEvent 
 
 	static new(): MPChangePlaybackPositionCommandEvent; // inherited from NSObject
 
-	/* readonly */ positionTime: number;
+	readonly positionTime: number;
 }
 
 declare class MPChangePlaybackRateCommand extends MPRemoteCommand {
@@ -50,7 +50,7 @@ declare class MPChangePlaybackRateCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPChangePlaybackRateCommandEvent; // inherited from NSObject
 
-	/* readonly */ playbackRate: number;
+	readonly playbackRate: number;
 }
 
 declare class MPChangeRepeatModeCommand extends MPRemoteCommand {
@@ -68,9 +68,9 @@ declare class MPChangeRepeatModeCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPChangeRepeatModeCommandEvent; // inherited from NSObject
 
-	/* readonly */ preservesRepeatMode: boolean;
+	readonly preservesRepeatMode: boolean;
 
-	/* readonly */ repeatType: MPRepeatType;
+	readonly repeatType: MPRepeatType;
 }
 
 declare class MPChangeShuffleModeCommand extends MPRemoteCommand {
@@ -88,9 +88,9 @@ declare class MPChangeShuffleModeCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPChangeShuffleModeCommandEvent; // inherited from NSObject
 
-	/* readonly */ preservesShuffleMode: boolean;
+	readonly preservesShuffleMode: boolean;
 
-	/* readonly */ shuffleType: MPShuffleType;
+	readonly shuffleType: MPShuffleType;
 }
 
 declare class MPContentItem extends NSObject {
@@ -105,7 +105,7 @@ declare class MPContentItem extends NSObject {
 
 	explicitContent: boolean;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
 	playable: boolean;
 
@@ -158,7 +158,7 @@ declare class MPFeedbackCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPFeedbackCommandEvent; // inherited from NSObject
 
-	/* readonly */ negative: boolean;
+	readonly negative: boolean;
 }
 
 declare var MPLanguageOptionCharacteristicContainsOnlyForcedSubtitles: string;
@@ -189,9 +189,9 @@ declare class MPMediaEntity extends NSObject implements NSSecureCoding {
 
 	static new(): MPMediaEntity; // inherited from NSObject
 
-	/* readonly */ persistentID: number;
+	readonly persistentID: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -237,77 +237,77 @@ declare class MPMediaItem extends MPMediaEntity {
 
 	static titlePropertyForGroupingType(groupingType: MPMediaGrouping): string;
 
-	/* readonly */ albumArtist: string;
+	readonly albumArtist: string;
 
-	/* readonly */ albumArtistPersistentID: number;
+	readonly albumArtistPersistentID: number;
 
-	/* readonly */ albumPersistentID: number;
+	readonly albumPersistentID: number;
 
-	/* readonly */ albumTitle: string;
+	readonly albumTitle: string;
 
-	/* readonly */ albumTrackCount: number;
+	readonly albumTrackCount: number;
 
-	/* readonly */ albumTrackNumber: number;
+	readonly albumTrackNumber: number;
 
-	/* readonly */ artist: string;
+	readonly artist: string;
 
-	/* readonly */ artistPersistentID: number;
+	readonly artistPersistentID: number;
 
-	/* readonly */ artwork: MPMediaItemArtwork;
+	readonly artwork: MPMediaItemArtwork;
 
-	/* readonly */ assetURL: NSURL;
+	readonly assetURL: NSURL;
 
-	/* readonly */ beatsPerMinute: number;
+	readonly beatsPerMinute: number;
 
-	/* readonly */ bookmarkTime: number;
+	readonly bookmarkTime: number;
 
-	/* readonly */ cloudItem: boolean;
+	readonly cloudItem: boolean;
 
-	/* readonly */ comments: string;
+	readonly comments: string;
 
-	/* readonly */ compilation: boolean;
+	readonly compilation: boolean;
 
-	/* readonly */ composer: string;
+	readonly composer: string;
 
-	/* readonly */ composerPersistentID: number;
+	readonly composerPersistentID: number;
 
-	/* readonly */ dateAdded: Date;
+	readonly dateAdded: Date;
 
-	/* readonly */ discCount: number;
+	readonly discCount: number;
 
-	/* readonly */ discNumber: number;
+	readonly discNumber: number;
 
-	/* readonly */ explicitItem: boolean;
+	readonly explicitItem: boolean;
 
-	/* readonly */ genre: string;
+	readonly genre: string;
 
-	/* readonly */ genrePersistentID: number;
+	readonly genrePersistentID: number;
 
-	/* readonly */ lastPlayedDate: Date;
+	readonly lastPlayedDate: Date;
 
-	/* readonly */ lyrics: string;
+	readonly lyrics: string;
 
-	/* readonly */ mediaType: MPMediaType;
+	readonly mediaType: MPMediaType;
 
-	/* readonly */ playCount: number;
+	readonly playCount: number;
 
-	/* readonly */ playbackDuration: number;
+	readonly playbackDuration: number;
 
-	/* readonly */ podcastPersistentID: number;
+	readonly podcastPersistentID: number;
 
-	/* readonly */ podcastTitle: string;
+	readonly podcastTitle: string;
 
-	/* readonly */ protectedAsset: boolean;
+	readonly protectedAsset: boolean;
 
-	/* readonly */ rating: number;
+	readonly rating: number;
 
-	/* readonly */ releaseDate: Date;
+	readonly releaseDate: Date;
 
-	/* readonly */ skipCount: number;
+	readonly skipCount: number;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ userGrouping: string;
+	readonly userGrouping: string;
 }
 
 declare class MPMediaItemArtwork extends NSObject {
@@ -316,9 +316,9 @@ declare class MPMediaItemArtwork extends NSObject {
 
 	static new(): MPMediaItemArtwork; // inherited from NSObject
 
-	/* readonly */ bounds: CGRect;
+	readonly bounds: CGRect;
 
-	/* readonly */ imageCropRect: CGRect;
+	readonly imageCropRect: CGRect;
 
 	constructor(o: { boundsSize: CGSize; requestHandler: (p1: CGSize) => UIImage; });
 
@@ -339,13 +339,13 @@ declare class MPMediaItemCollection extends MPMediaEntity {
 
 	static new(): MPMediaItemCollection; // inherited from NSObject
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ items: NSArray<MPMediaItem>;
+	readonly items: NSArray<MPMediaItem>;
 
-	/* readonly */ mediaTypes: MPMediaType;
+	readonly mediaTypes: MPMediaType;
 
-	/* readonly */ representativeItem: MPMediaItem;
+	readonly representativeItem: MPMediaItem;
 
 	constructor(o: { items: NSArray<MPMediaItem>; });
 
@@ -438,9 +438,9 @@ declare class MPMediaLibrary extends NSObject implements NSSecureCoding {
 
 	static requestAuthorization(handler: (p1: MPMediaLibraryAuthorizationStatus) => void): void;
 
-	/* readonly */ lastModifiedDate: Date;
+	readonly lastModifiedDate: Date;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -480,7 +480,7 @@ declare class MPMediaPickerController extends UIViewController {
 
 	delegate: MPMediaPickerControllerDelegate;
 
-	/* readonly */ mediaTypes: MPMediaType;
+	readonly mediaTypes: MPMediaType;
 
 	prompt: string;
 
@@ -539,15 +539,15 @@ declare class MPMediaPlaylist extends MPMediaItemCollection {
 
 	static new(): MPMediaPlaylist; // inherited from NSObject
 
-	/* readonly */ authorDisplayName: string;
+	readonly authorDisplayName: string;
 
-	/* readonly */ descriptionText: string;
+	readonly descriptionText: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ playlistAttributes: MPMediaPlaylistAttribute;
+	readonly playlistAttributes: MPMediaPlaylistAttribute;
 
-	/* readonly */ seedItems: NSArray<MPMediaItem>;
+	readonly seedItems: NSArray<MPMediaItem>;
 
 	addItemWithProductIDCompletionHandler(productID: string, completionHandler: (p1: NSError) => void): void;
 
@@ -575,7 +575,7 @@ declare class MPMediaPlaylistCreationMetadata extends NSObject {
 
 	descriptionText: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
 	constructor(o: { name: string; });
 
@@ -600,7 +600,7 @@ declare class MPMediaPredicate extends NSObject implements NSSecureCoding {
 
 	static new(): MPMediaPredicate; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -626,11 +626,11 @@ declare class MPMediaPropertyPredicate extends MPMediaPredicate {
 
 	static predicateWithValueForPropertyComparisonType(value: any, property: string, comparisonType: MPMediaPredicateComparison): MPMediaPropertyPredicate;
 
-	/* readonly */ comparisonType: MPMediaPredicateComparison;
+	readonly comparisonType: MPMediaPredicateComparison;
 
-	/* readonly */ property: string;
+	readonly property: string;
 
-	/* readonly */ value: any;
+	readonly value: any;
 }
 
 declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding {
@@ -657,19 +657,19 @@ declare class MPMediaQuery extends NSObject implements NSCopying, NSSecureCoding
 
 	static songsQuery(): MPMediaQuery;
 
-	/* readonly */ collectionSections: NSArray<MPMediaQuerySection>;
+	readonly collectionSections: NSArray<MPMediaQuerySection>;
 
-	/* readonly */ collections: NSArray<MPMediaItemCollection>;
+	readonly collections: NSArray<MPMediaItemCollection>;
 
 	filterPredicates: NSSet<MPMediaPredicate>;
 
 	groupingType: MPMediaGrouping;
 
-	/* readonly */ itemSections: NSArray<MPMediaQuerySection>;
+	readonly itemSections: NSArray<MPMediaQuerySection>;
 
-	/* readonly */ items: NSArray<MPMediaItem>;
+	readonly items: NSArray<MPMediaItem>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -694,11 +694,11 @@ declare class MPMediaQuerySection extends NSObject implements NSCopying, NSSecur
 
 	static new(): MPMediaQuerySection; // inherited from NSObject
 
-	/* readonly */ range: NSRange;
+	readonly range: NSRange;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -744,11 +744,11 @@ declare class MPMovieAccessLog extends NSObject implements NSCopying {
 
 	static new(): MPMovieAccessLog; // inherited from NSObject
 
-	/* readonly */ events: NSArray<any>;
+	readonly events: NSArray<any>;
 
-	/* readonly */ extendedLogData: NSData;
+	readonly extendedLogData: NSData;
 
-	/* readonly */ extendedLogDataStringEncoding: number;
+	readonly extendedLogDataStringEncoding: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -759,33 +759,33 @@ declare class MPMovieAccessLogEvent extends NSObject implements NSCopying {
 
 	static new(): MPMovieAccessLogEvent; // inherited from NSObject
 
-	/* readonly */ URI: string;
+	readonly URI: string;
 
-	/* readonly */ durationWatched: number;
+	readonly durationWatched: number;
 
-	/* readonly */ indicatedBitrate: number;
+	readonly indicatedBitrate: number;
 
-	/* readonly */ numberOfBytesTransferred: number;
+	readonly numberOfBytesTransferred: number;
 
-	/* readonly */ numberOfDroppedVideoFrames: number;
+	readonly numberOfDroppedVideoFrames: number;
 
-	/* readonly */ numberOfSegmentsDownloaded: number;
+	readonly numberOfSegmentsDownloaded: number;
 
-	/* readonly */ numberOfServerAddressChanges: number;
+	readonly numberOfServerAddressChanges: number;
 
-	/* readonly */ numberOfStalls: number;
+	readonly numberOfStalls: number;
 
-	/* readonly */ observedBitrate: number;
+	readonly observedBitrate: number;
 
-	/* readonly */ playbackSessionID: string;
+	readonly playbackSessionID: string;
 
-	/* readonly */ playbackStartDate: Date;
+	readonly playbackStartDate: Date;
 
-	/* readonly */ playbackStartOffset: number;
+	readonly playbackStartOffset: number;
 
-	/* readonly */ segmentsDownloadedDuration: number;
+	readonly segmentsDownloadedDuration: number;
 
-	/* readonly */ serverAddress: string;
+	readonly serverAddress: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -809,11 +809,11 @@ declare class MPMovieErrorLog extends NSObject implements NSCopying {
 
 	static new(): MPMovieErrorLog; // inherited from NSObject
 
-	/* readonly */ events: NSArray<any>;
+	readonly events: NSArray<any>;
 
-	/* readonly */ extendedLogData: NSData;
+	readonly extendedLogData: NSData;
 
-	/* readonly */ extendedLogDataStringEncoding: number;
+	readonly extendedLogDataStringEncoding: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -824,19 +824,19 @@ declare class MPMovieErrorLogEvent extends NSObject implements NSCopying {
 
 	static new(): MPMovieErrorLogEvent; // inherited from NSObject
 
-	/* readonly */ URI: string;
+	readonly URI: string;
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ errorComment: string;
+	readonly errorComment: string;
 
-	/* readonly */ errorDomain: string;
+	readonly errorDomain: string;
 
-	/* readonly */ errorStatusCode: number;
+	readonly errorStatusCode: number;
 
-	/* readonly */ playbackSessionID: string;
+	readonly playbackSessionID: string;
 
-	/* readonly */ serverAddress: string;
+	readonly serverAddress: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -895,41 +895,41 @@ declare class MPMoviePlayerController extends NSObject implements MPMediaPlaybac
 
 	static new(): MPMoviePlayerController; // inherited from NSObject
 
-	/* readonly */ accessLog: MPMovieAccessLog;
+	readonly accessLog: MPMovieAccessLog;
 
-	/* readonly */ airPlayVideoActive: boolean;
+	readonly airPlayVideoActive: boolean;
 
 	allowsAirPlay: boolean;
 
-	/* readonly */ backgroundView: UIView;
+	readonly backgroundView: UIView;
 
 	contentURL: NSURL;
 
 	controlStyle: MPMovieControlStyle;
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
 	endPlaybackTime: number;
 
-	/* readonly */ errorLog: MPMovieErrorLog;
+	readonly errorLog: MPMovieErrorLog;
 
 	fullscreen: boolean;
 
 	initialPlaybackTime: number;
 
-	/* readonly */ loadState: MPMovieLoadState;
+	readonly loadState: MPMovieLoadState;
 
-	/* readonly */ movieMediaTypes: MPMovieMediaTypeMask;
+	readonly movieMediaTypes: MPMovieMediaTypeMask;
 
 	movieSourceType: MPMovieSourceType;
 
-	/* readonly */ naturalSize: CGSize;
+	readonly naturalSize: CGSize;
 
-	/* readonly */ playableDuration: number;
+	readonly playableDuration: number;
 
-	/* readonly */ playbackState: MPMoviePlaybackState;
+	readonly playbackState: MPMoviePlaybackState;
 
-	/* readonly */ readyForDisplay: boolean;
+	readonly readyForDisplay: boolean;
 
 	repeatMode: MPMovieRepeatMode;
 
@@ -937,17 +937,17 @@ declare class MPMoviePlayerController extends NSObject implements MPMediaPlaybac
 
 	shouldAutoplay: boolean;
 
-	/* readonly */ timedMetadata: NSArray<any>;
+	readonly timedMetadata: NSArray<any>;
 
 	useApplicationAudioSession: boolean;
 
-	/* readonly */ view: UIView;
+	readonly view: UIView;
 
 	currentPlaybackRate: number; // inherited from MPMediaPlayback
 
 	currentPlaybackTime: number; // inherited from MPMediaPlayback
 
-	/* readonly */ isPreparedToPlay: boolean; // inherited from MPMediaPlayback
+	readonly isPreparedToPlay: boolean; // inherited from MPMediaPlayback
 
 	constructor(o: { contentURL: NSURL; });
 
@@ -1028,7 +1028,7 @@ declare class MPMoviePlayerViewController extends UIViewController {
 
 	static new(): MPMoviePlayerViewController; // inherited from NSObject
 
-	/* readonly */ moviePlayer: MPMoviePlayerController;
+	readonly moviePlayer: MPMoviePlayerController;
 
 	constructor(o: { contentURL: NSURL; });
 
@@ -1102,11 +1102,11 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	static systemMusicPlayer(): MPMusicPlayerController;
 
-	/* readonly */ indexOfNowPlayingItem: number;
+	readonly indexOfNowPlayingItem: number;
 
 	nowPlayingItem: MPMediaItem;
 
-	/* readonly */ playbackState: MPMusicPlaybackState;
+	readonly playbackState: MPMusicPlaybackState;
 
 	repeatMode: MPMusicRepeatMode;
 
@@ -1118,7 +1118,7 @@ declare class MPMusicPlayerController extends NSObject implements MPMediaPlaybac
 
 	currentPlaybackTime: number; // inherited from MPMediaPlayback
 
-	/* readonly */ isPreparedToPlay: boolean; // inherited from MPMediaPlayback
+	readonly isPreparedToPlay: boolean; // inherited from MPMediaPlayback
 
 	beginGeneratingPlaybackNotifications(): void;
 
@@ -1198,15 +1198,15 @@ declare class MPNowPlayingInfoLanguageOption extends NSObject {
 
 	static new(): MPNowPlayingInfoLanguageOption; // inherited from NSObject
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ languageOptionCharacteristics: NSArray<string>;
+	readonly languageOptionCharacteristics: NSArray<string>;
 
-	/* readonly */ languageOptionType: MPNowPlayingInfoLanguageOptionType;
+	readonly languageOptionType: MPNowPlayingInfoLanguageOptionType;
 
-	/* readonly */ languageTag: string;
+	readonly languageTag: string;
 
 	constructor(o: { type: MPNowPlayingInfoLanguageOptionType; languageTag: string; characteristics: NSArray<string>; displayName: string; identifier: string; });
 
@@ -1223,11 +1223,11 @@ declare class MPNowPlayingInfoLanguageOptionGroup extends NSObject {
 
 	static new(): MPNowPlayingInfoLanguageOptionGroup; // inherited from NSObject
 
-	/* readonly */ allowEmptySelection: boolean;
+	readonly allowEmptySelection: boolean;
 
-	/* readonly */ defaultLanguageOption: MPNowPlayingInfoLanguageOption;
+	readonly defaultLanguageOption: MPNowPlayingInfoLanguageOption;
 
-	/* readonly */ languageOptions: NSArray<MPNowPlayingInfoLanguageOption>;
+	readonly languageOptions: NSArray<MPNowPlayingInfoLanguageOption>;
 
 	constructor(o: { languageOptions: NSArray<MPNowPlayingInfoLanguageOption>; defaultLanguageOption: MPNowPlayingInfoLanguageOption; allowEmptySelection: boolean; });
 
@@ -1318,7 +1318,7 @@ declare class MPPlayableContentManager extends NSObject {
 
 	static sharedContentManager(): MPPlayableContentManager;
 
-	/* readonly */ context: MPPlayableContentManagerContext;
+	readonly context: MPPlayableContentManagerContext;
 
 	dataSource: MPPlayableContentDataSource;
 
@@ -1339,15 +1339,15 @@ declare class MPPlayableContentManagerContext extends NSObject {
 
 	static new(): MPPlayableContentManagerContext; // inherited from NSObject
 
-	/* readonly */ contentLimitsEnabled: boolean;
+	readonly contentLimitsEnabled: boolean;
 
-	/* readonly */ contentLimitsEnforced: boolean;
+	readonly contentLimitsEnforced: boolean;
 
-	/* readonly */ endpointAvailable: boolean;
+	readonly endpointAvailable: boolean;
 
-	/* readonly */ enforcedContentItemsCount: number;
+	readonly enforcedContentItemsCount: number;
 
-	/* readonly */ enforcedContentTreeDepth: number;
+	readonly enforcedContentTreeDepth: number;
 }
 
 declare class MPRatingCommand extends MPRemoteCommand {
@@ -1367,7 +1367,7 @@ declare class MPRatingCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPRatingCommandEvent; // inherited from NSObject
 
-	/* readonly */ rating: number;
+	readonly rating: number;
 }
 
 declare class MPRemoteCommand extends NSObject {
@@ -1395,45 +1395,45 @@ declare class MPRemoteCommandCenter extends NSObject {
 
 	static sharedCommandCenter(): MPRemoteCommandCenter;
 
-	/* readonly */ bookmarkCommand: MPFeedbackCommand;
+	readonly bookmarkCommand: MPFeedbackCommand;
 
-	/* readonly */ changePlaybackPositionCommand: MPChangePlaybackPositionCommand;
+	readonly changePlaybackPositionCommand: MPChangePlaybackPositionCommand;
 
-	/* readonly */ changePlaybackRateCommand: MPChangePlaybackRateCommand;
+	readonly changePlaybackRateCommand: MPChangePlaybackRateCommand;
 
-	/* readonly */ changeRepeatModeCommand: MPChangeRepeatModeCommand;
+	readonly changeRepeatModeCommand: MPChangeRepeatModeCommand;
 
-	/* readonly */ changeShuffleModeCommand: MPChangeShuffleModeCommand;
+	readonly changeShuffleModeCommand: MPChangeShuffleModeCommand;
 
-	/* readonly */ disableLanguageOptionCommand: MPRemoteCommand;
+	readonly disableLanguageOptionCommand: MPRemoteCommand;
 
-	/* readonly */ dislikeCommand: MPFeedbackCommand;
+	readonly dislikeCommand: MPFeedbackCommand;
 
-	/* readonly */ enableLanguageOptionCommand: MPRemoteCommand;
+	readonly enableLanguageOptionCommand: MPRemoteCommand;
 
-	/* readonly */ likeCommand: MPFeedbackCommand;
+	readonly likeCommand: MPFeedbackCommand;
 
-	/* readonly */ nextTrackCommand: MPRemoteCommand;
+	readonly nextTrackCommand: MPRemoteCommand;
 
-	/* readonly */ pauseCommand: MPRemoteCommand;
+	readonly pauseCommand: MPRemoteCommand;
 
-	/* readonly */ playCommand: MPRemoteCommand;
+	readonly playCommand: MPRemoteCommand;
 
-	/* readonly */ previousTrackCommand: MPRemoteCommand;
+	readonly previousTrackCommand: MPRemoteCommand;
 
-	/* readonly */ ratingCommand: MPRatingCommand;
+	readonly ratingCommand: MPRatingCommand;
 
-	/* readonly */ seekBackwardCommand: MPRemoteCommand;
+	readonly seekBackwardCommand: MPRemoteCommand;
 
-	/* readonly */ seekForwardCommand: MPRemoteCommand;
+	readonly seekForwardCommand: MPRemoteCommand;
 
-	/* readonly */ skipBackwardCommand: MPSkipIntervalCommand;
+	readonly skipBackwardCommand: MPSkipIntervalCommand;
 
-	/* readonly */ skipForwardCommand: MPSkipIntervalCommand;
+	readonly skipForwardCommand: MPSkipIntervalCommand;
 
-	/* readonly */ stopCommand: MPRemoteCommand;
+	readonly stopCommand: MPRemoteCommand;
 
-	/* readonly */ togglePlayPauseCommand: MPRemoteCommand;
+	readonly togglePlayPauseCommand: MPRemoteCommand;
 }
 
 declare class MPRemoteCommandEvent extends NSObject {
@@ -1442,9 +1442,9 @@ declare class MPRemoteCommandEvent extends NSObject {
 
 	static new(): MPRemoteCommandEvent; // inherited from NSObject
 
-	/* readonly */ command: MPRemoteCommand;
+	readonly command: MPRemoteCommand;
 
-	/* readonly */ timestamp: number;
+	readonly timestamp: number;
 }
 
 declare const enum MPRemoteCommandHandlerStatus {
@@ -1473,7 +1473,7 @@ declare class MPSeekCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPSeekCommandEvent; // inherited from NSObject
 
-	/* readonly */ type: MPSeekCommandEventType;
+	readonly type: MPSeekCommandEventType;
 }
 
 declare const enum MPSeekCommandEventType {
@@ -1507,7 +1507,7 @@ declare class MPSkipIntervalCommandEvent extends MPRemoteCommandEvent {
 
 	static new(): MPSkipIntervalCommandEvent; // inherited from NSObject
 
-	/* readonly */ interval: number;
+	readonly interval: number;
 }
 
 declare class MPTimedMetadata extends NSObject {
@@ -1516,15 +1516,15 @@ declare class MPTimedMetadata extends NSObject {
 
 	static new(): MPTimedMetadata; // inherited from NSObject
 
-	/* readonly */ allMetadata: NSDictionary<any, any>;
+	readonly allMetadata: NSDictionary<any, any>;
 
-	/* readonly */ key: string;
+	readonly key: string;
 
-	/* readonly */ keyspace: string;
+	readonly keyspace: string;
 
-	/* readonly */ timestamp: number;
+	readonly timestamp: number;
 
-	/* readonly */ value: any;
+	readonly value: any;
 }
 
 declare function MPVolumeSettingsAlertHide(): void;
@@ -1557,9 +1557,9 @@ declare class MPVolumeView extends UIView implements NSCoding {
 
 	volumeWarningSliderImage: UIImage;
 
-	/* readonly */ wirelessRouteActive: boolean;
+	readonly wirelessRouteActive: boolean;
 
-	/* readonly */ wirelessRoutesAvailable: boolean;
+	readonly wirelessRoutesAvailable: boolean;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

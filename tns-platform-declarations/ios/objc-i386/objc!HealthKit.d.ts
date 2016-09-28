@@ -17,7 +17,7 @@ declare class HKActivitySummary extends NSObject implements NSCopying, NSSecureC
 
 	appleStandHoursGoal: HKQuantity;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -93,9 +93,9 @@ declare class HKBiologicalSexObject extends NSObject implements NSCopying, NSSec
 
 	static new(): HKBiologicalSexObject; // inherited from NSObject
 
-	/* readonly */ biologicalSex: HKBiologicalSex;
+	readonly biologicalSex: HKBiologicalSex;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -133,9 +133,9 @@ declare class HKBloodTypeObject extends NSObject implements NSCopying, NSSecureC
 
 	static new(): HKBloodTypeObject; // inherited from NSObject
 
-	/* readonly */ bloodType: HKBloodType;
+	readonly bloodType: HKBloodType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -179,15 +179,15 @@ declare class HKCDADocument extends NSObject {
 
 	static new(): HKCDADocument; // inherited from NSObject
 
-	/* readonly */ authorName: string;
+	readonly authorName: string;
 
-	/* readonly */ custodianName: string;
+	readonly custodianName: string;
 
-	/* readonly */ documentData: NSData;
+	readonly documentData: NSData;
 
-	/* readonly */ patientName: string;
+	readonly patientName: string;
 
-	/* readonly */ title: string;
+	readonly title: string;
 }
 
 declare class HKCDADocumentSample extends HKDocumentSample {
@@ -198,7 +198,7 @@ declare class HKCDADocumentSample extends HKDocumentSample {
 
 	static new(): HKCDADocumentSample; // inherited from NSObject
 
-	/* readonly */ document: HKCDADocument;
+	readonly document: HKCDADocument;
 }
 
 declare class HKCategorySample extends HKSample {
@@ -213,9 +213,9 @@ declare class HKCategorySample extends HKSample {
 
 	static new(): HKCategorySample; // inherited from NSObject
 
-	/* readonly */ categoryType: HKCategoryType;
+	readonly categoryType: HKCategoryType;
 
-	/* readonly */ value: number;
+	readonly value: number;
 }
 
 declare class HKCategoryType extends HKSampleType {
@@ -324,9 +324,9 @@ declare class HKCorrelation extends HKSample {
 
 	static new(): HKCorrelation; // inherited from NSObject
 
-	/* readonly */ correlationType: HKCorrelationType;
+	readonly correlationType: HKCorrelationType;
 
-	/* readonly */ objects: NSSet<HKSample>;
+	readonly objects: NSSet<HKSample>;
 
 	objectsForType(objectType: HKObjectType): NSSet<HKSample>;
 }
@@ -337,9 +337,9 @@ declare class HKCorrelationQuery extends HKQuery {
 
 	static new(): HKCorrelationQuery; // inherited from NSObject
 
-	/* readonly */ correlationType: HKCorrelationType;
+	readonly correlationType: HKCorrelationType;
 
-	/* readonly */ samplePredicates: NSDictionary<HKSampleType, NSPredicate>;
+	readonly samplePredicates: NSDictionary<HKSampleType, NSPredicate>;
 
 	constructor(o: { type: HKCorrelationType; predicate: NSPredicate; samplePredicates: NSDictionary<HKSampleType, NSPredicate>; completion: (p1: HKCorrelationQuery, p2: NSArray<HKCorrelation>, p3: NSError) => void; });
 
@@ -363,9 +363,9 @@ declare class HKDeletedObject extends NSObject implements NSSecureCoding {
 
 	static new(): HKDeletedObject; // inherited from NSObject
 
-	/* readonly */ UUID: NSUUID;
+	readonly UUID: NSUUID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -384,23 +384,23 @@ declare class HKDevice extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): HKDevice; // inherited from NSObject
 
-	/* readonly */ UDIDeviceIdentifier: string;
+	readonly UDIDeviceIdentifier: string;
 
-	/* readonly */ firmwareVersion: string;
+	readonly firmwareVersion: string;
 
-	/* readonly */ hardwareVersion: string;
+	readonly hardwareVersion: string;
 
-	/* readonly */ localIdentifier: string;
+	readonly localIdentifier: string;
 
-	/* readonly */ manufacturer: string;
+	readonly manufacturer: string;
 
-	/* readonly */ model: string;
+	readonly model: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ softwareVersion: string;
+	readonly softwareVersion: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -437,11 +437,11 @@ declare class HKDocumentQuery extends HKQuery {
 
 	static new(): HKDocumentQuery; // inherited from NSObject
 
-	/* readonly */ includeDocumentData: boolean;
+	readonly includeDocumentData: boolean;
 
-	/* readonly */ limit: number;
+	readonly limit: number;
 
-	/* readonly */ sortDescriptors: NSArray<NSSortDescriptor>;
+	readonly sortDescriptors: NSArray<NSSortDescriptor>;
 
 	constructor(o: { documentType: HKDocumentType; predicate: NSPredicate; limit: number; sortDescriptors: NSArray<NSSortDescriptor>; includeDocumentData: boolean; resultsHandler: (p1: HKDocumentQuery, p2: NSArray<HKDocumentSample>, p3: boolean, p4: NSError) => void; });
 
@@ -454,7 +454,7 @@ declare class HKDocumentSample extends HKSample {
 
 	static new(): HKDocumentSample; // inherited from NSObject
 
-	/* readonly */ documentType: HKDocumentType;
+	readonly documentType: HKDocumentType;
 }
 
 declare class HKDocumentType extends HKSampleType {
@@ -514,9 +514,9 @@ declare class HKFitzpatrickSkinTypeObject extends NSObject implements NSCopying,
 
 	static new(): HKFitzpatrickSkinTypeObject; // inherited from NSObject
 
-	/* readonly */ skinType: HKFitzpatrickSkinType;
+	readonly skinType: HKFitzpatrickSkinType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -690,17 +690,17 @@ declare class HKObject extends NSObject implements NSSecureCoding {
 
 	static new(): HKObject; // inherited from NSObject
 
-	/* readonly */ UUID: NSUUID;
+	readonly UUID: NSUUID;
 
-	/* readonly */ device: HKDevice;
+	readonly device: HKDevice;
 
-	/* readonly */ metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any>;
 
-	/* readonly */ source: HKSource;
+	readonly source: HKSource;
 
-	/* readonly */ sourceRevision: HKSourceRevision;
+	readonly sourceRevision: HKSourceRevision;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -731,9 +731,9 @@ declare class HKObjectType extends NSObject implements NSCopying, NSSecureCoding
 
 	static workoutType(): HKWorkoutType;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -805,7 +805,7 @@ declare class HKQuantity extends NSObject implements NSCopying, NSSecureCoding {
 
 	static quantityWithUnitDoubleValue(unit: HKUnit, value: number): HKQuantity;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -841,9 +841,9 @@ declare class HKQuantitySample extends HKSample {
 
 	static quantitySampleWithTypeQuantityStartDateEndDateMetadata(quantityType: HKQuantityType, quantity: HKQuantity, startDate: Date, endDate: Date, metadata: NSDictionary<string, any>): HKQuantitySample;
 
-	/* readonly */ quantity: HKQuantity;
+	readonly quantity: HKQuantity;
 
-	/* readonly */ quantityType: HKQuantityType;
+	readonly quantityType: HKQuantityType;
 }
 
 declare class HKQuantityType extends HKSampleType {
@@ -852,7 +852,7 @@ declare class HKQuantityType extends HKSampleType {
 
 	static new(): HKQuantityType; // inherited from NSObject
 
-	/* readonly */ aggregationStyle: HKQuantityAggregationStyle;
+	readonly aggregationStyle: HKQuantityAggregationStyle;
 
 	isCompatibleWithUnit(unit: HKUnit): boolean;
 }
@@ -1053,11 +1053,11 @@ declare class HKQuery extends NSObject {
 
 	static predicateForWorkoutsWithWorkoutActivityType(workoutActivityType: HKWorkoutActivityType): NSPredicate;
 
-	/* readonly */ objectType: HKObjectType;
+	readonly objectType: HKObjectType;
 
-	/* readonly */ predicate: NSPredicate;
+	readonly predicate: NSPredicate;
 
-	/* readonly */ sampleType: HKSampleType;
+	readonly sampleType: HKSampleType;
 }
 
 declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCoding {
@@ -1068,7 +1068,7 @@ declare class HKQueryAnchor extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): HKQueryAnchor; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1094,11 +1094,11 @@ declare class HKSample extends HKObject {
 
 	static new(): HKSample; // inherited from NSObject
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ sampleType: HKSampleType;
+	readonly sampleType: HKSampleType;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 }
 
 declare class HKSampleQuery extends HKQuery {
@@ -1107,9 +1107,9 @@ declare class HKSampleQuery extends HKQuery {
 
 	static new(): HKSampleQuery; // inherited from NSObject
 
-	/* readonly */ limit: number;
+	readonly limit: number;
 
-	/* readonly */ sortDescriptors: NSArray<NSSortDescriptor>;
+	readonly sortDescriptors: NSArray<NSSortDescriptor>;
 
 	constructor(o: { sampleType: HKSampleType; predicate: NSPredicate; limit: number; sortDescriptors: NSArray<NSSortDescriptor>; resultsHandler: (p1: HKSampleQuery, p2: NSArray<HKSample>, p3: NSError) => void; });
 
@@ -1135,11 +1135,11 @@ declare class HKSource extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): HKSource; // inherited from NSObject
 
-	/* readonly */ bundleIdentifier: string;
+	readonly bundleIdentifier: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1167,11 +1167,11 @@ declare class HKSourceRevision extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): HKSourceRevision; // inherited from NSObject
 
-	/* readonly */ source: HKSource;
+	readonly source: HKSource;
 
-	/* readonly */ version: string;
+	readonly version: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1192,15 +1192,15 @@ declare class HKStatistics extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): HKStatistics; // inherited from NSObject
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ quantityType: HKQuantityType;
+	readonly quantityType: HKQuantityType;
 
-	/* readonly */ sources: NSArray<HKSource>;
+	readonly sources: NSArray<HKSource>;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1248,13 +1248,13 @@ declare class HKStatisticsCollectionQuery extends HKQuery {
 
 	static new(): HKStatisticsCollectionQuery; // inherited from NSObject
 
-	/* readonly */ anchorDate: Date;
+	readonly anchorDate: Date;
 
 	initialResultsHandler: (p1: HKStatisticsCollectionQuery, p2: HKStatisticsCollection, p3: NSError) => void;
 
-	/* readonly */ intervalComponents: NSDateComponents;
+	readonly intervalComponents: NSDateComponents;
 
-	/* readonly */ options: HKStatisticsOptions;
+	readonly options: HKStatisticsOptions;
 
 	statisticsUpdateHandler: (p1: HKStatisticsCollectionQuery, p2: HKStatistics, p3: HKStatisticsCollection, p4: NSError) => void;
 
@@ -1408,9 +1408,9 @@ declare class HKUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static yardUnit(): HKUnit;
 
-	/* readonly */ unitString: string;
+	readonly unitString: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1518,9 +1518,9 @@ declare class HKWheelchairUseObject extends NSObject implements NSCopying, NSSec
 
 	static new(): HKWheelchairUseObject; // inherited from NSObject
 
-	/* readonly */ wheelchairUse: HKWheelchairUse;
+	readonly wheelchairUse: HKWheelchairUse;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1549,17 +1549,17 @@ declare class HKWorkout extends HKSample {
 
 	static workoutWithActivityTypeStartDateEndDateWorkoutEventsTotalEnergyBurnedTotalDistanceTotalSwimmingStrokeCountDeviceMetadata(workoutActivityType: HKWorkoutActivityType, startDate: Date, endDate: Date, workoutEvents: NSArray<HKWorkoutEvent>, totalEnergyBurned: HKQuantity, totalDistance: HKQuantity, totalSwimmingStrokeCount: HKQuantity, device: HKDevice, metadata: NSDictionary<string, any>): HKWorkout;
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
-	/* readonly */ totalDistance: HKQuantity;
+	readonly totalDistance: HKQuantity;
 
-	/* readonly */ totalEnergyBurned: HKQuantity;
+	readonly totalEnergyBurned: HKQuantity;
 
-	/* readonly */ totalSwimmingStrokeCount: HKQuantity;
+	readonly totalSwimmingStrokeCount: HKQuantity;
 
-	/* readonly */ workoutActivityType: HKWorkoutActivityType;
+	readonly workoutActivityType: HKWorkoutActivityType;
 
-	/* readonly */ workoutEvents: NSArray<HKWorkoutEvent>;
+	readonly workoutEvents: NSArray<HKWorkoutEvent>;
 }
 
 declare const enum HKWorkoutActivityType {
@@ -1723,7 +1723,7 @@ declare class HKWorkoutConfiguration extends NSObject implements NSCopying, NSSe
 
 	swimmingLocationType: HKWorkoutSwimmingLocationType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1744,13 +1744,13 @@ declare class HKWorkoutEvent extends NSObject implements NSCopying, NSSecureCodi
 
 	static workoutEventWithTypeDateMetadata(type: HKWorkoutEventType, date: Date, metadata: NSDictionary<string, any>): HKWorkoutEvent;
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ metadata: NSDictionary<string, any>;
+	readonly metadata: NSDictionary<string, any>;
 
-	/* readonly */ type: HKWorkoutEventType;
+	readonly type: HKWorkoutEventType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

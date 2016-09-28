@@ -5,9 +5,9 @@ declare class CTCall extends NSObject {
 
 	static new(): CTCall; // inherited from NSObject
 
-	/* readonly */ callID: string;
+	readonly callID: string;
 
-	/* readonly */ callState: string;
+	readonly callState: string;
 }
 
 declare class CTCallCenter extends NSObject {
@@ -18,7 +18,7 @@ declare class CTCallCenter extends NSObject {
 
 	callEventHandler: (p1: CTCall) => void;
 
-	/* readonly */ currentCalls: NSSet<CTCall>;
+	readonly currentCalls: NSSet<CTCall>;
 }
 
 declare var CTCallStateConnected: string;
@@ -35,15 +35,15 @@ declare class CTCarrier extends NSObject {
 
 	static new(): CTCarrier; // inherited from NSObject
 
-	/* readonly */ allowsVOIP: boolean;
+	readonly allowsVOIP: boolean;
 
-	/* readonly */ carrierName: string;
+	readonly carrierName: string;
 
-	/* readonly */ isoCountryCode: string;
+	readonly isoCountryCode: string;
 
-	/* readonly */ mobileCountryCode: string;
+	readonly mobileCountryCode: string;
 
-	/* readonly */ mobileNetworkCode: string;
+	readonly mobileNetworkCode: string;
 }
 
 declare class CTCellularData extends NSObject {
@@ -54,7 +54,7 @@ declare class CTCellularData extends NSObject {
 
 	cellularDataRestrictionDidUpdateNotifier: (p1: CTCellularDataRestrictedState) => void;
 
-	/* readonly */ restrictedState: CTCellularDataRestrictedState;
+	readonly restrictedState: CTCellularDataRestrictedState;
 }
 
 declare const enum CTCellularDataRestrictedState {
@@ -102,7 +102,7 @@ declare class CTSubscriber extends NSObject {
 
 	static new(): CTSubscriber; // inherited from NSObject
 
-	/* readonly */ carrierToken: NSData;
+	readonly carrierToken: NSData;
 }
 
 declare class CTSubscriberInfo extends NSObject {
@@ -122,9 +122,9 @@ declare class CTTelephonyNetworkInfo extends NSObject {
 
 	static new(): CTTelephonyNetworkInfo; // inherited from NSObject
 
-	/* readonly */ currentRadioAccessTechnology: string;
+	readonly currentRadioAccessTechnology: string;
 
-	/* readonly */ subscriberCellularProvider: CTCarrier;
+	readonly subscriberCellularProvider: CTCarrier;
 
 	subscriberCellularProviderDidUpdateNotifier: (p1: CTCarrier) => void;
 }

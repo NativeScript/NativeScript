@@ -56,7 +56,7 @@ declare class MKAnnotationView extends UIView {
 
 	leftCalloutAccessoryView: UIView;
 
-	/* readonly */ reuseIdentifier: string;
+	readonly reuseIdentifier: string;
 
 	rightCalloutAccessoryView: UIView;
 
@@ -96,29 +96,29 @@ declare class MKCircle extends MKShape implements MKOverlay {
 
 	static new(): MKCircle; // inherited from NSObject
 
-	/* readonly */ radius: number;
+	readonly radius: number;
 
-	/* readonly */ boundingMapRect: MKMapRect; // inherited from MKOverlay
+	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
 
-	/* readonly */ canReplaceMapContent: boolean; // inherited from MKOverlay
+	readonly canReplaceMapContent: boolean; // inherited from MKOverlay
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string; // inherited from MKAnnotation
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ title: string; // inherited from MKAnnotation
+	readonly title: string; // inherited from MKAnnotation
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -153,7 +153,7 @@ declare class MKCircleRenderer extends MKOverlayPathRenderer {
 
 	static new(): MKCircleRenderer; // inherited from NSObject
 
-	/* readonly */ circle: MKCircle;
+	readonly circle: MKCircle;
 
 	constructor(o: { circle: MKCircle; });
 
@@ -178,7 +178,7 @@ declare class MKCircleView extends MKOverlayPathView {
 
 	static new(): MKCircleView; // inherited from NSObject
 
-	/* readonly */ circle: MKCircle;
+	readonly circle: MKCircle;
 
 	constructor(o: { circle: MKCircle; });
 
@@ -209,7 +209,7 @@ declare class MKDirections extends NSObject {
 
 	static new(): MKDirections; // inherited from NSObject
 
-	/* readonly */ calculating: boolean;
+	readonly calculating: boolean;
 
 	constructor(o: { request: MKDirectionsRequest; });
 
@@ -257,11 +257,11 @@ declare class MKDirectionsResponse extends NSObject {
 
 	static new(): MKDirectionsResponse; // inherited from NSObject
 
-	/* readonly */ destination: MKMapItem;
+	readonly destination: MKMapItem;
 
-	/* readonly */ routes: NSArray<MKRoute>;
+	readonly routes: NSArray<MKRoute>;
 
-	/* readonly */ source: MKMapItem;
+	readonly source: MKMapItem;
 }
 
 declare const enum MKDirectionsTransportType {
@@ -318,19 +318,19 @@ declare class MKETAResponse extends NSObject {
 
 	static new(): MKETAResponse; // inherited from NSObject
 
-	/* readonly */ destination: MKMapItem;
+	readonly destination: MKMapItem;
 
-	/* readonly */ distance: number;
+	readonly distance: number;
 
-	/* readonly */ expectedArrivalDate: Date;
+	readonly expectedArrivalDate: Date;
 
-	/* readonly */ expectedDepartureDate: Date;
+	readonly expectedDepartureDate: Date;
 
-	/* readonly */ expectedTravelTime: number;
+	readonly expectedTravelTime: number;
 
-	/* readonly */ source: MKMapItem;
+	readonly source: MKMapItem;
 
-	/* readonly */ transportType: MKDirectionsTransportType;
+	readonly transportType: MKDirectionsTransportType;
 }
 
 declare const enum MKErrorCode {
@@ -385,7 +385,7 @@ declare class MKLocalSearch extends NSObject {
 
 	static new(): MKLocalSearch; // inherited from NSObject
 
-	/* readonly */ searching: boolean;
+	readonly searching: boolean;
 
 	constructor(o: { request: MKLocalSearchRequest; });
 
@@ -410,9 +410,9 @@ declare class MKLocalSearchCompleter extends NSObject {
 
 	region: MKCoordinateRegion;
 
-	/* readonly */ results: NSArray<MKLocalSearchCompletion>;
+	readonly results: NSArray<MKLocalSearchCompletion>;
 
-	/* readonly */ searching: boolean;
+	readonly searching: boolean;
 
 	cancel(): void;
 }
@@ -434,13 +434,13 @@ declare class MKLocalSearchCompletion extends NSObject {
 
 	static new(): MKLocalSearchCompletion; // inherited from NSObject
 
-	/* readonly */ subtitle: string;
+	readonly subtitle: string;
 
-	/* readonly */ subtitleHighlightRanges: NSArray<NSValue>;
+	readonly subtitleHighlightRanges: NSArray<NSValue>;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ titleHighlightRanges: NSArray<NSValue>;
+	readonly titleHighlightRanges: NSArray<NSValue>;
 }
 
 declare class MKLocalSearchRequest extends NSObject implements NSCopying {
@@ -466,9 +466,9 @@ declare class MKLocalSearchResponse extends NSObject {
 
 	static new(): MKLocalSearchResponse; // inherited from NSObject
 
-	/* readonly */ boundingRegion: MKCoordinateRegion;
+	readonly boundingRegion: MKCoordinateRegion;
 
-	/* readonly */ mapItems: NSArray<MKMapItem>;
+	readonly mapItems: NSArray<MKMapItem>;
 }
 
 declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding {
@@ -491,7 +491,7 @@ declare class MKMapCamera extends NSObject implements NSCopying, NSSecureCoding 
 
 	pitch: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -512,13 +512,13 @@ declare class MKMapItem extends NSObject {
 
 	static openMapsWithItemsLaunchOptions(mapItems: NSArray<MKMapItem>, launchOptions: NSDictionary<string, any>): boolean;
 
-	/* readonly */ isCurrentLocation: boolean;
+	readonly isCurrentLocation: boolean;
 
 	name: string;
 
 	phoneNumber: string;
 
-	/* readonly */ placemark: MKPlacemark;
+	readonly placemark: MKPlacemark;
 
 	timeZone: NSTimeZone;
 
@@ -585,7 +585,7 @@ declare class MKMapSnapshot extends NSObject {
 
 	static new(): MKMapSnapshot; // inherited from NSObject
 
-	/* readonly */ image: UIImage;
+	readonly image: UIImage;
 
 	pointForCoordinate(coordinate: CLLocationCoordinate2D): CGPoint;
 }
@@ -621,7 +621,7 @@ declare class MKMapSnapshotter extends NSObject {
 
 	static new(): MKMapSnapshotter; // inherited from NSObject
 
-	/* readonly */ loading: boolean;
+	readonly loading: boolean;
 
 	constructor(o: { options: MKMapSnapshotOptions; });
 
@@ -665,9 +665,9 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	static new(): MKMapView; // inherited from NSObject
 
-	/* readonly */ annotationVisibleRect: CGRect;
+	readonly annotationVisibleRect: CGRect;
 
-	/* readonly */ annotations: NSArray<MKAnnotation>;
+	readonly annotations: NSArray<MKAnnotation>;
 
 	camera: MKMapCamera;
 
@@ -677,7 +677,7 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	mapType: MKMapType;
 
-	/* readonly */ overlays: NSArray<MKOverlay>;
+	readonly overlays: NSArray<MKOverlay>;
 
 	pitchEnabled: boolean;
 
@@ -701,9 +701,9 @@ declare class MKMapView extends UIView implements NSCoding {
 
 	showsUserLocation: boolean;
 
-	/* readonly */ userLocation: MKUserLocation;
+	readonly userLocation: MKUserLocation;
 
-	/* readonly */ userLocationVisible: boolean;
+	readonly userLocationVisible: boolean;
 
 	userTrackingMode: MKUserTrackingMode;
 
@@ -855,7 +855,7 @@ declare class MKMultiPoint extends MKShape {
 
 	static new(): MKMultiPoint; // inherited from NSObject
 
-	/* readonly */ pointCount: number;
+	readonly pointCount: number;
 
 	getCoordinatesRange(coords: interop.Pointer | interop.Reference<CLLocationCoordinate2D>, range: NSRange): void;
 
@@ -976,9 +976,9 @@ declare class MKOverlayRenderer extends NSObject {
 
 	alpha: number;
 
-	/* readonly */ contentScaleFactor: number;
+	readonly contentScaleFactor: number;
 
-	/* readonly */ overlay: MKOverlay;
+	readonly overlay: MKOverlay;
 
 	constructor(o: { overlay: MKOverlay; });
 
@@ -1021,7 +1021,7 @@ declare class MKOverlayView extends UIView {
 
 	static new(): MKOverlayView; // inherited from NSObject
 
-	/* readonly */ overlay: MKOverlay;
+	readonly overlay: MKOverlay;
 
 	constructor(o: { overlay: MKOverlay; });
 
@@ -1092,25 +1092,25 @@ declare class MKPlacemark extends CLPlacemark implements MKAnnotation {
 
 	static placemarkWithLocationNamePostalAddress(location: CLLocation, name: string, postalAddress: CNPostalAddress): MKPlacemark; // inherited from CLPlacemark
 
-	/* readonly */ countryCode: string;
+	readonly countryCode: string;
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string; // inherited from MKAnnotation
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ title: string; // inherited from MKAnnotation
+	readonly title: string; // inherited from MKAnnotation
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { coordinate: CLLocationCoordinate2D; });
 
@@ -1172,29 +1172,29 @@ declare class MKPolygon extends MKMultiPoint implements MKOverlay {
 
 	static polygonWithPointsCountInteriorPolygons(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number, interiorPolygons: NSArray<MKPolygon>): MKPolygon;
 
-	/* readonly */ interiorPolygons: NSArray<MKPolygon>;
+	readonly interiorPolygons: NSArray<MKPolygon>;
 
-	/* readonly */ boundingMapRect: MKMapRect; // inherited from MKOverlay
+	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
 
-	/* readonly */ canReplaceMapContent: boolean; // inherited from MKOverlay
+	readonly canReplaceMapContent: boolean; // inherited from MKOverlay
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string; // inherited from MKAnnotation
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ title: string; // inherited from MKAnnotation
+	readonly title: string; // inherited from MKAnnotation
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -1229,7 +1229,7 @@ declare class MKPolygonRenderer extends MKOverlayPathRenderer {
 
 	static new(): MKPolygonRenderer; // inherited from NSObject
 
-	/* readonly */ polygon: MKPolygon;
+	readonly polygon: MKPolygon;
 
 	constructor(o: { polygon: MKPolygon; });
 
@@ -1254,7 +1254,7 @@ declare class MKPolygonView extends MKOverlayPathView {
 
 	static new(): MKPolygonView; // inherited from NSObject
 
-	/* readonly */ polygon: MKPolygon;
+	readonly polygon: MKPolygon;
 
 	constructor(o: { polygon: MKPolygon; });
 
@@ -1271,27 +1271,27 @@ declare class MKPolyline extends MKMultiPoint implements MKOverlay {
 
 	static polylineWithPointsCount(points: interop.Pointer | interop.Reference<MKMapPoint>, count: number): MKPolyline;
 
-	/* readonly */ boundingMapRect: MKMapRect; // inherited from MKOverlay
+	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
 
-	/* readonly */ canReplaceMapContent: boolean; // inherited from MKOverlay
+	readonly canReplaceMapContent: boolean; // inherited from MKOverlay
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string; // inherited from MKAnnotation
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ title: string; // inherited from MKAnnotation
+	readonly title: string; // inherited from MKAnnotation
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -1326,7 +1326,7 @@ declare class MKPolylineRenderer extends MKOverlayPathRenderer {
 
 	static new(): MKPolylineRenderer; // inherited from NSObject
 
-	/* readonly */ polyline: MKPolyline;
+	readonly polyline: MKPolyline;
 
 	constructor(o: { polyline: MKPolyline; });
 
@@ -1351,7 +1351,7 @@ declare class MKPolylineView extends MKOverlayPathView {
 
 	static new(): MKPolylineView; // inherited from NSObject
 
-	/* readonly */ polyline: MKPolyline;
+	readonly polyline: MKPolyline;
 
 	constructor(o: { polyline: MKPolyline; });
 
@@ -1364,13 +1364,13 @@ declare class MKReverseGeocoder extends NSObject {
 
 	static new(): MKReverseGeocoder; // inherited from NSObject
 
-	/* readonly */ coordinate: CLLocationCoordinate2D;
+	readonly coordinate: CLLocationCoordinate2D;
 
 	delegate: MKReverseGeocoderDelegate;
 
-	/* readonly */ placemark: MKPlacemark;
+	readonly placemark: MKPlacemark;
 
-	/* readonly */ querying: boolean;
+	readonly querying: boolean;
 
 	constructor(o: { coordinate: CLLocationCoordinate2D; });
 
@@ -1402,19 +1402,19 @@ declare class MKRoute extends NSObject {
 
 	static new(): MKRoute; // inherited from NSObject
 
-	/* readonly */ advisoryNotices: NSArray<string>;
+	readonly advisoryNotices: NSArray<string>;
 
-	/* readonly */ distance: number;
+	readonly distance: number;
 
-	/* readonly */ expectedTravelTime: number;
+	readonly expectedTravelTime: number;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ polyline: MKPolyline;
+	readonly polyline: MKPolyline;
 
-	/* readonly */ steps: NSArray<MKRouteStep>;
+	readonly steps: NSArray<MKRouteStep>;
 
-	/* readonly */ transportType: MKDirectionsTransportType;
+	readonly transportType: MKDirectionsTransportType;
 }
 
 declare class MKRouteStep extends NSObject {
@@ -1423,15 +1423,15 @@ declare class MKRouteStep extends NSObject {
 
 	static new(): MKRouteStep; // inherited from NSObject
 
-	/* readonly */ distance: number;
+	readonly distance: number;
 
-	/* readonly */ instructions: string;
+	readonly instructions: string;
 
-	/* readonly */ notice: string;
+	readonly notice: string;
 
-	/* readonly */ polyline: MKPolyline;
+	readonly polyline: MKPolyline;
 
-	/* readonly */ transportType: MKDirectionsTransportType;
+	readonly transportType: MKDirectionsTransportType;
 }
 
 declare const enum MKSearchCompletionFilterType {
@@ -1451,19 +1451,19 @@ declare class MKShape extends NSObject implements MKAnnotation {
 
 	title: string;
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -1496,7 +1496,7 @@ declare class MKTileOverlay extends NSObject implements MKOverlay {
 
 	static new(): MKTileOverlay; // inherited from NSObject
 
-	/* readonly */ URLTemplate: string;
+	readonly URLTemplate: string;
 
 	canReplaceMapContent: boolean;
 
@@ -1508,25 +1508,25 @@ declare class MKTileOverlay extends NSObject implements MKOverlay {
 
 	tileSize: CGSize;
 
-	/* readonly */ boundingMapRect: MKMapRect; // inherited from MKOverlay
+	readonly boundingMapRect: MKMapRect; // inherited from MKOverlay
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ subtitle: string; // inherited from MKAnnotation
+	readonly subtitle: string; // inherited from MKAnnotation
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ title: string; // inherited from MKAnnotation
+	readonly title: string; // inherited from MKAnnotation
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { URLTemplate: string; });
 
@@ -1590,29 +1590,29 @@ declare class MKUserLocation extends NSObject implements MKAnnotation {
 
 	static new(): MKUserLocation; // inherited from NSObject
 
-	/* readonly */ heading: CLHeading;
+	readonly heading: CLHeading;
 
-	/* readonly */ location: CLLocation;
+	readonly location: CLLocation;
 
 	subtitle: string;
 
 	title: string;
 
-	/* readonly */ updating: boolean;
+	readonly updating: boolean;
 
-	/* readonly */ coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
+	readonly coordinate: CLLocationCoordinate2D; // inherited from MKAnnotation
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 

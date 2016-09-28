@@ -65,7 +65,7 @@ declare class MFMessageComposeViewController extends UINavigationController {
 
 	static new(): MFMessageComposeViewController; // inherited from NSObject
 
-	/* readonly */ attachments: NSArray<NSDictionary<any, any>>;
+	readonly attachments: NSArray<NSDictionary<any, any>>;
 
 	body: string;
 

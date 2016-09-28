@@ -9,23 +9,23 @@ declare class SLComposeServiceViewController extends UIViewController implements
 
 	charactersRemaining: number;
 
-	/* readonly */ contentText: string;
+	readonly contentText: string;
 
 	placeholder: string;
 
-	/* readonly */ textView: UITextView;
+	readonly textView: UITextView;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	cancel(): void;
 
@@ -147,7 +147,7 @@ declare class SLComposeViewController extends UIViewController {
 
 	completionHandler: (p1: SLComposeViewControllerResult) => void;
 
-	/* readonly */ serviceType: string;
+	readonly serviceType: string;
 
 	addImage(image: UIImage): boolean;
 
@@ -175,13 +175,13 @@ declare class SLRequest extends NSObject {
 
 	static requestForServiceTypeRequestMethodURLParameters(serviceType: string, requestMethod: SLRequestMethod, url: NSURL, parameters: NSDictionary<any, any>): SLRequest;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
 	account: ACAccount;
 
-	/* readonly */ parameters: NSDictionary<any, any>;
+	readonly parameters: NSDictionary<any, any>;
 
-	/* readonly */ requestMethod: SLRequestMethod;
+	readonly requestMethod: SLRequestMethod;
 
 	addMultipartDataWithNameTypeFilename(data: NSData, name: string, type: string, filename: string): void;
 

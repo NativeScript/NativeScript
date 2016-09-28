@@ -7,7 +7,7 @@ declare class QLPreviewController extends UIViewController {
 
 	static new(): QLPreviewController; // inherited from NSObject
 
-	/* readonly */ currentPreviewItem: QLPreviewItem;
+	readonly currentPreviewItem: QLPreviewItem;
 
 	currentPreviewItemIndex: number;
 

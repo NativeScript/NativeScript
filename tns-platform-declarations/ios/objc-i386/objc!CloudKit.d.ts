@@ -51,19 +51,19 @@ declare class CKAsset extends NSObject implements CKRecordValue {
 
 	static new(): CKAsset; // inherited from NSObject
 
-	/* readonly */ fileURL: NSURL;
+	readonly fileURL: NSURL;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { fileURL: NSURL; });
 
@@ -102,13 +102,13 @@ declare class CKContainer extends NSObject {
 
 	static new(): CKContainer; // inherited from NSObject
 
-	/* readonly */ containerIdentifier: string;
+	readonly containerIdentifier: string;
 
-	/* readonly */ privateCloudDatabase: CKDatabase;
+	readonly privateCloudDatabase: CKDatabase;
 
-	/* readonly */ publicCloudDatabase: CKDatabase;
+	readonly publicCloudDatabase: CKDatabase;
 
-	/* readonly */ sharedCloudDatabase: CKDatabase;
+	readonly sharedCloudDatabase: CKDatabase;
 
 	acceptShareMetadataCompletionHandler(metadata: CKShareMetadata, completionHandler: (p1: CKShare, p2: NSError) => void): void;
 
@@ -159,7 +159,7 @@ declare class CKDatabase extends NSObject {
 
 	static new(): CKDatabase; // inherited from NSObject
 
-	/* readonly */ databaseScope: CKDatabaseScope;
+	readonly databaseScope: CKDatabaseScope;
 
 	addOperation(operation: CKDatabaseOperation): void;
 
@@ -196,7 +196,7 @@ declare class CKDatabaseNotification extends CKNotification {
 
 	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKDatabaseNotification; // inherited from CKNotification
 
-	/* readonly */ databaseScope: CKDatabaseScope;
+	readonly databaseScope: CKDatabaseScope;
 }
 
 declare class CKDatabaseOperation extends CKOperation {
@@ -225,7 +225,7 @@ declare class CKDatabaseSubscription extends CKSubscription implements NSCopying
 
 	recordType: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -300,13 +300,13 @@ declare class CKDiscoveredUserInfo extends NSObject {
 
 	static new(): CKDiscoveredUserInfo; // inherited from NSObject
 
-	/* readonly */ displayContact: CNContact;
+	readonly displayContact: CNContact;
 
-	/* readonly */ firstName: string;
+	readonly firstName: string;
 
-	/* readonly */ lastName: string;
+	readonly lastName: string;
 
-	/* readonly */ userRecordID: CKRecordID;
+	readonly userRecordID: CKRecordID;
 }
 
 declare const enum CKErrorCode {
@@ -415,7 +415,7 @@ declare class CKFetchNotificationChangesOperation extends CKOperation {
 
 	fetchNotificationChangesCompletionBlock: (p1: CKServerChangeToken, p2: NSError) => void;
 
-	/* readonly */ moreComing: boolean;
+	readonly moreComing: boolean;
 
 	notificationChangedBlock: (p1: CKNotification) => void;
 
@@ -438,7 +438,7 @@ declare class CKFetchRecordChangesOperation extends CKDatabaseOperation {
 
 	fetchRecordChangesCompletionBlock: (p1: CKServerChangeToken, p2: NSData, p3: NSError) => void;
 
-	/* readonly */ moreComing: boolean;
+	readonly moreComing: boolean;
 
 	previousServerChangeToken: CKServerChangeToken;
 
@@ -494,7 +494,7 @@ declare class CKFetchRecordZoneChangesOptions extends NSObject implements NSSecu
 
 	resultsLimit: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -625,9 +625,9 @@ declare class CKLocationSortDescriptor extends NSSortDescriptor implements NSSec
 
 	static sortDescriptorWithKeyAscendingSelector(key: string, ascending: boolean, selector: string): CKLocationSortDescriptor; // inherited from NSSortDescriptor
 
-	/* readonly */ relativeLocation: CLLocation;
+	readonly relativeLocation: CLLocation;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -739,31 +739,31 @@ declare class CKNotification extends NSObject {
 
 	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKNotification;
 
-	/* readonly */ alertActionLocalizationKey: string;
+	readonly alertActionLocalizationKey: string;
 
-	/* readonly */ alertBody: string;
+	readonly alertBody: string;
 
-	/* readonly */ alertLaunchImage: string;
+	readonly alertLaunchImage: string;
 
-	/* readonly */ alertLocalizationArgs: NSArray<string>;
+	readonly alertLocalizationArgs: NSArray<string>;
 
-	/* readonly */ alertLocalizationKey: string;
+	readonly alertLocalizationKey: string;
 
-	/* readonly */ badge: number;
+	readonly badge: number;
 
-	/* readonly */ category: string;
+	readonly category: string;
 
-	/* readonly */ containerIdentifier: string;
+	readonly containerIdentifier: string;
 
-	/* readonly */ isPruned: boolean;
+	readonly isPruned: boolean;
 
-	/* readonly */ notificationID: CKNotificationID;
+	readonly notificationID: CKNotificationID;
 
-	/* readonly */ notificationType: CKNotificationType;
+	readonly notificationType: CKNotificationType;
 
-	/* readonly */ soundName: string;
+	readonly soundName: string;
 
-	/* readonly */ subscriptionID: string;
+	readonly subscriptionID: string;
 }
 
 declare class CKNotificationID extends NSObject implements NSCopying, NSSecureCoding {
@@ -772,7 +772,7 @@ declare class CKNotificationID extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): CKNotificationID; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -809,7 +809,7 @@ declare class CKNotificationInfo extends NSObject implements NSCopying, NSSecure
 
 	soundName: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -845,7 +845,7 @@ declare class CKOperation extends NSOperation {
 
 	longLivedOperationWasPersistedBlock: () => void;
 
-	/* readonly */ operationID: string;
+	readonly operationID: string;
 
 	timeoutIntervalForRequest: number;
 
@@ -864,13 +864,13 @@ declare class CKQuery extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CKQuery; // inherited from NSObject
 
-	/* readonly */ predicate: NSPredicate;
+	readonly predicate: NSPredicate;
 
-	/* readonly */ recordType: string;
+	readonly recordType: string;
 
 	sortDescriptors: NSArray<NSSortDescriptor>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -891,7 +891,7 @@ declare class CKQueryCursor extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): CKQueryCursor; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -910,15 +910,15 @@ declare class CKQueryNotification extends CKNotification {
 
 	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKQueryNotification; // inherited from CKNotification
 
-	/* readonly */ databaseScope: CKDatabaseScope;
+	readonly databaseScope: CKDatabaseScope;
 
-	/* readonly */ isPublicDatabase: boolean;
+	readonly isPublicDatabase: boolean;
 
-	/* readonly */ queryNotificationReason: CKQueryNotificationReason;
+	readonly queryNotificationReason: CKQueryNotificationReason;
 
-	/* readonly */ recordFields: NSDictionary<string, any>;
+	readonly recordFields: NSDictionary<string, any>;
 
-	/* readonly */ recordID: CKRecordID;
+	readonly recordID: CKRecordID;
 }
 
 declare const enum CKQueryNotificationReason {
@@ -967,9 +967,9 @@ declare class CKQuerySubscription extends CKSubscription implements NSCopying, N
 
 	static new(): CKQuerySubscription; // inherited from NSObject
 
-	/* readonly */ querySubscriptionOptions: CKQuerySubscriptionOptions;
+	readonly querySubscriptionOptions: CKQuerySubscriptionOptions;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -997,25 +997,25 @@ declare class CKRecord extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CKRecord; // inherited from NSObject
 
-	/* readonly */ creationDate: Date;
+	readonly creationDate: Date;
 
-	/* readonly */ creatorUserRecordID: CKRecordID;
+	readonly creatorUserRecordID: CKRecordID;
 
-	/* readonly */ lastModifiedUserRecordID: CKRecordID;
+	readonly lastModifiedUserRecordID: CKRecordID;
 
-	/* readonly */ modificationDate: Date;
+	readonly modificationDate: Date;
 
 	parent: CKReference;
 
-	/* readonly */ recordChangeTag: string;
+	readonly recordChangeTag: string;
 
-	/* readonly */ recordID: CKRecordID;
+	readonly recordID: CKRecordID;
 
-	/* readonly */ recordType: string;
+	readonly recordType: string;
 
-	/* readonly */ share: CKReference;
+	readonly share: CKReference;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1070,11 +1070,11 @@ declare class CKRecordID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CKRecordID; // inherited from NSObject
 
-	/* readonly */ recordName: string;
+	readonly recordName: string;
 
-	/* readonly */ zoneID: CKRecordZoneID;
+	readonly zoneID: CKRecordZoneID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1125,11 +1125,11 @@ declare class CKRecordZone extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): CKRecordZone; // inherited from NSObject
 
-	/* readonly */ capabilities: CKRecordZoneCapabilities;
+	readonly capabilities: CKRecordZoneCapabilities;
 
-	/* readonly */ zoneID: CKRecordZoneID;
+	readonly zoneID: CKRecordZoneID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1165,11 +1165,11 @@ declare class CKRecordZoneID extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): CKRecordZoneID; // inherited from NSObject
 
-	/* readonly */ ownerName: string;
+	readonly ownerName: string;
 
-	/* readonly */ zoneName: string;
+	readonly zoneName: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1192,9 +1192,9 @@ declare class CKRecordZoneNotification extends CKNotification {
 
 	static notificationFromRemoteNotificationDictionary(notificationDictionary: NSDictionary<string, NSObject>): CKRecordZoneNotification; // inherited from CKNotification
 
-	/* readonly */ databaseScope: CKDatabaseScope;
+	readonly databaseScope: CKDatabaseScope;
 
-	/* readonly */ recordZoneID: CKRecordZoneID;
+	readonly recordZoneID: CKRecordZoneID;
 }
 
 declare class CKRecordZoneSubscription extends CKSubscription implements NSCopying, NSSecureCoding {
@@ -1205,9 +1205,9 @@ declare class CKRecordZoneSubscription extends CKSubscription implements NSCopyi
 
 	recordType: string;
 
-	/* readonly */ zoneID: CKRecordZoneID;
+	readonly zoneID: CKRecordZoneID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1232,23 +1232,23 @@ declare class CKReference extends NSObject implements CKRecordValue, NSCopying, 
 
 	static new(): CKReference; // inherited from NSObject
 
-	/* readonly */ recordID: CKRecordID;
+	readonly recordID: CKRecordID;
 
-	/* readonly */ referenceAction: CKReferenceAction;
+	readonly referenceAction: CKReferenceAction;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1302,7 +1302,7 @@ declare class CKServerChangeToken extends NSObject implements NSCopying, NSSecur
 
 	static new(): CKServerChangeToken; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1319,13 +1319,13 @@ declare class CKShare extends CKRecord {
 
 	static new(): CKShare; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ currentUserParticipant: CKShareParticipant;
+	readonly currentUserParticipant: CKShareParticipant;
 
-	/* readonly */ owner: CKShareParticipant;
+	readonly owner: CKShareParticipant;
 
-	/* readonly */ participants: NSArray<CKShareParticipant>;
+	readonly participants: NSArray<CKShareParticipant>;
 
 	publicPermission: CKShareParticipantPermission;
 
@@ -1348,23 +1348,23 @@ declare class CKShareMetadata extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): CKShareMetadata; // inherited from NSObject
 
-	/* readonly */ containerIdentifier: string;
+	readonly containerIdentifier: string;
 
-	/* readonly */ ownerIdentity: CKUserIdentity;
+	readonly ownerIdentity: CKUserIdentity;
 
-	/* readonly */ participantPermission: CKShareParticipantPermission;
+	readonly participantPermission: CKShareParticipantPermission;
 
-	/* readonly */ participantStatus: CKShareParticipantAcceptanceStatus;
+	readonly participantStatus: CKShareParticipantAcceptanceStatus;
 
-	/* readonly */ participantType: CKShareParticipantType;
+	readonly participantType: CKShareParticipantType;
 
-	/* readonly */ rootRecord: CKRecord;
+	readonly rootRecord: CKRecord;
 
-	/* readonly */ rootRecordID: CKRecordID;
+	readonly rootRecordID: CKRecordID;
 
-	/* readonly */ share: CKShare;
+	readonly share: CKShare;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1381,15 +1381,15 @@ declare class CKShareParticipant extends NSObject implements NSCopying, NSSecure
 
 	static new(): CKShareParticipant; // inherited from NSObject
 
-	/* readonly */ acceptanceStatus: CKShareParticipantAcceptanceStatus;
+	readonly acceptanceStatus: CKShareParticipantAcceptanceStatus;
 
 	permission: CKShareParticipantPermission;
 
 	type: CKShareParticipantType;
 
-	/* readonly */ userIdentity: CKUserIdentity;
+	readonly userIdentity: CKUserIdentity;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1447,19 +1447,19 @@ declare class CKSubscription extends NSObject implements NSCopying, NSSecureCodi
 
 	notificationInfo: CKNotificationInfo;
 
-	/* readonly */ predicate: NSPredicate;
+	readonly predicate: NSPredicate;
 
-	/* readonly */ recordType: string;
+	readonly recordType: string;
 
-	/* readonly */ subscriptionID: string;
+	readonly subscriptionID: string;
 
-	/* readonly */ subscriptionOptions: CKSubscriptionOptions;
+	readonly subscriptionOptions: CKSubscriptionOptions;
 
-	/* readonly */ subscriptionType: CKSubscriptionType;
+	readonly subscriptionType: CKSubscriptionType;
 
 	zoneID: CKRecordZoneID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1512,15 +1512,15 @@ declare class CKUserIdentity extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): CKUserIdentity; // inherited from NSObject
 
-	/* readonly */ hasiCloudAccount: boolean;
+	readonly hasiCloudAccount: boolean;
 
-	/* readonly */ lookupInfo: CKUserIdentityLookupInfo;
+	readonly lookupInfo: CKUserIdentityLookupInfo;
 
-	/* readonly */ nameComponents: NSPersonNameComponents;
+	readonly nameComponents: NSPersonNameComponents;
 
-	/* readonly */ userRecordID: CKRecordID;
+	readonly userRecordID: CKRecordID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1543,13 +1543,13 @@ declare class CKUserIdentityLookupInfo extends NSObject implements NSCopying, NS
 
 	static new(): CKUserIdentityLookupInfo; // inherited from NSObject
 
-	/* readonly */ emailAddress: string;
+	readonly emailAddress: string;
 
-	/* readonly */ phoneNumber: string;
+	readonly phoneNumber: string;
 
-	/* readonly */ userRecordID: CKRecordID;
+	readonly userRecordID: CKRecordID;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

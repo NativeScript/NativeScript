@@ -7,7 +7,7 @@ declare class NEAppProxyFlow extends NSObject {
 
 	static new(): NEAppProxyFlow; // inherited from NSObject
 
-	/* readonly */ metaData: NEFlowMetaData;
+	readonly metaData: NEFlowMetaData;
 
 	closeReadWithError(error: NSError): void;
 
@@ -67,7 +67,7 @@ declare class NEAppProxyTCPFlow extends NEAppProxyFlow {
 
 	static new(): NEAppProxyTCPFlow; // inherited from NSObject
 
-	/* readonly */ remoteEndpoint: NWEndpoint;
+	readonly remoteEndpoint: NWEndpoint;
 
 	readDataWithCompletionHandler(completionHandler: (p1: NSData, p2: NSError) => void): void;
 
@@ -80,7 +80,7 @@ declare class NEAppProxyUDPFlow extends NEAppProxyFlow {
 
 	static new(): NEAppProxyUDPFlow; // inherited from NSObject
 
-	/* readonly */ localEndpoint: NWEndpoint;
+	readonly localEndpoint: NWEndpoint;
 
 	readDatagramsWithCompletionHandler(completionHandler: (p1: NSArray<NSData>, p2: NSArray<NWEndpoint>, p3: NSError) => void): void;
 
@@ -97,9 +97,9 @@ declare class NEAppRule extends NSObject implements NSCopying, NSSecureCoding {
 
 	matchPath: string;
 
-	/* readonly */ matchSigningIdentifier: string;
+	readonly matchSigningIdentifier: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -128,9 +128,9 @@ declare class NEDNSSettings extends NSObject implements NSCopying, NSSecureCodin
 
 	searchDomains: NSArray<string>;
 
-	/* readonly */ servers: NSArray<string>;
+	readonly servers: NSArray<string>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -151,15 +151,15 @@ declare class NEEvaluateConnectionRule extends NSObject implements NSCopying, NS
 
 	static new(): NEEvaluateConnectionRule; // inherited from NSObject
 
-	/* readonly */ action: NEEvaluateConnectionRuleAction;
+	readonly action: NEEvaluateConnectionRuleAction;
 
-	/* readonly */ matchDomains: NSArray<string>;
+	readonly matchDomains: NSArray<string>;
 
 	probeURL: NSURL;
 
 	useDNSServers: NSArray<string>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -187,13 +187,13 @@ declare class NEFilterBrowserFlow extends NEFilterFlow implements NSCopying, NSS
 
 	static new(): NEFilterBrowserFlow; // inherited from NSObject
 
-	/* readonly */ parentURL: NSURL;
+	readonly parentURL: NSURL;
 
-	/* readonly */ request: NSURLRequest;
+	readonly request: NSURLRequest;
 
-	/* readonly */ response: NSURLResponse;
+	readonly response: NSURLResponse;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -235,7 +235,7 @@ declare class NEFilterControlVerdict extends NEFilterNewFlowVerdict implements N
 
 	static updateRules(): NEFilterControlVerdict;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -283,7 +283,7 @@ declare class NEFilterDataVerdict extends NEFilterVerdict implements NSCopying, 
 
 	static remediateVerdictWithRemediationURLMapKeyRemediationButtonTextMapKey(remediationURLMapKey: string, remediationButtonTextMapKey: string): NEFilterDataVerdict;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -302,9 +302,9 @@ declare class NEFilterFlow extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): NEFilterFlow; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -365,7 +365,7 @@ declare class NEFilterNewFlowVerdict extends NEFilterVerdict implements NSCopyin
 
 	static remediateVerdictWithRemediationURLMapKeyRemediationButtonTextMapKey(remediationURLMapKey: string, remediationButtonTextMapKey: string): NEFilterNewFlowVerdict;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -382,7 +382,7 @@ declare class NEFilterProvider extends NEProvider {
 
 	static new(): NEFilterProvider; // inherited from NSObject
 
-	/* readonly */ filterConfiguration: NEFilterProviderConfiguration;
+	readonly filterConfiguration: NEFilterProviderConfiguration;
 
 	startFilterWithCompletionHandler(completionHandler: (p1: NSError) => void): void;
 
@@ -411,7 +411,7 @@ declare class NEFilterProviderConfiguration extends NSObject implements NSCopyin
 
 	vendorConfiguration: NSDictionary<string, any>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -438,7 +438,7 @@ declare class NEFilterRemediationVerdict extends NEFilterVerdict implements NSCo
 
 	static new(): NEFilterRemediationVerdict; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -455,9 +455,9 @@ declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSe
 
 	static new(): NEFilterSocketFlow; // inherited from NSObject
 
-	/* readonly */ localEndpoint: NWEndpoint;
+	readonly localEndpoint: NWEndpoint;
 
-	/* readonly */ remoteEndpoint: NWEndpoint;
+	readonly remoteEndpoint: NWEndpoint;
 
 	socketFamily: number;
 
@@ -465,7 +465,7 @@ declare class NEFilterSocketFlow extends NEFilterFlow implements NSCopying, NSSe
 
 	socketType: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -482,7 +482,7 @@ declare class NEFilterVerdict extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NEFilterVerdict; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -499,11 +499,11 @@ declare class NEFlowMetaData extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NEFlowMetaData; // inherited from NSObject
 
-	/* readonly */ sourceAppSigningIdentifier: string;
+	readonly sourceAppSigningIdentifier: string;
 
-	/* readonly */ sourceAppUniqueIdentifier: NSData;
+	readonly sourceAppUniqueIdentifier: NSData;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -533,11 +533,11 @@ declare class NEHotspotHelperCommand extends NSObject {
 
 	static new(): NEHotspotHelperCommand; // inherited from NSObject
 
-	/* readonly */ commandType: NEHotspotHelperCommandType;
+	readonly commandType: NEHotspotHelperCommandType;
 
-	/* readonly */ network: NEHotspotNetwork;
+	readonly network: NEHotspotNetwork;
 
-	/* readonly */ networkList: NSArray<NEHotspotNetwork>;
+	readonly networkList: NSArray<NEHotspotNetwork>;
 
 	createResponse(result: NEHotspotHelperResult): NEHotspotHelperResponse;
 
@@ -608,19 +608,19 @@ declare class NEHotspotNetwork extends NSObject {
 
 	static new(): NEHotspotNetwork; // inherited from NSObject
 
-	/* readonly */ BSSID: string;
+	readonly BSSID: string;
 
-	/* readonly */ SSID: string;
+	readonly SSID: string;
 
-	/* readonly */ autoJoined: boolean;
+	readonly autoJoined: boolean;
 
-	/* readonly */ chosenHelper: boolean;
+	readonly chosenHelper: boolean;
 
-	/* readonly */ justJoined: boolean;
+	readonly justJoined: boolean;
 
-	/* readonly */ secure: boolean;
+	readonly secure: boolean;
 
-	/* readonly */ signalStrength: number;
+	readonly signalStrength: number;
 
 	setConfidence(confidence: NEHotspotHelperConfidence): void;
 
@@ -635,13 +635,13 @@ declare class NEIPv4Route extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): NEIPv4Route; // inherited from NSObject
 
-	/* readonly */ destinationAddress: string;
+	readonly destinationAddress: string;
 
-	/* readonly */ destinationSubnetMask: string;
+	readonly destinationSubnetMask: string;
 
 	gatewayAddress: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -662,15 +662,15 @@ declare class NEIPv4Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NEIPv4Settings; // inherited from NSObject
 
-	/* readonly */ addresses: NSArray<string>;
+	readonly addresses: NSArray<string>;
 
 	excludedRoutes: NSArray<NEIPv4Route>;
 
 	includedRoutes: NSArray<NEIPv4Route>;
 
-	/* readonly */ subnetMasks: NSArray<string>;
+	readonly subnetMasks: NSArray<string>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { addresses: NSArray<string>; subnetMasks: NSArray<string>; });
 
@@ -693,13 +693,13 @@ declare class NEIPv6Route extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): NEIPv6Route; // inherited from NSObject
 
-	/* readonly */ destinationAddress: string;
+	readonly destinationAddress: string;
 
-	/* readonly */ destinationNetworkPrefixLength: number;
+	readonly destinationNetworkPrefixLength: number;
 
 	gatewayAddress: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -720,15 +720,15 @@ declare class NEIPv6Settings extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NEIPv6Settings; // inherited from NSObject
 
-	/* readonly */ addresses: NSArray<string>;
+	readonly addresses: NSArray<string>;
 
 	excludedRoutes: NSArray<NEIPv6Route>;
 
 	includedRoutes: NSArray<NEIPv6Route>;
 
-	/* readonly */ networkPrefixLengths: NSArray<number>;
+	readonly networkPrefixLengths: NSArray<number>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { addresses: NSArray<string>; networkPrefixLengths: NSArray<number>; });
 
@@ -755,13 +755,13 @@ declare class NEOnDemandRule extends NSObject implements NSCopying, NSSecureCodi
 
 	SSIDMatch: NSArray<string>;
 
-	/* readonly */ action: NEOnDemandRuleAction;
+	readonly action: NEOnDemandRuleAction;
 
 	interfaceTypeMatch: NEOnDemandRuleInterfaceType;
 
 	probeURL: NSURL;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -830,13 +830,13 @@ declare class NEPacket extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NEPacket; // inherited from NSObject
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ metadata: NEFlowMetaData;
+	readonly metadata: NEFlowMetaData;
 
-	/* readonly */ protocolFamily: number;
+	readonly protocolFamily: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -887,7 +887,7 @@ declare class NEPacketTunnelProvider extends NETunnelProvider {
 
 	static new(): NEPacketTunnelProvider; // inherited from NSObject
 
-	/* readonly */ packetFlow: NEPacketTunnelFlow;
+	readonly packetFlow: NEPacketTunnelFlow;
 
 	cancelTunnelWithError(error: NSError): void;
 
@@ -906,7 +906,7 @@ declare class NEProvider extends NSObject {
 
 	static new(): NEProvider; // inherited from NSObject
 
-	/* readonly */ defaultPath: NWPath;
+	readonly defaultPath: NWPath;
 
 	createTCPConnectionToEndpointEnableTLSTLSParametersDelegate(remoteEndpoint: NWEndpoint, enableTLS: boolean, TLSParameters: NWTLSParameters, delegate: any): NWTCPConnection;
 
@@ -958,17 +958,17 @@ declare class NEProxyServer extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): NEProxyServer; // inherited from NSObject
 
-	/* readonly */ address: string;
+	readonly address: string;
 
 	authenticationRequired: boolean;
 
 	password: string;
 
-	/* readonly */ port: number;
+	readonly port: number;
 
 	username: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { address: string; port: number; });
 
@@ -1009,7 +1009,7 @@ declare class NEProxySettings extends NSObject implements NSCopying, NSSecureCod
 
 	proxyAutoConfigurationURL: NSURL;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1030,9 +1030,9 @@ declare class NETunnelNetworkSettings extends NSObject implements NSCopying, NSS
 
 	proxySettings: NEProxySettings;
 
-	/* readonly */ tunnelRemoteAddress: string;
+	readonly tunnelRemoteAddress: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1053,13 +1053,13 @@ declare class NETunnelProvider extends NEProvider {
 
 	static new(): NETunnelProvider; // inherited from NSObject
 
-	/* readonly */ appRules: NSArray<NEAppRule>;
+	readonly appRules: NSArray<NEAppRule>;
 
-	/* readonly */ protocolConfiguration: NEVPNProtocol;
+	readonly protocolConfiguration: NEVPNProtocol;
 
 	reasserting: boolean;
 
-	/* readonly */ routingMethod: NETunnelProviderRoutingMethod;
+	readonly routingMethod: NETunnelProviderRoutingMethod;
 
 	handleAppMessageCompletionHandler(messageData: NSData, completionHandler: (p1: NSData) => void): void;
 
@@ -1085,7 +1085,7 @@ declare class NETunnelProviderManager extends NEVPNManager {
 
 	static new(): NETunnelProviderManager; // inherited from NSObject
 
-	/* readonly */ routingMethod: NETunnelProviderRoutingMethod;
+	readonly routingMethod: NETunnelProviderRoutingMethod;
 
 	copyAppRules(): NSArray<NEAppRule>;
 }
@@ -1129,11 +1129,11 @@ declare class NEVPNConnection extends NSObject {
 
 	static new(): NEVPNConnection; // inherited from NSObject
 
-	/* readonly */ connectedDate: Date;
+	readonly connectedDate: Date;
 
-	/* readonly */ manager: NEVPNManager;
+	readonly manager: NEVPNManager;
 
-	/* readonly */ status: NEVPNStatus;
+	readonly status: NEVPNStatus;
 
 	startVPNTunnelAndReturnError(): boolean;
 
@@ -1263,7 +1263,7 @@ declare class NEVPNIKEv2SecurityAssociationParameters extends NSObject implement
 
 	lifetimeMinutes: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1282,7 +1282,7 @@ declare class NEVPNManager extends NSObject {
 
 	static sharedManager(): NEVPNManager;
 
-	/* readonly */ connection: NEVPNConnection;
+	readonly connection: NEVPNConnection;
 
 	enabled: boolean;
 
@@ -1325,7 +1325,7 @@ declare class NEVPNProtocol extends NSObject implements NSCopying, NSSecureCodin
 
 	username: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1342,11 +1342,11 @@ declare class NEVPNProtocolIKEv2 extends NEVPNProtocolIPSec {
 
 	static new(): NEVPNProtocolIKEv2; // inherited from NSObject
 
-	/* readonly */ IKESecurityAssociationParameters: NEVPNIKEv2SecurityAssociationParameters;
+	readonly IKESecurityAssociationParameters: NEVPNIKEv2SecurityAssociationParameters;
 
 	certificateType: NEVPNIKEv2CertificateType;
 
-	/* readonly */ childSecurityAssociationParameters: NEVPNIKEv2SecurityAssociationParameters;
+	readonly childSecurityAssociationParameters: NEVPNIKEv2SecurityAssociationParameters;
 
 	deadPeerDetectionRate: NEVPNIKEv2DeadPeerDetectionRate;
 
@@ -1409,11 +1409,11 @@ declare class NWBonjourServiceEndpoint extends NWEndpoint {
 
 	static new(): NWBonjourServiceEndpoint; // inherited from NSObject
 
-	/* readonly */ domain: string;
+	readonly domain: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ type: string;
+	readonly type: string;
 }
 
 declare class NWEndpoint extends NSObject implements NSCopying, NSSecureCoding {
@@ -1422,7 +1422,7 @@ declare class NWEndpoint extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NWEndpoint; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1441,9 +1441,9 @@ declare class NWHostEndpoint extends NWEndpoint {
 
 	static new(): NWHostEndpoint; // inherited from NSObject
 
-	/* readonly */ hostname: string;
+	readonly hostname: string;
 
-	/* readonly */ port: string;
+	readonly port: string;
 }
 
 declare class NWPath extends NSObject {
@@ -1452,9 +1452,9 @@ declare class NWPath extends NSObject {
 
 	static new(): NWPath; // inherited from NSObject
 
-	/* readonly */ expensive: boolean;
+	readonly expensive: boolean;
 
-	/* readonly */ status: NWPathStatus;
+	readonly status: NWPathStatus;
 
 	isEqualToPath(path: NWPath): boolean;
 }
@@ -1476,23 +1476,23 @@ declare class NWTCPConnection extends NSObject {
 
 	static new(): NWTCPConnection; // inherited from NSObject
 
-	/* readonly */ connectedPath: NWPath;
+	readonly connectedPath: NWPath;
 
-	/* readonly */ endpoint: NWEndpoint;
+	readonly endpoint: NWEndpoint;
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ hasBetterPath: boolean;
+	readonly hasBetterPath: boolean;
 
-	/* readonly */ localAddress: NWEndpoint;
+	readonly localAddress: NWEndpoint;
 
-	/* readonly */ remoteAddress: NWEndpoint;
+	readonly remoteAddress: NWEndpoint;
 
-	/* readonly */ state: NWTCPConnectionState;
+	readonly state: NWTCPConnectionState;
 
-	/* readonly */ txtRecord: NSData;
+	readonly txtRecord: NSData;
 
-	/* readonly */ viable: boolean;
+	readonly viable: boolean;
 
 	constructor(o: { upgradeForConnection: NWTCPConnection; });
 
@@ -1560,19 +1560,19 @@ declare class NWUDPSession extends NSObject {
 
 	static new(): NWUDPSession; // inherited from NSObject
 
-	/* readonly */ currentPath: NWPath;
+	readonly currentPath: NWPath;
 
-	/* readonly */ endpoint: NWEndpoint;
+	readonly endpoint: NWEndpoint;
 
-	/* readonly */ hasBetterPath: boolean;
+	readonly hasBetterPath: boolean;
 
-	/* readonly */ maximumDatagramLength: number;
+	readonly maximumDatagramLength: number;
 
-	/* readonly */ resolvedEndpoint: NWEndpoint;
+	readonly resolvedEndpoint: NWEndpoint;
 
-	/* readonly */ state: NWUDPSessionState;
+	readonly state: NWUDPSessionState;
 
-	/* readonly */ viable: boolean;
+	readonly viable: boolean;
 
 	constructor(o: { upgradeForSession: NWUDPSession; });
 

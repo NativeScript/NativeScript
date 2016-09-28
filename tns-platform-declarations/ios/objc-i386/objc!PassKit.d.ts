@@ -95,7 +95,7 @@ declare class PKAddPaymentPassRequestConfiguration extends NSObject {
 
 	cardholderName: string;
 
-	/* readonly */ encryptionScheme: string;
+	readonly encryptionScheme: string;
 
 	localizedDescription: string;
 
@@ -209,35 +209,35 @@ declare class PKPass extends PKObject {
 
 	static new(): PKPass; // inherited from NSObject
 
-	/* readonly */ authenticationToken: string;
+	readonly authenticationToken: string;
 
-	/* readonly */ deviceName: string;
+	readonly deviceName: string;
 
-	/* readonly */ icon: UIImage;
+	readonly icon: UIImage;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 
-	/* readonly */ localizedName: string;
+	readonly localizedName: string;
 
-	/* readonly */ organizationName: string;
+	readonly organizationName: string;
 
-	/* readonly */ passType: PKPassType;
+	readonly passType: PKPassType;
 
-	/* readonly */ passTypeIdentifier: string;
+	readonly passTypeIdentifier: string;
 
-	/* readonly */ passURL: NSURL;
+	readonly passURL: NSURL;
 
-	/* readonly */ paymentPass: PKPaymentPass;
+	readonly paymentPass: PKPaymentPass;
 
-	/* readonly */ relevantDate: Date;
+	readonly relevantDate: Date;
 
-	/* readonly */ remotePass: boolean;
+	readonly remotePass: boolean;
 
-	/* readonly */ serialNumber: string;
+	readonly serialNumber: string;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any>;
 
-	/* readonly */ webServiceURL: NSURL;
+	readonly webServiceURL: NSURL;
 
 	constructor(o: { data: NSData; });
 
@@ -344,17 +344,17 @@ declare class PKPayment extends NSObject {
 
 	static new(): PKPayment; // inherited from NSObject
 
-	/* readonly */ billingAddress: any;
+	readonly billingAddress: any;
 
-	/* readonly */ billingContact: PKContact;
+	readonly billingContact: PKContact;
 
-	/* readonly */ shippingAddress: any;
+	readonly shippingAddress: any;
 
-	/* readonly */ shippingContact: PKContact;
+	readonly shippingContact: PKContact;
 
-	/* readonly */ shippingMethod: PKShippingMethod;
+	readonly shippingMethod: PKShippingMethod;
 
-	/* readonly */ token: PKPaymentToken;
+	readonly token: PKPaymentToken;
 }
 
 declare class PKPaymentAuthorizationController extends NSObject {
@@ -511,13 +511,13 @@ declare class PKPaymentMethod extends NSObject {
 
 	static new(): PKPaymentMethod; // inherited from NSObject
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ network: string;
+	readonly network: string;
 
-	/* readonly */ paymentPass: PKPaymentPass;
+	readonly paymentPass: PKPaymentPass;
 
-	/* readonly */ type: PKPaymentMethodType;
+	readonly type: PKPaymentMethodType;
 }
 
 declare const enum PKPaymentMethodType {
@@ -553,15 +553,15 @@ declare class PKPaymentPass extends PKPass {
 
 	static new(): PKPaymentPass; // inherited from NSObject
 
-	/* readonly */ activationState: PKPaymentPassActivationState;
+	readonly activationState: PKPaymentPassActivationState;
 
-	/* readonly */ deviceAccountIdentifier: string;
+	readonly deviceAccountIdentifier: string;
 
-	/* readonly */ deviceAccountNumberSuffix: string;
+	readonly deviceAccountNumberSuffix: string;
 
-	/* readonly */ primaryAccountIdentifier: string;
+	readonly primaryAccountIdentifier: string;
 
-	/* readonly */ primaryAccountNumberSuffix: string;
+	readonly primaryAccountNumberSuffix: string;
 }
 
 declare const enum PKPaymentPassActivationState {
@@ -646,15 +646,15 @@ declare class PKPaymentToken extends NSObject {
 
 	static new(): PKPaymentToken; // inherited from NSObject
 
-	/* readonly */ paymentData: NSData;
+	readonly paymentData: NSData;
 
-	/* readonly */ paymentInstrumentName: string;
+	readonly paymentInstrumentName: string;
 
-	/* readonly */ paymentMethod: PKPaymentMethod;
+	readonly paymentMethod: PKPaymentMethod;
 
-	/* readonly */ paymentNetwork: string;
+	readonly paymentNetwork: string;
 
-	/* readonly */ transactionIdentifier: string;
+	readonly transactionIdentifier: string;
 }
 
 declare class PKShippingMethod extends PKPaymentSummaryItem {

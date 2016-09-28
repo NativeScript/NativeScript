@@ -37,23 +37,23 @@ declare class CIColor extends NSObject implements NSCopying, NSSecureCoding {
 
 	static yellowColor(): CIColor;
 
-	/* readonly */ alpha: number;
+	readonly alpha: number;
 
-	/* readonly */ blue: number;
+	readonly blue: number;
 
-	/* readonly */ colorSpace: any;
+	readonly colorSpace: any;
 
-	/* readonly */ components: interop.Pointer | interop.Reference<number>;
+	readonly components: interop.Pointer | interop.Reference<number>;
 
-	/* readonly */ green: number;
+	readonly green: number;
 
-	/* readonly */ numberOfComponents: number;
+	readonly numberOfComponents: number;
 
-	/* readonly */ red: number;
+	readonly red: number;
 
-	/* readonly */ stringRepresentation: string;
+	readonly stringRepresentation: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { CGColor: any; });
 
@@ -119,9 +119,9 @@ declare class CIContext extends NSObject {
 
 	static new(): CIContext; // inherited from NSObject
 
-	/* readonly */ workingColorSpace: any;
+	readonly workingColorSpace: any;
 
-	/* readonly */ workingFormat: number;
+	readonly workingFormat: number;
 
 	constructor(o: { options: NSDictionary<string, any>; });
 
@@ -213,35 +213,35 @@ declare class CIFaceFeature extends CIFeature {
 
 	static new(): CIFaceFeature; // inherited from NSObject
 
-	/* readonly */ faceAngle: number;
+	readonly faceAngle: number;
 
-	/* readonly */ hasFaceAngle: boolean;
+	readonly hasFaceAngle: boolean;
 
-	/* readonly */ hasLeftEyePosition: boolean;
+	readonly hasLeftEyePosition: boolean;
 
-	/* readonly */ hasMouthPosition: boolean;
+	readonly hasMouthPosition: boolean;
 
-	/* readonly */ hasRightEyePosition: boolean;
+	readonly hasRightEyePosition: boolean;
 
-	/* readonly */ hasSmile: boolean;
+	readonly hasSmile: boolean;
 
-	/* readonly */ hasTrackingFrameCount: boolean;
+	readonly hasTrackingFrameCount: boolean;
 
-	/* readonly */ hasTrackingID: boolean;
+	readonly hasTrackingID: boolean;
 
-	/* readonly */ leftEyeClosed: boolean;
+	readonly leftEyeClosed: boolean;
 
-	/* readonly */ leftEyePosition: CGPoint;
+	readonly leftEyePosition: CGPoint;
 
-	/* readonly */ mouthPosition: CGPoint;
+	readonly mouthPosition: CGPoint;
 
-	/* readonly */ rightEyeClosed: boolean;
+	readonly rightEyeClosed: boolean;
 
-	/* readonly */ rightEyePosition: CGPoint;
+	readonly rightEyePosition: CGPoint;
 
-	/* readonly */ trackingFrameCount: number;
+	readonly trackingFrameCount: number;
 
-	/* readonly */ trackingID: number;
+	readonly trackingID: number;
 }
 
 declare class CIFeature extends NSObject {
@@ -250,9 +250,9 @@ declare class CIFeature extends NSObject {
 
 	static new(): CIFeature; // inherited from NSObject
 
-	/* readonly */ bounds: CGRect;
+	readonly bounds: CGRect;
 
-	/* readonly */ type: string;
+	readonly type: string;
 }
 
 declare var CIFeatureTypeFace: string;
@@ -299,17 +299,17 @@ declare class CIFilter extends NSObject implements NSCopying, NSSecureCoding {
 
 	static serializedXMPFromFiltersInputImageExtent(filters: NSArray<CIFilter>, extent: CGRect): NSData;
 
-	/* readonly */ attributes: NSDictionary<string, any>;
+	readonly attributes: NSDictionary<string, any>;
 
-	/* readonly */ inputKeys: NSArray<string>;
+	readonly inputKeys: NSArray<string>;
 
 	name: string;
 
-	/* readonly */ outputImage: CIImage;
+	readonly outputImage: CIImage;
 
-	/* readonly */ outputKeys: NSArray<string>;
+	readonly outputKeys: NSArray<string>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -341,7 +341,7 @@ declare class CIFilterShape extends NSObject implements NSCopying {
 
 	static shapeWithRect(r: CGRect): CIFilterShape;
 
-	/* readonly */ extent: CGRect;
+	readonly extent: CGRect;
 
 	constructor(o: { rect: CGRect; });
 
@@ -400,19 +400,19 @@ declare class CIImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): CIImage; // inherited from NSObject
 
-	/* readonly */ CGImage: any;
+	readonly CGImage: any;
 
-	/* readonly */ colorSpace: any;
+	readonly colorSpace: any;
 
-	/* readonly */ extent: CGRect;
+	readonly extent: CGRect;
 
-	/* readonly */ pixelBuffer: any;
+	readonly pixelBuffer: any;
 
-	/* readonly */ properties: NSDictionary<string, any>;
+	readonly properties: NSDictionary<string, any>;
 
-	/* readonly */ url: NSURL;
+	readonly url: NSURL;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { bitmapData: NSData; bytesPerRow: number; size: CGSize; format: number; colorSpace: any; });
 
@@ -537,9 +537,9 @@ declare class CIImageAccumulator extends NSObject {
 
 	static new(): CIImageAccumulator; // inherited from NSObject
 
-	/* readonly */ extent: CGRect;
+	readonly extent: CGRect;
 
-	/* readonly */ format: number;
+	readonly format: number;
 
 	constructor(o: { extent: CGRect; format: number; });
 
@@ -591,9 +591,9 @@ declare class CIImageProcessorKernel extends NSObject {
 
 	static roiForInputArgumentsOutputRect(input: number, _arguments: NSDictionary<string, any>, outputRect: CGRect): CGRect;
 
-	/* readonly */ static outputFormat: number;
+	static readonly outputFormat: number;
 
-	/* readonly */ static synchronizeInputs: boolean;
+	static readonly synchronizeInputs: boolean;
 }
 
 interface CIImageProcessorOutput {
@@ -627,7 +627,7 @@ declare class CIKernel extends NSObject {
 
 	static new(): CIKernel; // inherited from NSObject
 
-	/* readonly */ name: string;
+	readonly name: string;
 
 	applyWithExtentRoiCallbackArguments(extent: CGRect, callback: (p1: number, p2: CGRect) => CGRect, args: NSArray<any>): CIImage;
 
@@ -640,15 +640,15 @@ declare class CIQRCodeFeature extends CIFeature {
 
 	static new(): CIQRCodeFeature; // inherited from NSObject
 
-	/* readonly */ bottomLeft: CGPoint;
+	readonly bottomLeft: CGPoint;
 
-	/* readonly */ bottomRight: CGPoint;
+	readonly bottomRight: CGPoint;
 
-	/* readonly */ messageString: string;
+	readonly messageString: string;
 
-	/* readonly */ topLeft: CGPoint;
+	readonly topLeft: CGPoint;
 
-	/* readonly */ topRight: CGPoint;
+	readonly topRight: CGPoint;
 }
 
 declare class CIRectangleFeature extends CIFeature {
@@ -657,13 +657,13 @@ declare class CIRectangleFeature extends CIFeature {
 
 	static new(): CIRectangleFeature; // inherited from NSObject
 
-	/* readonly */ bottomLeft: CGPoint;
+	readonly bottomLeft: CGPoint;
 
-	/* readonly */ bottomRight: CGPoint;
+	readonly bottomRight: CGPoint;
 
-	/* readonly */ topLeft: CGPoint;
+	readonly topLeft: CGPoint;
 
-	/* readonly */ topRight: CGPoint;
+	readonly topRight: CGPoint;
 }
 
 declare class CISampler extends NSObject implements NSCopying {
@@ -678,9 +678,9 @@ declare class CISampler extends NSObject implements NSCopying {
 
 	static samplerWithImageOptions(im: CIImage, dict: NSDictionary<any, any>): CISampler;
 
-	/* readonly */ definition: CIFilterShape;
+	readonly definition: CIFilterShape;
 
-	/* readonly */ extent: CGRect;
+	readonly extent: CGRect;
 
 	constructor(o: { image: CIImage; });
 
@@ -699,15 +699,15 @@ declare class CITextFeature extends CIFeature {
 
 	static new(): CITextFeature; // inherited from NSObject
 
-	/* readonly */ bottomLeft: CGPoint;
+	readonly bottomLeft: CGPoint;
 
-	/* readonly */ bottomRight: CGPoint;
+	readonly bottomRight: CGPoint;
 
-	/* readonly */ subFeatures: NSArray<any>;
+	readonly subFeatures: NSArray<any>;
 
-	/* readonly */ topLeft: CGPoint;
+	readonly topLeft: CGPoint;
 
-	/* readonly */ topRight: CGPoint;
+	readonly topRight: CGPoint;
 }
 
 declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
@@ -734,25 +734,25 @@ declare class CIVector extends NSObject implements NSCopying, NSSecureCoding {
 
 	static vectorWithXYZW(x: number, y: number, z: number, w: number): CIVector;
 
-	/* readonly */ CGAffineTransformValue: CGAffineTransform;
+	readonly CGAffineTransformValue: CGAffineTransform;
 
-	/* readonly */ CGPointValue: CGPoint;
+	readonly CGPointValue: CGPoint;
 
-	/* readonly */ CGRectValue: CGRect;
+	readonly CGRectValue: CGRect;
 
-	/* readonly */ W: number;
+	readonly W: number;
 
-	/* readonly */ X: number;
+	readonly X: number;
 
-	/* readonly */ Y: number;
+	readonly Y: number;
 
-	/* readonly */ Z: number;
+	readonly Z: number;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ stringRepresentation: string;
+	readonly stringRepresentation: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { CGAffineTransform: CGAffineTransform; });
 

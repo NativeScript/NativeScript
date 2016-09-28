@@ -49,13 +49,13 @@ declare class VSAccountMetadata extends NSObject {
 
 	static new(): VSAccountMetadata; // inherited from NSObject
 
-	/* readonly */ SAMLAttributeQueryResponse: string;
+	readonly SAMLAttributeQueryResponse: string;
 
-	/* readonly */ accountProviderIdentifier: string;
+	readonly accountProviderIdentifier: string;
 
-	/* readonly */ authenticationExpirationDate: Date;
+	readonly authenticationExpirationDate: Date;
 
-	/* readonly */ verificationData: NSData;
+	readonly verificationData: NSData;
 }
 
 declare class VSAccountMetadataRequest extends NSObject {

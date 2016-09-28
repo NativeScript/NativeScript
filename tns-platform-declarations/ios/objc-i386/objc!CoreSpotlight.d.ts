@@ -5,17 +5,17 @@ declare class CSCustomAttributeKey extends NSObject implements NSCopying, NSSecu
 
 	static new(): CSCustomAttributeKey; // inherited from NSObject
 
-	/* readonly */ keyName: string;
+	readonly keyName: string;
 
-	/* readonly */ multiValued: boolean;
+	readonly multiValued: boolean;
 
-	/* readonly */ searchable: boolean;
+	readonly searchable: boolean;
 
-	/* readonly */ searchableByDefault: boolean;
+	readonly searchableByDefault: boolean;
 
-	/* readonly */ unique: boolean;
+	readonly unique: boolean;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -59,17 +59,17 @@ declare class CSIndexExtensionRequestHandler extends NSObject implements CSSearc
 
 	static new(): CSIndexExtensionRequestHandler; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	beginRequestWithExtensionContext(context: NSExtensionContext): void;
 
@@ -155,13 +155,13 @@ declare class CSPerson extends NSObject implements NSCopying, NSSecureCoding {
 
 	contactIdentifier: string;
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ handleIdentifier: string;
+	readonly handleIdentifier: string;
 
-	/* readonly */ handles: NSArray<string>;
+	readonly handles: NSArray<string>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -184,11 +184,11 @@ declare class CSSearchQuery extends NSObject {
 
 	static new(): CSSearchQuery; // inherited from NSObject
 
-	/* readonly */ cancelled: boolean;
+	readonly cancelled: boolean;
 
 	completionHandler: (p1: NSError) => void;
 
-	/* readonly */ foundItemCount: number;
+	readonly foundItemCount: number;
 
 	foundItemsHandler: (p1: NSArray<CSSearchableItem>) => void;
 
@@ -282,7 +282,7 @@ declare class CSSearchableItem extends NSObject implements NSCopying, NSSecureCo
 
 	uniqueIdentifier: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -661,7 +661,7 @@ declare class CSSearchableItemAttributeSet extends NSObject implements NSCopying
 
 	whiteBalance: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

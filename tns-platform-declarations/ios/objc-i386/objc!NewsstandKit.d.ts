@@ -5,11 +5,11 @@ declare class NKAssetDownload extends NSObject {
 
 	static new(): NKAssetDownload; // inherited from NSObject
 
-	/* readonly */ URLRequest: NSURLRequest;
+	readonly URLRequest: NSURLRequest;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ issue: NKIssue;
+	readonly issue: NKIssue;
 
 	userInfo: NSDictionary<any, any>;
 
@@ -22,15 +22,15 @@ declare class NKIssue extends NSObject {
 
 	static new(): NKIssue; // inherited from NSObject
 
-	/* readonly */ contentURL: NSURL;
+	readonly contentURL: NSURL;
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ downloadingAssets: NSArray<NKAssetDownload>;
+	readonly downloadingAssets: NSArray<NKAssetDownload>;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ status: NKIssueContentStatus;
+	readonly status: NKIssueContentStatus;
 
 	addAssetWithRequest(request: NSURLRequest): NKAssetDownload;
 }
@@ -56,9 +56,9 @@ declare class NKLibrary extends NSObject {
 
 	currentlyReadingIssue: NKIssue;
 
-	/* readonly */ downloadingAssets: NSArray<NKAssetDownload>;
+	readonly downloadingAssets: NSArray<NKAssetDownload>;
 
-	/* readonly */ issues: NSArray<NKIssue>;
+	readonly issues: NSArray<NKIssue>;
 
 	addIssueWithNameDate(name: string, date: Date): NKIssue;
 
