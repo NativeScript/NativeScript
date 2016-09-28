@@ -5,7 +5,8 @@ Offically supported entry points:
  - `ios.d.ts` - For iOS SDK and runtime types.
 
 Using the declarations may conflict with DOM typings,
-Consider the following settings in your `tsconfig.json`:
+consider using TypeScript 2.0.3 or newer,
+and the following settings in your `tsconfig.json`:
 ```
 {
     "compilerOptions": {
@@ -19,9 +20,9 @@ Consider the following settings in your `tsconfig.json`:
 }
 ```
 
-And add to the reference.d.ts:
+And add to a reference.d.ts:
 ```
-/// <reference path="./node_modules/tns-core-modules/tns-core-modules.es2016.d.ts" /> Needed for autocompletion and compilation.
+/// <reference path="./node_modules/tns-core-modules/tns-core-modules.es2016.d.ts" />
 
 /// <reference path="./node_modules/tns-platform-declarations/ios.d.ts" />
 /// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
