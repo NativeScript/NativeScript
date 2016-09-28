@@ -72,6 +72,7 @@ declare module "ui/styling/background" {
 
     export module ios {
         export function createBackgroundUIColor(view: viewModule.View, flip?: boolean): any /* UIColor */;
+        export function clearBorders(nativeView: any /* UIView */);
     }
 
     export module ad {

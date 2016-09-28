@@ -2,7 +2,6 @@ import viewModule = require("ui/core/view");
 import common = require("./background-common");
 import * as styleModule from "./style";
 import { Color } from "color";
-
 import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
@@ -20,6 +19,9 @@ export module ios {
         if (!nativeView) {
             return undefined;
         }
+        
+        clearBorders(nativeView);
+
         ensureStyle();
 
         let background = <common.Background>view.style._getValue(style.backgroundInternalProperty);
@@ -27,35 +29,14 @@ export module ios {
             return undefined;
         }
 
+        nativeView.clipsToBounds = true;
+
         // Clip-path
         if (background.clipPath) {
             drawClipPath(nativeView, background);
         }
 
         // Borders
-
-        // Clear all borders
-        nativeView.layer.borderColor = undefined; 
-        nativeView.layer.borderWidth = 0;
-        nativeView.layer.cornerRadius = 0;
-        nativeView.clipsToBounds = true;
-
-        if (nativeView["topBorderLayer"]){
-            (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
-        }
-        
-        if (nativeView["rightBorderLayer"]){
-            (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
-        }
-        
-        if (nativeView["bottomBorderLayer"]){
-            (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
-        }
-        
-        if (nativeView["leftBorderLayer"]){
-            (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
-        }
-        
         if (background.hasUniformBorder()){
             let borderColor = background.getUniformBorderColor();
             if (borderColor && borderColor.ios){
@@ -69,12 +50,12 @@ export module ios {
         }
         else { // Draw non-uniform borders
             let nativeViewLayerBounds = {
-                left: nativeView.layer.bounds.origin.x,
-                top: nativeView.layer.bounds.origin.y,
-                bottom: nativeView.layer.bounds.size.height,
-                right: nativeView.layer.bounds.size.width
+                left: 0,
+                top: 0,
+                bottom: nativeView.frame.size.height,
+                right: nativeView.frame.size.width
             };
-
+            
             let top = background.borderTopWidth;
             let right = background.borderRightWidth;
             let bottom = background.borderBottomWidth;
@@ -92,6 +73,15 @@ export module ios {
             let lbo: viewModule.Point = {x: nativeViewLayerBounds.left, y: nativeViewLayerBounds.bottom}; // left-bottom-outside
             let lbi: viewModule.Point = {x: nativeViewLayerBounds.left + left, y: nativeViewLayerBounds.bottom - bottom}; // left-bottom-inside
             
+            let hoveringBorderView: UIView;
+            if (nativeView instanceof UITextView || nativeView instanceof UIScrollView){
+                hoveringBorderView = UIView.alloc().initWithFrame(nativeView.frame);
+                hoveringBorderView.userInteractionEnabled = false;
+                hoveringBorderView.backgroundColor = utils.ios.getter(UIColor, UIColor.clearColor);
+                nativeView.superview.insertSubviewAboveSubview(hoveringBorderView, nativeView);
+                nativeView["hoveringBorderView"] = hoveringBorderView;
+            }
+            
             if (top > 0 && background.borderTopColor && background.borderTopColor.ios){
                 let topBorderPath = CGPathCreateMutable();
                 CGPathMoveToPoint(topBorderPath, null, lto.x, lto.y);
@@ -104,8 +94,13 @@ export module ios {
                 topBorderLayer.fillColor = background.borderTopColor.ios.CGColor; 
                 topBorderLayer.path = topBorderPath;
 
-                nativeView.layer.addSublayer(topBorderLayer);
-                nativeView["topBorderLayer"] = topBorderLayer;
+                if (hoveringBorderView){
+                    hoveringBorderView.layer.addSublayer(topBorderLayer);
+                }
+                else {
+                    nativeView.layer.addSublayer(topBorderLayer);
+                    nativeView["topBorderLayer"] = topBorderLayer;
+                }
             }
             
             if (right > 0 && background.borderRightColor && background.borderRightColor.ios){
@@ -120,8 +115,13 @@ export module ios {
                 rightBorderLayer.fillColor = background.borderRightColor.ios.CGColor; 
                 rightBorderLayer.path = rightBorderPath;
 
-                nativeView.layer.addSublayer(rightBorderLayer);
-                nativeView["rightBorderLayer"] = rightBorderLayer;
+                if (hoveringBorderView){
+                    hoveringBorderView.layer.addSublayer(rightBorderLayer);
+                }
+                else {
+                    nativeView.layer.addSublayer(rightBorderLayer);
+                    nativeView["rightBorderLayer"] = rightBorderLayer;
+                }
             }
             
             if (bottom > 0 && background.borderBottomColor && background.borderBottomColor.ios){
@@ -136,8 +136,13 @@ export module ios {
                 bottomBorderLayer.fillColor = background.borderBottomColor.ios.CGColor; 
                 bottomBorderLayer.path = bottomBorderPath;
 
-                nativeView.layer.addSublayer(bottomBorderLayer);
-                nativeView["bottomBorderLayer"] = bottomBorderLayer;
+                if (hoveringBorderView){
+                    hoveringBorderView.layer.addSublayer(bottomBorderLayer);
+                }
+                else {
+                    nativeView.layer.addSublayer(bottomBorderLayer);
+                    nativeView["bottomBorderLayer"] = bottomBorderLayer;
+                }
             }
             
             if (left > 0 && background.borderLeftColor && background.borderLeftColor.ios){
@@ -152,8 +157,13 @@ export module ios {
                 leftBorderLayer.fillColor = background.borderLeftColor.ios.CGColor; 
                 leftBorderLayer.path = leftBorderPath;
 
-                nativeView.layer.addSublayer(leftBorderLayer);
-                nativeView["leftBorderLayer"] = leftBorderLayer;
+                if (hoveringBorderView){
+                    hoveringBorderView.layer.addSublayer(leftBorderLayer);
+                }
+                else {
+                    nativeView.layer.addSublayer(leftBorderLayer);
+                    nativeView["leftBorderLayer"] = leftBorderLayer;
+                }
             }
         }
 
@@ -230,7 +240,41 @@ export module ios {
         UIGraphicsEndImageContext();
         return flippedImage;
     }
+
+    export function clearBorders(nativeView: any){
+        if (nativeView.layer){
+            nativeView.layer.borderColor = undefined; 
+            nativeView.layer.borderWidth = 0;
+            nativeView.layer.cornerRadius = 0;
+        }
+
+        if (nativeView["hoveringBorderView"]){
+            (<UIView>nativeView["hoveringBorderView"]).removeFromSuperview();
+            nativeView["hoveringBorderView"] = undefined;
+        }
+
+        if (nativeView["topBorderLayer"]){
+            (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
+            nativeView["topBorderLayer"] = undefined;
+        }
+        
+        if (nativeView["rightBorderLayer"]){
+            (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
+            nativeView["rightBorderLayer"] = undefined;
+        }
+        
+        if (nativeView["bottomBorderLayer"]){
+            (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
+            nativeView["bottomBorderLayer"] = undefined;
+        }
+        
+        if (nativeView["leftBorderLayer"]){
+            (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
+            nativeView["leftBorderLayer"] = undefined;
+        }
+    }
 }
+
 
 function drawClipPath(nativeView: UIView, background: common.Background) {
     var path: any;

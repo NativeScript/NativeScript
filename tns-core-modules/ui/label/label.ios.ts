@@ -111,6 +111,7 @@ export class LabelStyler implements style.Styler {
     private static resetBackgroundInternalProperty(view: View, nativeValue: any) {
         var uiLabel: UILabel = <UILabel>view._nativeView;
         if (uiLabel && uiLabel.layer) {
+            backgroundModule.ios.clearBorders(uiLabel);
             var uiColor = <UIColor>nativeValue;
             var cgColor = uiColor ? uiColor.CGColor : null;
             uiLabel.layer.backgroundColor = cgColor;

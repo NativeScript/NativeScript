@@ -3,7 +3,7 @@
         <Button class="s0" row="0" col="0" text="Button"/>
         <Label class="s0" row="0" col="1" text="Label"/>
         <TextField class="s0" row="0" col="2" text="TextField"/>
-        <TextView class="s0" row="1" col="0" text="TextView"/>
+        <TextView class="s0" row="1" col="0" text="TextView Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec blandit, tortor vitae imperdiet gravida, eros neque scelerisque sapien, vel ultricies turpis ipsum vitae nisi. Sed ut consequat magna, scelerisque malesuada elit. Proin posuere purus dolor, semper sagittis dolor tempus ut. Praesent lorem mauris, ultricies eu faucibus quis, auctor ut leo. Mauris tincidunt justo id urna malesuada, at dapibus orci tincidunt. Suspendisse sollicitudin eget lorem porttitor pharetra. Phasellus cursus mauris ut urna sollicitudin pharetra."/>
         <SearchBar class="s0" row="1" col="1" text="SearchBar"/>
         <Switch class="s0" row="1" col="2" checked="true"/>
         <Slider class="s0" row="2" col="0" minValue="0" maxValue="100" value="50"/>
@@ -19,11 +19,8 @@
                 <SegmentedBarItem title="SB 2" />
             </SegmentedBar.items>
         </SegmentedBar> 
-        <DatePicker class="s0" row="4" col="2" year="1980" month="2" day="9"/>
-        <TimePicker class="s0" row="5" col="0" hour="5" minute="30"/>
-        <ListPicker class="s0" row="5" col="1" items="123"/>
-        <ScrollView class="s0" row="5" col="2">
-            <Label text="ScrollView" width="160" height="160" style.backgroundColor="gray"/>
+        <ScrollView class="s0" row="4" col="2">
+            <Label textWrap="true" text="ScrollView Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec blandit, tortor vitae imperdiet gravida, eros neque scelerisque sapien, vel ultricies turpis ipsum vitae nisi. Sed ut consequat magna, scelerisque malesuada elit. Proin posuere purus dolor, semper sagittis dolor tempus ut. Praesent lorem mauris, ultricies eu faucibus quis, auctor ut leo. Mauris tincidunt justo id urna malesuada, at dapibus orci tincidunt. Suspendisse sollicitudin eget lorem porttitor pharetra. Phasellus cursus mauris ut urna sollicitudin pharetra."/>
         </ScrollView>
     </GridLayout>
 </Page>
