@@ -7,11 +7,11 @@ declare class MCAdvertiserAssistant extends NSObject {
 
 	delegate: MCAdvertiserAssistantDelegate;
 
-	/* readonly */ discoveryInfo: NSDictionary<string, string>;
+	readonly discoveryInfo: NSDictionary<string, string>;
 
-	/* readonly */ serviceType: string;
+	readonly serviceType: string;
 
-	/* readonly */ session: MCSession;
+	readonly session: MCSession;
 
 	constructor(o: { serviceType: string; discoveryInfo: NSDictionary<string, string>; session: MCSession; });
 
@@ -39,7 +39,7 @@ declare class MCBrowserViewController extends UIViewController implements MCNear
 
 	static new(): MCBrowserViewController; // inherited from NSObject
 
-	/* readonly */ browser: MCNearbyServiceBrowser;
+	readonly browser: MCNearbyServiceBrowser;
 
 	delegate: MCBrowserViewControllerDelegate;
 
@@ -47,19 +47,19 @@ declare class MCBrowserViewController extends UIViewController implements MCNear
 
 	minimumNumberOfPeers: number;
 
-	/* readonly */ session: MCSession;
+	readonly session: MCSession;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { browser: MCNearbyServiceBrowser; session: MCSession; });
 
@@ -147,11 +147,11 @@ declare class MCNearbyServiceAdvertiser extends NSObject {
 
 	delegate: MCNearbyServiceAdvertiserDelegate;
 
-	/* readonly */ discoveryInfo: NSDictionary<string, string>;
+	readonly discoveryInfo: NSDictionary<string, string>;
 
-	/* readonly */ myPeerID: MCPeerID;
+	readonly myPeerID: MCPeerID;
 
-	/* readonly */ serviceType: string;
+	readonly serviceType: string;
 
 	constructor(o: { peer: MCPeerID; discoveryInfo: NSDictionary<string, string>; serviceType: string; });
 
@@ -181,9 +181,9 @@ declare class MCNearbyServiceBrowser extends NSObject {
 
 	delegate: MCNearbyServiceBrowserDelegate;
 
-	/* readonly */ myPeerID: MCPeerID;
+	readonly myPeerID: MCPeerID;
 
-	/* readonly */ serviceType: string;
+	readonly serviceType: string;
 
 	constructor(o: { peer: MCPeerID; serviceType: string; });
 
@@ -215,9 +215,9 @@ declare class MCPeerID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): MCPeerID; // inherited from NSObject
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -238,15 +238,15 @@ declare class MCSession extends NSObject {
 
 	static new(): MCSession; // inherited from NSObject
 
-	/* readonly */ connectedPeers: NSArray<MCPeerID>;
+	readonly connectedPeers: NSArray<MCPeerID>;
 
 	delegate: MCSessionDelegate;
 
-	/* readonly */ encryptionPreference: MCEncryptionPreference;
+	readonly encryptionPreference: MCEncryptionPreference;
 
-	/* readonly */ myPeerID: MCPeerID;
+	readonly myPeerID: MCPeerID;
 
-	/* readonly */ securityIdentity: NSArray<any>;
+	readonly securityIdentity: NSArray<any>;
 
 	constructor(o: { peer: MCPeerID; });
 

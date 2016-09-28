@@ -264,9 +264,9 @@ declare class SKAttribute extends NSObject implements NSCoding {
 
 	static new(): SKAttribute; // inherited from NSObject
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ type: SKAttributeType;
+	readonly type: SKAttributeType;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -458,21 +458,21 @@ declare class SKEffectNode extends SKNode implements SKWarpable {
 
 	shouldRasterize: boolean;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	subdivisionLevels: number; // inherited from SKWarpable
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	warpGeometry: SKWarpGeometry; // inherited from SKWarpable
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -852,19 +852,19 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 
 	attributeValues: NSDictionary<string, SKAttributeValue>;
 
-	/* readonly */ children: NSArray<SKNode>;
+	readonly children: NSArray<SKNode>;
 
 	constraints: NSArray<SKConstraint>;
 
 	entity: GKEntity;
 
-	/* readonly */ frame: CGRect;
+	readonly frame: CGRect;
 
 	hidden: boolean;
 
 	name: string;
 
-	/* readonly */ parent: SKNode;
+	readonly parent: SKNode;
 
 	paused: boolean;
 
@@ -874,7 +874,7 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 
 	reachConstraints: SKReachConstraints;
 
-	/* readonly */ scene: SKScene;
+	readonly scene: SKScene;
 
 	speed: number;
 
@@ -890,23 +890,23 @@ declare class SKNode extends UIResponder implements NSCoding, NSCopying, UIFocus
 
 	zRotation: number;
 
-	/* readonly */ canBecomeFocused: boolean; // inherited from UIFocusItem
+	readonly canBecomeFocused: boolean; // inherited from UIFocusItem
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
+	readonly preferredFocusEnvironments: NSArray<UIFocusEnvironment>; // inherited from UIFocusEnvironment
 
-	/* readonly */ preferredFocusedView: UIView; // inherited from UIFocusEnvironment
+	readonly preferredFocusedView: UIView; // inherited from UIFocusEnvironment
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1050,7 +1050,7 @@ declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
 
 	angularVelocity: number;
 
-	/* readonly */ area: number;
+	readonly area: number;
 
 	categoryBitMask: number;
 
@@ -1068,13 +1068,13 @@ declare class SKPhysicsBody extends NSObject implements NSCoding, NSCopying {
 
 	friction: number;
 
-	/* readonly */ joints: NSArray<SKPhysicsJoint>;
+	readonly joints: NSArray<SKPhysicsJoint>;
 
 	linearDamping: number;
 
 	mass: number;
 
-	/* readonly */ node: SKNode;
+	readonly node: SKNode;
 
 	pinned: boolean;
 
@@ -1115,15 +1115,15 @@ declare class SKPhysicsContact extends NSObject {
 
 	static new(): SKPhysicsContact; // inherited from NSObject
 
-	/* readonly */ bodyA: SKPhysicsBody;
+	readonly bodyA: SKPhysicsBody;
 
-	/* readonly */ bodyB: SKPhysicsBody;
+	readonly bodyB: SKPhysicsBody;
 
-	/* readonly */ collisionImpulse: number;
+	readonly collisionImpulse: number;
 
-	/* readonly */ contactNormal: CGVector;
+	readonly contactNormal: CGVector;
 
-	/* readonly */ contactPoint: CGPoint;
+	readonly contactPoint: CGPoint;
 }
 
 interface SKPhysicsContactDelegate extends NSObjectProtocol {
@@ -1147,9 +1147,9 @@ declare class SKPhysicsJoint extends NSObject implements NSCoding {
 
 	bodyB: SKPhysicsBody;
 
-	/* readonly */ reactionForce: CGVector;
+	readonly reactionForce: CGVector;
 
-	/* readonly */ reactionTorque: number;
+	readonly reactionTorque: number;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1353,7 +1353,7 @@ declare class SKRegion extends NSObject implements NSCoding, NSCopying {
 
 	static new(): SKRegion; // inherited from NSObject
 
-	/* readonly */ path: any;
+	readonly path: any;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1407,7 +1407,7 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	anchorPoint: CGPoint;
 
-	/* readonly */ audioEngine: AVAudioEngine;
+	readonly audioEngine: AVAudioEngine;
 
 	backgroundColor: UIColor;
 
@@ -1417,25 +1417,25 @@ declare class SKScene extends SKEffectNode implements GKSceneRootNodeType {
 
 	listener: SKNode;
 
-	/* readonly */ physicsWorld: SKPhysicsWorld;
+	readonly physicsWorld: SKPhysicsWorld;
 
 	scaleMode: SKSceneScaleMode;
 
 	size: CGSize;
 
-	/* readonly */ view: SKView;
+	readonly view: SKView;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { size: CGSize; });
 
@@ -1605,7 +1605,7 @@ declare class SKShapeNode extends SKNode {
 
 	lineJoin: CGLineJoin;
 
-	/* readonly */ lineLength: number;
+	readonly lineLength: number;
 
 	lineWidth: number;
 
@@ -1666,21 +1666,21 @@ declare class SKSpriteNode extends SKNode implements SKWarpable {
 
 	texture: SKTexture;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	subdivisionLevels: number; // inherited from SKWarpable
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	warpGeometry: SKWarpGeometry; // inherited from SKWarpable
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { color: UIColor; size: CGSize; });
 
@@ -1792,7 +1792,7 @@ declare class SKTextureAtlas extends NSObject implements NSCoding {
 
 	static preloadTextureAtlasesWithCompletionHandler(textureAtlases: NSArray<SKTextureAtlas>, completionHandler: () => void): void;
 
-	/* readonly */ textureNames: NSArray<string>;
+	readonly textureNames: NSArray<string>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2051,7 +2051,7 @@ declare class SKTileMapNode extends SKNode implements NSCoding, NSCopying {
 
 	lightingBitMask: number;
 
-	/* readonly */ mapSize: CGSize;
+	readonly mapSize: CGSize;
 
 	numberOfColumns: number;
 
@@ -2218,11 +2218,11 @@ declare class SKUniform extends NSObject implements NSCoding, NSCopying {
 
 	floatValue: number;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
 	textureValue: SKTexture;
 
-	/* readonly */ uniformType: SKUniformType;
+	readonly uniformType: SKUniformType;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2349,7 +2349,7 @@ declare class SKView extends UIView {
 
 	preferredFramesPerSecond: number;
 
-	/* readonly */ scene: SKScene;
+	readonly scene: SKScene;
 
 	shouldCullNonVisibleNodes: boolean;
 
@@ -2412,11 +2412,11 @@ declare class SKWarpGeometryGrid extends SKWarpGeometry implements NSCoding {
 
 	static new(): SKWarpGeometryGrid; // inherited from NSObject
 
-	/* readonly */ numberOfColumns: number;
+	readonly numberOfColumns: number;
 
-	/* readonly */ numberOfRows: number;
+	readonly numberOfRows: number;
 
-	/* readonly */ vertexCount: number;
+	readonly vertexCount: number;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

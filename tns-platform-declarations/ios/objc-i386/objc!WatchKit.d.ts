@@ -56,7 +56,7 @@ declare class WKInterfaceController extends NSObject {
 
 	static reloadRootControllersWithNamesContexts(names: NSArray<string>, contexts: NSArray<any>): void;
 
-	/* readonly */ contentFrame: CGRect;
+	readonly contentFrame: CGRect;
 
 	addMenuItemWithImageNamedTitleAction(imageName: string, title: string, action: string): void;
 
@@ -138,23 +138,23 @@ declare class WKInterfaceDevice extends NSObject {
 
 	static new(): WKInterfaceDevice; // inherited from NSObject
 
-	/* readonly */ cachedImages: NSDictionary<string, number>;
+	readonly cachedImages: NSDictionary<string, number>;
 
-	/* readonly */ localizedModel: string;
+	readonly localizedModel: string;
 
-	/* readonly */ model: string;
+	readonly model: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ preferredContentSizeCategory: string;
+	readonly preferredContentSizeCategory: string;
 
-	/* readonly */ screenBounds: CGRect;
+	readonly screenBounds: CGRect;
 
-	/* readonly */ screenScale: number;
+	readonly screenScale: number;
 
-	/* readonly */ systemName: string;
+	readonly systemName: string;
 
-	/* readonly */ systemVersion: string;
+	readonly systemVersion: string;
 
 	addCachedImageName(image: UIImage, name: string): boolean;
 
@@ -171,17 +171,17 @@ declare class WKInterfaceGroup extends WKInterfaceObject implements WKImageAnima
 
 	static new(): WKInterfaceGroup; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -228,17 +228,17 @@ declare class WKInterfaceImage extends WKInterfaceObject implements WKImageAnima
 
 	static new(): WKInterfaceImage; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -324,7 +324,7 @@ declare class WKInterfaceObject extends NSObject {
 
 	static new(): WKInterfaceObject; // inherited from NSObject
 
-	/* readonly */ interfaceProperty: string;
+	readonly interfaceProperty: string;
 
 	setAccessibilityHint(accessibilityHint: string): void;
 
@@ -396,7 +396,7 @@ declare class WKInterfaceTable extends WKInterfaceObject {
 
 	static new(): WKInterfaceTable; // inherited from NSObject
 
-	/* readonly */ numberOfRows: number;
+	readonly numberOfRows: number;
 
 	insertRowsAtIndexesWithRowType(rows: NSIndexSet, rowType: string): void;
 

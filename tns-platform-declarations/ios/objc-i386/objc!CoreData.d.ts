@@ -11,11 +11,11 @@ declare class NSAsynchronousFetchRequest<ResultType> extends NSPersistentStoreRe
 
 	static new<ResultType>(): NSAsynchronousFetchRequest<ResultType>; // inherited from NSObject
 
-	/* readonly */ completionBlock: (p1: NSAsynchronousFetchResult<any>) => void;
+	readonly completionBlock: (p1: NSAsynchronousFetchResult<any>) => void;
 
 	estimatedResultCount: number;
 
-	/* readonly */ fetchRequest: NSFetchRequest<ResultType>;
+	readonly fetchRequest: NSFetchRequest<ResultType>;
 
 	constructor(o: { fetchRequest: NSFetchRequest<ResultType>; completionBlock: (p1: NSAsynchronousFetchResult<ResultType>) => void; });
 
@@ -28,9 +28,9 @@ declare class NSAsynchronousFetchResult<ResultType> extends NSPersistentStoreAsy
 
 	static new<ResultType>(): NSAsynchronousFetchResult<ResultType>; // inherited from NSObject
 
-	/* readonly */ fetchRequest: NSAsynchronousFetchRequest<ResultType>;
+	readonly fetchRequest: NSAsynchronousFetchRequest<ResultType>;
 
-	/* readonly */ finalResult: NSArray<ResultType>;
+	readonly finalResult: NSArray<ResultType>;
 }
 
 declare class NSAtomicStore extends NSPersistentStore {
@@ -68,7 +68,7 @@ declare class NSAtomicStoreCacheNode extends NSObject {
 
 	static new(): NSAtomicStoreCacheNode; // inherited from NSObject
 
-	/* readonly */ objectID: NSManagedObjectID;
+	readonly objectID: NSManagedObjectID;
 
 	propertyCache: NSMutableDictionary<string, any>;
 
@@ -129,7 +129,7 @@ declare class NSBatchDeleteRequest extends NSPersistentStoreRequest {
 
 	static new(): NSBatchDeleteRequest; // inherited from NSObject
 
-	/* readonly */ fetchRequest: NSFetchRequest<any>;
+	readonly fetchRequest: NSFetchRequest<any>;
 
 	resultType: NSBatchDeleteRequestResultType;
 
@@ -157,9 +157,9 @@ declare class NSBatchDeleteResult extends NSPersistentStoreResult {
 
 	static new(): NSBatchDeleteResult; // inherited from NSObject
 
-	/* readonly */ result: any;
+	readonly result: any;
 
-	/* readonly */ resultType: NSBatchDeleteRequestResultType;
+	readonly resultType: NSBatchDeleteRequestResultType;
 }
 
 declare class NSBatchUpdateRequest extends NSPersistentStoreRequest {
@@ -170,9 +170,9 @@ declare class NSBatchUpdateRequest extends NSPersistentStoreRequest {
 
 	static new(): NSBatchUpdateRequest; // inherited from NSObject
 
-	/* readonly */ entity: NSEntityDescription;
+	readonly entity: NSEntityDescription;
 
-	/* readonly */ entityName: string;
+	readonly entityName: string;
 
 	includesSubentities: boolean;
 
@@ -206,9 +206,9 @@ declare class NSBatchUpdateResult extends NSPersistentStoreResult {
 
 	static new(): NSBatchUpdateResult; // inherited from NSObject
 
-	/* readonly */ result: any;
+	readonly result: any;
 
-	/* readonly */ resultType: NSBatchUpdateRequestResultType;
+	readonly resultType: NSBatchUpdateRequestResultType;
 }
 
 declare var NSBinaryStoreType: string;
@@ -219,17 +219,17 @@ declare class NSConstraintConflict extends NSObject {
 
 	static new(): NSConstraintConflict; // inherited from NSObject
 
-	/* readonly */ conflictingObjects: NSArray<NSManagedObject>;
+	readonly conflictingObjects: NSArray<NSManagedObject>;
 
-	/* readonly */ conflictingSnapshots: NSArray<NSDictionary<any, any>>;
+	readonly conflictingSnapshots: NSArray<NSDictionary<any, any>>;
 
-	/* readonly */ constraint: NSArray<string>;
+	readonly constraint: NSArray<string>;
 
-	/* readonly */ constraintValues: NSDictionary<string, any>;
+	readonly constraintValues: NSDictionary<string, any>;
 
-	/* readonly */ databaseObject: NSManagedObject;
+	readonly databaseObject: NSManagedObject;
 
-	/* readonly */ databaseSnapshot: NSDictionary<string, any>;
+	readonly databaseSnapshot: NSDictionary<string, any>;
 
 	constructor(o: { constraint: NSArray<string>; databaseObject: NSManagedObject; databaseSnapshot: NSDictionary<any, any>; conflictingObjects: NSArray<NSManagedObject>; conflictingSnapshots: NSArray<any>; });
 
@@ -267,35 +267,35 @@ declare class NSEntityDescription extends NSObject implements NSCoding, NSCopyin
 
 	abstract: boolean;
 
-	/* readonly */ attributesByName: NSDictionary<string, NSAttributeDescription>;
+	readonly attributesByName: NSDictionary<string, NSAttributeDescription>;
 
 	compoundIndexes: NSArray<NSArray<any>>;
 
 	managedObjectClassName: string;
 
-	/* readonly */ managedObjectModel: NSManagedObjectModel;
+	readonly managedObjectModel: NSManagedObjectModel;
 
 	name: string;
 
 	properties: NSArray<NSPropertyDescription>;
 
-	/* readonly */ propertiesByName: NSDictionary<string, NSPropertyDescription>;
+	readonly propertiesByName: NSDictionary<string, NSPropertyDescription>;
 
-	/* readonly */ relationshipsByName: NSDictionary<string, NSRelationshipDescription>;
+	readonly relationshipsByName: NSDictionary<string, NSRelationshipDescription>;
 
 	renamingIdentifier: string;
 
 	subentities: NSArray<NSEntityDescription>;
 
-	/* readonly */ subentitiesByName: NSDictionary<string, NSEntityDescription>;
+	readonly subentitiesByName: NSDictionary<string, NSEntityDescription>;
 
-	/* readonly */ superentity: NSEntityDescription;
+	readonly superentity: NSEntityDescription;
 
 	uniquenessConstraints: NSArray<NSArray<any>>;
 
 	userInfo: NSDictionary<any, any>;
 
-	/* readonly */ versionHash: NSData;
+	readonly versionHash: NSData;
 
 	versionHashModifier: string;
 	[Symbol.iterator](): Iterator<any>;
@@ -407,7 +407,7 @@ declare class NSFetchRequest<ResultType> extends NSPersistentStoreRequest implem
 
 	entity: NSEntityDescription;
 
-	/* readonly */ entityName: string;
+	readonly entityName: string;
 
 	fetchBatchSize: number;
 
@@ -462,11 +462,11 @@ declare class NSFetchRequestExpression extends NSExpression {
 
 	static new(): NSFetchRequestExpression; // inherited from NSObject
 
-	/* readonly */ contextExpression: NSExpression;
+	readonly contextExpression: NSExpression;
 
-	/* readonly */ countOnlyRequest: boolean;
+	readonly countOnlyRequest: boolean;
 
-	/* readonly */ requestExpression: NSExpression;
+	readonly requestExpression: NSExpression;
 }
 
 declare var NSFetchRequestExpressionType: NSExpressionType;
@@ -517,21 +517,21 @@ declare class NSFetchedResultsController<ResultType> extends NSObject {
 
 	static new<ResultType>(): NSFetchedResultsController<ResultType>; // inherited from NSObject
 
-	/* readonly */ cacheName: string;
+	readonly cacheName: string;
 
 	delegate: NSFetchedResultsControllerDelegate;
 
-	/* readonly */ fetchRequest: NSFetchRequest<ResultType>;
+	readonly fetchRequest: NSFetchRequest<ResultType>;
 
-	/* readonly */ fetchedObjects: NSArray<ResultType>;
+	readonly fetchedObjects: NSArray<ResultType>;
 
-	/* readonly */ managedObjectContext: NSManagedObjectContext;
+	readonly managedObjectContext: NSManagedObjectContext;
 
-	/* readonly */ sectionIndexTitles: NSArray<string>;
+	readonly sectionIndexTitles: NSArray<string>;
 
-	/* readonly */ sectionNameKeyPath: string;
+	readonly sectionNameKeyPath: string;
 
-	/* readonly */ sections: NSArray<NSFetchedResultsSectionInfo>;
+	readonly sections: NSArray<NSFetchedResultsSectionInfo>;
 
 	constructor(o: { fetchRequest: NSFetchRequest<ResultType>; managedObjectContext: NSManagedObjectContext; sectionNameKeyPath: string; cacheName: string; });
 
@@ -615,9 +615,9 @@ declare class NSIncrementalStoreNode extends NSObject {
 
 	static new(): NSIncrementalStoreNode; // inherited from NSObject
 
-	/* readonly */ objectID: NSManagedObjectID;
+	readonly objectID: NSManagedObjectID;
 
-	/* readonly */ version: number;
+	readonly version: number;
 
 	constructor(o: { objectID: NSManagedObjectID; withValues: NSDictionary<string, any>; version: number; });
 
@@ -648,39 +648,39 @@ declare class NSManagedObject extends NSObject implements NSFetchRequestResult {
 
 	static new(): NSManagedObject; // inherited from NSObject
 
-	/* readonly */ deleted: boolean;
+	readonly deleted: boolean;
 
-	/* readonly */ entity: NSEntityDescription;
+	readonly entity: NSEntityDescription;
 
-	/* readonly */ fault: boolean;
+	readonly fault: boolean;
 
-	/* readonly */ faultingState: number;
+	readonly faultingState: number;
 
-	/* readonly */ hasChanges: boolean;
+	readonly hasChanges: boolean;
 
-	/* readonly */ hasPersistentChangedValues: boolean;
+	readonly hasPersistentChangedValues: boolean;
 
-	/* readonly */ inserted: boolean;
+	readonly inserted: boolean;
 
-	/* readonly */ managedObjectContext: NSManagedObjectContext;
+	readonly managedObjectContext: NSManagedObjectContext;
 
-	/* readonly */ objectID: NSManagedObjectID;
+	readonly objectID: NSManagedObjectID;
 
-	/* readonly */ updated: boolean;
+	readonly updated: boolean;
 
-	/* readonly */ static contextShouldIgnoreUnmodeledPropertyChanges: boolean;
+	static readonly contextShouldIgnoreUnmodeledPropertyChanges: boolean;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { context: NSManagedObjectContext; });
 
@@ -767,13 +767,13 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	automaticallyMergesChangesFromParent: boolean;
 
-	/* readonly */ concurrencyType: NSManagedObjectContextConcurrencyType;
+	readonly concurrencyType: NSManagedObjectContextConcurrencyType;
 
-	/* readonly */ deletedObjects: NSSet<NSManagedObject>;
+	readonly deletedObjects: NSSet<NSManagedObject>;
 
-	/* readonly */ hasChanges: boolean;
+	readonly hasChanges: boolean;
 
-	/* readonly */ insertedObjects: NSSet<NSManagedObject>;
+	readonly insertedObjects: NSSet<NSManagedObject>;
 
 	mergePolicy: any;
 
@@ -785,9 +785,9 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	propagatesDeletesAtEndOfEvent: boolean;
 
-	/* readonly */ queryGenerationToken: NSQueryGenerationToken;
+	readonly queryGenerationToken: NSQueryGenerationToken;
 
-	/* readonly */ registeredObjects: NSSet<NSManagedObject>;
+	readonly registeredObjects: NSSet<NSManagedObject>;
 
 	retainsRegisteredObjects: boolean;
 
@@ -797,9 +797,9 @@ declare class NSManagedObjectContext extends NSObject implements NSCoding, NSLoc
 
 	undoManager: NSUndoManager;
 
-	/* readonly */ updatedObjects: NSSet<NSManagedObject>;
+	readonly updatedObjects: NSSet<NSManagedObject>;
 
-	/* readonly */ userInfo: NSMutableDictionary<any, any>;
+	readonly userInfo: NSMutableDictionary<any, any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -893,23 +893,23 @@ declare class NSManagedObjectID extends NSObject implements NSCopying, NSFetchRe
 
 	static new(): NSManagedObjectID; // inherited from NSObject
 
-	/* readonly */ entity: NSEntityDescription;
+	readonly entity: NSEntityDescription;
 
-	/* readonly */ persistentStore: NSPersistentStore;
+	readonly persistentStore: NSPersistentStore;
 
-	/* readonly */ temporaryID: boolean;
+	readonly temporaryID: boolean;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	URIRepresentation(): NSURL;
 
@@ -954,15 +954,15 @@ declare class NSManagedObjectModel extends NSObject implements NSCoding, NSCopyi
 
 	static new(): NSManagedObjectModel; // inherited from NSObject
 
-	/* readonly */ configurations: NSArray<string>;
+	readonly configurations: NSArray<string>;
 
 	entities: NSArray<NSEntityDescription>;
 
-	/* readonly */ entitiesByName: NSDictionary<string, NSEntityDescription>;
+	readonly entitiesByName: NSDictionary<string, NSEntityDescription>;
 
-	/* readonly */ entityVersionHashesByName: NSDictionary<string, NSData>;
+	readonly entityVersionHashesByName: NSDictionary<string, NSData>;
 
-	/* readonly */ fetchRequestTemplatesByName: NSDictionary<string, NSFetchRequest<any>>;
+	readonly fetchRequestTemplatesByName: NSDictionary<string, NSFetchRequest<any>>;
 
 	localizationDictionary: NSDictionary<string, string>;
 
@@ -1010,7 +1010,7 @@ declare class NSMappingModel extends NSObject {
 
 	entityMappings: NSArray<NSEntityMapping>;
 
-	/* readonly */ entityMappingsByName: NSDictionary<string, NSEntityMapping>;
+	readonly entityMappingsByName: NSDictionary<string, NSEntityMapping>;
 
 	constructor(o: { contentsOfURL: NSURL; });
 
@@ -1031,17 +1031,17 @@ declare class NSMergeConflict extends NSObject {
 
 	static new(): NSMergeConflict; // inherited from NSObject
 
-	/* readonly */ cachedSnapshot: NSDictionary<string, any>;
+	readonly cachedSnapshot: NSDictionary<string, any>;
 
-	/* readonly */ newVersionNumber: number;
+	readonly newVersionNumber: number;
 
-	/* readonly */ objectSnapshot: NSDictionary<string, any>;
+	readonly objectSnapshot: NSDictionary<string, any>;
 
-	/* readonly */ oldVersionNumber: number;
+	readonly oldVersionNumber: number;
 
-	/* readonly */ persistedSnapshot: NSDictionary<string, any>;
+	readonly persistedSnapshot: NSDictionary<string, any>;
 
-	/* readonly */ sourceObject: NSManagedObject;
+	readonly sourceObject: NSManagedObject;
 
 	constructor(o: { source: NSManagedObject; newVersion: number; oldVersion: number; cachedSnapshot: NSDictionary<string, any>; persistedSnapshot: NSDictionary<string, any>; });
 
@@ -1054,17 +1054,17 @@ declare class NSMergePolicy extends NSObject {
 
 	static new(): NSMergePolicy; // inherited from NSObject
 
-	/* readonly */ mergeType: NSMergePolicyType;
+	readonly mergeType: NSMergePolicyType;
 
-	/* readonly */ static errorMergePolicy: NSMergePolicy;
+	static readonly errorMergePolicy: NSMergePolicy;
 
-	/* readonly */ static mergeByPropertyObjectTrumpMergePolicy: NSMergePolicy;
+	static readonly mergeByPropertyObjectTrumpMergePolicy: NSMergePolicy;
 
-	/* readonly */ static mergeByPropertyStoreTrumpMergePolicy: NSMergePolicy;
+	static readonly mergeByPropertyStoreTrumpMergePolicy: NSMergePolicy;
 
-	/* readonly */ static overwriteMergePolicy: NSMergePolicy;
+	static readonly overwriteMergePolicy: NSMergePolicy;
 
-	/* readonly */ static rollbackMergePolicy: NSMergePolicy;
+	static readonly rollbackMergePolicy: NSMergePolicy;
 
 	constructor(o: { mergeType: NSMergePolicyType; });
 
@@ -1110,19 +1110,19 @@ declare class NSMigrationManager extends NSObject {
 
 	static new(): NSMigrationManager; // inherited from NSObject
 
-	/* readonly */ currentEntityMapping: NSEntityMapping;
+	readonly currentEntityMapping: NSEntityMapping;
 
-	/* readonly */ destinationContext: NSManagedObjectContext;
+	readonly destinationContext: NSManagedObjectContext;
 
-	/* readonly */ destinationModel: NSManagedObjectModel;
+	readonly destinationModel: NSManagedObjectModel;
 
-	/* readonly */ mappingModel: NSMappingModel;
+	readonly mappingModel: NSMappingModel;
 
-	/* readonly */ migrationProgress: number;
+	readonly migrationProgress: number;
 
-	/* readonly */ sourceContext: NSManagedObjectContext;
+	readonly sourceContext: NSManagedObjectContext;
 
-	/* readonly */ sourceModel: NSManagedObjectModel;
+	readonly sourceModel: NSManagedObjectModel;
 
 	userInfo: NSDictionary<any, any>;
 
@@ -1179,15 +1179,15 @@ declare class NSPersistentContainer extends NSObject {
 
 	static persistentContainerWithNameManagedObjectModel(name: string, model: NSManagedObjectModel): NSPersistentContainer;
 
-	/* readonly */ managedObjectModel: NSManagedObjectModel;
+	readonly managedObjectModel: NSManagedObjectModel;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ persistentStoreCoordinator: NSPersistentStoreCoordinator;
+	readonly persistentStoreCoordinator: NSPersistentStoreCoordinator;
 
 	persistentStoreDescriptions: NSArray<NSPersistentStoreDescription>;
 
-	/* readonly */ viewContext: NSManagedObjectContext;
+	readonly viewContext: NSManagedObjectContext;
 
 	constructor(o: { name: string; });
 
@@ -1218,19 +1218,19 @@ declare class NSPersistentStore extends NSObject {
 
 	URL: NSURL;
 
-	/* readonly */ configurationName: string;
+	readonly configurationName: string;
 
 	identifier: string;
 
 	metadata: NSDictionary<string, any>;
 
-	/* readonly */ options: NSDictionary<any, any>;
+	readonly options: NSDictionary<any, any>;
 
-	/* readonly */ persistentStoreCoordinator: NSPersistentStoreCoordinator;
+	readonly persistentStoreCoordinator: NSPersistentStoreCoordinator;
 
 	readOnly: boolean;
 
-	/* readonly */ type: string;
+	readonly type: string;
 
 	constructor(o: { persistentStoreCoordinator: NSPersistentStoreCoordinator; configurationName: string; URL: NSURL; options: NSDictionary<any, any>; });
 
@@ -1249,11 +1249,11 @@ declare class NSPersistentStoreAsynchronousResult extends NSPersistentStoreResul
 
 	static new(): NSPersistentStoreAsynchronousResult; // inherited from NSObject
 
-	/* readonly */ managedObjectContext: NSManagedObjectContext;
+	readonly managedObjectContext: NSManagedObjectContext;
 
-	/* readonly */ operationError: NSError;
+	readonly operationError: NSError;
 
-	/* readonly */ progress: NSProgress;
+	readonly progress: NSProgress;
 
 	cancel(): void;
 }
@@ -1278,13 +1278,13 @@ declare class NSPersistentStoreCoordinator extends NSObject implements NSLocking
 
 	static setMetadataForPersistentStoreOfTypeURLOptionsError(metadata: NSDictionary<string, any>, storeType: string, url: NSURL, options: NSDictionary<any, any>): boolean;
 
-	/* readonly */ managedObjectModel: NSManagedObjectModel;
+	readonly managedObjectModel: NSManagedObjectModel;
 
 	name: string;
 
-	/* readonly */ persistentStores: NSArray<NSPersistentStore>;
+	readonly persistentStores: NSArray<NSPersistentStore>;
 
-	/* readonly */ static registeredStoreTypes: NSDictionary<string, NSValue>;
+	static readonly registeredStoreTypes: NSDictionary<string, NSValue>;
 
 	constructor(o: { managedObjectModel: NSManagedObjectModel; });
 
@@ -1347,7 +1347,7 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 
 	configuration: string;
 
-	/* readonly */ options: NSDictionary<string, NSObject>;
+	readonly options: NSDictionary<string, NSObject>;
 
 	readOnly: boolean;
 
@@ -1357,7 +1357,7 @@ declare class NSPersistentStoreDescription extends NSObject implements NSCopying
 
 	shouldMigrateStoreAutomatically: boolean;
 
-	/* readonly */ sqlitePragmas: NSDictionary<string, NSObject>;
+	readonly sqlitePragmas: NSDictionary<string, NSObject>;
 
 	timeout: number;
 
@@ -1406,7 +1406,7 @@ declare class NSPersistentStoreRequest extends NSObject implements NSCopying {
 
 	affectedStores: NSArray<NSPersistentStore>;
 
-	/* readonly */ requestType: NSPersistentStoreRequestType;
+	readonly requestType: NSPersistentStoreRequestType;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -1470,7 +1470,7 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	static new(): NSPropertyDescription; // inherited from NSObject
 
-	/* readonly */ entity: NSEntityDescription;
+	readonly entity: NSEntityDescription;
 
 	indexed: boolean;
 
@@ -1488,11 +1488,11 @@ declare class NSPropertyDescription extends NSObject implements NSCoding, NSCopy
 
 	userInfo: NSDictionary<any, any>;
 
-	/* readonly */ validationPredicates: NSArray<NSPredicate>;
+	readonly validationPredicates: NSArray<NSPredicate>;
 
-	/* readonly */ validationWarnings: NSArray<any>;
+	readonly validationWarnings: NSArray<any>;
 
-	/* readonly */ versionHash: NSData;
+	readonly versionHash: NSData;
 
 	versionHashModifier: string;
 
@@ -1526,7 +1526,7 @@ declare class NSQueryGenerationToken extends NSObject implements NSCopying {
 
 	static new(): NSQueryGenerationToken; // inherited from NSObject
 
-	/* readonly */ static currentQueryGenerationToken: NSQueryGenerationToken;
+	static readonly currentQueryGenerationToken: NSQueryGenerationToken;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -1553,7 +1553,7 @@ declare class NSRelationshipDescription extends NSPropertyDescription {
 
 	ordered: boolean;
 
-	/* readonly */ toMany: boolean;
+	readonly toMany: boolean;
 }
 
 declare var NSRemovedPersistentStoresKey: string;
@@ -1580,13 +1580,13 @@ declare class NSSaveChangesRequest extends NSPersistentStoreRequest {
 
 	static new(): NSSaveChangesRequest; // inherited from NSObject
 
-	/* readonly */ deletedObjects: NSSet<NSManagedObject>;
+	readonly deletedObjects: NSSet<NSManagedObject>;
 
-	/* readonly */ insertedObjects: NSSet<NSManagedObject>;
+	readonly insertedObjects: NSSet<NSManagedObject>;
 
-	/* readonly */ lockedObjects: NSSet<NSManagedObject>;
+	readonly lockedObjects: NSSet<NSManagedObject>;
 
-	/* readonly */ updatedObjects: NSSet<NSManagedObject>;
+	readonly updatedObjects: NSSet<NSManagedObject>;
 
 	constructor(o: { insertedObjects: NSSet<NSManagedObject>; updatedObjects: NSSet<NSManagedObject>; deletedObjects: NSSet<NSManagedObject>; lockedObjects: NSSet<NSManagedObject>; });
 

@@ -69,7 +69,7 @@ declare class SCNAction extends NSObject implements NSCopying, NSSecureCoding {
 
 	timingMode: SCNActionTimingMode;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -173,9 +173,9 @@ declare class SCNAudioPlayer extends NSObject {
 
 	static new(): SCNAudioPlayer; // inherited from NSObject
 
-	/* readonly */ audioNode: AVAudioNode;
+	readonly audioNode: AVAudioNode;
 
-	/* readonly */ audioSource: SCNAudioSource;
+	readonly audioSource: SCNAudioSource;
 
 	didFinishPlayback: () => void;
 
@@ -210,7 +210,7 @@ declare class SCNAudioSource extends NSObject implements NSCopying, NSSecureCodi
 
 	volume: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -358,7 +358,7 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	colorFringeStrength: number;
 
-	/* readonly */ colorGrading: SCNMaterialProperty;
+	readonly colorGrading: SCNMaterialProperty;
 
 	contrast: number;
 
@@ -408,23 +408,23 @@ declare class SCNCamera extends NSObject implements NSCopying, NSSecureCoding, S
 
 	zNear: number;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	technique: SCNTechnique; // inherited from SCNTechniqueSupport
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -560,21 +560,21 @@ declare class SCNConstraint extends NSObject implements NSCopying, NSSecureCodin
 
 	influenceFactor: number;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -734,11 +734,11 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	firstMaterial: SCNMaterial;
 
-	/* readonly */ geometryElementCount: number;
+	readonly geometryElementCount: number;
 
-	/* readonly */ geometryElements: NSArray<SCNGeometryElement>;
+	readonly geometryElements: NSArray<SCNGeometryElement>;
 
-	/* readonly */ geometrySources: NSArray<SCNGeometrySource>;
+	readonly geometrySources: NSArray<SCNGeometrySource>;
 
 	levelsOfDetail: NSArray<SCNLevelOfDetail>;
 
@@ -748,25 +748,25 @@ declare class SCNGeometry extends NSObject implements NSCopying, NSSecureCoding,
 
 	subdivisionLevel: number;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	program: SCNProgram; // inherited from SCNShadable
 
 	shaderModifiers: NSDictionary<string, string>; // inherited from SCNShadable
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -849,15 +849,15 @@ declare class SCNGeometryElement extends NSObject implements NSSecureCoding {
 
 	static new(): SCNGeometryElement; // inherited from NSObject
 
-	/* readonly */ bytesPerIndex: number;
+	readonly bytesPerIndex: number;
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ primitiveCount: number;
+	readonly primitiveCount: number;
 
-	/* readonly */ primitiveType: SCNGeometryPrimitiveType;
+	readonly primitiveType: SCNGeometryPrimitiveType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -891,23 +891,23 @@ declare class SCNGeometrySource extends NSObject implements NSSecureCoding {
 
 	static new(): SCNGeometrySource; // inherited from NSObject
 
-	/* readonly */ bytesPerComponent: number;
+	readonly bytesPerComponent: number;
 
-	/* readonly */ componentsPerVector: number;
+	readonly componentsPerVector: number;
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ dataOffset: number;
+	readonly dataOffset: number;
 
-	/* readonly */ dataStride: number;
+	readonly dataStride: number;
 
-	/* readonly */ floatComponents: boolean;
+	readonly floatComponents: boolean;
 
-	/* readonly */ semantic: string;
+	readonly semantic: string;
 
-	/* readonly */ vectorCount: number;
+	readonly vectorCount: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -954,23 +954,23 @@ declare class SCNHitTestResult extends NSObject {
 
 	static new(): SCNHitTestResult; // inherited from NSObject
 
-	/* readonly */ boneNode: SCNNode;
+	readonly boneNode: SCNNode;
 
-	/* readonly */ faceIndex: number;
+	readonly faceIndex: number;
 
-	/* readonly */ geometryIndex: number;
+	readonly geometryIndex: number;
 
-	/* readonly */ localCoordinates: SCNVector3;
+	readonly localCoordinates: SCNVector3;
 
-	/* readonly */ localNormal: SCNVector3;
+	readonly localNormal: SCNVector3;
 
-	/* readonly */ modelTransform: SCNMatrix4;
+	readonly modelTransform: SCNMatrix4;
 
-	/* readonly */ node: SCNNode;
+	readonly node: SCNNode;
 
-	/* readonly */ worldCoordinates: SCNVector3;
+	readonly worldCoordinates: SCNVector3;
 
-	/* readonly */ worldNormal: SCNVector3;
+	readonly worldNormal: SCNVector3;
 
 	textureCoordinatesWithMappingChannel(channel: number): CGPoint;
 }
@@ -987,7 +987,7 @@ declare class SCNIKConstraint extends SCNConstraint {
 
 	static new(): SCNIKConstraint; // inherited from NSObject
 
-	/* readonly */ chainRootNode: SCNNode;
+	readonly chainRootNode: SCNNode;
 
 	targetPosition: SCNVector3;
 
@@ -1010,13 +1010,13 @@ declare class SCNLevelOfDetail extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): SCNLevelOfDetail; // inherited from NSObject
 
-	/* readonly */ geometry: SCNGeometry;
+	readonly geometry: SCNGeometry;
 
-	/* readonly */ screenSpaceRadius: number;
+	readonly screenSpaceRadius: number;
 
-	/* readonly */ worldSpaceDistance: number;
+	readonly worldSpaceDistance: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1051,7 +1051,7 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	color: any;
 
-	/* readonly */ gobo: SCNMaterialProperty;
+	readonly gobo: SCNMaterialProperty;
 
 	intensity: number;
 
@@ -1083,23 +1083,23 @@ declare class SCNLight extends NSObject implements NSCopying, NSSecureCoding, SC
 
 	zNear: number;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	technique: SCNTechnique; // inherited from SCNTechniqueSupport
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1197,19 +1197,19 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	static new(): SCNMaterial; // inherited from NSObject
 
-	/* readonly */ ambient: SCNMaterialProperty;
+	readonly ambient: SCNMaterialProperty;
 
-	/* readonly */ ambientOcclusion: SCNMaterialProperty;
+	readonly ambientOcclusion: SCNMaterialProperty;
 
 	blendMode: SCNBlendMode;
 
 	cullMode: SCNCullMode;
 
-	/* readonly */ diffuse: SCNMaterialProperty;
+	readonly diffuse: SCNMaterialProperty;
 
 	doubleSided: boolean;
 
-	/* readonly */ emission: SCNMaterialProperty;
+	readonly emission: SCNMaterialProperty;
 
 	fresnelExponent: number;
 
@@ -1219,53 +1219,53 @@ declare class SCNMaterial extends NSObject implements NSCopying, NSSecureCoding,
 
 	locksAmbientWithDiffuse: boolean;
 
-	/* readonly */ metalness: SCNMaterialProperty;
+	readonly metalness: SCNMaterialProperty;
 
-	/* readonly */ multiply: SCNMaterialProperty;
+	readonly multiply: SCNMaterialProperty;
 
 	name: string;
 
-	/* readonly */ normal: SCNMaterialProperty;
+	readonly normal: SCNMaterialProperty;
 
 	readsFromDepthBuffer: boolean;
 
-	/* readonly */ reflective: SCNMaterialProperty;
+	readonly reflective: SCNMaterialProperty;
 
-	/* readonly */ roughness: SCNMaterialProperty;
+	readonly roughness: SCNMaterialProperty;
 
-	/* readonly */ selfIllumination: SCNMaterialProperty;
+	readonly selfIllumination: SCNMaterialProperty;
 
 	shininess: number;
 
-	/* readonly */ specular: SCNMaterialProperty;
+	readonly specular: SCNMaterialProperty;
 
 	transparency: number;
 
 	transparencyMode: SCNTransparencyMode;
 
-	/* readonly */ transparent: SCNMaterialProperty;
+	readonly transparent: SCNMaterialProperty;
 
 	writesToDepthBuffer: boolean;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	program: SCNProgram; // inherited from SCNShadable
 
 	shaderModifiers: NSDictionary<string, string>; // inherited from SCNShadable
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1350,21 +1350,21 @@ declare class SCNMaterialProperty extends NSObject implements NSSecureCoding, SC
 
 	wrapT: SCNWrapMode;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1465,21 +1465,21 @@ declare class SCNMorpher extends NSObject implements NSSecureCoding, SCNAnimatab
 
 	targets: NSArray<SCNGeometry>;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1558,7 +1558,7 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	static nodeWithMDLObject(mdlObject: MDLObject): SCNNode;
 
-	/* readonly */ audioPlayers: NSArray<SCNAudioPlayer>;
+	readonly audioPlayers: NSArray<SCNAudioPlayer>;
 
 	camera: SCNCamera;
 
@@ -1566,7 +1566,7 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	categoryBitMask: number;
 
-	/* readonly */ childNodes: NSArray<SCNNode>;
+	readonly childNodes: NSArray<SCNNode>;
 
 	constraints: NSArray<SCNConstraint>;
 
@@ -1590,9 +1590,9 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	orientation: SCNVector4;
 
-	/* readonly */ parentNode: SCNNode;
+	readonly parentNode: SCNNode;
 
-	/* readonly */ particleSystems: NSArray<SCNParticleSystem>;
+	readonly particleSystems: NSArray<SCNParticleSystem>;
 
 	paused: boolean;
 
@@ -1604,7 +1604,7 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	position: SCNVector3;
 
-	/* readonly */ presentationNode: SCNNode;
+	readonly presentationNode: SCNNode;
 
 	rendererDelegate: SCNNodeRendererDelegate;
 
@@ -1618,27 +1618,27 @@ declare class SCNNode extends NSObject implements NSCopying, NSSecureCoding, SCN
 
 	transform: SCNMatrix4;
 
-	/* readonly */ worldTransform: SCNMatrix4;
+	readonly worldTransform: SCNMatrix4;
 
-	/* readonly */ actionKeys: NSArray<string>; // inherited from SCNActionable
+	readonly actionKeys: NSArray<string>; // inherited from SCNActionable
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hasActions: boolean; // inherited from SCNActionable
+	readonly hasActions: boolean; // inherited from SCNActionable
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1878,7 +1878,7 @@ declare class SCNParticlePropertyController extends NSObject implements NSCopyin
 
 	inputScale: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2050,21 +2050,21 @@ declare class SCNParticleSystem extends NSObject implements NSCopying, NSSecureC
 
 	warmupDuration: number;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2139,9 +2139,9 @@ declare class SCNPhysicsBallSocketJoint extends SCNPhysicsBehavior {
 
 	anchorB: SCNVector3;
 
-	/* readonly */ bodyA: SCNPhysicsBody;
+	readonly bodyA: SCNPhysicsBody;
 
-	/* readonly */ bodyB: SCNPhysicsBody;
+	readonly bodyB: SCNPhysicsBody;
 }
 
 declare class SCNPhysicsBehavior extends NSObject implements NSSecureCoding {
@@ -2150,7 +2150,7 @@ declare class SCNPhysicsBehavior extends NSObject implements NSSecureCoding {
 
 	static new(): SCNPhysicsBehavior; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2195,7 +2195,7 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	friction: number;
 
-	/* readonly */ isResting: boolean;
+	readonly isResting: boolean;
 
 	mass: number;
 
@@ -2215,7 +2215,7 @@ declare class SCNPhysicsBody extends NSObject implements NSCopying, NSSecureCodi
 
 	velocityFactor: SCNVector3;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2260,17 +2260,17 @@ declare class SCNPhysicsContact extends NSObject {
 
 	static new(): SCNPhysicsContact; // inherited from NSObject
 
-	/* readonly */ collisionImpulse: number;
+	readonly collisionImpulse: number;
 
-	/* readonly */ contactNormal: SCNVector3;
+	readonly contactNormal: SCNVector3;
 
-	/* readonly */ contactPoint: SCNVector3;
+	readonly contactPoint: SCNVector3;
 
-	/* readonly */ nodeA: SCNNode;
+	readonly nodeA: SCNNode;
 
-	/* readonly */ nodeB: SCNNode;
+	readonly nodeB: SCNNode;
 
-	/* readonly */ penetrationDistance: number;
+	readonly penetrationDistance: number;
 }
 
 interface SCNPhysicsContactDelegate extends NSObjectProtocol {
@@ -2334,7 +2334,7 @@ declare class SCNPhysicsField extends NSObject implements NSCopying, NSSecureCod
 
 	usesEllipsoidalExtent: boolean;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2370,9 +2370,9 @@ declare class SCNPhysicsHingeJoint extends SCNPhysicsBehavior {
 
 	axisB: SCNVector3;
 
-	/* readonly */ bodyA: SCNPhysicsBody;
+	readonly bodyA: SCNPhysicsBody;
 
-	/* readonly */ bodyB: SCNPhysicsBody;
+	readonly bodyB: SCNPhysicsBody;
 }
 
 declare class SCNPhysicsShape extends NSObject implements NSCopying, NSSecureCoding {
@@ -2387,13 +2387,13 @@ declare class SCNPhysicsShape extends NSObject implements NSCopying, NSSecureCod
 
 	static shapeWithShapesTransforms(shapes: NSArray<SCNPhysicsShape>, transforms: NSArray<NSValue>): SCNPhysicsShape;
 
-	/* readonly */ options: NSDictionary<string, any>;
+	readonly options: NSDictionary<string, any>;
 
-	/* readonly */ sourceObject: any;
+	readonly sourceObject: any;
 
-	/* readonly */ transforms: NSArray<NSValue>;
+	readonly transforms: NSArray<NSValue>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2436,9 +2436,9 @@ declare class SCNPhysicsSliderJoint extends SCNPhysicsBehavior {
 
 	axisB: SCNVector3;
 
-	/* readonly */ bodyA: SCNPhysicsBody;
+	readonly bodyA: SCNPhysicsBody;
 
-	/* readonly */ bodyB: SCNPhysicsBody;
+	readonly bodyB: SCNPhysicsBody;
 
 	maximumAngularLimit: number;
 
@@ -2477,11 +2477,11 @@ declare class SCNPhysicsVehicle extends SCNPhysicsBehavior {
 
 	static vehicleWithChassisBodyWheels(chassisBody: SCNPhysicsBody, wheels: NSArray<SCNPhysicsVehicleWheel>): SCNPhysicsVehicle;
 
-	/* readonly */ chassisBody: SCNPhysicsBody;
+	readonly chassisBody: SCNPhysicsBody;
 
-	/* readonly */ speedInKilometersPerHour: number;
+	readonly speedInKilometersPerHour: number;
 
-	/* readonly */ wheels: NSArray<SCNPhysicsVehicleWheel>;
+	readonly wheels: NSArray<SCNPhysicsVehicleWheel>;
 
 	applyBrakingForceForWheelAtIndex(value: number, index: number): void;
 
@@ -2508,7 +2508,7 @@ declare class SCNPhysicsVehicleWheel extends NSObject implements NSCopying, NSSe
 
 	maximumSuspensionTravel: number;
 
-	/* readonly */ node: SCNNode;
+	readonly node: SCNNode;
 
 	radius: number;
 
@@ -2522,7 +2522,7 @@ declare class SCNPhysicsVehicleWheel extends NSObject implements NSCopying, NSSe
 
 	suspensionStiffness: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2539,7 +2539,7 @@ declare class SCNPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	static new(): SCNPhysicsWorld; // inherited from NSObject
 
-	/* readonly */ allBehaviors: NSArray<SCNPhysicsBehavior>;
+	readonly allBehaviors: NSArray<SCNPhysicsBehavior>;
 
 	contactDelegate: SCNPhysicsContactDelegate;
 
@@ -2549,7 +2549,7 @@ declare class SCNPhysicsWorld extends NSObject implements NSSecureCoding {
 
 	timeStep: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2629,7 +2629,7 @@ declare class SCNProgram extends NSObject implements NSCopying, NSSecureCoding {
 
 	vertexShader: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2707,7 +2707,7 @@ declare class SCNReferenceNode extends SCNNode {
 
 	static referenceNodeWithURL(referenceURL: NSURL): SCNReferenceNode;
 
-	/* readonly */ loaded: boolean;
+	readonly loaded: boolean;
 
 	loadingPolicy: SCNReferenceLoadingPolicy;
 
@@ -2732,29 +2732,29 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	static rendererWithDeviceOptions(device: MTLDevice, options: NSDictionary<any, any>): SCNRenderer;
 
-	/* readonly */ nextFrameTime: number;
+	readonly nextFrameTime: number;
 
-	/* readonly */ audioEngine: AVAudioEngine; // inherited from SCNSceneRenderer
+	readonly audioEngine: AVAudioEngine; // inherited from SCNSceneRenderer
 
-	/* readonly */ audioEnvironmentNode: AVAudioEnvironmentNode; // inherited from SCNSceneRenderer
+	readonly audioEnvironmentNode: AVAudioEnvironmentNode; // inherited from SCNSceneRenderer
 
 	audioListener: SCNNode; // inherited from SCNSceneRenderer
 
 	autoenablesDefaultLighting: boolean; // inherited from SCNSceneRenderer
 
-	/* readonly */ context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
+	readonly context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	debugOptions: SCNDebugOptions; // inherited from SCNSceneRenderer
 
 	delegate: SCNSceneRendererDelegate; // inherited from SCNSceneRenderer
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	jitteringEnabled: boolean; // inherited from SCNSceneRenderer
 
@@ -2766,7 +2766,7 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	pointOfView: SCNNode; // inherited from SCNSceneRenderer
 
-	/* readonly */ renderingAPI: SCNRenderingAPI; // inherited from SCNSceneRenderer
+	readonly renderingAPI: SCNRenderingAPI; // inherited from SCNSceneRenderer
 
 	scene: SCNScene; // inherited from SCNSceneRenderer
 
@@ -2774,11 +2774,11 @@ declare class SCNRenderer extends NSObject implements SCNSceneRenderer, SCNTechn
 
 	showsStatistics: boolean; // inherited from SCNSceneRenderer
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	technique: SCNTechnique; // inherited from SCNTechniqueSupport
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -2852,7 +2852,7 @@ declare class SCNScene extends NSObject implements NSSecureCoding {
 
 	static sceneWithURLOptionsError(url: NSURL, options: NSDictionary<string, any>): SCNScene;
 
-	/* readonly */ background: SCNMaterialProperty;
+	readonly background: SCNMaterialProperty;
 
 	fogColor: any;
 
@@ -2862,17 +2862,17 @@ declare class SCNScene extends NSObject implements NSSecureCoding {
 
 	fogStartDistance: number;
 
-	/* readonly */ lightingEnvironment: SCNMaterialProperty;
+	readonly lightingEnvironment: SCNMaterialProperty;
 
-	/* readonly */ particleSystems: NSArray<SCNParticleSystem>;
+	readonly particleSystems: NSArray<SCNParticleSystem>;
 
 	paused: boolean;
 
-	/* readonly */ physicsWorld: SCNPhysicsWorld;
+	readonly physicsWorld: SCNPhysicsWorld;
 
-	/* readonly */ rootNode: SCNNode;
+	readonly rootNode: SCNNode;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2990,9 +2990,9 @@ declare class SCNSceneSource extends NSObject {
 
 	static sceneSourceWithURLOptions(url: NSURL, options: NSDictionary<string, any>): SCNSceneSource;
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ url: NSURL;
+	readonly url: NSURL;
 
 	constructor(o: { data: NSData; options: NSDictionary<string, any>; });
 
@@ -3145,17 +3145,17 @@ declare class SCNSkinner extends NSObject implements NSSecureCoding {
 
 	baseGeometryBindTransform: SCNMatrix4;
 
-	/* readonly */ boneIndices: SCNGeometrySource;
+	readonly boneIndices: SCNGeometrySource;
 
-	/* readonly */ boneInverseBindTransforms: NSArray<NSValue>;
+	readonly boneInverseBindTransforms: NSArray<NSValue>;
 
-	/* readonly */ boneWeights: SCNGeometrySource;
+	readonly boneWeights: SCNGeometrySource;
 
-	/* readonly */ bones: NSArray<SCNNode>;
+	readonly bones: NSArray<SCNNode>;
 
 	skeleton: SCNNode;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3195,23 +3195,23 @@ declare class SCNTechnique extends NSObject implements NSCopying, NSSecureCoding
 
 	static techniqueWithDictionary(dictionary: NSDictionary<string, any>): SCNTechnique;
 
-	/* readonly */ dictionaryRepresentation: NSDictionary<string, any>;
+	readonly dictionaryRepresentation: NSDictionary<string, any>;
 
-	/* readonly */ animationKeys: NSArray<string>; // inherited from SCNAnimatable
+	readonly animationKeys: NSArray<string>; // inherited from SCNAnimatable
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3454,27 +3454,27 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	preferredFramesPerSecond: number;
 
-	/* readonly */ audioEngine: AVAudioEngine; // inherited from SCNSceneRenderer
+	readonly audioEngine: AVAudioEngine; // inherited from SCNSceneRenderer
 
-	/* readonly */ audioEnvironmentNode: AVAudioEnvironmentNode; // inherited from SCNSceneRenderer
+	readonly audioEnvironmentNode: AVAudioEnvironmentNode; // inherited from SCNSceneRenderer
 
 	audioListener: SCNNode; // inherited from SCNSceneRenderer
 
 	autoenablesDefaultLighting: boolean; // inherited from SCNSceneRenderer
 
-	/* readonly */ context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
+	readonly context: interop.Pointer | interop.Reference<any>; // inherited from SCNSceneRenderer
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
 	debugOptions: SCNDebugOptions; // inherited from SCNSceneRenderer
 
 	delegate: SCNSceneRendererDelegate; // inherited from SCNSceneRenderer
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	jitteringEnabled: boolean; // inherited from SCNSceneRenderer
 
@@ -3486,7 +3486,7 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	pointOfView: SCNNode; // inherited from SCNSceneRenderer
 
-	/* readonly */ renderingAPI: SCNRenderingAPI; // inherited from SCNSceneRenderer
+	readonly renderingAPI: SCNRenderingAPI; // inherited from SCNSceneRenderer
 
 	scene: SCNScene; // inherited from SCNSceneRenderer
 
@@ -3494,11 +3494,11 @@ declare class SCNView extends UIView implements SCNSceneRenderer, SCNTechniqueSu
 
 	showsStatistics: boolean; // inherited from SCNSceneRenderer
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
 	technique: SCNTechnique; // inherited from SCNTechniqueSupport
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { frame: CGRect; options: NSDictionary<string, any>; });
 

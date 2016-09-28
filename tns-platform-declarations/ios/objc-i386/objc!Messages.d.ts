@@ -5,11 +5,11 @@ declare class MSConversation extends NSObject {
 
 	static new(): MSConversation; // inherited from NSObject
 
-	/* readonly */ localParticipantIdentifier: NSUUID;
+	readonly localParticipantIdentifier: NSUUID;
 
-	/* readonly */ remoteParticipantIdentifiers: NSArray<NSUUID>;
+	readonly remoteParticipantIdentifiers: NSArray<NSUUID>;
 
-	/* readonly */ selectedMessage: MSMessage;
+	readonly selectedMessage: MSMessage;
 
 	insertAttachmentWithAlternateFilenameCompletionHandler(URL: NSURL, filename: string, completionHandler: (p1: NSError) => void): void;
 
@@ -32,15 +32,15 @@ declare class MSMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	layout: MSMessageLayout;
 
-	/* readonly */ senderParticipantIdentifier: NSUUID;
+	readonly senderParticipantIdentifier: NSUUID;
 
-	/* readonly */ session: MSSession;
+	readonly session: MSSession;
 
 	shouldExpire: boolean;
 
 	summaryText: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -119,9 +119,9 @@ declare class MSMessagesAppViewController extends UIViewController {
 
 	static new(): MSMessagesAppViewController; // inherited from NSObject
 
-	/* readonly */ activeConversation: MSConversation;
+	readonly activeConversation: MSConversation;
 
-	/* readonly */ presentationStyle: MSMessagesAppPresentationStyle;
+	readonly presentationStyle: MSMessagesAppPresentationStyle;
 
 	didBecomeActiveWithConversation(conversation: MSConversation): void;
 
@@ -165,9 +165,9 @@ declare class MSSticker extends NSObject {
 
 	static new(): MSSticker; // inherited from NSObject
 
-	/* readonly */ imageFileURL: NSURL;
+	readonly imageFileURL: NSURL;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 
 	constructor(o: { contentsOfFileURL: NSURL; localizedDescription: string; });
 
@@ -198,7 +198,7 @@ declare class MSStickerBrowserView extends UIView {
 
 	dataSource: MSStickerBrowserViewDataSource;
 
-	/* readonly */ stickerSize: MSStickerSize;
+	readonly stickerSize: MSStickerSize;
 
 	constructor(o: { frame: CGRect; stickerSize: MSStickerSize; });
 
@@ -215,21 +215,21 @@ declare class MSStickerBrowserViewController extends UIViewController implements
 
 	static new(): MSStickerBrowserViewController; // inherited from NSObject
 
-	/* readonly */ stickerBrowserView: MSStickerBrowserView;
+	readonly stickerBrowserView: MSStickerBrowserView;
 
-	/* readonly */ stickerSize: MSStickerSize;
+	readonly stickerSize: MSStickerSize;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { stickerSize: MSStickerSize; });
 
@@ -300,7 +300,7 @@ declare class MSStickerView extends UIView {
 
 	static new(): MSStickerView; // inherited from NSObject
 
-	/* readonly */ animationDuration: number;
+	readonly animationDuration: number;
 
 	sticker: MSSticker;
 

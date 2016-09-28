@@ -64,7 +64,7 @@ declare class INBookRestaurantReservationIntentResponse extends INIntentResponse
 
 	static new(): INBookRestaurantReservationIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INBookRestaurantReservationIntentCode;
+	readonly code: INBookRestaurantReservationIntentCode;
 
 	userBooking: INRestaurantReservationUserBooking;
 
@@ -138,7 +138,7 @@ declare class INCancelWorkoutIntent extends INIntent {
 
 	static new(): INCancelWorkoutIntent; // inherited from NSObject
 
-	/* readonly */ workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString;
 
 	constructor(o: { workoutName: INSpeakableString; });
 
@@ -166,7 +166,7 @@ declare class INCancelWorkoutIntentResponse extends INIntentResponse {
 
 	static new(): INCancelWorkoutIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INCancelWorkoutIntentResponseCode;
+	readonly code: INCancelWorkoutIntentResponseCode;
 
 	constructor(o: { code: INCancelWorkoutIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -346,11 +346,11 @@ declare class INCurrencyAmount extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): INCurrencyAmount; // inherited from NSObject
 
-	/* readonly */ amount: NSDecimalNumber;
+	readonly amount: NSDecimalNumber;
 
-	/* readonly */ currencyCode: string;
+	readonly currencyCode: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { amount: NSDecimalNumber; currencyCode: string; });
 
@@ -390,11 +390,11 @@ declare class INDateComponentsRange extends NSObject implements NSCopying, NSSec
 
 	static new(): INDateComponentsRange; // inherited from NSObject
 
-	/* readonly */ endDateComponents: NSDateComponents;
+	readonly endDateComponents: NSDateComponents;
 
-	/* readonly */ startDateComponents: NSDateComponents;
+	readonly startDateComponents: NSDateComponents;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -470,7 +470,7 @@ declare class INEndWorkoutIntent extends INIntent {
 
 	static new(): INEndWorkoutIntent; // inherited from NSObject
 
-	/* readonly */ workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString;
 
 	constructor(o: { workoutName: INSpeakableString; });
 
@@ -498,7 +498,7 @@ declare class INEndWorkoutIntentResponse extends INIntentResponse {
 
 	static new(): INEndWorkoutIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INEndWorkoutIntentResponseCode;
+	readonly code: INEndWorkoutIntentResponseCode;
 
 	constructor(o: { code: INEndWorkoutIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -526,17 +526,17 @@ declare class INExtension extends NSObject implements INIntentHandlerProviding {
 
 	static new(): INExtension; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -591,11 +591,11 @@ declare class INGetAvailableRestaurantReservationBookingDefaultsIntentResponse e
 
 	static new(): INGetAvailableRestaurantReservationBookingDefaultsIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode;
+	readonly code: INGetAvailableRestaurantReservationBookingDefaultsIntentResponseCode;
 
-	/* readonly */ defaultBookingDate: Date;
+	readonly defaultBookingDate: Date;
 
-	/* readonly */ defaultPartySize: number;
+	readonly defaultPartySize: number;
 
 	maximumPartySize: number;
 
@@ -672,9 +672,9 @@ declare class INGetAvailableRestaurantReservationBookingsIntentResponse extends 
 
 	static new(): INGetAvailableRestaurantReservationBookingsIntentResponse; // inherited from NSObject
 
-	/* readonly */ availableBookings: NSArray<INRestaurantReservationBooking>;
+	readonly availableBookings: NSArray<INRestaurantReservationBooking>;
 
-	/* readonly */ code: INGetAvailableRestaurantReservationBookingsIntentCode;
+	readonly code: INGetAvailableRestaurantReservationBookingsIntentCode;
 
 	localizedBookingAdvisementText: string;
 
@@ -711,7 +711,7 @@ declare class INGetRestaurantGuestIntentResponse extends INIntentResponse {
 
 	static new(): INGetRestaurantGuestIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INGetRestaurantGuestIntentResponseCode;
+	readonly code: INGetRestaurantGuestIntentResponseCode;
 
 	guest: INRestaurantGuest;
 
@@ -759,7 +759,7 @@ declare class INGetRideStatusIntentResponse extends INIntentResponse {
 
 	static new(): INGetRideStatusIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INGetRideStatusIntentResponseCode;
+	readonly code: INGetRideStatusIntentResponseCode;
 
 	rideStatus: INRideStatus;
 
@@ -832,7 +832,7 @@ declare class INGetUserCurrentRestaurantReservationBookingsIntentResponse extend
 
 	static new(): INGetUserCurrentRestaurantReservationBookingsIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode;
+	readonly code: INGetUserCurrentRestaurantReservationBookingsIntentResponseCode;
 
 	userCurrentBookings: NSArray<INRestaurantReservationUserBooking>;
 
@@ -870,7 +870,7 @@ declare class INImage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INImage; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -904,9 +904,9 @@ declare class INIntent extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INIntent; // inherited from NSObject
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -987,9 +987,9 @@ declare class INIntentResponse extends NSObject implements NSCopying, NSSecureCo
 
 	static new(): INIntentResponse; // inherited from NSObject
 
-	/* readonly */ userActivity: NSUserActivity;
+	readonly userActivity: NSUserActivity;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1020,13 +1020,13 @@ declare class INInteraction extends NSObject implements NSCopying, NSSecureCodin
 
 	identifier: string;
 
-	/* readonly */ intent: INIntent;
+	readonly intent: INIntent;
 
-	/* readonly */ intentHandlingStatus: INIntentHandlingStatus;
+	readonly intentHandlingStatus: INIntentHandlingStatus;
 
-	/* readonly */ intentResponse: INIntentResponse;
+	readonly intentResponse: INIntentResponse;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1058,9 +1058,9 @@ declare class INListRideOptionsIntent extends INIntent {
 
 	static new(): INListRideOptionsIntent; // inherited from NSObject
 
-	/* readonly */ dropOffLocation: CLPlacemark;
+	readonly dropOffLocation: CLPlacemark;
 
-	/* readonly */ pickupLocation: CLPlacemark;
+	readonly pickupLocation: CLPlacemark;
 
 	constructor(o: { pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; });
 
@@ -1090,7 +1090,7 @@ declare class INListRideOptionsIntentResponse extends INIntentResponse {
 
 	static new(): INListRideOptionsIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INListRideOptionsIntentResponseCode;
+	readonly code: INListRideOptionsIntentResponseCode;
 
 	expirationDate: Date;
 
@@ -1132,17 +1132,17 @@ declare class INMessage extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): INMessage; // inherited from NSObject
 
-	/* readonly */ content: string;
+	readonly content: string;
 
-	/* readonly */ dateSent: Date;
+	readonly dateSent: Date;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ recipients: NSArray<INPerson>;
+	readonly recipients: NSArray<INPerson>;
 
-	/* readonly */ sender: INPerson;
+	readonly sender: INPerson;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1228,7 +1228,7 @@ declare class INPauseWorkoutIntent extends INIntent {
 
 	static new(): INPauseWorkoutIntent; // inherited from NSObject
 
-	/* readonly */ workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString;
 
 	constructor(o: { workoutName: INSpeakableString; });
 
@@ -1256,7 +1256,7 @@ declare class INPauseWorkoutIntentResponse extends INIntentResponse {
 
 	static new(): INPauseWorkoutIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INPauseWorkoutIntentResponseCode;
+	readonly code: INPauseWorkoutIntentResponseCode;
 
 	constructor(o: { code: INPauseWorkoutIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -1286,15 +1286,15 @@ declare class INPaymentMethod extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): INPaymentMethod; // inherited from NSObject
 
-	/* readonly */ icon: INImage;
+	readonly icon: INImage;
 
-	/* readonly */ identificationHint: string;
+	readonly identificationHint: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ type: INPaymentMethodType;
+	readonly type: INPaymentMethodType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1336,21 +1336,21 @@ declare class INPaymentRecord extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): INPaymentRecord; // inherited from NSObject
 
-	/* readonly */ currencyAmount: INCurrencyAmount;
+	readonly currencyAmount: INCurrencyAmount;
 
-	/* readonly */ feeAmount: INCurrencyAmount;
+	readonly feeAmount: INCurrencyAmount;
 
-	/* readonly */ note: string;
+	readonly note: string;
 
-	/* readonly */ payee: INPerson;
+	readonly payee: INPerson;
 
-	/* readonly */ payer: INPerson;
+	readonly payer: INPerson;
 
-	/* readonly */ paymentMethod: INPaymentMethod;
+	readonly paymentMethod: INPaymentMethod;
 
-	/* readonly */ status: INPaymentStatus;
+	readonly status: INPaymentStatus;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1395,43 +1395,43 @@ declare class INPerson extends NSObject implements INSpeakable, NSCopying, NSSec
 
 	static new(): INPerson; // inherited from NSObject
 
-	/* readonly */ aliases: NSArray<INPersonHandle>;
+	readonly aliases: NSArray<INPersonHandle>;
 
-	/* readonly */ contactIdentifier: string;
+	readonly contactIdentifier: string;
 
-	/* readonly */ customIdentifier: string;
+	readonly customIdentifier: string;
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ handle: string;
+	readonly handle: string;
 
-	/* readonly */ image: INImage;
+	readonly image: INImage;
 
-	/* readonly */ nameComponents: NSPersonNameComponents;
+	readonly nameComponents: NSPersonNameComponents;
 
-	/* readonly */ personHandle: INPersonHandle;
+	readonly personHandle: INPersonHandle;
 
-	/* readonly */ suggestionType: INPersonSuggestionType;
+	readonly suggestionType: INPersonSuggestionType;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ identifier: string; // inherited from INSpeakable
+	readonly identifier: string; // inherited from INSpeakable
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ pronunciationHint: string; // inherited from INSpeakable
+	readonly pronunciationHint: string; // inherited from INSpeakable
 
-	/* readonly */ spokenPhrase: string; // inherited from INSpeakable
+	readonly spokenPhrase: string; // inherited from INSpeakable
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1490,11 +1490,11 @@ declare class INPersonHandle extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): INPersonHandle; // inherited from NSObject
 
-	/* readonly */ type: INPersonHandleType;
+	readonly type: INPersonHandleType;
 
-	/* readonly */ value: string;
+	readonly value: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1640,13 +1640,13 @@ declare class INPriceRange extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): INPriceRange; // inherited from NSObject
 
-	/* readonly */ currencyCode: string;
+	readonly currencyCode: string;
 
-	/* readonly */ maximumPrice: NSDecimalNumber;
+	readonly maximumPrice: NSDecimalNumber;
 
-	/* readonly */ minimumPrice: NSDecimalNumber;
+	readonly minimumPrice: NSDecimalNumber;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1774,11 +1774,11 @@ declare class INRequestPaymentIntent extends INIntent {
 
 	static new(): INRequestPaymentIntent; // inherited from NSObject
 
-	/* readonly */ currencyAmount: INCurrencyAmount;
+	readonly currencyAmount: INCurrencyAmount;
 
-	/* readonly */ note: string;
+	readonly note: string;
 
-	/* readonly */ payer: INPerson;
+	readonly payer: INPerson;
 
 	constructor(o: { payer: INPerson; currencyAmount: INCurrencyAmount; note: string; });
 
@@ -1810,7 +1810,7 @@ declare class INRequestPaymentIntentResponse extends INIntentResponse {
 
 	static new(): INRequestPaymentIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INRequestPaymentIntentResponseCode;
+	readonly code: INRequestPaymentIntentResponseCode;
 
 	paymentRecord: INPaymentRecord;
 
@@ -1850,15 +1850,15 @@ declare class INRequestRideIntent extends INIntent {
 
 	static new(): INRequestRideIntent; // inherited from NSObject
 
-	/* readonly */ dropOffLocation: CLPlacemark;
+	readonly dropOffLocation: CLPlacemark;
 
-	/* readonly */ partySize: number;
+	readonly partySize: number;
 
-	/* readonly */ paymentMethod: INPaymentMethod;
+	readonly paymentMethod: INPaymentMethod;
 
-	/* readonly */ pickupLocation: CLPlacemark;
+	readonly pickupLocation: CLPlacemark;
 
-	/* readonly */ rideOptionName: INSpeakableString;
+	readonly rideOptionName: INSpeakableString;
 
 	constructor(o: { pickupLocation: CLPlacemark; dropOffLocation: CLPlacemark; rideOptionName: INSpeakableString; partySize: number; paymentMethod: INPaymentMethod; });
 
@@ -1892,7 +1892,7 @@ declare class INRequestRideIntentResponse extends INIntentResponse {
 
 	static new(): INRequestRideIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INRequestRideIntentResponseCode;
+	readonly code: INRequestRideIntentResponseCode;
 
 	rideStatus: INRideStatus;
 
@@ -1938,7 +1938,7 @@ declare class INRestaurant extends NSObject implements NSCopying, NSSecureCoding
 
 	vendorIdentifier: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1990,7 +1990,7 @@ declare class INRestaurantGuestDisplayPreferences extends NSObject implements NS
 
 	phoneNumberFieldShouldBeDisplayed: boolean;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2032,7 +2032,7 @@ declare class INRestaurantOffer extends NSObject implements NSCopying, NSSecureC
 
 	offerTitleText: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2071,7 +2071,7 @@ declare class INRestaurantReservationBooking extends NSObject implements NSCopyi
 
 	restaurant: INRestaurant;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2145,7 +2145,7 @@ declare class INResumeWorkoutIntent extends INIntent {
 
 	static new(): INResumeWorkoutIntent; // inherited from NSObject
 
-	/* readonly */ workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString;
 
 	constructor(o: { workoutName: INSpeakableString; });
 
@@ -2173,7 +2173,7 @@ declare class INResumeWorkoutIntentResponse extends INIntentResponse {
 
 	static new(): INResumeWorkoutIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INResumeWorkoutIntentResponseCode;
+	readonly code: INResumeWorkoutIntentResponseCode;
 
 	constructor(o: { code: INResumeWorkoutIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -2213,19 +2213,19 @@ declare class INRideCompletionStatus extends NSObject implements NSCopying, NSSe
 
 	static new(): INRideCompletionStatus; // inherited from NSObject
 
-	/* readonly */ canceled: boolean;
+	readonly canceled: boolean;
 
-	/* readonly */ completed: boolean;
+	readonly completed: boolean;
 
 	completionUserActivity: NSUserActivity;
 
-	/* readonly */ missedPickup: boolean;
+	readonly missedPickup: boolean;
 
-	/* readonly */ outstanding: boolean;
+	readonly outstanding: boolean;
 
-	/* readonly */ paymentAmount: INCurrencyAmount;
+	readonly paymentAmount: INCurrencyAmount;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2242,11 +2242,11 @@ declare class INRideDriver extends INPerson implements NSCopying, NSSecureCoding
 
 	static new(): INRideDriver; // inherited from NSObject
 
-	/* readonly */ phoneNumber: string;
+	readonly phoneNumber: string;
 
-	/* readonly */ rating: string;
+	readonly rating: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2275,13 +2275,13 @@ declare class INRideFareLineItem extends NSObject implements NSCopying, NSSecure
 
 	static new(): INRideFareLineItem; // inherited from NSObject
 
-	/* readonly */ currencyCode: string;
+	readonly currencyCode: string;
 
-	/* readonly */ price: NSDecimalNumber;
+	readonly price: NSDecimalNumber;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2326,7 +2326,7 @@ declare class INRideOption extends NSObject implements NSCopying, NSSecureCoding
 
 	usesMeteredFare: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2347,13 +2347,13 @@ declare class INRidePartySizeOption extends NSObject implements NSCopying, NSSec
 
 	static new(): INRidePartySizeOption; // inherited from NSObject
 
-	/* readonly */ partySizeRange: NSRange;
+	readonly partySizeRange: NSRange;
 
-	/* readonly */ priceRange: INPriceRange;
+	readonly priceRange: INPriceRange;
 
-	/* readonly */ sizeDescription: string;
+	readonly sizeDescription: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2419,7 +2419,7 @@ declare class INRideStatus extends NSObject implements NSCopying, NSSecureCoding
 
 	waypoints: NSArray<CLPlacemark>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2446,7 +2446,7 @@ declare class INRideVehicle extends NSObject implements NSCopying, NSSecureCodin
 
 	registrationPlate: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2470,9 +2470,9 @@ declare class INSaveProfileInCarIntent extends INIntent {
 
 	static new(): INSaveProfileInCarIntent; // inherited from NSObject
 
-	/* readonly */ profileLabel: string;
+	readonly profileLabel: string;
 
-	/* readonly */ profileNumber: number;
+	readonly profileNumber: number;
 
 	constructor(o: { profileNumber: number; profileLabel: string; });
 
@@ -2500,7 +2500,7 @@ declare class INSaveProfileInCarIntentResponse extends INIntentResponse {
 
 	static new(): INSaveProfileInCarIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSaveProfileInCarIntentResponseCode;
+	readonly code: INSaveProfileInCarIntentResponseCode;
 
 	constructor(o: { code: INSaveProfileInCarIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -2528,13 +2528,13 @@ declare class INSearchCallHistoryIntent extends INIntent {
 
 	static new(): INSearchCallHistoryIntent; // inherited from NSObject
 
-	/* readonly */ callCapabilities: INCallCapabilityOptions;
+	readonly callCapabilities: INCallCapabilityOptions;
 
-	/* readonly */ callType: INCallRecordType;
+	readonly callType: INCallRecordType;
 
-	/* readonly */ dateCreated: INDateComponentsRange;
+	readonly dateCreated: INDateComponentsRange;
 
-	/* readonly */ recipient: INPerson;
+	readonly recipient: INPerson;
 
 	constructor(o: { callType: INCallRecordType; dateCreated: INDateComponentsRange; recipient: INPerson; callCapabilities: INCallCapabilityOptions; });
 
@@ -2566,7 +2566,7 @@ declare class INSearchCallHistoryIntentResponse extends INIntentResponse {
 
 	static new(): INSearchCallHistoryIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSearchCallHistoryIntentResponseCode;
+	readonly code: INSearchCallHistoryIntentResponseCode;
 
 	constructor(o: { code: INSearchCallHistoryIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -2592,33 +2592,33 @@ declare class INSearchForMessagesIntent extends INIntent {
 
 	static new(): INSearchForMessagesIntent; // inherited from NSObject
 
-	/* readonly */ attributes: INMessageAttributeOptions;
+	readonly attributes: INMessageAttributeOptions;
 
-	/* readonly */ dateTimeRange: INDateComponentsRange;
+	readonly dateTimeRange: INDateComponentsRange;
 
-	/* readonly */ groupNames: NSArray<string>;
+	readonly groupNames: NSArray<string>;
 
-	/* readonly */ groupNamesOperator: INConditionalOperator;
+	readonly groupNamesOperator: INConditionalOperator;
 
-	/* readonly */ identifiers: NSArray<string>;
+	readonly identifiers: NSArray<string>;
 
-	/* readonly */ identifiersOperator: INConditionalOperator;
+	readonly identifiersOperator: INConditionalOperator;
 
-	/* readonly */ notificationIdentifiers: NSArray<string>;
+	readonly notificationIdentifiers: NSArray<string>;
 
-	/* readonly */ notificationIdentifiersOperator: INConditionalOperator;
+	readonly notificationIdentifiersOperator: INConditionalOperator;
 
-	/* readonly */ recipients: NSArray<INPerson>;
+	readonly recipients: NSArray<INPerson>;
 
-	/* readonly */ recipientsOperator: INConditionalOperator;
+	readonly recipientsOperator: INConditionalOperator;
 
-	/* readonly */ searchTerms: NSArray<string>;
+	readonly searchTerms: NSArray<string>;
 
-	/* readonly */ searchTermsOperator: INConditionalOperator;
+	readonly searchTermsOperator: INConditionalOperator;
 
-	/* readonly */ senders: NSArray<INPerson>;
+	readonly senders: NSArray<INPerson>;
 
-	/* readonly */ sendersOperator: INConditionalOperator;
+	readonly sendersOperator: INConditionalOperator;
 
 	constructor(o: { recipients: NSArray<INPerson>; senders: NSArray<INPerson>; searchTerms: NSArray<string>; attributes: INMessageAttributeOptions; dateTimeRange: INDateComponentsRange; identifiers: NSArray<string>; notificationIdentifiers: NSArray<string>; groupNames: NSArray<string>; });
 
@@ -2654,7 +2654,7 @@ declare class INSearchForMessagesIntentResponse extends INIntentResponse {
 
 	static new(): INSearchForMessagesIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSearchForMessagesIntentResponseCode;
+	readonly code: INSearchForMessagesIntentResponseCode;
 
 	messages: NSArray<INMessage>;
 
@@ -2686,23 +2686,23 @@ declare class INSearchForPhotosIntent extends INIntent {
 
 	static new(): INSearchForPhotosIntent; // inherited from NSObject
 
-	/* readonly */ albumName: string;
+	readonly albumName: string;
 
-	/* readonly */ dateCreated: INDateComponentsRange;
+	readonly dateCreated: INDateComponentsRange;
 
-	/* readonly */ excludedAttributes: INPhotoAttributeOptions;
+	readonly excludedAttributes: INPhotoAttributeOptions;
 
-	/* readonly */ includedAttributes: INPhotoAttributeOptions;
+	readonly includedAttributes: INPhotoAttributeOptions;
 
-	/* readonly */ locationCreated: CLPlacemark;
+	readonly locationCreated: CLPlacemark;
 
-	/* readonly */ peopleInPhoto: NSArray<INPerson>;
+	readonly peopleInPhoto: NSArray<INPerson>;
 
-	/* readonly */ peopleInPhotoOperator: INConditionalOperator;
+	readonly peopleInPhotoOperator: INConditionalOperator;
 
-	/* readonly */ searchTerms: NSArray<string>;
+	readonly searchTerms: NSArray<string>;
 
-	/* readonly */ searchTermsOperator: INConditionalOperator;
+	readonly searchTermsOperator: INConditionalOperator;
 
 	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string>; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson>; });
 
@@ -2736,7 +2736,7 @@ declare class INSearchForPhotosIntentResponse extends INIntentResponse {
 
 	static new(): INSearchForPhotosIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSearchForPhotosIntentResponseCode;
+	readonly code: INSearchForPhotosIntentResponseCode;
 
 	searchResultsCount: number;
 
@@ -2764,15 +2764,15 @@ declare class INSendMessageIntent extends INIntent {
 
 	static new(): INSendMessageIntent; // inherited from NSObject
 
-	/* readonly */ content: string;
+	readonly content: string;
 
-	/* readonly */ groupName: string;
+	readonly groupName: string;
 
-	/* readonly */ recipients: NSArray<INPerson>;
+	readonly recipients: NSArray<INPerson>;
 
-	/* readonly */ sender: INPerson;
+	readonly sender: INPerson;
 
-	/* readonly */ serviceName: string;
+	readonly serviceName: string;
 
 	constructor(o: { recipients: NSArray<INPerson>; content: string; groupName: string; serviceName: string; sender: INPerson; });
 
@@ -2804,7 +2804,7 @@ declare class INSendMessageIntentResponse extends INIntentResponse {
 
 	static new(): INSendMessageIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSendMessageIntentResponseCode;
+	readonly code: INSendMessageIntentResponseCode;
 
 	constructor(o: { code: INSendMessageIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -2834,11 +2834,11 @@ declare class INSendPaymentIntent extends INIntent {
 
 	static new(): INSendPaymentIntent; // inherited from NSObject
 
-	/* readonly */ currencyAmount: INCurrencyAmount;
+	readonly currencyAmount: INCurrencyAmount;
 
-	/* readonly */ note: string;
+	readonly note: string;
 
-	/* readonly */ payee: INPerson;
+	readonly payee: INPerson;
 
 	constructor(o: { payee: INPerson; currencyAmount: INCurrencyAmount; note: string; });
 
@@ -2870,7 +2870,7 @@ declare class INSendPaymentIntentResponse extends INIntentResponse {
 
 	static new(): INSendPaymentIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSendPaymentIntentResponseCode;
+	readonly code: INSendPaymentIntentResponseCode;
 
 	paymentRecord: INPaymentRecord;
 
@@ -2912,9 +2912,9 @@ declare class INSetAudioSourceInCarIntent extends INIntent {
 
 	static new(): INSetAudioSourceInCarIntent; // inherited from NSObject
 
-	/* readonly */ audioSource: INCarAudioSource;
+	readonly audioSource: INCarAudioSource;
 
-	/* readonly */ relativeAudioSourceReference: INRelativeReference;
+	readonly relativeAudioSourceReference: INRelativeReference;
 
 	constructor(o: { audioSource: INCarAudioSource; relativeAudioSourceReference: INRelativeReference; });
 
@@ -2944,7 +2944,7 @@ declare class INSetAudioSourceInCarIntentResponse extends INIntentResponse {
 
 	static new(): INSetAudioSourceInCarIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetAudioSourceInCarIntentResponseCode;
+	readonly code: INSetAudioSourceInCarIntentResponseCode;
 
 	constructor(o: { code: INSetAudioSourceInCarIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -2972,27 +2972,27 @@ declare class INSetClimateSettingsInCarIntent extends INIntent {
 
 	static new(): INSetClimateSettingsInCarIntent; // inherited from NSObject
 
-	/* readonly */ airCirculationMode: INCarAirCirculationMode;
+	readonly airCirculationMode: INCarAirCirculationMode;
 
-	/* readonly */ climateZone: INCarSeat;
+	readonly climateZone: INCarSeat;
 
-	/* readonly */ enableAirConditioner: number;
+	readonly enableAirConditioner: number;
 
-	/* readonly */ enableAutoMode: number;
+	readonly enableAutoMode: number;
 
-	/* readonly */ enableClimateControl: number;
+	readonly enableClimateControl: number;
 
-	/* readonly */ enableFan: number;
+	readonly enableFan: number;
 
-	/* readonly */ fanSpeedIndex: number;
+	readonly fanSpeedIndex: number;
 
-	/* readonly */ fanSpeedPercentage: number;
+	readonly fanSpeedPercentage: number;
 
-	/* readonly */ relativeFanSpeedSetting: INRelativeSetting;
+	readonly relativeFanSpeedSetting: INRelativeSetting;
 
-	/* readonly */ relativeTemperatureSetting: INRelativeSetting;
+	readonly relativeTemperatureSetting: INRelativeSetting;
 
-	/* readonly */ temperature: NSMeasurement<NSUnitTemperature>;
+	readonly temperature: NSMeasurement<NSUnitTemperature>;
 
 	constructor(o: { enableFan: number; enableAirConditioner: number; enableClimateControl: number; enableAutoMode: number; airCirculationMode: INCarAirCirculationMode; fanSpeedIndex: number; fanSpeedPercentage: number; relativeFanSpeedSetting: INRelativeSetting; temperature: NSMeasurement<NSUnitTemperature>; relativeTemperatureSetting: INRelativeSetting; climateZone: INCarSeat; });
 
@@ -3040,7 +3040,7 @@ declare class INSetClimateSettingsInCarIntentResponse extends INIntentResponse {
 
 	static new(): INSetClimateSettingsInCarIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetClimateSettingsInCarIntentResponseCode;
+	readonly code: INSetClimateSettingsInCarIntentResponseCode;
 
 	constructor(o: { code: INSetClimateSettingsInCarIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3068,9 +3068,9 @@ declare class INSetDefrosterSettingsInCarIntent extends INIntent {
 
 	static new(): INSetDefrosterSettingsInCarIntent; // inherited from NSObject
 
-	/* readonly */ defroster: INCarDefroster;
+	readonly defroster: INCarDefroster;
 
-	/* readonly */ enable: number;
+	readonly enable: number;
 
 	constructor(o: { enable: number; defroster: INCarDefroster; });
 
@@ -3100,7 +3100,7 @@ declare class INSetDefrosterSettingsInCarIntentResponse extends INIntentResponse
 
 	static new(): INSetDefrosterSettingsInCarIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetDefrosterSettingsInCarIntentResponseCode;
+	readonly code: INSetDefrosterSettingsInCarIntentResponseCode;
 
 	constructor(o: { code: INSetDefrosterSettingsInCarIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3128,9 +3128,9 @@ declare class INSetMessageAttributeIntent extends INIntent {
 
 	static new(): INSetMessageAttributeIntent; // inherited from NSObject
 
-	/* readonly */ attribute: INMessageAttribute;
+	readonly attribute: INMessageAttribute;
 
-	/* readonly */ identifiers: NSArray<string>;
+	readonly identifiers: NSArray<string>;
 
 	constructor(o: { identifiers: NSArray<string>; attribute: INMessageAttribute; });
 
@@ -3158,7 +3158,7 @@ declare class INSetMessageAttributeIntentResponse extends INIntentResponse {
 
 	static new(): INSetMessageAttributeIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetMessageAttributeIntentResponseCode;
+	readonly code: INSetMessageAttributeIntentResponseCode;
 
 	constructor(o: { code: INSetMessageAttributeIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3190,11 +3190,11 @@ declare class INSetProfileInCarIntent extends INIntent {
 
 	static new(): INSetProfileInCarIntent; // inherited from NSObject
 
-	/* readonly */ defaultProfile: number;
+	readonly defaultProfile: number;
 
-	/* readonly */ profileLabel: string;
+	readonly profileLabel: string;
 
-	/* readonly */ profileNumber: number;
+	readonly profileNumber: number;
 
 	constructor(o: { profileNumber: number; profileLabel: string; defaultProfile: number; });
 
@@ -3224,7 +3224,7 @@ declare class INSetProfileInCarIntentResponse extends INIntentResponse {
 
 	static new(): INSetProfileInCarIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetProfileInCarIntentResponseCode;
+	readonly code: INSetProfileInCarIntentResponseCode;
 
 	constructor(o: { code: INSetProfileInCarIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3252,15 +3252,15 @@ declare class INSetRadioStationIntent extends INIntent {
 
 	static new(): INSetRadioStationIntent; // inherited from NSObject
 
-	/* readonly */ channel: string;
+	readonly channel: string;
 
-	/* readonly */ frequency: number;
+	readonly frequency: number;
 
-	/* readonly */ presetNumber: number;
+	readonly presetNumber: number;
 
-	/* readonly */ radioType: INRadioType;
+	readonly radioType: INRadioType;
 
-	/* readonly */ stationName: string;
+	readonly stationName: string;
 
 	constructor(o: { radioType: INRadioType; frequency: number; stationName: string; channel: string; presetNumber: number; });
 
@@ -3296,7 +3296,7 @@ declare class INSetRadioStationIntentResponse extends INIntentResponse {
 
 	static new(): INSetRadioStationIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetRadioStationIntentResponseCode;
+	readonly code: INSetRadioStationIntentResponseCode;
 
 	constructor(o: { code: INSetRadioStationIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3326,17 +3326,17 @@ declare class INSetSeatSettingsInCarIntent extends INIntent {
 
 	static new(): INSetSeatSettingsInCarIntent; // inherited from NSObject
 
-	/* readonly */ enableCooling: number;
+	readonly enableCooling: number;
 
-	/* readonly */ enableHeating: number;
+	readonly enableHeating: number;
 
-	/* readonly */ enableMassage: number;
+	readonly enableMassage: number;
 
-	/* readonly */ level: number;
+	readonly level: number;
 
-	/* readonly */ relativeLevelSetting: INRelativeSetting;
+	readonly relativeLevelSetting: INRelativeSetting;
 
-	/* readonly */ seat: INCarSeat;
+	readonly seat: INCarSeat;
 
 	constructor(o: { enableHeating: number; enableCooling: number; enableMassage: number; seat: INCarSeat; level: number; relativeLevelSetting: INRelativeSetting; });
 
@@ -3374,7 +3374,7 @@ declare class INSetSeatSettingsInCarIntentResponse extends INIntentResponse {
 
 	static new(): INSetSeatSettingsInCarIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INSetSeatSettingsInCarIntentResponseCode;
+	readonly code: INSetSeatSettingsInCarIntentResponseCode;
 
 	constructor(o: { code: INSetSeatSettingsInCarIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3426,23 +3426,23 @@ declare class INSpeakableString extends NSObject implements INSpeakable {
 
 	static new(): INSpeakableString; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ identifier: string; // inherited from INSpeakable
+	readonly identifier: string; // inherited from INSpeakable
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ pronunciationHint: string; // inherited from INSpeakable
+	readonly pronunciationHint: string; // inherited from INSpeakable
 
-	/* readonly */ spokenPhrase: string; // inherited from INSpeakable
+	readonly spokenPhrase: string; // inherited from INSpeakable
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { identifier: string; spokenPhrase: string; pronunciationHint: string; });
 
@@ -3496,7 +3496,7 @@ declare class INStartAudioCallIntent extends INIntent {
 
 	static new(): INStartAudioCallIntent; // inherited from NSObject
 
-	/* readonly */ contacts: NSArray<INPerson>;
+	readonly contacts: NSArray<INPerson>;
 
 	constructor(o: { contacts: NSArray<INPerson>; });
 
@@ -3524,7 +3524,7 @@ declare class INStartAudioCallIntentResponse extends INIntentResponse {
 
 	static new(): INStartAudioCallIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INStartAudioCallIntentResponseCode;
+	readonly code: INStartAudioCallIntentResponseCode;
 
 	constructor(o: { code: INStartAudioCallIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3550,23 +3550,23 @@ declare class INStartPhotoPlaybackIntent extends INIntent {
 
 	static new(): INStartPhotoPlaybackIntent; // inherited from NSObject
 
-	/* readonly */ albumName: string;
+	readonly albumName: string;
 
-	/* readonly */ dateCreated: INDateComponentsRange;
+	readonly dateCreated: INDateComponentsRange;
 
-	/* readonly */ excludedAttributes: INPhotoAttributeOptions;
+	readonly excludedAttributes: INPhotoAttributeOptions;
 
-	/* readonly */ includedAttributes: INPhotoAttributeOptions;
+	readonly includedAttributes: INPhotoAttributeOptions;
 
-	/* readonly */ locationCreated: CLPlacemark;
+	readonly locationCreated: CLPlacemark;
 
-	/* readonly */ peopleInPhoto: NSArray<INPerson>;
+	readonly peopleInPhoto: NSArray<INPerson>;
 
-	/* readonly */ peopleInPhotoOperator: INConditionalOperator;
+	readonly peopleInPhotoOperator: INConditionalOperator;
 
-	/* readonly */ searchTerms: NSArray<string>;
+	readonly searchTerms: NSArray<string>;
 
-	/* readonly */ searchTermsOperator: INConditionalOperator;
+	readonly searchTermsOperator: INConditionalOperator;
 
 	constructor(o: { dateCreated: INDateComponentsRange; locationCreated: CLPlacemark; albumName: string; searchTerms: NSArray<string>; includedAttributes: INPhotoAttributeOptions; excludedAttributes: INPhotoAttributeOptions; peopleInPhoto: NSArray<INPerson>; });
 
@@ -3600,7 +3600,7 @@ declare class INStartPhotoPlaybackIntentResponse extends INIntentResponse {
 
 	static new(): INStartPhotoPlaybackIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INStartPhotoPlaybackIntentResponseCode;
+	readonly code: INStartPhotoPlaybackIntentResponseCode;
 
 	searchResultsCount: number;
 
@@ -3628,7 +3628,7 @@ declare class INStartVideoCallIntent extends INIntent {
 
 	static new(): INStartVideoCallIntent; // inherited from NSObject
 
-	/* readonly */ contacts: NSArray<INPerson>;
+	readonly contacts: NSArray<INPerson>;
 
 	constructor(o: { contacts: NSArray<INPerson>; });
 
@@ -3656,7 +3656,7 @@ declare class INStartVideoCallIntentResponse extends INIntentResponse {
 
 	static new(): INStartVideoCallIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INStartVideoCallIntentResponseCode;
+	readonly code: INStartVideoCallIntentResponseCode;
 
 	constructor(o: { code: INStartVideoCallIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3682,15 +3682,15 @@ declare class INStartWorkoutIntent extends INIntent {
 
 	static new(): INStartWorkoutIntent; // inherited from NSObject
 
-	/* readonly */ goalValue: number;
+	readonly goalValue: number;
 
-	/* readonly */ isOpenEnded: number;
+	readonly isOpenEnded: number;
 
-	/* readonly */ workoutGoalUnitType: INWorkoutGoalUnitType;
+	readonly workoutGoalUnitType: INWorkoutGoalUnitType;
 
-	/* readonly */ workoutLocationType: INWorkoutLocationType;
+	readonly workoutLocationType: INWorkoutLocationType;
 
-	/* readonly */ workoutName: INSpeakableString;
+	readonly workoutName: INSpeakableString;
 
 	constructor(o: { workoutName: INSpeakableString; goalValue: number; workoutGoalUnitType: INWorkoutGoalUnitType; workoutLocationType: INWorkoutLocationType; isOpenEnded: number; });
 
@@ -3726,7 +3726,7 @@ declare class INStartWorkoutIntentResponse extends INIntentResponse {
 
 	static new(): INStartWorkoutIntentResponse; // inherited from NSObject
 
-	/* readonly */ code: INStartWorkoutIntentResponseCode;
+	readonly code: INStartWorkoutIntentResponseCode;
 
 	constructor(o: { code: INStartWorkoutIntentResponseCode; userActivity: NSUserActivity; });
 
@@ -3794,13 +3794,13 @@ declare class INTermsAndConditions extends NSObject implements NSCopying, NSSecu
 
 	static new(): INTermsAndConditions; // inherited from NSObject
 
-	/* readonly */ localizedTermsAndConditionsText: string;
+	readonly localizedTermsAndConditionsText: string;
 
-	/* readonly */ privacyPolicyURL: NSURL;
+	readonly privacyPolicyURL: NSURL;
 
-	/* readonly */ termsAndConditionsURL: NSURL;
+	readonly termsAndConditionsURL: NSURL;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

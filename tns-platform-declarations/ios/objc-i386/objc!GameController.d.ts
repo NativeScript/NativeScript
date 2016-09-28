@@ -18,23 +18,23 @@ declare class GCController extends NSObject {
 
 	static stopWirelessControllerDiscovery(): void;
 
-	/* readonly */ attachedToDevice: boolean;
+	readonly attachedToDevice: boolean;
 
 	controllerPausedHandler: (p1: GCController) => void;
 
-	/* readonly */ extendedGamepad: GCExtendedGamepad;
+	readonly extendedGamepad: GCExtendedGamepad;
 
-	/* readonly */ gamepad: GCGamepad;
+	readonly gamepad: GCGamepad;
 
 	handlerQueue: NSObject;
 
-	/* readonly */ microGamepad: GCMicroGamepad;
+	readonly microGamepad: GCMicroGamepad;
 
-	/* readonly */ motion: GCMotion;
+	readonly motion: GCMotion;
 
 	playerIndex: GCControllerPlayerIndex;
 
-	/* readonly */ vendorName: string;
+	readonly vendorName: string;
 }
 
 declare class GCControllerAxisInput extends GCControllerElement {
@@ -43,7 +43,7 @@ declare class GCControllerAxisInput extends GCControllerElement {
 
 	static new(): GCControllerAxisInput; // inherited from NSObject
 
-	/* readonly */ value: number;
+	readonly value: number;
 
 	valueChangedHandler: (p1: GCControllerAxisInput, p2: number) => void;
 }
@@ -54,11 +54,11 @@ declare class GCControllerButtonInput extends GCControllerElement {
 
 	static new(): GCControllerButtonInput; // inherited from NSObject
 
-	/* readonly */ pressed: boolean;
+	readonly pressed: boolean;
 
 	pressedChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void;
 
-	/* readonly */ value: number;
+	readonly value: number;
 
 	valueChangedHandler: (p1: GCControllerButtonInput, p2: number, p3: boolean) => void;
 }
@@ -73,19 +73,19 @@ declare class GCControllerDirectionPad extends GCControllerElement {
 
 	static new(): GCControllerDirectionPad; // inherited from NSObject
 
-	/* readonly */ down: GCControllerButtonInput;
+	readonly down: GCControllerButtonInput;
 
-	/* readonly */ left: GCControllerButtonInput;
+	readonly left: GCControllerButtonInput;
 
-	/* readonly */ right: GCControllerButtonInput;
+	readonly right: GCControllerButtonInput;
 
-	/* readonly */ up: GCControllerButtonInput;
+	readonly up: GCControllerButtonInput;
 
 	valueChangedHandler: (p1: GCControllerDirectionPad, p2: number, p3: number) => void;
 
-	/* readonly */ xAxis: GCControllerAxisInput;
+	readonly xAxis: GCControllerAxisInput;
 
-	/* readonly */ yAxis: GCControllerAxisInput;
+	readonly yAxis: GCControllerAxisInput;
 }
 
 declare class GCControllerElement extends NSObject {
@@ -94,9 +94,9 @@ declare class GCControllerElement extends NSObject {
 
 	static new(): GCControllerElement; // inherited from NSObject
 
-	/* readonly */ analog: boolean;
+	readonly analog: boolean;
 
-	/* readonly */ collection: GCControllerElement;
+	readonly collection: GCControllerElement;
 }
 
 declare const enum GCControllerPlayerIndex {
@@ -134,29 +134,29 @@ declare class GCExtendedGamepad extends NSObject {
 
 	static new(): GCExtendedGamepad; // inherited from NSObject
 
-	/* readonly */ buttonA: GCControllerButtonInput;
+	readonly buttonA: GCControllerButtonInput;
 
-	/* readonly */ buttonB: GCControllerButtonInput;
+	readonly buttonB: GCControllerButtonInput;
 
-	/* readonly */ buttonX: GCControllerButtonInput;
+	readonly buttonX: GCControllerButtonInput;
 
-	/* readonly */ buttonY: GCControllerButtonInput;
+	readonly buttonY: GCControllerButtonInput;
 
-	/* readonly */ controller: GCController;
+	readonly controller: GCController;
 
-	/* readonly */ dpad: GCControllerDirectionPad;
+	readonly dpad: GCControllerDirectionPad;
 
-	/* readonly */ leftShoulder: GCControllerButtonInput;
+	readonly leftShoulder: GCControllerButtonInput;
 
-	/* readonly */ leftThumbstick: GCControllerDirectionPad;
+	readonly leftThumbstick: GCControllerDirectionPad;
 
-	/* readonly */ leftTrigger: GCControllerButtonInput;
+	readonly leftTrigger: GCControllerButtonInput;
 
-	/* readonly */ rightShoulder: GCControllerButtonInput;
+	readonly rightShoulder: GCControllerButtonInput;
 
-	/* readonly */ rightThumbstick: GCControllerDirectionPad;
+	readonly rightThumbstick: GCControllerDirectionPad;
 
-	/* readonly */ rightTrigger: GCControllerButtonInput;
+	readonly rightTrigger: GCControllerButtonInput;
 
 	valueChangedHandler: (p1: GCExtendedGamepad, p2: GCControllerElement) => void;
 
@@ -208,21 +208,21 @@ declare class GCGamepad extends NSObject {
 
 	static new(): GCGamepad; // inherited from NSObject
 
-	/* readonly */ buttonA: GCControllerButtonInput;
+	readonly buttonA: GCControllerButtonInput;
 
-	/* readonly */ buttonB: GCControllerButtonInput;
+	readonly buttonB: GCControllerButtonInput;
 
-	/* readonly */ buttonX: GCControllerButtonInput;
+	readonly buttonX: GCControllerButtonInput;
 
-	/* readonly */ buttonY: GCControllerButtonInput;
+	readonly buttonY: GCControllerButtonInput;
 
-	/* readonly */ controller: GCController;
+	readonly controller: GCController;
 
-	/* readonly */ dpad: GCControllerDirectionPad;
+	readonly dpad: GCControllerDirectionPad;
 
-	/* readonly */ leftShoulder: GCControllerButtonInput;
+	readonly leftShoulder: GCControllerButtonInput;
 
-	/* readonly */ rightShoulder: GCControllerButtonInput;
+	readonly rightShoulder: GCControllerButtonInput;
 
 	valueChangedHandler: (p1: GCGamepad, p2: GCControllerElement) => void;
 
@@ -270,13 +270,13 @@ declare class GCMicroGamepad extends NSObject {
 
 	allowsRotation: boolean;
 
-	/* readonly */ buttonA: GCControllerButtonInput;
+	readonly buttonA: GCControllerButtonInput;
 
-	/* readonly */ buttonX: GCControllerButtonInput;
+	readonly buttonX: GCControllerButtonInput;
 
-	/* readonly */ controller: GCController;
+	readonly controller: GCController;
 
-	/* readonly */ dpad: GCControllerDirectionPad;
+	readonly dpad: GCControllerDirectionPad;
 
 	reportsAbsoluteDpadValues: boolean;
 
@@ -320,15 +320,15 @@ declare class GCMotion extends NSObject {
 
 	static new(): GCMotion; // inherited from NSObject
 
-	/* readonly */ attitude: GCQuaternion;
+	readonly attitude: GCQuaternion;
 
-	/* readonly */ controller: GCController;
+	readonly controller: GCController;
 
-	/* readonly */ gravity: GCAcceleration;
+	readonly gravity: GCAcceleration;
 
-	/* readonly */ rotationRate: GCRotationRate;
+	readonly rotationRate: GCRotationRate;
 
-	/* readonly */ userAcceleration: GCAcceleration;
+	readonly userAcceleration: GCAcceleration;
 
 	valueChangedHandler: (p1: GCMotion) => void;
 }

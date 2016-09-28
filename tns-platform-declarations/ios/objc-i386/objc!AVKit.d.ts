@@ -22,13 +22,13 @@ declare class AVPictureInPictureController extends NSObject {
 
 	delegate: AVPictureInPictureControllerDelegate;
 
-	/* readonly */ pictureInPictureActive: boolean;
+	readonly pictureInPictureActive: boolean;
 
-	/* readonly */ pictureInPicturePossible: boolean;
+	readonly pictureInPicturePossible: boolean;
 
-	/* readonly */ pictureInPictureSuspended: boolean;
+	readonly pictureInPictureSuspended: boolean;
 
-	/* readonly */ playerLayer: AVPlayerLayer;
+	readonly playerLayer: AVPlayerLayer;
 
 	constructor(o: { playerLayer: AVPlayerLayer; });
 
@@ -68,19 +68,19 @@ declare class AVPlayerViewController extends UIViewController {
 
 	allowsPictureInPicturePlayback: boolean;
 
-	/* readonly */ contentOverlayView: UIView;
+	readonly contentOverlayView: UIView;
 
 	delegate: AVPlayerViewControllerDelegate;
 
 	player: AVPlayer;
 
-	/* readonly */ readyForDisplay: boolean;
+	readonly readyForDisplay: boolean;
 
 	showsPlaybackControls: boolean;
 
 	updatesNowPlayingInfoCenter: boolean;
 
-	/* readonly */ videoBounds: CGRect;
+	readonly videoBounds: CGRect;
 
 	videoGravity: string;
 

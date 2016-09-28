@@ -5,31 +5,31 @@ declare class HMAccessory extends NSObject {
 
 	static new(): HMAccessory; // inherited from NSObject
 
-	/* readonly */ blocked: boolean;
+	readonly blocked: boolean;
 
-	/* readonly */ bridged: boolean;
+	readonly bridged: boolean;
 
-	/* readonly */ cameraProfiles: NSArray<HMCameraProfile>;
+	readonly cameraProfiles: NSArray<HMCameraProfile>;
 
-	/* readonly */ category: HMAccessoryCategory;
+	readonly category: HMAccessoryCategory;
 
 	delegate: HMAccessoryDelegate;
 
-	/* readonly */ identifier: NSUUID;
+	readonly identifier: NSUUID;
 
-	/* readonly */ identifiersForBridgedAccessories: NSArray<NSUUID>;
+	readonly identifiersForBridgedAccessories: NSArray<NSUUID>;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ reachable: boolean;
+	readonly reachable: boolean;
 
-	/* readonly */ room: HMRoom;
+	readonly room: HMRoom;
 
-	/* readonly */ services: NSArray<HMService>;
+	readonly services: NSArray<HMService>;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
-	/* readonly */ uniqueIdentifiersForBridgedAccessories: NSArray<NSUUID>;
+	readonly uniqueIdentifiersForBridgedAccessories: NSArray<NSUUID>;
 
 	identifyWithCompletionHandler(completion: (p1: NSError) => void): void;
 
@@ -44,7 +44,7 @@ declare class HMAccessoryBrowser extends NSObject {
 
 	delegate: HMAccessoryBrowserDelegate;
 
-	/* readonly */ discoveredAccessories: NSArray<HMAccessory>;
+	readonly discoveredAccessories: NSArray<HMAccessory>;
 
 	startSearchingForNewAccessories(): void;
 
@@ -68,9 +68,9 @@ declare class HMAccessoryCategory extends NSObject {
 
 	static new(): HMAccessoryCategory; // inherited from NSObject
 
-	/* readonly */ categoryType: string;
+	readonly categoryType: string;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 }
 
 declare var HMAccessoryCategoryTypeBridge: string;
@@ -134,11 +134,11 @@ declare class HMAccessoryProfile extends NSObject {
 
 	static new(): HMAccessoryProfile; // inherited from NSObject
 
-	/* readonly */ accessory: HMAccessory;
+	readonly accessory: HMAccessory;
 
-	/* readonly */ services: NSArray<HMService>;
+	readonly services: NSArray<HMService>;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 }
 
 declare class HMAction extends NSObject {
@@ -147,7 +147,7 @@ declare class HMAction extends NSObject {
 
 	static new(): HMAction; // inherited from NSObject
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 }
 
 declare class HMActionSet extends NSObject {
@@ -156,17 +156,17 @@ declare class HMActionSet extends NSObject {
 
 	static new(): HMActionSet; // inherited from NSObject
 
-	/* readonly */ actionSetType: string;
+	readonly actionSetType: string;
 
-	/* readonly */ actions: NSSet<HMAction>;
+	readonly actions: NSSet<HMAction>;
 
-	/* readonly */ executing: boolean;
+	readonly executing: boolean;
 
-	/* readonly */ lastExecutionDate: Date;
+	readonly lastExecutionDate: Date;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
 	addActionCompletionHandler(action: HMAction, completion: (p1: NSError) => void): void;
 
@@ -193,9 +193,9 @@ declare class HMCameraAudioControl extends HMCameraControl {
 
 	static new(): HMCameraAudioControl; // inherited from NSObject
 
-	/* readonly */ mute: HMCharacteristic;
+	readonly mute: HMCharacteristic;
 
-	/* readonly */ volume: HMCharacteristic;
+	readonly volume: HMCharacteristic;
 }
 
 declare const enum HMCameraAudioStreamSetting {
@@ -220,15 +220,15 @@ declare class HMCameraProfile extends HMAccessoryProfile {
 
 	static new(): HMCameraProfile; // inherited from NSObject
 
-	/* readonly */ microphoneControl: HMCameraAudioControl;
+	readonly microphoneControl: HMCameraAudioControl;
 
-	/* readonly */ settingsControl: HMCameraSettingsControl;
+	readonly settingsControl: HMCameraSettingsControl;
 
-	/* readonly */ snapshotControl: HMCameraSnapshotControl;
+	readonly snapshotControl: HMCameraSnapshotControl;
 
-	/* readonly */ speakerControl: HMCameraAudioControl;
+	readonly speakerControl: HMCameraAudioControl;
 
-	/* readonly */ streamControl: HMCameraStreamControl;
+	readonly streamControl: HMCameraStreamControl;
 }
 
 declare class HMCameraSettingsControl extends HMCameraControl {
@@ -237,23 +237,23 @@ declare class HMCameraSettingsControl extends HMCameraControl {
 
 	static new(): HMCameraSettingsControl; // inherited from NSObject
 
-	/* readonly */ currentHorizontalTilt: HMCharacteristic;
+	readonly currentHorizontalTilt: HMCharacteristic;
 
-	/* readonly */ currentVerticalTilt: HMCharacteristic;
+	readonly currentVerticalTilt: HMCharacteristic;
 
-	/* readonly */ digitalZoom: HMCharacteristic;
+	readonly digitalZoom: HMCharacteristic;
 
-	/* readonly */ imageMirroring: HMCharacteristic;
+	readonly imageMirroring: HMCharacteristic;
 
-	/* readonly */ imageRotation: HMCharacteristic;
+	readonly imageRotation: HMCharacteristic;
 
-	/* readonly */ nightVision: HMCharacteristic;
+	readonly nightVision: HMCharacteristic;
 
-	/* readonly */ opticalZoom: HMCharacteristic;
+	readonly opticalZoom: HMCharacteristic;
 
-	/* readonly */ targetHorizontalTilt: HMCharacteristic;
+	readonly targetHorizontalTilt: HMCharacteristic;
 
-	/* readonly */ targetVerticalTilt: HMCharacteristic;
+	readonly targetVerticalTilt: HMCharacteristic;
 }
 
 declare class HMCameraSnapshot extends HMCameraSource {
@@ -262,7 +262,7 @@ declare class HMCameraSnapshot extends HMCameraSource {
 
 	static new(): HMCameraSnapshot; // inherited from NSObject
 
-	/* readonly */ captureDate: Date;
+	readonly captureDate: Date;
 }
 
 declare class HMCameraSnapshotControl extends HMCameraControl {
@@ -273,7 +273,7 @@ declare class HMCameraSnapshotControl extends HMCameraControl {
 
 	delegate: HMCameraSnapshotControlDelegate;
 
-	/* readonly */ mostRecentSnapshot: HMCameraSnapshot;
+	readonly mostRecentSnapshot: HMCameraSnapshot;
 
 	takeSnapshot(): void;
 }
@@ -300,7 +300,7 @@ declare class HMCameraStream extends HMCameraSource {
 
 	static new(): HMCameraStream; // inherited from NSObject
 
-	/* readonly */ audioStreamSetting: HMCameraAudioStreamSetting;
+	readonly audioStreamSetting: HMCameraAudioStreamSetting;
 
 	setAudioStreamSetting(audioStreamSetting: HMCameraAudioStreamSetting): void;
 
@@ -313,11 +313,11 @@ declare class HMCameraStreamControl extends HMCameraControl {
 
 	static new(): HMCameraStreamControl; // inherited from NSObject
 
-	/* readonly */ cameraStream: HMCameraStream;
+	readonly cameraStream: HMCameraStream;
 
 	delegate: HMCameraStreamControlDelegate;
 
-	/* readonly */ streamState: HMCameraStreamState;
+	readonly streamState: HMCameraStreamState;
 
 	startStream(): void;
 
@@ -373,21 +373,21 @@ declare class HMCharacteristic extends NSObject {
 
 	static new(): HMCharacteristic; // inherited from NSObject
 
-	/* readonly */ characteristicType: string;
+	readonly characteristicType: string;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 
-	/* readonly */ metadata: HMCharacteristicMetadata;
+	readonly metadata: HMCharacteristicMetadata;
 
-	/* readonly */ notificationEnabled: boolean;
+	readonly notificationEnabled: boolean;
 
-	/* readonly */ properties: NSArray<string>;
+	readonly properties: NSArray<string>;
 
-	/* readonly */ service: HMService;
+	readonly service: HMService;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
-	/* readonly */ value: any;
+	readonly value: any;
 
 	enableNotificationCompletionHandler(enable: boolean, completion: (p1: NSError) => void): void;
 
@@ -404,9 +404,9 @@ declare class HMCharacteristicEvent<TriggerValueType> extends HMEvent {
 
 	static new<TriggerValueType>(): HMCharacteristicEvent<TriggerValueType>; // inherited from NSObject
 
-	/* readonly */ characteristic: HMCharacteristic;
+	readonly characteristic: HMCharacteristic;
 
-	/* readonly */ triggerValue: TriggerValueType;
+	readonly triggerValue: TriggerValueType;
 
 	constructor(o: { characteristic: HMCharacteristic; triggerValue: TriggerValueType; });
 
@@ -423,21 +423,21 @@ declare class HMCharacteristicMetadata extends NSObject {
 
 	static new(): HMCharacteristicMetadata; // inherited from NSObject
 
-	/* readonly */ format: string;
+	readonly format: string;
 
-	/* readonly */ manufacturerDescription: string;
+	readonly manufacturerDescription: string;
 
-	/* readonly */ maxLength: number;
+	readonly maxLength: number;
 
-	/* readonly */ maximumValue: number;
+	readonly maximumValue: number;
 
-	/* readonly */ minimumValue: number;
+	readonly minimumValue: number;
 
-	/* readonly */ stepValue: number;
+	readonly stepValue: number;
 
-	/* readonly */ units: string;
+	readonly units: string;
 
-	/* readonly */ validValues: NSArray<number>;
+	readonly validValues: NSArray<number>;
 }
 
 declare var HMCharacteristicMetadataFormatArray: string;
@@ -877,9 +877,9 @@ declare class HMCharacteristicWriteAction<TargetValueType> extends HMAction {
 
 	static new<TargetValueType>(): HMCharacteristicWriteAction<TargetValueType>; // inherited from NSObject
 
-	/* readonly */ characteristic: HMCharacteristic;
+	readonly characteristic: HMCharacteristic;
 
-	/* readonly */ targetValue: TargetValueType;
+	readonly targetValue: TargetValueType;
 
 	constructor(o: { characteristic: HMCharacteristic; targetValue: TargetValueType; });
 
@@ -1077,7 +1077,7 @@ declare class HMEvent extends NSObject {
 
 	static new(): HMEvent; // inherited from NSObject
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 }
 
 declare class HMEventTrigger extends HMTrigger {
@@ -1098,9 +1098,9 @@ declare class HMEventTrigger extends HMTrigger {
 
 	static predicateForEvaluatingTriggerWithCharacteristicRelatedByToValue(characteristic: HMCharacteristic, operatorType: NSPredicateOperatorType, value: any): NSPredicate;
 
-	/* readonly */ events: NSArray<HMEvent>;
+	readonly events: NSArray<HMEvent>;
 
-	/* readonly */ predicate: NSPredicate;
+	readonly predicate: NSPredicate;
 
 	constructor(o: { name: string; events: NSArray<HMEvent>; predicate: NSPredicate; });
 
@@ -1119,29 +1119,29 @@ declare class HMHome extends NSObject {
 
 	static new(): HMHome; // inherited from NSObject
 
-	/* readonly */ accessories: NSArray<HMAccessory>;
+	readonly accessories: NSArray<HMAccessory>;
 
-	/* readonly */ actionSets: NSArray<HMActionSet>;
+	readonly actionSets: NSArray<HMActionSet>;
 
-	/* readonly */ currentUser: HMUser;
+	readonly currentUser: HMUser;
 
 	delegate: HMHomeDelegate;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ primary: boolean;
+	readonly primary: boolean;
 
-	/* readonly */ rooms: NSArray<HMRoom>;
+	readonly rooms: NSArray<HMRoom>;
 
-	/* readonly */ serviceGroups: NSArray<HMServiceGroup>;
+	readonly serviceGroups: NSArray<HMServiceGroup>;
 
-	/* readonly */ triggers: NSArray<HMTrigger>;
+	readonly triggers: NSArray<HMTrigger>;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
-	/* readonly */ users: NSArray<HMUser>;
+	readonly users: NSArray<HMUser>;
 
-	/* readonly */ zones: NSArray<HMZone>;
+	readonly zones: NSArray<HMZone>;
 
 	addAccessoryCompletionHandler(accessory: HMAccessory, completion: (p1: NSError) => void): void;
 
@@ -1198,7 +1198,7 @@ declare class HMHomeAccessControl extends NSObject {
 
 	static new(): HMHomeAccessControl; // inherited from NSObject
 
-	/* readonly */ administrator: boolean;
+	readonly administrator: boolean;
 }
 
 interface HMHomeDelegate extends NSObjectProtocol {
@@ -1274,9 +1274,9 @@ declare class HMHomeManager extends NSObject {
 
 	delegate: HMHomeManagerDelegate;
 
-	/* readonly */ homes: NSArray<HMHome>;
+	readonly homes: NSArray<HMHome>;
 
-	/* readonly */ primaryHome: HMHome;
+	readonly primaryHome: HMHome;
 
 	addHomeWithNameCompletionHandler(homeName: string, completion: (p1: HMHome, p2: NSError) => void): void;
 
@@ -1306,7 +1306,7 @@ declare class HMLocationEvent extends HMEvent {
 
 	static new(): HMLocationEvent; // inherited from NSObject
 
-	/* readonly */ region: CLRegion;
+	readonly region: CLRegion;
 
 	constructor(o: { region: CLRegion; });
 
@@ -1321,11 +1321,11 @@ declare class HMRoom extends NSObject {
 
 	static new(): HMRoom; // inherited from NSObject
 
-	/* readonly */ accessories: NSArray<HMAccessory>;
+	readonly accessories: NSArray<HMAccessory>;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
 	updateNameCompletionHandler(name: string, completion: (p1: NSError) => void): void;
 }
@@ -1336,25 +1336,25 @@ declare class HMService extends NSObject {
 
 	static new(): HMService; // inherited from NSObject
 
-	/* readonly */ accessory: HMAccessory;
+	readonly accessory: HMAccessory;
 
-	/* readonly */ associatedServiceType: string;
+	readonly associatedServiceType: string;
 
-	/* readonly */ characteristics: NSArray<HMCharacteristic>;
+	readonly characteristics: NSArray<HMCharacteristic>;
 
-	/* readonly */ linkedServices: NSArray<HMService>;
+	readonly linkedServices: NSArray<HMService>;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ primaryService: boolean;
+	readonly primaryService: boolean;
 
-	/* readonly */ serviceType: string;
+	readonly serviceType: string;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
-	/* readonly */ userInteractive: boolean;
+	readonly userInteractive: boolean;
 
 	updateAssociatedServiceTypeCompletionHandler(serviceType: string, completion: (p1: NSError) => void): void;
 
@@ -1367,11 +1367,11 @@ declare class HMServiceGroup extends NSObject {
 
 	static new(): HMServiceGroup; // inherited from NSObject
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ services: NSArray<HMService>;
+	readonly services: NSArray<HMService>;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
 	addServiceCompletionHandler(service: HMService, completion: (p1: NSError) => void): void;
 
@@ -1454,13 +1454,13 @@ declare class HMTimerTrigger extends HMTrigger {
 
 	static new(): HMTimerTrigger; // inherited from NSObject
 
-	/* readonly */ fireDate: Date;
+	readonly fireDate: Date;
 
-	/* readonly */ recurrence: NSDateComponents;
+	readonly recurrence: NSDateComponents;
 
-	/* readonly */ recurrenceCalendar: NSCalendar;
+	readonly recurrenceCalendar: NSCalendar;
 
-	/* readonly */ timeZone: NSTimeZone;
+	readonly timeZone: NSTimeZone;
 
 	constructor(o: { name: string; fireDate: Date; timeZone: NSTimeZone; recurrence: NSDateComponents; recurrenceCalendar: NSCalendar; });
 
@@ -1479,15 +1479,15 @@ declare class HMTrigger extends NSObject {
 
 	static new(): HMTrigger; // inherited from NSObject
 
-	/* readonly */ actionSets: NSArray<HMActionSet>;
+	readonly actionSets: NSArray<HMActionSet>;
 
-	/* readonly */ enabled: boolean;
+	readonly enabled: boolean;
 
-	/* readonly */ lastFireDate: Date;
+	readonly lastFireDate: Date;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
 	addActionSetCompletionHandler(actionSet: HMActionSet, completion: (p1: NSError) => void): void;
 
@@ -1504,9 +1504,9 @@ declare class HMUser extends NSObject {
 
 	static new(): HMUser; // inherited from NSObject
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 }
 
 declare var HMUserFailedAccessoriesKey: string;
@@ -1517,11 +1517,11 @@ declare class HMZone extends NSObject {
 
 	static new(): HMZone; // inherited from NSObject
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ rooms: NSArray<HMRoom>;
+	readonly rooms: NSArray<HMRoom>;
 
-	/* readonly */ uniqueIdentifier: NSUUID;
+	readonly uniqueIdentifier: NSUUID;
 
 	addRoomCompletionHandler(room: HMRoom, completion: (p1: NSError) => void): void;
 

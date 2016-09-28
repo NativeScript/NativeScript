@@ -5,13 +5,13 @@ declare class TWRequest extends NSObject {
 
 	static new(): TWRequest; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
 	account: ACAccount;
 
-	/* readonly */ parameters: NSDictionary<any, any>;
+	readonly parameters: NSDictionary<any, any>;
 
-	/* readonly */ requestMethod: SLRequestMethod;
+	readonly requestMethod: SLRequestMethod;
 
 	constructor(o: { URL: NSURL; parameters: NSDictionary<any, any>; requestMethod: SLRequestMethod; });
 

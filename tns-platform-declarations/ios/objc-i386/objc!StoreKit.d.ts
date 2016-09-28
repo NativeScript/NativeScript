@@ -42,23 +42,23 @@ declare class SKDownload extends NSObject {
 
 	static new(): SKDownload; // inherited from NSObject
 
-	/* readonly */ contentIdentifier: string;
+	readonly contentIdentifier: string;
 
-	/* readonly */ contentLength: number;
+	readonly contentLength: number;
 
-	/* readonly */ contentURL: NSURL;
+	readonly contentURL: NSURL;
 
-	/* readonly */ contentVersion: string;
+	readonly contentVersion: string;
 
-	/* readonly */ downloadState: SKDownloadState;
+	readonly downloadState: SKDownloadState;
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ progress: number;
+	readonly progress: number;
 
-	/* readonly */ timeRemaining: number;
+	readonly timeRemaining: number;
 
-	/* readonly */ transaction: SKPaymentTransaction;
+	readonly transaction: SKPaymentTransaction;
 }
 
 declare const enum SKDownloadState {
@@ -128,15 +128,15 @@ declare class SKPayment extends NSObject implements NSCopying, NSMutableCopying 
 
 	static paymentWithProductIdentifier(identifier: string): any;
 
-	/* readonly */ applicationUsername: string;
+	readonly applicationUsername: string;
 
-	/* readonly */ productIdentifier: string;
+	readonly productIdentifier: string;
 
-	/* readonly */ quantity: number;
+	readonly quantity: number;
 
-	/* readonly */ requestData: NSData;
+	readonly requestData: NSData;
 
-	/* readonly */ simulatesAskToBuyInSandbox: boolean;
+	readonly simulatesAskToBuyInSandbox: boolean;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -153,7 +153,7 @@ declare class SKPaymentQueue extends NSObject {
 
 	static new(): SKPaymentQueue; // inherited from NSObject
 
-	/* readonly */ transactions: NSArray<SKPaymentTransaction>;
+	readonly transactions: NSArray<SKPaymentTransaction>;
 
 	addPayment(payment: SKPayment): void;
 
@@ -182,21 +182,21 @@ declare class SKPaymentTransaction extends NSObject {
 
 	static new(): SKPaymentTransaction; // inherited from NSObject
 
-	/* readonly */ downloads: NSArray<SKDownload>;
+	readonly downloads: NSArray<SKDownload>;
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ originalTransaction: SKPaymentTransaction;
+	readonly originalTransaction: SKPaymentTransaction;
 
-	/* readonly */ payment: SKPayment;
+	readonly payment: SKPayment;
 
-	/* readonly */ transactionDate: Date;
+	readonly transactionDate: Date;
 
-	/* readonly */ transactionIdentifier: string;
+	readonly transactionIdentifier: string;
 
-	/* readonly */ transactionReceipt: NSData;
+	readonly transactionReceipt: NSData;
 
-	/* readonly */ transactionState: SKPaymentTransactionState;
+	readonly transactionState: SKPaymentTransactionState;
 }
 
 interface SKPaymentTransactionObserver extends NSObjectProtocol {
@@ -235,21 +235,21 @@ declare class SKProduct extends NSObject {
 
 	static new(): SKProduct; // inherited from NSObject
 
-	/* readonly */ downloadContentLengths: NSArray<number>;
+	readonly downloadContentLengths: NSArray<number>;
 
-	/* readonly */ downloadContentVersion: string;
+	readonly downloadContentVersion: string;
 
-	/* readonly */ downloadable: boolean;
+	readonly downloadable: boolean;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 
-	/* readonly */ localizedTitle: string;
+	readonly localizedTitle: string;
 
-	/* readonly */ price: NSDecimalNumber;
+	readonly price: NSDecimalNumber;
 
-	/* readonly */ priceLocale: NSLocale;
+	readonly priceLocale: NSLocale;
 
-	/* readonly */ productIdentifier: string;
+	readonly productIdentifier: string;
 }
 
 declare class SKProductsRequest extends SKRequest {
@@ -280,9 +280,9 @@ declare class SKProductsResponse extends NSObject {
 
 	static new(): SKProductsResponse; // inherited from NSObject
 
-	/* readonly */ invalidProductIdentifiers: NSArray<string>;
+	readonly invalidProductIdentifiers: NSArray<string>;
 
-	/* readonly */ products: NSArray<SKProduct>;
+	readonly products: NSArray<SKProduct>;
 }
 
 declare var SKReceiptPropertyIsExpired: string;
@@ -297,7 +297,7 @@ declare class SKReceiptRefreshRequest extends SKRequest {
 
 	static new(): SKReceiptRefreshRequest; // inherited from NSObject
 
-	/* readonly */ receiptProperties: NSDictionary<string, any>;
+	readonly receiptProperties: NSDictionary<string, any>;
 
 	constructor(o: { receiptProperties: NSDictionary<string, any>; });
 

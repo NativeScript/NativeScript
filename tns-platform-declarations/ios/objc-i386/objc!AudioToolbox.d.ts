@@ -37,83 +37,83 @@ declare class AUAudioUnit extends NSObject {
 
 	static registerSubclassAsComponentDescriptionNameVersion(cls: typeof NSObject, componentDescription: AudioComponentDescription, name: string, version: number): void;
 
-	/* readonly */ allParameterValues: boolean;
+	readonly allParameterValues: boolean;
 
-	/* readonly */ audioUnitName: string;
+	readonly audioUnitName: string;
 
-	/* readonly */ canPerformInput: boolean;
+	readonly canPerformInput: boolean;
 
-	/* readonly */ canPerformOutput: boolean;
+	readonly canPerformOutput: boolean;
 
-	/* readonly */ canProcessInPlace: boolean;
+	readonly canProcessInPlace: boolean;
 
-	/* readonly */ channelCapabilities: NSArray<number>;
+	readonly channelCapabilities: NSArray<number>;
 
 	channelMap: NSArray<number>;
 
-	/* readonly */ component: interop.Pointer | interop.Reference<any>;
+	readonly component: interop.Pointer | interop.Reference<any>;
 
-	/* readonly */ componentDescription: AudioComponentDescription;
+	readonly componentDescription: AudioComponentDescription;
 
-	/* readonly */ componentName: string;
+	readonly componentName: string;
 
-	/* readonly */ componentVersion: number;
+	readonly componentVersion: number;
 
 	contextName: string;
 
 	currentPreset: AUAudioUnitPreset;
 
-	/* readonly */ factoryPresets: NSArray<AUAudioUnitPreset>;
+	readonly factoryPresets: NSArray<AUAudioUnitPreset>;
 
 	fullState: NSDictionary<string, any>;
 
 	fullStateForDocument: NSDictionary<string, any>;
 
-	/* readonly */ inputBusses: AUAudioUnitBusArray;
+	readonly inputBusses: AUAudioUnitBusArray;
 
 	inputEnabled: boolean;
 
 	inputHandler: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number) => void;
 
-	/* readonly */ latency: number;
+	readonly latency: number;
 
-	/* readonly */ manufacturerName: string;
+	readonly manufacturerName: string;
 
 	maximumFramesToRender: number;
 
-	/* readonly */ musicDeviceOrEffect: boolean;
+	readonly musicDeviceOrEffect: boolean;
 
 	musicalContextBlock: (p1: interop.Pointer | interop.Reference<number>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>, p5: interop.Pointer | interop.Reference<number>, p6: interop.Pointer | interop.Reference<number>) => boolean;
 
-	/* readonly */ outputBusses: AUAudioUnitBusArray;
+	readonly outputBusses: AUAudioUnitBusArray;
 
 	outputEnabled: boolean;
 
 	outputProvider: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number;
 
-	/* readonly */ parameterTree: AUParameterTree;
+	readonly parameterTree: AUParameterTree;
 
-	/* readonly */ renderBlock: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>, p6: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number) => number;
+	readonly renderBlock: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>, p6: (p1: interop.Pointer | interop.Reference<AudioUnitRenderActionFlags>, p2: interop.Pointer | interop.Reference<AudioTimeStamp>, p3: number, p4: number, p5: interop.Pointer | interop.Reference<AudioBufferList>) => number) => number;
 
 	renderQuality: number;
 
-	/* readonly */ renderResourcesAllocated: boolean;
+	readonly renderResourcesAllocated: boolean;
 
 	renderingOffline: boolean;
 
-	/* readonly */ scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: string) => void;
+	readonly scheduleMIDIEventBlock: (p1: number, p2: number, p3: number, p4: string) => void;
 
-	/* readonly */ scheduleParameterBlock: (p1: number, p2: number, p3: number, p4: number) => void;
+	readonly scheduleParameterBlock: (p1: number, p2: number, p3: number, p4: number) => void;
 
 	shouldBypassEffect: boolean;
 
-	/* readonly */ supportsMPE: boolean;
+	readonly supportsMPE: boolean;
 
-	/* readonly */ tailTime: number;
+	readonly tailTime: number;
 
 	transportStateBlock: (p1: interop.Pointer | interop.Reference<AUHostTransportStateFlags>, p2: interop.Pointer | interop.Reference<number>, p3: interop.Pointer | interop.Reference<number>, p4: interop.Pointer | interop.Reference<number>) => boolean;
 
-	/* readonly */ virtualMIDICableCount: number;
+	readonly virtualMIDICableCount: number;
 
 	constructor(o: { componentDescription: AudioComponentDescription; });
 
@@ -152,25 +152,25 @@ declare class AUAudioUnitBus extends NSObject {
 
 	static new(): AUAudioUnitBus; // inherited from NSObject
 
-	/* readonly */ busType: AUAudioUnitBusType;
+	readonly busType: AUAudioUnitBusType;
 
 	contextPresentationLatency: number;
 
 	enabled: boolean;
 
-	/* readonly */ format: AVAudioFormat;
+	readonly format: AVAudioFormat;
 
-	/* readonly */ index: number;
+	readonly index: number;
 
 	maximumChannelCount: number;
 
 	name: string;
 
-	/* readonly */ ownerAudioUnit: AUAudioUnit;
+	readonly ownerAudioUnit: AUAudioUnit;
 
 	supportedChannelCounts: NSArray<number>;
 
-	/* readonly */ supportedChannelLayoutTags: NSArray<number>;
+	readonly supportedChannelLayoutTags: NSArray<number>;
 
 	constructor(o: { format: AVAudioFormat; });
 
@@ -185,13 +185,13 @@ declare class AUAudioUnitBusArray extends NSObject implements NSFastEnumeration 
 
 	static new(): AUAudioUnitBusArray; // inherited from NSObject
 
-	/* readonly */ busType: AUAudioUnitBusType;
+	readonly busType: AUAudioUnitBusType;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ countChangeable: boolean;
+	readonly countChangeable: boolean;
 
-	/* readonly */ ownerAudioUnit: AUAudioUnit;
+	readonly ownerAudioUnit: AUAudioUnit;
 	[index: number]: AUAudioUnitBus;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -240,7 +240,7 @@ declare class AUAudioUnitPreset extends NSObject implements NSSecureCoding {
 
 	number: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -350,25 +350,25 @@ declare class AUParameter extends AUParameterNode implements NSSecureCoding {
 
 	static new(): AUParameter; // inherited from NSObject
 
-	/* readonly */ address: number;
+	readonly address: number;
 
-	/* readonly */ dependentParameters: NSArray<number>;
+	readonly dependentParameters: NSArray<number>;
 
-	/* readonly */ flags: AudioUnitParameterOptions;
+	readonly flags: AudioUnitParameterOptions;
 
-	/* readonly */ maxValue: number;
+	readonly maxValue: number;
 
-	/* readonly */ minValue: number;
+	readonly minValue: number;
 
-	/* readonly */ unit: AudioUnitParameterUnit;
+	readonly unit: AudioUnitParameterUnit;
 
-	/* readonly */ unitName: string;
+	readonly unitName: string;
 
 	value: number;
 
-	/* readonly */ valueStrings: NSArray<string>;
+	readonly valueStrings: NSArray<string>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -418,11 +418,11 @@ declare class AUParameterGroup extends AUParameterNode implements NSSecureCoding
 
 	static new(): AUParameterGroup; // inherited from NSObject
 
-	/* readonly */ allParameters: NSArray<AUParameter>;
+	readonly allParameters: NSArray<AUParameter>;
 
-	/* readonly */ children: NSArray<AUParameterNode>;
+	readonly children: NSArray<AUParameterNode>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -437,9 +437,9 @@ declare class AUParameterNode extends NSObject {
 
 	static new(): AUParameterNode; // inherited from NSObject
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
 	implementorDisplayNameWithLengthCallback: (p1: AUParameterNode, p2: number) => string;
 
@@ -451,7 +451,7 @@ declare class AUParameterNode extends NSObject {
 
 	implementorValueProvider: (p1: AUParameter) => number;
 
-	/* readonly */ keyPath: string;
+	readonly keyPath: string;
 
 	displayNameWithLength(maximumLength: number): string;
 
@@ -480,7 +480,7 @@ declare class AUParameterTree extends AUParameterGroup implements NSSecureCoding
 
 	static new(): AUParameterTree; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

@@ -120,7 +120,7 @@ declare class MIDINetworkConnection extends NSObject {
 
 	static new(): MIDINetworkConnection; // inherited from NSObject
 
-	/* readonly */ host: MIDINetworkHost;
+	readonly host: MIDINetworkHost;
 }
 
 declare const enum MIDINetworkConnectionPolicy {
@@ -144,15 +144,15 @@ declare class MIDINetworkHost extends NSObject {
 
 	static new(): MIDINetworkHost; // inherited from NSObject
 
-	/* readonly */ address: string;
+	readonly address: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ netServiceDomain: string;
+	readonly netServiceDomain: string;
 
-	/* readonly */ netServiceName: string;
+	readonly netServiceName: string;
 
-	/* readonly */ port: number;
+	readonly port: number;
 
 	hasSameAddressAs(other: MIDINetworkHost): boolean;
 }
@@ -173,11 +173,11 @@ declare class MIDINetworkSession extends NSObject {
 
 	enabled: boolean;
 
-	/* readonly */ localName: string;
+	readonly localName: string;
 
-	/* readonly */ networkName: string;
+	readonly networkName: string;
 
-	/* readonly */ networkPort: number;
+	readonly networkPort: number;
 
 	addConnection(connection: MIDINetworkConnection): boolean;
 

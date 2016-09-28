@@ -81,11 +81,11 @@ declare class NSObject implements NSObjectProtocol {
 
 	accessibilityViewIsModal: boolean;
 
-	/* readonly */ autoContentAccessingProxy: any;
+	readonly autoContentAccessingProxy: any;
 
-	/* readonly */ classForCoder: typeof NSObject;
+	readonly classForCoder: typeof NSObject;
 
-	/* readonly */ classForKeyedArchiver: typeof NSObject;
+	readonly classForKeyedArchiver: typeof NSObject;
 
 	isAccessibilityElement: boolean;
 
@@ -93,19 +93,19 @@ declare class NSObject implements NSObjectProtocol {
 
 	shouldGroupAccessibilityChildren: boolean;
 
-	/* readonly */ static accessInstanceVariablesDirectly: boolean;
+	static readonly accessInstanceVariablesDirectly: boolean;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor();
 

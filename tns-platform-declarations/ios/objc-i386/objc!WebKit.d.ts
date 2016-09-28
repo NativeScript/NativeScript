@@ -16,15 +16,15 @@ declare class WKBackForwardList extends NSObject {
 
 	static new(): WKBackForwardList; // inherited from NSObject
 
-	/* readonly */ backItem: WKBackForwardListItem;
+	readonly backItem: WKBackForwardListItem;
 
-	/* readonly */ backList: NSArray<WKBackForwardListItem>;
+	readonly backList: NSArray<WKBackForwardListItem>;
 
-	/* readonly */ currentItem: WKBackForwardListItem;
+	readonly currentItem: WKBackForwardListItem;
 
-	/* readonly */ forwardItem: WKBackForwardListItem;
+	readonly forwardItem: WKBackForwardListItem;
 
-	/* readonly */ forwardList: NSArray<WKBackForwardListItem>;
+	readonly forwardList: NSArray<WKBackForwardListItem>;
 
 	itemAtIndex(index: number): WKBackForwardListItem;
 }
@@ -35,11 +35,11 @@ declare class WKBackForwardListItem extends NSObject {
 
 	static new(): WKBackForwardListItem; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ initialURL: NSURL;
+	readonly initialURL: NSURL;
 
-	/* readonly */ title: string;
+	readonly title: string;
 }
 
 declare const enum WKDataDetectorTypes {
@@ -86,11 +86,11 @@ declare class WKFrameInfo extends NSObject implements NSCopying {
 
 	static new(): WKFrameInfo; // inherited from NSObject
 
-	/* readonly */ mainFrame: boolean;
+	readonly mainFrame: boolean;
 
-	/* readonly */ request: NSURLRequest;
+	readonly request: NSURLRequest;
 
-	/* readonly */ securityOrigin: WKSecurityOrigin;
+	readonly securityOrigin: WKSecurityOrigin;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -108,13 +108,13 @@ declare class WKNavigationAction extends NSObject {
 
 	static new(): WKNavigationAction; // inherited from NSObject
 
-	/* readonly */ navigationType: WKNavigationType;
+	readonly navigationType: WKNavigationType;
 
-	/* readonly */ request: NSURLRequest;
+	readonly request: NSURLRequest;
 
-	/* readonly */ sourceFrame: WKFrameInfo;
+	readonly sourceFrame: WKFrameInfo;
 
-	/* readonly */ targetFrame: WKFrameInfo;
+	readonly targetFrame: WKFrameInfo;
 }
 
 declare const enum WKNavigationActionPolicy {
@@ -157,11 +157,11 @@ declare class WKNavigationResponse extends NSObject {
 
 	static new(): WKNavigationResponse; // inherited from NSObject
 
-	/* readonly */ canShowMIMEType: boolean;
+	readonly canShowMIMEType: boolean;
 
-	/* readonly */ forMainFrame: boolean;
+	readonly forMainFrame: boolean;
 
-	/* readonly */ response: NSURLResponse;
+	readonly response: NSURLResponse;
 }
 
 declare const enum WKNavigationResponsePolicy {
@@ -228,7 +228,7 @@ declare class WKPreviewElementInfo extends NSObject implements NSCopying {
 
 	static new(): WKPreviewElementInfo; // inherited from NSObject
 
-	/* readonly */ linkURL: NSURL;
+	readonly linkURL: NSURL;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -252,13 +252,13 @@ declare class WKScriptMessage extends NSObject {
 
 	static new(): WKScriptMessage; // inherited from NSObject
 
-	/* readonly */ body: any;
+	readonly body: any;
 
-	/* readonly */ frameInfo: WKFrameInfo;
+	readonly frameInfo: WKFrameInfo;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ webView: WKWebView;
+	readonly webView: WKWebView;
 }
 
 interface WKScriptMessageHandler extends NSObjectProtocol {
@@ -276,11 +276,11 @@ declare class WKSecurityOrigin extends NSObject {
 
 	static new(): WKSecurityOrigin; // inherited from NSObject
 
-	/* readonly */ host: string;
+	readonly host: string;
 
-	/* readonly */ port: number;
+	readonly port: number;
 
-	/* readonly */ protocol: string;
+	readonly protocol: string;
 }
 
 declare const enum WKSelectionGranularity {
@@ -319,7 +319,7 @@ declare class WKUserContentController extends NSObject implements NSCoding {
 
 	static new(): WKUserContentController; // inherited from NSObject
 
-	/* readonly */ userScripts: NSArray<WKUserScript>;
+	readonly userScripts: NSArray<WKUserScript>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -342,11 +342,11 @@ declare class WKUserScript extends NSObject implements NSCopying {
 
 	static new(): WKUserScript; // inherited from NSObject
 
-	/* readonly */ forMainFrameOnly: boolean;
+	readonly forMainFrameOnly: boolean;
 
-	/* readonly */ injectionTime: WKUserScriptInjectionTime;
+	readonly injectionTime: WKUserScriptInjectionTime;
 
-	/* readonly */ source: string;
+	readonly source: string;
 
 	constructor(o: { source: string; injectionTime: WKUserScriptInjectionTime; forMainFrameOnly: boolean; });
 
@@ -382,37 +382,37 @@ declare class WKWebView extends UIView {
 
 	UIDelegate: WKUIDelegate;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
 	allowsBackForwardNavigationGestures: boolean;
 
 	allowsLinkPreview: boolean;
 
-	/* readonly */ backForwardList: WKBackForwardList;
+	readonly backForwardList: WKBackForwardList;
 
-	/* readonly */ canGoBack: boolean;
+	readonly canGoBack: boolean;
 
-	/* readonly */ canGoForward: boolean;
+	readonly canGoForward: boolean;
 
-	/* readonly */ certificateChain: NSArray<any>;
+	readonly certificateChain: NSArray<any>;
 
-	/* readonly */ configuration: WKWebViewConfiguration;
+	readonly configuration: WKWebViewConfiguration;
 
 	customUserAgent: string;
 
-	/* readonly */ estimatedProgress: number;
+	readonly estimatedProgress: number;
 
-	/* readonly */ hasOnlySecureContent: boolean;
+	readonly hasOnlySecureContent: boolean;
 
-	/* readonly */ loading: boolean;
+	readonly loading: boolean;
 
 	navigationDelegate: WKNavigationDelegate;
 
-	/* readonly */ scrollView: UIScrollView;
+	readonly scrollView: UIScrollView;
 
-	/* readonly */ serverTrust: any;
+	readonly serverTrust: any;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
 	constructor(o: { frame: CGRect; configuration: WKWebViewConfiguration; });
 
@@ -494,9 +494,9 @@ declare class WKWebsiteDataRecord extends NSObject {
 
 	static new(): WKWebsiteDataRecord; // inherited from NSObject
 
-	/* readonly */ dataTypes: NSSet<string>;
+	readonly dataTypes: NSSet<string>;
 
-	/* readonly */ displayName: string;
+	readonly displayName: string;
 }
 
 declare class WKWebsiteDataStore extends NSObject implements NSCoding {
@@ -511,7 +511,7 @@ declare class WKWebsiteDataStore extends NSObject implements NSCoding {
 
 	static nonPersistentDataStore(): WKWebsiteDataStore;
 
-	/* readonly */ persistent: boolean;
+	readonly persistent: boolean;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -548,19 +548,19 @@ declare class WKWindowFeatures extends NSObject {
 
 	static new(): WKWindowFeatures; // inherited from NSObject
 
-	/* readonly */ allowsResizing: number;
+	readonly allowsResizing: number;
 
-	/* readonly */ height: number;
+	readonly height: number;
 
-	/* readonly */ menuBarVisibility: number;
+	readonly menuBarVisibility: number;
 
-	/* readonly */ statusBarVisibility: number;
+	readonly statusBarVisibility: number;
 
-	/* readonly */ toolbarsVisibility: number;
+	readonly toolbarsVisibility: number;
 
-	/* readonly */ width: number;
+	readonly width: number;
 
-	/* readonly */ x: number;
+	readonly x: number;
 
-	/* readonly */ y: number;
+	readonly y: number;
 }

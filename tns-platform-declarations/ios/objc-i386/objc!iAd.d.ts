@@ -34,13 +34,13 @@ declare class ADBannerView extends UIView {
 
 	static sizeFromBannerContentSizeIdentifier(contentSizeIdentifier: string): CGSize;
 
-	/* readonly */ adType: ADAdType;
+	readonly adType: ADAdType;
 
 	advertisingSection: string;
 
-	/* readonly */ bannerLoaded: boolean;
+	readonly bannerLoaded: boolean;
 
-	/* readonly */ bannerViewActionInProgress: boolean;
+	readonly bannerViewActionInProgress: boolean;
 
 	currentContentSizeIdentifier: string;
 
@@ -127,11 +127,11 @@ declare class ADInterstitialAd extends NSObject {
 
 	static new(): ADInterstitialAd; // inherited from NSObject
 
-	/* readonly */ actionInProgress: boolean;
+	readonly actionInProgress: boolean;
 
 	delegate: ADInterstitialAdDelegate;
 
-	/* readonly */ loaded: boolean;
+	readonly loaded: boolean;
 
 	cancelAction(): void;
 

@@ -49,7 +49,7 @@ declare class PHLivePhotoView extends UIView {
 
 	muted: boolean;
 
-	/* readonly */ playbackGestureRecognizer: UIGestureRecognizer;
+	readonly playbackGestureRecognizer: UIGestureRecognizer;
 
 	startPlaybackWithStyle(playbackStyle: PHLivePhotoViewPlaybackStyle): void;
 

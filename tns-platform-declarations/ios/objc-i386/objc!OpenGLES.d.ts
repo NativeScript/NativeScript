@@ -9,13 +9,13 @@ declare class EAGLContext extends NSObject {
 
 	static setCurrentContext(context: EAGLContext): boolean;
 
-	/* readonly */ API: EAGLRenderingAPI;
+	readonly API: EAGLRenderingAPI;
 
 	debugLabel: string;
 
 	multiThreaded: boolean;
 
-	/* readonly */ sharegroup: EAGLSharegroup;
+	readonly sharegroup: EAGLSharegroup;
 
 	constructor(o: { API: EAGLRenderingAPI; });
 

@@ -63,23 +63,23 @@ declare class EKCalendar extends EKObject {
 
 	CGColor: any;
 
-	/* readonly */ allowedEntityTypes: EKEntityMask;
+	readonly allowedEntityTypes: EKEntityMask;
 
-	/* readonly */ allowsContentModifications: boolean;
+	readonly allowsContentModifications: boolean;
 
-	/* readonly */ calendarIdentifier: string;
+	readonly calendarIdentifier: string;
 
-	/* readonly */ immutable: boolean;
+	readonly immutable: boolean;
 
 	source: EKSource;
 
-	/* readonly */ subscribed: boolean;
+	readonly subscribed: boolean;
 
-	/* readonly */ supportedEventAvailabilities: EKCalendarEventAvailabilityMask;
+	readonly supportedEventAvailabilities: EKCalendarEventAvailabilityMask;
 
 	title: string;
 
-	/* readonly */ type: EKCalendarType;
+	readonly type: EKCalendarType;
 }
 
 declare const enum EKCalendarEventAvailabilityMask {
@@ -103,29 +103,29 @@ declare class EKCalendarItem extends EKObject {
 
 	URL: NSURL;
 
-	/* readonly */ UUID: string;
+	readonly UUID: string;
 
 	alarms: NSArray<EKAlarm>;
 
-	/* readonly */ attendees: NSArray<EKParticipant>;
+	readonly attendees: NSArray<EKParticipant>;
 
 	calendar: EKCalendar;
 
-	/* readonly */ calendarItemExternalIdentifier: string;
+	readonly calendarItemExternalIdentifier: string;
 
-	/* readonly */ calendarItemIdentifier: string;
+	readonly calendarItemIdentifier: string;
 
-	/* readonly */ creationDate: Date;
+	readonly creationDate: Date;
 
-	/* readonly */ hasAlarms: boolean;
+	readonly hasAlarms: boolean;
 
-	/* readonly */ hasAttendees: boolean;
+	readonly hasAttendees: boolean;
 
-	/* readonly */ hasNotes: boolean;
+	readonly hasNotes: boolean;
 
-	/* readonly */ hasRecurrenceRules: boolean;
+	readonly hasRecurrenceRules: boolean;
 
-	/* readonly */ lastModifiedDate: Date;
+	readonly lastModifiedDate: Date;
 
 	location: string;
 
@@ -254,23 +254,23 @@ declare class EKEvent extends EKCalendarItem {
 
 	availability: EKEventAvailability;
 
-	/* readonly */ birthdayContactIdentifier: string;
+	readonly birthdayContactIdentifier: string;
 
-	/* readonly */ birthdayPersonID: number;
+	readonly birthdayPersonID: number;
 
 	endDate: Date;
 
-	/* readonly */ eventIdentifier: string;
+	readonly eventIdentifier: string;
 
-	/* readonly */ isDetached: boolean;
+	readonly isDetached: boolean;
 
-	/* readonly */ occurrenceDate: Date;
+	readonly occurrenceDate: Date;
 
-	/* readonly */ organizer: EKParticipant;
+	readonly organizer: EKParticipant;
 
 	startDate: Date;
 
-	/* readonly */ status: EKEventStatus;
+	readonly status: EKEventStatus;
 
 	structuredLocation: EKStructuredLocation;
 
@@ -309,13 +309,13 @@ declare class EKEventStore extends NSObject {
 
 	static new(): EKEventStore; // inherited from NSObject
 
-	/* readonly */ calendars: NSArray<EKCalendar>;
+	readonly calendars: NSArray<EKCalendar>;
 
-	/* readonly */ defaultCalendarForNewEvents: EKCalendar;
+	readonly defaultCalendarForNewEvents: EKCalendar;
 
-	/* readonly */ eventStoreIdentifier: string;
+	readonly eventStoreIdentifier: string;
 
-	/* readonly */ sources: NSArray<EKSource>;
+	readonly sources: NSArray<EKSource>;
 
 	calendarItemWithIdentifier(identifier: string): EKCalendarItem;
 
@@ -380,9 +380,9 @@ declare class EKObject extends NSObject {
 
 	static new(): EKObject; // inherited from NSObject
 
-	/* readonly */ hasChanges: boolean;
+	readonly hasChanges: boolean;
 
-	/* readonly */ new: boolean;
+	readonly new: boolean;
 
 	refresh(): boolean;
 
@@ -397,19 +397,19 @@ declare class EKParticipant extends EKObject implements NSCopying {
 
 	static new(): EKParticipant; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ contactPredicate: NSPredicate;
+	readonly contactPredicate: NSPredicate;
 
-	/* readonly */ currentUser: boolean;
+	readonly currentUser: boolean;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ participantRole: EKParticipantRole;
+	readonly participantRole: EKParticipantRole;
 
-	/* readonly */ participantStatus: EKParticipantStatus;
+	readonly participantStatus: EKParticipantStatus;
 
-	/* readonly */ participantType: EKParticipantType;
+	readonly participantType: EKParticipantType;
 
 	ABRecordWithAddressBook(addressBook: any): any;
 
@@ -492,9 +492,9 @@ declare class EKRecurrenceDayOfWeek extends NSObject implements NSCopying {
 
 	static new(): EKRecurrenceDayOfWeek; // inherited from NSObject
 
-	/* readonly */ dayOfTheWeek: EKWeekday;
+	readonly dayOfTheWeek: EKWeekday;
 
-	/* readonly */ weekNumber: number;
+	readonly weekNumber: number;
 
 	constructor(o: { dayOfTheWeek: EKWeekday; weekNumber: number; });
 
@@ -513,9 +513,9 @@ declare class EKRecurrenceEnd extends NSObject implements NSCopying {
 
 	static recurrenceEndWithOccurrenceCount(occurrenceCount: number): EKRecurrenceEnd;
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ occurrenceCount: number;
+	readonly occurrenceCount: number;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -537,27 +537,27 @@ declare class EKRecurrenceRule extends EKObject implements NSCopying {
 
 	static new(): EKRecurrenceRule; // inherited from NSObject
 
-	/* readonly */ calendarIdentifier: string;
+	readonly calendarIdentifier: string;
 
-	/* readonly */ daysOfTheMonth: NSArray<number>;
+	readonly daysOfTheMonth: NSArray<number>;
 
-	/* readonly */ daysOfTheWeek: NSArray<EKRecurrenceDayOfWeek>;
+	readonly daysOfTheWeek: NSArray<EKRecurrenceDayOfWeek>;
 
-	/* readonly */ daysOfTheYear: NSArray<number>;
+	readonly daysOfTheYear: NSArray<number>;
 
-	/* readonly */ firstDayOfTheWeek: number;
+	readonly firstDayOfTheWeek: number;
 
-	/* readonly */ frequency: EKRecurrenceFrequency;
+	readonly frequency: EKRecurrenceFrequency;
 
-	/* readonly */ interval: number;
+	readonly interval: number;
 
-	/* readonly */ monthsOfTheYear: NSArray<number>;
+	readonly monthsOfTheYear: NSArray<number>;
 
 	recurrenceEnd: EKRecurrenceEnd;
 
-	/* readonly */ setPositions: NSArray<number>;
+	readonly setPositions: NSArray<number>;
 
-	/* readonly */ weeksOfTheYear: NSArray<number>;
+	readonly weeksOfTheYear: NSArray<number>;
 
 	constructor(o: { recurrenceWithFrequency: EKRecurrenceFrequency; interval: number; daysOfTheWeek: NSArray<EKRecurrenceDayOfWeek>; daysOfTheMonth: NSArray<number>; monthsOfTheYear: NSArray<number>; weeksOfTheYear: NSArray<number>; daysOfTheYear: NSArray<number>; setPositions: NSArray<number>; end: EKRecurrenceEnd; });
 
@@ -606,13 +606,13 @@ declare class EKSource extends EKObject {
 
 	static new(): EKSource; // inherited from NSObject
 
-	/* readonly */ calendars: NSSet<EKCalendar>;
+	readonly calendars: NSSet<EKCalendar>;
 
-	/* readonly */ sourceIdentifier: string;
+	readonly sourceIdentifier: string;
 
-	/* readonly */ sourceType: EKSourceType;
+	readonly sourceType: EKSourceType;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
 	calendarsForEntityType(entityType: EKEntityType): NSSet<EKCalendar>;
 }

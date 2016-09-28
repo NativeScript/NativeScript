@@ -11,9 +11,9 @@ declare class ACAccount extends NSObject {
 
 	credential: ACAccountCredential;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ userFullName: string;
+	readonly userFullName: string;
 
 	username: string;
 
@@ -54,7 +54,7 @@ declare class ACAccountStore extends NSObject {
 
 	static new(): ACAccountStore; // inherited from NSObject
 
-	/* readonly */ accounts: NSArray<any>;
+	readonly accounts: NSArray<any>;
 
 	accountTypeWithAccountTypeIdentifier(typeIdentifier: string): ACAccountType;
 
@@ -81,11 +81,11 @@ declare class ACAccountType extends NSObject {
 
 	static new(): ACAccountType; // inherited from NSObject
 
-	/* readonly */ accessGranted: boolean;
+	readonly accessGranted: boolean;
 
-	/* readonly */ accountTypeDescription: string;
+	readonly accountTypeDescription: string;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 }
 
 declare var ACAccountTypeIdentifierFacebook: string;

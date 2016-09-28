@@ -9,13 +9,13 @@ declare class MTKMesh extends NSObject {
 
 	name: string;
 
-	/* readonly */ submeshes: NSArray<MTKSubmesh>;
+	readonly submeshes: NSArray<MTKSubmesh>;
 
-	/* readonly */ vertexBuffers: NSArray<MTKMeshBuffer>;
+	readonly vertexBuffers: NSArray<MTKMeshBuffer>;
 
-	/* readonly */ vertexCount: number;
+	readonly vertexCount: number;
 
-	/* readonly */ vertexDescriptor: MDLVertexDescriptor;
+	readonly vertexDescriptor: MDLVertexDescriptor;
 
 	constructor(o: { mesh: MDLMesh; device: MTLDevice; });
 
@@ -28,29 +28,29 @@ declare class MTKMeshBuffer extends NSObject implements MDLMeshBuffer, MDLNamed 
 
 	static new(): MTKMeshBuffer; // inherited from NSObject
 
-	/* readonly */ allocator: MTKMeshBufferAllocator;
+	readonly allocator: MTKMeshBufferAllocator;
 
-	/* readonly */ buffer: MTLBuffer;
+	readonly buffer: MTLBuffer;
 
-	/* readonly */ offset: number;
+	readonly offset: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ length: number; // inherited from MDLMeshBuffer
+	readonly length: number; // inherited from MDLMeshBuffer
 
 	name: string; // inherited from MDLNamed
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */ type: MDLMeshBufferType; // inherited from MDLMeshBuffer
+	readonly type: MDLMeshBufferType; // inherited from MDLMeshBuffer
 
-	/* readonly */  // inherited from MDLMeshBuffer
+	readonly  // inherited from MDLMeshBuffer
 
 	class(): typeof NSObject;
 
@@ -87,19 +87,19 @@ declare class MTKMeshBufferAllocator extends NSObject implements MDLMeshBufferAl
 
 	static new(): MTKMeshBufferAllocator; // inherited from NSObject
 
-	/* readonly */ device: MTLDevice;
+	readonly device: MTLDevice;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { device: MTLDevice; });
 
@@ -162,17 +162,17 @@ declare class MTKSubmesh extends NSObject {
 
 	static new(): MTKSubmesh; // inherited from NSObject
 
-	/* readonly */ indexBuffer: MTKMeshBuffer;
+	readonly indexBuffer: MTKMeshBuffer;
 
-	/* readonly */ indexCount: number;
+	readonly indexCount: number;
 
-	/* readonly */ indexType: MTLIndexType;
+	readonly indexType: MTLIndexType;
 
-	/* readonly */ mesh: MTKMesh;
+	readonly mesh: MTKMesh;
 
 	name: string;
 
-	/* readonly */ primitiveType: MTLPrimitiveType;
+	readonly primitiveType: MTLPrimitiveType;
 }
 
 declare class MTKTextureLoader extends NSObject {
@@ -181,7 +181,7 @@ declare class MTKTextureLoader extends NSObject {
 
 	static new(): MTKTextureLoader; // inherited from NSObject
 
-	/* readonly */ device: MTLDevice;
+	readonly device: MTLDevice;
 
 	constructor(o: { device: MTLDevice; });
 
@@ -270,15 +270,15 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	colorPixelFormat: MTLPixelFormat;
 
-	/* readonly */ currentDrawable: MTLDrawable;
+	readonly currentDrawable: MTLDrawable;
 
-	/* readonly */ currentRenderPassDescriptor: MTLRenderPassDescriptor;
+	readonly currentRenderPassDescriptor: MTLRenderPassDescriptor;
 
 	delegate: MTKViewDelegate;
 
 	depthStencilPixelFormat: MTLPixelFormat;
 
-	/* readonly */ depthStencilTexture: MTLTexture;
+	readonly depthStencilTexture: MTLTexture;
 
 	device: MTLDevice;
 
@@ -288,7 +288,7 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	framebufferOnly: boolean;
 
-	/* readonly */ multisampleColorTexture: MTLTexture;
+	readonly multisampleColorTexture: MTLTexture;
 
 	paused: boolean;
 
@@ -298,17 +298,17 @@ declare class MTKView extends UIView implements CALayerDelegate, NSCoding {
 
 	sampleCount: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

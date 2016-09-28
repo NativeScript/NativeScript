@@ -53,7 +53,7 @@ declare class CNContactViewController extends UIViewController {
 
 	alternateName: string;
 
-	/* readonly */ contact: CNContact;
+	readonly contact: CNContact;
 
 	contactStore: CNContactStore;
 

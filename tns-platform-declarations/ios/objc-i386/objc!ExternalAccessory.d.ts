@@ -5,27 +5,27 @@ declare class EAAccessory extends NSObject {
 
 	static new(): EAAccessory; // inherited from NSObject
 
-	/* readonly */ connected: boolean;
+	readonly connected: boolean;
 
-	/* readonly */ connectionID: number;
+	readonly connectionID: number;
 
 	delegate: EAAccessoryDelegate;
 
-	/* readonly */ dockType: string;
+	readonly dockType: string;
 
-	/* readonly */ firmwareRevision: string;
+	readonly firmwareRevision: string;
 
-	/* readonly */ hardwareRevision: string;
+	readonly hardwareRevision: string;
 
-	/* readonly */ manufacturer: string;
+	readonly manufacturer: string;
 
-	/* readonly */ modelNumber: string;
+	readonly modelNumber: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ protocolStrings: NSArray<string>;
+	readonly protocolStrings: NSArray<string>;
 
-	/* readonly */ serialNumber: string;
+	readonly serialNumber: string;
 }
 
 interface EAAccessoryDelegate extends NSObjectProtocol {
@@ -51,7 +51,7 @@ declare class EAAccessoryManager extends NSObject {
 
 	static sharedAccessoryManager(): EAAccessoryManager;
 
-	/* readonly */ connectedAccessories: NSArray<EAAccessory>;
+	readonly connectedAccessories: NSArray<EAAccessory>;
 
 	registerForLocalNotifications(): void;
 
@@ -83,13 +83,13 @@ declare class EASession extends NSObject {
 
 	static new(): EASession; // inherited from NSObject
 
-	/* readonly */ accessory: EAAccessory;
+	readonly accessory: EAAccessory;
 
-	/* readonly */ inputStream: NSInputStream;
+	readonly inputStream: NSInputStream;
 
-	/* readonly */ outputStream: NSOutputStream;
+	readonly outputStream: NSOutputStream;
 
-	/* readonly */ protocolString: string;
+	readonly protocolString: string;
 
 	constructor(o: { accessory: EAAccessory; forProtocol: string; });
 
@@ -102,17 +102,17 @@ declare class EAWiFiUnconfiguredAccessory extends NSObject {
 
 	static new(): EAWiFiUnconfiguredAccessory; // inherited from NSObject
 
-	/* readonly */ macAddress: string;
+	readonly macAddress: string;
 
-	/* readonly */ manufacturer: string;
+	readonly manufacturer: string;
 
-	/* readonly */ model: string;
+	readonly model: string;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ properties: EAWiFiUnconfiguredAccessoryProperties;
+	readonly properties: EAWiFiUnconfiguredAccessoryProperties;
 
-	/* readonly */ ssid: string;
+	readonly ssid: string;
 }
 
 declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
@@ -123,7 +123,7 @@ declare class EAWiFiUnconfiguredAccessoryBrowser extends NSObject {
 
 	delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate;
 
-	/* readonly */ unconfiguredAccessories: NSSet<EAWiFiUnconfiguredAccessory>;
+	readonly unconfiguredAccessories: NSSet<EAWiFiUnconfiguredAccessory>;
 
 	constructor(o: { delegate: EAWiFiUnconfiguredAccessoryBrowserDelegate; queue: NSObject; });
 

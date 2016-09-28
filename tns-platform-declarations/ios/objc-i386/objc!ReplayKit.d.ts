@@ -29,7 +29,7 @@ declare class RPBroadcastConfiguration extends NSObject implements NSCoding, NSS
 
 	videoCompressionProperties: NSDictionary<string, NSObject>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -44,17 +44,17 @@ declare class RPBroadcastController extends NSObject {
 
 	static new(): RPBroadcastController; // inherited from NSObject
 
-	/* readonly */ broadcastExtensionBundleID: string;
+	readonly broadcastExtensionBundleID: string;
 
-	/* readonly */ broadcastURL: NSURL;
+	readonly broadcastURL: NSURL;
 
-	/* readonly */ broadcasting: boolean;
+	readonly broadcasting: boolean;
 
 	delegate: RPBroadcastControllerDelegate;
 
-	/* readonly */ paused: boolean;
+	readonly paused: boolean;
 
-	/* readonly */ serviceInfo: NSDictionary<string, NSObject>;
+	readonly serviceInfo: NSDictionary<string, NSObject>;
 
 	finishBroadcastWithHandler(handler: (p1: NSError) => void): void;
 
@@ -82,17 +82,17 @@ declare class RPBroadcastHandler extends NSObject implements NSExtensionRequestH
 
 	static new(): RPBroadcastHandler; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	beginRequestWithExtensionContext(context: NSExtensionContext): void;
 
@@ -218,17 +218,17 @@ declare class RPScreenRecorder extends NSObject {
 
 	static sharedRecorder(): RPScreenRecorder;
 
-	/* readonly */ available: boolean;
+	readonly available: boolean;
 
 	cameraEnabled: boolean;
 
-	/* readonly */ cameraPreviewView: UIView;
+	readonly cameraPreviewView: UIView;
 
 	delegate: RPScreenRecorderDelegate;
 
 	microphoneEnabled: boolean;
 
-	/* readonly */ recording: boolean;
+	readonly recording: boolean;
 
 	discardRecordingWithHandler(handler: () => void): void;
 

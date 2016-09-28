@@ -110,7 +110,7 @@ declare class CADisplayLink extends NSObject {
 
 	static new(): CADisplayLink; // inherited from NSObject
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
 	frameInterval: number;
 
@@ -118,9 +118,9 @@ declare class CADisplayLink extends NSObject {
 
 	preferredFramesPerSecond: number;
 
-	/* readonly */ targetTimestamp: number;
+	readonly targetTimestamp: number;
 
-	/* readonly */ timestamp: number;
+	readonly timestamp: number;
 
 	addToRunLoopForMode(runloop: NSRunLoop, mode: string): void;
 
@@ -167,7 +167,7 @@ declare class CAEmitterBehavior extends NSObject implements NSCoding {
 
 	name: string;
 
-	/* readonly */ type: string;
+	readonly type: string;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -478,11 +478,11 @@ declare class CALayer extends NSObject implements CAMediaTiming, NSCoding {
 
 	sublayers: NSArray<CALayer>;
 
-	/* readonly */ superlayer: CALayer;
+	readonly superlayer: CALayer;
 
 	transform: CATransform3D;
 
-	/* readonly */ visibleRect: CGRect;
+	readonly visibleRect: CGRect;
 
 	zPosition: number;
 
@@ -766,7 +766,7 @@ declare class CASpringAnimation extends CABasicAnimation {
 
 	mass: number;
 
-	/* readonly */ settlingDuration: number;
+	readonly settlingDuration: number;
 
 	stiffness: number;
 }
@@ -934,7 +934,7 @@ declare class CAValueFunction extends NSObject implements NSCoding {
 
 	static new(): CAValueFunction; // inherited from NSObject
 
-	/* readonly */ name: string;
+	readonly name: string;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 

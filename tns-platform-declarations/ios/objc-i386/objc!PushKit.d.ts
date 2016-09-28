@@ -5,9 +5,9 @@ declare class PKPushCredentials extends NSObject {
 
 	static new(): PKPushCredentials; // inherited from NSObject
 
-	/* readonly */ token: NSData;
+	readonly token: NSData;
 
-	/* readonly */ type: string;
+	readonly type: string;
 }
 
 declare class PKPushPayload extends NSObject {
@@ -16,9 +16,9 @@ declare class PKPushPayload extends NSObject {
 
 	static new(): PKPushPayload; // inherited from NSObject
 
-	/* readonly */ dictionaryPayload: NSDictionary<any, any>;
+	readonly dictionaryPayload: NSDictionary<any, any>;
 
-	/* readonly */ type: string;
+	readonly type: string;
 }
 
 declare class PKPushRegistry extends NSObject {

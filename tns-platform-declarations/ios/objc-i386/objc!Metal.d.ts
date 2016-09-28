@@ -5,35 +5,35 @@ declare class MTLArgument extends NSObject {
 
 	static new(): MTLArgument; // inherited from NSObject
 
-	/* readonly */ access: MTLArgumentAccess;
+	readonly access: MTLArgumentAccess;
 
-	/* readonly */ active: boolean;
+	readonly active: boolean;
 
-	/* readonly */ arrayLength: number;
+	readonly arrayLength: number;
 
-	/* readonly */ bufferAlignment: number;
+	readonly bufferAlignment: number;
 
-	/* readonly */ bufferDataSize: number;
+	readonly bufferDataSize: number;
 
-	/* readonly */ bufferDataType: MTLDataType;
+	readonly bufferDataType: MTLDataType;
 
-	/* readonly */ bufferStructType: MTLStructType;
+	readonly bufferStructType: MTLStructType;
 
-	/* readonly */ index: number;
+	readonly index: number;
 
-	/* readonly */ isDepthTexture: boolean;
+	readonly isDepthTexture: boolean;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ textureDataType: MTLDataType;
+	readonly textureDataType: MTLDataType;
 
-	/* readonly */ textureType: MTLTextureType;
+	readonly textureType: MTLTextureType;
 
-	/* readonly */ threadgroupMemoryAlignment: number;
+	readonly threadgroupMemoryAlignment: number;
 
-	/* readonly */ threadgroupMemoryDataSize: number;
+	readonly threadgroupMemoryDataSize: number;
 
-	/* readonly */ type: MTLArgumentType;
+	readonly type: MTLArgumentType;
 }
 
 declare const enum MTLArgumentAccess {
@@ -62,11 +62,11 @@ declare class MTLArrayType extends NSObject {
 
 	static new(): MTLArrayType; // inherited from NSObject
 
-	/* readonly */ arrayLength: number;
+	readonly arrayLength: number;
 
-	/* readonly */ elementType: MTLDataType;
+	readonly elementType: MTLDataType;
 
-	/* readonly */ stride: number;
+	readonly stride: number;
 
 	elementArrayType(): MTLArrayType;
 
@@ -79,17 +79,17 @@ declare class MTLAttribute extends NSObject {
 
 	static new(): MTLAttribute; // inherited from NSObject
 
-	/* readonly */ active: boolean;
+	readonly active: boolean;
 
-	/* readonly */ attributeIndex: number;
+	readonly attributeIndex: number;
 
-	/* readonly */ attributeType: MTLDataType;
+	readonly attributeType: MTLDataType;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ patchControlPointData: boolean;
+	readonly patchControlPointData: boolean;
 
-	/* readonly */ patchData: boolean;
+	readonly patchData: boolean;
 }
 
 declare class MTLAttributeDescriptor extends NSObject implements NSCopying {
@@ -583,7 +583,7 @@ declare class MTLComputePipelineReflection extends NSObject {
 
 	static new(): MTLComputePipelineReflection; // inherited from NSObject
 
-	/* readonly */ arguments: NSArray<MTLArgument>;
+	readonly arguments: NSArray<MTLArgument>;
 }
 
 interface MTLComputePipelineState extends NSObjectProtocol {
@@ -947,13 +947,13 @@ declare class MTLFunctionConstant extends NSObject {
 
 	static new(): MTLFunctionConstant; // inherited from NSObject
 
-	/* readonly */ index: number;
+	readonly index: number;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ required: boolean;
+	readonly required: boolean;
 
-	/* readonly */ type: MTLDataType;
+	readonly type: MTLDataType;
 }
 
 declare class MTLFunctionConstantValues extends NSObject implements NSCopying {
@@ -1593,7 +1593,7 @@ declare class MTLRenderPassDescriptor extends NSObject implements NSCopying {
 
 	static renderPassDescriptor(): MTLRenderPassDescriptor;
 
-	/* readonly */ colorAttachments: MTLRenderPassColorAttachmentDescriptorArray;
+	readonly colorAttachments: MTLRenderPassColorAttachmentDescriptorArray;
 
 	depthAttachment: MTLRenderPassDepthAttachmentDescriptor;
 
@@ -1662,7 +1662,7 @@ declare class MTLRenderPipelineDescriptor extends NSObject implements NSCopying 
 
 	alphaToOneEnabled: boolean;
 
-	/* readonly */ colorAttachments: MTLRenderPipelineColorAttachmentDescriptorArray;
+	readonly colorAttachments: MTLRenderPipelineColorAttachmentDescriptorArray;
 
 	depthAttachmentPixelFormat: MTLPixelFormat;
 
@@ -1716,9 +1716,9 @@ declare class MTLRenderPipelineReflection extends NSObject {
 
 	static new(): MTLRenderPipelineReflection; // inherited from NSObject
 
-	/* readonly */ fragmentArguments: NSArray<MTLArgument>;
+	readonly fragmentArguments: NSArray<MTLArgument>;
 
-	/* readonly */ vertexArguments: NSArray<MTLArgument>;
+	readonly vertexArguments: NSArray<MTLArgument>;
 }
 
 interface MTLRenderPipelineState extends NSObjectProtocol {
@@ -1898,13 +1898,13 @@ declare class MTLStageInputOutputDescriptor extends NSObject implements NSCopyin
 
 	static stageInputOutputDescriptor(): MTLStageInputOutputDescriptor;
 
-	/* readonly */ attributes: MTLAttributeDescriptorArray;
+	readonly attributes: MTLAttributeDescriptorArray;
 
 	indexBufferIndex: number;
 
 	indexType: MTLIndexType;
 
-	/* readonly */ layouts: MTLBufferLayoutDescriptorArray;
+	readonly layouts: MTLBufferLayoutDescriptorArray;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 
@@ -2002,11 +2002,11 @@ declare class MTLStructMember extends NSObject {
 
 	static new(): MTLStructMember; // inherited from NSObject
 
-	/* readonly */ dataType: MTLDataType;
+	readonly dataType: MTLDataType;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ offset: number;
+	readonly offset: number;
 
 	arrayType(): MTLArrayType;
 
@@ -2019,7 +2019,7 @@ declare class MTLStructType extends NSObject {
 
 	static new(): MTLStructType; // inherited from NSObject
 
-	/* readonly */ members: NSArray<MTLStructMember>;
+	readonly members: NSArray<MTLStructMember>;
 
 	memberByName(name: string): MTLStructMember;
 }
@@ -2201,17 +2201,17 @@ declare class MTLVertexAttribute extends NSObject {
 
 	static new(): MTLVertexAttribute; // inherited from NSObject
 
-	/* readonly */ active: boolean;
+	readonly active: boolean;
 
-	/* readonly */ attributeIndex: number;
+	readonly attributeIndex: number;
 
-	/* readonly */ attributeType: MTLDataType;
+	readonly attributeType: MTLDataType;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ patchControlPointData: boolean;
+	readonly patchControlPointData: boolean;
 
-	/* readonly */ patchData: boolean;
+	readonly patchData: boolean;
 }
 
 declare class MTLVertexAttributeDescriptor extends NSObject implements NSCopying {
@@ -2276,9 +2276,9 @@ declare class MTLVertexDescriptor extends NSObject implements NSCopying {
 
 	static vertexDescriptor(): MTLVertexDescriptor;
 
-	/* readonly */ attributes: MTLVertexAttributeDescriptorArray;
+	readonly attributes: MTLVertexAttributeDescriptorArray;
 
-	/* readonly */ layouts: MTLVertexBufferLayoutDescriptorArray;
+	readonly layouts: MTLVertexBufferLayoutDescriptorArray;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 

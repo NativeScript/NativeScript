@@ -9,7 +9,7 @@ declare class EKCalendarChooser extends UIViewController {
 
 	selectedCalendars: NSSet<EKCalendar>;
 
-	/* readonly */ selectionStyle: EKCalendarChooserSelectionStyle;
+	readonly selectionStyle: EKCalendarChooserSelectionStyle;
 
 	showsCancelButton: boolean;
 

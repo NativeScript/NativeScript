@@ -27,7 +27,7 @@ declare class SFContentBlockerState extends NSObject {
 
 	static new(): SFContentBlockerState; // inherited from NSObject
 
-	/* readonly */ enabled: boolean;
+	readonly enabled: boolean;
 }
 
 declare const enum SFErrorCode {

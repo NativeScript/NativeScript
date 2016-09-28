@@ -5,11 +5,11 @@ declare class PHAdjustmentData extends NSObject {
 
 	static new(): PHAdjustmentData; // inherited from NSObject
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ formatIdentifier: string;
+	readonly formatIdentifier: string;
 
-	/* readonly */ formatVersion: string;
+	readonly formatVersion: string;
 
 	constructor(o: { formatIdentifier: string; formatVersion: string; data: NSData; });
 
@@ -36,33 +36,33 @@ declare class PHAsset extends PHObject {
 
 	static new(): PHAsset; // inherited from NSObject
 
-	/* readonly */ burstIdentifier: string;
+	readonly burstIdentifier: string;
 
-	/* readonly */ burstSelectionTypes: PHAssetBurstSelectionType;
+	readonly burstSelectionTypes: PHAssetBurstSelectionType;
 
-	/* readonly */ creationDate: Date;
+	readonly creationDate: Date;
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
-	/* readonly */ favorite: boolean;
+	readonly favorite: boolean;
 
-	/* readonly */ hidden: boolean;
+	readonly hidden: boolean;
 
-	/* readonly */ location: CLLocation;
+	readonly location: CLLocation;
 
-	/* readonly */ mediaSubtypes: PHAssetMediaSubtype;
+	readonly mediaSubtypes: PHAssetMediaSubtype;
 
-	/* readonly */ mediaType: PHAssetMediaType;
+	readonly mediaType: PHAssetMediaType;
 
-	/* readonly */ modificationDate: Date;
+	readonly modificationDate: Date;
 
-	/* readonly */ pixelHeight: number;
+	readonly pixelHeight: number;
 
-	/* readonly */ pixelWidth: number;
+	readonly pixelWidth: number;
 
-	/* readonly */ representsBurst: boolean;
+	readonly representsBurst: boolean;
 
-	/* readonly */ sourceType: PHAssetSourceType;
+	readonly sourceType: PHAssetSourceType;
 
 	canPerformEditOperation(editOperation: PHAssetEditOperation): boolean;
 
@@ -106,7 +106,7 @@ declare class PHAssetChangeRequest extends NSObject {
 
 	location: CLLocation;
 
-	/* readonly */ placeholderForCreatedAsset: PHObjectPlaceholder;
+	readonly placeholderForCreatedAsset: PHObjectPlaceholder;
 
 	revertAssetContentToOriginal(): void;
 }
@@ -133,19 +133,19 @@ declare class PHAssetCollection extends PHCollection {
 
 	static transientAssetCollectionWithAssetsTitle(assets: NSArray<PHAsset>, title: string): PHAssetCollection;
 
-	/* readonly */ approximateLocation: CLLocation;
+	readonly approximateLocation: CLLocation;
 
-	/* readonly */ assetCollectionSubtype: PHAssetCollectionSubtype;
+	readonly assetCollectionSubtype: PHAssetCollectionSubtype;
 
-	/* readonly */ assetCollectionType: PHAssetCollectionType;
+	readonly assetCollectionType: PHAssetCollectionType;
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ estimatedAssetCount: number;
+	readonly estimatedAssetCount: number;
 
-	/* readonly */ localizedLocationNames: NSArray<string>;
+	readonly localizedLocationNames: NSArray<string>;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 }
 
 declare class PHAssetCollectionChangeRequest extends NSObject {
@@ -162,7 +162,7 @@ declare class PHAssetCollectionChangeRequest extends NSObject {
 
 	static new(): PHAssetCollectionChangeRequest; // inherited from NSObject
 
-	/* readonly */ placeholderForCreatedAssetCollection: PHObjectPlaceholder;
+	readonly placeholderForCreatedAssetCollection: PHObjectPlaceholder;
 
 	title: string;
 
@@ -303,13 +303,13 @@ declare class PHAssetResource extends NSObject {
 
 	static new(): PHAssetResource; // inherited from NSObject
 
-	/* readonly */ assetLocalIdentifier: string;
+	readonly assetLocalIdentifier: string;
 
-	/* readonly */ originalFilename: string;
+	readonly originalFilename: string;
 
-	/* readonly */ type: PHAssetResourceType;
+	readonly type: PHAssetResourceType;
 
-	/* readonly */ uniformTypeIdentifier: string;
+	readonly uniformTypeIdentifier: string;
 }
 
 declare class PHAssetResourceCreationOptions extends NSObject implements NSCopying {
@@ -438,11 +438,11 @@ declare class PHCollection extends PHObject {
 
 	static new(): PHCollection; // inherited from NSObject
 
-	/* readonly */ canContainAssets: boolean;
+	readonly canContainAssets: boolean;
 
-	/* readonly */ canContainCollections: boolean;
+	readonly canContainCollections: boolean;
 
-	/* readonly */ localizedTitle: string;
+	readonly localizedTitle: string;
 
 	canPerformEditOperation(anOperation: PHCollectionEditOperation): boolean;
 }
@@ -484,15 +484,15 @@ declare class PHCollectionList extends PHCollection {
 
 	static transientCollectionListWithCollectionsTitle(collections: NSArray<PHCollection>, title: string): PHCollectionList;
 
-	/* readonly */ collectionListSubtype: PHCollectionListSubtype;
+	readonly collectionListSubtype: PHCollectionListSubtype;
 
-	/* readonly */ collectionListType: PHCollectionListType;
+	readonly collectionListType: PHCollectionListType;
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ localizedLocationNames: NSArray<string>;
+	readonly localizedLocationNames: NSArray<string>;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 }
 
 declare class PHCollectionListChangeRequest extends NSObject {
@@ -509,7 +509,7 @@ declare class PHCollectionListChangeRequest extends NSObject {
 
 	static new(): PHCollectionListChangeRequest; // inherited from NSObject
 
-	/* readonly */ placeholderForCreatedCollectionList: PHObjectPlaceholder;
+	readonly placeholderForCreatedCollectionList: PHObjectPlaceholder;
 
 	title: string;
 
@@ -556,29 +556,29 @@ declare class PHContentEditingInput extends NSObject {
 
 	static new(): PHContentEditingInput; // inherited from NSObject
 
-	/* readonly */ adjustmentData: PHAdjustmentData;
+	readonly adjustmentData: PHAdjustmentData;
 
-	/* readonly */ audiovisualAsset: AVAsset;
+	readonly audiovisualAsset: AVAsset;
 
-	/* readonly */ avAsset: AVAsset;
+	readonly avAsset: AVAsset;
 
-	/* readonly */ creationDate: Date;
+	readonly creationDate: Date;
 
-	/* readonly */ displaySizeImage: UIImage;
+	readonly displaySizeImage: UIImage;
 
-	/* readonly */ fullSizeImageOrientation: number;
+	readonly fullSizeImageOrientation: number;
 
-	/* readonly */ fullSizeImageURL: NSURL;
+	readonly fullSizeImageURL: NSURL;
 
-	/* readonly */ livePhoto: PHLivePhoto;
+	readonly livePhoto: PHLivePhoto;
 
-	/* readonly */ location: CLLocation;
+	readonly location: CLLocation;
 
-	/* readonly */ mediaSubtypes: PHAssetMediaSubtype;
+	readonly mediaSubtypes: PHAssetMediaSubtype;
 
-	/* readonly */ mediaType: PHAssetMediaType;
+	readonly mediaType: PHAssetMediaType;
 
-	/* readonly */ uniformTypeIdentifier: string;
+	readonly uniformTypeIdentifier: string;
 }
 
 declare var PHContentEditingInputCancelledKey: string;
@@ -608,7 +608,7 @@ declare class PHContentEditingOutput extends NSObject {
 
 	adjustmentData: PHAdjustmentData;
 
-	/* readonly */ renderedContentURL: NSURL;
+	readonly renderedContentURL: NSURL;
 
 	constructor(o: { contentEditingInput: PHContentEditingInput; });
 
@@ -648,11 +648,11 @@ declare class PHFetchResult<ObjectType> extends NSObject implements NSCopying, N
 
 	static new<ObjectType>(): PHFetchResult<ObjectType>; // inherited from NSObject
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ firstObject: ObjectType;
+	readonly firstObject: ObjectType;
 
-	/* readonly */ lastObject: ObjectType;
+	readonly lastObject: ObjectType;
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -687,25 +687,25 @@ declare class PHFetchResultChangeDetails<ObjectType> extends NSObject {
 
 	static new<ObjectType>(): PHFetchResultChangeDetails<ObjectType>; // inherited from NSObject
 
-	/* readonly */ changedIndexes: NSIndexSet;
+	readonly changedIndexes: NSIndexSet;
 
-	/* readonly */ changedObjects: NSArray<ObjectType>;
+	readonly changedObjects: NSArray<ObjectType>;
 
-	/* readonly */ fetchResultAfterChanges: PHFetchResult<ObjectType>;
+	readonly fetchResultAfterChanges: PHFetchResult<ObjectType>;
 
-	/* readonly */ fetchResultBeforeChanges: PHFetchResult<ObjectType>;
+	readonly fetchResultBeforeChanges: PHFetchResult<ObjectType>;
 
-	/* readonly */ hasIncrementalChanges: boolean;
+	readonly hasIncrementalChanges: boolean;
 
-	/* readonly */ hasMoves: boolean;
+	readonly hasMoves: boolean;
 
-	/* readonly */ insertedIndexes: NSIndexSet;
+	readonly insertedIndexes: NSIndexSet;
 
-	/* readonly */ insertedObjects: NSArray<ObjectType>;
+	readonly insertedObjects: NSArray<ObjectType>;
 
-	/* readonly */ removedIndexes: NSIndexSet;
+	readonly removedIndexes: NSIndexSet;
 
-	/* readonly */ removedObjects: NSArray<ObjectType>;
+	readonly removedObjects: NSArray<ObjectType>;
 
 	enumerateMovesWithBlock(handler: (p1: number, p2: number) => void): void;
 }
@@ -818,9 +818,9 @@ declare class PHLivePhoto extends NSObject implements NSCopying, NSSecureCoding 
 
 	static requestLivePhotoWithResourceFileURLsPlaceholderImageTargetSizeContentModeResultHandler(fileURLs: NSArray<NSURL>, image: UIImage, targetSize: CGSize, contentMode: PHImageContentMode, resultHandler: (p1: PHLivePhoto, p2: NSDictionary<any, any>) => void): number;
 
-	/* readonly */ size: CGSize;
+	readonly size: CGSize;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -839,15 +839,15 @@ declare class PHLivePhotoEditingContext extends NSObject {
 
 	audioVolume: number;
 
-	/* readonly */ duration: CMTime;
+	readonly duration: CMTime;
 
 	frameProcessor: (p1: PHLivePhotoFrame, p2: interop.Pointer | interop.Reference<NSError>) => CIImage;
 
-	/* readonly */ fullSizeImage: CIImage;
+	readonly fullSizeImage: CIImage;
 
-	/* readonly */ orientation: CGImagePropertyOrientation;
+	readonly orientation: CGImagePropertyOrientation;
 
-	/* readonly */ photoTime: CMTime;
+	readonly photoTime: CMTime;
 
 	constructor(o: { livePhotoEditingInput: PHContentEditingInput; });
 
@@ -915,7 +915,7 @@ declare class PHObject extends NSObject implements NSCopying {
 
 	static new(): PHObject; // inherited from NSObject
 
-	/* readonly */ localIdentifier: string;
+	readonly localIdentifier: string;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -926,13 +926,13 @@ declare class PHObjectChangeDetails<ObjectType> extends NSObject {
 
 	static new<ObjectType>(): PHObjectChangeDetails<ObjectType>; // inherited from NSObject
 
-	/* readonly */ assetContentChanged: boolean;
+	readonly assetContentChanged: boolean;
 
-	/* readonly */ objectAfterChanges: ObjectType;
+	readonly objectAfterChanges: ObjectType;
 
-	/* readonly */ objectBeforeChanges: ObjectType;
+	readonly objectBeforeChanges: ObjectType;
 
-	/* readonly */ objectWasDeleted: boolean;
+	readonly objectWasDeleted: boolean;
 }
 
 declare class PHObjectPlaceholder extends PHObject {

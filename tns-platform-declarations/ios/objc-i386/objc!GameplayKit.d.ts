@@ -90,7 +90,7 @@ declare class GKBehavior extends NSObject implements NSCopying, NSFastEnumeratio
 
 	static new(): GKBehavior; // inherited from NSObject
 
-	/* readonly */ goalCount: number;
+	readonly goalCount: number;
 	[index: number]: GKGoal;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -177,7 +177,7 @@ declare class GKComponent extends NSObject implements NSCoding, NSCopying {
 
 	static new(): GKComponent; // inherited from NSObject
 
-	/* readonly */ entity: GKEntity;
+	readonly entity: GKEntity;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -200,9 +200,9 @@ declare class GKComponentSystem<ComponentType> extends NSObject implements NSFas
 
 	static new<ComponentType>(): GKComponentSystem<ComponentType>; // inherited from NSObject
 
-	/* readonly */ componentClass: typeof NSObject;
+	readonly componentClass: typeof NSObject;
 
-	/* readonly */ components: NSArray<ComponentType>;
+	readonly components: NSArray<ComponentType>;
 	[index: number]: ComponentType;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -243,7 +243,7 @@ declare class GKCompositeBehavior extends GKBehavior {
 
 	static new(): GKCompositeBehavior; // inherited from NSObject
 
-	/* readonly */ behaviorCount: number;
+	readonly behaviorCount: number;
 	[index: number]: GKBehavior;
 
 	objectAtIndexedSubscript(idx: number): GKBehavior;
@@ -312,9 +312,9 @@ declare class GKDecisionTree extends NSObject implements NSSecureCoding {
 
 	randomSource: GKRandomSource;
 
-	/* readonly */ rootNode: GKDecisionNode;
+	readonly rootNode: GKDecisionNode;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { attribute: NSObjectProtocol; });
 
@@ -341,7 +341,7 @@ declare class GKEntity extends NSObject implements NSCoding, NSCopying {
 
 	static new(): GKEntity; // inherited from NSObject
 
-	/* readonly */ components: NSArray<GKComponent>;
+	readonly components: NSArray<GKComponent>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -421,9 +421,9 @@ declare class GKGaussianDistribution extends GKRandomDistribution {
 
 	static new(): GKGaussianDistribution; // inherited from NSObject
 
-	/* readonly */ deviation: number;
+	readonly deviation: number;
 
-	/* readonly */ mean: number;
+	readonly mean: number;
 
 	constructor(o: { randomSource: GKRandom; mean: number; deviation: number; });
 
@@ -471,7 +471,7 @@ declare class GKGraph extends NSObject implements NSCoding, NSCopying {
 
 	static new(): GKGraph; // inherited from NSObject
 
-	/* readonly */ nodes: NSArray<GKGraphNode>;
+	readonly nodes: NSArray<GKGraphNode>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -500,7 +500,7 @@ declare class GKGraphNode extends NSObject implements NSCoding {
 
 	static new(): GKGraphNode; // inherited from NSObject
 
-	/* readonly */ connectedNodes: NSArray<GKGraphNode>;
+	readonly connectedNodes: NSArray<GKGraphNode>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -543,11 +543,11 @@ declare class GKGridGraph<NodeType> extends GKGraph {
 
 	static new<NodeType>(): GKGridGraph<NodeType>; // inherited from NSObject
 
-	/* readonly */ diagonalsAllowed: boolean;
+	readonly diagonalsAllowed: boolean;
 
-	/* readonly */ gridHeight: number;
+	readonly gridHeight: number;
 
-	/* readonly */ gridWidth: number;
+	readonly gridWidth: number;
 
 	classForGenericArgumentAtIndex(index: number): typeof NSObject;
 
@@ -595,11 +595,11 @@ declare class GKMeshGraph<NodeType> extends GKGraph {
 
 	static new<NodeType>(): GKMeshGraph<NodeType>; // inherited from NSObject
 
-	/* readonly */ bufferRadius: number;
+	readonly bufferRadius: number;
 
-	/* readonly */ obstacles: NSArray<GKPolygonObstacle>;
+	readonly obstacles: NSArray<GKPolygonObstacle>;
 
-	/* readonly */ triangleCount: number;
+	readonly triangleCount: number;
 
 	triangulationMode: GKMeshGraphTriangulationMode;
 
@@ -631,21 +631,21 @@ declare class GKMinmaxStrategist extends NSObject implements GKStrategist {
 
 	maxLookAheadDepth: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
 	gameModel: GKGameModel; // inherited from GKStrategist
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	randomSource: GKRandom; // inherited from GKStrategist
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	bestMoveForActivePlayer(): GKGameModelUpdate;
 
@@ -686,21 +686,21 @@ declare class GKMonteCarloStrategist extends NSObject implements GKStrategist {
 
 	explorationParameter: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
 	gameModel: GKGameModel; // inherited from GKStrategist
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
 	randomSource: GKRandom; // inherited from GKStrategist
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	bestMoveForActivePlayer(): GKGameModelUpdate;
 
@@ -739,7 +739,7 @@ declare class GKNSPredicateRule extends GKRule {
 
 	static ruleWithPredicateRetractingFactGrade(predicate: NSPredicate, fact: NSObjectProtocol, grade: number): GKNSPredicateRule; // inherited from GKRule
 
-	/* readonly */ predicate: NSPredicate;
+	readonly predicate: NSPredicate;
 
 	constructor(o: { predicate: NSPredicate; });
 
@@ -805,7 +805,7 @@ declare class GKNoiseMap extends NSObject {
 
 	static noiseMapWithNoise(noise: GKNoise): GKNoiseMap;
 
-	/* readonly */ seamless: boolean;
+	readonly seamless: boolean;
 
 	constructor(o: { noise: GKNoise; });
 
@@ -838,9 +838,9 @@ declare class GKObstacleGraph<NodeType> extends GKGraph {
 
 	static new<NodeType>(): GKObstacleGraph<NodeType>; // inherited from NSObject
 
-	/* readonly */ bufferRadius: number;
+	readonly bufferRadius: number;
 
-	/* readonly */ obstacles: NSArray<GKPolygonObstacle>;
+	readonly obstacles: NSArray<GKPolygonObstacle>;
 
 	constructor(o: { obstacles: NSArray<GKPolygonObstacle>; bufferRadius: number; });
 
@@ -901,7 +901,7 @@ declare class GKPath extends NSObject {
 
 	cyclical: boolean;
 
-	/* readonly */ numPoints: number;
+	readonly numPoints: number;
 
 	radius: number;
 
@@ -931,7 +931,7 @@ declare class GKPolygonObstacle extends GKObstacle implements NSCoding {
 
 	static new(): GKPolygonObstacle; // inherited from NSObject
 
-	/* readonly */ vertexCount: number;
+	readonly vertexCount: number;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1013,11 +1013,11 @@ declare class GKRandomDistribution extends NSObject implements GKRandom {
 
 	static new(): GKRandomDistribution; // inherited from NSObject
 
-	/* readonly */ highestValue: number;
+	readonly highestValue: number;
 
-	/* readonly */ lowestValue: number;
+	readonly lowestValue: number;
 
-	/* readonly */ numberOfPossibleOutcomes: number;
+	readonly numberOfPossibleOutcomes: number;
 
 	constructor(o: { randomSource: GKRandom; lowestValue: number; highestValue: number; });
 
@@ -1040,7 +1040,7 @@ declare class GKRandomSource extends NSObject implements GKRandom, NSCopying, NS
 
 	static sharedRandom(): GKRandomSource;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1099,15 +1099,15 @@ declare class GKRuleSystem extends NSObject {
 
 	static new(): GKRuleSystem; // inherited from NSObject
 
-	/* readonly */ agenda: NSArray<GKRule>;
+	readonly agenda: NSArray<GKRule>;
 
-	/* readonly */ executed: NSArray<GKRule>;
+	readonly executed: NSArray<GKRule>;
 
-	/* readonly */ facts: NSArray<any>;
+	readonly facts: NSArray<any>;
 
-	/* readonly */ rules: NSArray<GKRule>;
+	readonly rules: NSArray<GKRule>;
 
-	/* readonly */ state: NSMutableDictionary<any, any>;
+	readonly state: NSMutableDictionary<any, any>;
 
 	addRule(rule: GKRule): void;
 
@@ -1144,17 +1144,17 @@ declare class GKSKNodeComponent extends GKComponent implements GKAgentDelegate {
 
 	node: SKNode;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { node: SKNode; });
 
@@ -1195,9 +1195,9 @@ declare class GKScene extends NSObject implements NSCoding, NSCopying {
 
 	static sceneWithFileNamed(filename: string): GKScene;
 
-	/* readonly */ entities: NSArray<GKEntity>;
+	readonly entities: NSArray<GKEntity>;
 
-	/* readonly */ graphs: NSDictionary<string, GKGraph>;
+	readonly graphs: NSDictionary<string, GKGraph>;
 
 	rootNode: GKSceneRootNodeType;
 
@@ -1278,7 +1278,7 @@ declare class GKState extends NSObject {
 
 	static state(): GKState;
 
-	/* readonly */ stateMachine: GKStateMachine;
+	readonly stateMachine: GKStateMachine;
 
 	didEnterWithPreviousState(previousState: GKState): void;
 
@@ -1297,7 +1297,7 @@ declare class GKStateMachine extends NSObject {
 
 	static stateMachineWithStates(states: NSArray<GKState>): GKStateMachine;
 
-	/* readonly */ currentState: GKState;
+	readonly currentState: GKState;
 
 	constructor(o: { states: NSArray<GKState>; });
 

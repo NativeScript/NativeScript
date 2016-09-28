@@ -5,17 +5,17 @@ declare class AUViewController extends UIViewController implements NSExtensionRe
 
 	static new(): AUViewController; // inherited from NSObject
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	beginRequestWithExtensionContext(context: NSExtensionContext): void;
 
@@ -99,7 +99,7 @@ declare class CAInterAppAudioTransportView extends UIView {
 
 	static new(): CAInterAppAudioTransportView; // inherited from NSObject
 
-	/* readonly */ connected: boolean;
+	readonly connected: boolean;
 
 	currentTimeLabelFont: UIFont;
 
@@ -111,11 +111,11 @@ declare class CAInterAppAudioTransportView extends UIView {
 
 	playButtonColor: UIColor;
 
-	/* readonly */ playing: boolean;
+	readonly playing: boolean;
 
 	recordButtonColor: UIColor;
 
-	/* readonly */ recording: boolean;
+	readonly recording: boolean;
 
 	rewindButtonColor: UIColor;
 

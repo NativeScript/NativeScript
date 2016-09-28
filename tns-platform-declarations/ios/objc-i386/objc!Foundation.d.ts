@@ -46,27 +46,27 @@ declare class NSArray<ObjectType> extends NSObject implements CKRecordValue, NSC
 
 	static new<ObjectType>(): NSArray<ObjectType>; // inherited from NSObject
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ firstObject: ObjectType;
+	readonly firstObject: ObjectType;
 
-	/* readonly */ lastObject: ObjectType;
+	readonly lastObject: ObjectType;
 
-	/* readonly */ sortedArrayHint: NSData;
+	readonly sortedArrayHint: NSData;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -227,7 +227,7 @@ declare class NSAssertionHandler extends NSObject {
 
 	static new(): NSAssertionHandler; // inherited from NSObject
 
-	/* readonly */ static currentHandler: NSAssertionHandler;
+	static readonly currentHandler: NSAssertionHandler;
 }
 
 declare var NSAssertionHandlerKey: string;
@@ -240,11 +240,11 @@ declare class NSAttributedString extends NSObject implements NSCopying, NSMutabl
 
 	static new(): NSAttributedString; // inherited from NSObject
 
-	/* readonly */ length: number;
+	readonly length: number;
 
-	/* readonly */ string: string;
+	readonly string: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { attributedString: NSAttributedString; });
 
@@ -352,7 +352,7 @@ declare class NSBlockOperation extends NSOperation {
 
 	static new(): NSBlockOperation; // inherited from NSObject
 
-	/* readonly */ executionBlocks: NSArray<() => void>;
+	readonly executionBlocks: NSArray<() => void>;
 
 	addExecutionBlock(block: () => void): void;
 }
@@ -385,59 +385,59 @@ declare class NSBundle extends NSObject {
 
 	static preferredLocalizationsFromArrayForPreferences(localizationsArray: NSArray<string>, preferencesArray: NSArray<string>): NSArray<string>;
 
-	/* readonly */ appStoreReceiptURL: NSURL;
+	readonly appStoreReceiptURL: NSURL;
 
-	/* readonly */ builtInPlugInsPath: string;
+	readonly builtInPlugInsPath: string;
 
-	/* readonly */ builtInPlugInsURL: NSURL;
+	readonly builtInPlugInsURL: NSURL;
 
-	/* readonly */ bundleIdentifier: string;
+	readonly bundleIdentifier: string;
 
-	/* readonly */ bundlePath: string;
+	readonly bundlePath: string;
 
-	/* readonly */ bundleURL: NSURL;
+	readonly bundleURL: NSURL;
 
-	/* readonly */ developmentLocalization: string;
+	readonly developmentLocalization: string;
 
-	/* readonly */ executableArchitectures: NSArray<number>;
+	readonly executableArchitectures: NSArray<number>;
 
-	/* readonly */ executablePath: string;
+	readonly executablePath: string;
 
-	/* readonly */ executableURL: NSURL;
+	readonly executableURL: NSURL;
 
-	/* readonly */ infoDictionary: NSDictionary<string, any>;
+	readonly infoDictionary: NSDictionary<string, any>;
 
-	/* readonly */ loaded: boolean;
+	readonly loaded: boolean;
 
-	/* readonly */ localizations: NSArray<string>;
+	readonly localizations: NSArray<string>;
 
-	/* readonly */ localizedInfoDictionary: NSDictionary<string, any>;
+	readonly localizedInfoDictionary: NSDictionary<string, any>;
 
-	/* readonly */ preferredLocalizations: NSArray<string>;
+	readonly preferredLocalizations: NSArray<string>;
 
-	/* readonly */ principalClass: typeof NSObject;
+	readonly principalClass: typeof NSObject;
 
-	/* readonly */ privateFrameworksPath: string;
+	readonly privateFrameworksPath: string;
 
-	/* readonly */ privateFrameworksURL: NSURL;
+	readonly privateFrameworksURL: NSURL;
 
-	/* readonly */ resourcePath: string;
+	readonly resourcePath: string;
 
-	/* readonly */ resourceURL: NSURL;
+	readonly resourceURL: NSURL;
 
-	/* readonly */ sharedFrameworksPath: string;
+	readonly sharedFrameworksPath: string;
 
-	/* readonly */ sharedFrameworksURL: NSURL;
+	readonly sharedFrameworksURL: NSURL;
 
-	/* readonly */ sharedSupportPath: string;
+	readonly sharedSupportPath: string;
 
-	/* readonly */ sharedSupportURL: NSURL;
+	readonly sharedSupportURL: NSURL;
 
-	/* readonly */ static allBundles: NSArray<NSBundle>;
+	static readonly allBundles: NSArray<NSBundle>;
 
-	/* readonly */ static allFrameworks: NSArray<NSBundle>;
+	static readonly allFrameworks: NSArray<NSBundle>;
 
-	/* readonly */ static mainBundle: NSBundle;
+	static readonly mainBundle: NSBundle;
 
 	constructor(o: { path: string; });
 
@@ -518,25 +518,25 @@ declare class NSBundleResourceRequest extends NSObject implements NSProgressRepo
 
 	static new(): NSBundleResourceRequest; // inherited from NSObject
 
-	/* readonly */ bundle: NSBundle;
+	readonly bundle: NSBundle;
 
 	loadingPriority: number;
 
-	/* readonly */ tags: NSSet<string>;
+	readonly tags: NSSet<string>;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ progress: NSProgress; // inherited from NSProgressReporting
+	readonly progress: NSProgress; // inherited from NSProgressReporting
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { tags: NSSet<string>; });
 
@@ -686,15 +686,15 @@ declare class NSCachedURLResponse extends NSObject implements NSCopying, NSSecur
 
 	static new(): NSCachedURLResponse; // inherited from NSObject
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ response: NSURLResponse;
+	readonly response: NSURLResponse;
 
-	/* readonly */ storagePolicy: NSURLCacheStoragePolicy;
+	readonly storagePolicy: NSURLCacheStoragePolicy;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -734,61 +734,61 @@ declare class NSCalendar extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NSCalendar; // inherited from NSObject
 
-	/* readonly */ AMSymbol: string;
+	readonly AMSymbol: string;
 
-	/* readonly */ PMSymbol: string;
+	readonly PMSymbol: string;
 
-	/* readonly */ calendarIdentifier: string;
+	readonly calendarIdentifier: string;
 
-	/* readonly */ eraSymbols: NSArray<string>;
+	readonly eraSymbols: NSArray<string>;
 
 	firstWeekday: number;
 
 	locale: NSLocale;
 
-	/* readonly */ longEraSymbols: NSArray<string>;
+	readonly longEraSymbols: NSArray<string>;
 
 	minimumDaysInFirstWeek: number;
 
-	/* readonly */ monthSymbols: NSArray<string>;
+	readonly monthSymbols: NSArray<string>;
 
-	/* readonly */ quarterSymbols: NSArray<string>;
+	readonly quarterSymbols: NSArray<string>;
 
-	/* readonly */ shortMonthSymbols: NSArray<string>;
+	readonly shortMonthSymbols: NSArray<string>;
 
-	/* readonly */ shortQuarterSymbols: NSArray<string>;
+	readonly shortQuarterSymbols: NSArray<string>;
 
-	/* readonly */ shortStandaloneMonthSymbols: NSArray<string>;
+	readonly shortStandaloneMonthSymbols: NSArray<string>;
 
-	/* readonly */ shortStandaloneQuarterSymbols: NSArray<string>;
+	readonly shortStandaloneQuarterSymbols: NSArray<string>;
 
-	/* readonly */ shortStandaloneWeekdaySymbols: NSArray<string>;
+	readonly shortStandaloneWeekdaySymbols: NSArray<string>;
 
-	/* readonly */ shortWeekdaySymbols: NSArray<string>;
+	readonly shortWeekdaySymbols: NSArray<string>;
 
-	/* readonly */ standaloneMonthSymbols: NSArray<string>;
+	readonly standaloneMonthSymbols: NSArray<string>;
 
-	/* readonly */ standaloneQuarterSymbols: NSArray<string>;
+	readonly standaloneQuarterSymbols: NSArray<string>;
 
-	/* readonly */ standaloneWeekdaySymbols: NSArray<string>;
+	readonly standaloneWeekdaySymbols: NSArray<string>;
 
 	timeZone: NSTimeZone;
 
-	/* readonly */ veryShortMonthSymbols: NSArray<string>;
+	readonly veryShortMonthSymbols: NSArray<string>;
 
-	/* readonly */ veryShortStandaloneMonthSymbols: NSArray<string>;
+	readonly veryShortStandaloneMonthSymbols: NSArray<string>;
 
-	/* readonly */ veryShortStandaloneWeekdaySymbols: NSArray<string>;
+	readonly veryShortStandaloneWeekdaySymbols: NSArray<string>;
 
-	/* readonly */ veryShortWeekdaySymbols: NSArray<string>;
+	readonly veryShortWeekdaySymbols: NSArray<string>;
 
-	/* readonly */ weekdaySymbols: NSArray<string>;
+	readonly weekdaySymbols: NSArray<string>;
 
-	/* readonly */ static autoupdatingCurrentCalendar: NSCalendar;
+	static readonly autoupdatingCurrentCalendar: NSCalendar;
 
-	/* readonly */ static currentCalendar: NSCalendar;
+	static readonly currentCalendar: NSCalendar;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { calendarIdentifier: string; });
 
@@ -1009,53 +1009,53 @@ declare class NSCharacterSet extends NSObject implements NSCopying, NSMutableCop
 
 	static new(): NSCharacterSet; // inherited from NSObject
 
-	/* readonly */ bitmapRepresentation: NSData;
+	readonly bitmapRepresentation: NSData;
 
-	/* readonly */ invertedSet: NSCharacterSet;
+	readonly invertedSet: NSCharacterSet;
 
-	/* readonly */ static URLFragmentAllowedCharacterSet: NSCharacterSet;
+	static readonly URLFragmentAllowedCharacterSet: NSCharacterSet;
 
-	/* readonly */ static URLHostAllowedCharacterSet: NSCharacterSet;
+	static readonly URLHostAllowedCharacterSet: NSCharacterSet;
 
-	/* readonly */ static URLPasswordAllowedCharacterSet: NSCharacterSet;
+	static readonly URLPasswordAllowedCharacterSet: NSCharacterSet;
 
-	/* readonly */ static URLPathAllowedCharacterSet: NSCharacterSet;
+	static readonly URLPathAllowedCharacterSet: NSCharacterSet;
 
-	/* readonly */ static URLQueryAllowedCharacterSet: NSCharacterSet;
+	static readonly URLQueryAllowedCharacterSet: NSCharacterSet;
 
-	/* readonly */ static URLUserAllowedCharacterSet: NSCharacterSet;
+	static readonly URLUserAllowedCharacterSet: NSCharacterSet;
 
-	/* readonly */ static alphanumericCharacterSet: NSCharacterSet;
+	static readonly alphanumericCharacterSet: NSCharacterSet;
 
-	/* readonly */ static capitalizedLetterCharacterSet: NSCharacterSet;
+	static readonly capitalizedLetterCharacterSet: NSCharacterSet;
 
-	/* readonly */ static controlCharacterSet: NSCharacterSet;
+	static readonly controlCharacterSet: NSCharacterSet;
 
-	/* readonly */ static decimalDigitCharacterSet: NSCharacterSet;
+	static readonly decimalDigitCharacterSet: NSCharacterSet;
 
-	/* readonly */ static decomposableCharacterSet: NSCharacterSet;
+	static readonly decomposableCharacterSet: NSCharacterSet;
 
-	/* readonly */ static illegalCharacterSet: NSCharacterSet;
+	static readonly illegalCharacterSet: NSCharacterSet;
 
-	/* readonly */ static letterCharacterSet: NSCharacterSet;
+	static readonly letterCharacterSet: NSCharacterSet;
 
-	/* readonly */ static lowercaseLetterCharacterSet: NSCharacterSet;
+	static readonly lowercaseLetterCharacterSet: NSCharacterSet;
 
-	/* readonly */ static newlineCharacterSet: NSCharacterSet;
+	static readonly newlineCharacterSet: NSCharacterSet;
 
-	/* readonly */ static nonBaseCharacterSet: NSCharacterSet;
+	static readonly nonBaseCharacterSet: NSCharacterSet;
 
-	/* readonly */ static punctuationCharacterSet: NSCharacterSet;
+	static readonly punctuationCharacterSet: NSCharacterSet;
 
-	/* readonly */ static symbolCharacterSet: NSCharacterSet;
+	static readonly symbolCharacterSet: NSCharacterSet;
 
-	/* readonly */ static uppercaseLetterCharacterSet: NSCharacterSet;
+	static readonly uppercaseLetterCharacterSet: NSCharacterSet;
 
-	/* readonly */ static whitespaceAndNewlineCharacterSet: NSCharacterSet;
+	static readonly whitespaceAndNewlineCharacterSet: NSCharacterSet;
 
-	/* readonly */ static whitespaceCharacterSet: NSCharacterSet;
+	static readonly whitespaceCharacterSet: NSCharacterSet;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1104,17 +1104,17 @@ declare class NSCoder extends NSObject {
 
 	static new(): NSCoder; // inherited from NSObject
 
-	/* readonly */ allowedClasses: NSSet<typeof NSObject>;
+	readonly allowedClasses: NSSet<typeof NSObject>;
 
-	/* readonly */ allowsKeyedCoding: boolean;
+	readonly allowsKeyedCoding: boolean;
 
-	/* readonly */ decodingFailurePolicy: NSDecodingFailurePolicy;
+	readonly decodingFailurePolicy: NSDecodingFailurePolicy;
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ requiresSecureCoding: boolean;
+	readonly requiresSecureCoding: boolean;
 
-	/* readonly */ systemVersion: number;
+	readonly systemVersion: number;
 
 	containsValueForKey(key: string): boolean;
 
@@ -1276,17 +1276,17 @@ declare class NSComparisonPredicate extends NSPredicate {
 
 	static predicateWithLeftExpressionRightExpressionModifierTypeOptions(lhs: NSExpression, rhs: NSExpression, modifier: NSComparisonPredicateModifier, type: NSPredicateOperatorType, options: NSComparisonPredicateOptions): NSComparisonPredicate;
 
-	/* readonly */ comparisonPredicateModifier: NSComparisonPredicateModifier;
+	readonly comparisonPredicateModifier: NSComparisonPredicateModifier;
 
-	/* readonly */ customSelector: string;
+	readonly customSelector: string;
 
-	/* readonly */ leftExpression: NSExpression;
+	readonly leftExpression: NSExpression;
 
-	/* readonly */ options: NSComparisonPredicateOptions;
+	readonly options: NSComparisonPredicateOptions;
 
-	/* readonly */ predicateOperatorType: NSPredicateOperatorType;
+	readonly predicateOperatorType: NSPredicateOperatorType;
 
-	/* readonly */ rightExpression: NSExpression;
+	readonly rightExpression: NSExpression;
 
 	constructor(o: { leftExpression: NSExpression; rightExpression: NSExpression; customSelector: string; });
 
@@ -1336,9 +1336,9 @@ declare class NSCompoundPredicate extends NSPredicate {
 
 	static orPredicateWithSubpredicates(subpredicates: NSArray<NSPredicate>): NSCompoundPredicate;
 
-	/* readonly */ compoundPredicateType: NSCompoundPredicateType;
+	readonly compoundPredicateType: NSCompoundPredicateType;
 
-	/* readonly */ subpredicates: NSArray<any>;
+	readonly subpredicates: NSArray<any>;
 
 	constructor(o: { type: NSCompoundPredicateType; subpredicates: NSArray<NSPredicate>; });
 
@@ -1381,7 +1381,7 @@ declare class NSConditionLock extends NSObject implements NSLocking {
 
 	static new(): NSConditionLock; // inherited from NSObject
 
-	/* readonly */ condition: number;
+	readonly condition: number;
 
 	name: string;
 
@@ -1499,23 +1499,23 @@ declare class NSData extends NSObject implements CKRecordValue, NSCopying, NSMut
 
 	static new(): NSData; // inherited from NSObject
 
-	/* readonly */ bytes: interop.Pointer | interop.Reference<any>;
+	readonly bytes: interop.Pointer | interop.Reference<any>;
 
-	/* readonly */ length: number;
+	readonly length: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { base64EncodedData: NSData; options: NSDataBase64DecodingOptions; });
 
@@ -1654,7 +1654,7 @@ declare class NSDataDetector extends NSRegularExpression {
 
 	static new(): NSDataDetector; // inherited from NSObject
 
-	/* readonly */ checkingTypes: number;
+	readonly checkingTypes: number;
 
 	constructor(o: { types: number; });
 
@@ -1718,31 +1718,31 @@ declare class NSDate extends NSObject implements CKRecordValue, NSCopying, NSSec
 
 	static new(): NSDate; // inherited from NSObject
 
-	/* readonly */ timeIntervalSince1970: number;
+	readonly timeIntervalSince1970: number;
 
-	/* readonly */ timeIntervalSinceNow: number;
+	readonly timeIntervalSinceNow: number;
 
-	/* readonly */ timeIntervalSinceReferenceDate: number;
+	readonly timeIntervalSinceReferenceDate: number;
 
-	/* readonly */ static distantFuture: Date;
+	static readonly distantFuture: Date;
 
-	/* readonly */ static distantPast: Date;
+	static readonly distantPast: Date;
 
-	/* readonly */ static timeIntervalSinceReferenceDate: number;
+	static readonly timeIntervalSinceReferenceDate: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -1817,7 +1817,7 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 
 	calendar: NSCalendar;
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
 	day: number;
 
@@ -1839,7 +1839,7 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 
 	timeZone: NSTimeZone;
 
-	/* readonly */ validDate: boolean;
+	readonly validDate: boolean;
 
 	weekOfMonth: number;
 
@@ -1853,7 +1853,7 @@ declare class NSDateComponents extends NSObject implements NSCopying, NSSecureCo
 
 	yearForWeekOfYear: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2056,13 +2056,13 @@ declare class NSDateInterval extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): NSDateInterval; // inherited from NSObject
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
-	/* readonly */ endDate: Date;
+	readonly endDate: Date;
 
-	/* readonly */ startDate: Date;
+	readonly startDate: Date;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2173,15 +2173,15 @@ declare class NSDecimalNumber extends NSNumber {
 
 	static defaultBehavior: NSDecimalNumberBehaviors;
 
-	/* readonly */ static maximumDecimalNumber: NSDecimalNumber;
+	static readonly maximumDecimalNumber: NSDecimalNumber;
 
-	/* readonly */ static minimumDecimalNumber: NSDecimalNumber;
+	static readonly minimumDecimalNumber: NSDecimalNumber;
 
-	/* readonly */ static notANumber: NSDecimalNumber;
+	static readonly notANumber: NSDecimalNumber;
 
-	/* readonly */ static one: NSDecimalNumber;
+	static readonly one: NSDecimalNumber;
 
-	/* readonly */ static zero: NSDecimalNumber;
+	static readonly zero: NSDecimalNumber;
 
 	constructor(o: { decimal: NSDecimal; });
 
@@ -2321,27 +2321,27 @@ declare class NSDictionary<KeyType, ObjectType> extends NSObject implements NSCo
 
 	static sharedKeySetForKeys(keys: NSArray<any>): any;
 
-	/* readonly */ allKeys: NSArray<KeyType>;
+	readonly allKeys: NSArray<KeyType>;
 
-	/* readonly */ allValues: NSArray<ObjectType>;
+	readonly allValues: NSArray<ObjectType>;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ descriptionInStringsFileFormat: string;
+	readonly descriptionInStringsFileFormat: string;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -2489,9 +2489,9 @@ declare class NSDimension extends NSUnit implements NSSecureCoding {
 
 	static new(): NSDimension; // inherited from NSObject
 
-	/* readonly */ converter: NSUnitConverter;
+	readonly converter: NSUnitConverter;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2519,11 +2519,11 @@ declare class NSDirectoryEnumerator<ObjectType> extends NSEnumerator<ObjectType>
 
 	static new<ObjectType>(): NSDirectoryEnumerator<ObjectType>; // inherited from NSObject
 
-	/* readonly */ directoryAttributes: NSDictionary<string, any>;
+	readonly directoryAttributes: NSDictionary<string, any>;
 
-	/* readonly */ fileAttributes: NSDictionary<string, any>;
+	readonly fileAttributes: NSDictionary<string, any>;
 
-	/* readonly */ level: number;
+	readonly level: number;
 
 	skipDescendants(): void;
 
@@ -2596,7 +2596,7 @@ declare class NSEnumerator<ObjectType> extends NSObject implements NSFastEnumera
 
 	static new<ObjectType>(): NSEnumerator<ObjectType>; // inherited from NSObject
 
-	/* readonly */ allObjects: NSArray<ObjectType>;
+	readonly allObjects: NSArray<ObjectType>;
 	[Symbol.iterator](): Iterator<any>;
 
 	nextObject(): ObjectType;
@@ -2614,25 +2614,25 @@ declare class NSError extends NSObject implements NSCopying, NSSecureCoding {
 
 	static userInfoValueProviderForDomain(errorDomain: string): (p1: NSError, p2: string) => any;
 
-	/* readonly */ code: number;
+	readonly code: number;
 
-	/* readonly */ domain: string;
+	readonly domain: string;
 
-	/* readonly */ helpAnchor: string;
+	readonly helpAnchor: string;
 
-	/* readonly */ localizedDescription: string;
+	readonly localizedDescription: string;
 
-	/* readonly */ localizedFailureReason: string;
+	readonly localizedFailureReason: string;
 
-	/* readonly */ localizedRecoveryOptions: NSArray<string>;
+	readonly localizedRecoveryOptions: NSArray<string>;
 
-	/* readonly */ localizedRecoverySuggestion: string;
+	readonly localizedRecoverySuggestion: string;
 
-	/* readonly */ recoveryAttempter: any;
+	readonly recoveryAttempter: any;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2657,15 +2657,15 @@ declare class NSException extends NSObject implements NSCoding, NSCopying {
 
 	static new(): NSException; // inherited from NSObject
 
-	/* readonly */ callStackReturnAddresses: NSArray<number>;
+	readonly callStackReturnAddresses: NSArray<number>;
 
-	/* readonly */ callStackSymbols: NSArray<string>;
+	readonly callStackSymbols: NSArray<string>;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ reason: string;
+	readonly reason: string;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2732,35 +2732,35 @@ declare class NSExpression extends NSObject implements NSCopying, NSSecureCoding
 
 	static new(): NSExpression; // inherited from NSObject
 
-	/* readonly */ arguments: NSArray<NSExpression>;
+	readonly arguments: NSArray<NSExpression>;
 
-	/* readonly */ collection: any;
+	readonly collection: any;
 
-	/* readonly */ constantValue: any;
+	readonly constantValue: any;
 
-	/* readonly */ expressionBlock: (p1: any, p2: NSArray<any>, p3: NSMutableDictionary<any, any>) => any;
+	readonly expressionBlock: (p1: any, p2: NSArray<any>, p3: NSMutableDictionary<any, any>) => any;
 
-	/* readonly */ expressionType: NSExpressionType;
+	readonly expressionType: NSExpressionType;
 
-	/* readonly */ falseExpression: NSExpression;
+	readonly falseExpression: NSExpression;
 
-	/* readonly */ function: string;
+	readonly function: string;
 
-	/* readonly */ keyPath: string;
+	readonly keyPath: string;
 
-	/* readonly */ leftExpression: NSExpression;
+	readonly leftExpression: NSExpression;
 
-	/* readonly */ operand: NSExpression;
+	readonly operand: NSExpression;
 
-	/* readonly */ predicate: NSPredicate;
+	readonly predicate: NSPredicate;
 
-	/* readonly */ rightExpression: NSExpression;
+	readonly rightExpression: NSExpression;
 
-	/* readonly */ trueExpression: NSExpression;
+	readonly trueExpression: NSExpression;
 
-	/* readonly */ variable: string;
+	readonly variable: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2814,13 +2814,13 @@ declare class NSExtensionContext extends NSObject {
 
 	static new(): NSExtensionContext; // inherited from NSObject
 
-	/* readonly */ hostedViewMaximumAllowedSize: CGSize;
+	readonly hostedViewMaximumAllowedSize: CGSize;
 
-	/* readonly */ hostedViewMinimumAllowedSize: CGSize;
+	readonly hostedViewMinimumAllowedSize: CGSize;
 
-	/* readonly */ inputItems: NSArray<any>;
+	readonly inputItems: NSArray<any>;
 
-	/* readonly */ widgetActiveDisplayMode: NCWidgetDisplayMode;
+	readonly widgetActiveDisplayMode: NCWidgetDisplayMode;
 
 	widgetLargestAvailableDisplayMode: NCWidgetDisplayMode;
 
@@ -2863,7 +2863,7 @@ declare class NSExtensionItem extends NSObject implements NSCopying, NSSecureCod
 
 	userInfo: NSDictionary<any, any>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -2924,7 +2924,7 @@ declare class NSFileAccessIntent extends NSObject {
 
 	static writingIntentWithURLOptions(url: NSURL, options: NSFileCoordinatorWritingOptions): NSFileAccessIntent;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 }
 
 declare var NSFileAppendOnly: string;
@@ -2943,7 +2943,7 @@ declare class NSFileCoordinator extends NSObject {
 
 	purposeIdentifier: string;
 
-	/* readonly */ static filePresenters: NSArray<NSFilePresenter>;
+	static readonly filePresenters: NSArray<NSFilePresenter>;
 
 	constructor(o: { filePresenter: NSFilePresenter; });
 
@@ -3028,25 +3028,25 @@ declare class NSFileHandle extends NSObject implements NSSecureCoding {
 
 	static new(): NSFileHandle; // inherited from NSObject
 
-	/* readonly */ availableData: NSData;
+	readonly availableData: NSData;
 
-	/* readonly */ fileDescriptor: number;
+	readonly fileDescriptor: number;
 
-	/* readonly */ offsetInFile: number;
+	readonly offsetInFile: number;
 
 	readabilityHandler: (p1: NSFileHandle) => void;
 
 	writeabilityHandler: (p1: NSFileHandle) => void;
 
-	/* readonly */ static fileHandleWithNullDevice: NSFileHandle;
+	static readonly fileHandleWithNullDevice: NSFileHandle;
 
-	/* readonly */ static fileHandleWithStandardError: NSFileHandle;
+	static readonly fileHandleWithStandardError: NSFileHandle;
 
-	/* readonly */ static fileHandleWithStandardInput: NSFileHandle;
+	static readonly fileHandleWithStandardInput: NSFileHandle;
 
-	/* readonly */ static fileHandleWithStandardOutput: NSFileHandle;
+	static readonly fileHandleWithStandardOutput: NSFileHandle;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3121,15 +3121,15 @@ declare class NSFileManager extends NSObject {
 
 	static new(): NSFileManager; // inherited from NSObject
 
-	/* readonly */ currentDirectoryPath: string;
+	readonly currentDirectoryPath: string;
 
 	delegate: NSFileManagerDelegate;
 
-	/* readonly */ temporaryDirectory: NSURL;
+	readonly temporaryDirectory: NSURL;
 
-	/* readonly */ ubiquityIdentityToken: any;
+	readonly ubiquityIdentityToken: any;
 
-	/* readonly */ static defaultManager: NSFileManager;
+	static readonly defaultManager: NSFileManager;
 
 	URLForDirectoryInDomainAppropriateForURLCreateError(directory: NSSearchPathDirectory, domain: NSSearchPathDomainMask, url: NSURL, shouldCreate: boolean): NSURL;
 
@@ -3438,21 +3438,21 @@ declare class NSFileVersion extends NSObject {
 
 	static versionOfItemAtURLForPersistentIdentifier(url: NSURL, persistentIdentifier: any): NSFileVersion;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ conflict: boolean;
+	readonly conflict: boolean;
 
-	/* readonly */ hasLocalContents: boolean;
+	readonly hasLocalContents: boolean;
 
-	/* readonly */ hasThumbnail: boolean;
+	readonly hasThumbnail: boolean;
 
-	/* readonly */ localizedName: string;
+	readonly localizedName: string;
 
-	/* readonly */ localizedNameOfSavingComputer: string;
+	readonly localizedNameOfSavingComputer: string;
 
-	/* readonly */ modificationDate: Date;
+	readonly modificationDate: Date;
 
-	/* readonly */ persistentIdentifier: NSCoding;
+	readonly persistentIdentifier: NSCoding;
 
 	resolved: boolean;
 
@@ -3477,25 +3477,25 @@ declare class NSFileWrapper extends NSObject implements NSCoding {
 
 	static new(): NSFileWrapper; // inherited from NSObject
 
-	/* readonly */ directory: boolean;
+	readonly directory: boolean;
 
 	fileAttributes: NSDictionary<string, any>;
 
-	/* readonly */ fileWrappers: NSDictionary<string, NSFileWrapper>;
+	readonly fileWrappers: NSDictionary<string, NSFileWrapper>;
 
 	filename: string;
 
 	preferredFilename: string;
 
-	/* readonly */ regularFile: boolean;
+	readonly regularFile: boolean;
 
-	/* readonly */ regularFileContents: NSData;
+	readonly regularFileContents: NSData;
 
-	/* readonly */ serializedRepresentation: NSData;
+	readonly serializedRepresentation: NSData;
 
-	/* readonly */ symbolicLink: boolean;
+	readonly symbolicLink: boolean;
 
-	/* readonly */ symbolicLinkDestinationURL: NSURL;
+	readonly symbolicLinkDestinationURL: NSURL;
 
 	constructor(o: { directoryWithFileWrappers: NSDictionary<string, NSFileWrapper>; });
 
@@ -3653,31 +3653,31 @@ declare class NSHTTPCookie extends NSObject {
 
 	static requestHeaderFieldsWithCookies(cookies: NSArray<NSHTTPCookie>): NSDictionary<string, string>;
 
-	/* readonly */ HTTPOnly: boolean;
+	readonly HTTPOnly: boolean;
 
-	/* readonly */ comment: string;
+	readonly comment: string;
 
-	/* readonly */ commentURL: NSURL;
+	readonly commentURL: NSURL;
 
-	/* readonly */ domain: string;
+	readonly domain: string;
 
-	/* readonly */ expiresDate: Date;
+	readonly expiresDate: Date;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ path: string;
+	readonly path: string;
 
-	/* readonly */ portList: NSArray<number>;
+	readonly portList: NSArray<number>;
 
-	/* readonly */ properties: NSDictionary<string, any>;
+	readonly properties: NSDictionary<string, any>;
 
-	/* readonly */ secure: boolean;
+	readonly secure: boolean;
 
-	/* readonly */ sessionOnly: boolean;
+	readonly sessionOnly: boolean;
 
-	/* readonly */ value: string;
+	readonly value: string;
 
-	/* readonly */ version: number;
+	readonly version: number;
 
 	constructor(o: { properties: NSDictionary<string, any>; });
 
@@ -3729,9 +3729,9 @@ declare class NSHTTPCookieStorage extends NSObject {
 
 	cookieAcceptPolicy: NSHTTPCookieAcceptPolicy;
 
-	/* readonly */ cookies: NSArray<NSHTTPCookie>;
+	readonly cookies: NSArray<NSHTTPCookie>;
 
-	/* readonly */ static sharedHTTPCookieStorage: NSHTTPCookieStorage;
+	static readonly sharedHTTPCookieStorage: NSHTTPCookieStorage;
 
 	cookiesForURL(URL: NSURL): NSArray<NSHTTPCookie>;
 
@@ -3762,9 +3762,9 @@ declare class NSHTTPURLResponse extends NSURLResponse {
 
 	static new(): NSHTTPURLResponse; // inherited from NSObject
 
-	/* readonly */ allHeaderFields: NSDictionary<any, any>;
+	readonly allHeaderFields: NSDictionary<any, any>;
 
-	/* readonly */ statusCode: number;
+	readonly statusCode: number;
 
 	constructor(o: { URL: NSURL; statusCode: number; HTTPVersion: string; headerFields: NSDictionary<string, string>; });
 
@@ -3781,15 +3781,15 @@ declare class NSHashTable<ObjectType> extends NSObject implements NSCoding, NSCo
 
 	static weakObjectsHashTable<ObjectType>(): NSHashTable<ObjectType>;
 
-	/* readonly */ allObjects: NSArray<ObjectType>;
+	readonly allObjects: NSArray<ObjectType>;
 
-	/* readonly */ anyObject: ObjectType;
+	readonly anyObject: ObjectType;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ pointerFunctions: NSPointerFunctions;
+	readonly pointerFunctions: NSPointerFunctions;
 
-	/* readonly */ setRepresentation: NSSet<ObjectType>;
+	readonly setRepresentation: NSSet<ObjectType>;
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -3894,7 +3894,7 @@ declare class NSISO8601DateFormatter extends NSFormatter implements NSSecureCodi
 
 	timeZone: NSTimeZone;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3927,15 +3927,15 @@ declare class NSIndexPath extends NSObject implements NSCopying, NSSecureCoding 
 
 	static new(): NSIndexPath; // inherited from NSObject
 
-	/* readonly */ item: number;
+	readonly item: number;
 
-	/* readonly */ length: number;
+	readonly length: number;
 
-	/* readonly */ row: number;
+	readonly row: number;
 
-	/* readonly */ section: number;
+	readonly section: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -3978,13 +3978,13 @@ declare class NSIndexSet extends NSObject implements NSCopying, NSMutableCopying
 
 	static new(): NSIndexSet; // inherited from NSObject
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ firstIndex: number;
+	readonly firstIndex: number;
 
-	/* readonly */ lastIndex: number;
+	readonly lastIndex: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -4069,7 +4069,7 @@ declare class NSInputStream extends NSStream {
 
 	static new(): NSInputStream; // inherited from NSObject
 
-	/* readonly */ hasBytesAvailable: boolean;
+	readonly hasBytesAvailable: boolean;
 
 	constructor(o: { data: NSData; });
 
@@ -4110,9 +4110,9 @@ declare class NSInvocation extends NSObject {
 
 	static new(): NSInvocation; // inherited from NSObject
 
-	/* readonly */ argumentsRetained: boolean;
+	readonly argumentsRetained: boolean;
 
-	/* readonly */ methodSignature: NSMethodSignature;
+	readonly methodSignature: NSMethodSignature;
 
 	selector: string;
 
@@ -4139,9 +4139,9 @@ declare class NSInvocationOperation extends NSOperation {
 
 	static new(): NSInvocationOperation; // inherited from NSObject
 
-	/* readonly */ invocation: NSInvocation;
+	readonly invocation: NSInvocation;
 
-	/* readonly */ result: any;
+	readonly result: any;
 
 	constructor(o: { invocation: NSInvocation; });
 
@@ -4172,7 +4172,7 @@ declare class NSItemProvider extends NSObject implements NSCopying {
 
 	previewImageHandler: (p1: (p1: NSSecureCoding, p2: NSError) => void, p2: typeof NSObject, p3: NSDictionary<any, any>) => void;
 
-	/* readonly */ registeredTypeIdentifiers: NSArray<any>;
+	readonly registeredTypeIdentifiers: NSArray<any>;
 
 	constructor(o: { contentsOfURL: NSURL; });
 
@@ -4306,7 +4306,7 @@ declare class NSKeyedArchiver extends NSCoder {
 
 	delegate: NSKeyedArchiverDelegate;
 
-	/* readonly */ encodedData: NSData;
+	readonly encodedData: NSData;
 
 	outputFormat: NSPropertyListFormat;
 
@@ -4518,7 +4518,7 @@ declare class NSLinguisticTagger extends NSObject {
 
 	string: string;
 
-	/* readonly */ tagSchemes: NSArray<string>;
+	readonly tagSchemes: NSArray<string>;
 
 	constructor(o: { tagSchemes: NSArray<string>; options: number; });
 
@@ -4580,61 +4580,61 @@ declare class NSLocale extends NSObject implements NSCopying, NSSecureCoding {
 
 	static windowsLocaleCodeFromLocaleIdentifier(localeIdentifier: string): number;
 
-	/* readonly */ alternateQuotationBeginDelimiter: string;
+	readonly alternateQuotationBeginDelimiter: string;
 
-	/* readonly */ alternateQuotationEndDelimiter: string;
+	readonly alternateQuotationEndDelimiter: string;
 
-	/* readonly */ calendarIdentifier: string;
+	readonly calendarIdentifier: string;
 
-	/* readonly */ collationIdentifier: string;
+	readonly collationIdentifier: string;
 
-	/* readonly */ collatorIdentifier: string;
+	readonly collatorIdentifier: string;
 
-	/* readonly */ countryCode: string;
+	readonly countryCode: string;
 
-	/* readonly */ currencyCode: string;
+	readonly currencyCode: string;
 
-	/* readonly */ currencySymbol: string;
+	readonly currencySymbol: string;
 
-	/* readonly */ decimalSeparator: string;
+	readonly decimalSeparator: string;
 
-	/* readonly */ exemplarCharacterSet: NSCharacterSet;
+	readonly exemplarCharacterSet: NSCharacterSet;
 
-	/* readonly */ groupingSeparator: string;
+	readonly groupingSeparator: string;
 
-	/* readonly */ languageCode: string;
+	readonly languageCode: string;
 
-	/* readonly */ localeIdentifier: string;
+	readonly localeIdentifier: string;
 
-	/* readonly */ quotationBeginDelimiter: string;
+	readonly quotationBeginDelimiter: string;
 
-	/* readonly */ quotationEndDelimiter: string;
+	readonly quotationEndDelimiter: string;
 
-	/* readonly */ scriptCode: string;
+	readonly scriptCode: string;
 
-	/* readonly */ usesMetricSystem: boolean;
+	readonly usesMetricSystem: boolean;
 
-	/* readonly */ variantCode: string;
+	readonly variantCode: string;
 
-	/* readonly */ static ISOCountryCodes: NSArray<string>;
+	static readonly ISOCountryCodes: NSArray<string>;
 
-	/* readonly */ static ISOCurrencyCodes: NSArray<string>;
+	static readonly ISOCurrencyCodes: NSArray<string>;
 
-	/* readonly */ static ISOLanguageCodes: NSArray<string>;
+	static readonly ISOLanguageCodes: NSArray<string>;
 
-	/* readonly */ static autoupdatingCurrentLocale: NSLocale;
+	static readonly autoupdatingCurrentLocale: NSLocale;
 
-	/* readonly */ static availableLocaleIdentifiers: NSArray<string>;
+	static readonly availableLocaleIdentifiers: NSArray<string>;
 
-	/* readonly */ static commonISOCurrencyCodes: NSArray<string>;
+	static readonly commonISOCurrencyCodes: NSArray<string>;
 
-	/* readonly */ static currentLocale: NSLocale;
+	static readonly currentLocale: NSLocale;
 
-	/* readonly */ static preferredLanguages: NSArray<string>;
+	static readonly preferredLanguages: NSArray<string>;
 
-	/* readonly */ static systemLocale: NSLocale;
+	static readonly systemLocale: NSLocale;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -4776,7 +4776,7 @@ declare class NSMachPort extends NSPort {
 
 	static portWithMachPortOptions(machPort: number, f: NSMachPortOptions): NSPort;
 
-	/* readonly */ machPort: number;
+	readonly machPort: number;
 
 	constructor(o: { machPort: number; });
 
@@ -4829,11 +4829,11 @@ declare class NSMapTable<KeyType, ObjectType> extends NSObject implements NSCodi
 
 	static weakToWeakObjectsMapTable<KeyType, ObjectType>(): NSMapTable<KeyType, ObjectType>;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ keyPointerFunctions: NSPointerFunctions;
+	readonly keyPointerFunctions: NSPointerFunctions;
 
-	/* readonly */ valuePointerFunctions: NSPointerFunctions;
+	readonly valuePointerFunctions: NSPointerFunctions;
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -4943,11 +4943,11 @@ declare class NSMeasurement<UnitType> extends NSObject implements NSCopying, NSS
 
 	static new<UnitType>(): NSMeasurement<UnitType>; // inherited from NSObject
 
-	/* readonly */ doubleValue: number;
+	readonly doubleValue: number;
 
-	/* readonly */ unit: UnitType;
+	readonly unit: UnitType;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -4984,7 +4984,7 @@ declare class NSMeasurementFormatter extends NSFormatter implements NSSecureCodi
 
 	unitStyle: NSFormattingUnitStyle;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -5019,7 +5019,7 @@ declare class NSMetadataItem extends NSObject {
 
 	static new(): NSMetadataItem; // inherited from NSObject
 
-	/* readonly */ attributes: NSArray<string>;
+	readonly attributes: NSArray<string>;
 
 	valueForAttribute(key: string): any;
 
@@ -5054,9 +5054,9 @@ declare class NSMetadataQuery extends NSObject {
 
 	delegate: NSMetadataQueryDelegate;
 
-	/* readonly */ gathering: boolean;
+	readonly gathering: boolean;
 
-	/* readonly */ groupedResults: NSArray<NSMetadataQueryResultGroup>;
+	readonly groupedResults: NSArray<NSMetadataQueryResultGroup>;
 
 	groupingAttributes: NSArray<string>;
 
@@ -5066,9 +5066,9 @@ declare class NSMetadataQuery extends NSObject {
 
 	predicate: NSPredicate;
 
-	/* readonly */ resultCount: number;
+	readonly resultCount: number;
 
-	/* readonly */ results: NSArray<any>;
+	readonly results: NSArray<any>;
 
 	searchItems: NSArray<any>;
 
@@ -5076,13 +5076,13 @@ declare class NSMetadataQuery extends NSObject {
 
 	sortDescriptors: NSArray<NSSortDescriptor>;
 
-	/* readonly */ started: boolean;
+	readonly started: boolean;
 
-	/* readonly */ stopped: boolean;
+	readonly stopped: boolean;
 
 	valueListAttributes: NSArray<string>;
 
-	/* readonly */ valueLists: NSDictionary<string, NSArray<NSMetadataQueryAttributeValueTuple>>;
+	readonly valueLists: NSDictionary<string, NSArray<NSMetadataQueryAttributeValueTuple>>;
 
 	disableUpdates(): void;
 
@@ -5111,11 +5111,11 @@ declare class NSMetadataQueryAttributeValueTuple extends NSObject {
 
 	static new(): NSMetadataQueryAttributeValueTuple; // inherited from NSObject
 
-	/* readonly */ attribute: string;
+	readonly attribute: string;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ value: any;
+	readonly value: any;
 }
 
 interface NSMetadataQueryDelegate extends NSObjectProtocol {
@@ -5145,15 +5145,15 @@ declare class NSMetadataQueryResultGroup extends NSObject {
 
 	static new(): NSMetadataQueryResultGroup; // inherited from NSObject
 
-	/* readonly */ attribute: string;
+	readonly attribute: string;
 
-	/* readonly */ resultCount: number;
+	readonly resultCount: number;
 
-	/* readonly */ results: NSArray<any>;
+	readonly results: NSArray<any>;
 
-	/* readonly */ subgroups: NSArray<NSMetadataQueryResultGroup>;
+	readonly subgroups: NSArray<NSMetadataQueryResultGroup>;
 
-	/* readonly */ value: any;
+	readonly value: any;
 
 	resultAtIndex(idx: number): any;
 }
@@ -5210,13 +5210,13 @@ declare class NSMethodSignature extends NSObject {
 
 	static signatureWithObjCTypes(types: string): NSMethodSignature;
 
-	/* readonly */ frameLength: number;
+	readonly frameLength: number;
 
-	/* readonly */ methodReturnLength: number;
+	readonly methodReturnLength: number;
 
-	/* readonly */ methodReturnType: string;
+	readonly methodReturnType: string;
 
-	/* readonly */ numberOfArguments: number;
+	readonly numberOfArguments: number;
 
 	getArgumentTypeAtIndex(idx: number): string;
 
@@ -5314,7 +5314,7 @@ declare class NSMutableAttributedString extends NSAttributedString {
 
 	static new(): NSMutableAttributedString; // inherited from NSObject
 
-	/* readonly */ mutableString: NSMutableString;
+	readonly mutableString: NSMutableString;
 
 	addAttributeValueRange(name: string, value: any, range: NSRange): void;
 
@@ -5355,7 +5355,7 @@ declare class NSMutableCharacterSet extends NSCharacterSet implements NSCopying,
 
 	static new(): NSMutableCharacterSet; // inherited from NSObject
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -5421,7 +5421,7 @@ declare class NSMutableData extends NSData {
 
 	length: number;
 
-	/* readonly */ mutableBytes: interop.Pointer | interop.Reference<any>;
+	readonly mutableBytes: interop.Pointer | interop.Reference<any>;
 
 	constructor(o: { capacity: number; });
 
@@ -5756,21 +5756,21 @@ declare class NSNetService extends NSObject {
 
 	static new(): NSNetService; // inherited from NSObject
 
-	/* readonly */ addresses: NSArray<NSData>;
+	readonly addresses: NSArray<NSData>;
 
 	delegate: NSNetServiceDelegate;
 
-	/* readonly */ domain: string;
+	readonly domain: string;
 
-	/* readonly */ hostName: string;
+	readonly hostName: string;
 
 	includesPeerToPeer: boolean;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ port: number;
+	readonly port: number;
 
-	/* readonly */ type: string;
+	readonly type: string;
 
 	constructor(o: { domain: string; type: string; name: string; });
 
@@ -5918,11 +5918,11 @@ declare class NSNotification extends NSObject implements NSCoding, NSCopying {
 
 	static notificationWithNameObjectUserInfo(aName: string, anObject: any, aUserInfo: NSDictionary<any, any>): NSNotification;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ object: any;
+	readonly object: any;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -5943,7 +5943,7 @@ declare class NSNotificationCenter extends NSObject {
 
 	static new(): NSNotificationCenter; // inherited from NSObject
 
-	/* readonly */ static defaultCenter: NSNotificationCenter;
+	static readonly defaultCenter: NSNotificationCenter;
 
 	addObserverForNameObjectQueueUsingBlock(name: string, obj: any, queue: NSOperationQueue, block: (p1: NSNotification) => void): NSObjectProtocol;
 
@@ -5975,7 +5975,7 @@ declare class NSNotificationQueue extends NSObject {
 
 	static new(): NSNotificationQueue; // inherited from NSObject
 
-	/* readonly */ static defaultQueue: NSNotificationQueue;
+	static readonly defaultQueue: NSNotificationQueue;
 
 	constructor(o: { notificationCenter: NSNotificationCenter; });
 
@@ -5996,7 +5996,7 @@ declare class NSNull extends NSObject implements CAAction, NSCopying, NSSecureCo
 
 	static null(): NSNull;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6045,51 +6045,51 @@ declare class NSNumber extends NSValue implements CKRecordValue, NSFetchRequestR
 
 	static numberWithUnsignedShort(value: number): number;
 
-	/* readonly */ boolValue: boolean;
+	readonly boolValue: boolean;
 
-	/* readonly */ charValue: number;
+	readonly charValue: number;
 
-	/* readonly */ decimalValue: NSDecimal;
+	readonly decimalValue: NSDecimal;
 
-	/* readonly */ doubleValue: number;
+	readonly doubleValue: number;
 
-	/* readonly */ floatValue: number;
+	readonly floatValue: number;
 
-	/* readonly */ intValue: number;
+	readonly intValue: number;
 
-	/* readonly */ integerValue: number;
+	readonly integerValue: number;
 
-	/* readonly */ longLongValue: number;
+	readonly longLongValue: number;
 
-	/* readonly */ longValue: number;
+	readonly longValue: number;
 
-	/* readonly */ shortValue: number;
+	readonly shortValue: number;
 
-	/* readonly */ stringValue: string;
+	readonly stringValue: string;
 
-	/* readonly */ unsignedCharValue: number;
+	readonly unsignedCharValue: number;
 
-	/* readonly */ unsignedIntValue: number;
+	readonly unsignedIntValue: number;
 
-	/* readonly */ unsignedIntegerValue: number;
+	readonly unsignedIntegerValue: number;
 
-	/* readonly */ unsignedLongLongValue: number;
+	readonly unsignedLongLongValue: number;
 
-	/* readonly */ unsignedLongValue: number;
+	readonly unsignedLongValue: number;
 
-	/* readonly */ unsignedShortValue: number;
+	readonly unsignedShortValue: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	constructor(o: { bool: boolean; });
 
@@ -6398,19 +6398,19 @@ declare class NSOperation extends NSObject {
 
 	static new(): NSOperation; // inherited from NSObject
 
-	/* readonly */ asynchronous: boolean;
+	readonly asynchronous: boolean;
 
-	/* readonly */ cancelled: boolean;
+	readonly cancelled: boolean;
 
 	completionBlock: () => void;
 
-	/* readonly */ concurrent: boolean;
+	readonly concurrent: boolean;
 
-	/* readonly */ dependencies: NSArray<NSOperation>;
+	readonly dependencies: NSArray<NSOperation>;
 
-	/* readonly */ executing: boolean;
+	readonly executing: boolean;
 
-	/* readonly */ finished: boolean;
+	readonly finished: boolean;
 
 	name: string;
 
@@ -6418,7 +6418,7 @@ declare class NSOperation extends NSObject {
 
 	queuePriority: NSOperationQueuePriority;
 
-	/* readonly */ ready: boolean;
+	readonly ready: boolean;
 
 	threadPriority: number;
 
@@ -6445,9 +6445,9 @@ declare class NSOperationQueue extends NSObject {
 
 	name: string;
 
-	/* readonly */ operationCount: number;
+	readonly operationCount: number;
 
-	/* readonly */ operations: NSArray<NSOperation>;
+	readonly operations: NSArray<NSOperation>;
 
 	qualityOfService: NSQualityOfService;
 
@@ -6455,9 +6455,9 @@ declare class NSOperationQueue extends NSObject {
 
 	underlyingQueue: NSObject;
 
-	/* readonly */ static currentQueue: NSOperationQueue;
+	static readonly currentQueue: NSOperationQueue;
 
-	/* readonly */ static mainQueue: NSOperationQueue;
+	static readonly mainQueue: NSOperationQueue;
 
 	addOperation(op: NSOperation): void;
 
@@ -6511,19 +6511,19 @@ declare class NSOrderedSet<ObjectType> extends NSObject implements NSCopying, NS
 
 	static orderedSetWithSetCopyItems<ObjectType>(set: NSSet<ObjectType>, flag: boolean): NSOrderedSet<ObjectType>;
 
-	/* readonly */ array: NSArray<ObjectType>;
+	readonly array: NSArray<ObjectType>;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ firstObject: ObjectType;
+	readonly firstObject: ObjectType;
 
-	/* readonly */ lastObject: ObjectType;
+	readonly lastObject: ObjectType;
 
-	/* readonly */ reversedOrderedSet: NSOrderedSet<ObjectType>;
+	readonly reversedOrderedSet: NSOrderedSet<ObjectType>;
 
-	/* readonly */ set: NSSet<ObjectType>;
+	readonly set: NSSet<ObjectType>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[index: number]: ObjectType;
 	[Symbol.iterator](): Iterator<any>;
 
@@ -6648,17 +6648,17 @@ declare class NSOrthography extends NSObject implements NSCopying, NSSecureCodin
 
 	static orthographyWithDominantScriptLanguageMap(script: string, map: NSDictionary<string, NSArray<string>>): NSOrthography;
 
-	/* readonly */ allLanguages: NSArray<string>;
+	readonly allLanguages: NSArray<string>;
 
-	/* readonly */ allScripts: NSArray<string>;
+	readonly allScripts: NSArray<string>;
 
-	/* readonly */ dominantLanguage: string;
+	readonly dominantLanguage: string;
 
-	/* readonly */ dominantScript: string;
+	readonly dominantScript: string;
 
-	/* readonly */ languageMap: NSDictionary<string, NSArray<string>>;
+	readonly languageMap: NSDictionary<string, NSArray<string>>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6691,7 +6691,7 @@ declare class NSOutputStream extends NSStream {
 
 	static outputStreamWithURLAppend(url: NSURL, shouldAppend: boolean): NSOutputStream;
 
-	/* readonly */ hasSpaceAvailable: boolean;
+	readonly hasSpaceAvailable: boolean;
 
 	constructor(o: { toBuffer: string; capacity: number; });
 
@@ -6756,7 +6756,7 @@ declare class NSPersonNameComponents extends NSObject implements NSCopying, NSSe
 
 	phoneticRepresentation: NSPersonNameComponents;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6812,9 +6812,9 @@ declare class NSPipe extends NSObject {
 
 	static pipe(): NSPipe;
 
-	/* readonly */ fileHandleForReading: NSFileHandle;
+	readonly fileHandleForReading: NSFileHandle;
 
-	/* readonly */ fileHandleForWriting: NSFileHandle;
+	readonly fileHandleForWriting: NSFileHandle;
 }
 
 declare class NSPointerArray extends NSObject implements NSCoding, NSCopying, NSFastEnumeration {
@@ -6831,11 +6831,11 @@ declare class NSPointerArray extends NSObject implements NSCoding, NSCopying, NS
 
 	static weakObjectsPointerArray(): NSPointerArray;
 
-	/* readonly */ allObjects: NSArray<any>;
+	readonly allObjects: NSArray<any>;
 
 	count: number;
 
-	/* readonly */ pointerFunctions: NSPointerFunctions;
+	readonly pointerFunctions: NSPointerFunctions;
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
@@ -6933,9 +6933,9 @@ declare class NSPort extends NSObject implements NSCoding, NSCopying {
 
 	static port(): NSPort;
 
-	/* readonly */ reservedSpaceLength: number;
+	readonly reservedSpaceLength: number;
 
-	/* readonly */ valid: boolean;
+	readonly valid: boolean;
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -6996,9 +6996,9 @@ declare class NSPredicate extends NSObject implements NSCopying, NSSecureCoding 
 
 	static predicateWithValue(value: boolean): NSPredicate;
 
-	/* readonly */ predicateFormat: string;
+	readonly predicateFormat: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -7054,33 +7054,33 @@ declare class NSProcessInfo extends NSObject {
 
 	static new(): NSProcessInfo; // inherited from NSObject
 
-	/* readonly */ activeProcessorCount: number;
+	readonly activeProcessorCount: number;
 
-	/* readonly */ arguments: NSArray<string>;
+	readonly arguments: NSArray<string>;
 
-	/* readonly */ environment: NSDictionary<string, string>;
+	readonly environment: NSDictionary<string, string>;
 
-	/* readonly */ globallyUniqueString: string;
+	readonly globallyUniqueString: string;
 
-	/* readonly */ hostName: string;
+	readonly hostName: string;
 
-	/* readonly */ lowPowerModeEnabled: boolean;
+	readonly lowPowerModeEnabled: boolean;
 
-	/* readonly */ operatingSystemVersion: NSOperatingSystemVersion;
+	readonly operatingSystemVersion: NSOperatingSystemVersion;
 
-	/* readonly */ operatingSystemVersionString: string;
+	readonly operatingSystemVersionString: string;
 
-	/* readonly */ physicalMemory: number;
+	readonly physicalMemory: number;
 
-	/* readonly */ processIdentifier: number;
+	readonly processIdentifier: number;
 
 	processName: string;
 
-	/* readonly */ processorCount: number;
+	readonly processorCount: number;
 
-	/* readonly */ systemUptime: number;
+	readonly systemUptime: number;
 
-	/* readonly */ static processInfo: NSProcessInfo;
+	static readonly processInfo: NSProcessInfo;
 
 	beginActivityWithOptionsReason(options: NSActivityOptions, reason: string): NSObjectProtocol;
 
@@ -7117,13 +7117,13 @@ declare class NSProgress extends NSObject {
 
 	cancellationHandler: () => void;
 
-	/* readonly */ cancelled: boolean;
+	readonly cancelled: boolean;
 
 	completedUnitCount: number;
 
-	/* readonly */ fractionCompleted: number;
+	readonly fractionCompleted: number;
 
-	/* readonly */ indeterminate: boolean;
+	readonly indeterminate: boolean;
 
 	kind: string;
 
@@ -7133,7 +7133,7 @@ declare class NSProgress extends NSObject {
 
 	pausable: boolean;
 
-	/* readonly */ paused: boolean;
+	readonly paused: boolean;
 
 	pausingHandler: () => void;
 
@@ -7141,7 +7141,7 @@ declare class NSProgress extends NSObject {
 
 	totalUnitCount: number;
 
-	/* readonly */ userInfo: NSDictionary<string, any>;
+	readonly userInfo: NSDictionary<string, any>;
 
 	constructor(o: { parent: NSProgress; userInfo: NSDictionary<any, any>; });
 
@@ -7258,17 +7258,17 @@ declare class NSProxy implements NSObjectProtocol {
 
 	static respondsToSelector(aSelector: string): boolean;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
 	class(): typeof NSObject;
 
@@ -7398,13 +7398,13 @@ declare class NSRegularExpression extends NSObject implements NSCopying, NSSecur
 
 	static regularExpressionWithPatternOptionsError(pattern: string, options: NSRegularExpressionOptions): NSRegularExpression;
 
-	/* readonly */ numberOfCaptureGroups: number;
+	readonly numberOfCaptureGroups: number;
 
-	/* readonly */ options: NSRegularExpressionOptions;
+	readonly options: NSRegularExpressionOptions;
 
-	/* readonly */ pattern: string;
+	readonly pattern: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -7475,11 +7475,11 @@ declare class NSRunLoop extends NSObject {
 
 	static new(): NSRunLoop; // inherited from NSObject
 
-	/* readonly */ currentMode: string;
+	readonly currentMode: string;
 
-	/* readonly */ static currentRunLoop: NSRunLoop;
+	static readonly currentRunLoop: NSRunLoop;
 
-	/* readonly */ static mainRunLoop: NSRunLoop;
+	static readonly mainRunLoop: NSRunLoop;
 
 	acceptInputForModeBeforeDate(mode: string, limitDate: Date): void;
 
@@ -7522,7 +7522,7 @@ declare class NSScanner extends NSObject implements NSCopying {
 
 	static scannerWithString(string: string): NSScanner;
 
-	/* readonly */ atEnd: boolean;
+	readonly atEnd: boolean;
 
 	caseSensitive: boolean;
 
@@ -7532,7 +7532,7 @@ declare class NSScanner extends NSObject implements NSCopying {
 
 	scanLocation: number;
 
-	/* readonly */ string: string;
+	readonly string: string;
 
 	constructor(o: { string: string; });
 
@@ -7670,11 +7670,11 @@ declare class NSSet<ObjectType> extends NSObject implements NSCopying, NSFastEnu
 
 	static setWithSet<ObjectType>(set: NSSet<ObjectType>): NSSet<ObjectType>;
 
-	/* readonly */ allObjects: NSArray<ObjectType>;
+	readonly allObjects: NSArray<ObjectType>;
 
-	/* readonly */ count: number;
+	readonly count: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 	[Symbol.iterator](): Iterator<any>;
 
 	constructor(o: { array: NSArray<ObjectType>; });
@@ -7785,15 +7785,15 @@ declare class NSSocketPort extends NSPort {
 
 	static new(): NSSocketPort; // inherited from NSObject
 
-	/* readonly */ address: NSData;
+	readonly address: NSData;
 
-	/* readonly */ protocol: number;
+	readonly protocol: number;
 
-	/* readonly */ protocolFamily: number;
+	readonly protocolFamily: number;
 
-	/* readonly */ socket: number;
+	readonly socket: number;
 
-	/* readonly */ socketType: number;
+	readonly socketType: number;
 
 	constructor(o: { remoteWithProtocolFamily: number; socketType: number; protocol: number; address: NSData; });
 
@@ -7830,17 +7830,17 @@ declare class NSSortDescriptor extends NSObject implements NSCopying, NSSecureCo
 
 	static sortDescriptorWithKeyAscendingSelector(key: string, ascending: boolean, selector: string): NSSortDescriptor;
 
-	/* readonly */ ascending: boolean;
+	readonly ascending: boolean;
 
-	/* readonly */ comparator: (p1: any, p2: any) => NSComparisonResult;
+	readonly comparator: (p1: any, p2: any) => NSComparisonResult;
 
-	/* readonly */ key: string;
+	readonly key: string;
 
-	/* readonly */ reversedSortDescriptor: any;
+	readonly reversedSortDescriptor: any;
 
-	/* readonly */ selector: string;
+	readonly selector: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -7886,9 +7886,9 @@ declare class NSStream extends NSObject {
 
 	delegate: NSStreamDelegate;
 
-	/* readonly */ streamError: NSError;
+	readonly streamError: NSError;
 
-	/* readonly */ streamStatus: NSStreamStatus;
+	readonly streamStatus: NSStreamStatus;
 
 	close(): void;
 
@@ -8034,87 +8034,87 @@ declare class NSString extends NSObject implements CKRecordValue, CNKeyDescripto
 
 	static stringWithUTF8String(nullTerminatedCString: string): NSString;
 
-	/* readonly */ UTF8String: string;
+	readonly UTF8String: string;
 
-	/* readonly */ absolutePath: boolean;
+	readonly absolutePath: boolean;
 
-	/* readonly */ boolValue: boolean;
+	readonly boolValue: boolean;
 
-	/* readonly */ capitalizedString: string;
+	readonly capitalizedString: string;
 
-	/* readonly */ decomposedStringWithCanonicalMapping: string;
+	readonly decomposedStringWithCanonicalMapping: string;
 
-	/* readonly */ decomposedStringWithCompatibilityMapping: string;
+	readonly decomposedStringWithCompatibilityMapping: string;
 
-	/* readonly */ doubleValue: number;
+	readonly doubleValue: number;
 
-	/* readonly */ fastestEncoding: number;
+	readonly fastestEncoding: number;
 
-	/* readonly */ fileSystemRepresentation: string;
+	readonly fileSystemRepresentation: string;
 
-	/* readonly */ floatValue: number;
+	readonly floatValue: number;
 
-	/* readonly */ intValue: number;
+	readonly intValue: number;
 
-	/* readonly */ integerValue: number;
+	readonly integerValue: number;
 
-	/* readonly */ lastPathComponent: string;
+	readonly lastPathComponent: string;
 
-	/* readonly */ length: number;
+	readonly length: number;
 
-	/* readonly */ localizedCapitalizedString: string;
+	readonly localizedCapitalizedString: string;
 
-	/* readonly */ localizedLowercaseString: string;
+	readonly localizedLowercaseString: string;
 
-	/* readonly */ localizedUppercaseString: string;
+	readonly localizedUppercaseString: string;
 
-	/* readonly */ longLongValue: number;
+	readonly longLongValue: number;
 
-	/* readonly */ lowercaseString: string;
+	readonly lowercaseString: string;
 
-	/* readonly */ pathComponents: NSArray<string>;
+	readonly pathComponents: NSArray<string>;
 
-	/* readonly */ pathExtension: string;
+	readonly pathExtension: string;
 
-	/* readonly */ precomposedStringWithCanonicalMapping: string;
+	readonly precomposedStringWithCanonicalMapping: string;
 
-	/* readonly */ precomposedStringWithCompatibilityMapping: string;
+	readonly precomposedStringWithCompatibilityMapping: string;
 
-	/* readonly */ smallestEncoding: number;
+	readonly smallestEncoding: number;
 
-	/* readonly */ stringByAbbreviatingWithTildeInPath: string;
+	readonly stringByAbbreviatingWithTildeInPath: string;
 
-	/* readonly */ stringByDeletingLastPathComponent: string;
+	readonly stringByDeletingLastPathComponent: string;
 
-	/* readonly */ stringByDeletingPathExtension: string;
+	readonly stringByDeletingPathExtension: string;
 
-	/* readonly */ stringByExpandingTildeInPath: string;
+	readonly stringByExpandingTildeInPath: string;
 
-	/* readonly */ stringByRemovingPercentEncoding: string;
+	readonly stringByRemovingPercentEncoding: string;
 
-	/* readonly */ stringByResolvingSymlinksInPath: string;
+	readonly stringByResolvingSymlinksInPath: string;
 
-	/* readonly */ stringByStandardizingPath: string;
+	readonly stringByStandardizingPath: string;
 
-	/* readonly */ uppercaseString: string;
+	readonly uppercaseString: string;
 
-	/* readonly */ static availableStringEncodings: interop.Pointer | interop.Reference<number>;
+	static readonly availableStringEncodings: interop.Pointer | interop.Reference<number>;
 
-	/* readonly */ static defaultCStringEncoding: number;
+	static readonly defaultCStringEncoding: number;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { bytes: interop.Pointer | interop.Reference<any>; length: number; encoding: number; });
 
@@ -8596,37 +8596,37 @@ declare class NSTextCheckingResult extends NSObject implements NSCopying, NSSecu
 
 	static transitInformationCheckingResultWithRangeComponents(range: NSRange, components: NSDictionary<string, string>): NSTextCheckingResult;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ addressComponents: NSDictionary<string, string>;
+	readonly addressComponents: NSDictionary<string, string>;
 
-	/* readonly */ alternativeStrings: NSArray<string>;
+	readonly alternativeStrings: NSArray<string>;
 
-	/* readonly */ components: NSDictionary<string, string>;
+	readonly components: NSDictionary<string, string>;
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ duration: number;
+	readonly duration: number;
 
-	/* readonly */ grammarDetails: NSArray<NSDictionary<string, any>>;
+	readonly grammarDetails: NSArray<NSDictionary<string, any>>;
 
-	/* readonly */ numberOfRanges: number;
+	readonly numberOfRanges: number;
 
-	/* readonly */ orthography: NSOrthography;
+	readonly orthography: NSOrthography;
 
-	/* readonly */ phoneNumber: string;
+	readonly phoneNumber: string;
 
-	/* readonly */ range: NSRange;
+	readonly range: NSRange;
 
-	/* readonly */ regularExpression: NSRegularExpression;
+	readonly regularExpression: NSRegularExpression;
 
-	/* readonly */ replacementString: string;
+	readonly replacementString: string;
 
-	/* readonly */ resultType: NSTextCheckingType;
+	readonly resultType: NSTextCheckingType;
 
-	/* readonly */ timeZone: NSTimeZone;
+	readonly timeZone: NSTimeZone;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -8698,13 +8698,13 @@ declare class NSThread extends NSObject {
 
 	static threadPriority(): number;
 
-	/* readonly */ cancelled: boolean;
+	readonly cancelled: boolean;
 
-	/* readonly */ executing: boolean;
+	readonly executing: boolean;
 
-	/* readonly */ finished: boolean;
+	readonly finished: boolean;
 
-	/* readonly */ isMainThread: boolean;
+	readonly isMainThread: boolean;
 
 	name: string;
 
@@ -8712,19 +8712,19 @@ declare class NSThread extends NSObject {
 
 	stackSize: number;
 
-	/* readonly */ threadDictionary: NSMutableDictionary<any, any>;
+	readonly threadDictionary: NSMutableDictionary<any, any>;
 
 	threadPriority: number;
 
-	/* readonly */ static callStackReturnAddresses: NSArray<number>;
+	static readonly callStackReturnAddresses: NSArray<number>;
 
-	/* readonly */ static callStackSymbols: NSArray<string>;
+	static readonly callStackSymbols: NSArray<string>;
 
-	/* readonly */ static currentThread: NSThread;
+	static readonly currentThread: NSThread;
 
-	/* readonly */ static isMainThread: boolean;
+	static readonly isMainThread: boolean;
 
-	/* readonly */ static mainThread: NSThread;
+	static readonly mainThread: NSThread;
 
 	constructor(o: { block: () => void; });
 
@@ -8761,33 +8761,33 @@ declare class NSTimeZone extends NSObject implements NSCopying, NSSecureCoding {
 
 	static timeZoneWithNameData(tzName: string, aData: NSData): NSTimeZone;
 
-	/* readonly */ abbreviation: string;
+	readonly abbreviation: string;
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
-	/* readonly */ daylightSavingTime: boolean;
+	readonly daylightSavingTime: boolean;
 
-	/* readonly */ daylightSavingTimeOffset: number;
+	readonly daylightSavingTimeOffset: number;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ nextDaylightSavingTimeTransition: Date;
+	readonly nextDaylightSavingTimeTransition: Date;
 
-	/* readonly */ secondsFromGMT: number;
+	readonly secondsFromGMT: number;
 
 	static abbreviationDictionary: NSDictionary<string, string>;
 
 	static defaultTimeZone: NSTimeZone;
 
-	/* readonly */ static knownTimeZoneNames: NSArray<string>;
+	static readonly knownTimeZoneNames: NSArray<string>;
 
-	/* readonly */ static localTimeZone: NSTimeZone;
+	static readonly localTimeZone: NSTimeZone;
 
-	/* readonly */ static systemTimeZone: NSTimeZone;
+	static readonly systemTimeZone: NSTimeZone;
 
-	/* readonly */ static timeZoneDataVersion: string;
+	static readonly timeZoneDataVersion: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -8855,13 +8855,13 @@ declare class NSTimer extends NSObject {
 
 	fireDate: Date;
 
-	/* readonly */ timeInterval: number;
+	readonly timeInterval: number;
 
 	tolerance: number;
 
-	/* readonly */ userInfo: any;
+	readonly userInfo: any;
 
-	/* readonly */ valid: boolean;
+	readonly valid: boolean;
 
 	constructor(o: { fireDate: Date; interval: number; repeats: boolean; block: (p1: NSTimer) => void; });
 
@@ -8912,79 +8912,79 @@ declare class NSURL extends NSObject implements NSCopying, NSSecureCoding, QLPre
 
 	static writeBookmarkDataToURLOptionsError(bookmarkData: NSData, bookmarkFileURL: NSURL, options: number): boolean;
 
-	/* readonly */ URLByDeletingLastPathComponent: NSURL;
+	readonly URLByDeletingLastPathComponent: NSURL;
 
-	/* readonly */ URLByDeletingPathExtension: NSURL;
+	readonly URLByDeletingPathExtension: NSURL;
 
-	/* readonly */ URLByResolvingSymlinksInPath: NSURL;
+	readonly URLByResolvingSymlinksInPath: NSURL;
 
-	/* readonly */ URLByStandardizingPath: NSURL;
+	readonly URLByStandardizingPath: NSURL;
 
-	/* readonly */ absoluteString: string;
+	readonly absoluteString: string;
 
-	/* readonly */ absoluteURL: NSURL;
+	readonly absoluteURL: NSURL;
 
-	/* readonly */ baseURL: NSURL;
+	readonly baseURL: NSURL;
 
-	/* readonly */ dataRepresentation: NSData;
+	readonly dataRepresentation: NSData;
 
-	/* readonly */ filePathURL: NSURL;
+	readonly filePathURL: NSURL;
 
-	/* readonly */ fileSystemRepresentation: string;
+	readonly fileSystemRepresentation: string;
 
-	/* readonly */ fileURL: boolean;
+	readonly fileURL: boolean;
 
-	/* readonly */ fragment: string;
+	readonly fragment: string;
 
-	/* readonly */ hasDirectoryPath: boolean;
+	readonly hasDirectoryPath: boolean;
 
-	/* readonly */ host: string;
+	readonly host: string;
 
-	/* readonly */ lastPathComponent: string;
+	readonly lastPathComponent: string;
 
-	/* readonly */ parameterString: string;
+	readonly parameterString: string;
 
-	/* readonly */ password: string;
+	readonly password: string;
 
-	/* readonly */ path: string;
+	readonly path: string;
 
-	/* readonly */ pathComponents: NSArray<string>;
+	readonly pathComponents: NSArray<string>;
 
-	/* readonly */ pathExtension: string;
+	readonly pathExtension: string;
 
-	/* readonly */ port: number;
+	readonly port: number;
 
-	/* readonly */ query: string;
+	readonly query: string;
 
-	/* readonly */ relativePath: string;
+	readonly relativePath: string;
 
-	/* readonly */ relativeString: string;
+	readonly relativeString: string;
 
-	/* readonly */ resourceSpecifier: string;
+	readonly resourceSpecifier: string;
 
-	/* readonly */ scheme: string;
+	readonly scheme: string;
 
-	/* readonly */ standardizedURL: NSURL;
+	readonly standardizedURL: NSURL;
 
-	/* readonly */ user: string;
+	readonly user: string;
 
-	/* readonly */ debugDescription: string; // inherited from NSObjectProtocol
+	readonly debugDescription: string; // inherited from NSObjectProtocol
 
-	/* readonly */ description: string; // inherited from NSObjectProtocol
+	readonly description: string; // inherited from NSObjectProtocol
 
-	/* readonly */ hash: number; // inherited from NSObjectProtocol
+	readonly hash: number; // inherited from NSObjectProtocol
 
-	/* readonly */ isProxy: boolean; // inherited from NSObjectProtocol
+	readonly isProxy: boolean; // inherited from NSObjectProtocol
 
-	/* readonly */ previewItemTitle: string; // inherited from QLPreviewItem
+	readonly previewItemTitle: string; // inherited from QLPreviewItem
 
-	/* readonly */ previewItemURL: NSURL; // inherited from QLPreviewItem
+	readonly previewItemURL: NSURL; // inherited from QLPreviewItem
 
-	/* readonly */ superclass: typeof NSObject; // inherited from NSObjectProtocol
+	readonly superclass: typeof NSObject; // inherited from NSObjectProtocol
 
-	/* readonly */  // inherited from NSObjectProtocol
+	readonly  // inherited from NSObjectProtocol
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { absoluteURLWithDataRepresentation: NSData; relativeToURL: NSURL; });
 
@@ -9111,19 +9111,19 @@ declare class NSURLAuthenticationChallenge extends NSObject implements NSSecureC
 
 	static new(): NSURLAuthenticationChallenge; // inherited from NSObject
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ failureResponse: NSURLResponse;
+	readonly failureResponse: NSURLResponse;
 
-	/* readonly */ previousFailureCount: number;
+	readonly previousFailureCount: number;
 
-	/* readonly */ proposedCredential: NSURLCredential;
+	readonly proposedCredential: NSURLCredential;
 
-	/* readonly */ protectionSpace: NSURLProtectionSpace;
+	readonly protectionSpace: NSURLProtectionSpace;
 
-	/* readonly */ sender: NSURLAuthenticationChallengeSender;
+	readonly sender: NSURLAuthenticationChallengeSender;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { authenticationChallenge: NSURLAuthenticationChallenge; sender: NSURLAuthenticationChallengeSender; });
 
@@ -9201,9 +9201,9 @@ declare class NSURLCache extends NSObject {
 
 	static new(): NSURLCache; // inherited from NSObject
 
-	/* readonly */ currentDiskUsage: number;
+	readonly currentDiskUsage: number;
 
-	/* readonly */ currentMemoryUsage: number;
+	readonly currentMemoryUsage: number;
 
 	diskCapacity: number;
 
@@ -9253,7 +9253,7 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 
 	static new(): NSURLComponents; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
 	fragment: string;
 
@@ -9281,25 +9281,25 @@ declare class NSURLComponents extends NSObject implements NSCopying {
 
 	queryItems: NSArray<NSURLQueryItem>;
 
-	/* readonly */ rangeOfFragment: NSRange;
+	readonly rangeOfFragment: NSRange;
 
-	/* readonly */ rangeOfHost: NSRange;
+	readonly rangeOfHost: NSRange;
 
-	/* readonly */ rangeOfPassword: NSRange;
+	readonly rangeOfPassword: NSRange;
 
-	/* readonly */ rangeOfPath: NSRange;
+	readonly rangeOfPath: NSRange;
 
-	/* readonly */ rangeOfPort: NSRange;
+	readonly rangeOfPort: NSRange;
 
-	/* readonly */ rangeOfQuery: NSRange;
+	readonly rangeOfQuery: NSRange;
 
-	/* readonly */ rangeOfScheme: NSRange;
+	readonly rangeOfScheme: NSRange;
 
-	/* readonly */ rangeOfUser: NSRange;
+	readonly rangeOfUser: NSRange;
 
 	scheme: string;
 
-	/* readonly */ string: string;
+	readonly string: string;
 
 	user: string;
 
@@ -9330,11 +9330,11 @@ declare class NSURLConnection extends NSObject {
 
 	static sendSynchronousRequestReturningResponseError(request: NSURLRequest, response: interop.Pointer | interop.Reference<NSURLResponse>): NSData;
 
-	/* readonly */ currentRequest: NSURLRequest;
+	readonly currentRequest: NSURLRequest;
 
-	/* readonly */ newsstandAssetDownload: NKAssetDownload;
+	readonly newsstandAssetDownload: NKAssetDownload;
 
-	/* readonly */ originalRequest: NSURLRequest;
+	readonly originalRequest: NSURLRequest;
 
 	constructor(o: { request: NSURLRequest; delegate: any; });
 
@@ -9426,19 +9426,19 @@ declare class NSURLCredential extends NSObject implements NSCopying, NSSecureCod
 
 	static new(): NSURLCredential; // inherited from NSObject
 
-	/* readonly */ certificates: NSArray<any>;
+	readonly certificates: NSArray<any>;
 
-	/* readonly */ hasPassword: boolean;
+	readonly hasPassword: boolean;
 
-	/* readonly */ identity: any;
+	readonly identity: any;
 
-	/* readonly */ password: string;
+	readonly password: string;
 
-	/* readonly */ persistence: NSURLCredentialPersistence;
+	readonly persistence: NSURLCredentialPersistence;
 
-	/* readonly */ user: string;
+	readonly user: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9478,9 +9478,9 @@ declare class NSURLCredentialStorage extends NSObject {
 
 	static new(): NSURLCredentialStorage; // inherited from NSObject
 
-	/* readonly */ allCredentials: NSDictionary<NSURLProtectionSpace, NSDictionary<string, NSURLCredential>>;
+	readonly allCredentials: NSDictionary<NSURLProtectionSpace, NSDictionary<string, NSURLCredential>>;
 
-	/* readonly */ static sharedCredentialStorage: NSURLCredentialStorage;
+	static readonly sharedCredentialStorage: NSURLCredentialStorage;
 
 	credentialsForProtectionSpace(space: NSURLProtectionSpace): NSDictionary<string, NSURLCredential>;
 
@@ -9731,27 +9731,27 @@ declare class NSURLProtectionSpace extends NSObject implements NSCopying, NSSecu
 
 	static new(): NSURLProtectionSpace; // inherited from NSObject
 
-	/* readonly */ authenticationMethod: string;
+	readonly authenticationMethod: string;
 
-	/* readonly */ distinguishedNames: NSArray<NSData>;
+	readonly distinguishedNames: NSArray<NSData>;
 
-	/* readonly */ host: string;
+	readonly host: string;
 
-	/* readonly */ isProxy: boolean;
+	readonly isProxy: boolean;
 
-	/* readonly */ port: number;
+	readonly port: number;
 
-	/* readonly */ protocol: string;
+	readonly protocol: string;
 
-	/* readonly */ proxyType: string;
+	readonly proxyType: string;
 
-	/* readonly */ realm: string;
+	readonly realm: string;
 
-	/* readonly */ receivesCredentialSecurely: boolean;
+	readonly receivesCredentialSecurely: boolean;
 
-	/* readonly */ serverTrust: any;
+	readonly serverTrust: any;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9808,13 +9808,13 @@ declare class NSURLProtocol extends NSObject {
 
 	static unregisterClass(protocolClass: typeof NSObject): void;
 
-	/* readonly */ cachedResponse: NSCachedURLResponse;
+	readonly cachedResponse: NSCachedURLResponse;
 
-	/* readonly */ client: NSURLProtocolClient;
+	readonly client: NSURLProtocolClient;
 
-	/* readonly */ request: NSURLRequest;
+	readonly request: NSURLRequest;
 
-	/* readonly */ task: NSURLSessionTask;
+	readonly task: NSURLSessionTask;
 
 	constructor(o: { request: NSURLRequest; cachedResponse: NSCachedURLResponse; client: NSURLProtocolClient; });
 
@@ -9860,11 +9860,11 @@ declare class NSURLQueryItem extends NSObject implements NSCopying, NSSecureCodi
 
 	static queryItemWithNameValue(name: string, value: string): NSURLQueryItem;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ value: string;
+	readonly value: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9898,31 +9898,31 @@ declare class NSURLRequest extends NSObject implements NSCopying, NSMutableCopyi
 
 	static requestWithURLCachePolicyTimeoutInterval(URL: NSURL, cachePolicy: NSURLRequestCachePolicy, timeoutInterval: number): NSURLRequest;
 
-	/* readonly */ HTTPBody: NSData;
+	readonly HTTPBody: NSData;
 
-	/* readonly */ HTTPBodyStream: NSInputStream;
+	readonly HTTPBodyStream: NSInputStream;
 
-	/* readonly */ HTTPMethod: string;
+	readonly HTTPMethod: string;
 
-	/* readonly */ HTTPShouldHandleCookies: boolean;
+	readonly HTTPShouldHandleCookies: boolean;
 
-	/* readonly */ HTTPShouldUsePipelining: boolean;
+	readonly HTTPShouldUsePipelining: boolean;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ allHTTPHeaderFields: NSDictionary<string, string>;
+	readonly allHTTPHeaderFields: NSDictionary<string, string>;
 
-	/* readonly */ allowsCellularAccess: boolean;
+	readonly allowsCellularAccess: boolean;
 
-	/* readonly */ cachePolicy: NSURLRequestCachePolicy;
+	readonly cachePolicy: NSURLRequestCachePolicy;
 
-	/* readonly */ mainDocumentURL: NSURL;
+	readonly mainDocumentURL: NSURL;
 
-	/* readonly */ networkServiceType: NSURLRequestNetworkServiceType;
+	readonly networkServiceType: NSURLRequestNetworkServiceType;
 
-	/* readonly */ timeoutInterval: number;
+	readonly timeoutInterval: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -9983,17 +9983,17 @@ declare class NSURLResponse extends NSObject implements NSCopying, NSSecureCodin
 
 	static new(): NSURLResponse; // inherited from NSObject
 
-	/* readonly */ MIMEType: string;
+	readonly MIMEType: string;
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ expectedContentLength: number;
+	readonly expectedContentLength: number;
 
-	/* readonly */ suggestedFilename: string;
+	readonly suggestedFilename: string;
 
-	/* readonly */ textEncodingName: string;
+	readonly textEncodingName: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10018,15 +10018,15 @@ declare class NSURLSession extends NSObject {
 
 	static sessionWithConfigurationDelegateDelegateQueue(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate, queue: NSOperationQueue): NSURLSession;
 
-	/* readonly */ configuration: NSURLSessionConfiguration;
+	readonly configuration: NSURLSessionConfiguration;
 
-	/* readonly */ delegate: NSURLSessionDelegate;
+	readonly delegate: NSURLSessionDelegate;
 
-	/* readonly */ delegateQueue: NSOperationQueue;
+	readonly delegateQueue: NSOperationQueue;
 
 	sessionDescription: string;
 
-	/* readonly */ static sharedSession: NSURLSession;
+	static readonly sharedSession: NSURLSession;
 
 	dataTaskWithRequest(request: NSURLRequest): NSURLSessionDataTask;
 
@@ -10122,7 +10122,7 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	discretionary: boolean;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
 	networkServiceType: NSURLRequestNetworkServiceType;
 
@@ -10140,9 +10140,9 @@ declare class NSURLSessionConfiguration extends NSObject implements NSCopying {
 
 	timeoutIntervalForResource: number;
 
-	/* readonly */ static defaultSessionConfiguration: NSURLSessionConfiguration;
+	static readonly defaultSessionConfiguration: NSURLSessionConfiguration;
 
-	/* readonly */ static ephemeralSessionConfiguration: NSURLSessionConfiguration;
+	static readonly ephemeralSessionConfiguration: NSURLSessionConfiguration;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -10261,29 +10261,29 @@ declare class NSURLSessionTask extends NSObject implements NSCopying {
 
 	static new(): NSURLSessionTask; // inherited from NSObject
 
-	/* readonly */ countOfBytesExpectedToReceive: number;
+	readonly countOfBytesExpectedToReceive: number;
 
-	/* readonly */ countOfBytesExpectedToSend: number;
+	readonly countOfBytesExpectedToSend: number;
 
-	/* readonly */ countOfBytesReceived: number;
+	readonly countOfBytesReceived: number;
 
-	/* readonly */ countOfBytesSent: number;
+	readonly countOfBytesSent: number;
 
-	/* readonly */ currentRequest: NSURLRequest;
+	readonly currentRequest: NSURLRequest;
 
-	/* readonly */ error: NSError;
+	readonly error: NSError;
 
-	/* readonly */ originalRequest: NSURLRequest;
+	readonly originalRequest: NSURLRequest;
 
 	priority: number;
 
-	/* readonly */ response: NSURLResponse;
+	readonly response: NSURLResponse;
 
-	/* readonly */ state: NSURLSessionTaskState;
+	readonly state: NSURLSessionTaskState;
 
 	taskDescription: string;
 
-	/* readonly */ taskIdentifier: number;
+	readonly taskIdentifier: number;
 
 	cancel(): void;
 
@@ -10319,11 +10319,11 @@ declare class NSURLSessionTaskMetrics extends NSObject {
 
 	static new(): NSURLSessionTaskMetrics; // inherited from NSObject
 
-	/* readonly */ redirectCount: number;
+	readonly redirectCount: number;
 
-	/* readonly */ taskInterval: NSDateInterval;
+	readonly taskInterval: NSDateInterval;
 
-	/* readonly */ transactionMetrics: NSArray<NSURLSessionTaskTransactionMetrics>;
+	readonly transactionMetrics: NSArray<NSURLSessionTaskTransactionMetrics>;
 }
 
 declare const enum NSURLSessionTaskMetricsResourceFetchType {
@@ -10360,39 +10360,39 @@ declare class NSURLSessionTaskTransactionMetrics extends NSObject {
 
 	static new(): NSURLSessionTaskTransactionMetrics; // inherited from NSObject
 
-	/* readonly */ connectEndDate: Date;
+	readonly connectEndDate: Date;
 
-	/* readonly */ connectStartDate: Date;
+	readonly connectStartDate: Date;
 
-	/* readonly */ domainLookupEndDate: Date;
+	readonly domainLookupEndDate: Date;
 
-	/* readonly */ domainLookupStartDate: Date;
+	readonly domainLookupStartDate: Date;
 
-	/* readonly */ fetchStartDate: Date;
+	readonly fetchStartDate: Date;
 
-	/* readonly */ networkProtocolName: string;
+	readonly networkProtocolName: string;
 
-	/* readonly */ proxyConnection: boolean;
+	readonly proxyConnection: boolean;
 
-	/* readonly */ request: NSURLRequest;
+	readonly request: NSURLRequest;
 
-	/* readonly */ requestEndDate: Date;
+	readonly requestEndDate: Date;
 
-	/* readonly */ requestStartDate: Date;
+	readonly requestStartDate: Date;
 
-	/* readonly */ resourceFetchType: NSURLSessionTaskMetricsResourceFetchType;
+	readonly resourceFetchType: NSURLSessionTaskMetricsResourceFetchType;
 
-	/* readonly */ response: NSURLResponse;
+	readonly response: NSURLResponse;
 
-	/* readonly */ responseEndDate: Date;
+	readonly responseEndDate: Date;
 
-	/* readonly */ responseStartDate: Date;
+	readonly responseStartDate: Date;
 
-	/* readonly */ reusedConnection: boolean;
+	readonly reusedConnection: boolean;
 
-	/* readonly */ secureConnectionEndDate: Date;
+	readonly secureConnectionEndDate: Date;
 
-	/* readonly */ secureConnectionStartDate: Date;
+	readonly secureConnectionStartDate: Date;
 }
 
 declare var NSURLSessionTransferSizeUnknown: number;
@@ -10542,9 +10542,9 @@ declare class NSUUID extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NSUUID; // inherited from NSObject
 
-	/* readonly */ UUIDString: string;
+	readonly UUIDString: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10583,7 +10583,7 @@ declare class NSUbiquitousKeyValueStore extends NSObject {
 
 	static new(): NSUbiquitousKeyValueStore; // inherited from NSObject
 
-	/* readonly */ dictionaryRepresentation: NSDictionary<string, any>;
+	readonly dictionaryRepresentation: NSDictionary<string, any>;
 
 	arrayForKey(aKey: string): NSArray<any>;
 
@@ -10660,35 +10660,35 @@ declare class NSUndoManager extends NSObject {
 
 	static new(): NSUndoManager; // inherited from NSObject
 
-	/* readonly */ canRedo: boolean;
+	readonly canRedo: boolean;
 
-	/* readonly */ canUndo: boolean;
+	readonly canUndo: boolean;
 
-	/* readonly */ groupingLevel: number;
+	readonly groupingLevel: number;
 
 	groupsByEvent: boolean;
 
 	levelsOfUndo: number;
 
-	/* readonly */ redoActionIsDiscardable: boolean;
+	readonly redoActionIsDiscardable: boolean;
 
-	/* readonly */ redoActionName: string;
+	readonly redoActionName: string;
 
-	/* readonly */ redoMenuItemTitle: string;
+	readonly redoMenuItemTitle: string;
 
-	/* readonly */ redoing: boolean;
+	readonly redoing: boolean;
 
 	runLoopModes: NSArray<string>;
 
-	/* readonly */ undoActionIsDiscardable: boolean;
+	readonly undoActionIsDiscardable: boolean;
 
-	/* readonly */ undoActionName: string;
+	readonly undoActionName: string;
 
-	/* readonly */ undoMenuItemTitle: string;
+	readonly undoMenuItemTitle: string;
 
-	/* readonly */ undoRegistrationEnabled: boolean;
+	readonly undoRegistrationEnabled: boolean;
 
-	/* readonly */ undoing: boolean;
+	readonly undoing: boolean;
 
 	beginUndoGrouping(): void;
 
@@ -10757,9 +10757,9 @@ declare class NSUnit extends NSObject implements NSCopying, NSSecureCoding {
 
 	static new(): NSUnit; // inherited from NSObject
 
-	/* readonly */ symbol: string;
+	readonly symbol: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10782,11 +10782,11 @@ declare class NSUnitAcceleration extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitAcceleration; // inherited from NSObject
 
-	/* readonly */ static gravity: NSUnitAcceleration;
+	static readonly gravity: NSUnitAcceleration;
 
-	/* readonly */ static metersPerSecondSquared: NSUnitAcceleration;
+	static readonly metersPerSecondSquared: NSUnitAcceleration;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10803,19 +10803,19 @@ declare class NSUnitAngle extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitAngle; // inherited from NSObject
 
-	/* readonly */ static arcMinutes: NSUnitAngle;
+	static readonly arcMinutes: NSUnitAngle;
 
-	/* readonly */ static arcSeconds: NSUnitAngle;
+	static readonly arcSeconds: NSUnitAngle;
 
-	/* readonly */ static degrees: NSUnitAngle;
+	static readonly degrees: NSUnitAngle;
 
-	/* readonly */ static gradians: NSUnitAngle;
+	static readonly gradians: NSUnitAngle;
 
-	/* readonly */ static radians: NSUnitAngle;
+	static readonly radians: NSUnitAngle;
 
-	/* readonly */ static revolutions: NSUnitAngle;
+	static readonly revolutions: NSUnitAngle;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10832,35 +10832,35 @@ declare class NSUnitArea extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitArea; // inherited from NSObject
 
-	/* readonly */ static acres: NSUnitArea;
+	static readonly acres: NSUnitArea;
 
-	/* readonly */ static ares: NSUnitArea;
+	static readonly ares: NSUnitArea;
 
-	/* readonly */ static hectares: NSUnitArea;
+	static readonly hectares: NSUnitArea;
 
-	/* readonly */ static squareCentimeters: NSUnitArea;
+	static readonly squareCentimeters: NSUnitArea;
 
-	/* readonly */ static squareFeet: NSUnitArea;
+	static readonly squareFeet: NSUnitArea;
 
-	/* readonly */ static squareInches: NSUnitArea;
+	static readonly squareInches: NSUnitArea;
 
-	/* readonly */ static squareKilometers: NSUnitArea;
+	static readonly squareKilometers: NSUnitArea;
 
-	/* readonly */ static squareMegameters: NSUnitArea;
+	static readonly squareMegameters: NSUnitArea;
 
-	/* readonly */ static squareMeters: NSUnitArea;
+	static readonly squareMeters: NSUnitArea;
 
-	/* readonly */ static squareMicrometers: NSUnitArea;
+	static readonly squareMicrometers: NSUnitArea;
 
-	/* readonly */ static squareMiles: NSUnitArea;
+	static readonly squareMiles: NSUnitArea;
 
-	/* readonly */ static squareMillimeters: NSUnitArea;
+	static readonly squareMillimeters: NSUnitArea;
 
-	/* readonly */ static squareNanometers: NSUnitArea;
+	static readonly squareNanometers: NSUnitArea;
 
-	/* readonly */ static squareYards: NSUnitArea;
+	static readonly squareYards: NSUnitArea;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10879,11 +10879,11 @@ declare class NSUnitConcentrationMass extends NSDimension implements NSSecureCod
 
 	static new(): NSUnitConcentrationMass; // inherited from NSObject
 
-	/* readonly */ static gramsPerLiter: NSUnitConcentrationMass;
+	static readonly gramsPerLiter: NSUnitConcentrationMass;
 
-	/* readonly */ static milligramsPerDeciliter: NSUnitConcentrationMass;
+	static readonly milligramsPerDeciliter: NSUnitConcentrationMass;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10909,11 +10909,11 @@ declare class NSUnitConverterLinear extends NSUnitConverter implements NSSecureC
 
 	static new(): NSUnitConverterLinear; // inherited from NSObject
 
-	/* readonly */ coefficient: number;
+	readonly coefficient: number;
 
-	/* readonly */ constant: number;
+	readonly constant: number;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10938,9 +10938,9 @@ declare class NSUnitDispersion extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitDispersion; // inherited from NSObject
 
-	/* readonly */ static partsPerMillion: NSUnitDispersion;
+	static readonly partsPerMillion: NSUnitDispersion;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10957,13 +10957,13 @@ declare class NSUnitDuration extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitDuration; // inherited from NSObject
 
-	/* readonly */ static hours: NSUnitDuration;
+	static readonly hours: NSUnitDuration;
 
-	/* readonly */ static minutes: NSUnitDuration;
+	static readonly minutes: NSUnitDuration;
 
-	/* readonly */ static seconds: NSUnitDuration;
+	static readonly seconds: NSUnitDuration;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -10980,19 +10980,19 @@ declare class NSUnitElectricCharge extends NSDimension implements NSSecureCoding
 
 	static new(): NSUnitElectricCharge; // inherited from NSObject
 
-	/* readonly */ static ampereHours: NSUnitElectricCharge;
+	static readonly ampereHours: NSUnitElectricCharge;
 
-	/* readonly */ static coulombs: NSUnitElectricCharge;
+	static readonly coulombs: NSUnitElectricCharge;
 
-	/* readonly */ static kiloampereHours: NSUnitElectricCharge;
+	static readonly kiloampereHours: NSUnitElectricCharge;
 
-	/* readonly */ static megaampereHours: NSUnitElectricCharge;
+	static readonly megaampereHours: NSUnitElectricCharge;
 
-	/* readonly */ static microampereHours: NSUnitElectricCharge;
+	static readonly microampereHours: NSUnitElectricCharge;
 
-	/* readonly */ static milliampereHours: NSUnitElectricCharge;
+	static readonly milliampereHours: NSUnitElectricCharge;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11009,17 +11009,17 @@ declare class NSUnitElectricCurrent extends NSDimension implements NSSecureCodin
 
 	static new(): NSUnitElectricCurrent; // inherited from NSObject
 
-	/* readonly */ static amperes: NSUnitElectricCurrent;
+	static readonly amperes: NSUnitElectricCurrent;
 
-	/* readonly */ static kiloamperes: NSUnitElectricCurrent;
+	static readonly kiloamperes: NSUnitElectricCurrent;
 
-	/* readonly */ static megaamperes: NSUnitElectricCurrent;
+	static readonly megaamperes: NSUnitElectricCurrent;
 
-	/* readonly */ static microamperes: NSUnitElectricCurrent;
+	static readonly microamperes: NSUnitElectricCurrent;
 
-	/* readonly */ static milliamperes: NSUnitElectricCurrent;
+	static readonly milliamperes: NSUnitElectricCurrent;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11036,17 +11036,17 @@ declare class NSUnitElectricPotentialDifference extends NSDimension implements N
 
 	static new(): NSUnitElectricPotentialDifference; // inherited from NSObject
 
-	/* readonly */ static kilovolts: NSUnitElectricPotentialDifference;
+	static readonly kilovolts: NSUnitElectricPotentialDifference;
 
-	/* readonly */ static megavolts: NSUnitElectricPotentialDifference;
+	static readonly megavolts: NSUnitElectricPotentialDifference;
 
-	/* readonly */ static microvolts: NSUnitElectricPotentialDifference;
+	static readonly microvolts: NSUnitElectricPotentialDifference;
 
-	/* readonly */ static millivolts: NSUnitElectricPotentialDifference;
+	static readonly millivolts: NSUnitElectricPotentialDifference;
 
-	/* readonly */ static volts: NSUnitElectricPotentialDifference;
+	static readonly volts: NSUnitElectricPotentialDifference;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11063,17 +11063,17 @@ declare class NSUnitElectricResistance extends NSDimension implements NSSecureCo
 
 	static new(): NSUnitElectricResistance; // inherited from NSObject
 
-	/* readonly */ static kiloohms: NSUnitElectricResistance;
+	static readonly kiloohms: NSUnitElectricResistance;
 
-	/* readonly */ static megaohms: NSUnitElectricResistance;
+	static readonly megaohms: NSUnitElectricResistance;
 
-	/* readonly */ static microohms: NSUnitElectricResistance;
+	static readonly microohms: NSUnitElectricResistance;
 
-	/* readonly */ static milliohms: NSUnitElectricResistance;
+	static readonly milliohms: NSUnitElectricResistance;
 
-	/* readonly */ static ohms: NSUnitElectricResistance;
+	static readonly ohms: NSUnitElectricResistance;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11090,17 +11090,17 @@ declare class NSUnitEnergy extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitEnergy; // inherited from NSObject
 
-	/* readonly */ static calories: NSUnitEnergy;
+	static readonly calories: NSUnitEnergy;
 
-	/* readonly */ static joules: NSUnitEnergy;
+	static readonly joules: NSUnitEnergy;
 
-	/* readonly */ static kilocalories: NSUnitEnergy;
+	static readonly kilocalories: NSUnitEnergy;
 
-	/* readonly */ static kilojoules: NSUnitEnergy;
+	static readonly kilojoules: NSUnitEnergy;
 
-	/* readonly */ static kilowattHours: NSUnitEnergy;
+	static readonly kilowattHours: NSUnitEnergy;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11117,23 +11117,23 @@ declare class NSUnitFrequency extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitFrequency; // inherited from NSObject
 
-	/* readonly */ static gigahertz: NSUnitFrequency;
+	static readonly gigahertz: NSUnitFrequency;
 
-	/* readonly */ static hertz: NSUnitFrequency;
+	static readonly hertz: NSUnitFrequency;
 
-	/* readonly */ static kilohertz: NSUnitFrequency;
+	static readonly kilohertz: NSUnitFrequency;
 
-	/* readonly */ static megahertz: NSUnitFrequency;
+	static readonly megahertz: NSUnitFrequency;
 
-	/* readonly */ static microhertz: NSUnitFrequency;
+	static readonly microhertz: NSUnitFrequency;
 
-	/* readonly */ static millihertz: NSUnitFrequency;
+	static readonly millihertz: NSUnitFrequency;
 
-	/* readonly */ static nanohertz: NSUnitFrequency;
+	static readonly nanohertz: NSUnitFrequency;
 
-	/* readonly */ static terahertz: NSUnitFrequency;
+	static readonly terahertz: NSUnitFrequency;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11150,13 +11150,13 @@ declare class NSUnitFuelEfficiency extends NSDimension implements NSSecureCoding
 
 	static new(): NSUnitFuelEfficiency; // inherited from NSObject
 
-	/* readonly */ static litersPer100Kilometers: NSUnitFuelEfficiency;
+	static readonly litersPer100Kilometers: NSUnitFuelEfficiency;
 
-	/* readonly */ static milesPerGallon: NSUnitFuelEfficiency;
+	static readonly milesPerGallon: NSUnitFuelEfficiency;
 
-	/* readonly */ static milesPerImperialGallon: NSUnitFuelEfficiency;
+	static readonly milesPerImperialGallon: NSUnitFuelEfficiency;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11173,9 +11173,9 @@ declare class NSUnitIlluminance extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitIlluminance; // inherited from NSObject
 
-	/* readonly */ static lux: NSUnitIlluminance;
+	static readonly lux: NSUnitIlluminance;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11192,51 +11192,51 @@ declare class NSUnitLength extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitLength; // inherited from NSObject
 
-	/* readonly */ static astronomicalUnits: NSUnitLength;
+	static readonly astronomicalUnits: NSUnitLength;
 
-	/* readonly */ static centimeters: NSUnitLength;
+	static readonly centimeters: NSUnitLength;
 
-	/* readonly */ static decameters: NSUnitLength;
+	static readonly decameters: NSUnitLength;
 
-	/* readonly */ static decimeters: NSUnitLength;
+	static readonly decimeters: NSUnitLength;
 
-	/* readonly */ static fathoms: NSUnitLength;
+	static readonly fathoms: NSUnitLength;
 
-	/* readonly */ static feet: NSUnitLength;
+	static readonly feet: NSUnitLength;
 
-	/* readonly */ static furlongs: NSUnitLength;
+	static readonly furlongs: NSUnitLength;
 
-	/* readonly */ static hectometers: NSUnitLength;
+	static readonly hectometers: NSUnitLength;
 
-	/* readonly */ static inches: NSUnitLength;
+	static readonly inches: NSUnitLength;
 
-	/* readonly */ static kilometers: NSUnitLength;
+	static readonly kilometers: NSUnitLength;
 
-	/* readonly */ static lightyears: NSUnitLength;
+	static readonly lightyears: NSUnitLength;
 
-	/* readonly */ static megameters: NSUnitLength;
+	static readonly megameters: NSUnitLength;
 
-	/* readonly */ static meters: NSUnitLength;
+	static readonly meters: NSUnitLength;
 
-	/* readonly */ static micrometers: NSUnitLength;
+	static readonly micrometers: NSUnitLength;
 
-	/* readonly */ static miles: NSUnitLength;
+	static readonly miles: NSUnitLength;
 
-	/* readonly */ static millimeters: NSUnitLength;
+	static readonly millimeters: NSUnitLength;
 
-	/* readonly */ static nanometers: NSUnitLength;
+	static readonly nanometers: NSUnitLength;
 
-	/* readonly */ static nauticalMiles: NSUnitLength;
+	static readonly nauticalMiles: NSUnitLength;
 
-	/* readonly */ static parsecs: NSUnitLength;
+	static readonly parsecs: NSUnitLength;
 
-	/* readonly */ static picometers: NSUnitLength;
+	static readonly picometers: NSUnitLength;
 
-	/* readonly */ static scandinavianMiles: NSUnitLength;
+	static readonly scandinavianMiles: NSUnitLength;
 
-	/* readonly */ static yards: NSUnitLength;
+	static readonly yards: NSUnitLength;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11253,39 +11253,39 @@ declare class NSUnitMass extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitMass; // inherited from NSObject
 
-	/* readonly */ static carats: NSUnitMass;
+	static readonly carats: NSUnitMass;
 
-	/* readonly */ static centigrams: NSUnitMass;
+	static readonly centigrams: NSUnitMass;
 
-	/* readonly */ static decigrams: NSUnitMass;
+	static readonly decigrams: NSUnitMass;
 
-	/* readonly */ static grams: NSUnitMass;
+	static readonly grams: NSUnitMass;
 
-	/* readonly */ static kilograms: NSUnitMass;
+	static readonly kilograms: NSUnitMass;
 
-	/* readonly */ static metricTons: NSUnitMass;
+	static readonly metricTons: NSUnitMass;
 
-	/* readonly */ static micrograms: NSUnitMass;
+	static readonly micrograms: NSUnitMass;
 
-	/* readonly */ static milligrams: NSUnitMass;
+	static readonly milligrams: NSUnitMass;
 
-	/* readonly */ static nanograms: NSUnitMass;
+	static readonly nanograms: NSUnitMass;
 
-	/* readonly */ static ounces: NSUnitMass;
+	static readonly ounces: NSUnitMass;
 
-	/* readonly */ static ouncesTroy: NSUnitMass;
+	static readonly ouncesTroy: NSUnitMass;
 
-	/* readonly */ static picograms: NSUnitMass;
+	static readonly picograms: NSUnitMass;
 
-	/* readonly */ static poundsMass: NSUnitMass;
+	static readonly poundsMass: NSUnitMass;
 
-	/* readonly */ static shortTons: NSUnitMass;
+	static readonly shortTons: NSUnitMass;
 
-	/* readonly */ static slugs: NSUnitMass;
+	static readonly slugs: NSUnitMass;
 
-	/* readonly */ static stones: NSUnitMass;
+	static readonly stones: NSUnitMass;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11302,29 +11302,29 @@ declare class NSUnitPower extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitPower; // inherited from NSObject
 
-	/* readonly */ static femtowatts: NSUnitPower;
+	static readonly femtowatts: NSUnitPower;
 
-	/* readonly */ static gigawatts: NSUnitPower;
+	static readonly gigawatts: NSUnitPower;
 
-	/* readonly */ static horsepower: NSUnitPower;
+	static readonly horsepower: NSUnitPower;
 
-	/* readonly */ static kilowatts: NSUnitPower;
+	static readonly kilowatts: NSUnitPower;
 
-	/* readonly */ static megawatts: NSUnitPower;
+	static readonly megawatts: NSUnitPower;
 
-	/* readonly */ static microwatts: NSUnitPower;
+	static readonly microwatts: NSUnitPower;
 
-	/* readonly */ static milliwatts: NSUnitPower;
+	static readonly milliwatts: NSUnitPower;
 
-	/* readonly */ static nanowatts: NSUnitPower;
+	static readonly nanowatts: NSUnitPower;
 
-	/* readonly */ static picowatts: NSUnitPower;
+	static readonly picowatts: NSUnitPower;
 
-	/* readonly */ static terawatts: NSUnitPower;
+	static readonly terawatts: NSUnitPower;
 
-	/* readonly */ static watts: NSUnitPower;
+	static readonly watts: NSUnitPower;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11341,27 +11341,27 @@ declare class NSUnitPressure extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitPressure; // inherited from NSObject
 
-	/* readonly */ static bars: NSUnitPressure;
+	static readonly bars: NSUnitPressure;
 
-	/* readonly */ static gigapascals: NSUnitPressure;
+	static readonly gigapascals: NSUnitPressure;
 
-	/* readonly */ static hectopascals: NSUnitPressure;
+	static readonly hectopascals: NSUnitPressure;
 
-	/* readonly */ static inchesOfMercury: NSUnitPressure;
+	static readonly inchesOfMercury: NSUnitPressure;
 
-	/* readonly */ static kilopascals: NSUnitPressure;
+	static readonly kilopascals: NSUnitPressure;
 
-	/* readonly */ static megapascals: NSUnitPressure;
+	static readonly megapascals: NSUnitPressure;
 
-	/* readonly */ static millibars: NSUnitPressure;
+	static readonly millibars: NSUnitPressure;
 
-	/* readonly */ static millimetersOfMercury: NSUnitPressure;
+	static readonly millimetersOfMercury: NSUnitPressure;
 
-	/* readonly */ static newtonsPerMetersSquared: NSUnitPressure;
+	static readonly newtonsPerMetersSquared: NSUnitPressure;
 
-	/* readonly */ static poundsForcePerSquareInch: NSUnitPressure;
+	static readonly poundsForcePerSquareInch: NSUnitPressure;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11378,15 +11378,15 @@ declare class NSUnitSpeed extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitSpeed; // inherited from NSObject
 
-	/* readonly */ static kilometersPerHour: NSUnitSpeed;
+	static readonly kilometersPerHour: NSUnitSpeed;
 
-	/* readonly */ static knots: NSUnitSpeed;
+	static readonly knots: NSUnitSpeed;
 
-	/* readonly */ static metersPerSecond: NSUnitSpeed;
+	static readonly metersPerSecond: NSUnitSpeed;
 
-	/* readonly */ static milesPerHour: NSUnitSpeed;
+	static readonly milesPerHour: NSUnitSpeed;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11403,13 +11403,13 @@ declare class NSUnitTemperature extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitTemperature; // inherited from NSObject
 
-	/* readonly */ static celsius: NSUnitTemperature;
+	static readonly celsius: NSUnitTemperature;
 
-	/* readonly */ static fahrenheit: NSUnitTemperature;
+	static readonly fahrenheit: NSUnitTemperature;
 
-	/* readonly */ static kelvin: NSUnitTemperature;
+	static readonly kelvin: NSUnitTemperature;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11426,69 +11426,69 @@ declare class NSUnitVolume extends NSDimension implements NSSecureCoding {
 
 	static new(): NSUnitVolume; // inherited from NSObject
 
-	/* readonly */ static acreFeet: NSUnitVolume;
+	static readonly acreFeet: NSUnitVolume;
 
-	/* readonly */ static bushels: NSUnitVolume;
+	static readonly bushels: NSUnitVolume;
 
-	/* readonly */ static centiliters: NSUnitVolume;
+	static readonly centiliters: NSUnitVolume;
 
-	/* readonly */ static cubicCentimeters: NSUnitVolume;
+	static readonly cubicCentimeters: NSUnitVolume;
 
-	/* readonly */ static cubicDecimeters: NSUnitVolume;
+	static readonly cubicDecimeters: NSUnitVolume;
 
-	/* readonly */ static cubicFeet: NSUnitVolume;
+	static readonly cubicFeet: NSUnitVolume;
 
-	/* readonly */ static cubicInches: NSUnitVolume;
+	static readonly cubicInches: NSUnitVolume;
 
-	/* readonly */ static cubicKilometers: NSUnitVolume;
+	static readonly cubicKilometers: NSUnitVolume;
 
-	/* readonly */ static cubicMeters: NSUnitVolume;
+	static readonly cubicMeters: NSUnitVolume;
 
-	/* readonly */ static cubicMiles: NSUnitVolume;
+	static readonly cubicMiles: NSUnitVolume;
 
-	/* readonly */ static cubicMillimeters: NSUnitVolume;
+	static readonly cubicMillimeters: NSUnitVolume;
 
-	/* readonly */ static cubicYards: NSUnitVolume;
+	static readonly cubicYards: NSUnitVolume;
 
-	/* readonly */ static cups: NSUnitVolume;
+	static readonly cups: NSUnitVolume;
 
-	/* readonly */ static deciliters: NSUnitVolume;
+	static readonly deciliters: NSUnitVolume;
 
-	/* readonly */ static fluidOunces: NSUnitVolume;
+	static readonly fluidOunces: NSUnitVolume;
 
-	/* readonly */ static gallons: NSUnitVolume;
+	static readonly gallons: NSUnitVolume;
 
-	/* readonly */ static imperialFluidOunces: NSUnitVolume;
+	static readonly imperialFluidOunces: NSUnitVolume;
 
-	/* readonly */ static imperialGallons: NSUnitVolume;
+	static readonly imperialGallons: NSUnitVolume;
 
-	/* readonly */ static imperialPints: NSUnitVolume;
+	static readonly imperialPints: NSUnitVolume;
 
-	/* readonly */ static imperialQuarts: NSUnitVolume;
+	static readonly imperialQuarts: NSUnitVolume;
 
-	/* readonly */ static imperialTablespoons: NSUnitVolume;
+	static readonly imperialTablespoons: NSUnitVolume;
 
-	/* readonly */ static imperialTeaspoons: NSUnitVolume;
+	static readonly imperialTeaspoons: NSUnitVolume;
 
-	/* readonly */ static kiloliters: NSUnitVolume;
+	static readonly kiloliters: NSUnitVolume;
 
-	/* readonly */ static liters: NSUnitVolume;
+	static readonly liters: NSUnitVolume;
 
-	/* readonly */ static megaliters: NSUnitVolume;
+	static readonly megaliters: NSUnitVolume;
 
-	/* readonly */ static metricCups: NSUnitVolume;
+	static readonly metricCups: NSUnitVolume;
 
-	/* readonly */ static milliliters: NSUnitVolume;
+	static readonly milliliters: NSUnitVolume;
 
-	/* readonly */ static pints: NSUnitVolume;
+	static readonly pints: NSUnitVolume;
 
-	/* readonly */ static quarts: NSUnitVolume;
+	static readonly quarts: NSUnitVolume;
 
-	/* readonly */ static tablespoons: NSUnitVolume;
+	static readonly tablespoons: NSUnitVolume;
 
-	/* readonly */ static teaspoons: NSUnitVolume;
+	static readonly teaspoons: NSUnitVolume;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -11503,7 +11503,7 @@ declare class NSUserActivity extends NSObject {
 
 	static new(): NSUserActivity; // inherited from NSObject
 
-	/* readonly */ activityType: string;
+	readonly activityType: string;
 
 	contentAttributeSet: CSSearchableItemAttributeSet;
 
@@ -11517,7 +11517,7 @@ declare class NSUserActivity extends NSObject {
 
 	expirationDate: Date;
 
-	/* readonly */ interaction: INInteraction;
+	readonly interaction: INInteraction;
 
 	keywords: NSSet<string>;
 
@@ -11587,9 +11587,9 @@ declare class NSUserDefaults extends NSObject {
 
 	static resetStandardUserDefaults(): void;
 
-	/* readonly */ volatileDomainNames: NSArray<string>;
+	readonly volatileDomainNames: NSArray<string>;
 
-	/* readonly */ static standardUserDefaults: NSUserDefaults;
+	static readonly standardUserDefaults: NSUserDefaults;
 
 	constructor(o: { suiteName: string; });
 
@@ -11722,47 +11722,47 @@ declare class NSValue extends NSObject implements NSCopying, NSSecureCoding {
 
 	static valueWithUIOffset(insets: UIOffset): NSValue;
 
-	/* readonly */ CATransform3DValue: CATransform3D;
+	readonly CATransform3DValue: CATransform3D;
 
-	/* readonly */ CGAffineTransformValue: CGAffineTransform;
+	readonly CGAffineTransformValue: CGAffineTransform;
 
-	/* readonly */ CGPointValue: CGPoint;
+	readonly CGPointValue: CGPoint;
 
-	/* readonly */ CGRectValue: CGRect;
+	readonly CGRectValue: CGRect;
 
-	/* readonly */ CGSizeValue: CGSize;
+	readonly CGSizeValue: CGSize;
 
-	/* readonly */ CGVectorValue: CGVector;
+	readonly CGVectorValue: CGVector;
 
-	/* readonly */ CMTimeMappingValue: CMTimeMapping;
+	readonly CMTimeMappingValue: CMTimeMapping;
 
-	/* readonly */ CMTimeRangeValue: CMTimeRange;
+	readonly CMTimeRangeValue: CMTimeRange;
 
-	/* readonly */ CMTimeValue: CMTime;
+	readonly CMTimeValue: CMTime;
 
-	/* readonly */ MKCoordinateSpanValue: MKCoordinateSpan;
+	readonly MKCoordinateSpanValue: MKCoordinateSpan;
 
-	/* readonly */ MKCoordinateValue: CLLocationCoordinate2D;
+	readonly MKCoordinateValue: CLLocationCoordinate2D;
 
-	/* readonly */ SCNMatrix4Value: SCNMatrix4;
+	readonly SCNMatrix4Value: SCNMatrix4;
 
-	/* readonly */ SCNVector3Value: SCNVector3;
+	readonly SCNVector3Value: SCNVector3;
 
-	/* readonly */ SCNVector4Value: SCNVector4;
+	readonly SCNVector4Value: SCNVector4;
 
-	/* readonly */ UIEdgeInsetsValue: UIEdgeInsets;
+	readonly UIEdgeInsetsValue: UIEdgeInsets;
 
-	/* readonly */ UIOffsetValue: UIOffset;
+	readonly UIOffsetValue: UIOffset;
 
-	/* readonly */ nonretainedObjectValue: any;
+	readonly nonretainedObjectValue: any;
 
-	/* readonly */ objCType: string;
+	readonly objCType: string;
 
-	/* readonly */ pointerValue: interop.Pointer | interop.Reference<any>;
+	readonly pointerValue: interop.Pointer | interop.Reference<any>;
 
-	/* readonly */ rangeValue: NSRange;
+	readonly rangeValue: NSRange;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { bytes: interop.Pointer | interop.Reference<any>; objCType: string; });
 
@@ -11835,17 +11835,17 @@ declare class NSXMLParser extends NSObject {
 
 	allowedExternalEntityURLs: NSSet<NSURL>;
 
-	/* readonly */ columnNumber: number;
+	readonly columnNumber: number;
 
 	delegate: NSXMLParserDelegate;
 
 	externalEntityResolvingPolicy: NSXMLParserExternalEntityResolvingPolicy;
 
-	/* readonly */ lineNumber: number;
+	readonly lineNumber: number;
 
-	/* readonly */ parserError: NSError;
+	readonly parserError: NSError;
 
-	/* readonly */ publicID: string;
+	readonly publicID: string;
 
 	shouldProcessNamespaces: boolean;
 
@@ -11853,7 +11853,7 @@ declare class NSXMLParser extends NSObject {
 
 	shouldResolveExternalEntities: boolean;
 
-	/* readonly */ systemID: string;
+	readonly systemID: string;
 
 	constructor(o: { contentsOfURL: NSURL; });
 

@@ -46,11 +46,11 @@ declare class CBATTRequest extends NSObject {
 
 	static new(): CBATTRequest; // inherited from NSObject
 
-	/* readonly */ central: CBCentral;
+	readonly central: CBCentral;
 
-	/* readonly */ characteristic: CBCharacteristic;
+	readonly characteristic: CBCharacteristic;
 
-	/* readonly */ offset: number;
+	readonly offset: number;
 
 	value: NSData;
 }
@@ -77,7 +77,7 @@ declare class CBAttribute extends NSObject {
 
 	static new(): CBAttribute; // inherited from NSObject
 
-	/* readonly */ UUID: CBUUID;
+	readonly UUID: CBUUID;
 }
 
 declare const enum CBAttributePermissions {
@@ -97,7 +97,7 @@ declare class CBCentral extends CBPeer {
 
 	static new(): CBCentral; // inherited from NSObject
 
-	/* readonly */ maximumUpdateValueLength: number;
+	readonly maximumUpdateValueLength: number;
 }
 
 declare class CBCentralManager extends CBManager {
@@ -108,7 +108,7 @@ declare class CBCentralManager extends CBManager {
 
 	delegate: CBCentralManagerDelegate;
 
-	/* readonly */ isScanning: boolean;
+	readonly isScanning: boolean;
 
 	constructor(o: { delegate: CBCentralManagerDelegate; queue: NSObject; });
 
@@ -185,17 +185,17 @@ declare class CBCharacteristic extends CBAttribute {
 
 	static new(): CBCharacteristic; // inherited from NSObject
 
-	/* readonly */ descriptors: NSArray<CBDescriptor>;
+	readonly descriptors: NSArray<CBDescriptor>;
 
-	/* readonly */ isBroadcasted: boolean;
+	readonly isBroadcasted: boolean;
 
-	/* readonly */ isNotifying: boolean;
+	readonly isNotifying: boolean;
 
-	/* readonly */ properties: CBCharacteristicProperties;
+	readonly properties: CBCharacteristicProperties;
 
-	/* readonly */ service: CBService;
+	readonly service: CBService;
 
-	/* readonly */ value: NSData;
+	readonly value: NSData;
 }
 
 declare const enum CBCharacteristicProperties {
@@ -240,9 +240,9 @@ declare class CBDescriptor extends CBAttribute {
 
 	static new(): CBDescriptor; // inherited from NSObject
 
-	/* readonly */ characteristic: CBCharacteristic;
+	readonly characteristic: CBCharacteristic;
 
-	/* readonly */ value: any;
+	readonly value: any;
 }
 
 declare const enum CBError {
@@ -280,7 +280,7 @@ declare class CBManager extends NSObject {
 
 	static new(): CBManager; // inherited from NSObject
 
-	/* readonly */ state: CBManagerState;
+	readonly state: CBManagerState;
 }
 
 declare const enum CBManagerState {
@@ -310,7 +310,7 @@ declare class CBMutableCharacteristic extends CBCharacteristic {
 
 	properties: CBCharacteristicProperties;
 
-	/* readonly */ subscribedCentrals: NSArray<CBCentral>;
+	readonly subscribedCentrals: NSArray<CBCentral>;
 
 	value: NSData;
 
@@ -351,7 +351,7 @@ declare class CBPeer extends NSObject implements NSCopying {
 
 	static new(): CBPeer; // inherited from NSObject
 
-	/* readonly */ identifier: NSUUID;
+	readonly identifier: NSUUID;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }
@@ -362,15 +362,15 @@ declare class CBPeripheral extends CBPeer {
 
 	static new(): CBPeripheral; // inherited from NSObject
 
-	/* readonly */ RSSI: number;
+	readonly RSSI: number;
 
 	delegate: CBPeripheralDelegate;
 
-	/* readonly */ name: string;
+	readonly name: string;
 
-	/* readonly */ services: NSArray<CBService>;
+	readonly services: NSArray<CBService>;
 
-	/* readonly */ state: CBPeripheralState;
+	readonly state: CBPeripheralState;
 
 	discoverCharacteristicsForService(characteristicUUIDs: NSArray<CBUUID>, service: CBService): void;
 
@@ -438,7 +438,7 @@ declare class CBPeripheralManager extends CBManager {
 
 	delegate: CBPeripheralManagerDelegate;
 
-	/* readonly */ isAdvertising: boolean;
+	readonly isAdvertising: boolean;
 
 	constructor(o: { delegate: CBPeripheralManagerDelegate; queue: NSObject; });
 
@@ -550,13 +550,13 @@ declare class CBService extends CBAttribute {
 
 	static new(): CBService; // inherited from NSObject
 
-	/* readonly */ characteristics: NSArray<CBCharacteristic>;
+	readonly characteristics: NSArray<CBCharacteristic>;
 
-	/* readonly */ includedServices: NSArray<CBService>;
+	readonly includedServices: NSArray<CBService>;
 
-	/* readonly */ isPrimary: boolean;
+	readonly isPrimary: boolean;
 
-	/* readonly */ peripheral: CBPeripheral;
+	readonly peripheral: CBPeripheral;
 }
 
 declare class CBUUID extends NSObject implements NSCopying {
@@ -573,9 +573,9 @@ declare class CBUUID extends NSObject implements NSCopying {
 
 	static new(): CBUUID; // inherited from NSObject
 
-	/* readonly */ UUIDString: string;
+	readonly UUIDString: string;
 
-	/* readonly */ data: NSData;
+	readonly data: NSData;
 
 	copyWithZone(zone: interop.Pointer | interop.Reference<any>): any;
 }

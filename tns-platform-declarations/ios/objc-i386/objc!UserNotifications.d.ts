@@ -38,7 +38,7 @@ declare class UNCalendarNotificationTrigger extends UNNotificationTrigger {
 
 	static triggerWithDateMatchingComponentsRepeats(dateComponents: NSDateComponents, repeats: boolean): UNCalendarNotificationTrigger;
 
-	/* readonly */ dateComponents: NSDateComponents;
+	readonly dateComponents: NSDateComponents;
 
 	nextTriggerDate(): Date;
 }
@@ -74,7 +74,7 @@ declare class UNLocationNotificationTrigger extends UNNotificationTrigger {
 
 	static triggerWithRegionRepeats(region: CLRegion, repeats: boolean): UNLocationNotificationTrigger;
 
-	/* readonly */ region: CLRegion;
+	readonly region: CLRegion;
 }
 
 declare class UNMutableNotificationContent extends UNNotificationContent {
@@ -110,11 +110,11 @@ declare class UNNotification extends NSObject implements NSCopying, NSSecureCodi
 
 	static new(): UNNotification; // inherited from NSObject
 
-	/* readonly */ date: Date;
+	readonly date: Date;
 
-	/* readonly */ request: UNNotificationRequest;
+	readonly request: UNNotificationRequest;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -133,13 +133,13 @@ declare class UNNotificationAction extends NSObject implements NSCopying, NSSecu
 
 	static new(): UNNotificationAction; // inherited from NSObject
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ options: UNNotificationActionOptions;
+	readonly options: UNNotificationActionOptions;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -169,13 +169,13 @@ declare class UNNotificationAttachment extends NSObject implements NSCopying, NS
 
 	static new(): UNNotificationAttachment; // inherited from NSObject
 
-	/* readonly */ URL: NSURL;
+	readonly URL: NSURL;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ type: string;
+	readonly type: string;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -202,15 +202,15 @@ declare class UNNotificationCategory extends NSObject implements NSCopying, NSSe
 
 	static new(): UNNotificationCategory; // inherited from NSObject
 
-	/* readonly */ actions: NSArray<UNNotificationAction>;
+	readonly actions: NSArray<UNNotificationAction>;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ intentIdentifiers: NSArray<string>;
+	readonly intentIdentifiers: NSArray<string>;
 
-	/* readonly */ options: UNNotificationCategoryOptions;
+	readonly options: UNNotificationCategoryOptions;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -236,27 +236,27 @@ declare class UNNotificationContent extends NSObject implements NSCopying, NSMut
 
 	static new(): UNNotificationContent; // inherited from NSObject
 
-	/* readonly */ attachments: NSArray<UNNotificationAttachment>;
+	readonly attachments: NSArray<UNNotificationAttachment>;
 
-	/* readonly */ badge: number;
+	readonly badge: number;
 
-	/* readonly */ body: string;
+	readonly body: string;
 
-	/* readonly */ categoryIdentifier: string;
+	readonly categoryIdentifier: string;
 
-	/* readonly */ launchImageName: string;
+	readonly launchImageName: string;
 
-	/* readonly */ sound: UNNotificationSound;
+	readonly sound: UNNotificationSound;
 
-	/* readonly */ subtitle: string;
+	readonly subtitle: string;
 
-	/* readonly */ threadIdentifier: string;
+	readonly threadIdentifier: string;
 
-	/* readonly */ title: string;
+	readonly title: string;
 
-	/* readonly */ userInfo: NSDictionary<any, any>;
+	readonly userInfo: NSDictionary<any, any>;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -292,13 +292,13 @@ declare class UNNotificationRequest extends NSObject implements NSCopying, NSSec
 
 	static requestWithIdentifierContentTrigger(identifier: string, content: UNNotificationContent, trigger: UNNotificationTrigger): UNNotificationRequest;
 
-	/* readonly */ content: UNNotificationContent;
+	readonly content: UNNotificationContent;
 
-	/* readonly */ identifier: string;
+	readonly identifier: string;
 
-	/* readonly */ trigger: UNNotificationTrigger;
+	readonly trigger: UNNotificationTrigger;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -315,11 +315,11 @@ declare class UNNotificationResponse extends NSObject implements NSCopying, NSSe
 
 	static new(): UNNotificationResponse; // inherited from NSObject
 
-	/* readonly */ actionIdentifier: string;
+	readonly actionIdentifier: string;
 
-	/* readonly */ notification: UNNotification;
+	readonly notification: UNNotification;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -356,23 +356,23 @@ declare class UNNotificationSettings extends NSObject implements NSCopying, NSSe
 
 	static new(): UNNotificationSettings; // inherited from NSObject
 
-	/* readonly */ alertSetting: UNNotificationSetting;
+	readonly alertSetting: UNNotificationSetting;
 
-	/* readonly */ alertStyle: UNAlertStyle;
+	readonly alertStyle: UNAlertStyle;
 
-	/* readonly */ authorizationStatus: UNAuthorizationStatus;
+	readonly authorizationStatus: UNAuthorizationStatus;
 
-	/* readonly */ badgeSetting: UNNotificationSetting;
+	readonly badgeSetting: UNNotificationSetting;
 
-	/* readonly */ carPlaySetting: UNNotificationSetting;
+	readonly carPlaySetting: UNNotificationSetting;
 
-	/* readonly */ lockScreenSetting: UNNotificationSetting;
+	readonly lockScreenSetting: UNNotificationSetting;
 
-	/* readonly */ notificationCenterSetting: UNNotificationSetting;
+	readonly notificationCenterSetting: UNNotificationSetting;
 
-	/* readonly */ soundSetting: UNNotificationSetting;
+	readonly soundSetting: UNNotificationSetting;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -393,7 +393,7 @@ declare class UNNotificationSound extends NSObject implements NSCopying, NSSecur
 
 	static soundNamed(name: string): UNNotificationSound;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -410,9 +410,9 @@ declare class UNNotificationTrigger extends NSObject implements NSCopying, NSSec
 
 	static new(): UNNotificationTrigger; // inherited from NSObject
 
-	/* readonly */ repeats: boolean;
+	readonly repeats: boolean;
 
-	/* readonly */ static supportsSecureCoding: boolean; // inherited from NSSecureCoding
+	static readonly supportsSecureCoding: boolean; // inherited from NSSecureCoding
 
 	constructor(o: { coder: NSCoder; }); // inherited from NSCoding
 
@@ -440,9 +440,9 @@ declare class UNTextInputNotificationAction extends UNNotificationAction {
 
 	static new(): UNTextInputNotificationAction; // inherited from NSObject
 
-	/* readonly */ textInputButtonTitle: string;
+	readonly textInputButtonTitle: string;
 
-	/* readonly */ textInputPlaceholder: string;
+	readonly textInputPlaceholder: string;
 }
 
 declare class UNTextInputNotificationResponse extends UNNotificationResponse {
@@ -451,7 +451,7 @@ declare class UNTextInputNotificationResponse extends UNNotificationResponse {
 
 	static new(): UNTextInputNotificationResponse; // inherited from NSObject
 
-	/* readonly */ userText: string;
+	readonly userText: string;
 }
 
 declare class UNTimeIntervalNotificationTrigger extends UNNotificationTrigger {
@@ -462,7 +462,7 @@ declare class UNTimeIntervalNotificationTrigger extends UNNotificationTrigger {
 
 	static triggerWithTimeIntervalRepeats(timeInterval: number, repeats: boolean): UNTimeIntervalNotificationTrigger;
 
-	/* readonly */ timeInterval: number;
+	readonly timeInterval: number;
 
 	nextTriggerDate(): Date;
 }
@@ -477,7 +477,7 @@ declare class UNUserNotificationCenter extends NSObject {
 
 	delegate: UNUserNotificationCenterDelegate;
 
-	/* readonly */ supportsContentExtensions: boolean;
+	readonly supportsContentExtensions: boolean;
 
 	addNotificationRequestWithCompletionHandler(request: UNNotificationRequest, completionHandler: (p1: NSError) => void): void;
 
