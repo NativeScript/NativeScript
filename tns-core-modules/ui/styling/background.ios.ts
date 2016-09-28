@@ -240,40 +240,41 @@ export module ios {
         UIGraphicsEndImageContext();
         return flippedImage;
     }
+
+    export function clearBorders(nativeView: any){
+        if (nativeView.layer){
+            nativeView.layer.borderColor = undefined; 
+            nativeView.layer.borderWidth = 0;
+            nativeView.layer.cornerRadius = 0;
+        }
+
+        if (nativeView["hoveringBorderView"]){
+            (<UIView>nativeView["hoveringBorderView"]).removeFromSuperview();
+            nativeView["hoveringBorderView"] = undefined;
+        }
+
+        if (nativeView["topBorderLayer"]){
+            (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
+            nativeView["topBorderLayer"] = undefined;
+        }
+        
+        if (nativeView["rightBorderLayer"]){
+            (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
+            nativeView["rightBorderLayer"] = undefined;
+        }
+        
+        if (nativeView["bottomBorderLayer"]){
+            (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
+            nativeView["bottomBorderLayer"] = undefined;
+        }
+        
+        if (nativeView["leftBorderLayer"]){
+            (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
+            nativeView["leftBorderLayer"] = undefined;
+        }
+    }
 }
 
-export function clearBorders(nativeView: UIView){
-    if (nativeView.layer){
-        nativeView.layer.borderColor = undefined; 
-        nativeView.layer.borderWidth = 0;
-        nativeView.layer.cornerRadius = 0;
-    }
-
-    if (nativeView["hoveringBorderView"]){
-        (<UIView>nativeView["hoveringBorderView"]).removeFromSuperview();
-        nativeView["hoveringBorderView"] = undefined;
-    }
-
-    if (nativeView["topBorderLayer"]){
-        (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
-        nativeView["topBorderLayer"] = undefined;
-    }
-    
-    if (nativeView["rightBorderLayer"]){
-        (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
-        nativeView["rightBorderLayer"] = undefined;
-    }
-    
-    if (nativeView["bottomBorderLayer"]){
-        (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
-        nativeView["bottomBorderLayer"] = undefined;
-    }
-    
-    if (nativeView["leftBorderLayer"]){
-        (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
-        nativeView["leftBorderLayer"] = undefined;
-    }
-}
 
 function drawClipPath(nativeView: UIView, background: common.Background) {
     var path: any;
