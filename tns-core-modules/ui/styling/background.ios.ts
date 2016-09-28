@@ -19,6 +19,9 @@ export module ios {
         if (!nativeView) {
             return undefined;
         }
+        
+        clearBorders(nativeView);
+
         ensureStyle();
 
         let background = <common.Background>view.style._getValue(style.backgroundInternalProperty);
@@ -26,44 +29,14 @@ export module ios {
             return undefined;
         }
 
+        nativeView.clipsToBounds = true;
+
         // Clip-path
         if (background.clipPath) {
             drawClipPath(nativeView, background);
         }
 
         // Borders
-
-        // Clear all borders
-        nativeView.layer.borderColor = undefined; 
-        nativeView.layer.borderWidth = 0;
-        nativeView.layer.cornerRadius = 0;
-        nativeView.clipsToBounds = true;
-
-        if (nativeView["hoveringBorderView"]){
-            (<UIView>nativeView["hoveringBorderView"]).removeFromSuperview();
-            nativeView["hoveringBorderView"] = undefined;
-        }
-
-        if (nativeView["topBorderLayer"]){
-            (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
-            nativeView["topBorderLayer"] = undefined;
-        }
-        
-        if (nativeView["rightBorderLayer"]){
-            (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
-            nativeView["rightBorderLayer"] = undefined;
-        }
-        
-        if (nativeView["bottomBorderLayer"]){
-            (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
-            nativeView["bottomBorderLayer"] = undefined;
-        }
-        
-        if (nativeView["leftBorderLayer"]){
-            (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
-            nativeView["leftBorderLayer"] = undefined;
-        }
-        
         if (background.hasUniformBorder()){
             let borderColor = background.getUniformBorderColor();
             if (borderColor && borderColor.ios){
@@ -266,6 +239,39 @@ export module ios {
         var flippedImage = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         return flippedImage;
+    }
+}
+
+export function clearBorders(nativeView: UIView){
+    if (nativeView.layer){
+        nativeView.layer.borderColor = undefined; 
+        nativeView.layer.borderWidth = 0;
+        nativeView.layer.cornerRadius = 0;
+    }
+
+    if (nativeView["hoveringBorderView"]){
+        (<UIView>nativeView["hoveringBorderView"]).removeFromSuperview();
+        nativeView["hoveringBorderView"] = undefined;
+    }
+
+    if (nativeView["topBorderLayer"]){
+        (<CAShapeLayer>nativeView["topBorderLayer"]).removeFromSuperlayer();
+        nativeView["topBorderLayer"] = undefined;
+    }
+    
+    if (nativeView["rightBorderLayer"]){
+        (<CAShapeLayer>nativeView["rightBorderLayer"]).removeFromSuperlayer();
+        nativeView["rightBorderLayer"] = undefined;
+    }
+    
+    if (nativeView["bottomBorderLayer"]){
+        (<CAShapeLayer>nativeView["bottomBorderLayer"]).removeFromSuperlayer();
+        nativeView["bottomBorderLayer"] = undefined;
+    }
+    
+    if (nativeView["leftBorderLayer"]){
+        (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
+        nativeView["leftBorderLayer"] = undefined;
     }
 }
 

@@ -390,6 +390,7 @@ export class ViewStyler implements style.Styler {
     private static resetBackgroundInternalProperty(view: View, nativeValue: any) {
         var nativeView: UIView = <UIView>view._nativeView;
         if (nativeView) {
+            backgroundModule.ios.clearBorders(nativeView);
             nativeView.backgroundColor = nativeValue;
         }
     }
