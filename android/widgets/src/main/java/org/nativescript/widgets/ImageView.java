@@ -13,14 +13,27 @@ import android.util.Log;
  * 
  */
 public class ImageView extends android.widget.ImageView {
+    private static final double EPSILON = 1E-05;
+
     private Path path = new Path();
     private RectF rect = new RectF();
 
     private double scaleW = 1;
     private double scaleH = 1;
+	
+	private float rotationAngle;
+
+    public float getRotationAngle() {
+        return rotationAngle;
+    }
+
+    public void setRotationAngle(float rotationAngle) {
+        this.rotationAngle = rotationAngle;
+    }
 
     public ImageView(Context context) {
         super(context);
+        this.mMatrix = new Matrix();
         this.setScaleType(ScaleType.FIT_CENTER);
     }
 
@@ -118,6 +131,15 @@ public class ImageView extends android.widget.ImageView {
         }
     }
 
+    private Matrix mMatrix;
+    private Bitmap pBitmap;
+
+    @Override
+    public void setImageBitmap(Bitmap bm) {
+        super.setImageBitmap(bm);
+        this.pBitmap = bm;
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable)this.getBackground() : null;
@@ -143,6 +165,59 @@ public class ImageView extends android.widget.ImageView {
             canvas.clipPath(this.path);
         }
 
-        super.onDraw(canvas);
+        float rotationDegree = this.getRotationAngle();
+
+        if (Math.abs(rotationDegree) > ImageView.EPSILON && Math.abs((rotationDegree % 90) - 0.0) < ImageView.EPSILON) {
+            ScaleType scaleType = this.getScaleType();
+
+            float viewWidth = this.getWidth() - (2 * roundedBorderWidth);
+            float viewHeight = this.getHeight() - (2 * roundedBorderWidth);
+            float bitmapWidth = (float) pBitmap.getWidth();
+            float bitmapHeight = (float) pBitmap.getHeight();
+
+            float scaleX;
+            float scaleY;
+            float decision = (rotationDegree / 90) % 2;
+            if (Math.abs(Math.floor(decision) - 0) < ImageView.EPSILON) {
+                scaleX = viewWidth / bitmapWidth;
+                scaleY = viewHeight / bitmapHeight;
+            } else {
+                scaleX = viewHeight / bitmapWidth;
+                scaleY = viewWidth / bitmapHeight;
+            }
+
+            float scale = 1.0f;
+
+            if (scaleType == ScaleType.FIT_CENTER || scaleType == ScaleType.MATRIX) {
+                scale = (scaleX < scaleY) ? scaleX : scaleY;
+            }
+            else if (scaleType == ScaleType.CENTER_CROP) {
+                scale = (scaleX < scaleY) ? scaleY : scaleX;
+            }
+
+            Matrix matrix = this.mMatrix;
+            matrix.reset();
+
+            if (scaleType == ScaleType.CENTER_CROP || scaleType == ScaleType.FIT_CENTER || scaleType == ScaleType.MATRIX) {
+				matrix.postScale(scale, scale);
+            	matrix.postTranslate(-(bitmapWidth * scale) / 2, -(bitmapHeight * scale) / 2);
+            }
+            else if (scaleType == ScaleType.FIT_XY) {
+                matrix.postScale(scaleX, scaleY);
+                matrix.postTranslate(-((bitmapWidth * scaleX) + roundedBorderWidth) / 2, -((bitmapHeight * scaleY) + roundedBorderWidth) / 2);
+            }
+			
+			matrix.postRotate(rotationDegree);
+			matrix.postTranslate(viewWidth / 2 + roundedBorderWidth, viewHeight / 2 + roundedBorderWidth);
+
+            canvas.drawBitmap(this.pBitmap, matrix, null);
+        }
+        else {
+            super.onDraw(canvas);
+        }
+		
+		if (background != null) {
+			background.draw(canvas);
+		}
     }
 }
