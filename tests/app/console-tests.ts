@@ -39,5 +39,5 @@ export var test_DummyTestForSnippetOnly4 = function () {
 export var test_DummyTestForSnippetOnly5 = function () {
     // >> console-trace
     console.trace();
-    // << console-traceß
+    // << console-trace
 }

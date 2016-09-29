@@ -24,7 +24,7 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
 };
 
 export var test_fetch_text = function (done: (err: Error, res?: string) => void) {
-    // >> fetch-string'
+    // >> fetch-string
     fetch("https://httpbin.org/get").then(response => { return response.text(); }).then(function (r) {
         // Argument (r) is string!
         // >> (hide)
@@ -37,7 +37,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
             done(e);
             // << (hide)
         });
-    // << fetch-string'
+    // << fetch-string
 };
 
 export var test_fetch_json = function (done: (err: Error, res?: string) => void) {

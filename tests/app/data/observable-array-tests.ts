@@ -111,7 +111,7 @@ export var test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithD
 };
 
 export var test_ObservableArray_popShouldRemoveTheLastElement = function () {
-    // >> observable-array-join-pop'
+    // >> observable-array-join-pop
     var array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
     var bindable = new bindableModule.Bindable();
@@ -119,7 +119,7 @@ export var test_ObservableArray_popShouldRemoveTheLastElement = function () {
     bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     var result = array.pop();
-    // << observable-array-join-pop'
+    // << observable-array-join-pop
     TKUnit.assert(result === 3 && array.length === 2, "ObservableArray pop() should remove last element!");
     TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
 };
@@ -359,7 +359,7 @@ export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStart
     bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
     var result = array.splice(1, 2);
-    // <, observable-array-splice
+    // << observable-array-splice
     TKUnit.assert(result.length === 2 && result[0] === "two" && array.length === 1 && array.getItem(0) === "one",
         "ObservableArray splice() should remove specified number of elements starting from specified index!");
     TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
