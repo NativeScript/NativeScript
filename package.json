@@ -41,7 +41,7 @@
     "dev-tsc-apps": "tsc -p apps",
     "dev-tsc-all": "npm run dev-tsc-tns-platform-declarations && npm run dev-tsc-tns-core-modules && npm run dev-tsc-tests && npm run dev-tsc-apps",
     "dev-link-tns-platform-declarations": "cd tns-platform-declarations && npm link",
-    "dev-link-tns-core-modules": "cd tns-core-modules && npm link tns-platform-declarations && npm link",
+    "dev-link-tns-core-modules": "cd tns-core-modules && npm link",
     "dev-link-tests": "cd tests && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-link-apps": "cd apps && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-declarations": "npm run setup && rm -rf tns-platform-declarations/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-platform-declarations/ios/objc tns build ios --path tests",
