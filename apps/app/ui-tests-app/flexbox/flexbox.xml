@@ -1,0 +1,119 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <GridLayout rows="auto, *" backgroundColor="gray">
+        <GridLayout class="control" columns="auto, *" rows="30, 30, 30, 30, 30, 25, 30, 30, 30, 30">
+            <Label row="0" text="FlexDirection" verticalAlignment="center" />
+            <StackLayout row="0" col="1" orientation="horizontal">
+                <Button text="row" tap="flexDirection" />
+                <Button text="row-reverse" tap="flexDirection" />
+                <Button text="column" tap="flexDirection" />
+                <Button text="column-reverse" tap="flexDirection" />
+            </StackLayout>
+
+            <Label row="1" text="FlexWrap" verticalAlignment="center" />
+            <StackLayout row="1" col="1" orientation="horizontal">
+                <Button text="nowrap" tap="flexWrap" />
+                <Button text="wrap" tap="flexWrap" />
+                <Button text="wrap-reverse" tap="flexWrap" />
+            </StackLayout>
+
+            <!-- TODO: Stretch seems to be default in JavaScript, but not default in Java -->
+            <Label row="2" text="JustifyContent" verticalAlignment="center" />
+            <StackLayout row="2" col="1" orientation="horizontal">
+                <Button text="flex-start" tap="justifyContent" />
+                <Button text="flex-end" tap="justifyContent" />
+                <Button text="center" tap="justifyContent" />
+                <Button text="space-between" tap="justifyContent" />
+                <Button text="space-around" tap="justifyContent" />
+            </StackLayout>
+
+            <Label row="3" text="AlignItems" verticalAlignment="center" />
+            <StackLayout row="3" col="1" orientation="horizontal">
+                <Button text="flex-start" tap="alignItems" />
+                <Button text="flex-end" tap="alignItems" />
+                <Button text="center" tap="alignItems" />
+                <Button text="baseline" tap="alignItems" />
+                <Button text="stretch" tap="alignItems" />
+            </StackLayout>
+
+            <Label row="4" text="AlignContent" verticalAlignment="center" />
+            <StackLayout row="4" col="1" orientation="horizontal">
+                <Button text="flex-start" tap="alignContent" />
+                <Button text="flex-end" tap="alignContent" />
+                <Button text="center" tap="alignContent" />
+                <Button text="space-between" tap="alignContent" />
+                <Button text="space-around" tap="alignContent" />
+                <Button text="stretch" tap="alignContent" />
+            </StackLayout>
+
+            <Label row="5" colSpan="2" text="--- selected item properties ---" />
+
+            <Label text="order" row="6" />
+            <StackLayout row="6" col="1" orientation="horizontal">
+                <Button text="0" tap="order" />
+                <Button text="1" tap="order" />
+                <Button text="2" tap="order" />
+                <Button text="3" tap="order" />
+                <Button text="4" tap="order" />
+            </StackLayout>
+
+            <Label text="flex-grow" row="7" />
+            <StackLayout row="7" col="1" orientation="horizontal">
+                <Button text="0" tap="flexGrow" />
+                <Button text="1" tap="flexGrow" />
+                <Button text="2" tap="flexGrow" />
+                <Button text="3" tap="flexGrow" />
+                <Button text="4" tap="flexGrow" />
+            </StackLayout>
+
+            <Label text="flex-shrink" row="8" />
+            <StackLayout row="8" col="1" orientation="horizontal">
+                <Button text="0" tap="flexShrink" />
+                <Button text="1" tap="flexShrink" />
+                <Button text="2" tap="flexShrink" />
+                <Button text="3" tap="flexShrink" />
+                <Button text="4" tap="flexShrink" />
+            </StackLayout>
+
+            <!--<Label text="margin" row="9" />
+            <StackLayout row="9" col="1" orientation="horizontal">
+                <TextField text="{{margin}}" width="100" />
+                <Label text="width" />
+                <TextField text="{{width}}" width="100" />
+                <Label text="height" />
+                <TextField text="{{height}}" width="100" />
+            </StackLayout>-->
+            
+
+            <!-- TODO: Align self -->
+
+        </GridLayout>
+        <FlexboxLayout id="container" row="1" backgroundColor="white" margin="10">
+            <!-- TODO: horizontalAlignment and verticalAlignment should be handled somehow by treating the items with proper layout params -->
+
+            <Label text="row" backgroundColor="#EEEEEE" margin="20" padding="20" tap="select" />
+            <Label text="row-reverse" backgroundColor="#DDDDDD" fontSize="8" tap="select" />
+            <Label text="column" backgroundColor="#CCCCCC" tap="select" />
+            <Label text="column-reverse" backgroundColor="#BBBBBB" tap="select" />
+            <Label text="row" backgroundColor="#AAAAAA" tap="select" />
+            <Label text="row-reverse" backgroundColor="#EEEEEE" fontSize="8" tap="select" />
+            <Label text="column" backgroundColor="#DDDDDD" tap="select" />
+            <Label text="column-reverse" backgroundColor="#CCCCCC" tap="select" />
+            <Label text="row" backgroundColor="#BBBBBB" tap="select" />
+            <Label text="row-reverse" backgroundColor="#AAAAAA" fontSize="8" tap="select" />
+            <Label text="column" backgroundColor="#EEEEEE" tap="select" />
+            <Label text="column-reverse" backgroundColor="#DDDDDD" tap="select" />
+            <Label text="row" backgroundColor="#CCCCCC" tap="select" />
+            <Label text="row-reverse" backgroundColor="#BBBBBB" fontSize="8" tap="select" />
+            <Label text="column" backgroundColor="#AAAAAA" tap="select" />
+            <Label text="column-reverse" backgroundColor="#EEEEEE" tap="select" />
+            <Label text="row" backgroundColor="#DDDDDD" tap="select" />
+            <Label text="row-reverse" backgroundColor="#CCCCCC" fontSize="8" tap="select" />
+            <Label text="column" backgroundColor="#BBBBBB" tap="select" />
+            <Label text="column-reverse" backgroundColor="#AAAAAA" tap="select" />
+            <Label text="row" backgroundColor="#EEEEEE" tap="select" />
+            <Label text="row-reverse" backgroundColor="#DDDDDD" fontSize="8" tap="select" />
+            <Label text="column" backgroundColor="#CCCCCC" tap="select" />
+            <Label text="column-reverse" backgroundColor="#BBBBBB" tap="select" />
+        </FlexboxLayout>
+    </GridLayout>
+</Page>
