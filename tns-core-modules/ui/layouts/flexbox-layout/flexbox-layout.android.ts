@@ -51,6 +51,15 @@ const alignContentMap = {
     [AlignContent.STRETCH]: FlexboxLayoutWidget.ALIGN_CONTENT_STRETCH
 }
 
+const alignSelfMap = {
+    [AlignSelf.AUTO]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_AUTO,
+    [AlignSelf.FLEX_START]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_FLEX_START,
+    [AlignSelf.FLEX_END]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_FLEX_END,
+    [AlignSelf.CENTER]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_CENTER,
+    [AlignSelf.BASELINE]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_BASELINE,
+    [AlignSelf.STRETCH]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_STRETCH
+}
+
 export class FlexboxLayout extends FlexboxLayoutBase {
     private _layout: FlexboxLayoutWidget;
 
@@ -109,8 +118,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     protected onAlignSelfPropertyChanged(view: View, oldValue: AlignSelf, newValue: AlignSelf): void {
         console.log("align-self changed: " + newValue + " " + view);
-        // TODO: Map the align self enum:
-        // this.setLayoutParamsProperty(view, lp => lp.alignSelf = newValue);
+        this.setLayoutParamsProperty(view, lp => lp.alignSelf = alignSelfMap[newValue]);
     }
 
     private setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams) => void) {

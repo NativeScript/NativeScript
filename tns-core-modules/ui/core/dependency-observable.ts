@@ -252,13 +252,13 @@ export class DependencyObservable extends Observable implements definition.Depen
         let currentValue = entry.effectiveValue;
         let newValue = this.getEffectiveValueAndUpdateEntry(currentValueSource, entry, property);
         if (!property.equalityComparer(currentValue, newValue)) {
-            // // If we fallback to defalutValue - remove propertyEntry.
-            // if (entry.valueSource === ValueSource.Default) {
-            //     delete this._propertyEntries[property.id];
-            // }
-            // else {
-            entry.effectiveValue = newValue;
-            // }
+            // If we fallback to defalutValue - remove propertyEntry.
+            if (entry.valueSource === ValueSource.Default) {
+                delete this._propertyEntries[property.id];
+            }
+            else {
+                entry.effectiveValue = newValue;
+            }
 
             this._onPropertyChanged(property, currentValue, newValue);
         }

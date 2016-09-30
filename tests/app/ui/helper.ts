@@ -69,9 +69,8 @@ export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
     clearPage();
     let newPage = getCurrentPage();
     newPage.content = controlToTest;
-    if (pageCss) {
-        newPage.css = pageCss;
-    }
+
+    newPage.css = pageCss;
 
     testFunction([controlToTest, newPage]);
     newPage.content = null;
