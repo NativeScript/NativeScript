@@ -411,7 +411,7 @@ class TransitionDelegate extends NSObject {
 
 const _defaultTransitionDuration = 0.35;
 
-class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
+export class UINavigationControllerAnimatedDelegate extends NSObject implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
     navigationControllerAnimationControllerForOperationFromViewControllerToViewController(
@@ -453,7 +453,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
     }
 }
 
-class UINavigationControllerImpl extends UINavigationController {
+export class UINavigationControllerImpl extends UINavigationController {
     private _owner: WeakRef<Frame>;
 
     public static initWithOwner(owner: WeakRef<Frame>): UINavigationControllerImpl {
@@ -665,7 +665,7 @@ export function _getNativeCurve(transition: definition.NavigationTransition): UI
 }
 
 /* tslint:disable */
-class iOSFrame implements definition.iOSFrame {
+export class iOSFrame implements definition.iOSFrame {
     /* tslint:enable */
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;

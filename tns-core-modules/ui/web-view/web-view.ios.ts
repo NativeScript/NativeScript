@@ -3,7 +3,7 @@ import trace = require("trace");
 
 global.moduleMerge(common, exports);
 
-class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
+export class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     public static ObjCProtocols = [UIWebViewDelegate];
 
     private _owner: WeakRef<WebView>;
