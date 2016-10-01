@@ -10,7 +10,7 @@ import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
 
-class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
+export class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static ObjCProtocols = [UITextViewDelegate];
 
     private _owner: WeakRef<TextView>;

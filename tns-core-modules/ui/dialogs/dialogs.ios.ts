@@ -10,7 +10,7 @@ import getter = utils.ios.getter;
 
 global.moduleMerge(dialogsCommon, exports);
 
-class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
+export class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
     public static ObjCProtocols = [UIAlertViewDelegate];
 
     static new(): UIAlertViewDelegateImpl {
@@ -29,7 +29,7 @@ class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
     }
 }
 
-class UIActionSheetDelegateImpl extends NSObject implements UIActionSheetDelegate {
+export class UIActionSheetDelegateImpl extends NSObject implements UIActionSheetDelegate {
     public static ObjCProtocols = [UIActionSheetDelegate];
 
     static new(): UIActionSheetDelegateImpl {

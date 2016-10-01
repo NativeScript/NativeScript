@@ -15,7 +15,7 @@ function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 global.moduleMerge(common, exports);
 
-class SwitchChangeHandlerImpl extends NSObject {
+export class SwitchChangeHandlerImpl extends NSObject {
 
     private _owner: WeakRef<Switch>;
 

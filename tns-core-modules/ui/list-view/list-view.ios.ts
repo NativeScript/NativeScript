@@ -26,7 +26,7 @@ global.moduleMerge(common, exports);
 
 var infinity = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
 
-class ListViewCell extends UITableViewCell {
+export class ListViewCell extends UITableViewCell {
     public willMoveToSuperview(newSuperview: UIView): void {
         let parent = <ListView>(this.view ? this.view.parent : null);
 
@@ -50,7 +50,7 @@ function notifyForItemAtIndex(listView: definition.ListView, cell: any, view: vi
     return args;
 }
 
-class DataSource extends NSObject implements UITableViewDataSource {
+export class DataSource extends NSObject implements UITableViewDataSource {
     public static ObjCProtocols = [UITableViewDataSource];
 
     private _owner: WeakRef<ListView>;
@@ -87,7 +87,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
     }
 }
 
-class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
+export class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     public static ObjCProtocols = [UITableViewDelegate];
 
     private _owner: WeakRef<ListView>;
@@ -147,7 +147,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     }
 }
 
-class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDelegate {
+export class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDelegate {
     public static ObjCProtocols = [UITableViewDelegate];
 
     private _owner: WeakRef<ListView>;
