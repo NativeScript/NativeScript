@@ -29,21 +29,28 @@
     "shelljs": "^0.7.0",
     "time-grunt": "1.3.0",
     "tslint": "3.4.0",
-    "typescript": "1.8.10"
+    "typescript": "^2.0.3"
   },
   "scripts": {
-    "tsc-tiw": "node build/tsc-dev.js tiw",
-    "tsc-ti": "node build/tsc-dev.js ti",
+    "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps",
     "tsc": "tsc",
-    "link-tests": "cd tns-core-modules && npm link && cd ../tests && npm link tns-core-modules",
-    "dev-tests-android": "npm run tsc-ti && tns livesync android --path tests",
-    "dev-tests-ios": "npm run tsc-ti && tns livesync ios --path tests",
-    "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
-    "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
-    "pretest": "npm run link-tests && npm run tsc",
+    "tsc-w": "tsc --skipLibCheck -w",
+    "dev-tsc-tns-platform-declarations": "tsc -p tns-platform-declarations",
+    "dev-tsc-tns-core-modules": "tsc -p tns-core-modules",
+    "dev-tsc-tests": "tsc -p tests",
+    "dev-tsc-apps": "tsc -p apps",
+    "dev-tsc-all": "npm run dev-tsc-tns-platform-declarations && npm run dev-tsc-tns-core-modules && npm run dev-tsc-tests && npm run dev-tsc-apps",
+    "dev-link-tns-platform-declarations": "cd tns-platform-declarations && npm link",
+    "dev-link-tns-core-modules": "cd tns-core-modules && npm link",
+    "dev-link-tests": "cd tests && npm link tns-platform-declarations && npm link tns-core-modules",
+    "dev-link-apps": "cd apps && npm link tns-platform-declarations && npm link tns-core-modules",
+    "dev-declarations": "npm run setup && rm -rf tns-platform-declarations/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-platform-declarations/ios/objc tns build ios --path tests",
+    "test": "npm run test-android && npm run test-ios",
+    "pretest": "npm run setup && npm run dev-tsc-tns-core-modules && npm run dev-tsc-tests",
     "test-android": "tns run android --path tests --justlaunch",
     "test-ios": "tns run ios --path tests --justlaunch",
-    "test": "npm run test-android && npm run test-ios",
-    "dts-ios": "npm run link-tests && rm -rf tns-core-modules/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-core-modules/ios/objc tns build ios --path tests"
+    "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
+    "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
+    "prepublish": "echo \"Development reminder: npm run setup\n\""
   }
 }

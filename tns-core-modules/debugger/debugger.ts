@@ -36,4 +36,11 @@ export namespace domains {
     }
 }
 
-export var network: domains.network.NetworkDomainDebugger;
+var network;
+
+export function getNetwork(): domains.network.NetworkDomainDebugger {
+    return network;
+}
+export function setNetwork(newNetwork: domains.network.NetworkDomainDebugger) {
+    network = newNetwork;
+}

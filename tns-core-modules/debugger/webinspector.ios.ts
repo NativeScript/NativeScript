@@ -142,10 +142,10 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Enables network tracking, network events will now be delivered to the client.
      */
     enable(): void {
-        if (debuggerDomains.network) {
+        if (debuggerDomains.getNetwork()) {
             throw new Error("One NetworkDomainDebugger may be enabled at a time.");
         } else {
-            debuggerDomains.network = this;
+            debuggerDomains.setNetwork(this);
         }
         this._enabled = true;
     }
@@ -154,8 +154,8 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
      * Disables network tracking, prevents network events from being sent to the client.
      */
     disable(): void {
-        if (debuggerDomains.network === this) {
-            debuggerDomains.network = null;
+        if (debuggerDomains.getNetwork() === this) {
+            debuggerDomains.setNetwork(null);
         }
         this._enabled = false;
     }

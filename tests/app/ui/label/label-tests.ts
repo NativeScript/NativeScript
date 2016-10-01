@@ -73,7 +73,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
         else {
             this.waitUntilTestElementIsLoaded();
-            actualNative = testLabel.android.getText();
+            actualNative = testLabel.android.getText().toString();
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
@@ -90,7 +90,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
         else {
             this.waitUntilTestElementIsLoaded();
-            actualNative = testLabel.android.getText();
+            actualNative = testLabel.android.getText().toString();
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");
@@ -107,7 +107,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         }
         else {
             this.waitUntilTestElementIsLoaded();
-            actualNative = testLabel.android.getText();
+            actualNative = testLabel.android.getText().toString();
         }
 
         TKUnit.assertEqual(actualNative, expectedValue, "Native text not equal");

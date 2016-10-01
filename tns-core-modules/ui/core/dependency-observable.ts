@@ -59,13 +59,16 @@ export class PropertyMetadata implements definition.PropertyMetadata {
     public affectsStyle: boolean;
     public affectsLayout: boolean;
     public onValueChanged: definition.PropertyChangedCallback;
+    public onValidateValue: definition.PropertyValidationCallback;
+    public equalityComparer: definition.PropertyEqualityComparer;
 
     constructor(
         public defaultValue: any,
         public options: number = PropertyMetadataSettings.None,
         onChanged?: definition.PropertyChangedCallback,
-        public onValidateValue?: definition.PropertyValidationCallback,
-        public equalityComparer?: definition.PropertyEqualityComparer) {
+        onValidateValue?: definition.PropertyValidationCallback,
+        equalityComparer?: definition.PropertyEqualityComparer) {
+
         this.defaultValue = defaultValue;
         this.options = options;
         this.onValueChanged = onChanged;
@@ -91,7 +94,9 @@ export class Property implements definition.Property {
     public onValidateValue;
     public onValueChanged: definition.PropertyChangedCallback;
 
-    constructor(public name: string, public ownerType: string, public metadata: PropertyMetadata, public valueConverter?: (value: string) => any) {
+    public valueConverter: (value: string) => any
+
+    constructor(public name: string, public ownerType: string, public metadata: PropertyMetadata, valueConverter?: (value: string) => any) {
         // register key
         this.key = generatePropertyKey(name, ownerType, true);
         if (propertyFromKey[this.key]) {

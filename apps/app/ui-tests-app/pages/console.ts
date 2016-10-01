@@ -57,8 +57,8 @@ export function pageLoaded() {
     console.warn("warn");
     console.error("error");
 
-    console.assert(0 === 1, "%d not equals %d", 0, 1);
-    console.assert(1 === 1, "1 equals 1");
+    console.assert(false, "%d not equals %d", 0, 1);
+    console.assert(true, "1 equals 1");
 
     if (app.android) {
         console.dump(true);

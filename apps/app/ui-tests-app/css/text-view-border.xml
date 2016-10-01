@@ -5,7 +5,7 @@
         <TextView  id="s2" row="0" col="2" textWrap="true" text="border-width: 5; border-color: red red red green;"/>
         <TextView  id="s3" row="1" col="0" textWrap="true" text="border-width: 5; border-color: red; border-radius: 5;"/>
         <TextView  id="s4" row="1" col="1" textWrap="true" text="border-width: 5; border-color: red; border-radius: 50;"/>
-        <TextView  id="s5" row="1" col="2" textWrap="true" text="border-width: 5 10 15 20; border-color: red;"/>
+        <TextView  id="s5" row="1" col="2" textWrap="true" text="border-width: 5 10 15 20; border-color: green;"/>
         <TextView  id="s6" row="2" col="0" textWrap="true" text="border-width: 5; border-color: red green blue yellow;"/>
         <TextView  id="s7" row="2" col="1" textWrap="true" text="border-width: 5 10 15 20; border-color: red green blue yellow;"/>
         <TextView  id="s8" row="2" col="2" textWrap="true" text="border-width: 5 10; border-color: red green;"/>

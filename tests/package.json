@@ -6,7 +6,7 @@
   "nativescript": {
     "id": "org.nativescript.tests",
     "tns-ios": {
-      "version": "2.2.1"
+      "version": "2.3.0"
     },
     "tns-android": {
       "version": "2.3.0"
@@ -21,6 +21,6 @@
     "babylon": "6.8.0",
     "filewalker": "0.1.2",
     "lazy": "1.0.11",
-    "typescript": "^1.8.10"
+    "typescript": "^2.0.3"
   }
 }

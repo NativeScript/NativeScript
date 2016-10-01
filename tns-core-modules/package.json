@@ -26,6 +26,9 @@
   "dependencies": {
     "tns-core-modules-widgets": "next"
   },
+  "devDependencies": {
+    "tns-platform-declarations": "*"
+  },
   "nativescript": {
     "platforms": {
       "ios": "2.1.1",

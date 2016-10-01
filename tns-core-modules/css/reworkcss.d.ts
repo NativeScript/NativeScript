@@ -5,7 +5,7 @@ declare module "css" {
     }
 
     export interface Node {
-        type: "rule" | "keyframes" | "declaration";
+        type: "rule" | "keyframes" | "declaration" | "import";
         position: Position;
     }
 
