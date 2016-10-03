@@ -8,6 +8,8 @@ import * as builderModule from "ui/builder";
 import * as labelModule from "ui/label";
 import * as observableArrayModule from "data/observable-array";
 import * as weakEventsModule from "ui/core/weak-event-listener";
+import {isString, isFunction} from "utils/types";
+import { Bindable } from "ui/core/bindable";
 
 var builder: typeof builderModule;
 function ensureBuilder() {
@@ -39,6 +41,7 @@ function ensureWeakEvents() {
 
 var ITEMS = "items";
 var ITEMTEMPLATE = "itemTemplate";
+var ITEMTEMPLATES = "itemTemplates";
 var ISSCROLLING = "isScrolling";
 var LISTVIEW = "ListView";
 var SEPARATORCOLOR = "separatorColor";
@@ -46,6 +49,10 @@ var ROWHEIGHT = "rowHeight";
 
 export module knownTemplates {
     export var itemTemplate = "itemTemplate";
+}
+
+export module knownMultiTemplates {
+    export var itemTemplates = "itemTemplates";
 }
 
 function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -58,6 +65,11 @@ function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChange
     listView.refresh();
 }
 
+function onItemTemplatesPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    var listView = <ListView>data.object;
+    listView._onItemTemplatesPropertyChanged(data);
+}
+
 function onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var listView = <ListView>data.object;
     listView._onRowHeightPropertyChanged(data);
@@ -67,6 +79,20 @@ export class ListView extends view.View implements definition.ListView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
+    
+    private _itemTemplateSelector: (index: number, item: any) => string;
+    private _itemTemplateSelectorBindable = new Bindable();
+    public _defaultTemplate: view.KeyedTemplate = {
+        key: "default",
+        createView: () => {
+            if (this.itemTemplate) {
+                ensureBuilder();
+                return builder.parse(this.itemTemplate, this); 
+            }
+            return undefined;
+        }
+    }
+    public _itemTemplatesInternal = new Array<view.KeyedTemplate>(this._defaultTemplate);
 
     public static separatorColorProperty = new dependencyObservable.Property(
         SEPARATORCOLOR,
@@ -90,6 +116,16 @@ export class ListView extends view.View implements definition.ListView {
             undefined,
             dependencyObservable.PropertyMetadataSettings.AffectsLayout,
             onItemTemplatePropertyChanged
+            )
+        );
+
+    public static itemTemplatesProperty = new dependencyObservable.Property(
+        ITEMTEMPLATES,
+        LISTVIEW,
+        new proxy.PropertyMetadata(
+            undefined,
+            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
+            onItemTemplatesPropertyChanged
             )
         );
 
@@ -126,6 +162,40 @@ export class ListView extends view.View implements definition.ListView {
         this._setValue(ListView.itemTemplateProperty, value);
     }
 
+    get itemTemplates(): string | Array<view.KeyedTemplate> {
+        return this._getValue(ListView.itemTemplatesProperty);
+    }
+    set itemTemplates(value: string | Array<view.KeyedTemplate>) {
+        let newValue = value;
+        if (isString(newValue)){
+            ensureBuilder();
+            newValue = builder.parseMultipleTemplates(<string>newValue, this);
+        }
+        this._setValue(ListView.itemTemplatesProperty, newValue);
+    }
+
+    get itemTemplateSelector(): string | ((index: number, item: any) => string) {
+        return this._itemTemplateSelector;
+    }
+
+    set itemTemplateSelector(value: string | ((index: number, item: any) => string)) {
+        if (isString(value)){
+            this._itemTemplateSelectorBindable.bind({
+                sourceProperty: null,
+                targetProperty: "templateKey",
+                expression: <string>value
+            });
+            this._itemTemplateSelector = (index: number, item: any) => {
+                item["$index"] = index;
+                this._itemTemplateSelectorBindable.bindingContext = item;
+                return this._itemTemplateSelectorBindable.get("templateKey"); 
+            };
+        }
+        else if (isFunction(value)) {
+            this._itemTemplateSelector = <((index: number, item: any) => string)>value;
+        }
+    }
+
     get isScrolling(): boolean {
         return false;
     }
@@ -156,17 +226,23 @@ export class ListView extends view.View implements definition.ListView {
         //
     }
 
-    public _getItemTemplateContent(index: number): view.View {
-        ensureBuilder();
-
-        var v;
-        if (this.itemTemplate && this.items) {
-            v = builder.parse(this.itemTemplate, this);
+    public _getItemTemplate(index: number): view.KeyedTemplate {
+        let templateKey = "default";
+        if (this.itemTemplateSelector){
+            let dataItem = this._getDataItem(index);
+            templateKey = this._itemTemplateSelector(index, dataItem);
         }
 
-        return v;
-    }
+        for (let i = 0, length = this._itemTemplatesInternal.length; i < length; i++) {
+            if (this._itemTemplatesInternal[i].key === templateKey){
+                return this._itemTemplatesInternal[i];
+            }
+        }
 
+        // This is the default template
+        return this._itemTemplatesInternal[0]; 
+    }
+    
     public _prepareItem(item: view.View, index: number) {
         if (item) {
             item.bindingContext = this._getDataItem(index);
@@ -210,5 +286,9 @@ export class ListView extends view.View implements definition.ListView {
 
     public _onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         this.refresh();
+    }
+
+    public _onItemTemplatesPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+        //
     }
 }

@@ -1,6 +1,6 @@
 ﻿import {debug, ScopeError, SourceError, Source} from "utils/debug";
 import * as xml from "xml";
-import {View, Template} from "ui/core/view";
+import {View, Template, KeyedTemplate} from "ui/core/view";
 import {File, path, knownFolders} from "file-system";
 import {isString, isFunction, isDefined} from "utils/types";
 import {ComponentModule, setPropertyValue, getComponentModule} from "ui/builder/component-builder";
@@ -34,9 +34,14 @@ export function parse(value: string | Template, context: any): View {
         }
 
         return viewToReturn;
-    } else if (isFunction(value)) {
+    } else if ( isFunction(value)) {
         return (<Template>value)();
     }
+}
+
+export function parseMultipleTemplates(value: string, context: any): Array<KeyedTemplate> {
+    let dummyComponent = `<ListView><ListView.itemTemplates>${value}</ListView.itemTemplates></ListView>`;
+    return parseInternal(dummyComponent, context).component["itemTemplates"];
 }
 
 function parseInternal(value: string, context: any, uri?: string): ComponentModule {
@@ -347,8 +352,9 @@ namespace xml2ui {
         private _state: TemplateParser.State;
 
         private parent: XmlStateConsumer;
+        private _setTemplateProperty: boolean;
 
-        constructor(parent: XmlStateConsumer, templateProperty: TemplateProperty) {
+        constructor(parent: XmlStateConsumer, templateProperty: TemplateProperty, setTemplateProperty = true) {
             this.parent = parent;
 
             this._context = templateProperty.context;
@@ -356,6 +362,7 @@ namespace xml2ui {
             this._templateProperty = templateProperty;
             this._nestingLevel = 0;
             this._state = TemplateParser.State.EXPECTING_START;
+            this._setTemplateProperty = setTemplateProperty;
         }
 
         public parse(args: xml.ParserEvent): XmlStateConsumer {
@@ -395,29 +402,64 @@ namespace xml2ui {
 
             if (this._nestingLevel === 0) {
                 this._state = TemplateParser.State.FINISHED;
-                this.build();
+                
+                if (this._setTemplateProperty && this._templateProperty.name in this._templateProperty.parent.component){
+                    let template = this._build();
+                    this._templateProperty.parent.component[this._templateProperty.name] = template;
+                }
             }
         }
 
-        private build() {
-            if (this._templateProperty.name in this._templateProperty.parent.component) {
-                var context = this._context;
-                var errorFormat = this._templateProperty.errorFormat;
-                var sourceTracker = this._templateProperty.sourceTracker;
-                var template: Template = () => {
-                    var start: xml2ui.XmlArgsReplay;
-                    var ui: xml2ui.ComponentParser;
+        public _build(): Template {
+            var context = this._context;
+            var errorFormat = this._templateProperty.errorFormat;
+            var sourceTracker = this._templateProperty.sourceTracker;
+            var template: Template = () => {
+                var start: xml2ui.XmlArgsReplay;
+                var ui: xml2ui.ComponentParser;
 
-                    (start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
-                        // No platform filter, it has been filtered allready
-                        .pipe(new XmlStateParser(ui = new ComponentParser(context, errorFormat, sourceTracker)));
+                (start = new xml2ui.XmlArgsReplay(this._recordedXmlStream, errorFormat))
+                    // No platform filter, it has been filtered allready
+                    .pipe(new XmlStateParser(ui = new ComponentParser(context, errorFormat, sourceTracker)));
 
-                    start.replay();
+                start.replay();
 
-                    return ui.rootComponentModule.component;
-                }
-                this._templateProperty.parent.component[this._templateProperty.name] = template;
+                return ui.rootComponentModule.component;
             }
+            return template;
+        }
+    }
+
+    export class MultiTemplateParser implements XmlStateConsumer {
+        private _childParsers = new Array<TemplateParser>();
+
+        constructor(private parent: XmlStateConsumer, private templateProperty: TemplateProperty) {
+        }
+        
+        public parse(args: xml.ParserEvent): XmlStateConsumer {
+            if (args.eventType === xml.ParserEventType.StartElement && args.elementName === "template"){
+                let childParser = new TemplateParser(this, this.templateProperty, false);
+                childParser["key"] = args.attributes["key"]; 
+                this._childParsers.push(childParser);
+                return childParser;    
+            }
+
+            if (args.eventType === xml.ParserEventType.EndElement){
+                let name = ComponentParser.getComplexPropertyName(args.elementName);
+                if (name === this.templateProperty.name){
+                    let templates = new Array<KeyedTemplate>();        
+                    for (let i = 0; i < this._childParsers.length; i++){
+                        templates.push({
+                            key: this._childParsers[i]["key"],
+                            createView: this._childParsers[i]._build()
+                        });
+                    }
+                    this.templateProperty.parent.component[this.templateProperty.name] = templates;
+                    return this.parent;
+                }
+            }
+            
+            return this;
         }
     }
 
@@ -433,6 +475,7 @@ namespace xml2ui {
 
         private static KNOWNCOLLECTIONS = "knownCollections";
         private static KNOWNTEMPLATES = "knownTemplates";
+        private static KNOWNMULTITEMPLATES = "knownMultiTemplates";
 
         public rootComponentModule: ComponentModule;
 
@@ -480,6 +523,19 @@ namespace xml2ui {
                             sourceTracker: this.sourceTracker
                         });
                     }
+                    
+                    if (ComponentParser.isKnownMultiTemplate(name, parent.exports)) {
+                        return new MultiTemplateParser(this, {
+                            context: (parent ? getExports(parent.component) : null) || this.context, // Passing 'context' won't work if you set "codeFile" on the page
+                            parent: parent,
+                            name: name,
+                            elementName: args.elementName,
+                            templateItems: [],
+                            errorFormat: this.error,
+                            sourceTracker: this.sourceTracker
+                        });
+                    }
+                    
 
                 } else {
 
@@ -550,7 +606,7 @@ namespace xml2ui {
             return isString(name) && name.indexOf(".") !== -1;
         }
 
-        private static getComplexPropertyName(fullName: string): string {
+        public static getComplexPropertyName(fullName: string): string {
             var name: string;
 
             if (isString(fullName)) {
@@ -563,6 +619,10 @@ namespace xml2ui {
 
         private static isKnownTemplate(name: string, exports: any): boolean {
             return ComponentParser.KNOWNTEMPLATES in exports && exports[ComponentParser.KNOWNTEMPLATES] && name in exports[ComponentParser.KNOWNTEMPLATES];
+        }
+
+        private static isKnownMultiTemplate(name: string, exports: any): boolean {
+            return ComponentParser.KNOWNMULTITEMPLATES in exports && exports[ComponentParser.KNOWNMULTITEMPLATES] && name in exports[ComponentParser.KNOWNMULTITEMPLATES];
         }
 
         private static addToComplexProperty(parent: ComponentModule, complexProperty: ComponentParser.ComplexProperty, elementModule: ComponentModule) {

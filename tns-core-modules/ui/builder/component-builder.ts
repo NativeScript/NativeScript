@@ -164,7 +164,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
 export function setPropertyValue(instance: View, instanceModule: Object, exports: Object, propertyName: string, propertyValue: any) {
     // Note: instanceModule can be null if we are loading custom compnenet with no code-behind.
-
     if (isBinding(propertyValue) && instance.bind) {
         var bindOptions = getBindingOptions(propertyName, getBindingExpressionFromAttribute(propertyValue));
         instance.bind({
@@ -181,7 +180,12 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         if (isFunction(handler)) {
             instance.on(propertyName, handler);
         }
-    } else {
+    }
+    //TODO_ITS: This code may break some people if they have an export named like one of their attribue values.
+    else if (isFunction(exports && exports[propertyValue])) {
+        instance[propertyName] = exports[propertyValue];             
+    }
+    else {
         let attrHandled = false;
         let specialSetter = getSpecialPropertySetter(propertyName);
         if (!attrHandled && specialSetter) {

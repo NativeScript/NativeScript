@@ -657,6 +657,21 @@ declare module "ui/core/view" {
     }
 
     /**
+     * Defines an interface for Template with a key.
+     */
+    interface KeyedTemplate {
+        /**
+         * The unique key of the template.
+         */
+        key: string;
+
+        /**
+         * The function that creates the view.
+         */
+        createView: Template;
+    }
+
+    /**
      * Defines an interface for adding arrays declared in xml.
      */
     interface AddArrayFromBuilder {

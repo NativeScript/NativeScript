@@ -83,6 +83,16 @@ declare module "ui/list-view" {
         itemTemplate: string | view.Template;
 
         /**
+         * Gets or set the list of item templates for the item template selector 
+         */
+        itemTemplates: string | Array<view.KeyedTemplate>;
+
+        /**
+         * A function that returns the appropriate ket template based on the data item.
+         */
+
+        itemTemplateSelector: string | ((index: number, item: any) => string);
+        /**
          * Gets or set the items separator line color of the ListView. 
          */
         separatorColor: color.Color;
