@@ -1,7 +1,6 @@
 ﻿import imageCommon = require("./image-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
-import * as enumsModule from "ui/enums";
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 import enums = require("ui/enums");
