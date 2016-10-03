@@ -2,6 +2,7 @@
 import view = require("ui/core/view");
 import proxy = require("ui/core/proxy");
 import imageSource = require("image-source");
+import imageAssetModule = require("image-asset");
 import definition = require("ui/image");
 import enums = require("ui/enums");
 import platform = require("platform");
@@ -157,6 +158,12 @@ export class Image extends view.View implements definition.Image {
             // Support binding the imageSource trough the src property
             this.imageSource = value;
             this._setValue(Image.isLoadingProperty, false);
+        }
+        else if (value instanceof imageAssetModule.ImageAsset) {
+            imageSource.fromAsset(value).then((result) => {
+                this.imageSource = result;
+                this._setValue(Image.isLoadingProperty, false);
+            });
         }
         else {
             this.imageSource = imageSource.fromNativeSource(value);

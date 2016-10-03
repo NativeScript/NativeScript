@@ -280,6 +280,14 @@
 
             export class ImageView extends android.widget.ImageView {
                 constructor(context: android.content.Context);
+                getCornerRadius(): number;
+                setCornerRadius(radius: number): void;
+
+                getBorderWidth(): number;
+                setBorderWidth(width: number): void;
+
+                getRotationAngle(): number;
+                setRotationAngle(angle: number): void;
             }
 
             export class TabLayout extends android.widget.HorizontalScrollView {

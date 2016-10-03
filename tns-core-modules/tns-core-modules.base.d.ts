@@ -18,6 +18,7 @@
 /// <reference path="fps-meter/fps-native.d.ts" />
 /// <reference path="http/http-request.d.ts" />
 /// <reference path="http/http.d.ts" />
+/// <reference path="image-asset/image-asset.d.ts" />
 /// <reference path="image-source/image-source.d.ts" />
 /// <reference path="js-libs/easysax/easysax.d.ts" />
 /// <reference path="js-libs/esprima/esprima.d.ts" />

@@ -3,12 +3,26 @@ import types = require("utils/types");
 import fs = require("file-system");
 import common = require("./image-source-common");
 import enums = require("ui/enums");
+import * as imageAssetModule from "image-asset";
 
 global.moduleMerge(common, exports);
 
 export class ImageSource implements definition.ImageSource {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
+
+    public fromAsset(asset: imageAssetModule.ImageAsset) {
+        return new Promise<definition.ImageSource>((resolve, reject) => {
+            asset.getImageAsync((image, err) => {
+                if (image) {
+                    resolve(common.fromNativeSource(image));
+                }
+                else {
+                    reject(err);
+                }
+            });
+        });
+    }
 
     public loadFromResource(name: string): boolean {
         this.ios = (<any>UIImage).tns_safeImageNamed(name) || (<any>UIImage).tns_safeImageNamed(`${name}.jpg`);
@@ -155,6 +169,10 @@ export class ImageSource implements definition.ImageSource {
             return this.ios.size.width;
         }
 
+        return NaN;
+    }
+
+    get rotationAngle(): number {
         return NaN;
     }
 }

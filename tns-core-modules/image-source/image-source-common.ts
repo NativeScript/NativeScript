@@ -1,5 +1,6 @@
 ﻿import utils = require("utils/utils");
 import * as httpModule from "http";
+import * as imageAssetModule from "image-asset";
 
 var http: typeof httpModule;
 function ensureHttp() {
@@ -10,6 +11,11 @@ function ensureHttp() {
 
 // This is used for definition purposes only, it does not generate JavaScript for it.
 import definition = require("image-source");
+
+export function fromAsset(asset: imageAssetModule.ImageAsset): Promise<definition.ImageSource> {
+    let image = new definition.ImageSource();
+    return image.fromAsset(asset);
+}
 
 export function fromResource(name: string): definition.ImageSource {
     var image = new definition.ImageSource();

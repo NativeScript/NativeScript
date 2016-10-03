@@ -2,7 +2,7 @@
  * Contains the ImageSource class, which encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
  */
 declare module "image-source" {
-    
+    import * as imageAssetModule from "image-asset";
     /**
      * Encapsulates the common abstraction behind a platform specific object (typically a Bitmap) that is used as a source for images.
      */
@@ -18,6 +18,11 @@ declare module "image-source" {
         width: number;
 
        /**
+        * Gets or sets the rotation angle that should be applied to image. (Used in android)
+        */
+        rotationAngle: number;
+
+       /**
         * The iOS-specific [UIImage](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIImage_Class/) instance. Will be undefined when running on Android.
         */
         ios: any /* UIImage */;
@@ -26,6 +31,12 @@ declare module "image-source" {
         * The Android-specific [image](http://developer.android.com/reference/android/graphics/Bitmap.html) instance. Will be undefined when running on iOS.
         */
         android: any /* android.graphics.Bitmap */;
+
+        /**
+         * Loads this instance from the specified asset asynchronously.
+         * @param asset The ImageAsset instance used to create ImageSource.
+         */
+        fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;
 
        /**
         * Loads this instance from the specified resource name.
@@ -97,6 +108,8 @@ declare module "image-source" {
          */
         toBase64String(format: string, quality?: number): string;
     }
+
+    export function fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;
 
    /**
     * Creates a new ImageSource instance and loads it from the specified resource name.

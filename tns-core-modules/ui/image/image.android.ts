@@ -45,7 +45,7 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
         return;
     }
 
-    image._setNativeImage(data.newValue ? data.newValue.android : null);
+    image._setNativeImage(data.newValue);
 }
 
 // register the setNativeValue callback
@@ -64,7 +64,11 @@ export class Image extends imageCommon.Image {
     }
 
     public _setNativeImage(nativeImage: any) {
-        this.android.setImageBitmap(nativeImage);
+        let rotation = (nativeImage && nativeImage.rotationAngle) ? nativeImage.rotationAngle : 0 ;
+        if (rotation > 0) {
+             this.android.setRotationAngle(rotation);
+        }
+        this.android.setImageBitmap(nativeImage.android);
     }
 }
 
