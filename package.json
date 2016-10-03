@@ -45,7 +45,7 @@
     "dev-link-apps": "cd apps && npm link tns-platform-declarations && npm link tns-core-modules",
     "dev-declarations": "npm run setup && rm -rf tns-platform-declarations/ios/objc* && TNS_TYPESCRIPT_DECLARATIONS_PATH=$PWD/tns-platform-declarations/ios/objc tns build ios --path tests",
     "test": "npm run test-android && npm run test-ios",
-    "pretest": "npm run setup && npm run tsc && npm run dev-tsc-tests",
+    "pretest": "npm run setup && npm run tsc",
     "test-android": "tns run android --path tests --justlaunch",
     "test-ios": "tns run ios --path tests --justlaunch",
     "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
