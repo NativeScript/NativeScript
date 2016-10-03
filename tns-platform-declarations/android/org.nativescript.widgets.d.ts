@@ -1,6 +1,50 @@
 ﻿declare module org {
     module nativescript {
         module widgets {
+            export module Async {
+                export class CompleteCallback {
+                    constructor(implementation: ICompleteCallback);
+                    onComplete(result: Object, context: Object): void;
+                }
+
+                export interface ICompleteCallback {
+                    onComplete(result: Object, context: Object): void;
+                }
+
+                export module Image {
+                    export function download(url: string, callback: CompleteCallback, context: any);
+                }
+
+                export module Http {
+                    export class KeyValuePair {
+                        public key: string;
+                        public value: string;
+                        constructor(key: string, value: string);
+                    }
+
+                    export class RequestOptions {
+                        public url: string;
+                        public method: string;
+                        public headers: java.util.ArrayList<KeyValuePair>;
+                        public content: string;
+                        public timeout: number;
+                        public screenWidth: number;
+                        public screenHeight: number;
+                    }
+
+                    export class RequestResult {
+                        public raw: java.io.ByteArrayOutputStream;
+                        public headers: java.util.ArrayList<KeyValuePair>;
+                        public statusCode: number;
+                        public responseAsString: string;
+                        public responseAsImage: android.graphics.Bitmap;
+                        public error: java.lang.Exception;
+                    }
+
+                    export function MakeRequest(options: RequestOptions, callback: CompleteCallback, context: any);
+                }
+            }
+
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
                 constructor(density: number);
                 public refresh(
@@ -8,19 +52,19 @@
                     borderRightColor: number,
                     borderBottomColor: number,
                     borderLeftColor: number,
-                    
+
                     borderTopWidth: number,
                     borderRightWidth: number,
                     borderBottomWidth: number,
                     borderLeftWidth: number,
-                    
+
                     borderTopLeftRadius: number,
                     borderTopRightRadius: number,
                     borderBottomRightRadius: number,
                     borderBottomLeftRadius: number,
-                    
+
                     clipPath: string,
-                    
+
                     backgroundColor: number,
                     backgroundImage: android.graphics.Bitmap,
                     backgroundRepeat: string,
@@ -29,39 +73,39 @@
                     backgroundSize: string,
                     backgroundSizeParsedCSSValues: native.Array<CSSValue>
                 );
-                
+
                 public getBorderTopColor(): number;
                 public getBorderRightColor(): number;
                 public getBorderBottomColor(): number;
                 public getBorderLeftColor(): number;
                 public getUniformBorderColor(): number;
-                
+
                 public getBorderTopWidth(): number;
                 public getBorderRightWidth(): number;
                 public getBorderBottomWidth(): number;
                 public getBorderLeftWidth(): number;
                 public getUniformBorderWidth(): number;
-                
+
                 public getBorderTopLeftRadius(): number;
                 public getBorderTopRightRadius(): number;
                 public getBorderBottomRightRadius(): number;
                 public getBorderBottomLeftRadius(): number;
                 public getUniformBorderRadius(): number;
-                
+
                 public getClipPath(): string;
-                
+
                 public getBackgroundColor(): number;
                 public getBackgroundImage(): android.graphics.Bitmap;
                 public getBackgroundRepeat(): string;
                 public getBackgroundPosition(): string;
                 public getBackgroundSize(): string;
-                
+
                 public hasUniformBorderColor(): boolean;
                 public hasUniformBorderWidth(): boolean;
                 public hasUniformBorderRadius(): boolean;
                 public hasUniformBorder(): boolean;
             }
-            
+
             export class CSSValue {
                 constructor(type: string, str: string, unit: string, value: number);
                 public getType(): string;
@@ -69,7 +113,7 @@
                 public getUnit(): string;
                 public getValue(): number;
             }
-            
+
             export class CommonLayoutParams extends android.widget.FrameLayout.LayoutParams {
                 constructor();
 
@@ -134,7 +178,7 @@
                 horizontal,
                 vertical
             }
-            
+
             export class OriginPoint {
                 public static setX(view: android.view.View, value: number);
                 public static setY(view: android.view.View, value: number);
@@ -308,6 +352,48 @@
                 title: string;
                 iconId: number;
                 iconDrawable: android.graphics.drawable.Drawable;
+            }
+
+            export namespace image {
+
+                export class Cache {
+                    private constructor();
+                    public static getInstance(cacheParams: Cache.CacheParams): Cache;
+                }
+
+                export class Worker {
+
+                }
+
+                export namespace Worker {
+                    interface IOnImageLoadedListener {
+                        onImageLoaded(success: boolean): void;
+                    }
+
+                    export class OnImageLoadedListener implements IOnImageLoadedListener {
+                        constructor(implementation: IOnImageLoadedListener);
+                        public onImageLoaded(success: boolean): void;
+                    }
+                }
+
+                export class Fetcher extends Worker {
+                    constructor(context: android.content.Context);
+                    public addImageCache(cache: Cache): void;
+                    public initCache(): void;
+                    public clearCache(): void;
+                    public loadImage(data: Object, imageView: ImageView, 
+                        decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean,
+                        listener: Worker.IOnImageLoadedListener): void;
+                }
+
+                export namespace Cache {
+                    export class CacheParams {
+                        constructor(context: android.content.Context, diskCacheDirectoryName: string);
+                        public setMemCacheSizePercent(percent: number): void;
+                        public diskCacheEnabled: boolean;
+                        public diskCacheSize: number;
+                    }
+                }
             }
         }
     }

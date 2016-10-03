@@ -756,7 +756,7 @@ export function test_border_color() {
     let blue = new color.Color("blue");
     let hex = blue.hex;
     testView.style.borderColor = hex;
-    TKUnit.assertEqual(testView.style.borderColor, blue, "all");
+    TKUnit.assertEqual((<any>testView.style.borderColor), blue, "all");
     TKUnit.assertEqual(testView.style.borderTopColor, blue, "top");
     TKUnit.assertEqual(testView.style.borderRightColor, blue, "right");
     TKUnit.assertEqual(testView.style.borderBottomColor, blue, "bottom");
@@ -774,7 +774,7 @@ export function test_border_width() {
     TKUnit.assertEqual(testView.style.borderLeftWidth, 10, "left");
 
     testView.style.borderWidth = "20";
-    TKUnit.assertEqual(testView.style.borderWidth, 20, "all");
+    TKUnit.assertEqual((<any>testView.style.borderWidth), 20, "all");
     TKUnit.assertEqual(testView.style.borderTopWidth, 20, "top");
     TKUnit.assertEqual(testView.style.borderRightWidth, 20, "right");
     TKUnit.assertEqual(testView.style.borderBottomWidth, 20, "bottom");
@@ -792,7 +792,7 @@ export function test_border_radius() {
     TKUnit.assertEqual(testView.style.borderBottomLeftRadius, 10, "left");
     
     testView.style.borderRadius = "20";
-    TKUnit.assertEqual(testView.style.borderRadius, 20, "all");
+    TKUnit.assertEqual((<any>testView.style.borderRadius), 20, "all");
     TKUnit.assertEqual(testView.style.borderTopLeftRadius, 20, "top");
     TKUnit.assertEqual(testView.style.borderTopRightRadius, 20, "right");
     TKUnit.assertEqual(testView.style.borderBottomRightRadius, 20, "bottom");
