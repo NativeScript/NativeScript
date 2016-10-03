@@ -16,7 +16,7 @@ const FILE_PREFIX = "file:///";
 let ASYNC = "async";
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 let imageCache: org.nativescript.widgets.image.Cache;
-let currentMode: number;
+export let currentMode: number;
 
 function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     let image = <Image>data.object;

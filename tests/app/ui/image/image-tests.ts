@@ -1,7 +1,7 @@
 ﻿import { Image } from "ui/image";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { GridLayout } from "ui/layouts/grid-layout";
-import { isIOS } from "platform";
+import { isIOS, isAndroid } from "platform";
 import { PropertyChangeData } from "data/observable";
 import utils = require("utils/utils");
 
@@ -23,6 +23,11 @@ import fs = require("file-system");
 import color = require("color");
 
 var imagePath = fs.path.join(__dirname, "../../logo.png");
+
+if (isAndroid) {
+    var imageModule = require("ui/image");
+    imageModule.currentMode = 1; // use memory cache only.
+}
 
 export var test_Image_Members = function () {
     var image = new ImageModule.Image();
@@ -104,6 +109,7 @@ export var test_SettingImageSrc = function (done) {
     var image = new ImageModule.Image();
     image.src = "https://www.google.com/images/errors/logo_sm_2.png";
     // << img-create-src
+    (<any>image).useCache = false;
     runImageTest(done, image, image.src)
 }
 
@@ -342,6 +348,7 @@ export var test_SettingImageSourceWhenSizedToContentShouldInvalidate = ios(() =>
 export var test_DimensionsAreRoundedAfterScale = function () {
     let host = new StackLayout();
     let image = new Image();
+    (<any>image).useCache = false;
     image.src = "~/ui/image/700x50.png";
     let imageWidth = 700;
     let imageHeight = 50;
@@ -353,8 +360,7 @@ export var test_DimensionsAreRoundedAfterScale = function () {
     host.addChild(image);
     let mainPage = helper.getCurrentPage();
     mainPage.content = host;
-    TKUnit.waitUntilReady(() => host.isLoaded);
-    TKUnit.waitUntilReady(() => image.isLayoutValid);
+    TKUnit.waitUntilReady(() => host.isLayoutValid);
 
     let scale = hostWidth / imageWidth;
     let expectedHeight = Math.round(imageHeight * scale);
