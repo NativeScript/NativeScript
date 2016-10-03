@@ -1,0 +1,28 @@
+@keyframes select {
+    0%, 100% {
+        transform: scale(1, 1);
+    }
+    50% {
+        transform: scale(1.4, 1.4);
+    }
+}
+#container>Label {
+    border-width: 1;
+    border-color: black;
+    border-radius: 5;
+}
+#container>Label[selected="yes"] {
+    border-color: yellow;
+    /* animation-name: select; 
+    animation-duration: 0.2s;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;*/
+}
+
+.control {
+    font-size: 11;
+}
+.control Button {
+    padding: 2;
+    margin: 2;
+}

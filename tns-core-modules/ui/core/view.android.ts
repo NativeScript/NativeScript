@@ -150,12 +150,16 @@ export class View extends viewCommon.View {
         }
     }
 
-    public _addViewCore(view: viewCommon.View, atIndex?: number) {
+    public _addViewCore(view: View, atIndex?: number) {
         if (this._context) {
             view._onAttached(this._context);
         }
 
         super._addViewCore(view, atIndex);
+
+        if (this._context) {
+            view._syncNativeProperties();
+        }
     }
 
     public _removeViewCore(view: viewCommon.View) {
@@ -189,12 +193,14 @@ export class View extends viewCommon.View {
         if (this._childrenCount > 0) {
             // Notify each child for the _onAttached event
             var that = this;
-            var eachChild = function (child: View): boolean {
+            var eachChild = (child: View): boolean => {
                 child._onAttached(context);
                 if (!child._isAddedToNativeVisualTree) {
                     // since we have lazy loading of the android widgets, we need to add the native instances at this point.
                     child._isAddedToNativeVisualTree = that._addViewToNativeVisualTree(child);
                 }
+                child._syncNativeProperties();
+
                 return true;
             }
             this._eachChildView(eachChild);
@@ -260,7 +266,7 @@ export class View extends viewCommon.View {
         padding = this.style.paddingTop;
         padding = this.style.paddingRight;
         padding = this.style.paddingBottom;
-        this._syncNativeProperties();
+
         trace.notifyEvent(this, "_onContextChanged");
     }
 

@@ -202,6 +202,68 @@
                 public getRows(): Array<ItemSpec>;
             }
 
+            export class FlexboxLayout extends LayoutBase {
+                constructor(context: android.content.Context);
+
+                public getFlexDirection(): number;
+                public setFlexDirection(value: number);
+
+                public getFlexWrap(): number;
+                public setFlexWrap(value: number);
+
+                public getJustifyContent(): number;
+                public setJustifyContent(value: number);
+
+                public getAlignItems(): number;
+                public setAlignItems(value: number);
+
+                public getAlignContent(): number;
+                public setAlignContent(value: number);
+
+                public static FLEX_DIRECTION_ROW: number;
+                public static FLEX_DIRECTION_ROW_REVERSE: number;
+                public static FLEX_DIRECTION_COLUMN: number;
+                public static FLEX_DIRECTION_COLUMN_REVERSE: number;
+
+                public static FLEX_WRAP_NOWRAP: number;
+                public static FLEX_WRAP_WRAP: number;
+                public static FLEX_WRAP_WRAP_REVERSE: number;
+
+                public static JUSTIFY_CONTENT_FLEX_START: number;
+                public static JUSTIFY_CONTENT_FLEX_END: number;
+                public static JUSTIFY_CONTENT_CENTER: number;
+                public static JUSTIFY_CONTENT_SPACE_BETWEEN: number;
+                public static JUSTIFY_CONTENT_SPACE_AROUND: number;
+
+                public static ALIGN_ITEMS_FLEX_START: number;
+                public static ALIGN_ITEMS_FLEX_END: number;
+                public static ALIGN_ITEMS_CENTER: number;
+                public static ALIGN_ITEMS_BASELINE: number;
+                public static ALIGN_ITEMS_STRETCH: number;
+
+                public static ALIGN_CONTENT_FLEX_START: number;
+                public static ALIGN_CONTENT_FLEX_END: number;
+                public static ALIGN_CONTENT_CENTER: number;
+                public static ALIGN_CONTENT_SPACE_BETWEEN: number;
+                public static ALIGN_CONTENT_SPACE_AROUND: number;
+                public static ALIGN_CONTENT_STRETCH: number;
+            }
+            export namespace FlexboxLayout {
+                export class LayoutParams extends org.nativescript.widgets.CommonLayoutParams {
+                    public static ALIGN_SELF_AUTO: number;
+                    public static ALIGN_SELF_FLEX_START: number;
+                    public static ALIGN_SELF_FLEX_END: number;
+                    public static ALIGN_SELF_CENTER: number;
+                    public static ALIGN_SELF_BASELINE: number;
+                    public static ALIGN_SELF_STRETCH: number;
+
+                    public order: number;
+                    public flexGrow: number;
+                    public flexShrink: number;
+                    public alignSelf: number;
+                }
+            }
+
             export class ContentLayout extends LayoutBase {
                 constructor(context: android.content.Context);
             }

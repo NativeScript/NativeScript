@@ -59,6 +59,7 @@
 /// <reference path="ui/layouts/absolute-layout/absolute-layout.d.ts" />
 /// <reference path="ui/layouts/dock-layout/dock-layout.d.ts" />
 /// <reference path="ui/layouts/grid-layout/grid-layout.d.ts" />
+/// <reference path="ui/layouts/flexbox-layout/flexbox-layout.d.ts" />
 /// <reference path="ui/layouts/layout-base.d.ts" />
 /// <reference path="ui/layouts/layout.d.ts" />
 /// <reference path="ui/layouts/stack-layout/stack-layout.d.ts" />
