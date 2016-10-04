@@ -1,9 +1,9 @@
-﻿import {ContentView} from "ui/content-view";
+﻿import { ContentView } from "ui/content-view";
 import view = require("ui/core/view");
 import dts = require("ui/page");
 import styleScope = require("../styling/style-scope");
-import {ActionBar} from "ui/action-bar";
-import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource} from "ui/core/dependency-observable";
+import { ActionBar } from "ui/action-bar";
+import { PropertyMetadataSettings, PropertyChangeData, Property, ValueSource } from "ui/core/dependency-observable";
 import * as style from "../styling/style";
 import * as fileSystemModule from "file-system";
 import * as frameModule from "ui/frame";
@@ -41,9 +41,21 @@ function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
 
 (<proxy.PropertyMetadata>actionBarHiddenProperty.metadata).onSetNativeValue = onActionBarHiddenPropertyChanged;
 
+const iosSwipeBackNavigationEnabledProperty = new Property("isoSwipeBackNavigationEnabled", "Page", new proxy.PropertyMetadata(true));
+
+function iosSwipeBackNavigationEnabledPropertyChanged(data: PropertyChangeData) {
+    const page = <Page>data.object;
+    if (page.isLoaded) {
+        page._updateSwipeBackNavigationEnabled(data.newValue);
+    }
+}
+
+(<proxy.PropertyMetadata>iosSwipeBackNavigationEnabledProperty.metadata).onSetNativeValue = iosSwipeBackNavigationEnabledPropertyChanged;
+
 export class Page extends ContentView implements dts.Page {
     public static backgroundSpanUnderStatusBarProperty = backgroundSpanUnderStatusBarProperty;
     public static actionBarHiddenProperty = actionBarHiddenProperty;
+    public static iosSwipeBackNavigationEnabledProperty = iosSwipeBackNavigationEnabledProperty;
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
     public static navigatingFromEvent = "navigatingFrom";
@@ -97,7 +109,19 @@ export class Page extends ContentView implements dts.Page {
         this._setValue(Page.actionBarHiddenProperty, value);
     }
 
+    get iosSwipeBackNavigationEnabled(): boolean {
+        return this._getValue(Page.iosSwipeBackNavigationEnabledProperty);
+    }
+
+    set iosSwipeBackNavigationEnabled(value: boolean) {
+        this._setValue(Page.iosSwipeBackNavigationEnabledProperty, value);
+    }
+
     public _updateActionBar(hidden: boolean) {
+        //
+    }
+
+    public _updateSwipeBackNavigationEnabled(hidden: boolean) {
         //
     }
 
@@ -197,9 +221,9 @@ export class Page extends ContentView implements dts.Page {
 
     public onNavigatingTo(context: any, isBackNavigation: boolean, bindingContext?: any) {
         this._navigationContext = context;
-        
+
         //https://github.com/NativeScript/NativeScript/issues/731
-        if (!isBackNavigation && !types.isNullOrUndefined(bindingContext)){
+        if (!isBackNavigation && !types.isNullOrUndefined(bindingContext)) {
             this.bindingContext = bindingContext;
         }
         this.notify(this.createNavigatedData(Page.navigatingToEvent, isBackNavigation));
