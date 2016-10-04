@@ -15,17 +15,22 @@ export class ImageAsset extends common.ImageAsset {
 
     public getImageAsync(callback: (image, error) => void) {
         let requestedSize = common.getRequestedImageSize({
-            width: this.ios.pixelWidth,
-            height: this.ios.pixelHeight
+            width: this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth,
+            height: this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight
         });
+
+        if (this.nativeImage) {
+            let newSize = CGSizeMake(requestedSize.width, requestedSize.height);
+            UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0);
+            this.nativeImage.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
+            let resizedImage = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
+            callback(resizedImage, null);
+            return;
+        }
 
         let imageRequestOptions = PHImageRequestOptions.alloc().init();
         imageRequestOptions.deliveryMode = PHImageRequestOptionsDeliveryMode.HighQualityFormat;
-
-        if (this.nativeImage) {
-            callback(this.nativeImage, null);
-            return;
-        }
         
         PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions,
             (image, imageResultInfo) => {
