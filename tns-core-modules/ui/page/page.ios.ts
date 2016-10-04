@@ -218,7 +218,7 @@ class UIViewControllerImpl extends UIViewController {
             // Workaround for disabled backswipe on second custom native transition
             if (frame.canGoBack()) {
                 this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
-                this.navigationController.interactivePopGestureRecognizer.enabled = page.iosSwipeBackNavigationEnabled;
+                this.navigationController.interactivePopGestureRecognizer.enabled = page.enableSwipeBackNavigation;
             } else {
                 this.navigationController.interactivePopGestureRecognizer.enabled = false;
             }
@@ -429,7 +429,7 @@ export class Page extends pageCommon.Page {
         }
     }
 
-    public _updateSwipeBackNavigationEnabled(enabled: boolean) {
+    public _updateEnableSwipeBackNavigation(enabled: boolean) {
         const navController = this._ios.navigationController;
         if (this.frame && navController && navController.interactivePopGestureRecognizer) {
             // Make sure we don't set true if cannot go back

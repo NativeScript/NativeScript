@@ -62,9 +62,10 @@ declare module "ui/page" {
         public static actionBarHiddenProperty: dependencyObservable.Property;
 
         /**
-         * Dependency property used to control if swipe back navigation in IOS is enabled. Default value: true
+         * Dependency property used to control if swipe back navigation in iOS is enabled.
+         * This property is iOS sepecific. Default value: true
          */
-        public static isoSwipeBackNavigationEnabledProperty: dependencyObservable.Property;
+        public static enableSwipeBackNavigationProperty: dependencyObservable.Property;
 
         /**
          * String value used when hooking to showingModally event.
@@ -107,9 +108,9 @@ declare module "ui/page" {
         actionBarHidden: boolean;
 
         /**
-         * Used to control if swipe back navigation in IOS is enabled. Default value: true
+         * Used to control if swipe back navigation in iOS is enabled. This property is iOS sepecific. Default value: true
          */
-        iosSwipeBackNavigationEnabled: boolean;
+        enableSwipeBackNavigation: boolean;
 
         /**
          * A valid css string which will be applied for all nested UI components (based on css rules).
