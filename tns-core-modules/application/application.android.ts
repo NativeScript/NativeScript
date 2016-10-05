@@ -13,17 +13,17 @@ function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     let lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
-            if (!androidApp.startActivity) {
-
-                // Set app theme after launch screen was used during startup
-                let activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
-                if (activityInfo.metaData) {
-                    let setThemeOnLaunch = activityInfo.metaData.getInt("SET_THEME_ON_LAUNCH", -1);
-                    if (setThemeOnLaunch !== -1) {
-                        activity.setTheme(setThemeOnLaunch);
-                    }
+            
+            // Set app theme after launch screen was used during startup
+            let activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
+            if (activityInfo.metaData) {
+                let setThemeOnLaunch = activityInfo.metaData.getInt("SET_THEME_ON_LAUNCH", -1);
+                if (setThemeOnLaunch !== -1) {
+                    activity.setTheme(setThemeOnLaunch);
                 }
+            }
 
+            if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
                 androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
 
