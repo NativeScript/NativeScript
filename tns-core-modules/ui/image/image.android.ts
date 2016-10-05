@@ -99,7 +99,11 @@ export class Image extends imageCommon.Image {
     }
 
     public _setNativeImage(nativeImage: any) {
-        let rotation = (nativeImage && nativeImage.rotationAngle) ? nativeImage.rotationAngle : 0 ;
+        if (!nativeImage) {
+            return;
+        }
+        
+        let rotation = nativeImage.rotationAngle ? nativeImage.rotationAngle : 0 ;
         if (rotation > 0) {
              this.android.setRotationAngle(rotation);
         }
