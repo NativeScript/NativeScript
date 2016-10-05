@@ -1,9 +1,9 @@
 ﻿import pageCommon = require("./page-common");
-import {View} from "ui/core/view";
+import { View } from "ui/core/view";
 import trace = require("trace");
 import uiUtils = require("ui/utils");
-import {device} from "platform";
-import {DeviceType} from "ui/enums";
+import { device } from "platform";
+import { DeviceType } from "ui/enums";
 
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
@@ -216,7 +216,12 @@ class UIViewControllerImpl extends UIViewController {
             frame.ios.controller.delegate = this[DELEGATE];
 
             // Workaround for disabled backswipe on second custom native transition
-            this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
+            if (frame.canGoBack()) {
+                this.navigationController.interactivePopGestureRecognizer.delegate = this.navigationController;
+                this.navigationController.interactivePopGestureRecognizer.enabled = page.enableSwipeBackNavigation;
+            } else {
+                this.navigationController.interactivePopGestureRecognizer.enabled = false;
+            }
 
             frame._processNavigationQueue(page);
         }
@@ -421,6 +426,15 @@ export class Page extends pageCommon.Page {
         const frame = this.frame;
         if (frame) {
             frame._updateActionBar(this);
+        }
+    }
+
+    public _updateEnableSwipeBackNavigation(enabled: boolean) {
+        const navController = this._ios.navigationController;
+        if (this.frame && navController && navController.interactivePopGestureRecognizer) {
+            // Make sure we don't set true if cannot go back
+            enabled = enabled && this.frame.canGoBack();
+            navController.interactivePopGestureRecognizer.enabled = enabled;
         }
     }
 
