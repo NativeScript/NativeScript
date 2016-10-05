@@ -394,6 +394,8 @@ declare module "ui/core/view" {
          */
         public getMeasuredHeight(): number;
 
+        public getMeasuredState(): number;
+
         /**
          * Call this when something has changed which has invalidated the layout of this view. This will schedule a layout pass of the view tree.
          */
@@ -461,6 +463,8 @@ declare module "ui/core/view" {
          * size is smaller than the size the view wants to be.
          */
         public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
+
+        public static combineMeasuredStates(curState: number, newState): number;
 
         /**
          * Returns the child view with the specified id.

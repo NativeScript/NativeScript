@@ -8,6 +8,7 @@ import {
     AlignSelf,
     FlexboxLayoutBase
 } from "./flexbox-layout-common";
+import {layout} from "utils/utils";
 
 export * from "./flexbox-layout-common";
 
@@ -65,7 +66,6 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     constructor() {
         super();
-        console.log("New FlexBoxLayout!");
     }
 
     get android(): FlexboxLayoutWidget { return this._layout; }
@@ -77,56 +77,63 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     protected setNativeFlexDirection(flexDirection: FlexDirection) {
         let value = flexDirectionMap[flexDirection];
-        console.log("setNativeFlexDirection: " + flexDirection + " -> " + value);
         this.android.setFlexDirection(value);
     }
 
     protected setNativeFlexWrap(flexWrap: FlexWrap) {
-        console.log("flexWrap: " + flexWrap);
         this.android.setFlexWrap(flexWrapMap[flexWrap]);
     }
 
     protected setNativeJustifyContent(justifyContent: JustifyContent) {
-        console.log("setNativeJustifyContent: " + justifyContent);
         this.android.setJustifyContent(justifyContentMap[justifyContent]);
     }
 
     protected setNativeAlignItems(alignItems: AlignItems) {
-        console.log("setNativeAlignItems: " + alignItems);
         this.android.setAlignItems(alignItemsMap[alignItems]);
     }
 
     protected setNativeAlignContent(alignContent: AlignContent) {
-        console.log("setNativeAlignContent: " + alignContent);
         this.android.setAlignContent(alignContentMap[alignContent]);
     }
 
     protected onOrderPropertyChanged(view: View, oldValue: number, newValue: number): void {
-        console.log("order changed: " + newValue + " " + view);
         this.setLayoutParamsProperty(view, lp => lp.order = newValue);
     }
 
     protected onFlexGrowPropertyChanged(view: View, oldValue: number, newValue: number): void {
-        console.log("flex-grow changed: " + newValue + " " + view);
         this.setLayoutParamsProperty(view, lp => lp.flexGrow = newValue);
     }
 
     protected onFlexShrinkPropertyChanged(view: View, oldValue: number, newValue: number): void {
-        console.log("flex-shrink changed: " + newValue + " " + view);
         this.setLayoutParamsProperty(view, lp => lp.flexShrink = newValue);
     }
 
     protected onAlignSelfPropertyChanged(view: View, oldValue: AlignSelf, newValue: AlignSelf): void {
-        console.log("align-self changed: " + newValue + " " + view);
         this.setLayoutParamsProperty(view, lp => lp.alignSelf = alignSelfMap[newValue]);
+    }
+
+    protected onFlexWrapBeforePropertyChanged(view: View, oldValue: boolean, newValue: boolean): void {
+        this.setLayoutParamsProperty(view, lp => lp.wrapBefore = newValue);
     }
 
     private setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams) => void) {
         let nativeView: android.view.View = view._nativeView;
-        var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.FlexboxLayout.LayoutParams();
-        if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
-            setter(lp);
-            nativeView.setLayoutParams(lp);
+        if (nativeView) {
+            var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.FlexboxLayout.LayoutParams();
+            if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
+                setter(lp);
+                nativeView.setLayoutParams(lp);
+            }
         }
     }
+}
+
+export function _setAndroidLayoutParams(lp: org.nativescript.widgets.FlexboxLayout.LayoutParams, view: View) {
+    lp.order = FlexboxLayout.getOrder(view);
+    lp.flexGrow = FlexboxLayout.getFlexGrow(view);
+    lp.flexShrink = FlexboxLayout.getFlexShrink(view);
+    lp.alignSelf = alignSelfMap[FlexboxLayout.getAlignSelf(view)];
+    lp.wrapBefore = FlexboxLayout.getFlexWrapBefore(view);
+    lp.minWidth = layout.toDevicePixels(view.minWidth);
+    lp.minHeight = layout.toDevicePixels(view.minHeight);
 }

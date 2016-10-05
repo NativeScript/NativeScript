@@ -10,7 +10,9 @@
         "experimentalDecorators": true,
         "diagnostics": true,
         "sourceMap": true,
-        "noLib": true
+        "noLib": true,
+        "jsx": "react",
+        "reactNamespace": "UIBuilder"
     },
     "exclude": [
         "node_modules",

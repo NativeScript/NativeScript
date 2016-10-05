@@ -10,6 +10,8 @@
         "experimentalDecorators": true,
         "diagnostics": true,
         "sourceMap": true,
+        "jsx": "react",
+        "reactNamespace": "UIBuilder",
         "lib": [
             "es2016"
         ]

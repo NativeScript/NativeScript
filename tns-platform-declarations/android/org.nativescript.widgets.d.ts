@@ -305,6 +305,9 @@
                     public flexGrow: number;
                     public flexShrink: number;
                     public alignSelf: number;
+                    public wrapBefore: boolean;
+                    public minWidth: number;
+                    public minHeight: number;
                 }
             }
 
