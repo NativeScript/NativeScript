@@ -7,27 +7,6 @@ import * as animationModule from "ui/animation";
 import lazy from "utils/lazy";
 import trace = require("trace");
 
-let idleGCHandler;
-let scheduledGC = false;
-function scheduleGCOnIdle() {
-    if (!idleGCHandler) {
-        idleGCHandler = new android.os.MessageQueue.IdleHandler({
-            queueIdle: function () {
-                gc();
-                scheduledGC = false;
-                return false;
-            }
-        });
-    }
-
-    if (!scheduledGC) {
-        android.os.Looper.myQueue().addIdleHandler(idleGCHandler);
-        scheduledGC = true;
-    }
-
-    return idleGCHandler;
-}
-
 let slideTransition: any;
 function ensureSlideTransition() {
     if (!slideTransition) {
@@ -443,8 +422,6 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
     }
 
     entry.isNavigation = undefined;
-
-    scheduleGCOnIdle();
 }
 
 export function _removePageNativeViewFromAndroidParent(page: Page): void {
