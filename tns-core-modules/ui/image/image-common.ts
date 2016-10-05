@@ -96,7 +96,7 @@ export class Image extends view.View implements definition.Image {
     /**
      * @internal
      */
-    _createImageSourceFromSrc(): void {
+    public _createImageSourceFromSrc(): void {
         var value = this.src;
         if (types.isString(value)) {
             value = value.trim();

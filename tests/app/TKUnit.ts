@@ -214,7 +214,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
     }
 }
 
-export function assertEqual(actual: any, expected: any, message?: string) {
+export function assertEqual<T extends { equals?(arg: T): boolean }>(actual: T, expected: T, message?: string) {
     if (!types.isNullOrUndefined(actual)
         && !types.isNullOrUndefined(expected)
         && types.getClass(actual) === types.getClass(expected)
@@ -222,11 +222,11 @@ export function assertEqual(actual: any, expected: any, message?: string) {
 
         // Use the equals method
         if (!actual.equals(expected)) {
-            throw new Error(`${message} Actual: <${actual}>(${typeof(actual)}). Expected: <${expected}>(${typeof(expected)})`);
+            throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})`);
         }
     }
     else if (actual !== expected) {
-        throw new Error(`${message} Actual: <${actual}>(${typeof(actual)}). Expected: <${expected}>(${typeof(expected)})`);
+        throw new Error(`${message} Actual: <${actual}>(${typeof (actual)}). Expected: <${expected}>(${typeof (expected)})`);
     }
 };
 
@@ -459,7 +459,7 @@ var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
             } else {
                 target.dispatchMessage(msg);
             }
-            
+
             if (sdkVersion < 21) {//https://code.google.com/p/android-test-kit/issues/detail?id=84
                 msg.recycle();
             }

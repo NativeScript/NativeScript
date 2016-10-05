@@ -501,11 +501,11 @@ export function test_ObservableShouldEmitPropertyChangeWithSameObjectUsingWrappe
 export function test_CorrectEventArgsWhenWrappedValueIsUsed() {
     let testArray = [1];
     let testObservable = new observable.Observable({ "property1": testArray});
-    let actualArgsValue = 0;
+    let actualArgsValue;
     let propertyChangeHandler = function (args) {
         actualArgsValue = args.value;
-        
     }
+
     testObservable.on(observable.Observable.propertyChangeEvent, propertyChangeHandler);
     testArray.push(2);
     

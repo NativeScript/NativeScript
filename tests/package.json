@@ -16,6 +16,7 @@
     "tns-core-modules": "2.3.0"
   },
   "devDependencies": {
+    "tns-platform-declarations": "*",
     "babel-traverse": "6.9.0",
     "babel-types": "6.9.0",
     "babylon": "6.8.0",
