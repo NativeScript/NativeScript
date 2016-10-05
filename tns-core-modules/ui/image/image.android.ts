@@ -16,7 +16,14 @@ const FILE_PREFIX = "file:///";
 let ASYNC = "async";
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 let imageCache: org.nativescript.widgets.image.Cache;
-export let currentMode: number;
+
+export enum CacheMode {
+    none,
+    memory,
+    diskAndMemory
+}
+
+export let currentCacheMode: CacheMode;
 
 function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     let image = <Image>data.object;
@@ -50,18 +57,18 @@ function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeD
     image._setNativeImage(data.newValue);
 }
 
-export function initImageCache(context: android.content.Context, mode: number = 2, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
-    if (currentMode === mode) {
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+    if (currentCacheMode === mode) {
         return;
     }
 
-    currentMode = mode;
+    currentCacheMode = mode;
     if (!imageFetcher) {
         imageFetcher = new org.nativescript.widgets.image.Fetcher(context);
     }
 
     // Disable cache.
-    if (mode === 0) {
+    if (mode === CacheMode.none) {
         if (imageCache != null && imageFetcher != null) {
             imageFetcher.clearCache();
         }
@@ -69,7 +76,7 @@ export function initImageCache(context: android.content.Context, mode: number = 
 
     let params = new org.nativescript.widgets.image.Cache.CacheParams(context, "_imageCache");
     params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
-    params.diskCacheEnabled = mode > 1;
+    params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
     params.diskCacheSize = diskCacheSize;
     imageCache = org.nativescript.widgets.image.Cache.getInstance(params);
     imageFetcher.addImageCache(imageCache);
@@ -102,7 +109,7 @@ export class Image extends imageCommon.Image {
         if (!nativeImage) {
             return;
         }
-        
+
         let rotation = nativeImage.rotationAngle ? nativeImage.rotationAngle : 0 ;
         if (rotation > 0) {
              this.android.setRotationAngle(rotation);

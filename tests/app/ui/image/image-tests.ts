@@ -26,7 +26,7 @@ var imagePath = fs.path.join(__dirname, "../../logo.png");
 
 if (isAndroid) {
     var imageModule = require("ui/image");
-    imageModule.currentMode = 1; // use memory cache only.
+    imageModule.currentMode = imageModule.CacheMode.memory; // use memory cache only.
 }
 
 export var test_Image_Members = function () {
@@ -91,17 +91,17 @@ function runImageTest(done, image: ImageModule.Image, src: string) {
         twoWay: true
     }, testModel);
 
-    helper.buildUIAndRunTest(image, () => {
-        image.src = src;
-        testModel.on(ObservableModule.Observable.propertyChangeEvent, handler);
-        if (done) {
-            TKUnit.assertTrue(image.isLoading, "Image.isLoading should be true.");
-            TKUnit.assertTrue(testModel.get("imageIsLoading"), "model.isLoading should be true.");
-        } else {
-            // Since it is synchronous check immediately.
-            handler(null);
-        }
-    });
+    let page = helper.getCurrentPage();
+    page.content = image;
+    image.src = src;
+    testModel.on(ObservableModule.Observable.propertyChangeEvent, handler);
+    if (done) {
+        TKUnit.assertTrue(image.isLoading, "Image.isLoading should be true.");
+        TKUnit.assertTrue(testModel.get("imageIsLoading"), "model.isLoading should be true.");
+    } else {
+        // Since it is synchronous check immediately.
+        handler(null);
+    }
 }
 
 export var test_SettingImageSrc = function (done) {
