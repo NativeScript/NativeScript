@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": true,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "noImplicitUseStrict": true,
+        "experimentalDecorators": true
+    },
+    "files": [
+        "tns-core-modules/tns-core-modules.d.ts"
+    ]
+}
