@@ -236,7 +236,7 @@ public class Fetcher extends Resizer {
                         decodeHeight, getImageCache());
             } else if (stringData.startsWith(RESOURCE_PREFIX)) {
                 String resPath = stringData.substring(RESOURCE_PREFIX.length());
-                int resId = mResources.getIdentifier(stringData, "drawable", mPackageName);
+                int resId = mResources.getIdentifier(resPath, "drawable", mPackageName);
                 if (resId > 0) {
                     if (debuggable > 0) {
                         Log.v(TAG, "processBitmap - " + resId);
