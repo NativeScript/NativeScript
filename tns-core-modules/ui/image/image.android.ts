@@ -8,7 +8,6 @@ import types = require("utils/types");
 import imageSource = require("image-source");
 import utils = require("utils/utils");
 import * as fs from "file-system";
-import * as application from "application";
 
 global.moduleMerge(imageCommon, exports);
 
@@ -83,8 +82,6 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
     imageFetcher.initCache();
 }
 
-initImageCache(application.android.nativeApp);
-
 // register the setNativeValue callback
 (<proxy.PropertyMetadata>imageCommon.Image.imageSourceProperty.metadata).onSetNativeValue = onImageSourcePropertyChanged;
 (<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
@@ -101,6 +98,10 @@ export class Image extends imageCommon.Image {
     }
 
     public _createUI() {
+        if (!imageFetcher) {
+            initImageCache(this._context);
+        }
+
         this._android = new org.nativescript.widgets.ImageView(this._context);
         this._createImageSourceFromSrc();
     }
