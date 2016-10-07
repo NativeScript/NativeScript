@@ -420,9 +420,10 @@ module.exports = function(grunt) {
                     "name": 'NativeScript',
                     "includeDeclarations": undefined,
                     "experimentalDecorators": undefined,
-                    "mode": "file"
+                    "mode": "file",
+                    "tsconfig": "tsconfig.typedoc.json"
                 },
-                src: localCfg.srcTsdFiles
+                src: "tns-core-modules/tns-core-modules.d.ts"
             }
         }
     });

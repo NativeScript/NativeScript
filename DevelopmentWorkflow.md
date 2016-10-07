@@ -89,3 +89,14 @@ npm run dev-declarations
 ```
 This script will update the iOS declarations. Android tools are not integrated yet.
 The declarations are generated from the test app and will include the native code from tns-core-modules-widgets.
+
+# Documentation API reference
+The following will build the API reference pages in `bin/dist/apiref`:
+```
+npm run typedoc
+```
+If you want to improve on the documentation you can also build and start up dev web server:
+```
+npm run dev-typedoc
+```
+The terminal will point the address you can open in your web browsed.
