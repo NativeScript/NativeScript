@@ -59,7 +59,6 @@ public class Fetcher extends Resizer {
      */
     public Fetcher(Context context) {
         super(context);
-        checkConnection(context);
         mHttpCacheDir = Cache.getDiskCacheDir(context, HTTP_CACHE_DIR);
         mPackageName = context.getPackageName();
     }
@@ -144,20 +143,6 @@ public class Fetcher extends Resizer {
                     Log.e(TAG, "closeCacheInternal - " + e);
                 }
             }
-        }
-    }
-
-    /**
-     * Simple network connection check.
-     *
-     * @param context
-     */
-    private void checkConnection(Context context) {
-        final ConnectivityManager cm =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
-            Log.e(TAG, "checkConnection - no connection found");
         }
     }
 
