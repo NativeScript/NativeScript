@@ -194,7 +194,7 @@ export class ActionBar extends common.ActionBar {
     }
 
     public _updateNavigationButton() {
-        var navButton = this.navigationButton;
+        let navButton = this.navigationButton;
         if (navButton && common.isVisible(navButton)) {
             if (navButton.android.systemIcon) {
                 // Try to look in the system resources.
@@ -208,10 +208,12 @@ export class ActionBar extends common.ActionBar {
                 this._toolbar.setNavigationIcon(drawableOrId);
             }
 
+            let navBtn = new WeakRef(navButton);
             this._toolbar.setNavigationOnClickListener(new android.view.View.OnClickListener({
                 onClick: function (v) {
-                    if (navButton) {
-                        navButton._raiseTap();
+                    let owner = navBtn.get();
+                    if (owner) {
+                        owner._raiseTap();
                     }
                 }
             }));
