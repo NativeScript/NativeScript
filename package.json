@@ -23,6 +23,7 @@
     "grunt-tslint": "3.0.3",
     "grunt-typedoc": "0.2.4",
     "grunt-untar": "0.0.1",
+    "http-server": "^0.9.0",
     "markdown-snippet-injector": "0.1.1",
     "mocha": "2.2.5",
     "nativescript-typedoc-theme": "0.0.7",
