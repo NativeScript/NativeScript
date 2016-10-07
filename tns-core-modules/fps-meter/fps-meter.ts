@@ -1,16 +1,16 @@
 ﻿import fpsNative = require("fps-meter/fps-native");
 
-var callbacks = {},
-    idCounter = 0,
-    _minFps = 1000,
-    framesRendered = 0,
-    frameStartTime = 0;
+const callbacks = {};
+let idCounter = 0;
+let _minFps = 1000;
+let framesRendered = 0;
+let frameStartTime = 0;
 
 function doFrame(currentTimeMillis: number) {
-    var fps = 0;
+    let fps = 0;
     if (frameStartTime > 0) {
         // take the span in milliseconds        
-        var timeSpan = (currentTimeMillis - frameStartTime);
+        const timeSpan = (currentTimeMillis - frameStartTime);
         framesRendered++;
 
         if (timeSpan > 1000) {
@@ -29,7 +29,7 @@ function doFrame(currentTimeMillis: number) {
     }
 }
 
-var native: fpsNative.FPSCallback;
+let native: fpsNative.FPSCallback;
 function ensureNative() {
     if (!native) {
         native = new fpsNative.FPSCallback(doFrame);
@@ -69,9 +69,10 @@ export function stop() {
 }
 
 export function addCallback(callback: (fps: number, minFps?: number) => void): number {
-    var id = idCounter;
+    const id = idCounter;
 
-    callbacks[id] = callback;
+    // Wrap all calback in zonedCallback so that they work with the current zone.
+    callbacks[id] = zonedCallback(callback);
     idCounter++;
 
     return id;
@@ -84,8 +85,8 @@ export function removeCallback(id: number) {
 }
 
 function notify(fps) {
-    var callback: Function;
-    for (var id in callbacks) {
+    let callback: Function;
+    for (let id in callbacks) {
         callback = callbacks[id];
         callback(fps, _minFps);
     }
