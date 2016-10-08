@@ -22,7 +22,7 @@ function ensureImageSource() {
     }
 }
 
-class UITabBarControllerImpl extends UITabBarController {
+export class UITabBarControllerImpl extends UITabBarController {
 
     private _owner: WeakRef<TabView>;
 
@@ -44,7 +44,7 @@ class UITabBarControllerImpl extends UITabBarController {
     }
 }
 
-class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
+export class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControllerDelegate {
     public static ObjCProtocols = [UITabBarControllerDelegate];
 
     private _owner: WeakRef<TabView>;
@@ -82,7 +82,7 @@ class UITabBarControllerDelegateImpl extends NSObject implements UITabBarControl
     }
 }
 
-class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
+export class UINavigationControllerDelegateImpl extends NSObject implements UINavigationControllerDelegate {
     public static ObjCProtocols = [UINavigationControllerDelegate];
 
     private _owner: WeakRef<TabView>;
