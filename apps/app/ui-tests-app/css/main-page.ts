@@ -15,7 +15,6 @@ export function pageLoaded(args: EventData) {
     examples.set("csslv", "css/listview");
     examples.set("radius", "css/radius");
     examples.set("styles", "css/styles");
-    examples.set("tabmore", "css/tab-view-more");
     examples.set("spacing", "css/letter-spacing");
     examples.set("decoration", "css/text-decoration");
     examples.set("transform", "css/text-transform");
