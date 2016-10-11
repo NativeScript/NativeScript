@@ -13,7 +13,7 @@
     <StackLayout loaded="stack3Loaded">
       <ListView id="listView" automationText="listView" items="{{ myItems }}">
         <ListView.itemTemplate>
-          <Label id="item" automationText="item" text="{{ text }}"  />
+          <Label id="item" text="{{ text }}"/>
         </ListView.itemTemplate>
       </ListView>
     </StackLayout>
