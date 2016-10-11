@@ -4,6 +4,8 @@ import view = require("ui/core/view");
 import observable = require("data/observable");
 import trace = require("trace");
 import types = require("utils/types");
+import utils = require("utils/utils");
+import getter = utils.ios.getter;
 
 global.moduleMerge(common, exports);
 
@@ -413,14 +415,14 @@ class TouchGestureEventData implements definition.TouchGestureEventData {
     android: any = undefined;
     action: string;
     view: view.View;
-    ios: { touches: NSSet<any>, event: { allTouches: () => NSSet<any> } };
+    ios: { touches: NSSet<any>, event: UIEvent };
     object: any;
 
     private _activePointers: Array<Pointer>;
     private _allPointers: Array<Pointer>;
     private _mainPointer: UITouch;
 
-    public prepare(view: view.View, action: string, touches: NSSet<any>, event: any) {
+    public prepare(view: view.View, action: string, touches: NSSet<any>, event: UIEvent) {
         this.action = action;
         this.view = view;
         this.object = view;
@@ -435,7 +437,7 @@ class TouchGestureEventData implements definition.TouchGestureEventData {
     }
 
     getPointerCount(): number {
-        return this.ios.event.allTouches().count;
+        return getter(this.ios.event, this.ios.event.allTouches).count;
     }
 
     private getMainPointer(): UITouch {
@@ -461,7 +463,7 @@ class TouchGestureEventData implements definition.TouchGestureEventData {
         if (!this._allPointers) {
             this._allPointers = [];
 
-            let nsArr = this.ios.event.allTouches().allObjects;
+            let nsArr = getter(this.ios.event, this.ios.event.allTouches).allObjects;
             for (var i = 0; i < nsArr.count; i++) {
                 this._allPointers.push(new Pointer(nsArr.objectAtIndex(i), this.view));
             }
