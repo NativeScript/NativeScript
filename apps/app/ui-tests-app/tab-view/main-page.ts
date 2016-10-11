@@ -16,6 +16,7 @@ export function pageLoaded(args: EventData) {
     examples.set("tabTabsBG", "tab-view/tabsBackground");
     examples.set("tabSelected", "tab-view/selected");
     examples.set("tabStyle", "tab-view/all");
+    examples.set("tabmore", "tab-view/tab-view-more");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
