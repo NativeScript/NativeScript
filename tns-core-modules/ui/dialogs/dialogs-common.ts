@@ -54,6 +54,7 @@ export function getButtonColor(): color.Color {
         var btn = new button.Button();
         applySelectors(btn);
         buttonColor = btn.color;
+        btn.onUnloaded();
     }
 
     return buttonColor;
