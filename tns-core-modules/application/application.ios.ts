@@ -81,6 +81,10 @@ class IOSApplication implements definition.iOSApplication {
         return utils.ios.getter(UIApplication, UIApplication.sharedApplication);
     }
 
+    get window(): Window {
+        return this._window;
+    }    
+
     get delegate(): typeof UIApplicationDelegate {
         return this._delegate;
     }
@@ -121,27 +125,7 @@ class IOSApplication implements definition.iOSApplication {
 
         typedExports.notify(args);
 
-        let rootView = args.root;
-        let frame: Frame;
-        let navParam: Object;
-        if (!rootView) {
-            // try to navigate to the mainEntry/Module (if specified)
-            navParam = typedExports.mainEntry;
-            if (!navParam) {
-                navParam = typedExports.mainModule;
-            }
-
-            if (navParam) {
-                frame = new Frame();
-                frame.navigate(navParam);
-            } else {
-                // TODO: Throw an exception?
-                throw new Error("A Frame must be used to navigate to a Page.");
-            }
-
-            rootView = frame;
-        }
-
+        let rootView = createRootView(args.root);
         this._window.content = rootView;
 
         if (rootView instanceof Frame) {
@@ -225,7 +209,6 @@ class IOSApplication implements definition.iOSApplication {
             });
         }
     }
-
 }
 
 var iosApp = new IOSApplication();
@@ -259,6 +242,31 @@ export function addCss(cssText: string) {
     }
 }
 
+function createRootView(v?) {
+    let rootView = v;
+    let frame: Frame;
+    let navParam: Object;
+    if (!rootView) {
+        // try to navigate to the mainEntry/Module (if specified)
+        navParam = typedExports.mainEntry;
+        if (!navParam) {
+            navParam = typedExports.mainModule;
+        }
+
+        if (navParam) {
+            frame = new Frame();
+            frame.navigate(navParam);
+        } else {
+            // TODO: Throw an exception?
+            throw new Error("A Frame must be used to navigate to a Page.");
+        }
+
+        rootView = frame;
+    }
+
+    return rootView;
+}
+
 var started: boolean = false;
 typedExports.start = function (entry?: NavigationEntry) {
     if (!started) {
@@ -267,7 +275,20 @@ typedExports.start = function (entry?: NavigationEntry) {
         }
         started = true;
         loadCss();
-        UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
+
+        if(!iosApp.nativeApp) {
+            // Normal NativeScript app will need UIApplicationMain. 
+            UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
+        } else {
+            let rootView = createRootView();
+            if(rootView) {
+                // Attach to the existing iOS app
+                let rootController = iosApp.nativeApp.keyWindow.rootViewController;
+                rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
+                uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+            }
+        }
+
     } else {
         throw new Error("iOS Application already started!");
     }

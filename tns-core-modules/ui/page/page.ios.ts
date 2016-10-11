@@ -1,4 +1,5 @@
-﻿import pageCommon = require("./page-common");
+﻿import application = require("application");
+import pageCommon = require("./page-common");
 import { View } from "ui/core/view";
 import trace = require("trace");
 import uiUtils = require("ui/utils");
@@ -130,6 +131,9 @@ class UIViewControllerImpl extends UIViewController {
             }
         }
         else {
+            if(!application.ios.window) {
+                uiUtils.ios._layoutRootView(owner, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+            }
             owner._updateLayout();
         }
     }
