@@ -21,11 +21,15 @@ export class TextBaseStyler implements style.Styler {
 
     // color
     private static setColorProperty(view: view.View, newValue: any) {
-        (<android.widget.TextView>view._nativeView).setTextColor(newValue);
+        if(newValue){
+            (<android.widget.TextView>view._nativeView).setTextColor(newValue);
+        }
     }
 
     private static resetColorProperty(view: view.View, nativeValue: any) {
-        (<android.widget.TextView>view._nativeView).setTextColor(nativeValue);
+        if(nativeValue){
+            (<android.widget.TextView>view._nativeView).setTextColor(nativeValue);
+        }
     }
 
     private static getNativeColorValue(view: view.View): any {
