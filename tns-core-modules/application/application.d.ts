@@ -358,12 +358,12 @@ declare module "application" {
         foregroundActivity: any /* android.app.Activity */;
 
         /**
-         * The currently active (loaded) Context. This is typically the top-level Activity that is just created.
+         * [Deprecated. Please use the respective event instead.] Please use foregroundActivity property.
          */
         currentContext: any /* android.content.Context */;
 
         /**
-         * The main (start) Activity for the application.
+         * [Deprecated. Please use foregroundActivity or activity related events instead.] The main (start) Activity for the application.
          */
         startActivity: any /* android.app.Activity */;
 
@@ -373,7 +373,7 @@ declare module "application" {
         packageName: string;
 
         /**
-         * True if the application is not running (suspended), false otherwise.
+         * True if the main application activity is not running (suspended), false otherwise.
          */
         paused: boolean;
         

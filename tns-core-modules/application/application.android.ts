@@ -4,16 +4,16 @@ import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
 import * as enumsModule from "ui/enums";
+import { isNativeScriptActivity } from "ui/frame/activity";
 let enums: typeof enumsModule;
 
 global.moduleMerge(appModule, exports);
-var typedExports: typeof definition = exports;
+const typedExports: typeof definition = exports;
 
 function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     let lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
-            
             // Set app theme after launch screen was used during startup
             let activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
             if (activityInfo.metaData) {
@@ -25,38 +25,20 @@ function initLifecycleCallbacks() {
 
             if (!androidApp.startActivity) {
                 androidApp.startActivity = activity;
-                androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
-
-                if (androidApp.onActivityCreated) {
-                    androidApp.onActivityCreated(activity, bundle);
-                }
             }
 
-            androidApp.currentContext = activity;
+            androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
+            if (androidApp.onActivityCreated) {
+                androidApp.onActivityCreated(activity, bundle);
+            }
         },
 
         onActivityDestroyed: function (activity: any) {
-            // Clear the current activity reference to prevent leak
-            if (activity === androidApp.foregroundActivity) {
-                androidApp.foregroundActivity = undefined;
-            }
-
-            if (activity === androidApp.currentContext) {
-                androidApp.currentContext = undefined;
-            }
-
             if (activity === androidApp.startActivity) {
-                if (typedExports.onExit) {
-                    typedExports.onExit();
-                }
-
-                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.exitEvent, object: androidApp, android: activity });
-
                 androidApp.startActivity = undefined;
             }
 
             androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityDestroyed", object: androidApp, activity: activity });
-
             if (androidApp.onActivityDestroyed) {
                 androidApp.onActivityDestroyed(activity);
             }
@@ -66,35 +48,38 @@ function initLifecycleCallbacks() {
         },
 
         onActivityPaused: function (activity: any) {
-            androidApp.paused = true;
-
             if (activity === androidApp.foregroundActivity) {
+                androidApp.foregroundActivity = undefined;
+            }
+
+            if (isNativeScriptActivity(activity)) {
+                androidApp.paused = true;
+
                 if (typedExports.onSuspend) {
                     typedExports.onSuspend();
                 }
-
                 typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.suspendEvent, object: androidApp, android: activity });
             }
 
             androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityPaused", object: androidApp, activity: activity });
-
             if (androidApp.onActivityPaused) {
                 androidApp.onActivityPaused(activity);
             }
         },
 
         onActivityResumed: function (activity: any) {
-            androidApp.paused = false;
             androidApp.foregroundActivity = activity;
 
-            if (typedExports.onResume) {
-                typedExports.onResume();
+            if (isNativeScriptActivity(activity)) {
+                if (typedExports.onResume) {
+                    typedExports.onResume();
+                }
+                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.resumeEvent, object: androidApp, android: activity });
+
+                androidApp.paused = false;
             }
 
-            typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.resumeEvent, object: androidApp, android: activity });
-
             androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityResumed", object: androidApp, activity: activity });
-
             if (androidApp.onActivityResumed) {
                 androidApp.onActivityResumed(activity);
             }
@@ -109,10 +94,7 @@ function initLifecycleCallbacks() {
         },
 
         onActivityStarted: function (activity: any) {
-            androidApp.foregroundActivity = activity;
-
             androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityStarted", object: androidApp, activity: activity });
-
             if (androidApp.onActivityStarted) {
                 androidApp.onActivityStarted(activity);
             }
@@ -120,7 +102,6 @@ function initLifecycleCallbacks() {
 
         onActivityStopped: function (activity: any) {
             androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityStopped", object: androidApp, activity: activity });
-
             if (androidApp.onActivityStopped) {
                 androidApp.onActivityStopped(activity);
             }
@@ -195,11 +176,14 @@ export class AndroidApplication extends observable.Observable implements definit
     public paused: boolean;
     public nativeApp: android.app.Application;
     public context: android.content.Context;
-    public currentContext: android.content.Context;
     public foregroundActivity: android.app.Activity;
     public startActivity: android.app.Activity;
     public packageName: string;
     public hasActionBar: boolean;
+
+    public get currentContext(): android.content.Context {
+        return this.foregroundActivity;
+    }
 
     public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
 
@@ -219,7 +203,7 @@ export class AndroidApplication extends observable.Observable implements definit
 
     public init(nativeApp: any) {
         if (this.nativeApp) {
-            throw new Error("application.android already initialized.")
+            throw new Error("application.android already initialized.");
         }
 
         this.nativeApp = nativeApp;
@@ -238,10 +222,10 @@ export class AndroidApplication extends observable.Observable implements definit
     private _pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
     private _registerPendingReceivers() {
         if (this._pendingReceiverRegistrations) {
-            var i = 0;
-            var length = this._pendingReceiverRegistrations.length;
+            let i = 0;
+            const length = this._pendingReceiverRegistrations.length;
             for (; i < length; i++) {
-                var registerFunc = this._pendingReceiverRegistrations[i];
+                const registerFunc = this._pendingReceiverRegistrations[i];
                 registerFunc(this.context);
             }
             this._pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
@@ -250,12 +234,12 @@ export class AndroidApplication extends observable.Observable implements definit
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
         ensureBroadCastReceiverClass();
-        var that = this;
-        var registerFunc = function (context: android.content.Context) {
-            var receiver: android.content.BroadcastReceiver = new BroadcastReceiverClass(onReceiveCallback);
+        const that = this;
+        const registerFunc = function (context: android.content.Context) {
+            const receiver: android.content.BroadcastReceiver = new BroadcastReceiverClass(onReceiveCallback);
             context.registerReceiver(receiver, new android.content.IntentFilter(intentFilter));
             that._registeredReceivers[intentFilter] = receiver;
-        }
+        };
 
         if (this.context) {
             registerFunc(this.context);
@@ -266,7 +250,7 @@ export class AndroidApplication extends observable.Observable implements definit
     }
 
     public unregisterBroadcastReceiver(intentFilter: string) {
-        var receiver = this._registeredReceivers[intentFilter];
+        const receiver = this._registeredReceivers[intentFilter];
         if (receiver) {
             this.context.unregisterReceiver(receiver);
             this._registeredReceivers[intentFilter] = undefined;
@@ -350,10 +334,10 @@ global.__onLiveSync = function () {
     appModule.__onLiveSync();
 
     loadCss();
-}
+};
 
 global.__onUncaughtError = function (error: definition.NativeScriptError) {
-    var types: typeof typesModule = require("utils/types");
+    const types: typeof typesModule = require("utils/types");
 
     // TODO: Obsolete this
     if (types.isFunction(typedExports.onUncaughtError)) {
@@ -361,4 +345,4 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
     }
 
     typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error });
-}
+};

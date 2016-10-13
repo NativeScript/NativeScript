@@ -44,3 +44,7 @@ class NativeScriptActivity extends android.app.Activity {
         this._callbacks.onActivityResult(this, requestCode, resultCode, data, super.onActivityResult);
     }
 }
+
+export function isNativeScriptActivity(activity: android.app.Activity): boolean {
+    return activity instanceof NativeScriptActivity;
+}
