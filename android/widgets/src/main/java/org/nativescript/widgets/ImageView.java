@@ -5,8 +5,8 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.graphics.*;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.Log;
 
 /**
  * @author hhristov
@@ -29,6 +29,7 @@ public class ImageView extends android.widget.ImageView {
 
     public void setRotationAngle(float rotationAngle) {
         this.rotationAngle = rotationAngle;
+        invalidate();
     }
 
     public ImageView(Context context) {
@@ -141,6 +142,14 @@ public class ImageView extends android.widget.ImageView {
     }
 
     @Override
+    public void setImageDrawable(Drawable drawable) {
+        super.setImageDrawable(drawable);
+        if (drawable instanceof BitmapDrawable) {
+            this.pBitmap = ((BitmapDrawable)drawable).getBitmap();
+        }
+    }
+
+    @Override
     protected void onDraw(Canvas canvas) {
         BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable)this.getBackground() : null;
         float uniformBorderWidth = background != null ? background.getUniformBorderWidth() * background.getDensity() : 0;
@@ -149,6 +158,10 @@ public class ImageView extends android.widget.ImageView {
         // floor the border width to avoid gaps between the border and the image
         float roundedBorderWidth = (float) Math.floor(uniformBorderWidth);
         float innerRadius = Math.max(0, uniformBorderRadius - roundedBorderWidth);
+
+        if (background != null) {
+            background.draw(canvas);
+        }
 
         // The border width is included in the padding so there is no need for
         // clip if there is no inner border radius.
@@ -215,9 +228,5 @@ public class ImageView extends android.widget.ImageView {
         else {
             super.onDraw(canvas);
         }
-		
-		if (background != null) {
-			background.draw(canvas);
-		}
     }
 }

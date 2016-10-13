@@ -18,8 +18,6 @@ package org.nativescript.widgets.image;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.util.Log;
 
@@ -28,6 +26,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
@@ -37,14 +36,12 @@ import java.net.URL;
  * A simple subclass of {@link Resizer} that fetch and resize images from a file, resource or URL.
  */
 public class Fetcher extends Resizer {
-    private static final String RESOURCE_PREFIX = "res://";
-    private static final String FILE_PREFIX = "file:///";
     private static final int HTTP_CACHE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final String HTTP_CACHE_DIR = "http";
     private static final int IO_BUFFER_SIZE = 8 * 1024;
 
-    private DiskLruCache mHttpDiskCache;
     private File mHttpCacheDir;
+    private DiskLruCache mHttpDiskCache;
     private boolean mHttpDiskCacheStarting = true;
     private final Object mHttpDiskCacheLock = new Object();
     private static final int DISK_CACHE_INDEX = 0;
@@ -65,11 +62,6 @@ public class Fetcher extends Resizer {
 
     @Override
     protected void initDiskCacheInternal() {
-        super.initDiskCacheInternal();
-        initHttpDiskCache();
-    }
-
-    private void initHttpDiskCache() {
         if (!mHttpCacheDir.exists()) {
             mHttpCacheDir.mkdirs();
         }
@@ -104,14 +96,12 @@ public class Fetcher extends Resizer {
                 }
                 mHttpDiskCache = null;
                 mHttpDiskCacheStarting = true;
-//                initHttpDiskCache();
             }
         }
     }
 
     @Override
     protected void flushCacheInternal() {
-        super.flushCacheInternal();
         synchronized (mHttpDiskCacheLock) {
             if (mHttpDiskCache != null) {
                 try {
@@ -128,7 +118,6 @@ public class Fetcher extends Resizer {
 
     @Override
     protected void closeCacheInternal() {
-        super.closeCacheInternal();
         synchronized (mHttpDiskCacheLock) {
             if (mHttpDiskCache != null) {
                 try {
@@ -153,9 +142,9 @@ public class Fetcher extends Resizer {
      * @param data The data to load the bitmap, in this case, a regular http URL
      * @return The downloaded and resized bitmap
      */
-    private Bitmap processBitmap(String data, int decodeWidth, int decodeHeight) {
+    private Bitmap processHttp(String data, int decodeWidth, int decodeHeight) {
         if (debuggable > 0) {
-            Log.v(TAG, "processBitmap - " + data);
+            Log.v(TAG, "processHttp - " + data);
         }
 
         final String key = Cache.hashKeyForDisk(data);
@@ -212,7 +201,7 @@ public class Fetcher extends Resizer {
         Bitmap bitmap = null;
         if (fileDescriptor != null) {
             bitmap = decodeSampledBitmapFromDescriptor(fileDescriptor, decodeWidth,
-                    decodeHeight, getImageCache());
+                    decodeHeight, getCache());
         }
         if (fileInputStream != null) {
             try {
@@ -223,34 +212,65 @@ public class Fetcher extends Resizer {
         return bitmap;
     }
 
+    private Bitmap processHttpNoCache(String data, int decodeWidth, int decodeHeight) {
+        if (debuggable > 0) {
+            Log.v(TAG, "processHttp - " + data);
+        }
+        final String key = Cache.hashKeyForDisk(data);
+        FileOutputStream outputStream = null;
+        Bitmap bitmap = null;
+
+        try {
+            outputStream = new FileOutputStream(key);
+            if (downloadUrlToStream(data, outputStream)) {
+                bitmap = decodeSampledBitmapFromDescriptor(outputStream.getFD(), decodeWidth, decodeHeight, getCache());
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "processBitmap - " + e);
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "processBitmap - " + e);
+        } finally {
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                }
+            }
+        }
+
+        return bitmap;
+    }
+
     @Override
-    protected Bitmap processBitmap(Object data, int decodeWidth, int decodeHeight) {
+    protected Bitmap processBitmap(Object data, int decodeWidth, int decodeHeight, boolean useCache) {
         if (data instanceof String) {
             String stringData = String.valueOf(data);
             if (stringData.startsWith(FILE_PREFIX)) {
                 String filename = stringData.substring(FILE_PREFIX.length());
                 if (debuggable > 0) {
-                    Log.v(TAG, "processBitmap - " + filename);
+                    Log.v(TAG, "processFile - " + filename);
                 }
-                return decodeSampledBitmapFromFile(filename, decodeWidth,
-                        decodeHeight, getImageCache());
+                return decodeSampledBitmapFromFile(filename, decodeWidth, decodeHeight, getCache());
             } else if (stringData.startsWith(RESOURCE_PREFIX)) {
                 String resPath = stringData.substring(RESOURCE_PREFIX.length());
                 int resId = mResources.getIdentifier(resPath, "drawable", mPackageName);
                 if (resId > 0) {
                     if (debuggable > 0) {
-                        Log.v(TAG, "processBitmap - " + resId);
+                        Log.v(TAG, "processResource - " + resId);
                     }
-                    return decodeSampledBitmapFromResource(mResources, resId, decodeWidth,
-                            decodeHeight, getImageCache());
+                    return decodeSampledBitmapFromResource(mResources, resId, decodeWidth, decodeHeight, getCache());
                 } else {
                     Log.v(TAG, "Missing ResourceID: " + stringData);
                 }
             } else {
-                return processBitmap(stringData, decodeWidth, decodeHeight);
+                if (useCache) {
+                    return processHttp(stringData, decodeWidth, decodeHeight);
+                } else {
+                    return processHttpNoCache(stringData, decodeWidth, decodeHeight);
+                }
             }
         } else {
-            Log.v(TAG, "Invalid Value: " + String.valueOf(data) + ". Expecting String or Integer.");
+            Log.v(TAG, "Invalid Value: " + String.valueOf(data));
         }
 
         return null;
@@ -292,7 +312,8 @@ public class Fetcher extends Resizer {
                 if (in != null) {
                     in.close();
                 }
-            } catch (final IOException e) {}
+            } catch (final IOException e) {
+            }
         }
         return false;
     }
