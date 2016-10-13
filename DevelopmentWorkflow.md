@@ -39,25 +39,18 @@ npm run setup
 The following commands are commonly used to compile the `tns-core-modules`:
 ```bash
 # Full tsc with type checking ~22.2s.
-tsc -p tns-core-modules
+tsc
 
 # Fast tsc ~11.2s.
-tsc -p tns-core-modules --skipLibCheck
+tsc --skipLibCheck
 
 # Fast watcher, ~4s. on save
-tsc -p tns-core-modules --skipLibCheck -w
-```
-
-Compiling the modules, tests and apps has also npm scripts:
-```
-npm run dev-tsc-tns-core-modules
-npm run dev-tsc-tests
-npm run dev-tsc-apps
+tsc --skipLibCheck -w
 ```
 
 The modules have `typescript` as devDependency so you should also be able to use locally installed TypeScript compiler from node_modules:
 ```
-./node_modules/.bin/tsc -p tns-core-modules
+./node_modules/.bin/tsc
 ```
 
 You can compile the typescript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
@@ -72,13 +65,11 @@ To run the test app:
 # Once after npm install
 npm run setup
 
-# After changes in the modules
-tsc -p tns-core-modules
-# After changes in the tests
-tsc -p tests
+# After changes in the modules or the tests
+tsc
 
-tns run ios --path tests
-tns run android --path tests
+tns livesync ios --path tests
+tns livesync android --path tests
 ```
 
 ## Platform declarations
