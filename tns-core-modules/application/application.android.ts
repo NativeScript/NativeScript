@@ -4,7 +4,6 @@ import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
 import * as enumsModule from "ui/enums";
-import { isNativeScriptActivity } from "ui/frame/activity";
 let enums: typeof enumsModule;
 
 global.moduleMerge(appModule, exports);
@@ -14,6 +13,9 @@ function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     let lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
+
+            console.log("------> onActivityCreated: " + activity + " activity.isNativeScriptActivity: " + activity.isNativeScriptActivity);
+
             // Set app theme after launch screen was used during startup
             let activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
             if (activityInfo.metaData) {
@@ -52,7 +54,7 @@ function initLifecycleCallbacks() {
                 androidApp.foregroundActivity = undefined;
             }
 
-            if (isNativeScriptActivity(activity)) {
+            if (activity.isNativeScriptActivity) {
                 androidApp.paused = true;
 
                 if (typedExports.onSuspend) {
@@ -70,7 +72,7 @@ function initLifecycleCallbacks() {
         onActivityResumed: function (activity: any) {
             androidApp.foregroundActivity = activity;
 
-            if (isNativeScriptActivity(activity)) {
+            if (activity.isNativeScriptActivity) {
                 if (typedExports.onResume) {
                     typedExports.onResume();
                 }

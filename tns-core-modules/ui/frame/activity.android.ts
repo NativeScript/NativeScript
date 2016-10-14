@@ -3,12 +3,16 @@ import {setActivityCallbacks, AndroidActivityCallbacks} from "ui/frame";
 @JavaProxy("com.tns.NativeScriptActivity")
 class NativeScriptActivity extends android.app.Activity {
     private _callbacks: AndroidActivityCallbacks;
+    public isNativeScriptActivity;
     constructor() {
         super();
         return global.__native(this);
     }
 
     protected onCreate(savedInstanceState: android.os.Bundle): void {
+        // Set isNativeScriptActivity in onCreate.
+        // The JS construcotr might not be called beacuse the activity is created from Andoird.
+        this.isNativeScriptActivity = true;
         if (!this._callbacks) {
             setActivityCallbacks(this);
         }
@@ -43,8 +47,4 @@ class NativeScriptActivity extends android.app.Activity {
     protected onActivityResult(requestCode: number, resultCode: number, data: android.content.Intent): void {
         this._callbacks.onActivityResult(this, requestCode, resultCode, data, super.onActivityResult);
     }
-}
-
-export function isNativeScriptActivity(activity: android.app.Activity): boolean {
-    return activity instanceof NativeScriptActivity;
 }
