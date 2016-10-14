@@ -115,7 +115,8 @@ module.exports = function(grunt) {
             "!tns-core-modules.es6.d.ts",
             "!tns-core-modules.es2016.d.ts",
             "!tns-core-modules.base.d.ts",
-            "!references.d.ts"
+            "!references.d.ts",
+            "!webworker.es2016.d.ts"
         ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
         dtsFiles.sort();
 
@@ -266,7 +267,7 @@ module.exports = function(grunt) {
                     "!android17.d.ts",
                     "!**/*.android.d.ts",
                     "!ios.d.ts",
-                    "!**/*.ios.d.ts",
+                    "!**/*.ios.d.ts"
                 ].concat(localCfg.defaultExcludes),
                 dest: localCfg.outDir + "/",
                 expand: true,
