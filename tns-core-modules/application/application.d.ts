@@ -559,6 +559,12 @@ declare module "application" {
          */
         rootController: any /* UIViewController */;
 
+        /* tslint:enable */
+        /**
+         * The key window.
+         */
+        window: any /* UIWindow */;        
+
         /**
          * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
          */
