@@ -283,9 +283,14 @@ typedExports.start = function (entry?: NavigationEntry) {
             let rootView = createRootView();
             if(rootView) {
                 // Attach to the existing iOS app
-                let rootController = iosApp.nativeApp.keyWindow.rootViewController;
-                rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
-                uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+                var window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
+                if(window) {
+                    var rootController = window.rootViewController;
+                    if(rootController) {
+                        rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
+                        uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+                    }
+                }
             }
         }
 
