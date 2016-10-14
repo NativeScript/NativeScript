@@ -24,7 +24,7 @@ page.on(Page.navigatedToEvent, onNavigatedTo);
 function onNavigatedTo(args) {
     let label = new Label();
     label.text = "Running non-UI tests...";
-    page.content = label
+    page.content = label;
     args.object.off(Page.navigatedToEvent, onNavigatedTo);
     setTimeout(function () {
         tests.runAll();
