@@ -46,7 +46,7 @@ script:
     grunt buildOnlyTestsApp --verbose --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --runtimeVersion=$RUNTIMEVERSION --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false > /dev/null &&
     grunt runOnlyTestsApp --verbose --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false
   - node ./build/travis-scripts/check-testrun-broken.js
-  - adb pull /data/data/org.nativescript.TestsApp/files/test-results.xml &&
+  - adb pull /data/local/tmp/test-results.xml &&
     mv test-results.xml ~/test-run-results$PACKAGE_VERSION.xml
 before_deploy:
   - mv bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz ../.deploymentpackage

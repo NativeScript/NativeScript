@@ -177,6 +177,9 @@ function printRunTestStats() {
     testFileContent.push("</testsuites>");
 
     let testFilePath = fs.path.join(fs.knownFolders.documents().path, "test-results.xml");
+    if (platform.isAndroid){
+        testFilePath = "/data/local/tmp/test-results.xml";
+    }
     let testFile = fs.File.fromPath(testFilePath);
     testFile.writeTextSync(testFileContent.join(""));
 
