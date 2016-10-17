@@ -172,7 +172,8 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
             expression: bindOptions[bindingConstants.expression],
             twoWay: bindOptions[bindingConstants.twoWay]
         }, bindOptions[bindingConstants.source]);
-    } else if (isEventOrGesture(propertyName, instance)) {
+    } 
+    else if (isEventOrGesture(propertyName, instance)) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
 
@@ -181,8 +182,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
             instance.on(propertyName, handler);
         }
     }
-    //TODO_ITS: This code may break some people if they have an export named like one of their attribue values.
-    else if (isFunction(exports && exports[propertyValue])) {
+    else if (isKnownFunction(propertyName, instance) && isFunction(exports && exports[propertyValue])) {
         instance[propertyName] = exports[propertyValue];             
     }
     else {
@@ -214,4 +214,12 @@ function isBinding(value: any): boolean {
     }
 
     return isBinding;
+}
+
+// For example, ListView.itemTemplateSelector
+let KNOWN_FUNCTIONS = "knownFunctions";
+function isKnownFunction(name: string, instance: View): boolean {
+    return instance.constructor 
+        && KNOWN_FUNCTIONS in instance.constructor 
+        && instance.constructor[KNOWN_FUNCTIONS].indexOf(name) !== -1;
 }

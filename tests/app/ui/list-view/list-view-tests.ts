@@ -793,10 +793,10 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         let itemTemplateSelectorFunction = <any>listView.itemTemplateSelector;
         TKUnit.wait(0.1);
 
-        let templateKey0 = itemTemplateSelectorFunction(0, items[0]);
+        let templateKey0 = itemTemplateSelectorFunction(items[0], 0, items);
         TKUnit.assertEqual(templateKey0, "red", "itemTemplateSelector result for first item");
 
-        let templateKey1 = itemTemplateSelectorFunction(1, items[1]);
+        let templateKey1 = itemTemplateSelectorFunction(items[1], 1, items);
         TKUnit.assertEqual(templateKey1, "green", "itemTemplateSelector result for second item");
     }
 

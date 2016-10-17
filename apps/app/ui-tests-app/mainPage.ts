@@ -36,6 +36,7 @@ export function pageLoaded(args: EventData) {
     examples.set("transitions", "transitions/page0");
     examples.set("segStyle", "segmented-bar/all");
     examples.set("flexBox", "flexbox/flexbox");
+    examples.set("list-view", "list-view/list-view");
 
     //examples.set("listview_binding", "pages/listview_binding");
     //examples.set("textfield", "text-field/text-field");

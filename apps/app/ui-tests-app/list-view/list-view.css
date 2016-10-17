@@ -1,0 +1,8 @@
+Label, Button {
+    font-size: 8;
+}
+
+ListView {
+    border-width: 1;
+    margin: 1;
+}

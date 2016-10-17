@@ -8,7 +8,6 @@ import definition = require("ui/list-view");
 import {ProxyViewContainer} from "ui/proxy-view-container";
 import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
-import * as traceModule from "trace";
 
 let color: typeof colorModule;
 function ensureColor() {

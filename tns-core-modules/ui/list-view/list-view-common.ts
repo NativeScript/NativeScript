@@ -79,8 +79,9 @@ export class ListView extends view.View implements definition.ListView {
     public static itemLoadingEvent = "itemLoading";
     public static itemTapEvent = "itemTap";
     public static loadMoreItemsEvent = "loadMoreItems";
+    public static knownFunctions = ["itemTemplateSelector"]; //See component-builder.ts isKnownFunction
     
-    private _itemTemplateSelector: (index: number, item: any) => string;
+    private _itemTemplateSelector: (item: any, index: number, items: any) => string;
     private _itemTemplateSelectorBindable = new Bindable();
     public _defaultTemplate: view.KeyedTemplate = {
         key: "default",
@@ -174,25 +175,25 @@ export class ListView extends view.View implements definition.ListView {
         this._setValue(ListView.itemTemplatesProperty, newValue);
     }
 
-    get itemTemplateSelector(): string | ((index: number, item: any) => string) {
+    get itemTemplateSelector(): string | ((item: any, index: number, items: any) => string) {
         return this._itemTemplateSelector;
     }
 
-    set itemTemplateSelector(value: string | ((index: number, item: any) => string)) {
+    set itemTemplateSelector(value: string | ((item: any, index: number, items: any) => string)) {
         if (isString(value)){
             this._itemTemplateSelectorBindable.bind({
                 sourceProperty: null,
                 targetProperty: "templateKey",
                 expression: <string>value
             });
-            this._itemTemplateSelector = (index: number, item: any) => {
+            this._itemTemplateSelector = (item: any, index: number, items: any) => {
                 item["$index"] = index;
                 this._itemTemplateSelectorBindable.bindingContext = item;
                 return this._itemTemplateSelectorBindable.get("templateKey"); 
             };
         }
         else if (isFunction(value)) {
-            this._itemTemplateSelector = <((index: number, item: any) => string)>value;
+            this._itemTemplateSelector = <((item: any, index: number, items: any) => string)>value;
         }
     }
 
@@ -230,7 +231,7 @@ export class ListView extends view.View implements definition.ListView {
         let templateKey = "default";
         if (this.itemTemplateSelector){
             let dataItem = this._getDataItem(index);
-            templateKey = this._itemTemplateSelector(index, dataItem);
+            templateKey = this._itemTemplateSelector(dataItem, index, this.items);
         }
 
         for (let i = 0, length = this._itemTemplatesInternal.length; i < length; i++) {
