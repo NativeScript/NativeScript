@@ -10,7 +10,7 @@ var aboutText = "Cuteness is a proof of concept app demonstrating the Telerik's 
 export var defaultThumbnailImageSource = imageSourceFromFile("~/cuteness.io/res/reddit-logo.png");
 export var defaultNoThumbnailImageSource = imageSourceFromFile("~/cuteness.io/res/no-image.png");
 
-var redditUrl = "http://www.reddit.com/r/aww.json?limit=";
+var redditUrl = "https://www.reddit.com/r/aww.json?limit=";
 var after: string;
 var ISSCROLLING = "isLoading";
 
@@ -40,9 +40,6 @@ export class AppViewModel extends Observable {
                     if (lastItem) {
                         after = itemsToLoad[itemsToLoad.length - 1].source.name;
                     }
-
-                }).catch(e => {
-                setTimeout(() => { throw e; });
                 });
             });
         }

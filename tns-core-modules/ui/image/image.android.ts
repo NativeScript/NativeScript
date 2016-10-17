@@ -120,7 +120,7 @@ export class Image extends imageCommon.Image {
 
     public _createImageSourceFromSrc() {
         let imageView = this._android;
-        if (!imageView) {
+        if (!imageView || !this.src) {
             return;
         }
 
