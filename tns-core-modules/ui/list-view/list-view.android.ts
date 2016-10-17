@@ -17,13 +17,6 @@ function ensureColor() {
     }
 }
 
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
-
 let ITEMLOADING = common.ListView.itemLoadingEvent;
 let LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
 let ITEMTAP = common.ListView.itemTapEvent;
@@ -206,7 +199,6 @@ function ensureListViewAdapterClass() {
         }
 
         public getViewTypeCount() {
-            let viewTypeCount = this._listView._itemTemplatesInternal.length; 
             return this._listView._itemTemplatesInternal.length; 
         }
 
