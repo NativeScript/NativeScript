@@ -13,23 +13,23 @@
       <Label text="label 4" left="30" top="105" style="height: 50; width: 110; z-index:-1; padding-top:10; background-color: orange;"/>
     </AbsoluteLayout>
     <AbsoluteLayout style="background-color: brown;" row="1">
-      <TextField text="TextField" style="height: 60; width: 100; z-index: 999;  background-color: red;" />
-      <TextView text="TextView" left="10" top="30" style="height: 70; width: 100; padding-top:40; z-index:1; background-color: yellow;"/>
+      <TextField text="TextField" autocorrect="false" style="height: 60; width: 100; z-index: 999;  background-color: red;" />
+      <TextView text="TextView" autocorrect="false" left="10" top="30" style="height: 70; width: 100; padding-top:40; z-index:1; background-color: yellow;"/>
       <Image src="~/ui-tests-app/image-view/gravatar.png" left="30" top="70" style="height: 60; width: 100; z-index:0; background-color: blue;"/>
       <TimePicker hour="5" minute="30" minHour="3" maxHour="7" top="90" style="z-index:-1; background-color: orange; width: auto;"/>
     </AbsoluteLayout>
-    <AbsoluteLayout row="1" col="1" style="background-color: red;"> 
+    <AbsoluteLayout row="1" col="1" style="background-color: red;">
       <StackLayout style="background-color: green; z-index: 999;">
-        <TextField text="stacklayout1" style="height: 60; width: 110;"/> 
+        <TextField text="stacklayout1" autocorrect="false" style="height: 60; width: 110;"/>
       </StackLayout>
       <StackLayout left="10" top="40" style="z-index: 1; background-color: yellow">
-        <TextField text="stacklayout2" style="height: 60; width: 110;"/>
+        <TextField text="stacklayout2" autocorrect="false" style="height: 60; width: 110;"/>
       </StackLayout>
       <WrapLayout left="30" top="80" style="z-index: 0; background-color: blue">
-        <TextField text="wraplayout" style="height: 60; width: 110;"/>
+        <TextField text="wraplayout" autocorrect="false" style="height: 60; width: 110;"/>
       </WrapLayout>
       <AbsoluteLayout left="50" top="100" style="height: 60; width: 110; z-index: -1; background-color: orange;">
-        <Label text="absolutelayout" top="40"/>
+        <Label text="absolutelayout" autocorrect="false" top="40"/>
       </AbsoluteLayout>
     </AbsoluteLayout>
   </GridLayout>
