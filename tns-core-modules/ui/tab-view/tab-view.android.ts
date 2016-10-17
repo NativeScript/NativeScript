@@ -227,16 +227,16 @@ export class TabView extends common.TabView {
             this._tabLayout.setBackgroundColor(primaryColor);
         }
 
+        if (this._androidViewId < 0) {
+            this._androidViewId = android.view.View.generateViewId();
+        }
+        
         this._viewPager = new android.support.v4.view.ViewPager(this._context);
+        this._viewPager.setId(this._androidViewId);
         var lp = new org.nativescript.widgets.CommonLayoutParams();
         lp.row = 1;
         this._viewPager.setLayoutParams(lp);
         this._grid.addView(this._viewPager);
-
-        if (this._androidViewId < 0) {
-            this._androidViewId = android.view.View.generateViewId();
-        }
-        this._grid.setId(this._androidViewId);
 
         ensurePageChangedListenerClass();
         this._pageChagedListener = new PageChangedListenerClass(this);

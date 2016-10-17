@@ -139,6 +139,16 @@ export var test_SettingImageSrcToFileWithinAppAsync = function (done) {
     runImageTest(done, image, image.src)
 }
 
+export function test_imageSourceNotResetAfterCreateUI() {
+    let image = new ImageModule.Image();
+    let imageSource = ImageSourceModule.fromResource("splashscreen.9");
+    image.imageSource = imageSource;
+    helper.buildUIAndRunTest(image, (img, page) => {
+        TKUnit.waitUntilReady(() => image.isLoaded);
+        TKUnit.assertEqual(image.imageSource, imageSource); 
+    });
+}
+
 export var test_SettingImageSrcToDataURIAsync = function (done) {
     var image = new ImageModule.Image();
     image.loadMode = "async";
