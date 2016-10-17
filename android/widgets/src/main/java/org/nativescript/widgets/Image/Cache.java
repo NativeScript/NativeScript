@@ -16,8 +16,10 @@
 
 package org.nativescript.widgets.image;
 
+import android.Manifest;
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
@@ -333,11 +335,11 @@ public class Cache {
     public static File getDiskCacheDir(Context context, String uniqueName) {
         // Check if media is mounted or storage is built-in, if so, try and use external cache dir
         // otherwise use internal cache dir
-        final String cachePath =
-                Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
-                        !isExternalStorageRemovable() ? getExternalCacheDir(context).getPath() :
-                        context.getCacheDir().getPath();
-
+        final File cacheFilePath = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
+                !isExternalStorageRemovable() ? getExternalCacheDir(context) : context.getCacheDir();
+        // In case there is no external storage isExternalStorageRemovable returns False and we get Null from getExternalCacheDir.
+        // If this is the case - fall back to internal cache dir.
+        final String cachePath = cacheFilePath != null ? cacheFilePath.getPath() : context.getCacheDir().getPath();
         return new File(cachePath + File.separator + uniqueName);
     }
 
@@ -417,7 +419,12 @@ public class Cache {
     @TargetApi(VERSION_CODES.FROYO)
     public static File getExternalCacheDir(Context context) {
         if (Utils.hasFroyo()) {
-            return context.getExternalCacheDir();
+            if (Utils.hasKitKat() ||
+                    context.checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE, android.os.Process.myPid(), android.os.Process.myUid()) == PackageManager.PERMISSION_GRANTED) {
+                return context.getExternalCacheDir();
+            }
+
+            return null;
         }
 
         // Before Froyo we need to construct the external cache dir ourselves
