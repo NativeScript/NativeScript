@@ -400,7 +400,7 @@ export class DependencyObservable extends Observable implements definition.Depen
                     entry.valueSource = ValueSource.Inherited;
                 }
                 else {
-                    newValue = entry.defaultValue != undefined ? entry.defaultValue : property.defaultValue;
+                    newValue = entry.defaultValue !== undefined ? entry.defaultValue : property.defaultValue;
                     entry.valueSource = ValueSource.Default;
                 }
                 break;
@@ -415,7 +415,7 @@ export class DependencyObservable extends Observable implements definition.Depen
                     entry.valueSource = ValueSource.Inherited;
                 }
                 else {
-                    newValue = entry.defaultValue != undefined ? entry.defaultValue : property.defaultValue;
+                    newValue = entry.defaultValue !== undefined ? entry.defaultValue : property.defaultValue;
                     entry.valueSource = ValueSource.Default;
                 }
                 break;
@@ -434,7 +434,7 @@ export class DependencyObservable extends Observable implements definition.Depen
                     entry.valueSource = ValueSource.Inherited;
                 }
                 else {
-                    newValue = entry.defaultValue != undefined ? entry.defaultValue : property.defaultValue;
+                    newValue = entry.defaultValue !== undefined ? entry.defaultValue : property.defaultValue;
                     entry.valueSource = ValueSource.Default;
                 }
                 break;
