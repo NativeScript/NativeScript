@@ -95,8 +95,7 @@ export class XMLHttpRequest {
 
     private _loadResponse(r) {
         this._status = r.statusCode;
-        this._response = r.content.raw;
-
+        this._response = r.content.raw + "";
         this._headers = r.headers;
         this._setReadyState(this.HEADERS_RECEIVED);
 
@@ -109,6 +108,8 @@ export class XMLHttpRequest {
 
         if (this.responseType === XMLHttpRequestResponseType.json) {
             this._response = JSON.parse(this.responseText);
+        } else if (this.responseType === XMLHttpRequestResponseType.text) {
+            this._response = this.responseText;
         }
 
         this._setReadyState(this.DONE);
@@ -127,6 +128,23 @@ export class XMLHttpRequest {
         }
     }
 
+    private textTypes: string[] = [
+        'text/plain',
+        'application/xml',
+        'text/html'
+    ];
+
+    private isTextContentType(contentType: string): boolean {
+        let result = false;
+        for(let i = 0; i < this.textTypes.length; i++) {
+            if (contentType.toLowerCase().indexOf(this.textTypes[i]) >= 0) {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
     private _setResponseType() {
         const header = this.getResponseHeader('Content-Type');
         const contentType = header && header.toLowerCase();
@@ -134,7 +152,7 @@ export class XMLHttpRequest {
         if (contentType) {
             if (contentType.indexOf('application/json') >= 0 || contentType.indexOf('+json') >= 0) {
                 this.responseType = XMLHttpRequestResponseType.json;
-            } else if (contentType.indexOf('text/plain') >= 0) {
+            } else if (this.isTextContentType(contentType)) {
                 this.responseType = XMLHttpRequestResponseType.text;
             }
         } else {
