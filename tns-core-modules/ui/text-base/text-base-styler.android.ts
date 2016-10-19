@@ -32,6 +32,29 @@ export class TextBaseStyler implements style.Styler {
         return (<android.widget.TextView>view._nativeView).getTextColors().getDefaultColor();
     }
 
+    // background-color
+    private static setBkgColorProperty(view: view.View, newValue: any) {
+        let tv = <android.widget.TextView>view._nativeView;
+        // Set the bottom line color
+        let bkg = tv.getBackground();
+        if(bkg){
+            bkg = bkg.mutate();
+            bkg.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_ATOP);
+        }
+    }
+
+    private static resetBkgColorProperty(view: view.View, nativeValue: any) {
+        let tv = <android.widget.TextView>view._nativeView;
+        tv.setTextColor(nativeValue);
+
+        // Reset the bottom line color
+        let bkg = tv.getBackground();
+        if(bkg){
+            bkg = bkg.mutate();
+            bkg.clearColorFilter();
+        }
+    }    
+
     // font
     private static setFontInternalProperty(view: view.View, newValue: any, nativeValue?: any) {
         var tv = <android.widget.TextView>view._nativeView;
@@ -140,6 +163,11 @@ export class TextBaseStyler implements style.Styler {
             TextBaseStyler.setColorProperty,
             TextBaseStyler.resetColorProperty,
             TextBaseStyler.getNativeColorValue), "TextBase");
+
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            TextBaseStyler.setBkgColorProperty,
+            TextBaseStyler.resetBkgColorProperty), "TextField");
+        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "TextField");
 
         style.registerHandler(style.placeholderColorProperty, new style.StylePropertyChangedHandler(
             TextBaseStyler.setPlaceholderColorProperty,
