@@ -124,7 +124,9 @@ public abstract class Worker {
             }
             imageView.setImageBitmap(value);
             if (listener != null) {
-                Log.d(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
+                if (debuggable > 0) {
+                    Log.d(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
+                }
                 listener.onImageLoaded(true);
             }
         } else if (cancelPotentialWork(data, imageView)) {
