@@ -262,7 +262,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         layoutHelper.assertLayout(btn2, 50, 0, 50, 80, "button2");
     }
 
-    public test_percent_support() {
+    public test_percent_children_support() {
         let layout = this.testView;
         layout.removeChildren();
         layout.width = layoutHelper.dp(200);

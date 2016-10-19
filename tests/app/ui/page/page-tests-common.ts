@@ -20,6 +20,7 @@ import observable = require("data/observable");
 import {Page, ShownModallyData, NavigatedData} from "ui/page";
 import {Label} from "ui/label";
 import {EventData} from "data/observable";
+import {widthProperty} from "ui/styling/style"
 import platform = require("platform");
 
 export function addLabelToPage(page: Page, text?: string) {
@@ -534,6 +535,61 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     TKUnit.assertEqual(modalUnloaded, 1, "modalUnloaded");
 
     masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
+}
+
+export function  test_percent_width_and_height_support() {
+    let testPage = new Page();
+    testPage.id = "test_percent_width_and_height_support";
+
+    let stackLayout = new StackLayout();
+    (<any>stackLayout).width = "50%";
+    (<any>stackLayout).height = "50%";
+
+    testPage.content = stackLayout; 
+
+    let pageWidth = testPage.getMeasuredWidth();
+    let pageHeight = testPage.getMeasuredHeight()
+
+    TKUnit.assertEqual(pageWidth, Math.round(pageWidth / 2), "Current page MeasuredWidth incorrect");
+    TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");
+
+    //reset values.
+    testPage.height = Number.NaN;
+    (<any>testPage.style)._resetValue(widthProperty);
+    
+    testPage.height = Number.NaN;
+
+    TKUnit.assert(isNaN(testPage.width), "width");
+    TKUnit.assert(isNaN(testPage.height), "height");
+}
+
+export function  test_percent_margin_support() {
+    let testPage = new Page();
+    testPage.id = "ttest_percent_margin_support";
+
+    let stackLayout = new StackLayout();
+    stackLayout.margin = "10%";
+    testPage.content = stackLayout;
+
+    let pageWidth = testPage.getMeasuredWidth();
+    let pageHeight = testPage.getMeasuredHeight()
+
+    let marginLeft = pageWidth * 0.1;
+    let marginTop = pageHeight * 0.1;
+
+    let bounds = stackLayout._getCurrentLayoutBounds();
+    TKUnit.assertEqual(bounds.left, Math.round(marginLeft), "Page's content LEFT position incorrect");
+    TKUnit.assertEqual(bounds.top, Math.round(marginTop), "Page's content  TOP position incorrect");
+    TKUnit.assertEqual(bounds.right, Math.round(marginLeft + pageWidth), "Page's content  RIGHT position incorrect");
+    TKUnit.assertEqual(bounds.bottom, Math.round(marginTop + pageHeight), "Page's content  BOTTOM position incorrect");
+
+    //reset values.
+    testPage.margin = "0";
+
+    TKUnit.assertEqual(testPage.marginLeft, 0, "marginLeft");
+    TKUnit.assertEqual(testPage.marginTop, 0, "marginTop");
+    TKUnit.assertEqual(testPage.marginRight, 0, "marginRight");
+    TKUnit.assertEqual(testPage.marginBottom, 0, "marginBottom");
 }
 
 //export function test_ModalPage_Layout_is_Correct() {

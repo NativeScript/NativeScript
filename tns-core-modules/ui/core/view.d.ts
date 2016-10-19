@@ -455,6 +455,19 @@ declare module "ui/core/view" {
         public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void;
 
         /**
+         * Changes the width, height and margins of the child to one calculated from percentage values.
+         *
+         * @param widthMeasureSpec  Width MeasureSpec of the parent layout.
+         * @param heightMeasureSpec Height MeasureSpec of the parent layout.
+         */
+        protected static adjustChildLayoutParams(view: View, widthMeasureSpec: number, heightMeasureSpec: number): void;
+
+        /**
+         * Restores the original dimensions of the child that were changed for percentage values.
+         */
+        protected static restoreChildOriginalParams(view: View): void;
+
+        /**
          * Utility to reconcile a desired size and state, with constraints imposed
          * by a MeasureSpec.  Will take the desired size, unless a different size
          * is imposed by the constraints.  The returned value is a compound integer,

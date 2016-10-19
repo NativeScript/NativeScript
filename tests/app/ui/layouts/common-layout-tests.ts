@@ -74,7 +74,7 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
     TKUnit.assertEqual(lp.bottomMarginPercent, -1, "bottomMarginPercent");
 }
 
-export function percent_support_test(test: testModule.UITest<LayoutBase>) {
+export function percent_support_children_test(test: testModule.UITest<LayoutBase>) {
     let layout: LayoutBase = test.testView;
     layout.removeChildren();
     layout.width = layoutHelper.dp(200);
