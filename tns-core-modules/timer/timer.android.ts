@@ -7,7 +7,7 @@ var timerId = 0;
 
 function createHandlerAndGetId(): number {
     if (!timeoutHandler) {
-        timeoutHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+        timeoutHandler = new android.os.Handler(android.os.Looper.myLooper());
     }
 
     timerId++;
