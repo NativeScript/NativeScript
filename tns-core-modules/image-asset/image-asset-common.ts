@@ -56,23 +56,23 @@ export function getAspectSafeDimensions(sourceWidth, sourceHeight, reqWidth, req
     };
 }
 
-export function getRequestedImageSize(src: {width: number, height: number}): {width: number, height: number} {
+export function getRequestedImageSize(src: { width: number, height: number }, options: definition.ImageAssetOptions): { width: number, height: number } {
     let reqWidth = platform.screen.mainScreen.widthDIPs;
-    let reqHeight = platform.screen.mainScreen.heightDIPs
-    if (this.options && this.options.width) {
-        reqWidth = (this.options.width > 0 && this.options.width < reqWidth) ? this.options.width : reqWidth;
+    let reqHeight = platform.screen.mainScreen.heightDIPs;
+    if (options && options.width) {
+        reqWidth = (options.width > 0 && options.width < reqWidth) ? options.width : reqWidth;
     }
-    if (this.options && this.options.height) {
-        reqWidth = (this.options.height > 0 && this.options.height < reqHeight) ? this.options.height : reqHeight;
+    if (options && options.height) {
+        reqHeight = (options.height > 0 && options.height < reqHeight) ? options.height : reqHeight;
     }
 
-    if (this.options && this.options.keepAspectRatio) {
+    if (options && options.keepAspectRatio) {
         let safeAspectSize = getAspectSafeDimensions(src.width, src.height, reqWidth, reqHeight);
         reqWidth = safeAspectSize.width;
         reqHeight = safeAspectSize.height;
     }
-    return { 
+    return {
         width: reqWidth,
-        height:reqHeight
+        height: reqHeight
     };
 }
