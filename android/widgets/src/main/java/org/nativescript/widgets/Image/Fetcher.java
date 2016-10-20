@@ -260,7 +260,7 @@ public class Fetcher extends Resizer {
                     }
                     return decodeSampledBitmapFromResource(mResources, resId, decodeWidth, decodeHeight, getCache());
                 } else {
-                    Log.v(TAG, "Missing ResourceID: " + stringData);
+                    Log.v(TAG, "Missing Image with resourceID: " + stringData);
                 }
             } else {
                 if (useCache) {

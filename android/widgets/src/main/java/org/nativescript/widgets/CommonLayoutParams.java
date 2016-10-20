@@ -360,7 +360,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     }
 
     static void log(String tag, String message) {
-        Log.d(tag, message);
+        Log.v(tag, message);
     }
 
     static StringBuilder getStringBuilder() {

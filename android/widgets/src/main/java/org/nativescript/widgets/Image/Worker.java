@@ -97,7 +97,7 @@ public abstract class Worker {
         Bitmap value = null;
         String dataString = String.valueOf(data);
         if (debuggable > 0) {
-            Log.d(TAG, "loadImage on: " + imageView + " to: " + dataString);
+            Log.v(TAG, "loadImage on: " + imageView + " to: " + dataString);
         }
 
         if (mCache != null && useCache) {
@@ -120,12 +120,12 @@ public abstract class Worker {
         if (value != null) {
             // Bitmap found in memory cache
             if (debuggable > 0) {
-                Log.d(TAG, "Set ImageBitmap on: " + imageView + " to: " + dataString);
+                Log.v(TAG, "Set ImageBitmap on: " + imageView + " to: " + dataString);
             }
             imageView.setImageBitmap(value);
             if (listener != null) {
                 if (debuggable > 0) {
-                    Log.d(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
+                    Log.v(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
                 }
                 listener.onImageLoaded(true);
             }
@@ -352,14 +352,14 @@ public abstract class Worker {
             if (value != null && imageView != null) {
                 success = true;
                 if (debuggable > 0) {
-                    Log.d(TAG, "Set ImageDrawable on: " + imageView + " to: " + dataString);
+                    Log.v(TAG, "Set ImageDrawable on: " + imageView + " to: " + dataString);
                 }
                 imageView.setImageBitmap(value);
             }
 
             if (mOnImageLoadedListener != null) {
                 if (debuggable > 0) {
-                    Log.d(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
+                    Log.v(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
                 }
                 mOnImageLoadedListener.onImageLoaded(success);
             }
