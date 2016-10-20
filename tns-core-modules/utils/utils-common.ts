@@ -65,6 +65,7 @@ export module layout {
     export var EXACTLY = 1 << MODE_SHIFT;
     export var AT_MOST = 2 << MODE_SHIFT;
 
+    export var MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
     export var MEASURED_STATE_TOO_SMALL = 0x01000000;
     export var MEASURED_STATE_MASK = 0xff000000;
     export var MEASURED_SIZE_MASK = 0x00ffffff;

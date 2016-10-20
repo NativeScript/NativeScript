@@ -62,6 +62,7 @@ allTests["WRAPLAYOUT"] = require("./ui/layouts/wrap-layout-tests");
 allTests["ABSOLUTELAYOUT"] = require("./ui/layouts/absolute-layout-tests");
 allTests["GRIDLAYOUT"] = require("./ui/layouts/grid-layout-tests");
 allTests["STACKLAYOUT"] = require("./ui/layouts/stack-layout-tests");
+allTests["FLEXBOXLAYOUT"] = require("./ui/layouts/flexbox-layout-tests");
 allTests["STYLE-PROPERTIES"] = require("./ui/styling/style-properties-tests");
 allTests["FRAME"] = require("./ui/frame/frame-tests");
 allTests["VIEW"] = require("./ui/view/view-tests");

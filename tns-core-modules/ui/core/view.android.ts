@@ -12,6 +12,8 @@ import background = require("ui/styling/background");
 import {CommonLayoutParams} from "ui/styling/style";
 import {device} from "platform";
 
+var flexbox;
+
 global.moduleMerge(viewCommon, exports);
 
 var ANDROID = "_android";
@@ -607,6 +609,13 @@ export class ViewStyler implements style.Styler {
             lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
             lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
             lp.gravity = gravity;
+
+            if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
+                if (!flexbox) {
+                    flexbox = require("ui/layouts/flexbox-layout");
+                }
+                flexbox._setAndroidLayoutParams(lp, view);
+            }
         }
         else {
             let layoutParams: any = lp;

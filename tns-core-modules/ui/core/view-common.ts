@@ -727,6 +727,12 @@ export class View extends ProxyObject implements definition.View {
         return this._measuredHeight & utils.layout.MEASURED_SIZE_MASK;
     }
 
+    public getMeasuredState(): number {
+        return (this._measuredWidth & utils.layout.MEASURED_STATE_MASK)
+                | ((this._measuredHeight >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT)
+                        & (utils.layout.MEASURED_STATE_MASK >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT));
+    }
+
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
         this._measuredWidth = measuredWidth;
         this._measuredHeight = measuredHeight;
@@ -784,6 +790,10 @@ export class View extends ProxyObject implements definition.View {
         }
 
         return Math.round(result + 0.499) | (childMeasuredState & utils.layout.MEASURED_STATE_MASK);
+    }
+
+    public static combineMeasuredStates(curState: number, newState): number {
+        return curState | newState;
     }
 
     public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void {
