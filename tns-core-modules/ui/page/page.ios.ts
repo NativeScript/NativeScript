@@ -443,6 +443,8 @@ export class Page extends pageCommon.Page {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
+        View.adjustChildLayoutParams(this.layoutView, widthMeasureSpec, heightMeasureSpec);
+        
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -507,6 +509,8 @@ export class Page extends pageCommon.Page {
         }
 
         View.layoutChild(this, this.layoutView, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
+
+        View.restoreChildOriginalParams(this.layoutView);
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {

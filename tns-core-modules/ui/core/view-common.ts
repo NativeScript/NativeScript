@@ -980,6 +980,75 @@ export class View extends ProxyObject implements definition.View {
         return changed;
     }
 
+    protected static adjustChildLayoutParams(view: View, widthMeasureSpec: number, heightMeasureSpec: number): void {
+        if(!view) {
+            return;
+        }
+
+        let availableWidth = utils.layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthSpec = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+
+        let availableHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightSpec = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+
+         let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
+
+         if (widthSpec !== utils.layout.UNSPECIFIED) {
+             if (lp.widthPercent > 0) {
+                 lp.width = Math.round(availableWidth * lp.widthPercent);
+             }
+
+             if (lp.leftMarginPercent > 0) {
+                 lp.leftMargin = Math.round(availableWidth * lp.leftMarginPercent);
+             }
+
+             if (lp.rightMarginPercent > 0) {
+                 lp.rightMargin = Math.round(availableWidth * lp.rightMarginPercent);
+             }
+         }
+
+         if (heightSpec !== utils.layout.UNSPECIFIED) {
+             if (lp.heightPercent > 0) {
+                 lp.height = Math.round(availableHeight * lp.heightPercent);
+             }
+
+             if (lp.topMarginPercent > 0) {
+                 lp.topMargin = Math.round(availableHeight * lp.topMarginPercent);
+             }
+
+             if (lp.bottomMarginPercent > 0) {
+                 lp.bottomMargin = Math.round(availableHeight * lp.bottomMarginPercent);
+             }
+         }
+    }
+
+    protected static restoreChildOriginalParams(view: View): void {
+        if(!view) {
+            return;
+        }
+        let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
+
+        if (lp.widthPercent > 0) {
+            lp.width = -1;
+        }
+
+        if (lp.heightPercent > 0) {
+            lp.height = -1;
+        }
+        if (lp.leftMarginPercent > 0) {
+            lp.leftMargin = 0;
+        }
+        if (lp.topMarginPercent > 0) {
+            lp.topMargin = 0;
+        }
+        if (lp.rightMarginPercent > 0) {
+            lp.rightMargin = 0;
+        }
+        if (lp.bottomMarginPercent > 0) {
+            lp.bottomMargin = 0;
+        }
+    }
+
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
         return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom }
     }
