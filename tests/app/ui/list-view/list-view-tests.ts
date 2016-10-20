@@ -800,7 +800,6 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assertEqual(templateKey1, "green", "itemTemplateSelector result for second item");
     }
 
-   
     public test_ItemTemplateSelector_IsCorrectlyUsedAsAFunction() {
         let listView = this.testView;
         listView.itemTemplateSelector = selectItemTemplate;

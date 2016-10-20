@@ -8,4 +8,3 @@ export function getNativeHintColor(searchBar: SearchBar): Color {
 export function getNativeFontSize(searchBar: SearchBar): number {
     return (<any>searchBar)._textField ? (<any>searchBar)._textField.font.pointSize : undefined;
 }
-

@@ -527,4 +527,3 @@ export function goBack(): boolean {
 export function stack(): Array<definition.Frame> {
     return frameStack;
 }
-

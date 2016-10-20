@@ -38,4 +38,3 @@ export function testIsIOSandIsAndroid() {
         TKUnit.assertTrue(!!android, "isAndroid is true but common 'android' package is not available.");
     }
 }
-

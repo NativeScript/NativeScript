@@ -453,4 +453,3 @@ function getChildAt(repeater: repeaterModule.Repeater, index: number): viewModul
 function getChildAtText(repeater: repeaterModule.Repeater, index: number): string {
     return (<labelModule.Label>getChildAt(repeater, index)).text + "";
 }
-

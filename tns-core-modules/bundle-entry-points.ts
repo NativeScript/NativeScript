@@ -33,4 +33,3 @@ if (global.TNS_WEBPACK) {
     global.registerModule("ui/text-view", () => require("ui/text-view"))
     global.registerModule("ui/time-picker", () => require("ui/time-picker"))
 }
-

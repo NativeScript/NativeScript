@@ -535,7 +535,6 @@ namespace xml2ui {
                             sourceTracker: this.sourceTracker
                         });
                     }
-                    
 
                 } else {
 
