@@ -40,6 +40,55 @@ Other modules which will be used in the code samples in this article:
  </ListView>{%endraw%}
 </Page>
 ```
+### Define multiple item templates and an item template selector in XML.
+The itemTemplateSelector can be an expression specified directly in XML. The context of the expression is the data item for each row.
+``` XML
+<Page>
+ {%raw%}<ListView items="{{ myItems }}" itemTemplateSelector="age > 18 ? 'green' : 'red'">
+    <ListView.itemTemplates>
+      <template key="green">
+        <Label text="{{ age }}" style.backgroundColor="green" />
+      </template>
+      <template key="red">
+        <Label text="{{ age }}" style.backgroundColor="red" />
+      </template>
+    </ListView.itemTemplates>
+ </ListView>{%endraw%}
+</Page>
+```
+### Specifying the item template selector as a function in the code-behind file
+In case your item template selector involves complicated logic which cannot be expressed with an expression, you can create an item template selector function in the code behind of the page in which the ListView resides. The function receives the respective data item, the row index and the entire ListView items collection as parameters. It has to return the the key of the template to be used based on the supplied information.
+``` XML
+<Page>
+ {%raw%}<ListView items="{{ myItems }}" itemTemplateSelector="selectItemTemplate">
+    <ListView.itemTemplates>
+      <template key="green">
+        <Label text="{{ age }}" style.backgroundColor="green" />
+      </template>
+      <template key="red">
+        <Label text="{{ age }}" style.backgroundColor="red" />
+      </template>
+    </ListView.itemTemplates>
+ </ListView>{%endraw%}
+</Page>
+```
+{%snippet article-item-template-selector-function%}
+### Alternating row colors
+You can use the special value '$index' in the item template selector expression which represents the row index.
+``` XML
+<Page>
+ {%raw%}<ListView items="{{ myItems }}" itemTemplateSelector="$index % 2 === 0 ? 'even' : 'odd'">
+    <ListView.itemTemplates>
+      <template key="even">
+        <Label text="{{ age }}" style.backgroundColor="white" />
+      </template>
+      <template key="odd">
+        <Label text="{{ age }}" style.backgroundColor="gray" />
+      </template>
+    </ListView.itemTemplates>
+ </ListView>{%endraw%}
+</Page>
+```
 ### Creating a ListView
 {%snippet article-create-listview%}
 ### Using ListView with Array

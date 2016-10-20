@@ -800,6 +800,21 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assertEqual(templateKey1, "green", "itemTemplateSelector result for second item");
     }
 
+   
+    public test_ItemTemplateSelector_IsCorrectlyUsedAsAFunction() {
+        let listView = this.testView;
+        listView.itemTemplateSelector = selectItemTemplate;
+        let items = ListViewTest.generateItemsForMultipleTemplatesTests(2);
+        let itemTemplateSelectorFunction = <any>listView.itemTemplateSelector;
+        TKUnit.wait(0.1);
+
+        let templateKey0 = itemTemplateSelectorFunction(items[0], 0, items);
+        TKUnit.assertEqual(templateKey0, "red", "itemTemplateSelector result for first item");
+
+        let templateKey1 = itemTemplateSelectorFunction(items[1], 1, items);
+        TKUnit.assertEqual(templateKey1, "green", "itemTemplateSelector result for second item");
+    }
+
     public test_ItemTemplateSelector_ItemTemplatesAreCorrectlyParsedFromString() {
         let listView = this.testView;
         listView.itemTemplates = this._itemTemplatesString;
@@ -915,3 +930,9 @@ interface Item {
 export function createTestCase(): ListViewTest {
     return new ListViewTest();
 }
+
+// >> article-item-template-selector-function
+export function selectItemTemplate(item: Item, index: number, items: Array<Item>) {
+    return item.age % 2 === 0 ? "red" : "green";
+}
+// << article-item-template-selector-function
