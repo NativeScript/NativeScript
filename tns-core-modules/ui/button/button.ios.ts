@@ -82,7 +82,7 @@ export class Button extends common.Button {
         }
     }
 
-    @PseudoClassHandler("normal", "highlighted")
+    @PseudoClassHandler("normal", "highlighted", "pressed", "active")
     _updateHandler(subscribe: boolean) {
         if (subscribe) {
             if (!this._stateChangedHandler) {

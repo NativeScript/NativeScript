@@ -258,6 +258,48 @@ export var testNativeTextAlignmentFromCss = function () {
     });
 }
 
+export var test_StateHighlighted_also_fires_pressedState = function () {
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
+        var view = <buttonModule.Button>views[0];
+        var page = <pagesModule.Page>views[1];
+        var expectedColor = "#ffff0000";
+        page.css = "button:pressed { background-color: " + expectedColor + "; }";
+
+        view._goToVisualState('highlighted');
+
+        var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
+        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+    });
+}
+
+export var test_StateHighlighted_also_fires_activeState = function () {
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
+        var view = <buttonModule.Button>views[0];
+        var page = <pagesModule.Page>views[1];
+        var expectedColor = "#ffff0000";
+        page.css = "button:active { background-color: " + expectedColor + "; }";
+
+        view._goToVisualState('highlighted');
+
+        var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
+        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+    });
+}
+
+export var test_applying_disabled_visual_State_when_button_is_disable = function () {
+    helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
+        var view = <buttonModule.Button>views[0];
+        var page = <pagesModule.Page>views[1];
+        var expectedColor = "#ffff0000";
+        page.css = "button:disabled { background-color: " + expectedColor + "; }";
+
+        view.isEnabled = false;
+
+        var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
+        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+    });
+}
+
 export var testNativeTextAlignmentFromLocal = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
