@@ -17,7 +17,7 @@ export class ImageAsset extends common.ImageAsset {
             width: bitmapOptions.outWidth,
             height: bitmapOptions.outHeight
         };
-        let requestedSize = common.getRequestedImageSize(sourceSize);
+        let requestedSize = common.getRequestedImageSize(sourceSize, this.options);
 
         let sampleSize = calculateInSampleSize(bitmapOptions.outWidth, bitmapOptions.outHeight, requestedSize.width, requestedSize.height);
 

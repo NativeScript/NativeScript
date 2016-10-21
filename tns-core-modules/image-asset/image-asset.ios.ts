@@ -14,17 +14,13 @@ export class ImageAsset extends common.ImageAsset {
     }
 
     public getImageAsync(callback: (image, error) => void) {
-        let requestedSize = common.getRequestedImageSize({
-            width: this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth,
-            height: this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight
-        });
+        let srcWidth = this.nativeImage ? this.nativeImage.size.width : this.ios.pixelWidth;
+        let srcHeight = this.nativeImage ? this.nativeImage.size.height : this.ios.pixelHeight;
+        let requestedSize = common.getRequestedImageSize({ width: srcWidth, height: srcHeight }, this.options);
 
         if (this.nativeImage) {
             let newSize = CGSizeMake(requestedSize.width, requestedSize.height);
-            UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0);
-            this.nativeImage.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
-            let resizedImage = UIGraphicsGetImageFromCurrentImageContext();
-            UIGraphicsEndImageContext();
+            let resizedImage = this.scaleImage(this.nativeImage, newSize);
             callback(resizedImage, null);
             return;
         }
@@ -35,12 +31,21 @@ export class ImageAsset extends common.ImageAsset {
         PHImageManager.defaultManager().requestImageForAssetTargetSizeContentModeOptionsResultHandler(this.ios, requestedSize, PHImageContentMode.AspectFit, imageRequestOptions,
             (image, imageResultInfo) => {
                 if (image) {
-                    callback(image, null);
+                    let resultImage = this.scaleImage(image, requestedSize);
+                    callback(resultImage, null);
                 }
                 else {
                     callback(null, imageResultInfo.valueForKey(PHImageErrorKey));
                 }
             }
         );
+    }
+
+    private scaleImage(image: UIImage, requestedSize: {width: number, height: number}): UIImage {
+        UIGraphicsBeginImageContextWithOptions(requestedSize, false, 0.0);
+        image.drawInRect(CGRectMake(0, 0, requestedSize.width, requestedSize.height));
+        let resultImage = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        return resultImage;
     }
 }
