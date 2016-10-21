@@ -1,12 +1,19 @@
 <Page>
-  <StackLayout>
-    <SegmentedBar selectedIndex="2" style="color: yellow; background-color: blue; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace;" selectedBackgroundColor="red">
-      <SegmentedBar.items>
-        <SegmentedBarItem title="Item 1" />
-        <SegmentedBarItem title="Item 2" />
-        <SegmentedBarItem title="Item 3" />
-      </SegmentedBar.items>
-    </SegmentedBar>
-    <Button text="go to cleared page" tap="navigate"/>
-  </StackLayout>
+	<StackLayout>
+		<SegmentedBar selectedIndex="2" style="color: yellow; background-color: blue; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace;" selectedBackgroundColor="red">
+			<SegmentedBar.items>
+				<SegmentedBarItem title="Item 1" />
+				<SegmentedBarItem title="Item 2" />
+				<SegmentedBarItem title="Item 3" />
+			</SegmentedBar.items>
+		</SegmentedBar>
+		<SegmentedBar selectedIndex="2" style="margin: 5; color: yellow; background-color: blue; font-weight: bold; font-size: 20; font-style: italic; font-family: monospace; height: 72; border-width: 2; border-radius: 7; border-color:green;" selectedBackgroundColor="red">
+			<SegmentedBar.items>
+				<SegmentedBarItem title="Item 1" />
+				<SegmentedBarItem title="Item 2" />
+				<SegmentedBarItem title="Item 3" />
+			</SegmentedBar.items>
+		</SegmentedBar>
+		<Button text="go to cleared page" tap="navigate" />
+	</StackLayout>
 </Page>
