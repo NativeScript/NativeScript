@@ -3,7 +3,7 @@ import {View} from "ui/core/view";
 import {PropertyMetadata} from "ui/core/proxy";
 import {Property, PropertyMetadataSettings, PropertyChangeData} from "ui/core/dependency-observable";
 import {registerSpecialProperty} from "ui/builder/special-properties";
-import * as platform from "platform";
+import {isAndroid} from "platform";
 
 export type Basis = "auto" | number;
 
@@ -12,7 +12,7 @@ const FLEX_GROW_DEFAULT = 0.0;
 const FLEX_SHRINK_DEFAULT = 1.0;
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+var affectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export namespace FlexDirection {
@@ -142,18 +142,18 @@ function validateArgs(element: View): View {
  */
 export abstract class FlexboxLayoutBase extends LayoutBase {
 
-    public static flexDirectionProperty = new Property("flexDirection", "FlexboxLayout", new PropertyMetadata("row", AffectsLayout, undefined, validateFlexDirection, (args: any) => args.object.setNativeFlexDirection(args.newValue)));
-    public static flexWrapProperty = new Property("flexWrap", "FlexboxLayout", new PropertyMetadata("nowrap", AffectsLayout, undefined, validateFlexWrap, (args: any) => args.object.setNativeFlexWrap(args.newValue)));
-    public static justifyContentProperty = new Property("justifyContent", "FlexboxLayout", new PropertyMetadata("flex-start", AffectsLayout, undefined, validateJustifyContent, (args: any) => args.object.setNativeJustifyContent(args.newValue)));
-    public static alignItemsProperty = new Property("alignItems", "FlexboxLayout", new PropertyMetadata("stretch", AffectsLayout, undefined, validateAlignItems, (args: any) => args.object.setNativeAlignItems(args.newValue)));
-    public static alignContentProperty = new Property("alignContent", "FlexboxLayout", new PropertyMetadata("stretch", AffectsLayout, undefined, validateAlignContent, (args: any) => args.object.setNativeAlignContent(args.newValue)));
+    public static flexDirectionProperty = new Property("flexDirection", "FlexboxLayout", new PropertyMetadata("row", affectsLayout, undefined, validateFlexDirection, (args: any) => args.object.setNativeFlexDirection(args.newValue)));
+    public static flexWrapProperty = new Property("flexWrap", "FlexboxLayout", new PropertyMetadata("nowrap", affectsLayout, undefined, validateFlexWrap, (args: any) => args.object.setNativeFlexWrap(args.newValue)));
+    public static justifyContentProperty = new Property("justifyContent", "FlexboxLayout", new PropertyMetadata("flex-start", affectsLayout, undefined, validateJustifyContent, (args: any) => args.object.setNativeJustifyContent(args.newValue)));
+    public static alignItemsProperty = new Property("alignItems", "FlexboxLayout", new PropertyMetadata("stretch", affectsLayout, undefined, validateAlignItems, (args: any) => args.object.setNativeAlignItems(args.newValue)));
+    public static alignContentProperty = new Property("alignContent", "FlexboxLayout", new PropertyMetadata("stretch", affectsLayout, undefined, validateAlignContent, (args: any) => args.object.setNativeAlignContent(args.newValue)));
 
     // TODO: Validation:
-    public static orderProperty = new Property("order", "FlexboxLayout", new PropertyMetadata(ORDER_DEFAULT, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler<number>((flexbox, element, oldValue, newValue) => flexbox.onOrderPropertyChanged(element, oldValue, newValue))));
-    public static flexGrowProperty = new Property("flexGrow", "FlexboxLayout", new PropertyMetadata(FLEX_GROW_DEFAULT, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler<number>((flexbox, element, oldValue, newValue) => flexbox.onFlexGrowPropertyChanged(element, oldValue, newValue))));
-    public static flexShrinkProperty = new Property("flexShrink", "FlexboxLayout", new PropertyMetadata(FLEX_SHRINK_DEFAULT, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler<number>((flexbox, element, oldValue, newValue) => flexbox.onFlexShrinkPropertyChanged(element, oldValue, newValue))));
-    public static flexWrapBeforeProperty = new Property("flexWrapBefore", "FlexboxLayout", new PropertyMetadata(false, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler<boolean>((flexbox, element, oldValue, newValue) => flexbox.onFlexWrapBeforePropertyChanged(element, oldValue, newValue))))
-    public static alignSelfProperty = new Property("alignSelf", "FlexboxLayout", new PropertyMetadata(AlignSelf.AUTO, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler<AlignSelf>((flexbox, element, oldValue, newValue) => flexbox.onAlignSelfPropertyChanged(element, oldValue, newValue))));
+    public static orderProperty = new Property("order", "FlexboxLayout", new PropertyMetadata(ORDER_DEFAULT, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler));
+    public static flexGrowProperty = new Property("flexGrow", "FlexboxLayout", new PropertyMetadata(FLEX_GROW_DEFAULT, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler));
+    public static flexShrinkProperty = new Property("flexShrink", "FlexboxLayout", new PropertyMetadata(FLEX_SHRINK_DEFAULT, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler));
+    public static flexWrapBeforeProperty = new Property("flexWrapBefore", "FlexboxLayout", new PropertyMetadata(false, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler));
+    public static alignSelfProperty = new Property("alignSelf", "FlexboxLayout", new PropertyMetadata(AlignSelf.AUTO, PropertyMetadataSettings.None, FlexboxLayoutBase.childHandler));
 
     constructor() {
         super();
@@ -235,24 +235,18 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
     protected abstract setNativeAlignItems(alignItems: AlignItems);
     protected abstract setNativeAlignContent(alignContent: AlignContent);
 
-    protected abstract onOrderPropertyChanged(element: View, oldValue: number, newValue: number): void;
-    protected abstract onFlexGrowPropertyChanged(element: View, oldValue: number, newValue: number): void;
-    protected abstract onFlexShrinkPropertyChanged(element: View, oldValue: number, newValue: number): void;
-    protected abstract onAlignSelfPropertyChanged(element: View, oldValue: AlignSelf, newValue: AlignSelf): void;
-    protected abstract onFlexWrapBeforePropertyChanged(element: View, oldValue: boolean, newValue: boolean): void;
-
-    private static childHandler<V>(handler: (flexbox: FlexboxLayoutBase, element: View, oldValue: V, newValue: V) => void) {
-        return (data: PropertyChangeData) => {
-            let element = data.object as View;
-            if (!(element instanceof View)) {
-                throw new Error("Element is not View or its descendant.");
-            }
-            let flexbox = element.parent;
-            if (flexbox instanceof FlexboxLayoutBase) {
-                handler(flexbox, element, data.oldValue, data.newValue);
-            }
+    private static childHandler<V>(args: PropertyChangeData) {
+        let element = args.object as View;
+        if (!(element instanceof View)) {
+            throw new Error("Element is not View or its descendant.");
+        }
+        let flexbox = element.parent;
+        if (flexbox instanceof FlexboxLayoutBase) {
+            flexbox.invalidate();
         }
     }
+
+    protected abstract invalidate();
 }
 
 registerSpecialProperty("order", (instance, propertyValue) => {

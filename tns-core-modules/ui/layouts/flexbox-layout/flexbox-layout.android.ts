@@ -8,7 +8,46 @@ import {
     AlignSelf,
     FlexboxLayoutBase
 } from "./flexbox-layout-common";
+import {PropertyMetadata} from "ui/core/proxy";
+import {PropertyChangeData} from "ui/core/dependency-observable";
 import {layout} from "utils/utils";
+
+function setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams) => void) {
+    let nativeView: android.view.View = view._nativeView;
+    if (nativeView) {
+        var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.FlexboxLayout.LayoutParams();
+        if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
+            setter(lp);
+            nativeView.setLayoutParams(lp);
+        }
+    }
+}
+
+function onNativeOrderPropertyChanged({object, newValue}: PropertyChangeData): void {
+    setLayoutParamsProperty(<View>object, lp => lp.order = newValue);
+}
+
+function onNativeFlexGrowPropertyChanged({object, newValue}: PropertyChangeData): void {
+    setLayoutParamsProperty(<View>object, lp => lp.flexGrow = newValue);
+}
+
+function onNativeFlexShrinkPropertyChanged({object, newValue}: PropertyChangeData): void {
+    setLayoutParamsProperty(<View>object, lp => lp.flexShrink = newValue);
+}
+
+function onNativeAlignSelfPropertyChanged({object, newValue}: PropertyChangeData): void {
+    setLayoutParamsProperty(<View>object, lp => lp.alignSelf = alignSelfMap[newValue]);
+}
+
+function onNativeFlexWrapBeforePropertyChanged({object, newValue}: PropertyChangeData): void {
+    setLayoutParamsProperty(<View>object, lp => lp.wrapBefore = newValue);
+}
+
+(<PropertyMetadata>FlexboxLayoutBase.orderProperty.metadata).onSetNativeValue = onNativeOrderPropertyChanged;
+(<PropertyMetadata>FlexboxLayoutBase.flexGrowProperty.metadata).onSetNativeValue = onNativeFlexGrowPropertyChanged;
+(<PropertyMetadata>FlexboxLayoutBase.flexShrinkProperty.metadata).onSetNativeValue = onNativeFlexShrinkPropertyChanged;
+(<PropertyMetadata>FlexboxLayoutBase.alignSelfProperty.metadata).onSetNativeValue = onNativeAlignSelfPropertyChanged;
+(<PropertyMetadata>FlexboxLayoutBase.flexWrapBeforeProperty.metadata).onSetNativeValue = onNativeFlexWrapBeforePropertyChanged;
 
 export * from "./flexbox-layout-common";
 
@@ -96,35 +135,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this.android.setAlignContent(alignContentMap[alignContent]);
     }
 
-    protected onOrderPropertyChanged(view: View, oldValue: number, newValue: number): void {
-        this.setLayoutParamsProperty(view, lp => lp.order = newValue);
-    }
-
-    protected onFlexGrowPropertyChanged(view: View, oldValue: number, newValue: number): void {
-        this.setLayoutParamsProperty(view, lp => lp.flexGrow = newValue);
-    }
-
-    protected onFlexShrinkPropertyChanged(view: View, oldValue: number, newValue: number): void {
-        this.setLayoutParamsProperty(view, lp => lp.flexShrink = newValue);
-    }
-
-    protected onAlignSelfPropertyChanged(view: View, oldValue: AlignSelf, newValue: AlignSelf): void {
-        this.setLayoutParamsProperty(view, lp => lp.alignSelf = alignSelfMap[newValue]);
-    }
-
-    protected onFlexWrapBeforePropertyChanged(view: View, oldValue: boolean, newValue: boolean): void {
-        this.setLayoutParamsProperty(view, lp => lp.wrapBefore = newValue);
-    }
-
-    private setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams) => void) {
-        let nativeView: android.view.View = view._nativeView;
-        if (nativeView) {
-            var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.FlexboxLayout.LayoutParams();
-            if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
-                setter(lp);
-                nativeView.setLayoutParams(lp);
-            }
-        }
+    protected invalidate() {
+        // no operation
     }
 }
 

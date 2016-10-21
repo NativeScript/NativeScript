@@ -1,11 +1,3 @@
-@keyframes select {
-    0%, 100% {
-        transform: scale(1, 1);
-    }
-    50% {
-        transform: scale(1.4, 1.4);
-    }
-}
 #container>Label {
     border-width: 1;
     border-color: black;
@@ -13,16 +5,18 @@
 }
 #container>Label[selected="yes"] {
     border-color: yellow;
-    /* animation-name: select; 
-    animation-duration: 0.2s;
-    animation-fill-mode: forwards;
-    animation-iteration-count: 1;*/
 }
 
 .control {
     font-size: 11;
 }
+.control FlexboxLayout {
+    border-width: 0 0 1 1;
+    border-color: gray;
+}
 .control Button {
-    padding: 2;
-    margin: 2;
+    border-width: 1 1 0 0;
+    border-color: gray;
+    padding: 0;
+    height: 0;
 }
