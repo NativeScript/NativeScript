@@ -34,7 +34,11 @@ class Window extends UIWindow {
     }
 
     public layoutSubviews(): void {
-        uiUtils.ios._layoutRootView(this._content, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+        if (utils.ios.MajorVersion < 9) {
+            uiUtils.ios._layoutRootView(this._content, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+        }else{
+            uiUtils.ios._layoutRootView(this._content, this.frame);
+        }
     }
 }
 
