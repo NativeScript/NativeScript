@@ -21,10 +21,13 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 class TabStrip extends LinearLayout {
 
@@ -46,6 +49,10 @@ class TabStrip extends LinearLayout {
 
     private TabLayout.TabColorizer mCustomTabColorizer;
     private final SimpleTabColorizer mDefaultTabColorizer;
+
+    private int mDefaultTabTextColor;
+    private Integer mTabTextColor;
+    private Integer mSelectedTabTextColor;
 
     TabStrip(Context context) {
         this(context, null);
@@ -74,6 +81,9 @@ class TabStrip extends LinearLayout {
 
         mSelectedIndicatorThickness = (int) (SELECTED_INDICATOR_THICKNESS_DIPS * density);
         mSelectedIndicatorPaint = new Paint();
+
+        TextView defaultTextView = new TextView(context);
+        mDefaultTabTextColor = defaultTextView.getTextColors().getDefaultColor();
     }
 
     void setCustomTabColorizer(TabLayout.TabColorizer customTabColorizer) {
@@ -88,10 +98,53 @@ class TabStrip extends LinearLayout {
         invalidate();
     }
 
+    void setTabTextColor(Integer color){
+        mTabTextColor = color;
+        updateTabsTextColor();
+    }
+
+    Integer getTabTextColor(){
+        return mTabTextColor;
+    }
+
+    void setSelectedTabTextColor(Integer color){
+        mSelectedTabTextColor = color;
+        updateTabsTextColor();
+    }
+
+    Integer getSelectedTabTextColor(){
+        return mSelectedTabTextColor;
+    }
+
+    private void updateTabsTextColor(){
+        final int childCount = getChildCount();
+        for (int i = 0; i < childCount; i++){
+            LinearLayout linearLayout = (LinearLayout)getChildAt(i);
+            TextView textView = (TextView)linearLayout.getChildAt(1);
+            if (i == mSelectedPosition){
+                if (mSelectedTabTextColor != null){
+                    textView.setTextColor(mSelectedTabTextColor);
+                }
+                else {
+                    textView.setTextColor(mDefaultTabTextColor);
+                }
+            }
+            else {
+                if (mTabTextColor != null){
+                    textView.setTextColor(mTabTextColor);
+                }
+                else {
+                    textView.setTextColor(mDefaultTabTextColor);
+                }
+            }
+        }
+    }
+
     void onViewPagerPageChanged(int position, float positionOffset) {
         mSelectedPosition = position;
         mSelectionOffset = positionOffset;
         invalidate();
+        updateTabsTextColor();
     }
 
     @Override
