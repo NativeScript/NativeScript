@@ -49,7 +49,6 @@ declare module "ui/tab-view" {
     class TabView extends view.View {
         public static itemsProperty: dependencyObservable.Property;
         public static selectedIndexProperty: dependencyObservable.Property;
-        public static selectedColorProperty: dependencyObservable.Property;
 
         /**
          * Gets or sets the items of the TabView.
@@ -62,14 +61,39 @@ declare module "ui/tab-view" {
         selectedIndex: number;
 
         /**
-         * Gets or sets the color used for selected item.
+         * [Deprecated. Please use `selectedTabTextColor` to color the titles of the tabs on both platforms and `androidSelectedTabHighlightColor` to color the horizontal line at the bottom of the tab on Android.] Gets or sets the color used for selected item.
          */
         selectedColor: color.Color;
 
         /**
-         * Gets or sets the color used for background of the tab items.
+         * [Deprecated. Please use `tabBackgroundColor` instead] Gets or sets the color used for background of the tab items.
          */
         tabsBackgroundColor: color.Color;
+
+        /**
+         * Gets or sets the text color of the tabs titles.
+         */
+        tabTextColor: color.Color;
+        
+        /**
+         * Gets or sets the background color of the tabs.
+         */
+        tabBackgroundColor: color.Color;
+        
+        /**
+         * Gets or sets the text color of the selected tab title.
+         */
+        selectedTabTextColor: color.Color;
+       
+        /**
+         * Gets or sets the color of the horizontal line drawn below the currently selected tab on Android.
+         */
+        androidSelectedTabHighlightColor: color.Color;
+        
+        /**
+         * Gets or sets the text transform of the tab titles. 
+         */
+        textTransform: string;
 
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.

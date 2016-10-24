@@ -4,12 +4,10 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import trace = require("trace");
 import view = require("ui/core/view");
 import types = require("utils/types");
-import proxy = require("ui/core/proxy");
 import color = require("color");
 import * as imageSourceModule from "image-source";
 import style = require("ui/styling/style");
 import { Page } from "ui/page";
-
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 
@@ -144,20 +142,6 @@ export class TabViewItem extends common.TabViewItem {
         }
     }
 }
-
-function selectedColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var tabView = <TabView>data.object;
-    tabView._updateIOSTabBarColorsAndFonts();
-}
-(<proxy.PropertyMetadata>common.TabView.selectedColorProperty.metadata).onSetNativeValue = selectedColorPropertyChanged;
-
-function tabsBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var tabView = <TabView>data.object;
-    if (data.newValue instanceof color.Color) {
-        tabView.ios.tabBar.barTintColor = data.newValue.ios;
-    }
-}
-(<proxy.PropertyMetadata>common.TabView.tabsBackgroundColorProperty.metadata).onSetNativeValue = tabsBackgroundColorPropertyChanged;
 
 export class TabView extends common.TabView {
     public _ios: UITabBarControllerImpl;
@@ -416,27 +400,42 @@ export class TabView extends common.TabView {
         }
 
         var tabBar = this.ios.tabBar;
-
-        tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null;
         var states = getTitleAttributesForStates(this);
-
         for (var i = 0; i < tabBar.items.count; i++) {
             var item = <UITabBarItem>tabBar.items[i];
             item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
             item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
         }
     }
+
+    public _updateIOSTabBarTextTransform(newValue: string): void {
+        if (!this.items) {
+            return;
+        }
+
+        var tabBar = this.ios.tabBar;
+        for (let i = 0; i < tabBar.items.count; i++) {
+            let item = <UITabBarItem>tabBar.items[i];
+            if (types.isNullOrUndefined(newValue)){
+                // Reset to original
+                item.title = this.items[i].title;
+            }
+            else {
+                item.title = utils.ios.getTransformedText({text: this.items[i].title}, this.items[i].title, newValue);
+            }
+        }
+    }
 }
 
 function getTitleAttributesForStates(tabView: TabView): { normalState: any, selectedState: any } {
     var normalState = {};
-    if (tabView.color instanceof color.Color) {
-        normalState[UITextAttributeTextColor] = tabView.color.ios;
+    if (tabView.tabTextColor instanceof color.Color) {
+        normalState[UITextAttributeTextColor] = tabView.tabTextColor.ios;
     }
 
     var selectedState = {};
-    if (tabView.selectedColor instanceof color.Color) {
-        selectedState[UITextAttributeTextColor] = tabView.selectedColor.ios;
+    if (tabView.selectedTabTextColor instanceof color.Color) {
+        selectedState[UITextAttributeTextColor] = tabView.selectedTabTextColor.ios;
     }
     else {
         selectedState[UITextAttributeTextColor] = tabView.ios.tabBar.tintColor;
@@ -454,17 +453,6 @@ function getTitleAttributesForStates(tabView: TabView): { normalState: any, sele
 }
 
 export class TabViewStyler implements style.Styler {
-    // color
-    private static setColorProperty(v: view.View, newValue: any) {
-        var tab = <definition.TabView>v;
-        tab._updateIOSTabBarColorsAndFonts();
-    }
-
-    private static resetColorProperty(v: view.View, nativeValue: any) {
-        var tab = <definition.TabView>v;
-        tab._updateIOSTabBarColorsAndFonts();
-    }
-
     // font
     private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
         var tab = <definition.TabView>v;
@@ -495,15 +483,85 @@ export class TabViewStyler implements style.Styler {
         return currentFont;
     }
 
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TabViewStyler.setColorProperty,
-            TabViewStyler.resetColorProperty), "TabView");
+    // tab-text-color
+    private static setTabTextColorProperty(v: view.View, newValue: any) {
+        var tabView = <definition.TabView>v;
+        tabView._updateIOSTabBarColorsAndFonts();
+    }
 
+    private static resetTabTextColorProperty(v: view.View, nativeValue: any) {
+        var tabView = <definition.TabView>v;
+        tabView._updateIOSTabBarColorsAndFonts();
+    }
+
+    // tab-background-color
+    private static setTabBackgroundColorProperty(v: view.View, newValue: any) {
+        let tabView = <TabView>v;
+        tabView.ios.tabBar.barTintColor = newValue;
+    }
+
+    private static resetTabBackgroundColorProperty(v: view.View, nativeValue: any) {
+        let tabView = <TabView>v;
+        tabView.ios.tabBar.barTintColor = nativeValue;
+    }
+
+    private static getTabBackgroundColorProperty(v: view.View): any {
+        let tabView = <TabView>v;
+        return tabView.ios.tabBar.barTintColor;
+    }
+
+    // selected-tab-text-color
+    private static setSelectedTabTextColorProperty(v: view.View, newValue: any) {
+        var tabView = <definition.TabView>v;
+        tabView.ios.tabBar.tintColor = newValue;
+        tabView._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static resetSelectedTabTextColorProperty(v: view.View, nativeValue: any) {
+        var tabView = <definition.TabView>v;
+        tabView.ios.tabBar.tintColor = nativeValue;
+        tabView._updateIOSTabBarColorsAndFonts();
+    }
+
+    private static getSelectedTabTextColorProperty(v: view.View) {
+        var tabView = <definition.TabView>v;
+        return tabView.ios.tabBar.tintColor;
+    }
+
+    // text-transform
+    private static setTextTransformProperty(v: view.View, newValue: any) {
+        var tabView = <TabView>v;
+        tabView._updateIOSTabBarTextTransform(newValue);
+    }
+
+    private static resetTextTransformProperty(v: view.View, nativeValue: any) {
+        var tabView = <TabView>v;
+        tabView._updateIOSTabBarTextTransform(nativeValue);
+    }
+
+    public static registerHandlers() {
         style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
             TabViewStyler.setFontInternalProperty,
             TabViewStyler.resetFontInternalProperty,
             TabViewStyler.getNativeFontValue), "TabView");
+
+        style.registerHandler(style.tabTextColorProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setTabTextColorProperty,
+            TabViewStyler.resetTabTextColorProperty), "TabView");
+        
+        style.registerHandler(style.tabBackgroundColorProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setTabBackgroundColorProperty,
+            TabViewStyler.resetTabBackgroundColorProperty,
+            TabViewStyler.getTabBackgroundColorProperty), "TabView");
+
+        style.registerHandler(style.selectedTabTextColorProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setSelectedTabTextColorProperty,
+            TabViewStyler.resetSelectedTabTextColorProperty,
+            TabViewStyler.getSelectedTabTextColorProperty), "TabView");
+
+        style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
+            TabViewStyler.setTextTransformProperty,
+            TabViewStyler.resetTextTransformProperty), "TabView");
     }
 }
 
