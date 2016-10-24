@@ -87,8 +87,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _flexLines: FlexLine[] = [];
     private _childrenFrozen: boolean[];
 
-    public FlexboxLayout() {
-        //
+    protected invalidate() {
+        this.requestLayout();
     }
 
     protected setNativeFlexDirection(flexDirection: FlexDirection) {
@@ -104,22 +104,6 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         // lint happy no-op
     }
     protected setNativeAlignContent(alignContent: AlignContent) {
-        // lint happy no-op
-    }
-
-    protected onOrderPropertyChanged(element: View, oldValue: number, newValue: number): void {
-        // lint happy no-op
-    }
-    protected onFlexGrowPropertyChanged(element: View, oldValue: number, newValue: number): void {
-        // lint happy no-op
-    }
-    protected onFlexShrinkPropertyChanged(element: View, oldValue: number, newValue: number): void {
-        // lint happy no-op
-    }
-    protected onAlignSelfPropertyChanged(element: View, oldValue: AlignSelf, newValue: AlignSelf): void {
-        // lint happy no-op
-    }
-    protected onFlexWrapBeforePropertyChanged(element: View, oldValue: boolean, newValue: boolean): void {
         // lint happy no-op
     }
 
@@ -147,13 +131,19 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             default:
                 throw new Error("Invalid value for the flex direction is set: " + this.flexDirection);
         }
+
+        this._childrenFrozen.length = 0;
     }
 
     private _getReorderedChildAt(index: number): View {
+        let child: View;
         if (index < 0 || index >= this._reorderedIndices.length) {
-            return null;
+            child = null;
+        } else {
+            let reorderedIndex = this._reorderedIndices[index];
+            child = this.getChildAt(reorderedIndex);
         }
-        return this.getChildAt(this._reorderedIndices[index]);
+        return child;
     }
 
     public addChild(child: View) {
@@ -169,8 +159,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     private _createReorderedIndices(viewBeforeAdded: View, indexForViewBeforeAdded: number, paramsForViewBeforeAdded: FlexboxLayout.LayoutParams): number[];
     private _createReorderedIndices(): number[];
-    private _createReorderedIndices(viewBeforeAdded?: View, indexForViewBeforeAdded?: number, paramsForViewBeforeAdded?: FlexboxLayout.LayoutParams)
-    {
+    private _createReorderedIndices(viewBeforeAdded?: View, indexForViewBeforeAdded?: number, paramsForViewBeforeAdded?: FlexboxLayout.LayoutParams) {
         if (arguments.length === 0) {
             let childCount = this.getChildrenCount();
             let orders = this._createOrders(childCount);
@@ -202,7 +191,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _sortOrdersIntoReorderedIndices(childCount: number, orders: Order[]): number[] {
-        orders.sort(/* TODO: Orders... use the comparer? */);
+        orders.sort((a, b) => a.compareTo(b));
         if (!this._orderCache) {
             this._orderCache = [];
         }
@@ -348,11 +337,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     if (this.flexWrap !== FlexWrap.WRAP_REVERSE) {
                         let marginTop = flexLine._maxBaseline - FlexboxLayout.getBaseline(child);
                         marginTop = Math.max(marginTop, lp.topMargin);
-                        largestHeightInLine = Math.max(largestHeightInLine, child.height + marginTop + lp.bottomMargin);
+                        largestHeightInLine = Math.max(largestHeightInLine, child.getActualSize().height + marginTop + lp.bottomMargin);
                     } else {
                         let marginBottom = flexLine._maxBaseline - child.getMeasuredHeight() + FlexboxLayout.getBaseline(child);
                         marginBottom = Math.max(marginBottom, lp.bottomMargin);
-                        largestHeightInLine = Math.max(largestHeightInLine, child.height + lp.topMargin + marginBottom);
+                        largestHeightInLine = Math.max(largestHeightInLine, child.getActualSize().height + lp.topMargin + marginBottom);
                     }
                 }
                 flexLine._crossSize = largestHeightInLine;
@@ -535,7 +524,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         }
         let sizeBeforeExpand = flexLine._mainSize;
         let needsReexpand = false;
-        let unitSpace = (maxMainSize - flexLine._mainSize) / flexLine._totalFlexGrow;
+        let pendingSpace = maxMainSize - flexLine._mainSize;
+        let unitSpace = pendingSpace / flexLine._totalFlexGrow;
         flexLine._mainSize = paddingAlongMainAxis + flexLine._dividerLengthInMainSize;
         let accumulatedRoundError = 0;
         for (let i = 0; i < flexLine.itemCount; i++) {
@@ -549,54 +539,32 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             let lp = FlexboxLayout.getLayoutParams(child);
             if (this._isMainAxisDirectionHorizontal(flexDirection)) {
                 if (!this._childrenFrozen[childIndex]) {
-                    let rawCalculatedWidth = child.getMeasuredWidth() + unitSpace * lp.flexGrow;
-                    if (i === flexLine.itemCount - 1) {
-                        rawCalculatedWidth += accumulatedRoundError;
-                        accumulatedRoundError = 0;
-                    }
-                    let newWidth = Math.round(rawCalculatedWidth);
-                    if (newWidth > lp.maxWidth) {
+                    let rawCalculatedWidth = child.getMeasuredWidth() + unitSpace * lp.flexGrow + accumulatedRoundError;
+                    let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
+                    if (roundedCalculatedWidth > lp.maxWidth) {
                         needsReexpand = true;
-                        newWidth = lp.maxWidth;
+                        roundedCalculatedWidth = lp.maxWidth;
                         this._childrenFrozen[childIndex] = true;
                         flexLine._totalFlexGrow -= lp.flexGrow;
                     } else {
-                        accumulatedRoundError += (rawCalculatedWidth - newWidth);
-                        if (accumulatedRoundError > 1.0) {
-                            newWidth += 1;
-                            accumulatedRoundError -= 1.0;
-                        } else if (accumulatedRoundError < -1.0) {
-                            newWidth -= 1;
-                            accumulatedRoundError += 1.0;
-                        }
+                        accumulatedRoundError = rawCalculatedWidth - roundedCalculatedWidth;
                     }
-                    child.measure(makeMeasureSpec(newWidth, EXACTLY), makeMeasureSpec(child.getMeasuredHeight(), EXACTLY));
+                    child.measure(makeMeasureSpec(roundedCalculatedWidth, EXACTLY), makeMeasureSpec(child.getMeasuredHeight(), EXACTLY));
                 }
                 flexLine._mainSize += child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
             } else {
                 if (!this._childrenFrozen[childIndex]) {
-                    let rawCalculatedHeight = child.getMeasuredHeight() + unitSpace * lp.flexGrow;
-                    if (i === flexLine._itemCount - 1) {
-                        rawCalculatedHeight += accumulatedRoundError;
-                        accumulatedRoundError = 0;
-                    }
-                    let newHeight = Math.round(rawCalculatedHeight);
-                    if (newHeight > lp.maxHeight) {
+                    let rawCalculatedHeight = child.getMeasuredHeight() + unitSpace * lp.flexGrow + accumulatedRoundError;
+                    let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
+                    if (roundedCalculatedHeight > lp.maxHeight) {
                         needsReexpand = true;
-                        newHeight = lp.maxHeight;
+                        roundedCalculatedHeight = lp.maxHeight;
                         this._childrenFrozen[childIndex] = true;
                         flexLine._totalFlexGrow -= lp.flexGrow;
                     } else {
-                        accumulatedRoundError += (rawCalculatedHeight - newHeight);
-                        if (accumulatedRoundError > 1.0) {
-                            newHeight += 1;
-                            accumulatedRoundError -= 1.0;
-                        } else if (accumulatedRoundError < -1.0) {
-                            newHeight -= 1;
-                            accumulatedRoundError += 1.0;
-                        }
+                        accumulatedRoundError = rawCalculatedHeight - roundedCalculatedHeight;
                     }
-                    child.measure(makeMeasureSpec(child.getMeasuredWidth(), EXACTLY), makeMeasureSpec(newHeight, EXACTLY));
+                    child.measure(makeMeasureSpec(child.getMeasuredWidth(), EXACTLY), makeMeasureSpec(roundedCalculatedHeight, EXACTLY));
                 }
                 flexLine._mainSize += child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
             }
