@@ -99,7 +99,7 @@ export module ad {
         }
     }
 
-    function getTransformedString(textTransform: string, view, stringToTransform: string): string {
+    export function getTransformedString(textTransform: string, view, stringToTransform: string): string {
         let result: string;
 
         switch (textTransform) {

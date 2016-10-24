@@ -297,6 +297,27 @@
          */
         letterSpacing: number;
 
+        // TabView-specific props
+        /**
+         * Gets or sets the tab text color TabView style property 
+         */
+        tabTextColor: color.Color;
+
+        /**
+         * Gets or sets the tab background color TabView style property 
+         */
+        tabBackgroundColor: color.Color;
+
+        /**
+         * Gets or sets the selected tab text color TabView style property 
+         */
+        selectedTabTextColor: color.Color;
+
+        /**
+         * Gets or sets the selected tab highlight color TabView style property for Android 
+         */
+        androidSelectedTabHighlightColor: color.Color;
+
         //@private
         public _beginUpdate();
         public _endUpdate();

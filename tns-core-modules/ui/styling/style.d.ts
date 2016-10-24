@@ -101,6 +101,12 @@ declare module "ui/styling/style" {
         public whiteSpace: string;
         public letterSpacing: number;
         public zIndex: number;
+        
+        // TabView-specific props
+        public tabTextColor: Color;
+        public tabBackgroundColor: Color;
+        public selectedTabTextColor: Color;
+        public androidSelectedTabHighlightColor: Color;
 
         constructor(parentView: View);
 
@@ -165,6 +171,11 @@ declare module "ui/styling/style" {
     export var whiteSpaceProperty: styleProperty.Property;
     export var letterSpacingProperty: styleProperty.Property;
     export var zIndexProperty: styleProperty.Property;
+
+    export var tabTextColorProperty: styleProperty.Property;
+    export var tabBackgroundColorProperty: styleProperty.Property;
+    export var selectedTabTextColorProperty: styleProperty.Property;
+    export var androidSelectedTabHighlightColorProperty: styleProperty.Property;
 
     // Helper property holding most layout related properties available in CSS.
     // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

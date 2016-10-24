@@ -343,6 +343,11 @@
                 constructor(context: android.content.Context, attrs: android.util.IAttributeSet, defStyle: number);
 
                 setSelectedIndicatorColors(color: Array<number>): void;
+                getSelectedIndicatorColors(): Array<number>;
+                setTabTextColor(color: java.lang.Integer): void;
+                getTabTextColor(): java.lang.Integer;
+                setSelectedTabTextColor(color: java.lang.Integer): void;
+                getSelectedTabTextColor(): java.lang.Integer;
 
                 setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;

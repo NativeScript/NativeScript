@@ -81,6 +81,7 @@
         export function setTextTransform(view, value: string);
         export function setWhiteSpace(view, value: string);
         export function setTextDecoration(view, value: string);
+        export function getTransformedString(textTransform: string, view, stringToTransform: string): string;
 
         /**
          * Gets the native Android application instance.

@@ -835,6 +835,35 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(zIndexProperty, value);
     }
 
+    // TabView-specific properties
+    get tabTextColor(): Color {
+        return this._getValue(tabTextColorProperty);
+    }
+    set tabTextColor(value: Color) {
+        this._setValue(tabTextColorProperty, value);
+    }
+
+    get tabBackgroundColor(): Color {
+        return this._getValue(tabBackgroundColorProperty);
+    }
+    set tabBackgroundColor(value: Color) {
+        this._setValue(tabBackgroundColorProperty, value);
+    }
+
+    get selectedTabTextColor(): Color {
+        return this._getValue(selectedTabTextColorProperty);
+    }
+    set selectedTabTextColor(value: Color) {
+        this._setValue(selectedTabTextColorProperty, value);
+    }
+
+    get androidSelectedTabHighlightColor(): Color {
+        return this._getValue(androidSelectedTabHighlightColorProperty);
+    }
+    set androidSelectedTabHighlightColor(value: Color) {
+        this._setValue(androidSelectedTabHighlightColorProperty, value);
+    }
+
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
             this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
@@ -1085,6 +1114,23 @@ export var letterSpacingProperty = new styleProperty.Property("letterSpacing", "
 
 export var zIndexProperty = new styleProperty.Property("zIndex", "z-index",
     new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), converters.floatConverter);
+
+//TabView-specific props
+export var tabTextColorProperty = new styleProperty.Property("tabTextColor", "tab-text-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+export var tabBackgroundColorProperty = new styleProperty.Property("tabBackgroundColor", "tab-background-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+export var selectedTabTextColorProperty = new styleProperty.Property("selectedTabTextColor", "selected-tab-text-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+export var androidSelectedTabHighlightColorProperty = new styleProperty.Property("androidSelectedTabHighlightColor", "android-selected-tab-highlight-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
@@ -1703,3 +1749,4 @@ function onBorderRadiusChanged(value: any): Array<styleProperty.KeyValuePair<sty
 styleProperty.registerShorthandCallback("border-color", onBorderColorChanged);
 styleProperty.registerShorthandCallback("border-width", onBorderWidthChanged);
 styleProperty.registerShorthandCallback("border-radius", onBorderRadiusChanged);
+

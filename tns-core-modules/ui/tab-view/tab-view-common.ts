@@ -62,8 +62,6 @@ export class TabViewItem extends Bindable implements definition.TabViewItem {
 var TAB_VIEW = "TabView";
 var ITEMS = "items";
 var SELECTED_INDEX = "selectedIndex";
-var SELECTED_COLOR = "selectedColor";
-var TABS_BACKGROUND_COLOR = "tabsBackgroundColor";
 
 export module knownCollections {
     export var items = "items";
@@ -71,8 +69,6 @@ export module knownCollections {
 
 var itemsProperty = new Property(ITEMS, TAB_VIEW, new PropertyMetadata(undefined, AffectsLayout));
 var selectedIndexProperty = new Property(SELECTED_INDEX, TAB_VIEW, new PropertyMetadata(undefined, AffectsLayout));
-var selectedColorProperty = new Property(SELECTED_COLOR, TAB_VIEW, new PropertyMetadata(undefined));
-var tabsBackgroundColorProperty = new Property(TABS_BACKGROUND_COLOR, TAB_VIEW, new PropertyMetadata(undefined));
 
 (<PropertyMetadata>selectedIndexProperty.metadata).onSetNativeValue = function (data: PropertyChangeData) {
     var tabView = <TabView>data.object;
@@ -87,8 +83,6 @@ var tabsBackgroundColorProperty = new Property(TABS_BACKGROUND_COLOR, TAB_VIEW, 
 export class TabView extends View implements definition.TabView, AddArrayFromBuilder {
     public static itemsProperty = itemsProperty;
     public static selectedIndexProperty = selectedIndexProperty;
-    public static selectedColorProperty = selectedColorProperty;
-    public static tabsBackgroundColorProperty = tabsBackgroundColorProperty;
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
@@ -180,20 +174,67 @@ export class TabView extends View implements definition.TabView, AddArrayFromBui
         this._setValue(TabView.selectedIndexProperty, value);
     }
 
+    // [Deprecated. Please use `selectedTabTextColor` to color the titles of the tabs on both platforms and `androidSelectedTabHighlightColor` to color the horizontal line at the bottom of the tab on Android.]
     get selectedColor(): color.Color {
-        return this._getValue(TabView.selectedColorProperty);
+        // Avoid breaking changes and keep the old behavior until we remove this prop
+        if (isAndroid){
+            return this.style.androidSelectedTabHighlightColor;
+        }
+        else {
+            return this.style.selectedTabTextColor;
+        }
     }
     set selectedColor(value: color.Color) {
-        this._setValue(TabView.selectedColorProperty,
-            value instanceof color.Color ? value : new color.Color(<any>value));
+        // Avoid breaking changes and keep the old behavior until we remove this prop
+        if (isAndroid){
+            this.style.androidSelectedTabHighlightColor = value;;
+        }
+        else {
+            this.style.selectedTabTextColor = value;
+        }
     }
 
+    // [Deprecated. Please use `tabBackgroundColor` instead]
     get tabsBackgroundColor(): color.Color {
-        return this._getValue(TabView.tabsBackgroundColorProperty);
+        return this.style.tabBackgroundColor;
     }
     set tabsBackgroundColor(value: color.Color) {
-        this._setValue(TabView.tabsBackgroundColorProperty,
-            value instanceof color.Color ? value : new color.Color(<any>value));
+        this.style.tabBackgroundColor = value;
+    }
+
+    get tabTextColor(): color.Color {
+        return this.style.tabTextColor;
+    }
+    set tabTextColor(value: color.Color) {
+        this.style.tabTextColor = value;
+    }
+
+    get tabBackgroundColor(): color.Color {
+        return this.style.tabBackgroundColor;
+    }
+    set tabBackgroundColor(value: color.Color) {
+        this.style.tabBackgroundColor = value;
+    }
+
+    get selectedTabTextColor(): color.Color {
+        return this.style.selectedTabTextColor;
+    }
+    set selectedTabTextColor(value: color.Color) {
+        this.style.selectedTabTextColor = value;
+    }
+
+    get androidSelectedTabHighlightColor(): color.Color {
+        return this.style.androidSelectedTabHighlightColor;
+    }
+    set androidSelectedTabHighlightColor(value: color.Color) {
+        this.style.androidSelectedTabHighlightColor = value;
+    }
+
+    get textTransform(): string {
+        return this.style.textTransform;
+    }
+    set textTransform(value: string) {
+        this.style.textTransform = value;
     }
 
     public _onSelectedIndexPropertyChangedSetNativeValue(data: PropertyChangeData) {
