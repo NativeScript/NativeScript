@@ -23,6 +23,7 @@ import {Label} from "ui/label";
 import {LayoutBase} from  "ui/layouts/layout-base";
 import * as helper from "../helper";
 import viewModule = require("ui/core/view");
+import {Page} from "ui/page";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
@@ -664,5 +665,20 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
+    });
+}
+
+export var test_applying_disabled_visual_State_when_label_is_disable = function () {
+    let view = new Label();
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        var view = <Label>views[0];
+        var page = <Page>views[1];
+        var expectedColor = "#ffff0000";
+        page.css = "label:disabled { background-color: " + expectedColor + "; }";
+
+        view.isEnabled = false;
+
+        var actualResult = labelTestsNative.getNativeBackgroundColor(view);
+        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
     });
 }

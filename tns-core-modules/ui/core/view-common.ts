@@ -552,6 +552,11 @@ export class View extends ProxyObject implements definition.View {
     }
     set isEnabled(value: boolean) {
         this._setValue(View.isEnabledProperty, value);
+        if (value === false) {
+            this._goToVisualState('disabled');
+        } else {
+            this._goToVisualState('normal');   
+        }
     }
 
     get page(): definition.View {
@@ -757,17 +762,41 @@ export class View extends ProxyObject implements definition.View {
         //
     }
 
+    private pseudoClassAliases = {
+        'highlighted': [
+            'active',
+            'pressed'
+        ]
+    };
+
+    private getAllAliasedStates(name: string): Array<string> {
+        let allStates = [];
+        allStates.push(name);
+        if (name in this.pseudoClassAliases) {
+            for (let i = 0; i < this.pseudoClassAliases[name].length; i++) {
+                allStates.push(this.pseudoClassAliases[name][i]);
+            }
+        }
+        return allStates;
+    }
+
     public addPseudoClass(name: string): void {
-        if (!this.cssPseudoClasses.has(name)) {
-            this.cssPseudoClasses.add(name);
-            this.notifyPseudoClassChanged(name);
+        let allStates = this.getAllAliasedStates(name);
+        for (let i = 0; i < allStates.length; i++) {
+            if (!this.cssPseudoClasses.has(allStates[i])) {
+                this.cssPseudoClasses.add(allStates[i]);
+                this.notifyPseudoClassChanged(allStates[i]);
+            }
         }
     }
 
     public deletePseudoClass(name: string): void {
-        if (this.cssPseudoClasses.has(name)) {
-            this.cssPseudoClasses.delete(name);
-            this.notifyPseudoClassChanged(name);
+        let allStates = this.getAllAliasedStates(name);
+        for (let i = 0; i < allStates.length; i++) {
+            if (this.cssPseudoClasses.has(allStates[i])) {
+                this.cssPseudoClasses.delete(allStates[i]);
+                this.notifyPseudoClassChanged(allStates[i]);
+            }
         }
     }
 
