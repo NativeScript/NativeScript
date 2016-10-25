@@ -1,0 +1,47 @@
+<!-- >> flexbox-layout-page -->
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <FlexboxLayout flexDirection="column">
+        <!-- Reverse the natural flow of items -->
+        <FlexboxLayout height="22" flexDirection="row-reverse">
+            <!-- Use even flexGrow to achieve uniform grid -->
+            <Label text="1" backgroundColor="#EEEEEE" flexGrow="1" id="one" />
+            <Label text="2" backgroundColor="#DDDDDD" flexGrow="1" />
+            <Label text="3" backgroundColor="#CCCCCC" flexGrow="1" />
+            <Label text="4" backgroundColor="#BBBBBB" flexGrow="1" />
+            <Label text="5" backgroundColor="#AAAAAA" flexGrow="1" />
+            <Label text="6" backgroundColor="#999999" flexGrow="1" id="six" />
+        </FlexboxLayout>
+
+        <!-- Set flexGrow to accomodate into any extra space -->
+        <ScrollView flexGrow="1" id="scrollview">
+
+            <!-- Wrap excessive items on new lines -->
+            <FlexboxLayout flexWrap="wrap" alignContent="flex-start">
+
+                <Label textWrap="wrap" text="Sed aliquet diam sed augue vestibulum scelerisque." id="title" />
+
+                <!-- Use flexWrapBefore to control explicit line wrapping -->
+                <Label text="Gihub issue labels:" flexWrapBefore="true" fontSize="11" />
+
+                <Label text="S: High" flexWrapBefore="true" borderRadius="5" backgroundColor="red" margin="2" id="firstlabel" />
+                <Label text="T: Feature" borderRadius="5" backgroundColor="green" margin="2"/>
+                <Label text="3 - In Progress" borderRadius="5" backgroundColor="gray" margin="2"/>
+                <Label text="S: Ullamcorper" borderRadius="5" backgroundColor="red" margin="2" />
+                <Label text="T: Vulputate" borderRadius="5" backgroundColor="green" margin="2"/>
+                <Label text="2 - Egestas magna" borderRadius="5" backgroundColor="gray" margin="2"/>
+                <Label text="S: High" borderRadius="5" backgroundColor="red" margin="2" />
+                <Label text="T: Phasellus" borderRadius="5" backgroundColor="green" margin="2"/>
+                <Label text="Nullam" borderRadius="5" backgroundColor="gray" margin="2"/>
+
+                <Label flexWrapBefore="true" textWrap="wrap" text="Pellentesque molestie nibh et leo facilisis gravida ac porttitor eros. Etiam tempus diam nulla, ut fermentum mauris aliquet quis. Cras finibus vitae magna in bibendum." id="description" />
+            </FlexboxLayout>
+        </ScrollView>
+        <FlexboxLayout>
+            <Button text="&lt;" width="50" backgroundColor="gray" />
+            <!-- Set flexGrow to 1 accomodate into any extra space -->
+            <Button text="reactions" flexGrow="1" backgroundColor="darkgray" />
+            <Button text="&gt;" width="50" backgroundColor="gray" />
+        </FlexboxLayout>
+    </FlexboxLayout>
+</Page>
+<!-- << flexbox-layout-page -->

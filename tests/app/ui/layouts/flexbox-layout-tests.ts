@@ -1,18 +1,23 @@
+// >> flexbox-layout-require
 import {
     FlexboxLayout,
+    FlexDirection,
     FlexWrap,
+    JustifyContent,
     AlignItems,
     AlignContent,
-    AlignSelf,
-    FlexDirection,
-    JustifyContent
+    AlignSelf
 } from "ui/layouts/flexbox-layout";
+// << flexbox-layout-require
+
 import {View} from "ui/core/view";
 import {Label} from "ui/label";
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import {layout} from "utils/utils";
 import {parse} from "ui/builder";
+
+// TODO: Test the flexbox-layout-page.xml can be loaded and displayed
 
 import dipToDp = layout.toDevicePixels;
 
@@ -162,6 +167,17 @@ function isBelow(view1: View, view2: View) {
 function isAbove(view1: View, view2: View) {
     let { bounds1, bounds2 } = comparableBounds(view1, view2);
     TKUnit.assert(bounds1.bottom <= bounds2.top, `${view1}.bottom: ${bounds1.bottom} is not above ${view2}.top: ${bounds2.top}`);
+}
+
+export function testFlexboxPage() {
+    let page = helper.navigateWithEntry({ moduleName: "ui/layouts/flexbox-layout-page" });
+    function view(id: string) {
+        return page.getViewById(id);
+    }
+    isLeftOf(view("six"), view("one"));
+    isAbove(view("one"), view("scrollview"));
+    isAbove(view("title"), view("firstlabel"));
+    isAbove(view("firstlabel"), view("description"));
 }
 
 const noop = () => {
