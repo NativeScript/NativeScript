@@ -13,9 +13,6 @@ function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     let lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
         onActivityCreated: function (activity: any, bundle: any) {
-
-            console.log("------> onActivityCreated: " + activity + " activity.isNativeScriptActivity: " + activity.isNativeScriptActivity);
-
             // Set app theme after launch screen was used during startup
             let activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
             if (activityInfo.metaData) {
