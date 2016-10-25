@@ -1,9 +1,11 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+<Page 
+  xmlns="http://schemas.nativescript.org/tns.xsd">
   <TabView id="test-element">
     <TabView.items>
       <TabViewItem title="IteM onE">
         <TabViewItem.view>
-          <StackLayout>
+          <ScrollView>
+            <StackLayout>
               <Button text="tab-text-color: green;" tap="applyTap" tag="tab-text-color: green;" style.fontSize="8"/>
               <Button text="tab-background-color: yellow;" tap="applyTap" tag="tab-background-color: yellow;" style.fontSize="8"/>
               <Button text="selected-tab-text-color: red;" tap="applyTap" tag="selected-tab-text-color: red;" style.fontSize="8"/>
@@ -14,17 +16,18 @@
               <Button text="text-transform: none;" tap="applyTap" tag="text-transform: none;" style.fontSize="8"/>
               <Button text="all" tap="applyTap" tag="tab-text-color: green; tab-background-color: yellow; selected-tab-text-color: red; android-selected-tab-highlight-color: orange; text-transform: uppercase;" style.fontSize="8"/>
               <Button text="reset" tap="resetTap" style.fontSize="8"/>
-          </StackLayout>
+            </StackLayout>
+          </ScrollView>
         </TabViewItem.view>
       </TabViewItem>
       <TabViewItem title="IteM twO">
         <TabViewItem.view>
-            <Label text="Item 2"/>
+          <Label text="Item 2"/>
         </TabViewItem.view>
       </TabViewItem>
       <TabViewItem title="IteM threE">
         <TabViewItem.view>
-            <Label text="Item 3"/>
+          <Label text="Item 3"/>
         </TabViewItem.view>
       </TabViewItem>
     </TabView.items>
