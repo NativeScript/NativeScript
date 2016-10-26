@@ -35,6 +35,7 @@ export function pageLoaded(args: EventData) {
     examples.set("measure-tests", "css/measure-tests");
     examples.set("all-uniform-border", "css/all-uniform-border");
     examples.set("all-non-uniform-border", "css/all-non-uniform-border");
+    examples.set("margins-paddings-with-percentage", "css/margins-paddings-with-percentage");
     //examples.set("border-playground", "css/border-playground");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
