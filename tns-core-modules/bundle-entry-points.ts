@@ -29,6 +29,7 @@ if (global.TNS_WEBPACK) {
     global.registerModule("ui/slider", () => require("ui/slider"))
     global.registerModule("ui/switch", () => require("ui/switch"))
     global.registerModule("ui/tab-view", () => require("ui/tab-view"))
+    global.registerModule("ui/web-view", () => require("ui/web-view"))
     global.registerModule("ui/text-field", () => require("ui/text-field"))
     global.registerModule("ui/text-view", () => require("ui/text-view"))
     global.registerModule("ui/time-picker", () => require("ui/time-picker"))
