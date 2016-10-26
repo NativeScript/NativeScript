@@ -12,6 +12,7 @@ export function pageLoaded(args: EventData) {
     let examples: Map<string, string> = new Map<string, string>();
     
     examples.set("2911", "issues/issue-2911");
+    examples.set("2674", "issues/issue-2674");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
