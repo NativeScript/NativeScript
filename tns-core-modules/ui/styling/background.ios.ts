@@ -162,8 +162,8 @@ export module ios {
         }
 
         let frame = nativeView.frame;
-        let boundsWidth = frame.size.width;
-        let boundsHeight = frame.size.height;
+        let boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
+        let boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;
         if (!boundsWidth || !boundsHeight) {
             return undefined;
         }
@@ -180,7 +180,7 @@ export module ios {
             UIGraphicsEndImageContext();
         }
 
-        UIGraphicsBeginImageContextWithOptions(frame.size, false, 0.0);
+        UIGraphicsBeginImageContextWithOptions(CGSizeFromString(`{${boundsWidth},${boundsHeight}}`), false, 0.0);
         var context = UIGraphicsGetCurrentContext();
 
         if (background.color && background.color.ios) {
