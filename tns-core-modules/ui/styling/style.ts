@@ -1757,4 +1757,3 @@ function onBorderRadiusChanged(value: any): Array<styleProperty.KeyValuePair<sty
 styleProperty.registerShorthandCallback("border-color", onBorderColorChanged);
 styleProperty.registerShorthandCallback("border-width", onBorderWidthChanged);
 styleProperty.registerShorthandCallback("border-radius", onBorderRadiusChanged);
-

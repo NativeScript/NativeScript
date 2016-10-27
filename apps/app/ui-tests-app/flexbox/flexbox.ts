@@ -36,4 +36,3 @@ export const flexGrow = whenSelected(intHandler(setProperty(FlexboxLayout.setFle
 export const flexShrink = whenSelected(intHandler(setProperty(FlexboxLayout.setFlexShrink)));
 export const alignSelf = whenSelected(stringHandler(setProperty(FlexboxLayout.setAlignSelf)));
 export const flexWrapBefore = whenSelected(booleanHandler(setProperty(FlexboxLayout.setFlexWrapBefore)));
-
