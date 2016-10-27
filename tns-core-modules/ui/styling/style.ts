@@ -490,8 +490,8 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     get borderColor(): string | Color {
-        if (Color.equals(this.borderTopColor, this.borderRightColor) && 
-            Color.equals(this.borderTopColor, this.borderBottomColor) && 
+        if (Color.equals(this.borderTopColor, this.borderRightColor) &&
+            Color.equals(this.borderTopColor, this.borderBottomColor) &&
             Color.equals(this.borderTopColor, this.borderLeftColor)){
             return this.borderTopColor;
         }
@@ -535,8 +535,8 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     get borderWidth(): string | number {
-        if (this.borderTopWidth === this.borderRightWidth && 
-            this.borderTopWidth === this.borderBottomWidth && 
+        if (this.borderTopWidth === this.borderRightWidth &&
+            this.borderTopWidth === this.borderBottomWidth &&
             this.borderTopWidth === this.borderLeftWidth){
                 return this.borderTopWidth;
         }
@@ -577,8 +577,8 @@ export class Style extends DependencyObservable implements styling.Style {
     }
 
     get borderRadius(): string | number {
-        if (this.borderTopLeftRadius === this.borderTopRightRadius && 
-            this.borderTopLeftRadius === this.borderBottomRightRadius && 
+        if (this.borderTopLeftRadius === this.borderTopRightRadius &&
+            this.borderTopLeftRadius === this.borderBottomRightRadius &&
             this.borderTopLeftRadius === this.borderBottomLeftRadius){
                 return this.borderTopLeftRadius;
         }
@@ -1275,9 +1275,13 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
             case "scale":
             case "scale3d":
                 values = newTransform[transform].split(",");
-                if (values.length === 2 || values.length === 3) {
+                if (values.length >= 2) {
                     array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
                     array.push({ property: scaleYProperty, value: parseFloat(values[1]) });
+                }
+                else if (values.length === 1) {
+                    array.push({ property: scaleXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: scaleYProperty, value: parseFloat(values[0]) });
                 }
                 break;
             case "translateX":
@@ -1289,9 +1293,13 @@ function onTransformChanged(value: any): Array<styleProperty.KeyValuePair<styleP
             case "translate":
             case "translate3d":
                 values = newTransform[transform].split(",");
-                if (values.length === 2 || values.length === 3) {
+                if (values.length >= 2) {
                     array.push({ property: translateXProperty, value: parseFloat(values[0]) });
                     array.push({ property: translateYProperty, value: parseFloat(values[1]) });
+                }
+                else if (values.length === 1) {
+                    array.push({ property: translateXProperty, value: parseFloat(values[0]) });
+                    array.push({ property: translateYProperty, value: parseFloat(values[0]) });
                 }
                 break;
             case "rotate":
@@ -1611,40 +1619,40 @@ function parseThickness(value: any): definition.Thickness {
     if (types.isString(value)) {
         let arr = value.split(/[ ,]+/);
         if (arr.length === 1){
-            let arr0 = parseInt(arr[0]);  
+            let arr0 = parseInt(arr[0]);
             result.top = arr0;
             result.right = arr0;
             result.bottom = arr0;
             result.left = arr0;
         }
         else if (arr.length === 2){
-            let arr0 = parseInt(arr[0]);  
-            let arr1 = parseInt(arr[1]);  
+            let arr0 = parseInt(arr[0]);
+            let arr1 = parseInt(arr[1]);
             result.top = arr0;
             result.right = arr1;
             result.bottom = arr0;
             result.left = arr1;
         }
         else if (arr.length === 3){
-            let arr0 = parseInt(arr[0]);  
-            let arr1 = parseInt(arr[1]);  
-            let arr2 = parseInt(arr[2]);  
+            let arr0 = parseInt(arr[0]);
+            let arr1 = parseInt(arr[1]);
+            let arr2 = parseInt(arr[2]);
             result.top = arr0;
             result.right = arr1;
             result.bottom = arr2;
             result.left = arr1;
         }
         else if (arr.length === 4){
-            let arr0 = parseInt(arr[0]);  
-            let arr1 = parseInt(arr[1]);  
-            let arr2 = parseInt(arr[2]);  
-            let arr3 = parseInt(arr[3]);  
+            let arr0 = parseInt(arr[0]);
+            let arr1 = parseInt(arr[1]);
+            let arr2 = parseInt(arr[2]);
+            let arr3 = parseInt(arr[3]);
             result.top = arr0;
             result.right = arr1;
             result.bottom = arr2;
             result.left = arr3;
         }
-    } 
+    }
     else if (types.isNumber(value)) {
         result.top = result.right = result.bottom = result.left = value;
     }
@@ -1661,7 +1669,7 @@ function parseBorderColor(value: any): definition.BorderColor {
         if (types.isString(value)) {
             if (value.indexOf("rgb") === 0){
                 result.top = result.right = result.bottom = result.left = new Color(value);
-                return result;    
+                return result;
             }
 
             let arr = value.split(/[ ,]+/);
@@ -1699,7 +1707,7 @@ function parseBorderColor(value: any): definition.BorderColor {
                 result.bottom = arr2;
                 result.left = arr3;
             }
-        } 
+        }
         else if (value instanceof Color) {
             result.top = result.right = result.bottom = result.left = value;
         }
