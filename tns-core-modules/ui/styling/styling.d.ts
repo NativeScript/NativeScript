@@ -318,6 +318,11 @@
          */
         androidSelectedTabHighlightColor: color.Color;
 
+        /**
+         * Gets or sets the selected background color of a SegmentedBar.
+         */
+        selectedBackgroundColor: color.Color;
+
         //@private
         public _beginUpdate();
         public _endUpdate();

@@ -108,6 +108,9 @@ declare module "ui/styling/style" {
         public selectedTabTextColor: Color;
         public androidSelectedTabHighlightColor: Color;
 
+        //SegmentedBar-specific props
+        public selectedBackgroundColor: Color;
+
         constructor(parentView: View);
 
         public _beginUpdate();
@@ -176,6 +179,8 @@ declare module "ui/styling/style" {
     export var tabBackgroundColorProperty: styleProperty.Property;
     export var selectedTabTextColorProperty: styleProperty.Property;
     export var androidSelectedTabHighlightColorProperty: styleProperty.Property;
+
+    export var selectedBackgroundColorProperty: styleProperty.Property;
 
     // Helper property holding most layout related properties available in CSS.
     // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

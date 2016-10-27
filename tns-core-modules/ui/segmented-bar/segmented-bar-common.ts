@@ -77,14 +77,12 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
     }
 
     get selectedBackgroundColor(): color.Color {
-        return this._getValue(SegmentedBar.selectedBackgroundColorProperty);
+        return this.style.selectedBackgroundColor;
     }
     set selectedBackgroundColor(value: color.Color) {
-        this._setValue(SegmentedBar.selectedBackgroundColorProperty,
-            value instanceof color.Color ? value : new color.Color(<any>value));
+        this.style.selectedBackgroundColor = value;
     }
-
-    public static selectedBackgroundColorProperty = new dependencyObservable.Property("selectedBackgroundColor", "SegmentedBar", new proxy.PropertyMetadata(undefined));
+    
     public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "SegmentedBar", new proxy.PropertyMetadata(undefined));
     public static itemsProperty = new dependencyObservable.Property("items", "SegmentedBar", new proxy.PropertyMetadata(undefined));
     public static selectedIndexChangedEvent = "selectedIndexChanged";
