@@ -6,4 +6,3 @@ export function itemTap(args: observable.EventData) {
         moduleName: "gallery-app/" + args.object.get("tag"),
     });
 }
- 

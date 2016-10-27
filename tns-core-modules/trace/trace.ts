@@ -64,7 +64,6 @@ export function write(message: any, category: string, type?: number) {
         return;
     }
 
-    
     for (i = 0; i < _writers.length; i++) {
         _writers[i].write(message, category, type);
     }

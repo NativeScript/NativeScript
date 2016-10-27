@@ -84,8 +84,6 @@ export var testLocation = function (done) {
 
     //TKUnit.waitUntilReady(isReady, 10);
 
-    
-
     //TKUnit.assert(true === locationReceived, locationReceived);
 };
 

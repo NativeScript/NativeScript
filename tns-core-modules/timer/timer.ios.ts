@@ -1,6 +1,4 @@
-﻿/**
- * iOS specific timer functions implementation.
- */
+﻿//iOS specific timer functions implementation.
 var timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
 var timerId = 0;
 

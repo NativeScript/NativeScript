@@ -8,4 +8,3 @@ declare module "js-libs/easysax" {
         public angularSyntax: boolean;
     }
 }
-

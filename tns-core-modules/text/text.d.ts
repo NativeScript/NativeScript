@@ -37,4 +37,3 @@ declare module "text" {
         export var UTF_8: any;
     }
 }
-

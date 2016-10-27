@@ -8,5 +8,3 @@ export function selectNativeItem(listPicker: listPickerModule.ListPicker, index:
     listPicker.ios.selectRowInComponentAnimated(index, 0, false);
     (<UIPickerViewDelegate>(<any>listPicker)._delegate).pickerViewDidSelectRowInComponent(listPicker.ios, index, 0);
 }
-
-    

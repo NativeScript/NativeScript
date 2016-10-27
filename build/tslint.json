@@ -4,7 +4,7 @@
         "curly": true,
         "forin": false,
         "indent": true,
-        "jsdoc-format": true,
+        "jsdoc-format": false,
         "max-line-length": [false, 120],
         "no-arg": true,
         "no-consecutive-blank-lines": true,

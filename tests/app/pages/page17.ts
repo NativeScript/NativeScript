@@ -36,4 +36,3 @@ export function buttonTap(args: observable.EventData) {
         }
     }
 }
-
