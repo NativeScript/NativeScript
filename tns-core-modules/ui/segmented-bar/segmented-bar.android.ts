@@ -63,23 +63,6 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         var tabHost = <android.widget.TabHost>view.android;
         var tabIndex: number;
 
-        if (view.selectedBackgroundColor) {
-            ensureSegmentedBarColorDrawableClass();
-            for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-                var vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-
-                var stateDrawable = new android.graphics.drawable.StateListDrawable();
-
-                var arr = (<any>Array).create("int", 1);
-                arr[0] = R_ATTR_STATE_SELECTED;
-                var colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(view.selectedBackgroundColor.android)
-                stateDrawable.addState(arr, colorDrawable);
-                stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
-
-                vg.setBackgroundDrawable(stateDrawable);
-            }
-        }
-
         for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             var tabChild = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
             var t = <android.widget.TextView>tabChild.getChildAt(1);
@@ -292,6 +275,45 @@ export class SegmentedBarStyler implements style.Styler {
         };
     }
 
+    // selectedBackgroundColor methods
+    private static setSelectedBackgroundColorProperty(v: view.View, newValue: any) {
+        ensureSegmentedBarColorDrawableClass();
+        let tabHost = <android.widget.TabHost>v._nativeView;
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+
+            let stateDrawable = new android.graphics.drawable.StateListDrawable();
+
+            let arr = (<any>Array).create("int", 1);
+            arr[0] = R_ATTR_STATE_SELECTED;
+            let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(newValue)
+            stateDrawable.addState(arr, colorDrawable);
+            stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
+
+            vg.setBackground(stateDrawable);
+        }
+    }
+
+    private static resetSelectedBackgroundColorProperty(v: view.View, nativeValue: Array<android.graphics.drawable.Drawable>) {
+        let tabHost = <android.widget.TabHost>v._nativeView;
+        ensureSegmentedBarColorDrawableClass();
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
+            vg.setBackground(nativeValue[tabIndex]);
+        }
+    }
+
+    private static getSelectedBackgroundColorProperty(v: view.View): Array<android.graphics.drawable.Drawable> {
+        var tabHost = <android.widget.TabHost>v._nativeView;
+        let result = [];
+        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
+            let background = tabHost.getTabWidget().getChildTabViewAt(tabIndex).getBackground();
+            result.push(background);
+        }
+        
+        return result;
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             SegmentedBarStyler.setColorProperty,
@@ -301,6 +323,10 @@ export class SegmentedBarStyler implements style.Styler {
             SegmentedBarStyler.setFontInternalProperty,
             SegmentedBarStyler.resetFontInternalProperty,
             SegmentedBarStyler.getFontInternalProperty), "SegmentedBar");
+        style.registerHandler(style.selectedBackgroundColorProperty, new style.StylePropertyChangedHandler(
+            SegmentedBarStyler.setSelectedBackgroundColorProperty,
+            SegmentedBarStyler.resetSelectedBackgroundColorProperty,
+            SegmentedBarStyler.getSelectedBackgroundColorProperty), "SegmentedBar");
     }
 }
 

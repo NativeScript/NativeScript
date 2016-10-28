@@ -68,20 +68,6 @@ function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 }
 (<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
 
-function onSelectedBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <SegmentedBar>data.object;
-    if (!view.ios) {
-        return;
-    }
-
-    ensureColor();
-
-    if (data.newValue instanceof color.Color) {
-        view.ios.tintColor = data.newValue.ios;
-    }
-}
-(<proxy.PropertyMetadata>common.SegmentedBar.selectedBackgroundColorProperty.metadata).onSetNativeValue = onSelectedBackgroundColorPropertyChanged;
-
 export class SegmentedBarItem extends common.SegmentedBarItem {
     public _update() {
         if (this._parent) {
@@ -209,6 +195,39 @@ export class SegmentedBarStyler implements style.Styler {
         return currentFont;
     }
 
+    //Selected background color methods
+    private static setSelectedBackgroundColorProperty(v: view.View, newValue: any) {
+        if (!v.ios) {
+            return;
+        }
+
+        ensureColor();
+
+        if (newValue instanceof color.Color) {
+            v.ios.tintColor = newValue.ios;
+        }
+    }
+
+    private static resetSelectedBackgroundColorProperty(v: view.View, nativeValue: any) {
+        if (!v.ios) {
+            return;
+        }
+
+        ensureColor();
+
+        if (nativeValue instanceof color.Color) {
+            v.ios.tintColor = nativeValue.ios;
+        }
+    }
+
+    private static getSelectedBackgroundColorProperty(v: view.View): any {
+        if (!v.ios) {
+            return;
+        }
+
+        return v.ios.tintColor; 
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             SegmentedBarStyler.setColorProperty,
@@ -217,6 +236,10 @@ export class SegmentedBarStyler implements style.Styler {
             SegmentedBarStyler.setFontInternalProperty,
             SegmentedBarStyler.resetFontInternalProperty,
             SegmentedBarStyler.getNativeFontValue), "SegmentedBar");
+        style.registerHandler(style.selectedBackgroundColorProperty, new style.StylePropertyChangedHandler(
+            SegmentedBarStyler.setSelectedBackgroundColorProperty,
+            SegmentedBarStyler.resetSelectedBackgroundColorProperty,
+            SegmentedBarStyler.getSelectedBackgroundColorProperty), "SegmentedBar");
     }
 }
 

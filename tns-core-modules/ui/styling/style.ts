@@ -864,6 +864,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(androidSelectedTabHighlightColorProperty, value);
     }
 
+    get selectedBackgroundColor(): Color {
+        return this._getValue(selectedBackgroundColorProperty);
+    }
+    set selectedBackgroundColor(value: Color) {
+        this._setValue(selectedBackgroundColorProperty, value);
+    }
+
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
             this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
@@ -1129,6 +1136,11 @@ export var selectedTabTextColorProperty = new styleProperty.Property("selectedTa
     converters.colorConverter);
 
 export var androidSelectedTabHighlightColorProperty = new styleProperty.Property("androidSelectedTabHighlightColor", "android-selected-tab-highlight-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+// SegmentedBar-specific props
+export var selectedBackgroundColorProperty = new styleProperty.Property("selectedBackgroundColor", "selected-background-color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
 
