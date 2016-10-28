@@ -3,6 +3,7 @@ import {FlexboxLayout} from "ui/layouts/flexbox-layout";
 function set(what: string) {
     return function(args) {
         args.object.page.getViewById("container")[what] = args.object.text;
+        // console.log(args.object.text);
     }
 }
 
