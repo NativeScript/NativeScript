@@ -33,5 +33,5 @@ if (global.TNS_WEBPACK) {
     global.registerModule("ui/text-field", () => require("ui/text-field"))
     global.registerModule("ui/text-view", () => require("ui/text-view"))
     global.registerModule("ui/time-picker", () => require("ui/time-picker"))
-	global.registerModule("ui/list-view", () => require("ui/list-view"))
+    global.registerModule("ui/list-view", () => require("ui/list-view"))
 }
