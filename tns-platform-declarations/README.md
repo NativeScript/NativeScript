@@ -27,3 +27,5 @@ And add to a reference.d.ts:
 /// <reference path="./node_modules/tns-platform-declarations/ios.d.ts" />
 /// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
 ```
+
+d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option to tsconfig file.
