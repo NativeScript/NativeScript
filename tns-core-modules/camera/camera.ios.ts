@@ -1,7 +1,11 @@
 ﻿import types = require("utils/types");
-import * as cameraCommonModule from "./camera-common";
+
+import {Camera as Common} from "./camera-common";
+
 import * as imageSourceModule from "image-source";
 import * as frameModule from "ui/frame";
+
+var listener;
 
 class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePickerControllerDelegate {
     public static ObjCProtocols = [UIImagePickerControllerDelegate];
@@ -16,6 +20,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
     private _height: number;
     private _keepAspectRatio: boolean;
     private _saveToGallery: boolean;
+	private _options: any;
 
     public initWithCallback(callback: (result?) => void): UIImagePickerControllerDelegateImpl {
         this._callback = callback;
@@ -29,6 +34,7 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
             this._height = options.height;
             this._saveToGallery = options.saveToGallery;
             this._keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
+			this._options = options.options;
         }
         return this;
     }
@@ -36,28 +42,27 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
     imagePickerControllerDidFinishPickingMediaWithInfo(picker, info): void {
         if (info) {
             let source = info.valueForKey(UIImagePickerControllerOriginalImage);
+
             if (source) {
                 let image = null;
+
                 if (this._width || this._height) {
                     let newSize = null;
-                    if (this._keepAspectRatio) {
-                        let common: typeof cameraCommonModule = require("./camera-common");
 
-                        let aspectSafeSize = common.getAspectSafeDimensions(source.size.width, source.size.height, this._width, this._height);
+                    if (this._keepAspectRatio) {
+                        let aspectSafeSize = (new Common()).getAspectSafeDimensions(source.size.width, source.size.height, this._width, this._height);
                         newSize = CGSizeMake(aspectSafeSize.width, aspectSafeSize.height);
-                    }
-                    else {
+                    } else {
                         newSize = CGSizeMake(this._width, this._height);
                     }
+
                     UIGraphicsBeginImageContextWithOptions(newSize, false, 0.0);
                     source.drawInRect(CGRectMake(0, 0, newSize.width, newSize.height));
                     image = UIGraphicsGetImageFromCurrentImageContext();
                     UIGraphicsEndImageContext();
                 }
 
-                let imageSource: typeof imageSourceModule = require("image-source");
-
-                let imageSourceResult = image ? imageSource.fromNativeSource(image) : imageSource.fromNativeSource(source);
+                let imageSourceResult = image ? imageSourceModule.fromNativeSource(image) : imageSourceModule.fromNativeSource(source);
 
                 if (this._callback) {
                     this._callback(imageSourceResult);
@@ -65,7 +70,9 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
                         UIImageWriteToSavedPhotosAlbum(imageSourceResult.ios, null, null, null);
                     }
                 }
-            }
+            } else if (info.valueForKey(UIImagePickerControllerReferenceURL)) {
+            	// TODO: handle video
+			}
         }
         picker.presentingViewController.dismissViewControllerAnimatedCompletion(true, null);
         listener = null;
@@ -77,54 +84,94 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
     }
 }
 
-var listener;
+class Camera extends Common {
+    static takePicture(options): Promise<any> {
+        return new Promise((resolve, reject) => {
+            listener = null;
 
-export var takePicture = function (options): Promise<any> {
-    return new Promise((resolve, reject) => {
-        listener = null;
-        let imagePickerController = UIImagePickerController.new();
-        let reqWidth = 0;
-        let reqHeight = 0;
-        let keepAspectRatio = true;
-        let saveToGallery = true;
-        if (options) {
-            reqWidth = options.width || 0;
-            reqHeight = options.height || reqWidth;
-            keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
-            saveToGallery = options.saveToGallery ? true : false;
-        }
-        if (reqWidth && reqHeight) {
-            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio, saveToGallery: saveToGallery });
-        } else if (saveToGallery) {
-            listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { saveToGallery: saveToGallery });
-        }
-        else {
-            listener = UIImagePickerControllerDelegateImpl.new().initWithCallback(resolve);
-        }
-        imagePickerController.delegate = listener;
+            let imagePickerController = UIImagePickerController.new();
+            let reqWidth = 0;
+            let reqHeight = 0;
+            let keepAspectRatio = true;
+            let saveToGallery = true;
 
-        let sourceType = UIImagePickerControllerSourceType.Camera;
-        let mediaTypes = UIImagePickerController.availableMediaTypesForSourceType(sourceType);
-
-        if (mediaTypes) {
-            imagePickerController.mediaTypes = mediaTypes;
-            imagePickerController.sourceType = sourceType;
-        }
-
-        imagePickerController.modalPresentationStyle = UIModalPresentationStyle.CurrentContext;
-
-        let frame: typeof frameModule = require("ui/frame");
-
-        let topMostFrame = frame.topmost();
-        if (topMostFrame) {
-            let viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
-            if (viewController) {
-                viewController.presentViewControllerAnimatedCompletion(imagePickerController, true, null);
+            if (options) {
+                reqWidth = options.width || 0;
+                reqHeight = options.height || reqWidth;
+                keepAspectRatio = types.isNullOrUndefined(options.keepAspectRatio) ? true : options.keepAspectRatio;
+                saveToGallery = options.saveToGallery ? true : false;
             }
+
+            if (reqWidth && reqHeight) {
+                listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { width: reqWidth, height: reqHeight, keepAspectRatio: keepAspectRatio, saveToGallery: saveToGallery, options: options });
+            } else if (saveToGallery) {
+                listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { saveToGallery: saveToGallery, options: options });
+            } else {
+                listener = UIImagePickerControllerDelegateImpl.new().initWithCallbackAndOptions(resolve, { options : options });
+            }
+
+            imagePickerController.delegate = listener;
+            options.source = Camera.getSource(options.source);
+
+            let sourceType;
+
+            switch (options.source) {
+                case Camera.sources.device:
+                    sourceType = UIImagePickerControllerSourceType.Camera;
+                    break;
+                case Camera.sources.library:
+                    sourceType = UIImagePickerControllerSourceType.PhotoLibrary;
+                    break;
+                case Camera.sources.roll:
+                    sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum;
+                    break;
+            }
+
+            imagePickerController.sourceType = sourceType;
+            options.mode = Camera.getMode(options.mode);
+
+            if (options.source == Camera.sources.device) {
+                switch (options.mode) {
+                    case Camera.modes.photo:
+                        imagePickerController.cameraCaptureMode = UIImagePickerControllerCameraCaptureModePhoto;
+                        break;
+                    case Camera.modes.video:
+                        imagePickerController.cameraCaptureMode = UIImagePickerControllerCameraCaptureModeVideo;
+                        break;
+                }
+            }
+
+            imagePickerController.modalPresentationStyle = UIModalPresentationStyle.CurrentContext;
+
+            let topMostFrame = frameModule.topmost();
+
+            if (topMostFrame) {
+                let viewController: UIViewController = topMostFrame.currentPage && topMostFrame.currentPage.ios;
+
+                if (viewController) {
+                    viewController.presentViewControllerAnimatedCompletion(imagePickerController, true, null);
+                }
+            }
+        });
+    }
+
+    static isAvailable(source: string = Camera.sources.device): boolean {
+        var sourceType;
+
+        switch (source) {
+            case Camera.sources.device:
+                sourceType = UIImagePickerControllerSourceType.Camera;
+                break;
+            case Camera.sources.library:
+                sourceType = UIImagePickerControllerSourceType.PhotoLibrary;
+                break;
+            case Camera.sources.roll:
+                sourceType = UIImagePickerControllerSourceType.SavedPhotosAlbum;
+                break;
         }
-    });
+
+        return UIImagePickerController.isSourceTypeAvailable(sourceType);
+    }
 }
 
-export var isAvailable = function () {
-    return UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
-}
+module.exports = Camera;
