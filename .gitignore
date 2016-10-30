@@ -26,6 +26,7 @@ CrossPlatformModules.csproj.user
 bin/
 obj/
 .vs/
+.idea/
 
 .baseDir.ts
 .ctags-exclude
