@@ -3,7 +3,6 @@ import common = require("./segmented-bar-common");
 import dependencyObservable = require("ui/core/dependency-observable");
 import proxy = require("ui/core/proxy");
 import types = require("utils/types");
-import * as colorModule from "color";
 import style = require("ui/styling/style");
 import font = require("ui/styling/font");
 import view = require("ui/core/view");
@@ -11,13 +10,6 @@ import view = require("ui/core/view");
 import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
-
-var color: typeof colorModule;
-function ensureColor() {
-    if (!color) {
-        color = require("color");
-    }
-}
 
 function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <SegmentedBar>data.object;
