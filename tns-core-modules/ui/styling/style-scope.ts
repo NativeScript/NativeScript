@@ -201,10 +201,8 @@ export class StyleScope {
 
         let state = this._selectors.query(view);
 
-        let previousState = view._cssState;
         let nextState = new CssState(view, state);
-        view._cssState = nextState;
-        view._onCssStateChange(previousState, nextState);
+        view._setCssState(nextState);
     }
 
     public query(node: Node): SelectorCore[] {

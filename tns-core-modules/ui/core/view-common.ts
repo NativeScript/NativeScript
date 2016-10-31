@@ -10,13 +10,13 @@ import utils = require("utils/utils");
 import color = require("color");
 import observable = require("data/observable");
 import keyframeAnimationModule = require("ui/animation/keyframe-animation");
-import {PropertyMetadata, ProxyObject} from "ui/core/proxy";
-import {PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata} from "ui/core/dependency-observable";
-import {registerSpecialProperty} from "ui/builder/special-properties";
-import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
+import { PropertyMetadata, ProxyObject } from "ui/core/proxy";
+import { PropertyMetadataSettings, PropertyChangeData, Property, ValueSource, PropertyMetadata as doPropertyMetadata } from "ui/core/dependency-observable";
+import { registerSpecialProperty } from "ui/builder/special-properties";
+import { CommonLayoutParams, nativeLayoutParamsProperty } from "ui/styling/style";
 import * as animModule from "ui/animation";
-import {CssState} from "ui/styling/style-scope";
-import {Source} from "utils/debug";
+import { CssState } from "ui/styling/style-scope";
+import { Source } from "utils/debug";
 
 registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
     instance.className = propertyValue;
@@ -99,7 +99,7 @@ export function getAncestor(view: View, criterion: string | Function): definitio
     return null;
 }
 
-export function PseudoClassHandler(... pseudoClasses: string[]): MethodDecorator {
+export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
     let stateEventNames = pseudoClasses.map(s => ":" + s);
     let listeners = Symbol("listeners");
     return <T>(target: Object, propertyKey: string | symbol, descriptor: TypedPropertyDescriptor<T>) => {
@@ -555,7 +555,7 @@ export class View extends ProxyObject implements definition.View {
         if (value === false) {
             this._goToVisualState('disabled');
         } else {
-            this._goToVisualState('normal');   
+            this._goToVisualState('normal');
         }
     }
 
@@ -647,8 +647,7 @@ export class View extends ProxyObject implements definition.View {
     }
 
     public onUnloaded() {
-        this._onCssStateChange(this._cssState, null);
-        this._cssState = null;
+        this._setCssState(null);
 
         this._unloadEachChildView();
 
@@ -734,8 +733,8 @@ export class View extends ProxyObject implements definition.View {
 
     public getMeasuredState(): number {
         return (this._measuredWidth & utils.layout.MEASURED_STATE_MASK)
-                | ((this._measuredHeight >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT)
-                        & (utils.layout.MEASURED_STATE_MASK >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT));
+            | ((this._measuredHeight >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT)
+                & (utils.layout.MEASURED_STATE_MASK >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT));
     }
 
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
@@ -1010,7 +1009,7 @@ export class View extends ProxyObject implements definition.View {
     }
 
     protected static adjustChildLayoutParams(view: View, widthMeasureSpec: number, heightMeasureSpec: number): void {
-        if(!view) {
+        if (!view) {
             return;
         }
 
@@ -1020,39 +1019,39 @@ export class View extends ProxyObject implements definition.View {
         let availableHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         let heightSpec = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-         let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
+        let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
 
-         if (widthSpec !== utils.layout.UNSPECIFIED) {
-             if (lp.widthPercent > 0) {
-                 lp.width = Math.round(availableWidth * lp.widthPercent);
-             }
+        if (widthSpec !== utils.layout.UNSPECIFIED) {
+            if (lp.widthPercent > 0) {
+                lp.width = Math.round(availableWidth * lp.widthPercent);
+            }
 
-             if (lp.leftMarginPercent > 0) {
-                 lp.leftMargin = Math.round(availableWidth * lp.leftMarginPercent);
-             }
+            if (lp.leftMarginPercent > 0) {
+                lp.leftMargin = Math.round(availableWidth * lp.leftMarginPercent);
+            }
 
-             if (lp.rightMarginPercent > 0) {
-                 lp.rightMargin = Math.round(availableWidth * lp.rightMarginPercent);
-             }
-         }
+            if (lp.rightMarginPercent > 0) {
+                lp.rightMargin = Math.round(availableWidth * lp.rightMarginPercent);
+            }
+        }
 
-         if (heightSpec !== utils.layout.UNSPECIFIED) {
-             if (lp.heightPercent > 0) {
-                 lp.height = Math.round(availableHeight * lp.heightPercent);
-             }
+        if (heightSpec !== utils.layout.UNSPECIFIED) {
+            if (lp.heightPercent > 0) {
+                lp.height = Math.round(availableHeight * lp.heightPercent);
+            }
 
-             if (lp.topMarginPercent > 0) {
-                 lp.topMargin = Math.round(availableHeight * lp.topMarginPercent);
-             }
+            if (lp.topMarginPercent > 0) {
+                lp.topMargin = Math.round(availableHeight * lp.topMarginPercent);
+            }
 
-             if (lp.bottomMarginPercent > 0) {
-                 lp.bottomMargin = Math.round(availableHeight * lp.bottomMarginPercent);
-             }
-         }
+            if (lp.bottomMarginPercent > 0) {
+                lp.bottomMargin = Math.round(availableHeight * lp.bottomMarginPercent);
+            }
+        }
     }
 
     protected static restoreChildOriginalParams(view: View): void {
-        if(!view) {
+        if (!view) {
             return;
         }
         let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
@@ -1180,8 +1179,7 @@ export class View extends ProxyObject implements definition.View {
         if (!view) {
             throw new Error("Expecting a valid View instance.");
         }
-        if(!(view instanceof View))
-        {
+        if (!(view instanceof View)) {
             throw new Error(view + " is not a valid View instance.");
         }
         if (view._parent) {
@@ -1439,7 +1437,9 @@ export class View extends ProxyObject implements definition.View {
     }
 
     // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
-    _onCssStateChange(previous: CssState, next: CssState): void {
+    _setCssState(next: CssState): void {
+        const previous = this._cssState;
+        this._cssState = next;
 
         if (!this._invalidateCssHandler) {
             this._invalidateCssHandler = () => {
