@@ -13,6 +13,7 @@ export function pageLoaded(args: EventData) {
     
     examples.set("2911", "issues/issue-2911");
     examples.set("2674", "issues/issue-2674");
+    examples.set("2942", "issues/issue-2942");
 
     let viewModel = new SubMianPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
