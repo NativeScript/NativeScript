@@ -1,4 +1,4 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" actionBarHidden="true">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true">
     <GridLayout rows="auto, *">
         <GridLayout class="control" columns="auto, *" rows="25, 15, 25, 15, 25, 15, 15, 15, 15, 25, 15">
 
@@ -37,12 +37,12 @@
 
             <Label row="4" text="alignContent" verticalAlignment="center" />
             <FlexboxLayout row="4" col="1">
-                <Button text="flex-start" tap="alignContent" flexGrow="1" automationText="alignItems-flex-start" />
-                <Button text="flex-end" tap="alignContent" flexGrow="1" automationText="alignItems-flex-end" />
-                <Button text="center" tap="alignContent" flexGrow="1" automationText="alignItems-center" />
-                <Button text="space-between" tap="alignContent" flexGrow="1" automationText="alignItems-space-between" />
-                <Button text="space-around" tap="alignContent" flexGrow="1" automationText="alignItems-space-around" />
-                <Button text="stretch" tap="alignContent" flexGrow="1" automationText="alignItems-stretch" />
+                <Button text="flex-start" tap="alignContent" flexGrow="1" automationText="alignContent-flex-start" />
+                <Button text="flex-end" tap="alignContent" flexGrow="1" automationText="alignContent-flex-end" />
+                <Button text="center" tap="alignContent" flexGrow="1" automationText="alignContent-center" />
+                <Button text="space-between" tap="alignContent" flexGrow="1" automationText="alignContent-space-between" />
+                <Button text="space-around" tap="alignContent" flexGrow="1" automationText="alignContent-space-around" />
+                <Button text="stretch" tap="alignContent" flexGrow="1" automationText="alignContent-stretch" />
             </FlexboxLayout>
 
             <Label row="5" colSpan="2" text="--- selected item properties ---" />

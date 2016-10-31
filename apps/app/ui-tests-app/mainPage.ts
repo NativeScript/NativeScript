@@ -35,7 +35,7 @@ export function pageLoaded(args: EventData) {
     examples.set("animeBG", "animations/background");
     examples.set("transitions", "transitions/page0");
     examples.set("segStyle", "segmented-bar/all");
-    examples.set("flexBox", "flexbox/flexbox");
+    examples.set("flexbox", "flexbox/flexbox");
     examples.set("list-view", "list-view/list-view");
     examples.set("issues", "issues/main-page");
 
