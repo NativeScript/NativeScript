@@ -200,24 +200,14 @@ export class SegmentedBarStyler implements style.Styler {
         if (!v.ios) {
             return;
         }
-
-        ensureColor();
-
-        if (newValue instanceof color.Color) {
-            v.ios.tintColor = newValue.ios;
-        }
+        v.ios.tintColor = newValue;
     }
 
     private static resetSelectedBackgroundColorProperty(v: view.View, nativeValue: any) {
         if (!v.ios) {
             return;
         }
-
-        ensureColor();
-
-        if (nativeValue instanceof color.Color) {
-            v.ios.tintColor = nativeValue.ios;
-        }
+        v.ios.tintColor = nativeValue;
     }
 
     private static getSelectedBackgroundColorProperty(v: view.View): any {
