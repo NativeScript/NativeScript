@@ -20,7 +20,7 @@ import observable = require("data/observable");
 import {Page, ShownModallyData, NavigatedData} from "ui/page";
 import {Label} from "ui/label";
 import {EventData} from "data/observable";
-import {widthProperty} from "ui/styling/style"
+import {widthProperty, heightProperty} from "ui/styling/style"
 import platform = require("platform");
 
 export function addLabelToPage(page: Page, text?: string) {
@@ -554,10 +554,8 @@ export function  test_percent_width_and_height_support() {
     TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");
 
     //reset values.
-    testPage.height = Number.NaN;
+    (<any>testPage.style)._resetValue(heightProperty);
     (<any>testPage.style)._resetValue(widthProperty);
-    
-    testPage.height = Number.NaN;
 
     TKUnit.assert(isNaN(testPage.width), "width");
     TKUnit.assert(isNaN(testPage.height), "height");
