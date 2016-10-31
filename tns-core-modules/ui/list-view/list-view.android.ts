@@ -47,6 +47,7 @@ export class ListView extends common.ListView {
 
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
+        this._android.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
         // Fixes issue with black random black items when scrolling
         this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
@@ -178,7 +179,7 @@ function ensureListViewAdapterClass() {
         }
 
         public getCount() {
-            return this._listView && this._listView.items ? this._listView.items.length : 0;
+            return this._listView && this._listView.items && this._listView.items.length ? this._listView.items.length : 0;
         }
 
         public getItem(i: number) {

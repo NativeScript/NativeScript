@@ -93,6 +93,9 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
             }
 
             sp.removeChild(weakRef.get());
+            
+            TKUnit.wait(1); // Wait for the TextField/TextView to close its keyboard so it can be released.
+            
             if (newPage.ios) {
                 /* tslint:disable:no-unused-expression */
                 // Could cause GC on the next call.

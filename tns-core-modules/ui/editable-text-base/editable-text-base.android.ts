@@ -4,6 +4,9 @@ import enums = require("ui/enums");
 import utils = require("utils/utils");
 import types = require("utils/types");
 
+//https://github.com/NativeScript/NativeScript/issues/2942
+let dismissKeyboardTimeoutId: number;
+
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
     private _textWatcher: android.text.TextWatcher;
@@ -69,13 +72,26 @@ export class EditableTextBase extends common.EditableTextBase {
                     return;
                 }
 
-                if (!hasFocus) {
+                if (hasFocus) {
+                    if (dismissKeyboardTimeoutId){
+                        // https://github.com/NativeScript/NativeScript/issues/2942
+                        // Don't hide the keyboard since another (or the same) EditText has gained focus.
+                        clearTimeout(dismissKeyboardTimeoutId);
+                        dismissKeyboardTimeoutId = undefined;
+                    }
+                }
+                else {
                     if (owner._dirtyTextAccumulator) {
                         owner._onPropertyChangedFromNative(EditableTextBase.textProperty, owner._dirtyTextAccumulator);
                         owner._dirtyTextAccumulator = undefined;
                     }
 
-                    owner.dismissSoftInput();
+                    dismissKeyboardTimeoutId = setTimeout(() => {
+                        // https://github.com/NativeScript/NativeScript/issues/2942
+                        // Dismiss the keyboard if focus goes to something different from EditText.
+                        owner.dismissSoftInput();
+                        dismissKeyboardTimeoutId = null;
+                    }, 1);
                 }
             }
         });
