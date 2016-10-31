@@ -17,15 +17,17 @@ export class Border extends ContentView implements BorderDefinition {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        View.adjustChildLayoutParams(this.layoutView, widthMeasureSpec, heightMeasureSpec);
+
         let width = layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
         let height = layout.getMeasureSpecSize(heightMeasureSpec);
         let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let density = utils.layout.getDisplayDensity();
+        let density = layout.getDisplayDensity();
         let borderWidth = 0;
-        if (types.isNumber(this.borderWidth)){
+        if (isNumber(this.borderWidth)){
             borderWidth = <number>this.borderWidth;
         }
         let borderSize = (2 * borderWidth) * density;
@@ -41,12 +43,14 @@ export class Border extends ContentView implements BorderDefinition {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        let density = utils.layout.getDisplayDensity();
+        let density = layout.getDisplayDensity();
         let borderWidth = 0;
-        if (types.isNumber(this.borderWidth)){
+        if (isNumber(this.borderWidth)){
             borderWidth = <number>this.borderWidth;
         }
         let borderSize = borderWidth * density;
-        viewModule.View.layoutChild(this, this.layoutView, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
+        View.layoutChild(this, this.layoutView, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
+
+        View.restoreChildOriginalParams(this.layoutView);
     }
 }

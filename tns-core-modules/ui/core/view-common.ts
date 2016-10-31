@@ -1,47 +1,42 @@
-﻿import types = require("utils/types");
-import definition = require("ui/core/view");
+import {View as ViewDefinition, Point, Size} from "ui/core/view";
 import {Style} from "ui/styling/style";
-import trace = require("trace");
-import gestures = require("ui/gestures");
-import styleScope = require("../styling/style-scope");
+import {CssState, StyleScope, applyInlineSyle} from "ui/styling/style-scope";
 import {VerticalAlignment, HorizontalAlignment} from "ui/enums";
-import utils = require("utils/utils");
+
 import {Color} from "color";
+import {Animation} from "ui/animation";
 import {KeyframeAnimation} from "ui/animation/keyframe-animation";
-import * as animModule from "ui/animation";
-import {CssState} from "ui/styling/style-scope";
 import {Source} from "utils/debug";
 import {Observable, EventData} from "data/observable";
 import {ViewBase} from "./view-base";
 
 import {propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty} from "./properties";
 import bindable = require("ui/core/bindable");
-// registerSpecialProperty("class", (instance: definition.View, propertyValue: string) => {
+
+import {isString, isNumber} from "utils/types";
+
+import * as trace from "trace";
+import * as utils from "utils/utils";
+import {observe, fromString, GesturesObserver, GestureTypes, GestureEventData} from "ui/gestures";
+
+// registerSpecialProperty("class", (instance: ViewDefinition, propertyValue: string) => {
 //     instance.className = propertyValue;
 // });
 // registerSpecialProperty("text", (instance, propertyValue) => {
 //     instance.set("text", propertyValue);
 // });
 
-
-let animationModule: typeof animModule;
-function ensureAnimationModule() {
-    if (!animationModule) {
-        animationModule = require("ui/animation");
-    }
-}
-
 function getEventOrGestureName(name: string): string {
     return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
 }
 
 export function isEventOrGesture(name: string, view: View): boolean {
-    if (types.isString(name)) {
+    if (isString(name)) {
         var eventOrGestureName = getEventOrGestureName(name);
         var evt = `${eventOrGestureName}Event`;
 
         return view.constructor && evt in view.constructor ||
-            gestures.fromString(eventOrGestureName.toLowerCase()) !== undefined;
+            fromString(eventOrGestureName.toLowerCase()) !== undefined;
     }
 
     return false;
@@ -71,7 +66,7 @@ export function getViewById(view: View, id: string): View {
     return retVal;
 }
 
-export function eachDescendant(view: definition.View, callback: (child: View) => boolean) {
+export function eachDescendant(view: ViewDefinition, callback: (child: View) => boolean) {
     if (!callback || !view) {
         return;
     }
@@ -88,12 +83,12 @@ export function eachDescendant(view: definition.View, callback: (child: View) =>
     view._eachChildView(localCallback);
 }
 
-export function getAncestor(view: View, criterion: string | Function): definition.View {
-    let matcher: (view: definition.View) => boolean = null;
+export function getAncestor(view: View, criterion: string | Function): ViewDefinition {
+    let matcher: (view: ViewDefinition) => boolean = null;
     if (typeof criterion === "string") {
-        matcher = (view: definition.View) => view.typeName === criterion;
+        matcher = (view: ViewDefinition) => view.typeName === criterion;
     } else {
-        matcher = (view: definition.View) => view instanceof criterion;
+        matcher = (view: ViewDefinition) => view instanceof criterion;
     }
 
     for (let parent = view.parent; parent != null; parent = parent.parent) {
@@ -127,7 +122,7 @@ let viewIdCounter = 0;
 function onCssClassPropertyChanged(view: View, oldValue: string, newValue: string) {
     let classes = view.cssClasses;
     classes.clear();
-    if (types.isString(newValue)) {
+    if (isString(newValue)) {
         newValue.split(" ").forEach(c => classes.add(c));
     }
 }
@@ -177,7 +172,7 @@ bindingContextProperty.register(View);
 
 let defaultBindingSource = {};
 
-export class View extends ViewBase implements definition.View {
+export class View extends ViewBase implements ViewDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
@@ -222,7 +217,7 @@ export class View extends ViewBase implements definition.View {
 
 
 
-    public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver> {
+    public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
         return this._gestureObservers[type];
     }
 
@@ -240,7 +235,7 @@ export class View extends ViewBase implements definition.View {
         this._goToVisualState("normal");
     }
 
-    observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any): void {
+    observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {
             this._gestureObservers[type] = [];
         }
@@ -249,7 +244,7 @@ export class View extends ViewBase implements definition.View {
     }
 
     public addEventListener(arg: string | gestures.GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-        if (types.isString(arg)) {
+        if (isString(arg)) {
             arg = getEventOrGestureName(<string>arg);
 
             let gesture = gestures.fromString(<string>arg);
@@ -271,13 +266,13 @@ export class View extends ViewBase implements definition.View {
                     super.addEventListener(<string>arg, callback, thisArg);
                 }
             }
-        } else if (types.isNumber(arg)) {
+        } else if (isNumber(arg)) {
             this.observe(<gestures.GestureTypes>arg, callback, thisArg);
         }
     }
 
     public removeEventListener(arg: string | gestures.GestureTypes, callback?: any, thisArg?: any) {
-        if (types.isString(arg)) {
+        if (isString(arg)) {
             let gesture = gestures.fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this._disconnectGestureObservers(gesture);
@@ -298,7 +293,7 @@ export class View extends ViewBase implements definition.View {
                 }
 
             }
-        } else if (types.isNumber(arg)) {
+        } else if (isNumber(arg)) {
             this._disconnectGestureObservers(<gestures.GestureTypes>arg);
         }
     }
@@ -582,7 +577,7 @@ export class View extends ViewBase implements definition.View {
     //END Style property shortcuts
 
 
-    get page(): definition.View {
+    get page(): ViewDefinition {
         if (this.parent) {
             return this.parent.page;
         }
@@ -1021,7 +1016,7 @@ export class View extends ViewBase implements definition.View {
         let availableHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         let heightSpec = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
+         let lp: CommonLayoutParams = view.style[nativeLayoutParamsProperty];
 
         if (widthSpec !== utils.layout.UNSPECIFIED) {
             if (lp.widthPercent > 0) {
@@ -1102,15 +1097,15 @@ export class View extends ViewBase implements definition.View {
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }
-        let scope: styleScope.StyleScope = (<any>rootPage)._getStyleScope();
+        let scope: StyleScope = (<any>rootPage)._getStyleScope();
         scope.applySelectors(this);
     }
 
     private _applyInlineStyle(inlineStyle) {
-        if (types.isString(inlineStyle)) {
+        if (isString(inlineStyle)) {
             try {
                 // this.style._beginUpdate();
-                styleScope.applyInlineSyle(this, <string>inlineStyle);
+                applyInlineSyle(this, <string>inlineStyle);
             } finally {
                 // this.style._endUpdate();
             }
@@ -1316,7 +1311,7 @@ export class View extends ViewBase implements definition.View {
     }
 
     public setInlineStyle(style: string): void {
-        if (!types.isString(style)) {
+        if (!isString(style)) {
             throw new Error("Parameter should be valid CSS string!");
         }
 
@@ -1340,19 +1335,19 @@ export class View extends ViewBase implements definition.View {
         return undefined;
     }
 
-    public getLocationInWindow(): definition.Point {
+    public getLocationInWindow(): Point {
         return undefined;
     }
 
-    public getLocationOnScreen(): definition.Point {
+    public getLocationOnScreen(): Point {
         return undefined;
     }
 
-    public getLocationRelativeTo(otherView: definition.View): definition.Point {
+    public getLocationRelativeTo(otherView: ViewDefinition): Point {
         return undefined;
     }
 
-    public getActualSize(): definition.Size {
+    public getActualSize(): Size {
         var currentBounds = this._getCurrentLayoutBounds();
         if (!currentBounds) {
             return undefined;
@@ -1369,9 +1364,8 @@ export class View extends ViewBase implements definition.View {
     }
 
     public createAnimation(animation: any): any {
-        ensureAnimationModule();
         animation.target = this;
-        return new animationModule.Animation([animation]);
+        return new Animation([animation]);
     }
 
     public _registerAnimation(animation: KeyframeAnimation) {

@@ -3,10 +3,10 @@
     import { Page } from "ui/page";
 
     export module AndroidTransitionType {
-        export var enter: string;
-        export var exit: string;
-        export var popEnter: string;
-        export var popExit: string;
+        export let enter: string;
+        export let exit: string;
+        export let popEnter: string;
+        export let popExit: string;
     }
 
     export class Transition {

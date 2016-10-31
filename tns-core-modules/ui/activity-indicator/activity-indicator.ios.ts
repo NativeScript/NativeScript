@@ -1,6 +1,7 @@
 import {ActivityIndicatorBase, busyProperty} from "./activity-indicator-common";
 import {Visibility} from "ui/enums";
 import {colorProperty, visibilityProperty} from "ui/styling/style";
+import * as utils from "utils/utils";
 
 export * from "./activity-indicator-common";
 
@@ -9,12 +10,17 @@ export class ActivityIndicator extends ActivityIndicatorBase {
 
     constructor() {
         super();
-        this.nativeView = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.UIActivityIndicatorViewStyleGray);
+        this.nativeView = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
         this.nativeView.hidesWhenStopped = true;
     }
 
     get [busyProperty.native](): boolean {
-        return this.nativeView.isAnimating();
+        if (utils.ios.MajorVersion > 9) {
+            return this.nativeView.animating;
+        }
+        else {
+            return (<any>this.nativeView).isAnimating();
+        }
     }
     set [busyProperty.native](value: boolean) {
         let nativeView = this.nativeView;

@@ -1,23 +1,22 @@
-﻿import common = require("./time-picker-common");
-import style = require("ui/styling/style");
-import {View} from "ui/core/view";
-
+﻿import { TimePickerBase, getValidTime, timeProperty, minuteProperty, hourProperty } from "./time-picker-common";
+import { colorProperty } from "ui/styling/style";
 import * as utils from "utils/utils";
+import getter = utils.ios.getter;
+export * from "./time-picker-common";
+
 
 function getDate(hour: number, minute: number): Date {
-    var comps = NSDateComponents.alloc().init();
-    comps.hour = hour;
-    comps.minute = minute;
-    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>comps);
+    let components = NSDateComponents.alloc().init();
+    components.hour = hour;
+    components.minute = minute;
+    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>components);
 }
 
 function getComponents(date: Date | NSDate): NSDateComponents {
     return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
-global.moduleMerge(common, exports);
-
-export class TimePicker extends common.TimePicker {
+export class TimePicker extends TimePickerBase {
     private _ios: UIDatePicker;
     private _changeHandler: NSObject;
 
@@ -30,9 +29,9 @@ export class TimePicker extends common.TimePicker {
         this._changeHandler = UITimePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
 
-        var comps = getComponents(NSDate.date());
-        this.hour = comps.hour;
-        this.minute = comps.minute;
+        let components = getComponents(NSDate.date());
+        this.hour = components.hour;
+        this.minute = components.minute;
     }
 
     get ios(): UIDatePicker {
@@ -62,6 +61,13 @@ export class TimePicker extends common.TimePicker {
             this.ios.minuteInterval = this.minuteInterval;
         }
     }
+
+    get [colorProperty.native](): UIColor {
+        return this.nativeView.valueForKey("textColor");
+    }
+    set [colorProperty.native](value: UIColor) {
+        this.nativeView.setValueForKey(value, "textColor");
+    }
 }
 
 class UITimePickerChangeHandlerImpl extends NSObject {
@@ -80,21 +86,21 @@ class UITimePickerChangeHandlerImpl extends NSObject {
             return;
         }
 
-        var comps = getComponents(sender.date);
-        
+        let components = getComponents(sender.date);
+
         let timeChanged = false;
-        if (comps.hour !== owner.hour) {
-            owner._onPropertyChangedFromNative(common.TimePicker.hourProperty, comps.hour);
+        if (components.hour !== owner.hour) {
+            owner.nativePropertyChanged(hourProperty, components.hour);
             timeChanged = true;
         }
 
-        if (comps.minute !== owner.minute) {
-            owner._onPropertyChangedFromNative(common.TimePicker.minuteProperty, comps.minute);
+        if (components.minute !== owner.minute) {
+            owner.nativePropertyChanged(minuteProperty, components.minute);
             timeChanged = true;
         }
-        
+
         if (timeChanged) {
-            owner._onPropertyChangedFromNative(common.TimePicker.timeProperty, new Date(0, 0, 0, comps.hour, comps.minute));
+            owner.nativePropertyChanged(timeProperty, new Date(0, 0, 0, components.hour, components.minute));
         }
     }
 
@@ -102,30 +108,3 @@ class UITimePickerChangeHandlerImpl extends NSObject {
         'valueChanged': { returns: interop.types.void, params: [UIDatePicker] }
     }
 }
-
-export class TimePickerStyler implements style.Styler {
-    // color
-    private static setColorProperty(view: View, newValue: any) {
-        var picker = <UIDatePicker>view._nativeView;
-        picker.setValueForKey(newValue, "textColor");
-    }
-
-    private static resetColorProperty(view: View, nativeValue: any) {
-        var picker = <UIDatePicker>view._nativeView;
-        picker.setValueForKey(nativeValue, "textColor");
-    }
-
-    private static getColorProperty(view: View): any {
-        var picker = <UIDatePicker>view._nativeView;
-        return picker.valueForKey("textColor");
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TimePickerStyler.setColorProperty,
-            TimePickerStyler.resetColorProperty,
-            TimePickerStyler.getColorProperty), "TimePicker");
-    }
-}
-
-TimePickerStyler.registerHandlers();

@@ -1,12 +1,13 @@
-﻿import color = require("color");
-import frame = require("ui/frame");
-import page = require("ui/page");
-import button = require("ui/button");
-import textField = require("ui/text-field");
-import label = require("ui/label");
-import types = require("utils/types");
+﻿import {Color} from "color";
+import {topmost} from "ui/frame";
+import {Page} from "ui/page";
+import {Button} from "ui/button";
+import {TextField} from "ui/text-field";
+import {Label} from "ui/label";
+import {View} from "ui/core/view";
+import * as types from "utils/types";
 
-export var STRING = "string",
+export let STRING = "string",
     PROMPT = "Prompt",
     CONFIRM = "Confirm",
     ALERT = "Alert",
@@ -21,37 +22,38 @@ export module inputType {
     /**
      * Plain text input type.
      */
-    export var text: string = "text";
+    export let text: string = "text";
 
     /**
      * Password input type.
      */
-    export var password: string = "password";
+    export let password: string = "password";
 }
 
-export function getCurrentPage(): page.Page {
-    var topMostFrame = frame.topmost();
-    if (topMostFrame) {
-        return topMostFrame.currentPage;
+export function getCurrentPage(): Page {
+    let topmostFrame = topmost();
+    if (topmostFrame) {
+        return topmostFrame.currentPage;
     }
 
     return undefined;
 }
 
-function applySelectors(view) {
-    var currentPage = getCurrentPage();
+function applySelectors(view: View) {
+    let currentPage = getCurrentPage();
     if (currentPage) {
-        var styleScope = currentPage._getStyleScope();
+        let styleScope = currentPage._getStyleScope();
         if (styleScope) {
             styleScope.applySelectors(view);
         }
     }
 }
 
-var buttonColor: color.Color;
-export function getButtonColor(): color.Color {
+let buttonColor: Color;
+// NOTE: This will fail if app.css is changed.
+export function getButtonColor(): Color {
     if (!buttonColor) {
-        var btn = new button.Button();
+        let btn = new Button();
         applySelectors(btn);
         buttonColor = btn.color;
         btn.onUnloaded();
@@ -60,10 +62,11 @@ export function getButtonColor(): color.Color {
     return buttonColor;
 }
 
-var buttonBackgroundColor: color.Color;
-export function getButtonBackgroundColor(): color.Color {
+let buttonBackgroundColor: Color;
+// NOTE: This will fail if app.css is changed.
+export function getButtonBackgroundColor(): Color {
     if (!buttonBackgroundColor) {
-        var btn = new button.Button();
+        let btn = new button.Button();
         applySelectors(btn);
         buttonBackgroundColor = btn.backgroundColor;
         btn.onUnloaded();
@@ -72,23 +75,26 @@ export function getButtonBackgroundColor(): color.Color {
     return buttonBackgroundColor;
 }
 
-var textFieldColor: color.Color;
-export function getTextFieldColor(): color.Color {
+let textFieldColor: Color;
+export function getTextFieldColor(): Color {
     if (!textFieldColor) {
-        var tf = new textField.TextField();
+        let tf = new TextField();
         applySelectors(tf);
         textFieldColor = tf.color;
+        tf.onUnloaded();
     }
 
     return textFieldColor;
 }
 
-var labelColor: color.Color;
-export function getLabelColor(): color.Color {
+let labelColor: Color;
+// NOTE: This will fail if app.css is changed.
+export function getLabelColor(): Color {
     if (!labelColor) {
-        var lbl = new label.Label();
+        let lbl = new Label();
         applySelectors(lbl);
         labelColor = lbl.color;
+        lbl.onUnloaded();
     }
 
     return labelColor;

@@ -2,12 +2,15 @@ import {AnimationDefinition} from "ui/animation";
 import {AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise} from "./animation-common";
 import {View} from "ui/core/view";
 import {AnimationCurve} from "ui/enums";
+import * as utils from "utils/utils";
 import {opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
     scaleXProperty, scaleYProperty } from "ui/styling/style";
 import * as trace from "trace";
 
 export * from "./animation-common";
+
+let getter = utils.ios.getter;
 
 let _transform = "_transform";
 let _skip = "_skip";
@@ -271,7 +274,7 @@ export class Animation extends AnimationBase {
                 };
                 originalValue = nativeView.layer.backgroundColor;
                 if (nativeView instanceof UILabel) {
-                    nativeView.setValueForKey(utils.ios.getter(UIColor, UIColor.clearColor), "backgroundColor");
+                    nativeView.setValueForKey(getter(UIColor, UIColor.clearColor), "backgroundColor");
                 }
                 value = value.CGColor;
                 break;

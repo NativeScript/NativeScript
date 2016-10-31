@@ -195,70 +195,74 @@
 
             export class ViewHelper {
                 public static getMinWidth(view: android.view.View): number;
-                public static setMinWidth(view: android.view.View, value: number);
+                public static setMinWidth(view: android.view.View, value: number): void;
 
                 public static getMinHeight(view: android.view.View): number;
-                public static setMinHeight(view: android.view.View, value: number);
+                public static setMinHeight(view: android.view.View, value: number): void;
 
                 public static getWidth(view: android.view.View): number;
-                public static setWidth(view: android.view.View, value: number);
+                public static setWidth(view: android.view.View, value: number): void;
 
                 public static getHeight(view: android.view.View): number;
-                public static setHeight(view: android.view.View, value: number);
+                public static setHeight(view: android.view.View, value: number): void;
 
                 public static getMargin(view: android.view.View): { left: number, top: number, right: number, bottom: number };
-                public static setMargin(view: android.view.View, left: number, top: number, right: number, bottom: number);
+                public static setMargin(view: android.view.View, left: number, top: number, right: number, bottom: number): void;
 
                 public static getMarginLeft(view: android.view.View): number;
-                public static setMarginLeft(view: android.view.View, value): number;
+                public static setMarginLeft(view: android.view.View, value: number): void;
 
                 public static getMarginTop(view: android.view.View): number;
-                public static setMarginTop(view: android.view.View, value: number);
+                public static setMarginTop(view: android.view.View, value: number): void;
 
                 public static getMarginRight(view: android.view.View): number;
-                public static setMarginRight(view: android.view.View, value: number);
+                public static setMarginRight(view: android.view.View, value: number): void;
 
                 public static getMarginBottom(view: android.view.View): number;
-                public static setMarginBottom(view: android.view.View, value: number);
+                public static setMarginBottom(view: android.view.View, value: number): void;
 
                 public static getHorizontalAlighment(view: android.view.View): string;
-                public static setHorizontalAlighment(view: android.view.View, value: string);
+                public static setHorizontalAlighment(view: android.view.View, value: string): void;
 
                 public static getVerticalAlignment(view: android.view.View): string;
-                public static setVerticalAlignment(view: android.view.View, value: string);
+                public static setVerticalAlignment(view: android.view.View, value: string): void;
 
                 public static getPadding(view: android.view.View): { left: number, top: number, right: number, bottom: number };
-                public static setPadding(view: android.view.View, left: number, top: number, right: number, bottom: number);
+                public static setPadding(view: android.view.View, left: number, top: number, right: number, bottom: number): void;
 
                 public static getPaddingLeft(view: android.view.View): number;
-                public static setPaddingLeft(view: android.view.View, value: number);
+                public static setPaddingLeft(view: android.view.View, value: number): void;
 
                 public static getPaddingTop(view: android.view.View): number;
-                public static setPaddingTop(view: android.view.View, value: number);
+                public static setPaddingTop(view: android.view.View, value: number): void;
 
                 public static getPaddingRight(view: android.view.View): number;
-                public static setPaddingRight(view: android.view.View, value: number);
+                public static setPaddingRight(view: android.view.View, value: number): void;
 
                 public static getPaddingBottom(view: android.view.View): number;
-                public static setPaddingBottom(view: android.view.View, value: number);
+                public static setPaddingBottom(view: android.view.View, value: number): void;
 
                 public static getRotate(view: android.view.View): number;
-                public static setRotate(view: android.view.View, value: number);
+                public static setRotate(view: android.view.View, value: number): void;
 
                 public static getScaleX(view: android.view.View): number;
-                public static setScaleX(view: android.view.View, value): number;
+                public static setScaleX(view: android.view.View, value: number): void;
 
                 public static getScaleY(view: android.view.View): number;
-                public static setScaleY(view: android.view.View, value): number;
+                public static setScaleY(view: android.view.View, value: number): void;
 
                 public static getTranslateX(view: android.view.View): number;
-                public static setTranslateX(view: android.view.View, value): number;
+                public static setTranslateX(view: android.view.View, value: number): void;
 
                 public static getTranslateY(view: android.view.View): number;
-                public static setTranslateY(view: android.view.View, value): number;
+                public static setTranslateY(view: android.view.View, value: number): void;
 
                 public static getZIndex(view: android.view.View): number;
-                public static setZIndex(view: android.view.View, value): number;
+                public static setZIndex(view: android.view.View, value: number): void;
+
+                public static getLetterspacing(view: android.view.View): number;
+                public static setLetterspacing(view: android.view.View, value: number): void;
+                
             }
         }
     }

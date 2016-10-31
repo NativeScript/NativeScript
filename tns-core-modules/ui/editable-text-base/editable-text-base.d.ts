@@ -1,18 +1,19 @@
 ﻿declare module "ui/editable-text-base" {
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import textBase = require("ui/text-base");
+    import { Property } from "ui/core/properties";
+    import { TextBase } from "ui/text-base";
+
+    export let keyboardTypeProperty: Property<EditableTextBase, string>;
+    export let returnKeyTypeProperty: Property<EditableTextBase, string>;
+    export let editableProperty: Property<EditableTextBase, boolean>;
+    export let updateTextTriggerProperty: Property<EditableTextBase, string>;
+    export let autocapitalizationTypeProperty: Property<EditableTextBase, string>;
+    export let autocorrectProperty: Property<EditableTextBase, boolean>;
+    export let hintProperty: Property<EditableTextBase, string>;
 
     /**
      * Represents the base class for all editable text views.
      */
-    export class EditableTextBase extends textBase.TextBase {
-        public static keyboardTypeProperty: dependencyObservable.Property;
-        public static returnKeyTypeProperty: dependencyObservable.Property;
-        public static editableProperty: dependencyObservable.Property;
-        public static updateTextTriggerProperty: dependencyObservable.Property;
-        public static autocapitalizationTypeProperty: dependencyObservable.Property;
-        public static autocorrectProperty: dependencyObservable.Property;
-
+    export class EditableTextBase extends TextBase {
         /**
          * Gets or sets the soft keyboard type. Possible values are contained in the [KeyboardType enumeration](../enums/KeyboardType/README.md).
          */

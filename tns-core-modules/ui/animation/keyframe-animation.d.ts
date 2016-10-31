@@ -1,5 +1,4 @@
 declare module "ui/animation/keyframe-animation" {
-
     import {View} from "ui/core/view";
 
     export interface KeyframeDeclaration {

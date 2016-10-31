@@ -1,37 +1,44 @@
-﻿import spanModule = require("text/span");
-import observable = require("data/observable");
-import observableArray = require("data/observable-array");
-import definition = require("text/formatted-string");
-import view = require("ui/core/view");
-import types = require("utils/types");
-import colorModule = require("color");
+﻿import { FormattedString as FormattedStringDefinition, FormattedStringView } from "text/formatted-string";
+import { Span } from "text/span";
+import { Observable, PropertyChangeData } from "data/observable";
+import { ObservableArray, ChangedData } from "data/observable-array";
+import { View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
+import { isString } from "utils/types";
+import { Color } from "color";
 
 export module knownCollections {
-    export var spans = "spans";
+    export let spans = "spans";
 }
 
-var CHILD_SPAN = "Span";
-var CHILD_FORMATTED_TEXT = "formattedText";
-var CHILD_FORMATTED_STRING = "FormattedString";
+let CHILD_SPAN = "Span";
+let CHILD_FORMATTED_TEXT = "formattedText";
+let CHILD_FORMATTED_STRING = "FormattedString";
 
-export class FormattedString extends observable.Observable implements definition.FormattedString, view.AddArrayFromBuilder {
-    private _spans: observableArray.ObservableArray<spanModule.Span>;
-    public _formattedText: any;
+export abstract class FormattedStringBase extends Observable implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
+    private _spans: ObservableArray<Span>;
     private _isDirty: boolean;
     private _fontFamily: string;
     private _fontSize: number;
-    private _foregroundColor: colorModule.Color;
-    private _backgroundColor: colorModule.Color;
+    private _foregroundColor: Color;
+    private _backgroundColor: Color;
     private _underline: number;
     private _strikethrough: number;
     private _fontAttributes: number;
-    private _parent: view.View;
+    private _parent: View;
 
-    get parent(): view.View {
-        return this._parent;
+    public _formattedText: any;
+
+    constructor() {
+        super();
+        this._spans = new ObservableArray<Span>();
+        this._spans.addEventListener(ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
+        this._isDirty = true;
     }
 
-    set parent(value: view.View) {
+    get parent(): View {
+        return this._parent;
+    }
+    set parent(value: View) {
         if (this._parent !== value) {
             this._parent = value;
         }
@@ -40,7 +47,6 @@ export class FormattedString extends observable.Observable implements definition
     get fontFamily(): string {
         return this._fontFamily;
     }
-
     set fontFamily(value: string) {
         if (this._fontFamily !== value) {
             this._fontFamily = value;
@@ -51,8 +57,8 @@ export class FormattedString extends observable.Observable implements definition
         return this._fontSize;
     }
     set fontSize(value: number) {
-        var fSize: number;
-        if (types.isString(value)) {
+        let fSize: number;
+        if (isString(value)) {
             fSize = parseInt(<any>value);
         }
         else {
@@ -63,13 +69,13 @@ export class FormattedString extends observable.Observable implements definition
         }
     }
 
-    get foregroundColor(): colorModule.Color {
+    get foregroundColor(): Color {
         return this._foregroundColor;
     }
-    set foregroundColor(value: colorModule.Color) {
-        var foreColor;
-        if (types.isString(value)) {
-            foreColor = new colorModule.Color(<any>value);
+    set foregroundColor(value: Color) {
+        let foreColor;
+        if (isString(value)) {
+            foreColor = new Color(<any>value);
         }
         else {
             foreColor = value;
@@ -79,13 +85,13 @@ export class FormattedString extends observable.Observable implements definition
         }
     }
 
-    get backgroundColor(): colorModule.Color {
+    get backgroundColor(): Color {
         return this._backgroundColor;
     }
-    set backgroundColor(value: colorModule.Color) {
-        var backColor;
-        if (types.isString(value)) {
-            backColor = new colorModule.Color(<any>value);
+    set backgroundColor(value: Color) {
+        let backColor;
+        if (isString(value)) {
+            backColor = new Color(<any>value);
         }
         else {
             backColor = value;
@@ -98,10 +104,9 @@ export class FormattedString extends observable.Observable implements definition
     get underline(): number {
         return this._underline;
     }
-
     set underline(value: number) {
-        var underlineIntValue: number;
-        if (types.isString(value)) {
+        let underlineIntValue: number;
+        if (isString(value)) {
             underlineIntValue = parseInt(<any>value);
         }
         else {
@@ -115,10 +120,9 @@ export class FormattedString extends observable.Observable implements definition
     get strikethrough(): number {
         return this._strikethrough;
     }
-
     set strikethrough(value: number) {
-        var strikethroughIntValue: number;
-        if (types.isString(value)) {
+        let strikethroughIntValue: number;
+        if (isString(value)) {
             strikethroughIntValue = parseInt(<any>value);
         }
         else {
@@ -132,75 +136,34 @@ export class FormattedString extends observable.Observable implements definition
     get fontAttributes(): number {
         return this._fontAttributes;
     }
-
     set fontAttributes(value: number) {
         if (this._fontAttributes !== value) {
             this._fontAttributes = value;
         }
     }
 
-    constructor() {
-        super();
-        this._spans = new observableArray.ObservableArray<spanModule.Span>();
-        this._spans.addEventListener(observableArray.ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
-        this._isDirty = true;
-    }
-
-    get spans(): observableArray.ObservableArray<spanModule.Span> {
+    get spans(): ObservableArray<Span> {
         if (!this._spans) {
-            this._spans = new observableArray.ObservableArray<spanModule.Span>();
+            this._spans = new ObservableArray<Span>();
         }
         return this._spans;
     }
 
-    private onSpansCollectionChanged(eventData: observableArray.ChangedData<spanModule.Span>) {
-        var i;
-        if (eventData.addedCount > 0) {
-            for (i = 0; i < eventData.addedCount; i++) {
-                var addedSpan: spanModule.Span = (<observableArray.ObservableArray<spanModule.Span>>eventData.object).getItem(eventData.index + i);
-                addedSpan.parentFormattedString = this;
-                addedSpan.addEventListener(observable.Observable.propertyChangeEvent, this.onSpanChanged, this);
-            }
-        }
-        if (eventData.removed && eventData.removed.length > 0) {
-            var p;
-            for (p = 0; p < eventData.removed.length; p++) {
-                var removedSpan = eventData.removed[p];
-                removedSpan.removeEventListener(observable.Observable.propertyChangeEvent, this.onSpanChanged, this);
-            }
-        }
-        this.updateFormattedText(true);
-    }
+    public abstract createFormattedStringCore(): void;
 
-    private onSpanChanged(eventData: observable.PropertyChangeData) {
-        this.updateFormattedText(true);
-    }
-
-    private updateFormattedText(isDirty?: boolean) {
-        var shouldUpdate = isDirty || this._isDirty;
-        if (shouldUpdate) {
-            this.createFormattedStringCore();
-            this._isDirty = false;
-            this.notify(this._createPropertyChangeData("", this));
-        }
-    }
-
-    public createFormattedStringCore() {
-        // a virtual method overriden in platform specific implementations.
-    }
+    public abstract _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void;
 
     public toString(): string {
-        var result = "";
-        var i;
-        for (i = 0; i < this._spans.length; i++) {
+        let result = "";
+        for (let i = 0, length = this._spans.length; i < length; i++) {
             result += this._spans.getItem(i).text;
         }
         return result;
     }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
-        var i;
-        var span;
+        let i;
+        let span;
         if (name === knownCollections.spans) {
             for (i = 0; i < value.length; i++) {
                 span = value[i];
@@ -209,25 +172,25 @@ export class FormattedString extends observable.Observable implements definition
         }
     }
 
-    public updateSpansBindingContext(newBindingContext) {
-        var i;
-        for (i = 0; i < this.spans.length; i++) {
-            var span = this.spans.getItem(i);
-            span.bindingContext = newBindingContext;
-        }
-    }
-
     public _addChildFromBuilder(name: string, value: any): void {
-        if(name === CHILD_SPAN) {
+        if (name === CHILD_SPAN) {
             this.spans.push(value);
         }
     }
 
-    public static addFormattedStringToView(view: definition.FormattedStringView, name: string, value: any): void {
-        if(name === CHILD_SPAN) {
-            if (!view.formattedText) {
-                view.formattedText = new FormattedString();
-            }
+    public updateSpansBindingContext(newBindingContext) {
+        for (let i = 0, length = this.spans.length; i < length; i++) {
+            let span = this.spans.getItem(i);
+            span.bindingContext = newBindingContext;
+        }
+    }
+
+    public static addFormattedStringToView(view: FormattedStringView, name: string, value: any): void {
+        if (name === CHILD_SPAN) {
+            // NOTE: getter should either initialize the value or do it in the constructor.
+            // if (!view.formattedText) {
+            //     view.formattedText = new FormattedString();
+            // }
             view.formattedText.spans.push(value);
         }
         else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
@@ -235,7 +198,33 @@ export class FormattedString extends observable.Observable implements definition
         }
     }
 
-    public _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void {
-        //
+    private onSpansCollectionChanged(eventData: ChangedData<Span>) {
+        if (eventData.addedCount > 0) {
+            for (let i = 0; i < eventData.addedCount; i++) {
+                let addedSpan: Span = (<ObservableArray<Span>>eventData.object).getItem(eventData.index + i);
+                addedSpan.parentFormattedString = this;
+                addedSpan.addEventListener(Observable.propertyChangeEvent, this.onSpanChanged, this);
+            }
+        }
+        if (eventData.removed && eventData.removed.length > 0) {
+            for (let p = 0; p < eventData.removed.length; p++) {
+                let removedSpan = eventData.removed[p];
+                removedSpan.removeEventListener(Observable.propertyChangeEvent, this.onSpanChanged, this);
+            }
+        }
+        this.updateFormattedText(true);
+    }
+
+    private onSpanChanged(eventData: PropertyChangeData) {
+        this.updateFormattedText(true);
+    }
+
+    private updateFormattedText(isDirty?: boolean) {
+        let shouldUpdate = isDirty || this._isDirty;
+        if (shouldUpdate) {
+            this.createFormattedStringCore();
+            this._isDirty = false;
+            this.notify(this._createPropertyChangeData("", this));
+        }
     }
 }

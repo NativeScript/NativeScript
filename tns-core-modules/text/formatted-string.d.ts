@@ -2,11 +2,11 @@
  * Contains the FormattedString and Span classes, which are used to create a formatted (rich text) strings.
  */
 declare module "text/formatted-string" {
-    import spanModule = require("text/span");
-    import observable = require("data/observable");
-    import observableArray = require("data/observable-array");
-    import colorModule = require("color");
-    import view = require("ui/core/view");
+    import { Span } from "text/span";
+    import { Observable } from "data/observable";
+    import { ObservableArray } from "data/observable-array";
+    import { View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
+    import { Color } from "color";
 
     /**
      * Interface that specifies View that have formattedText property (like TextBase and Button).
@@ -18,11 +18,11 @@ declare module "text/formatted-string" {
     /**
      * A class used to create a formatted (rich text) string.
      */
-    class FormattedString extends observable.Observable implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
+    class FormattedString extends Observable implements AddArrayFromBuilder, AddChildFromBuilder {
         /**
          * An observable collection of Span objects used to define common text properties.
          */
-        public spans: observableArray.ObservableArray<spanModule.Span>;
+        public spans: ObservableArray<Span>;
 
         /**
          * Initializes a new instance of FormattedString class.
@@ -52,12 +52,12 @@ declare module "text/formatted-string" {
         /**
          * Gets or sets the font foreground color which will be used for all spans that not have a specific value for font foreground color.
          */
-        public foregroundColor: colorModule.Color;
+        public foregroundColor: Color;
 
         /**
          * Gets or sets the font background color which will be used for all spans that not have a specific value for font background color.
          */
-        public backgroundColor: colorModule.Color;
+        public backgroundColor: Color;
 
         /**
          * Gets or sets underline which will be used for all spans that not have a specific value for underline.
@@ -78,7 +78,7 @@ declare module "text/formatted-string" {
         /**
          * Gets the parent view of the formatted string.
          */
-        public parent: view.View;
+        public parent: View;
 
         /**
          * A function that is called when an array declaration is found in xml.

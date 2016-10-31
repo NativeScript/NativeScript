@@ -4,25 +4,33 @@ import { device } from "platform";
 
 export * from "./button-common";
 
-@Implements([android.view.View.OnClickListener])
+@Interfaces([android.view.View.OnClickListener])
 class ClickListener implements android.view.View.OnClickListener {
     constructor(public owner: WeakRef<Button>) { }
 
     public onClick(v: android.view.View): void {
-        this.owner.get()._emit(ButtonBase.tapEvent);
+        let btn = this.owner.get();
+        if (btn) { 
+            btn._emit(ButtonBase.tapEvent);
+        }
     }
 }
 
-@Implements([android.view.View.OnTouchListener])
+@Interfaces([android.view.View.OnTouchListener])
 class TouchListener implements android.view.View.OnTouchListener {
     constructor(public owner: WeakRef<Button>) { }
 
     public onTouch(v: android.view.View, event: android.view.MotionEvent): boolean {
+        let btn = this.owner.get();
+        if (!btn) { 
+            return false;
+        }
+
         if (event.getAction() === 0) { // down
-            this.owner.get()._goToVisualState("highlighted");
+            btn._goToVisualState("highlighted");
         }
         else if (event.getAction() === 1) { // up
-            this.owner.get()._goToVisualState("normal");
+            btn._goToVisualState("normal");
         }
         return false;
     }
@@ -38,33 +46,13 @@ export class Button extends ButtonBase {
     }
 
     public _createUI() {
+        let weakRef = new WeakRef(this);
         this.nativeView = new android.widget.Button(this._context);
-        this.nativeView.setOnClickListener(new ClickListener(new WeakRef(this)));
-        this.nativeView.setOnTouchListener(new TouchListener(new WeakRef(this)));
+        this.nativeView.setOnClickListener(new ClickListener(weakRef));
+        this.nativeView.setOnTouchListener(new TouchListener(weakRef));
     }
 
-    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.android) {
-            this.android.setText(data.newValue + "");
-        }
-    }
-
-
-    public _setFormattedTextPropertyToNative(value) {
-
-    }
-
-    get [textProperty.native](): string {
-        return this.nativeView.getText();
-    }
-    set [textProperty.native](value: string) {
-        this.nativeView.setText(value);
-    }
-
-    get [formattedTextProperty.native](): string {
-        return this.nativeView.getText();
-    }
-    set [formattedTextProperty.native](value: FormattedString) {
+    public _setFormattedTextPropertyToNative(value: FormattedString) {
         let newText = value ? value._formattedText : null;
         if (newText) {
             if (!this._transformationMethod) {
@@ -77,7 +65,7 @@ export class Button extends ButtonBase {
             }
         }
 
-        this.android.setText(newText);
+        this.nativeView.setText(newText);
     }
 }
 

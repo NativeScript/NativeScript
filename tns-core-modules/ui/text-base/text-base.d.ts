@@ -1,22 +1,12 @@
 ﻿declare module "ui/text-base" {
-    import {View, AddChildFromBuilder} from "ui/core/view";
-    import {FormattedString, FormattedStringView} from "text/formatted-string";
-    import {Property} from "ui/core/properties";
+    import { View, AddChildFromBuilder } from "ui/core/view";
+    import { FormattedString, FormattedStringView } from "text/formatted-string";
+    import { Property } from "ui/core/properties";
 
     /**
      * Represents the base class for all text views.
      */
     export class TextBase extends View implements AddChildFromBuilder, FormattedStringView {
-        // /**
-        //  * Dependency property used to support binding operations for the text of the current text-base instance.
-        //  */
-        // public static textProperty: dependencyObservable.Property;
-
-        // /**
-        //  * Dependency property used to support binding operations for the formatted text of the current text-base instance.
-        //  */
-        // public static formattedTextProperty: dependencyObservable.Property;
-
         /**
          * Gets or sets the text.
          */
@@ -46,8 +36,8 @@
         _addChildFromBuilder(name: string, value: any): void;
 
         //@private
-        _onTextPropertyChanged(value: string): void;
-        _setFormattedTextPropertyToNative(value: any): void;
+        // _onTextPropertyChanged(value: string): void;
+        // _setFormattedTextPropertyToNative(value: any): void;
         /**
          * @private
          * Called when the text property is changed to request layout.

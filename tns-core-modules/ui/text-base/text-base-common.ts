@@ -1,20 +1,12 @@
-﻿import {TextBase as TextBaseDefinition} from "ui/text-base";
-import {View} from "ui/core/view";
-import {Observable, PropertyChangeData} from "data/observable";
-import {FormattedString, FormattedStringView} from "text/formatted-string";
-import {isIOS} from "platform";
-import {Property} from "ui/core/properties";
-import * as weakEventListenerModule from "ui/core/weak-event-listener";
+﻿import { TextBase as TextBaseDefinition } from "ui/text-base";
+import { View } from "ui/core/view";
+import { Observable, PropertyChangeData } from "data/observable";
+import { FormattedString, FormattedStringView } from "text/formatted-string";
+import { isIOS } from "platform";
+import { Property } from "ui/core/properties";
+import * as weakEvents from "ui/core/weak-event-listener";
 
-let weakEvents: typeof weakEventListenerModule;
-function ensureWeakEvents() {
-    if (!weakEvents) {
-        weakEvents = require("ui/core/weak-event-listener");
-    }
-}
-
-function onFormattedTextPropertyChanged(textBase: TextBase, oldValue: FormattedString, newValue: FormattedString) {
-    ensureWeakEvents();
+function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
     if (oldValue) {
         oldValue.parent = null;
         weakEvents.removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
@@ -27,7 +19,7 @@ function onFormattedTextPropertyChanged(textBase: TextBase, oldValue: FormattedS
 
     // textBase._onFormattedTextPropertyChanged(newValue);
 }
-function onTextPropertyChanged(textBase: TextBase, oldValue: string, newValue: string) {
+function onTextPropertyChanged(textBase: TextBaseCommon, oldValue: string, newValue: string) {
     // textBase._onTextPropertyChanged(newValue);
 
     // //RemoveThisDoubleCall
@@ -38,7 +30,15 @@ function onTextPropertyChanged(textBase: TextBase, oldValue: string, newValue: s
 // (<proxy.PropertyMetadata>textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
 // (<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
 
-export class TextBase extends View implements TextBaseDefinition, FormattedStringView {
+export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
+
+    constructor() {
+        super();
+        // NOTE: this was added so that FormattedString.addFormattedStringToView does not instantiate it.
+        this.formattedText = new FormattedString();
+    }
+
+    public abstract _setFormattedTextPropertyToNative(value): void;
 
     // public _onBindingContextChanged(oldValue: any, newValue: any) {
     //     super._onBindingContextChanged(oldValue, newValue);
@@ -75,20 +75,6 @@ export class TextBase extends View implements TextBaseDefinition, FormattedStrin
         this.nativePropertyChanged(textProperty, value.toString());
     }
 
-    public _onTextPropertyChanged(newValue: string) {
-        //
-    }
-
-    public _setFormattedTextPropertyToNative(value) {
-        //
-    }
-
-    public _onFormattedTextPropertyChanged(newValue: FormattedString) {
-        this._setFormattedTextPropertyToNative(newValue);
-        let newText = newValue ? newValue.toString() : "";
-        this.nativePropertyChanged(textProperty, newText);
-    }
-
     public _addChildFromBuilder(name: string, value: any): void {
         FormattedString.addFormattedStringToView(this, name, value);
     }
@@ -98,8 +84,8 @@ export class TextBase extends View implements TextBaseDefinition, FormattedStrin
     }
 }
 
-export let textProperty = new Property<TextBase, string>({ name: "text", defaultValue: "", valueChanged: onTextPropertyChanged });
-textProperty.register(TextBase);
+export let textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
+textProperty.register(TextBaseCommon);
 
-export let formattedTextProperty = new Property<TextBase, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
-formattedTextProperty.register(TextBase);
+export let formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
+formattedTextProperty.register(TextBaseCommon);

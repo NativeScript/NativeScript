@@ -4,8 +4,8 @@ import { Page} from "ui/page";
 import { getClass } from "utils/types";
 import { device } from "platform";
 import * as animationModule from "ui/animation";
+import * as trace from "trace";
 import lazy from "utils/lazy";
-import trace = require("trace");
 
 let slideTransition: any;
 function ensureSlideTransition() {
@@ -711,7 +711,7 @@ export class Transition implements definitionTransition {
     constructor(duration: number, curve: any) {
         this._duration = duration;
         if (curve) {
-            let animation: typeof animationModule = require("ui/animation");
+            ensureAnimationModule();
             this._interpolator = animation._resolveAnimationCurve(curve);
         }
         else {

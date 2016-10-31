@@ -1,11 +1,9 @@
-﻿import common = require("./editable-text-base-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import enums = require("ui/enums");
-import utils = require("utils/utils");
-import types = require("utils/types");
-
-//https://github.com/NativeScript/NativeScript/issues/2942
-let dismissKeyboardTimeoutId: number;
+﻿import {
+    EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
+    returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty
+} from "./editable-text-base-common";
+import { textProperty } from "ui/text-base";
 
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
@@ -14,6 +12,133 @@ export class EditableTextBase extends common.EditableTextBase {
     /* tslint:disable */
     private _dirtyTextAccumulator: string;
     /* tslint:enable */
+
+import { UpdateTextTrigger, KeyboardType, ReturnKeyType, AutocapitalizationType } from "ui/enums";
+import { toUIString } from "utils/types";
+import * as utils from "utils/utils";
+
+@Interfaces([android.text.TextWatcher])
+class TextWatcher implements android.text.TextWatcher {
+    constructor(private owner: WeakRef<EditableTextBase>) {
+        //        
+    }
+
+    public beforeTextChanged(text: string, start: number, count: number, after: number) {
+        //
+    }
+
+    public onTextChanged(text: string, start: number, before: number, count: number) {
+        let owner = this.owner.get();
+        if (!owner) {
+            return;
+        }
+        let selectionStart = owner.android.getSelectionStart();
+        owner.android.removeTextChangedListener(owner._textWatcher);
+
+        // //RemoveThisDoubleCall
+        // owner.style._updateTextDecoration();
+        // owner.style._updateTextTransform();
+
+        owner.android.addTextChangedListener(owner._textWatcher);
+        owner.android.setSelection(selectionStart);
+    }
+
+    public afterTextChanged(editable: android.text.IEditable) {
+        let owner = this.owner.get();
+        if (!owner) {
+            return;
+        }
+
+        switch (owner.updateTextTrigger) {
+            case UpdateTextTrigger.focusLost:
+                owner._dirtyTextAccumulator = editable.toString();
+                break;
+            case UpdateTextTrigger.textChanged:
+                owner.nativePropertyChanged(textProperty, editable.toString());
+                break;
+            default:
+                throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
+        }
+    }
+}
+
+@Interfaces([android.view.View.OnFocusChangeListener])
+class FocusChangeListener implements android.view.View.OnFocusChangeListener {
+    constructor(private owner: WeakRef<EditableTextBase>) {
+        //        
+    }
+
+    public onFocusChange(view: android.view.View, hasFocus: boolean) {
+        let owner = this.owner.get();
+        if (!owner) {
+            return;
+        }
+
+        if (!hasFocus) {
+             if (dismissKeyboardTimeoutId){
+                 // https://github.com/NativeScript/NativeScript/issues/2942
+                 // Don't hide the keyboard since another (or the same) EditText has gained focus.
+                 clearTimeout(dismissKeyboardTimeoutId);
+                 dismissKeyboardTimeoutId = undefined;
+             }
+        }
+        else {
+            if (owner._dirtyTextAccumulator) {
+                owner.nativePropertyChanged(textProperty, owner._dirtyTextAccumulator);
+                owner._dirtyTextAccumulator = undefined;
+            }
+
+            dismissKeyboardTimeoutId = setTimeout(() => {
+                        // https://github.com/NativeScript/NativeScript/issues/2942
+                        // Dismiss the keyboard if focus goes to something different from EditText.
+                        owner.dismissSoftInput();
+                        dismissKeyboardTimeoutId = null;
+                    }, 1);
+        }
+    }
+}
+
+@Interfaces([android.widget.TextView.OnEditorActionListener])
+class EditorActionListener implements android.widget.TextView.OnEditorActionListener {
+    constructor(private owner: WeakRef<EditableTextBase>) {
+        //        
+    }
+
+    public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
+        let owner = this.owner.get();
+        if (owner) {
+	    if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+           	actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
+            	actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+            	actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
+            	(event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
+                 // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
+                 // https://github.com/NativeScript/NativeScript/issues/3111
+                 if (textView.getMaxLines() === 1){
+                     owner.dismissSoftInput();
+                 }
+                 owner._onReturnPress();
+             }
+             // If action is ACTION_NEXT then do not close keyboard
+             if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
+               owner._onReturnPress();
+             }
+
+        return false;
+    }
+}
+
+export abstract class EditableTextBase extends EditableTextBaseCommon {
+    _textWatcher: android.text.TextWatcher;
+    /* tslint:disable */
+    _dirtyTextAccumulator: string;
+    /* tslint:enable */
+
+    private _android: android.widget.EditText;
+    private _keyListenerCache: android.text.method.KeyListener;
+    private _focusChangeListener: android.view.View.OnFocusChangeListener;
+    private _editorActionListener: android.widget.TextView.OnEditorActionListener;
+    public nativeView: android.widget.EditText;
 
     get android(): android.widget.EditText {
         return this._android;
@@ -24,119 +149,35 @@ export class EditableTextBase extends common.EditableTextBase {
         this._configureEditText();
         this._keyListenerCache = this.android.getKeyListener();
 
-        var that = new WeakRef(this);
+        let weakRef = new WeakRef(this);
 
-        this._textWatcher = new android.text.TextWatcher({
-            beforeTextChanged: function (text: string, start: number, count: number, after: number) {
-                //
-            },
-            onTextChanged: function (text: string, start: number, before: number, count: number) {
-                var owner = that.get();
-                if (!owner) {
-                    return;
-                }
-                var selectionStart = owner.android.getSelectionStart();
-                owner.android.removeTextChangedListener(owner._textWatcher);
-
-                //RemoveThisDoubleCall
-                owner.style._updateTextDecoration();
-                owner.style._updateTextTransform();
-
-                owner.android.addTextChangedListener(owner._textWatcher);
-                owner.android.setSelection(selectionStart);
-            },
-            afterTextChanged: function (editable: android.text.IEditable) {
-                var owner = that.get();
-                if (!owner) {
-                    return;
-                }
-
-                switch (owner.updateTextTrigger) {
-                    case enums.UpdateTextTrigger.focusLost:
-                        owner._dirtyTextAccumulator = editable.toString();
-                        break;
-                    case enums.UpdateTextTrigger.textChanged:
-                        owner._onPropertyChangedFromNative(EditableTextBase.textProperty, editable.toString());
-                        break;
-                    default:
-                        throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
-                }
-            }
-        });
+        this._textWatcher = this._textWatcher || new TextWatcher(weakRef);
         this._android.addTextChangedListener(this._textWatcher);
 
-        var focusChangeListener = new android.view.View.OnFocusChangeListener({
-            onFocusChange: function (view: android.view.View, hasFocus: boolean) {
-                var owner = that.get();
-                if (!owner) {
-                    return;
-                }
+        this._focusChangeListener = this._focusChangeListener || new FocusChangeListener(weakRef);
+        this._android.setOnFocusChangeListener(this._focusChangeListener);
 
-                if (hasFocus) {
-                    if (dismissKeyboardTimeoutId){
-                        // https://github.com/NativeScript/NativeScript/issues/2942
-                        // Don't hide the keyboard since another (or the same) EditText has gained focus.
-                        clearTimeout(dismissKeyboardTimeoutId);
-                        dismissKeyboardTimeoutId = undefined;
-                    }
-                }
-                else {
-                    if (owner._dirtyTextAccumulator) {
-                        owner._onPropertyChangedFromNative(EditableTextBase.textProperty, owner._dirtyTextAccumulator);
-                        owner._dirtyTextAccumulator = undefined;
-                    }
-
-                    dismissKeyboardTimeoutId = setTimeout(() => {
-                        // https://github.com/NativeScript/NativeScript/issues/2942
-                        // Dismiss the keyboard if focus goes to something different from EditText.
-                        owner.dismissSoftInput();
-                        dismissKeyboardTimeoutId = null;
-                    }, 1);
-                }
-            }
-        });
-        this._android.setOnFocusChangeListener(focusChangeListener);
-
-        var editorActionListener = new android.widget.TextView.OnEditorActionListener({
-            onEditorAction: function (textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
-                var owner = that.get();
-                if (owner) {
-                    if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
-                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
-                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                        actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
-                        (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
-
-                        // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
-                        // https://github.com/NativeScript/NativeScript/issues/3111
-                        if (textView.getMaxLines() === 1){
-                            owner.dismissSoftInput();
-                        }
-                        owner._onReturnPress();
-                    }
-                    // If action is ACTION_NEXT then do not close keyboard
-                    if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
-                      owner._onReturnPress();
-                    }
-                }
-
-                return false;
-            }
-        });
-        this._android.setOnEditorActionListener(editorActionListener);
+        this._editorActionListener = this._editorActionListener || new EditorActionListener(weakRef);
+        this._android.setOnEditorActionListener(this._editorActionListener);
     }
 
-    public _configureEditText() {
-        // abstract
-    }
+    public abstract _configureEditText(): void;
 
-    public _onReturnPress() {
-        // abstract
-    }
+    public abstract _onReturnPress(): void;
 
     public _onDetached(force?: boolean) {
-        if (this._android && this._textWatcher) {
-            this._android.removeTextChangedListener(this._textWatcher);
+        if (this._android) {
+            if (this._textWatcher) {
+                this._android.removeTextChangedListener(this._textWatcher);
+            }
+
+            if (this._focusChangeListener) {
+                this._android.setOnFocusChangeListener(null);
+            }
+
+            if (this._editorActionListener) {
+                this._android.setOnEditorActionListener(null);
+            }
         }
 
         this._android = undefined;
@@ -148,7 +189,7 @@ export class EditableTextBase extends common.EditableTextBase {
     }
 
     public focus(): boolean {
-        var result = super.focus();
+        let result = super.focus();
 
         if (result) {
             utils.ad.showSoftInput(this._nativeView);
@@ -157,124 +198,202 @@ export class EditableTextBase extends common.EditableTextBase {
         return result;
     }
 
-    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this._android) {
-            var newValue = types.toUIString(data.newValue);
-            this.android.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
+    private _setInputType(inputType): void {
+        let nativeView = this.nativeView;
+        nativeView.setInputType(inputType);
+
+        // setInputType will change the keyListener so we should cache it again
+        let listener = nativeView.getKeyListener();
+        if (listener) {
+            this._keyListenerCache = listener;
+        }
+
+        // clear the listener if editable is false
+        if (!this.editable) {
+            nativeView.setKeyListener(null);
         }
     }
 
-    public _onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (!this._android) {
-            return;
-        }
+    get [textProperty.native](): string {
+        return this.nativeView.getText();
+    }
+    set [textProperty.native](value: string) {
+        let newValue = toUIString(value);
+        this.nativeView.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
+    }
 
-        var newInputType;
-        switch (data.newValue) {
-            case enums.KeyboardType.datetime:
+    get [keyboardTypeProperty.native](): string {
+        let inputType = this.nativeView.getInputType();
+        switch (inputType) {
+            case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
+                return KeyboardType.datetime;
+
+            case android.text.InputType.TYPE_CLASS_PHONE:
+                return KeyboardType.phone;
+
+            case android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL:
+                return KeyboardType.number;
+
+            case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI:
+                return KeyboardType.url;
+
+            case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
+                return KeyboardType.email;
+
+            default:
+                return inputType.toString();
+        }
+    }
+    set [keyboardTypeProperty.native](value: string) {
+        let newInputType;
+        switch (value) {
+            case KeyboardType.datetime:
                 newInputType = android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
                 break;
-            case enums.KeyboardType.phone:
+            case KeyboardType.phone:
                 newInputType = android.text.InputType.TYPE_CLASS_PHONE;
                 break;
-            case enums.KeyboardType.number:
+            case KeyboardType.number:
                 newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
                 break;
-            case enums.KeyboardType.url:
+            case KeyboardType.url:
                 newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI;
                 break;
-            case enums.KeyboardType.email:
+            case KeyboardType.email:
                 newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
                 break;
             default:
-                newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
+                let inputType = +value;
+                if (!isNaN(inputType)) {
+                    newInputType = inputType;
+                } else {
+                    newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
+                }
                 break;
         }
 
         this._setInputType(newInputType);
     }
 
-    public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (!this._android) {
-            return;
-        }
+    get [returnKeyTypeProperty.native](): string {
+        let ime = this.nativeView.getImeOptions();
+        switch (ime) {
+            case android.view.inputmethod.EditorInfo.IME_ACTION_DONE:
+                return ReturnKeyType.done;
 
-        var newImeOptions;
-        switch (data.newValue) {
-            case enums.ReturnKeyType.done:
+            case android.view.inputmethod.EditorInfo.IME_ACTION_GO:
+                return ReturnKeyType.go;
+
+            case android.view.inputmethod.EditorInfo.IME_ACTION_NEXT:
+                return ReturnKeyType.next;
+
+            case android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH:
+                return ReturnKeyType.search;
+
+            case android.view.inputmethod.EditorInfo.IME_ACTION_SEND:
+                return ReturnKeyType.send;
+
+            default:
+                return ime.toString();
+        }
+    }
+    set [returnKeyTypeProperty.native](value: string) {
+        let newImeOptions;
+        switch (value) {
+            case ReturnKeyType.done:
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
                 break;
-            case enums.ReturnKeyType.go:
+            case ReturnKeyType.go:
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
                 break;
-            case enums.ReturnKeyType.next:
+            case ReturnKeyType.next:
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
                 break;
-            case enums.ReturnKeyType.search:
+            case ReturnKeyType.search:
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
                 break;
-            case enums.ReturnKeyType.send:
+            case ReturnKeyType.send:
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
                 break;
             default:
-                newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED
+                let ime = +value;
+                if (!isNaN(ime)) {
+                    newImeOptions = ime;
+                } else {
+                    newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_UNSPECIFIED;
+                }
                 break;
         }
 
         this._android.setImeOptions(newImeOptions);
     }
 
-    public _onEditablePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (!this._android) {
-            return;
-        }
-
-        if (data.newValue) {
-            this.android.setKeyListener(this._keyListenerCache);
+    get [editableProperty.native](): boolean {
+        return !!this.nativeView.getKeyListener();
+    }
+    set [editableProperty.native](value: boolean) {
+        if (value) {
+            this.nativeView.setKeyListener(this._keyListenerCache);
         }
         else {
-            this.android.setKeyListener(null);
+            this.nativeView.setKeyListener(null);
         }
     }
 
-    public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var editableTextBase = <EditableTextBase>data.object;
-        if (!editableTextBase.android) {
-            return;
+    get [autocapitalizationTypeProperty.native](): string {
+        let inputType = this.nativeView.getInputType();
+        if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
+            return AutocapitalizationType.words;
+        } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) === android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) {
+            return AutocapitalizationType.sentences;
+        } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) {
+            return AutocapitalizationType.allCharacters;
+        } else {
+            return inputType.toString();
         }
-
-        var inputType = editableTextBase.android.getInputType();
+    }
+    set [autocapitalizationTypeProperty.native](value: string) {
+        let inputType = this.nativeView.getInputType();
         inputType = inputType & ~28672; //28672 (0x00070000) 13,14,15bits (111 0000 0000 0000)
 
-        switch (data.newValue) {
-            case enums.AutocapitalizationType.none:
+        switch (value) {
+            case AutocapitalizationType.none:
                 //Do nothing, we have lowered the three bits above.
                 break;
-            case enums.AutocapitalizationType.words:
+            case AutocapitalizationType.words:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00020000) 14th bit
                 break;
-            case enums.AutocapitalizationType.sentences:
+            case AutocapitalizationType.sentences:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00040000) 15th bit
                 break;
-            case enums.AutocapitalizationType.allCharacters:
+            case AutocapitalizationType.allCharacters:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
                 break;
             default:
-                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
+                let number = +value;
+                // We set the default value.
+                if (!isNaN(number)) {
+                    inputType = number;
+                } else {
+                    inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES;
+                }
                 break;
         }
 
-        editableTextBase._setInputType(inputType);
+        this._setInputType(inputType);
     }
 
-    public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var editableTextBase = <EditableTextBase>data.object;
-        if (!editableTextBase.android) {
-            return;
+    get [autocorrectProperty.native](): boolean {
+        let autocorrect = this.nativeView.getInputType();
+        if ((autocorrect & android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) === android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) {
+            return true;
         }
 
-        var inputType = editableTextBase.android.getInputType();
-        switch (data.newValue) {
+        return false;
+    }
+    set [autocorrectProperty.native](value: boolean) {
+        let inputType = this.nativeView.getInputType();
+        switch (value) {
             case true:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
@@ -290,30 +409,13 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        editableTextBase._setInputType(inputType);
+        this._setInputType(inputType);
     }
 
-    public _onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var editableTextBase = <EditableTextBase>data.object;
-        if (!editableTextBase.android) {
-            return;
-        }
-
-        editableTextBase.android.setHint(data.newValue + "");
+    get [hintProperty.native](): string {
+        return this.nativeView.getHint();
     }
-
-    private _setInputType(inputType): void {
-        this.android.setInputType(inputType);
-
-        // setInputType will change the keyListener so we should cache it again
-        let listener = this.android.getKeyListener();
-        if (listener) {
-            this._keyListenerCache = listener;
-        }
-
-        // clear the listener if editable is false
-        if (!this.editable) {
-            this.android.setKeyListener(null);
-        }
+    set [hintProperty.native](value: string) {
+        this.nativeView.setHint(toUIString(value));
     }
-}
+}  

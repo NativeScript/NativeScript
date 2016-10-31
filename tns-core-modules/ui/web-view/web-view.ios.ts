@@ -1,7 +1,8 @@
-import common = require("./web-view-common");
-import trace = require("trace");
+import {WebViewBase} from "./web-view-common";
+import * as trace from "trace";
+import * as fs from "file-system";
 
-global.moduleMerge(common, exports);
+export * from "./web-view-common";
 
 class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     public static ObjCProtocols = [UIWebViewDelegate];
@@ -18,30 +19,30 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
         let owner = this._owner.get();
 
         if (owner && request.URL) {
-            var navTypeIndex = common.WebView.navigationTypes.indexOf("other");
+            let navTypeIndex = WebViewBase.navigationTypes.indexOf("other");
 
             switch (navigationType) {
                 case UIWebViewNavigationType.LinkClicked:
-                    navTypeIndex = common.WebView.navigationTypes.indexOf("linkClicked");
+                    navTypeIndex = WebViewBase.navigationTypes.indexOf("linkClicked");
                     break;
                 case UIWebViewNavigationType.FormSubmitted:
-                    navTypeIndex = common.WebView.navigationTypes.indexOf("formSubmitted");
+                    navTypeIndex = WebViewBase.navigationTypes.indexOf("formSubmitted");
                     break;
                 case UIWebViewNavigationType.BackForward:
-                    navTypeIndex = common.WebView.navigationTypes.indexOf("backForward");
+                    navTypeIndex = WebViewBase.navigationTypes.indexOf("backForward");
                     break;
                 case UIWebViewNavigationType.Reload:
-                    navTypeIndex = common.WebView.navigationTypes.indexOf("reload");
+                    navTypeIndex = WebViewBase.navigationTypes.indexOf("reload");
                     break;
                 case UIWebViewNavigationType.FormResubmitted:
-                    navTypeIndex = common.WebView.navigationTypes.indexOf("formResubmitted");
+                    navTypeIndex = WebViewBase.navigationTypes.indexOf("formResubmitted");
                     break;
             }
 
             if (trace.enabled) {
                 trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
             }
-            owner._onLoadStarted(request.URL.absoluteString, common.WebView.navigationTypes[navTypeIndex]);
+            owner._onLoadStarted(request.URL.absoluteString, WebViewBase.navigationTypes[navTypeIndex]);
         }
 
         return true;
@@ -66,22 +67,22 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     public webViewDidFailLoadWithError(webView: UIWebView, error: NSError) {
         let owner = this._owner.get();
         if (owner) {
-            var url = owner.url;
+            let src  = owner.src;
             if (webView.request && webView.request.URL) {
-                url = webView.request.URL.absoluteString;
+                src = webView.request.URL.absoluteString;
             }
 
             if (trace.enabled) {
                 trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
             }
             if (owner) {
-                owner._onLoadFinished(url, error.localizedDescription);
+                owner._onLoadFinished(src, error.localizedDescription);
             }
         }
     }
 }
 
-export class WebView extends common.WebView {
+export class WebView extends WebViewBase {
     private _ios: UIWebView;
     private _delegate: any;
 
@@ -131,8 +132,6 @@ export class WebView extends common.WebView {
     }
 
     public _loadData(content: string) {
-        var fs = require("file-system");
-
         this._ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${fs.knownFolders.currentApp().path}/`));
     }
 

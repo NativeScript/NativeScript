@@ -2,12 +2,12 @@
  * Contains the TextField class, which represents an editable single-line box.
  */
 declare module "ui/text-field" {
-    import editableTextBase = require("ui/editable-text-base");
+    import { EditableTextBase } from "ui/editable-text-base";
 
     /**
      * Represents an editable text field.
      */
-    export class TextField extends editableTextBase.EditableTextBase {
+    export class TextField extends EditableTextBase {
         public static returnPressEvent: string;
 
         /**

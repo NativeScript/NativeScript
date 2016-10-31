@@ -1,26 +1,19 @@
-import common = require("./web-view-common");
-import trace = require("trace");
-import * as fileSystemModule from "file-system";
+import {WebViewBase} from "./web-view-common";
+import * as trace from "trace";
+import * as fs from "file-system";
 
-global.moduleMerge(common, exports);
+export * from "./web-view-common";
 
-var fs: typeof fileSystemModule;
-function ensureFS() {
-    if (!fs) {
-        fs = require("file-system");
-    }
-}
-
-var WebViewClientClass;
+let WebViewClientClass;
 function ensureWebViewClientClass() {
     if (WebViewClientClass) {
         return;
     }
 
     class WebViewClientClassInner extends android.webkit.WebViewClient {
-        private _view: common.WebView;
+        private _view: WebViewBase;
 
-        constructor(view: common.WebView) {
+        constructor(view: WebViewBase) {
             super();
 
             this._view = view;
@@ -41,7 +34,7 @@ function ensureWebViewClientClass() {
                 if (trace.enabled) {
                     trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
                 }
-                this._view._onLoadStarted(url, common.WebView.navigationTypes[common.WebView.navigationTypes.indexOf("linkClicked")]);
+                this._view._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
             }
         }
 
@@ -57,13 +50,12 @@ function ensureWebViewClientClass() {
         }
 
         public onReceivedError() {
-            var view: android.webkit.WebView = arguments[0];
+            let view: android.webkit.WebView = arguments[0];
 
             if (arguments.length === 4) {
-
-                var errorCode: number = arguments[1];
-                var description: string = arguments[2];
-                var failingUrl: string = arguments[3];
+                let errorCode: number = arguments[1];
+                let description: string = arguments[2];
+                let failingUrl: string = arguments[3];
 
                 super.onReceivedError(view, errorCode, description, failingUrl);
 
@@ -74,9 +66,8 @@ function ensureWebViewClientClass() {
                     this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
             } else {
-
-                var request: any = arguments[1];
-                var error: any = arguments[2];
+                let request: any = arguments[1];
+                let error: any = arguments[2];
 
                 super.onReceivedError(view, request, error);
 
@@ -93,7 +84,7 @@ function ensureWebViewClientClass() {
     WebViewClientClass = WebViewClientClassInner;
 }
 
-export class WebView extends common.WebView {
+export class WebView extends WebViewBase {
     private _android: android.webkit.WebView;
     private _webViewClient: android.webkit.WebViewClient;
 
@@ -155,8 +146,6 @@ export class WebView extends common.WebView {
         if (!this._android) {
             return;
         }
-
-        ensureFS();
 
         var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
         this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);

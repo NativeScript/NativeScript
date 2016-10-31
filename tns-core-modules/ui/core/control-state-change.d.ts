@@ -12,7 +12,6 @@
         constructor(control: any /* UIControl */, callback: (state: string) => void);
 
         start();
-
         stop();
     }
 }

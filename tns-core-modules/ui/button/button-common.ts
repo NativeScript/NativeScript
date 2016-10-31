@@ -1,8 +1,8 @@
-﻿import {Button as ButtonDefinition} from "ui/button";
-import {TextBase} from "../text-base/text-base-common";
-import {WhiteSpace} from "ui/enums";
+﻿import { Button as ButtonDefinition } from "ui/button";
+import { TextBaseCommon } from "../text-base/text-base-common";
+import { WhiteSpace } from "ui/enums";
 
-export class ButtonBase extends TextBase implements ButtonDefinition {
+export abstract class ButtonBase extends TextBaseCommon implements ButtonDefinition {
     public static tapEvent = "tap";
 
     get textWrap(): boolean {

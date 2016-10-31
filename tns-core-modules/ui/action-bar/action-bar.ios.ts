@@ -97,7 +97,7 @@ export class ActionBar extends ActionBarBase {
         if (previousController) {
             if (this.navigationButton) {
                 let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
-                let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.UIBarButtonItemStylePlain, tapHandler, "tap");
+                let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
                 previousController.navigationItem.backBarButtonItem = barButtonItem;
             }
             else {

@@ -1,59 +1,30 @@
-﻿import definition = require("ui/date-picker");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import view = require("ui/core/view");
+﻿import { DatePicker as DatePickerDefinition } from "ui/date-picker";
+import { View } from "ui/core/view";
+import { Property } from "ui/core/properties";
 
-export class DatePicker extends view.View implements definition.DatePicker {
-    public static yearProperty = new dependencyObservable.Property("year", "DatePicker", new proxy.PropertyMetadata(undefined));
-    public static monthProperty = new dependencyObservable.Property("month", "DatePicker", new proxy.PropertyMetadata(undefined));
-    public static dayProperty = new dependencyObservable.Property("day", "DatePicker", new proxy.PropertyMetadata(undefined));
-    public static maxDateProperty = new dependencyObservable.Property("maxDate", "DatePicker", new proxy.PropertyMetadata(undefined));
-    public static minDateProperty = new dependencyObservable.Property("minDate", "DatePicker", new proxy.PropertyMetadata(undefined));
-    public static dateProperty = new dependencyObservable.Property("date", "DatePicker", new proxy.PropertyMetadata(undefined));
-
-    constructor() {
-        super();
-    }
-
-    get year(): number {
-        return this._getValue(DatePicker.yearProperty);
-    }
-    set year(value: number) {
-        this._setValue(DatePicker.yearProperty, value);
-    }
-
-    get month(): number {
-        return this._getValue(DatePicker.monthProperty);
-    }
-    set month(value: number) {
-        this._setValue(DatePicker.monthProperty, value);
-    }
-
-    get day(): number {
-        return this._getValue(DatePicker.dayProperty);
-    }
-    set day(value: number) {
-        this._setValue(DatePicker.dayProperty, value);
-    }
-
-    get maxDate(): Date {
-        return this._getValue(DatePicker.maxDateProperty);
-    }
-    set maxDate(value: Date) {
-        this._setValue(DatePicker.maxDateProperty, value);
-    }
-
-    get minDate(): Date {
-        return this._getValue(DatePicker.minDateProperty);
-    }
-    set minDate(value: Date) {
-        this._setValue(DatePicker.minDateProperty, value);
-    }
-    
-    get date(): Date {
-        return this._getValue(DatePicker.dateProperty);
-    }
-    set date(value: Date) {
-        this._setValue(DatePicker.dateProperty, value);
-    }
+export class DatePickerBase extends View implements DatePickerDefinition {
+    public year: number;
+    public month: number;
+    public day: number;
+    public maxDate: Date;
+    public minDate: Date;
+    public date: Date;
 }
+
+export let yearProperty = new Property<DatePickerBase, number>({ name: "year" });
+yearProperty.register(DatePickerBase);
+
+export let monthProperty = new Property<DatePickerBase, number>({ name: "month" });
+monthProperty.register(DatePickerBase);
+
+export let dayProperty = new Property<DatePickerBase, number>({ name: "day" });
+dayProperty.register(DatePickerBase);
+
+export let maxDateProperty = new Property<DatePickerBase, Date>({ name: "maxDate" });
+maxDateProperty.register(DatePickerBase);
+
+export let minDateProperty = new Property<DatePickerBase, Date>({ name: "minDate" });
+minDateProperty.register(DatePickerBase);
+
+export let dateProperty = new Property<DatePickerBase, Date>({ name: "date" });
+dateProperty.register(DatePickerBase);

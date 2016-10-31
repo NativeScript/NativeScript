@@ -1,57 +1,15 @@
-﻿import common = require("./date-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
+﻿import {
+    DatePickerBase, yearProperty, monthProperty, dayProperty,
+    dateProperty, maxDateProperty, minDateProperty
+} from "./date-picker-common";
+import { colorProperty } from "ui/styling/style"
+
+export * from "./date-picker-common";
+
 import style = require("ui/styling/style");
 import view = require("ui/core/view");
 
 import * as utils from "utils/utils";
-
-function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.ios) {
-        var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
-        comps.year = data.newValue;
-        picker.date = new Date(comps.year, comps.month - 1, comps.day);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.yearProperty.metadata).onSetNativeValue = onYearPropertyChanged;
-
-function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.ios) {
-        var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
-        comps.month = data.newValue;
-        picker.date = new Date(comps.year, comps.month - 1, comps.day);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.monthProperty.metadata).onSetNativeValue = onMonthPropertyChanged;
-
-function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.ios) {
-        var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
-        comps.day = data.newValue;
-        picker.date = new Date(comps.year, comps.month - 1, comps.day);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.dayProperty.metadata).onSetNativeValue = onDayPropertyChanged;
-
-function onMaxDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.ios) {
-        var nsDate = NSDate.dateWithTimeIntervalSince1970((<Date>data.newValue).getTime() / 1000);
-        picker.ios.maximumDate = <any>nsDate;
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.maxDateProperty.metadata).onSetNativeValue = onMaxDatePropertyChanged;
 
 function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
@@ -63,26 +21,10 @@ function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData)
 
 (<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
 
-function onDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.ios) {
-        var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.ios.date);
-        let newDate = data.newValue;
-        comps.year = newDate.getFullYear();
-        comps.month = newDate.getMonth() + 1;
-        comps.day = newDate.getDate();
-        picker.ios.setDateAnimated(utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.dateProperty.metadata).onSetNativeValue = onDatePropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class DatePicker extends common.DatePicker {
+export class DatePicker extends DatePickerBase {
     private _ios: UIDatePicker;
     private _changeHandler: NSObject;
+    public nativeView: UIDatePicker;
 
     constructor() {
         super();
@@ -97,10 +39,77 @@ export class DatePicker extends common.DatePicker {
     get ios(): UIDatePicker {
         return this._ios;
     }
+
+    get [yearProperty.native](): number {
+        return this.nativeView.date.getFullYear();
+    }
+    set [yearProperty.native](value: number) {
+        let picker = this.nativeView;
+        let comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
+        comps.year = value;
+        this.date = new Date(comps.year, comps.month - 1, comps.day);
+    }
+
+    get [monthProperty.native](): number {
+        return this.nativeView.date.getMonth();
+    }
+    set [monthProperty.native](value: number) {
+        let picker = this.nativeView;
+        let comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
+        comps.month = value;
+        this.date = new Date(comps.year, comps.month - 1, comps.day);
+    }
+
+    get [dayProperty.native](): number {
+        return this.nativeView.date.getDay();
+    }
+    set [dayProperty.native](value: number) {
+        let picker = this.nativeView;
+        let comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
+        comps.day = value;
+        this.date = new Date(comps.year, comps.month - 1, comps.day);
+    }
+
+    get [dateProperty.native](): Date {
+        return this.nativeView.date;
+    }
+    set [dateProperty.native](value: Date) {
+        let picker = this.nativeView;
+        let comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
+        comps.year = value.getFullYear();
+        comps.month = value.getMonth() + 1;
+        comps.day = value.getDate();
+        picker.setDateAnimated(utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
+    }
+
+    get [maxDateProperty.native](): Date {
+        return this.nativeView.maximumDate;
+    }
+    set [maxDateProperty.native](value: Date) {
+        let picker = this.nativeView;
+        let nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
+        picker.maximumDate = <any>nsDate;
+    }
+
+    get [minDateProperty.native](): Date {
+        return this.nativeView.minimumDate;
+    }
+    set [minDateProperty.native](value: Date) {
+        let picker = this.nativeView;
+        let nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
+        picker.minimumDate = <any>nsDate;
+    }
+
+    get [colorProperty.native](): UIColor {
+        return this.nativeView.valueForKey("textColor");
+    }
+    set [minDateProperty.native](value: UIColor) {
+        let picker = this.nativeView;
+        picker.setValueForKey(value, "textColor");
+    }
 }
 
 class UIDatePickerChangeHandlerImpl extends NSObject {
-
     private _owner: WeakRef<DatePicker>;
 
     public static initWithOwner(owner: WeakRef<DatePicker>): UIDatePickerChangeHandlerImpl {
@@ -110,8 +119,8 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
     }
 
     public valueChanged(sender: UIDatePicker) {
-        var comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, sender.date);
-        
+        let comps = utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, sender.date);
+
         let owner = this._owner.get();
         if (!owner) {
             return;
@@ -119,22 +128,22 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
 
         let dateChanged = false;
         if (comps.year !== owner.year) {
-            owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, comps.year);
+            owner.nativePropertyChanged(yearProperty, comps.year);
             dateChanged = true;
         }
 
         if (comps.month !== owner.month) {
-            owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, comps.month);
+            owner.nativePropertyChanged(monthProperty, comps.month);
             dateChanged = true;
         }
 
         if (comps.day !== owner.day) {
-            owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, comps.day);
+            owner.nativePropertyChanged(dayProperty, comps.day);
             dateChanged = true;
         }
-        
+
         if (dateChanged) {
-            owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(comps.year, comps.month - 1, comps.day));
+            owner.nativePropertyChanged(dateProperty, new Date(comps.year, comps.month - 1, comps.day));
         }
     }
 
@@ -142,30 +151,3 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
         'valueChanged': { returns: interop.types.void, params: [UIDatePicker] }
     };
 }
-
-export class DatePickerStyler implements style.Styler {
-    // color
-    private static setColorProperty(view: view.View, newValue: any) {
-        var picker = <UIDatePicker>view._nativeView;
-        picker.setValueForKey(newValue, "textColor");
-    }
-
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var picker = <UIDatePicker>view._nativeView;
-        picker.setValueForKey(nativeValue, "textColor");
-    }
-
-    private static getColorProperty(view: view.View): any {
-        var picker = <UIDatePicker>view._nativeView;
-        return picker.valueForKey("textColor");
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            DatePickerStyler.setColorProperty,
-            DatePickerStyler.resetColorProperty,
-            DatePickerStyler.getColorProperty), "DatePicker");
-    }
-}
-
-DatePickerStyler.registerHandlers();

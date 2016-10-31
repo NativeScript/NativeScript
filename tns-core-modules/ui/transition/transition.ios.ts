@@ -5,8 +5,8 @@ import trace = require("trace");
 import * as _slideTransitionModule from "./slide-transition";
 import * as _fadeTransitionModule from "./fade-transition";
 
-var slideTransitionModule: typeof _slideTransitionModule;
-var fadeTransitionModule: typeof _fadeTransitionModule;
+let slideTransitionModule: typeof _slideTransitionModule;
+let fadeTransitionModule: typeof _fadeTransitionModule;
 
 module UIViewControllerAnimatedTransitioningMethods {
     let methodSignature = NSMethodSignature.signatureWithObjCTypes("v@:c");
@@ -30,7 +30,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
     private _transitionType: string;
 
     public static init(transition: definition.Transition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): AnimatedTransitioning {
-        var impl = <AnimatedTransitioning>AnimatedTransitioning.new();
+        let impl = <AnimatedTransitioning>AnimatedTransitioning.new();
         impl._transition = transition;
         impl._operation = operation;
         impl._fromVC = fromVC;
@@ -40,7 +40,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 
     public animateTransition(transitionContext: any): void {
         let containerView = transitionContext.valueForKey("containerView");
-        var completion = UIViewControllerAnimatedTransitioningMethods.completeTransition.bind(transitionContext);
+        let completion = UIViewControllerAnimatedTransitioningMethods.completeTransition.bind(transitionContext);
         switch (this._operation) {
             case UINavigationControllerOperation.Push: this._transitionType = "push"; break;
             case UINavigationControllerOperation.Pop: this._transitionType = "pop"; break;
@@ -71,7 +71,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
     }
 }
 
-var transitionId = 0;
+let transitionId = 0;
 export class Transition implements definition.Transition {
     private _duration: number;
     private _curve: UIViewAnimationCurve;
