@@ -1024,7 +1024,7 @@ export class View extends ProxyObject implements definition.View {
 
          if (widthSpec !== utils.layout.UNSPECIFIED) {
              if (lp.widthPercent > 0) {
-                 lp.width = Math.round(availableWidth * lp.widthPercent);
+                 lp.width = Math.floor(availableWidth * lp.widthPercent);
              }
 
              if (lp.leftMarginPercent > 0) {
@@ -1038,7 +1038,7 @@ export class View extends ProxyObject implements definition.View {
 
          if (heightSpec !== utils.layout.UNSPECIFIED) {
              if (lp.heightPercent > 0) {
-                 lp.height = Math.round(availableHeight * lp.heightPercent);
+                 lp.height = Math.floor(availableHeight * lp.heightPercent);
              }
 
              if (lp.topMarginPercent > 0) {
