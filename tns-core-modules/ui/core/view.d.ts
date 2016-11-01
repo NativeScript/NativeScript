@@ -605,7 +605,7 @@ declare module "ui/core/view" {
         _domId: number;
 
         _cssState: any /* "ui/styling/style-scope" */;
-        _onCssStateChange(previous: any /* "ui/styling/style-scope" */, any /* "ui/styling/style-scope" */);
+        _setCssState(next: any /* "ui/styling/style-scope" */);
 
         _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
         _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
