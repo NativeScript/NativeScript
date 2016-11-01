@@ -110,11 +110,9 @@ export class Image extends imageCommon.Image {
         if (!nativeImage) {
             return;
         }
-
-        let rotation = nativeImage.rotationAngle ? nativeImage.rotationAngle : 0 ;
-        if (rotation > 0) {
-             this.android.setRotationAngle(rotation);
-        }
+        
+        let rotation = nativeImage.rotationAngle ? nativeImage.rotationAngle : 0;
+        this.android.setRotationAngle(rotation);
         this.android.setImageBitmap(nativeImage.android);
     }
 
