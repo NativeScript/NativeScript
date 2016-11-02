@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
  */
 public class BorderDrawable extends ColorDrawable {
     private float density;
+    private String id;
 
     private int borderTopColor;
     private int borderRightColor;
@@ -177,6 +178,12 @@ public class BorderDrawable extends ColorDrawable {
         this.density = density;
     }
 
+    public BorderDrawable(float density, String id){
+        super();
+        this.density = density;
+        this.id = id;
+    }
+
     // For backwards compatibility
     public void refresh(float borderWidth,
                         int borderColor,
@@ -273,6 +280,10 @@ public class BorderDrawable extends ColorDrawable {
     @Override
     public void draw(Canvas canvas) {
         Rect bounds = this.getBounds();
+        if (bounds.width() <= 0 || bounds.height() <= 0) {
+            // When the view is off-screen the bounds might be empty and we don't have anything to draw.
+            return;
+        }
 
         float topBackoffAntialias = calculateBackoffAntialias(this.borderTopColor, this.borderTopWidth, this.density);
         float rightBackoffAntialias = calculateBackoffAntialias(this.borderRightColor, this.borderRightWidth, this.density);
@@ -689,12 +700,42 @@ public class BorderDrawable extends ColorDrawable {
         if (source.contains("px")) {
             result = Float.parseFloat(source.replace("px", ""));
         }
-        else if (source.contains("%") && total > 0) {
+        else if (source.contains("%")) {
             result = (Float.parseFloat(source.replace("%", "")) / 100) * (total / density);
         } else {
             result = Float.parseFloat(source);
         }
         return result * density;
+    }
+
+    public String toDebugString() {
+        return
+            getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + "; " +
+
+            "id: " + this.id + "; " +
+
+            "borderTopColor: " + this.borderTopColor + "; " +
+            "borderRightColor: " + this.borderRightColor + "; " +
+            "borderBottomColor: " + this.borderBottomColor + "; " +
+            "borderLeftColor: " + this.borderLeftColor + "; " +
+
+            "borderTopWidth: " + this.borderTopWidth + "; " +
+            "borderRightWidth: " + this.borderRightWidth + "; " +
+            "borderBottomWidth: " + this.borderBottomWidth + "; " +
+            "borderLeftWidth: " + this.borderLeftWidth + "; " +
+
+            "borderTopLeftRadius: " + this.borderTopLeftRadius + "; " +
+            "borderTopRightRadius: " + this.borderTopRightRadius + "; " +
+            "borderBottomRightRadius: " + this.borderBottomRightRadius + "; " +
+            "borderBottomLeftRadius: " + this.borderBottomLeftRadius + "; " +
+
+            "clipPath: " + this.clipPath + "; " +
+            "backgroundColor: " + this.backgroundColor + "; " +
+            "backgroundImage: " + this.backgroundImage + "; " +
+            "backgroundRepeat: " + this.backgroundRepeat + "; " +
+            "backgroundPosition: " + this.backgroundPosition + "; " +
+            "backgroundSize: " + this.backgroundSize + "; "
+        ;
     }
 
     private class BackgroundDrawParams {
