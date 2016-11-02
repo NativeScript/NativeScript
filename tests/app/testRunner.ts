@@ -1,8 +1,10 @@
 ﻿/* tslint:disable */
-import * as TKUnit from"./TKUnit";
-import {messageType} from "trace";
-import {topmost, Frame} from "ui/frame";
-import {TextView} from "ui/text-view";
+import * as TKUnit from "./TKUnit";
+import { messageType } from "trace";
+import { topmost, Frame } from "ui/frame";
+import { TextView } from "ui/text-view";
+import { Button } from "ui/button";
+import { StackLayout } from "ui/layouts/stack-layout";
 import * as platform from "platform";
 import "./ui-test";
 import fs = require("file-system");
@@ -132,14 +134,14 @@ function printRunTestStats() {
     var failedTestCount = 0;
     var failedTestInfo = [];
 
-    let allTests = testsQueue.filter(t=> t.isTest);
+    let allTests = testsQueue.filter(t => t.isTest);
 
     testFileContent.push("<testsuites>");
 
     for (j = 0; j < allTests.length; j++) {
         let testName = allTests[j].testName;
         let duration = (allTests[j].duration / 1000).toFixed(2);
-        
+
         if (!allTests[j].isPassed) {
             failedTestCount++;
 
@@ -153,17 +155,17 @@ function printRunTestStats() {
             testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
     }
-    
+
     var totalTime = (TKUnit.time() - startTime).toFixed(2);
-    
+
     testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
 
     testFileContent = testFileContent.concat(testCases);
 
     let finalMessage = `\n=== ALL TESTS COMPLETE ===\n` +
-        `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` + 
+        `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` +
         `DURATION: ${totalTime} ms\n`;
-    TKUnit.write(finalMessage, messageType.info);  
+    TKUnit.write(finalMessage, messageType.info);
 
     for (j = 0; j < failedTestInfo.length; j++) {
         let failureMessage = failedTestInfo[j];
@@ -183,9 +185,15 @@ function printRunTestStats() {
 
     finalMessage += "\n" + "Test results: " + testFilePath;
 
+    let stack = new StackLayout();
+    let btn = new Button();
+    btn.text = "Rerun tests";
+    btn.on("tap", () => runAll(testsSelector));
+    stack.addChild(btn);
     let messageContainer = new TextView();
     messageContainer.text = finalMessage;
-    topmost().currentPage.content = messageContainer;
+    stack.addChild(messageContainer);
+    topmost().currentPage.content = stack;
 }
 
 function startLog(): void {
@@ -200,7 +208,9 @@ function log(): void {
     TKUnit.write(testsName + " COMPLETED for " + duration + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
 }
 
+let testsSelector: string
 export var runAll = function (testSelector?: string) {
+    testsSelector = testSelector;
     if (running) {
         // TODO: We may schedule pending run requests
         return;

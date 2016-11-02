@@ -69,8 +69,8 @@ function runImageTest(done, image: ImageModule.Image, src: string) {
 
         try {
             let imageIsLoaded = isIOS ? !!image.imageSource : true;
-            TKUnit.assertTrue(!image.isLoading, "Image.isLoading should be false.");
-            TKUnit.assertTrue(!testModel.get("imageIsLoading"), "imageIsLoading on viewModel should be false.");
+            TKUnit.assertFalse(image.isLoading, "Image.isLoading should be false.");
+            TKUnit.assertFalse(testModel.get("imageIsLoading"), "imageIsLoading on viewModel should be false.");
             TKUnit.assertTrue(imageIsLoaded, "imageSource should be set.");
             if (done) {
                 done(null);

@@ -335,6 +335,9 @@
 
                 getRotationAngle(): number;
                 setRotationAngle(angle: number): void;
+
+                setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean,
+                    async: boolean, listener: image.Worker.IOnImageLoadedListener): void;
             }
 
             export class TabLayout extends android.widget.HorizontalScrollView {
@@ -385,7 +388,8 @@
                 }
 
                 export class Fetcher extends Worker {
-                    constructor(context: android.content.Context);
+                    private constructor();
+                    public static getInstance(context: android.content.Context): Fetcher;
                     public addImageCache(cache: Cache): void;
                     public initCache(): void;
                     public clearCache(): void;
@@ -396,10 +400,10 @@
 
                 export namespace Cache {
                     export class CacheParams {
-                        constructor(context: android.content.Context, diskCacheDirectoryName: string);
-                        public setMemCacheSizePercent(percent: number): void;
-                        public diskCacheEnabled: boolean;
                         public diskCacheSize: number;
+                        public diskCacheEnabled: boolean;
+                        public memoryCacheEnabled: boolean;
+                        public setMemCacheSizePercent(percent: number): void;
                     }
                 }
             }
