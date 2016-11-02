@@ -142,6 +142,12 @@ public class Cache {
                     return bitmapSize == 0 ? 1 : bitmapSize;
                 }
             };
+        } else {
+            clearCache();
+            if (mReusableBitmaps != null) {
+                mReusableBitmaps.clear();
+                mReusableBitmaps = null;
+            }
         }
     }
 
@@ -236,6 +242,7 @@ public class Cache {
                 Log.v(TAG, "Memory cache cleared");
             }
         }
+        mMemoryCache = null;
     }
 
     /**
@@ -245,18 +252,6 @@ public class Cache {
         public int memCacheSize = DEFAULT_MEM_CACHE_SIZE;
         public boolean memoryCacheEnabled = DEFAULT_MEM_CACHE_ENABLED;
         public boolean diskCacheEnabled = DEFAULT_DISK_CACHE_ENABLED;
-
-        /**
-         * Create a set of image cache parameters that can be provided to
-         * {@link Cache#getInstance(CacheParams)}.
-         *
-         * @param context                A context to use.
-         * @param diskCacheDirectoryName A unique subdirectory name that will be appended to the
-         *                               application cache directory. Usually "cache" or "images"
-         *                               is sufficient.
-         */
-        public CacheParams(Context context, String diskCacheDirectoryName) {
-        }
 
         /**
          * Sets the memory cache size based on a percentage of the max available VM memory.

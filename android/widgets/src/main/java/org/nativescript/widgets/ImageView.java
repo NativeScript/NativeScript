@@ -5,8 +5,10 @@ package org.nativescript.widgets;
 
 import android.content.Context;
 import android.graphics.*;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+
+import org.nativescript.widgets.image.Fetcher;
+import org.nativescript.widgets.image.Worker;
 
 /**
  * @author hhristov
@@ -23,6 +25,16 @@ public class ImageView extends android.widget.ImageView {
 	
 	private float rotationAngle;
 
+    private Matrix mMatrix;
+    private Bitmap mBitmap;
+    private String mUri;
+    private int mDecodeWidth;
+    private int mDecodeHeight;
+    private boolean mUseCache;
+    private boolean mAsync;
+    private Worker.OnImageLoadedListener mListener;
+    private boolean mAttachedToWindow = false;
+
     public float getRotationAngle() {
         return rotationAngle;
     }
@@ -36,6 +48,23 @@ public class ImageView extends android.widget.ImageView {
         super(context);
         this.mMatrix = new Matrix();
         this.setScaleType(ScaleType.FIT_CENTER);
+    }
+
+    @Override
+    protected void onAttachedToWindow() {
+        mAttachedToWindow = true;
+        super.onAttachedToWindow();
+        this.loadImage();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        mAttachedToWindow = false;
+        super.onDetachedFromWindow();
+        if (mUri != null) {
+            // Clear the bitmap as we are not in the visual tree.
+            this.setImageBitmap(null);
+        }
     }
 
     @Override
@@ -132,21 +161,30 @@ public class ImageView extends android.widget.ImageView {
         }
     }
 
-    private Matrix mMatrix;
-    private Bitmap pBitmap;
+    public void setUri(String uri, int decodeWidth, int decodeHeight, boolean useCache, boolean async, Worker.OnImageLoadedListener listener) {
+        mUri = uri;
+        mDecodeWidth = decodeWidth;
+        mDecodeHeight = decodeHeight;
+        mUseCache = useCache;
+        mAsync = async;
+        mListener = listener;
+        if (mAttachedToWindow) {
+            loadImage();
+        }
+    }
+
+    private void loadImage() {
+        Fetcher fetcher = Fetcher.getInstance(this.getContext());
+        if (mUri != null && fetcher != null) {
+            // Get the Bitmap from cache.
+            fetcher.loadImage(mUri, this, mDecodeWidth, mDecodeHeight, mUseCache, mAsync, mListener);
+        }
+    }
 
     @Override
     public void setImageBitmap(Bitmap bm) {
         super.setImageBitmap(bm);
-        this.pBitmap = bm;
-    }
-
-    @Override
-    public void setImageDrawable(Drawable drawable) {
-        super.setImageDrawable(drawable);
-        if (drawable instanceof BitmapDrawable) {
-            this.pBitmap = ((BitmapDrawable)drawable).getBitmap();
-        }
+        this.mBitmap = bm;
     }
 
     @Override
@@ -185,8 +223,8 @@ public class ImageView extends android.widget.ImageView {
 
             float viewWidth = this.getWidth() - (2 * roundedBorderWidth);
             float viewHeight = this.getHeight() - (2 * roundedBorderWidth);
-            float bitmapWidth = (float) pBitmap.getWidth();
-            float bitmapHeight = (float) pBitmap.getHeight();
+            float bitmapWidth = (float) mBitmap.getWidth();
+            float bitmapHeight = (float) mBitmap.getHeight();
 
             float scaleX;
             float scaleY;
@@ -223,7 +261,7 @@ public class ImageView extends android.widget.ImageView {
 			matrix.postRotate(rotationDegree);
 			matrix.postTranslate(viewWidth / 2 + roundedBorderWidth, viewHeight / 2 + roundedBorderWidth);
 
-            canvas.drawBitmap(this.pBitmap, matrix, null);
+            canvas.drawBitmap(this.mBitmap, matrix, null);
         }
         else {
             super.onDraw(canvas);

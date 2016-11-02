@@ -23,11 +23,14 @@ import android.util.Log;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -47,14 +50,22 @@ public class Fetcher extends Resizer {
     private static final int DISK_CACHE_INDEX = 0;
 
     private final String mPackageName;
+    private static Fetcher instance;
 
+    public static Fetcher getInstance(Context context) {
+        if (instance == null) {
+            instance = new Fetcher(context);
+        }
+
+        return instance;
+    }
 
     /**
      * Initialize providing a target image width and height for the processing images.
      *
      * @param context
      */
-    public Fetcher(Context context) {
+    private Fetcher(Context context) {
         super(context);
         mHttpCacheDir = Cache.getDiskCacheDir(context, HTTP_CACHE_DIR);
         mPackageName = context.getPackageName();
@@ -184,9 +195,9 @@ public class Fetcher extends Resizer {
                         fileDescriptor = fileInputStream.getFD();
                     }
                 } catch (IOException e) {
-                    Log.e(TAG, "processBitmap - " + e);
+                    Log.e(TAG, "processHttp - " + e);
                 } catch (IllegalStateException e) {
-                    Log.e(TAG, "processBitmap - " + e);
+                    Log.e(TAG, "processHttp - " + e);
                 } finally {
                     if (fileDescriptor == null && fileInputStream != null) {
                         try {
@@ -216,19 +227,17 @@ public class Fetcher extends Resizer {
         if (debuggable > 0) {
             Log.v(TAG, "processHttp - " + data);
         }
-        final String key = Cache.hashKeyForDisk(data);
-        FileOutputStream outputStream = null;
+
+        ByteArrayOutputStreamInternal outputStream = null;
         Bitmap bitmap = null;
 
         try {
-            outputStream = new FileOutputStream(key);
+            outputStream = new ByteArrayOutputStreamInternal();
             if (downloadUrlToStream(data, outputStream)) {
-                bitmap = decodeSampledBitmapFromDescriptor(outputStream.getFD(), decodeWidth, decodeHeight, getCache());
+                bitmap = decodeSampledBitmapFromByteArray(outputStream.getBuffer(),  decodeWidth, decodeHeight, getCache());
             }
-        } catch (IOException e) {
-            Log.e(TAG, "processBitmap - " + e);
         } catch (IllegalStateException e) {
-            Log.e(TAG, "processBitmap - " + e);
+            Log.e(TAG, "processHttpNoCache - " + e);
         } finally {
             if (outputStream != null) {
                 try {
@@ -263,7 +272,7 @@ public class Fetcher extends Resizer {
                     Log.v(TAG, "Missing Image with resourceID: " + stringData);
                 }
             } else {
-                if (useCache) {
+                if (useCache && mHttpDiskCache != null) {
                     return processHttp(stringData, decodeWidth, decodeHeight);
                 } else {
                     return processHttpNoCache(stringData, decodeWidth, decodeHeight);
@@ -326,6 +335,12 @@ public class Fetcher extends Resizer {
         // HTTP connection reuse which was buggy pre-froyo
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
             System.setProperty("http.keepAlive", "false");
+        }
+    }
+
+    private static class ByteArrayOutputStreamInternal extends ByteArrayOutputStream {
+        public byte[] getBuffer() {
+            return buf;
         }
     }
 }

@@ -23,6 +23,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import java.io.FileDescriptor;
+import java.io.InputStream;
 
 /**
  * A simple subclass of {@link Worker} that resize images given a target width
@@ -147,6 +148,34 @@ public abstract class Resizer extends Worker {
         }
 
         return BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+    }
+
+    public static Bitmap decodeSampledBitmapFromByteArray(
+            byte[] buffer, int reqWidth, int reqHeight, Cache cache) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(buffer, 0, buffer.length, options);
+
+        // If requested width/height were not specified - decode in full size.
+        if (reqWidth > 0 && reqHeight > 0) {
+            // Calculate inSampleSize
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+        }
+        else {
+            options.inSampleSize = 1;
+        }
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+
+        // If we're running on Honeycomb or newer, try to use inBitmap
+        if (Utils.hasHoneycomb()) {
+            addInBitmapOptions(options, cache);
+        }
+
+        return BitmapFactory.decodeByteArray(buffer, 0, buffer.length, options);
     }
 
     /**

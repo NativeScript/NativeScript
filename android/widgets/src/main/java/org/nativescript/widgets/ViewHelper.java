@@ -373,5 +373,21 @@ public class ViewHelper {
                 view.setZ(value);
             }
         }
+
+        @TargetApi(21)
+        public static float getLetterspacing(android.widget.TextView textView) {
+            if (ViewHelper.version >= 21) {
+                return textView.getLetterSpacing();
+            }
+
+            return 0;
+        }
+
+        @TargetApi(21)
+        public static void setLetterspacing(android.widget.TextView textView, float value) {
+            if (ViewHelper.version >= 21) {
+                textView.setLetterSpacing(value);
+            }
+        }
 }
     
