@@ -14,12 +14,7 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
         TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + r);
         done(null);
         // << (hide)
-    }).catch( function (e) {
-            // Argument (e) is Error!
-            // >> (hide)
-            done(e);
-            // << (hide)
-        });
+    }).catch(failOnError(done));
     // << fetch-response
 };
 
@@ -31,12 +26,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
         TKUnit.assert(types.isString(r), "Result from text() should be string! Actual result is: " + r);
         done(null);
         // << (hide)
-    }).catch( function (e) {
-            // Argument (e) is Error!
-            // >> (hide)
-            done(e);
-            // << (hide)
-        });
+    }).catch(failOnError(done));
     // << fetch-string
 };
 
@@ -48,12 +38,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
         TKUnit.assert(types.isString(JSON.stringify(r)), "Result from json() should be JSON object! Actual result is: " + r);
         done(null);
         // << (hide)
-    }).catch( function (e) {
-            // Argument (e) is Error!
-            // >> (hide)
-            done(e);
-            // << (hide)
-        });
+    }).catch(failOnError(done));
     // << fetch-json
 };
 
@@ -65,12 +50,7 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
         TKUnit.assert(r instanceof FormData, "Result from formData() should be FormData object! Actual result is: " + r);
         done(null);
         // << (hide)
-    }).catch( function (e) {
-            // Argument (e) is Error!
-            // >> (hide)
-            done(e);
-            // << (hide)
-        });
+    }).catch(failOnError(done));
     // << fetch-formdata
 };
 
@@ -81,7 +61,7 @@ export var test_fetch_fail_invalid_url = function (done) {
     fetch("hgfttp://httpbin.org/get").catch(function (e) {
         completed = true;
         done(null)
-    }).catch( e => done(e) );
+    }).catch(failOnError(done));
 };
 
 export var test_fetch_response_status = function (done) {
@@ -94,12 +74,7 @@ export var test_fetch_response_status = function (done) {
         TKUnit.assert(types.isDefined(statusCode), "response.status should be defined! Actual result is: " + statusCode);
         done(null);
         // << (hide)
-    }).catch( function (e) {
-            // Argument (e) is Error!
-            // >> (hide)
-            done(e);
-            // << (hide)
-        });
+    }).catch(failOnError(done));
     // << fetch-status-response
 };
 
@@ -113,12 +88,7 @@ export var test_fetch_response_headers = function (done) {
         TKUnit.assert(types.isDefined(response.headers), "response.headers should be defined! Actual result is: " + response.headers);
         done(null);
         // << (hide)
-    }).catch( function (e) {
-            // Argument (e) is Error!
-            // >> (hide)
-            done(e);
-            // << (hide)
-        });
+    }).catch(failOnError(done));
     // << fetch-headers-response
 };
 
@@ -130,9 +100,7 @@ export var test_fetch_headers_sent = function (done) {
         var result = response.headers;
         TKUnit.assert(result.get("Content-Type") === "application/json", "Headers not sent/received properly! Actual result is: " + result);
         done(null);
-    }).catch( function (e) {
-            done(e);
-        });
+    }).catch(failOnError(done));
 };
 
 export var test_fetch_post_form_data = function (done) {
@@ -149,9 +117,7 @@ export var test_fetch_post_form_data = function (done) {
     }).then(function (r) {
         TKUnit.assert(r instanceof FormData, "Content not sent/received properly! Actual result is: " + r);
         done(null);
-    }).catch( function (e) {
-            done(e);
-        });
+    }).catch(failOnError(done));
 };
 
 export var test_fetch_post_json = function (done) {
@@ -166,11 +132,10 @@ export var test_fetch_post_json = function (done) {
         done(null);
         // << (hide)
         // console.log(result);
-    }).catch( function (e) {
-            // >> (hide)
-            done(e);
-            // << (hide)
-            // console.log("Error occurred " + e);
-        });
+    }).catch(failOnError(done));
     // << fetch-post-json
 };
+
+const failOnError = function (done: (err: Error, res?: string) => void) {
+    return e => done(e);
+}
