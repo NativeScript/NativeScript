@@ -14,7 +14,7 @@ export var test_fetch = function (done: (err: Error, res?: string) => void) {
         TKUnit.assert(r instanceof Response, "Result from fetch() should be valid Response object! Actual result is: " + r);
         done(null);
         // << (hide)
-    }, function (e) {
+    }).catch( function (e) {
             // Argument (e) is Error!
             // >> (hide)
             done(e);
@@ -31,7 +31,7 @@ export var test_fetch_text = function (done: (err: Error, res?: string) => void)
         TKUnit.assert(types.isString(r), "Result from text() should be string! Actual result is: " + r);
         done(null);
         // << (hide)
-    }, function (e) {
+    }).catch( function (e) {
             // Argument (e) is Error!
             // >> (hide)
             done(e);
@@ -48,7 +48,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
         TKUnit.assert(types.isString(JSON.stringify(r)), "Result from json() should be JSON object! Actual result is: " + r);
         done(null);
         // << (hide)
-    }, function (e) {
+    }).catch( function (e) {
             // Argument (e) is Error!
             // >> (hide)
             done(e);
@@ -65,7 +65,7 @@ export var test_fetch_formData = function (done: (err: Error, res?: string) => v
         TKUnit.assert(r instanceof FormData, "Result from formData() should be FormData object! Actual result is: " + r);
         done(null);
         // << (hide)
-    }, function (e) {
+    }).catch( function (e) {
             // Argument (e) is Error!
             // >> (hide)
             done(e);
@@ -81,7 +81,7 @@ export var test_fetch_fail_invalid_url = function (done) {
     fetch("hgfttp://httpbin.org/get").catch(function (e) {
         completed = true;
         done(null)
-    });
+    }).catch( e => done(e) );
 };
 
 export var test_fetch_response_status = function (done) {
@@ -91,15 +91,10 @@ export var test_fetch_response_status = function (done) {
         // Argument (response) is Response!
         var statusCode = response.status;
         // >> (hide)
-        try {
-            TKUnit.assert(types.isDefined(statusCode), "response.status should be defined! Actual result is: " + statusCode);
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
+        TKUnit.assert(types.isDefined(statusCode), "response.status should be defined! Actual result is: " + statusCode);
+        done(null);
         // << (hide)
-    }, function (e) {
+    }).catch( function (e) {
             // Argument (e) is Error!
             // >> (hide)
             done(e);
@@ -115,15 +110,10 @@ export var test_fetch_response_headers = function (done) {
         // Argument (response) is Response!
         // var all = response.headers.getAll();
         // >> (hide)
-        try {
-            TKUnit.assert(types.isDefined(response.headers), "response.headers should be defined! Actual result is: " + response.headers);
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
+        TKUnit.assert(types.isDefined(response.headers), "response.headers should be defined! Actual result is: " + response.headers);
+        done(null);
         // << (hide)
-    }, function (e) {
+    }).catch( function (e) {
             // Argument (e) is Error!
             // >> (hide)
             done(e);
@@ -138,14 +128,9 @@ export var test_fetch_headers_sent = function (done) {
         headers: { "Content-Type": "application/json" }
     }).then(function (response) {
         var result = response.headers;
-        try {
-            TKUnit.assert(result.get("Content-Type") === "application/json", "Headers not sent/received properly! Actual result is: " + result);
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
-    }, function (e) {
+        TKUnit.assert(result.get("Content-Type") === "application/json", "Headers not sent/received properly! Actual result is: " + result);
+        done(null);
+    }).catch( function (e) {
             done(e);
         });
 };
@@ -162,14 +147,9 @@ export var test_fetch_post_form_data = function (done) {
     }).then(r => {
         return r.formData();
     }).then(function (r) {
-        try {
-            TKUnit.assert(r instanceof FormData, "Content not sent/received properly! Actual result is: " + r);
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
-    }, function (e) {
+        TKUnit.assert(r instanceof FormData, "Content not sent/received properly! Actual result is: " + r);
+        done(null);
+    }).catch( function (e) {
             done(e);
         });
 };
@@ -182,16 +162,11 @@ export var test_fetch_post_json = function (done) {
         body: JSON.stringify({ MyVariableOne: "ValueOne", MyVariableTwo: "ValueTwo" })
     }).then(r => { return r.json(); }).then(function (r) {
         // >> (hide)
-        try {
-            TKUnit.assert(r.json["MyVariableOne"] === "ValueOne" && r.json["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Actual result is: " + r.json);
-            done(null);
-        }
-        catch (err) {
-            done(err);
-        }
+        TKUnit.assert(r.json["MyVariableOne"] === "ValueOne" && r.json["MyVariableTwo"] === "ValueTwo", "Content not sent/received properly! Actual result is: " + r.json);
+        done(null);
         // << (hide)
         // console.log(result);
-    }, function (e) {
+    }).catch( function (e) {
             // >> (hide)
             done(e);
             // << (hide)
