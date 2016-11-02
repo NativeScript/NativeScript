@@ -1,4 +1,4 @@
-import {FlexboxLayout} from "ui/layouts/flexbox-layout";
+import { FlexboxLayout } from "ui/layouts/flexbox-layout";
 
 function set(what: string) {
     return function(args) {
