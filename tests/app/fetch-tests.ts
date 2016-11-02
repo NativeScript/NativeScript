@@ -35,7 +35,7 @@ export var test_fetch_json = function (done: (err: Error, res?: string) => void)
     fetch("https://httpbin.org/get").then(response => { return response.json(); }).then(function (r) {
         // Argument (r) is JSON object!
         // >> (hide)
-        TKUnit.assert(types.isString(JSON.stringify(r)), "Result from json() should be JSON object! Actual result is: " + r);
+        TKUnit.assertNotNull(r, "Result from json() should be JSON object!");
         done(null);
         // << (hide)
     }).catch(failOnError(done));
