@@ -63,7 +63,7 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
 
     currentCacheMode = mode;
     if (!imageFetcher) {
-        imageFetcher = new org.nativescript.widgets.image.Fetcher(context);
+        imageFetcher = org.nativescript.widgets.image.Fetcher.getInstance(context);
     }
 
     // Disable cache.
@@ -73,7 +73,8 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
         }
     }
 
-    let params = new org.nativescript.widgets.image.Cache.CacheParams(context, "_imageCache");
+    let params = new org.nativescript.widgets.image.Cache.CacheParams();
+    params.memoryCacheEnabled = mode !== CacheMode.none; 
     params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
     params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
     params.diskCacheSize = diskCacheSize;
@@ -145,7 +146,7 @@ export class Image extends imageCommon.Image {
             }
             else if (imageSource.isFileOrResourcePath(value)) {
                 if (value.indexOf(utils.RESOURCE_PREFIX) === 0) {
-                    imageFetcher.loadImage(value, imageView, this.decodeWidth, this.decodeHeight, this.useCache, async, listener);
+                    imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async, listener);
                 }
                 else {
                     let fileName = value;
@@ -153,12 +154,12 @@ export class Image extends imageCommon.Image {
                         fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
                     }
 
-                    imageFetcher.loadImage(FILE_PREFIX + fileName, imageView, this.decodeWidth, this.decodeHeight, this.useCache, async, listener);
+                    imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async, listener);
                 }
             }
             else {
                 // For backwards compatibility http always use async loading.
-                imageFetcher.loadImage(value, imageView, this.decodeWidth, this.decodeHeight, this.useCache, true, listener);
+                imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true, listener);
             }
         } else {
             super._createImageSourceFromSrc();
