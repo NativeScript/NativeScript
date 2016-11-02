@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page loaded="pageLoaded">
+  <Repeater items="{{ items }}">
+    <Repeater.itemsLayout>
+      <FlexboxLayout flexDirection="column" flexWrap="wrap" justifyContent="center" alignItems="center" alignContent="stretch" />
+    </Repeater.itemsLayout>
+    <Repeater.itemTemplate>
+      <FlexboxLayout flexDirection="row">
+        <Label text="{{ number }}" backgroundColor="lightgreen" />
+        <Label text="{{ number }}" backgroundColor="lightblue" />
+      </FlexboxLayout>
+    </Repeater.itemTemplate>
+  </Repeater>
+</Page>
