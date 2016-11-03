@@ -42,7 +42,7 @@ export function pageLoaded(args: EventData) {
     //examples.set("listview_binding", "pages/listview_binding");
     //examples.set("textfield", "text-field/text-field");
 
-    let viewModel = new MianPageViewModel(wrapLayout, examples);
+    let viewModel = new MainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
 
      var parent = page.getViewById('parentLayout');
@@ -142,7 +142,7 @@ export function refresh() {
     oldExamples.set("webtest", "web-view/web-view-test");
 }
 
-export class MianPageViewModel extends observable.Observable {
+export class MainPageViewModel extends observable.Observable {
     private _exampleName: string;
     private basePath: string = "";
     private colors = ["#ff0000", "#0000cc", "#33cc33", "#33cc33"];

@@ -1,5 +1,5 @@
 import { EventData } from "data/observable";
-import { MianPageViewModel } from "../mainPage";
+import { MainPageViewModel } from "../mainPage";
 import { WrapLayout } from "ui/layouts/wrap-layout";
 import { Page } from "ui/page";
 
@@ -15,11 +15,11 @@ export function pageLoaded(args: EventData) {
     examples.set("2674", "issues/issue-2674");
     examples.set("2942", "issues/issue-2942");
 
-    let viewModel = new SubMianPageViewModel(wrapLayout, examples);
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
 }
 
-export class SubMianPageViewModel extends MianPageViewModel {
+export class SubMainPageViewModel extends MainPageViewModel {
     constructor(container: WrapLayout, examples: Map<string, string>) {
         super(container, examples);
     }
