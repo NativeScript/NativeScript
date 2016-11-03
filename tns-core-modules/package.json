@@ -1,7 +1,7 @@
 {
   "name": "tns-core-modules",
   "description": "Telerik NativeScript Core Modules",
-  "version": "2.5.0",
+  "version": "2.4.0",
   "homepage":"https://www.nativescript.org",
   "repository": {
     "type": "git",
@@ -24,15 +24,15 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "next"
+    "tns-core-modules-widgets": "2.4.0"
   },
   "devDependencies": {
     "tns-platform-declarations": "*"
   },
   "nativescript": {
     "platforms": {
-      "ios": "2.1.1",
-      "android": "2.1.1"
+      "ios": "2.3.0",
+      "android": "2.3.0"
     }
   }
 }
