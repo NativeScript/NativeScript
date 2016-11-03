@@ -47,6 +47,7 @@
 
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
                 constructor(density: number);
+                constructor(density: number, id: string);
                 public refresh(
                     borderTopColor: number,
                     borderRightColor: number,
@@ -104,6 +105,8 @@
                 public hasUniformBorderWidth(): boolean;
                 public hasUniformBorderRadius(): boolean;
                 public hasUniformBorder(): boolean;
+
+                public toDebugString(): string;
             }
 
             export class CSSValue {

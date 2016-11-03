@@ -67,7 +67,7 @@ export module ad {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
                 
-                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(density);
+                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(density, v.toString());
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
                 nativeView.setBackground(backgroundDrawable);
             }
@@ -116,6 +116,7 @@ export module ad {
 }
 
 function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript.widgets.BorderDrawable){
+    //console.log(`>>> refreshBorderDrawable(${view})...`);
     let background = <background.Background>view.style._getValue(style.backgroundInternalProperty);
     if (background){
         let backgroundPositionParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
@@ -154,6 +155,7 @@ function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript
             background.size,
             backgroundSizeParsedCSSValues
         );
+        //console.log(`>>> ${borderDrawable.toDebugString()}`);
     }
 }
 
