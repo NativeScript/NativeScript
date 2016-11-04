@@ -125,6 +125,7 @@ export class TabViewItem extends common.TabViewItem {
     public _update() {
         if (this._parent && this._controller) {
             var icon = this._parent._getIcon(this.iconSource);
+            //TODO: Implement initWithSystemItem to support standard system icons
             var tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((this.title || ""), icon, this._parent.items.indexOf(this));
             if (!icon) {
                 if (types.isFunction((<any>tabBarItem).setTitlePositionAdjustment)) {
@@ -301,6 +302,36 @@ export class TabView extends common.TabView {
         }
     }
 
+    private _iconRenderingMode: string;
+    get iosIconRenderingMode(): string {
+        return this._iconRenderingMode;
+    }
+    set iosIconRenderingMode(value: string) {
+        if (this._iconRenderingMode !== value){
+            this._iconRenderingMode = value;
+            this._iconsCache = {};
+            if (this.items && this.items.length){
+                for (let i = 0, length = this.items.length; i < length; i++) {
+                    if (this.items[i].iconSource) {
+                        (<any>this.items[i])._update();
+                    }
+                }
+            }
+        }
+    }
+
+    private _getIconRenderingMode(): UIImageRenderingMode {
+        switch(this._iconRenderingMode) {
+            case "alwaysOriginal":
+                return UIImageRenderingMode.AlwaysOriginal;
+            case "alwaysTemplate":
+                return UIImageRenderingMode.AlwaysTemplate;
+            case "automatic":
+            default:
+                return UIImageRenderingMode.Automatic;
+        }
+    }
+
     public _getIcon(iconSource: string): UIImage {
         if (!iconSource) {
             return null;
@@ -313,7 +344,7 @@ export class TabView extends common.TabView {
 
             var is = imageSource.fromFileOrResource(iconSource);
             if (is && is.ios) {
-                var originalRenderedImage = is.ios.imageWithRenderingMode(UIImageRenderingMode.Automatic);
+                var originalRenderedImage = is.ios.imageWithRenderingMode(this._getIconRenderingMode());
                 this._iconsCache[iconSource] = originalRenderedImage;
                 image = originalRenderedImage;
             }

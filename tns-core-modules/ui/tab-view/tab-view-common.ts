@@ -237,6 +237,13 @@ export class TabView extends View implements definition.TabView, AddArrayFromBui
         this.style.textTransform = value;
     }
 
+    get iosIconRenderingMode(): string {
+        return undefined;
+    }
+    set iosIconRenderingMode(value: string) {
+        //
+    }
+
     public _onSelectedIndexPropertyChangedSetNativeValue(data: PropertyChangeData) {
         var index = this.selectedIndex;
         if (types.isUndefined(index)) {

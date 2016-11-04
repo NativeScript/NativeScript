@@ -106,6 +106,15 @@ declare module "ui/tab-view" {
         ios: any /* UITabBarController */;
 
         /**
+         * Gets or set the UIImageRenderingMode of the tab icons in iOS. 
+         * Valid values are:
+         *  - automatic
+         *  - alwaysOriginal
+         *  - alwaysTemplate  
+         */
+        iosIconRenderingMode: string;
+
+        /**
          * String value used when hooking to the selectedIndexChanged event.
          */
         public static selectedIndexChangedEvent: string;
