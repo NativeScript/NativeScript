@@ -10,6 +10,8 @@ declare module "ui/layouts/flexbox-layout" {
         export const ROW_REVERSE: "row-reverse";
         export const COLUMN: "column";
         export const COLUMN_REVERSE: "column-reverse";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): FlexDirection;
     }
 
     export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";
@@ -17,6 +19,8 @@ declare module "ui/layouts/flexbox-layout" {
         export const NOWRAP: "nowrap";
         export const WRAP: "wrap";
         export const WRAP_REVERSE: "wrap-reverse";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): FlexWrap;
     }
 
     export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
@@ -26,6 +30,8 @@ declare module "ui/layouts/flexbox-layout" {
         export const CENTER: "center";
         export const SPACE_BETWEEN: "space-between";
         export const SPACE_AROUND: "space-around";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): JustifyContent;
     }
 
     export type AlignItems = "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
@@ -35,6 +41,8 @@ declare module "ui/layouts/flexbox-layout" {
         export const CENTER: "center";
         export const BASELINE: "baseline";
         export const STRETCH: "stretch";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): AlignItems;
     }
 
     export type AlignContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
@@ -45,6 +53,44 @@ declare module "ui/layouts/flexbox-layout" {
         export const SPACE_BETWEEN: "space-between";
         export const SPACE_AROUND: "space-around";
         export const STRETCH: "stretch";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): AlignContent;
+    }
+
+    /**
+     * A flex order integer.
+     */
+    export type Order = number;
+    export namespace Order {
+        export function isValid(value: any): boolean;
+        export function parse(value: string): Order;
+    }
+
+    /**
+     * A flex-grow number. Negative values are invalid.
+     */
+    export type FlexGrow = number;
+    export namespace FlexGrow {
+        export function isValid(value: any): boolean;
+        export function parse(value: string): FlexGrow;
+    }
+
+    /**
+     * A flex-shrink number. Negative values are invalid.
+     */
+    export type FlexShrink = number;
+    export namespace FlexShrink {
+        export function isValid(value: any): boolean;
+        export function parse(value: string): FlexShrink;
+    }
+
+    /**
+     * A flex-wrap-before value. True, false or their string presentations "true" or "false".
+     */
+    export type FlexWrapBefore = boolean;
+    export namespace FlexWrapBefore {
+        export function isValid(value: any): boolean;
+        export function parse(value: string): FlexWrapBefore;
     }
 
     export type AlignSelf = "auto" | AlignItems;
@@ -55,6 +101,8 @@ declare module "ui/layouts/flexbox-layout" {
         export const CENTER: "center";
         export const BASELINE: "baseline";
         export const STRETCH: "stretch";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): AlignSelf;
     }
 
     export class FlexboxLayout extends LayoutBase {

@@ -14,6 +14,13 @@
     export function isNumber(value: any): boolean;
 
     /**
+     * A function that checks if something is a valid boolean.
+     * @param value The value which will be checked.
+     * Returns true if value is a boolean.
+     */
+    export function isBoolean(value: any): boolean;
+
+    /**
      * A function that checks if something is a function.
      * @param value The value which will be checked.
      * Returns true if value is a function.

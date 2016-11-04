@@ -8,8 +8,6 @@ import {
     AlignSelf,
     FlexboxLayoutBase
 } from "./flexbox-layout-common";
-import {PropertyMetadata} from "ui/core/proxy";
-import {PropertyChangeData} from "ui/core/dependency-observable";
 import {layout} from "utils/utils";
 
 function setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams) => void) {
@@ -23,31 +21,25 @@ function setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widge
     }
 }
 
-function onNativeOrderPropertyChanged({object, newValue}: PropertyChangeData): void {
-    setLayoutParamsProperty(<View>object, lp => lp.order = newValue);
+export function _onNativeOrderPropertyChanged(view: View, newValue: number): void {
+    setLayoutParamsProperty(view, lp => lp.order = newValue);
 }
 
-function onNativeFlexGrowPropertyChanged({object, newValue}: PropertyChangeData): void {
-    setLayoutParamsProperty(<View>object, lp => lp.flexGrow = newValue);
+export function _onNativeFlexGrowPropertyChanged(view: View, newValue: number): void {
+    setLayoutParamsProperty(view, lp => lp.flexGrow = newValue);
 }
 
-function onNativeFlexShrinkPropertyChanged({object, newValue}: PropertyChangeData): void {
-    setLayoutParamsProperty(<View>object, lp => lp.flexShrink = newValue);
+export function _onNativeFlexShrinkPropertyChanged(view: View, newValue: number): void {
+    setLayoutParamsProperty(view, lp => lp.flexShrink = newValue);
 }
 
-function onNativeAlignSelfPropertyChanged({object, newValue}: PropertyChangeData): void {
-    setLayoutParamsProperty(<View>object, lp => lp.alignSelf = alignSelfMap[newValue]);
+export function _onNativeAlignSelfPropertyChanged(view: View, newValue: AlignSelf): void {
+    setLayoutParamsProperty(view, lp => lp.alignSelf = alignSelfMap[newValue]);
 }
 
-function onNativeFlexWrapBeforePropertyChanged({object, newValue}: PropertyChangeData): void {
-    setLayoutParamsProperty(<View>object, lp => lp.wrapBefore = newValue);
+export function _onNativeFlexWrapBeforePropertyChanged(view: View, newValue: boolean): void {
+    setLayoutParamsProperty(view, lp => lp.wrapBefore = newValue);
 }
-
-(<PropertyMetadata>FlexboxLayoutBase.orderProperty.metadata).onSetNativeValue = onNativeOrderPropertyChanged;
-(<PropertyMetadata>FlexboxLayoutBase.flexGrowProperty.metadata).onSetNativeValue = onNativeFlexGrowPropertyChanged;
-(<PropertyMetadata>FlexboxLayoutBase.flexShrinkProperty.metadata).onSetNativeValue = onNativeFlexShrinkPropertyChanged;
-(<PropertyMetadata>FlexboxLayoutBase.alignSelfProperty.metadata).onSetNativeValue = onNativeAlignSelfPropertyChanged;
-(<PropertyMetadata>FlexboxLayoutBase.flexWrapBeforeProperty.metadata).onSetNativeValue = onNativeFlexWrapBeforePropertyChanged;
 
 export * from "./flexbox-layout-common";
 
@@ -114,29 +106,25 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
     }
 
-    protected setNativeFlexDirection(flexDirection: FlexDirection) {
+    _setNativeFlexDirection(flexDirection: FlexDirection) {
         let value = flexDirectionMap[flexDirection];
         this.android.setFlexDirection(value);
     }
 
-    protected setNativeFlexWrap(flexWrap: FlexWrap) {
+    _setNativeFlexWrap(flexWrap: FlexWrap) {
         this.android.setFlexWrap(flexWrapMap[flexWrap]);
     }
 
-    protected setNativeJustifyContent(justifyContent: JustifyContent) {
+    _setNativeJustifyContent(justifyContent: JustifyContent) {
         this.android.setJustifyContent(justifyContentMap[justifyContent]);
     }
 
-    protected setNativeAlignItems(alignItems: AlignItems) {
+    _setNativeAlignItems(alignItems: AlignItems) {
         this.android.setAlignItems(alignItemsMap[alignItems]);
     }
 
-    protected setNativeAlignContent(alignContent: AlignContent) {
+    _setNativeAlignContent(alignContent: AlignContent) {
         this.android.setAlignContent(alignContentMap[alignContent]);
-    }
-
-    protected invalidate() {
-        // no operation
     }
 }
 
