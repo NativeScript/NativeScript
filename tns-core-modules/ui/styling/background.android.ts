@@ -36,6 +36,13 @@ export module ad {
 
     let _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
+    function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
+        return ( 
+            nativeView instanceof android.widget.Button || 
+            nativeView instanceof android.support.v7.widget.Toolbar
+        ); 
+    }
+    
     export function onBackgroundOrBorderPropertyChanged(v: view.View) {
         let nativeView = <android.view.View>v._nativeView;
         if (!nativeView) {
@@ -48,7 +55,8 @@ export module ad {
         let backgroundDrawable = nativeView.getBackground();
         let density = utils.layout.getDisplayDensity();
         let cache = <CacheLayerType>v._nativeView;
-        if (v instanceof button.Button 
+
+        if (isSetColorFilterOnlyWidget(nativeView) 
         && !types.isNullOrUndefined(backgroundDrawable) 
         && types.isFunction(backgroundDrawable.setColorFilter) 
         && !background.hasBorderWidth()
@@ -63,7 +71,7 @@ export module ad {
         else if (!background.isEmpty()) {
             if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
                 let viewClass = types.getClass(v);
-                if (!(v instanceof button.Button) && !_defaultBackgrounds.has(viewClass)) {
+                if (!isSetColorFilterOnlyWidget(nativeView) && !_defaultBackgrounds.has(viewClass)) {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
                 
