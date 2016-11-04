@@ -220,7 +220,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     private get _isOrderChangedFromLastMeasurement(): boolean {
         let childCount = this.getChildrenCount();
-        if (this._orderCache === null) {
+        if (!this._orderCache) {
             this._orderCache = [];
         }
         if (this._orderCache.length !== childCount) {
