@@ -600,54 +600,32 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             if (this._isMainAxisDirectionHorizontal(flexDirection)) {
                 // The direction of main axis is horizontal
                 if (!this._childrenFrozen[childIndex]) {
-                    let rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * lp.flexShrink;
-                    if (i === flexLine.itemCount - 1) {
-                        rawCalculatedWidth += accumulatedRoundError;
-                        accumulatedRoundError = 0;
-                    }
-                    let newWidth = Math.round(rawCalculatedWidth);
-                    if (newWidth < lp.minWidth) {
+                    let rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * lp.flexShrink + accumulatedRoundError;
+                    let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
+                    if (roundedCalculatedWidth < lp.minWidth) {
                         needsReshrink = true;
-                        newWidth = lp.minWidth;
+                        roundedCalculatedWidth = lp.minWidth;
                         this._childrenFrozen[childIndex] = true;
                         flexLine._totalFlexShrink -= lp.flexShrink;
                     } else {
-                        accumulatedRoundError += (rawCalculatedWidth - newWidth);
-                        if (accumulatedRoundError > 1.0) {
-                            newWidth += 1;
-                            accumulatedRoundError -= 1;
-                        } else if (accumulatedRoundError < -1.0) {
-                            newWidth -= 1;
-                            accumulatedRoundError += 1;
-                        }
+                        accumulatedRoundError = rawCalculatedWidth - roundedCalculatedWidth;
                     }
-                    child.measure(makeMeasureSpec(newWidth, EXACTLY), makeMeasureSpec(child.getMeasuredHeight(), EXACTLY));
+                    child.measure(makeMeasureSpec(roundedCalculatedWidth, EXACTLY), makeMeasureSpec(child.getMeasuredHeight(), EXACTLY));
                 }
                 flexLine._mainSize += child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin;
             } else {
                 if (!this._childrenFrozen[childIndex]) {
-                    let rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * lp.flexShrink;
-                    if (i === flexLine.itemCount - 1) {
-                        rawCalculatedHeight += accumulatedRoundError;
-                        accumulatedRoundError = 0;
-                    }
-                    let newHeight = Math.round(rawCalculatedHeight);
-                    if (newHeight < lp.minHeight) {
+                    let rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * lp.flexShrink + accumulatedRoundError;
+                    let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
+                    if (roundedCalculatedHeight < lp.minHeight) {
                         needsReshrink = true;
-                        newHeight = lp.minHeight;
+                        roundedCalculatedHeight = lp.minHeight;
                         this._childrenFrozen[childIndex] = true;
                         flexLine._totalFlexShrink -= lp.flexShrink;
                     } else {
-                        accumulatedRoundError += (rawCalculatedHeight - newHeight);
-                        if (accumulatedRoundError > 1.0) {
-                            newHeight += 1;
-                            accumulatedRoundError -= 1;
-                        } else if (accumulatedRoundError < -1.0) {
-                            newHeight -= 1;
-                            accumulatedRoundError += 1;
-                        }
+                        accumulatedRoundError = rawCalculatedHeight - roundedCalculatedHeight;
                     }
-                    child.measure(makeMeasureSpec(child.getMeasuredWidth(), EXACTLY), makeMeasureSpec(newHeight, EXACTLY));
+                    child.measure(makeMeasureSpec(child.getMeasuredWidth(), EXACTLY), makeMeasureSpec(roundedCalculatedHeight, EXACTLY));
                 }
                 flexLine._mainSize += child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin;
             }
