@@ -6,6 +6,10 @@ export function isNumber(value: any): boolean {
     return typeof value === "number" || value instanceof Number;
 }
 
+export function isBoolean(value: any): boolean {
+    return typeof value === "boolean" || value instanceof Boolean;
+}
+
 export function isFunction(value: any): boolean {
     if (!value) {
         return false;
