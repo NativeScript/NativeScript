@@ -33,3 +33,11 @@ export var test_file_exists_on_folder = function () {
 
     TKUnit.assertTrue(fs.File.exists(path), "File.exists() returned false for folder!");
 };
+
+export var test_leading_slash_is_not_returned = function () {
+    var parts = ["app", "tns_modules", "fileName"];
+    var expected = parts.join("/");
+    var path = fs.path.join(...parts);
+
+    TKUnit.assertEqual(path, expected, "Leading slash should not be part of the path");
+}
