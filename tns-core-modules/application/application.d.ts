@@ -300,12 +300,12 @@ declare module "application" {
         /**
          * The Permissions
          */
-        permissions: Array<String>,
+        permissions: Array<string>,
 
         /**
          * The Granted.
          */
-        grantResults: Array<Number>
+        grantResults: Array<number>
     }
 
     /**
@@ -480,7 +480,7 @@ declare module "application" {
         /**
          * This event is raised on the back button is pressed in an android application.
          */
-        on(event: "activityRequestPermissions", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+        on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
 
         /**
          * String value used when hooking to activityCreated event.
