@@ -149,13 +149,11 @@ export class StyleScope {
                     if (utils.isFileOrResourcePath(url)) {
                         ensureFS();
 
-                        let fileName = types.isString(url) ? url.trim() : "";
-                        if (fileName.indexOf("~/") === 0) {
-                            fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
-                        }
+                        let appDirectory = fs.knownFolders.currentApp().path;
+                        let fileName = resolveFileNameFromUrl(url, appDirectory, fs.File.exists);
 
-                        if (fs.File.exists(fileName)) {
-                            let file = fs.File.fromPath(fileName);
+                        if (fileName !== null) {
+                            let file: fileSystemModule.File = fs.File.fromPath(fileName);
                             let text = file.readTextSync();
                             if (text) {
                                 selectors = selectors.concat(StyleScope.createSelectorsFromCss(text, fileName, keyframes));
@@ -197,7 +195,7 @@ export class StyleScope {
     }
 
     public applySelectors(view: view.View): void {
-        this.ensureSelectors(); 
+        this.ensureSelectors();
 
         let state = this._selectors.query(view);
 
@@ -243,6 +241,26 @@ export class StyleScope {
     public getAnimations(ruleset: RuleSet): keyframeAnimation.KeyframeAnimationInfo[] {
         return ruleset[animationsSymbol];
     }
+}
+
+export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean): string {
+    let fileName: string = types.isString(url) ? url.trim() : "";
+
+    if (fileName.indexOf("~/") === 0) {
+        fileName = fileName.replace("~/", "");
+    }
+
+    let local = fs.path.join(appDirectory, fileName);
+    if (fileExists(local)) {
+        return local;
+    }
+
+    let external = fs.path.join(appDirectory, "tns_modules", fileName);
+    if (fileExists(external)) {
+        return external;
+    }
+
+    return null;
 }
 
 export function applyInlineSyle(view: view.View, style: string) {

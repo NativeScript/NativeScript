@@ -32,5 +32,6 @@ declare module "ui/styling/style-scope" {
         public getAnimations(ruleset: RuleSet): KeyframeAnimationInfo[];
     }
 
+    export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean): string;
     export function applyInlineSyle(view: view.View, style: string): void;
 }
