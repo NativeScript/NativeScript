@@ -28,6 +28,8 @@ var MODULES = {
 var CODEFILE = "codeFile";
 var CSSFILE = "cssFile";
 
+var IMPORT = "import";
+
 var platform: typeof platformModule;
 function ensurePlatform() {
     if (!platform) {
@@ -82,6 +84,17 @@ export function getComponentModule(elementName: string, namespace: string, attri
     }
 
     if (attributes) {
+        if (attributes[IMPORT]) {
+            var importPath = attributes[IMPORT].trim();
+
+            if (importPath.indexOf("~/") === 0) {
+                importPath = path.join(knownFolders.currentApp().path, importPath.replace("~/", ""));
+            }
+
+            exports = global.loadModule(importPath);
+            (<any>instance).exports = exports;
+        }
+
         if (attributes[CODEFILE]) {
             if (instance instanceof Page) {
                 var codeFilePath = attributes[CODEFILE].trim();
