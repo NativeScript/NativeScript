@@ -12,6 +12,7 @@ import types = require("utils/types");
 import viewModule = require("ui/core/view");
 import styleModule = require("ui/styling/style");
 import dependencyObservableModule = require("ui/core/dependency-observable");
+import { resolveFileNameFromUrl } from "ui/styling/style-scope";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     var stack = new stackModule.StackLayout();
@@ -1382,9 +1383,9 @@ export function test_star_attr_selector_incorrect_syntax() {
 export function test_alone_attr_selector() {
     let testButton = new buttonModule.Button();
     testButton["testAttr"] = "flow";
-    
+
     let testCss = "[testAttr*='flower'] { background-color: #FF0000; } button { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1395,9 +1396,9 @@ export function test_alone_attr_selector() {
 export function test_UsingSameSelectors_ShouldApplyLatest() {
     let testButton = new buttonModule.Button();
     testButton.className = 'green';
-    
+
     let testCss = ".green { background-color: #FF0000; } .green { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1408,9 +1409,9 @@ export function test_UsingSameSelectors_ShouldApplyLatest() {
 export function test_UsingSameSelectorsWithSpecific_ShouldApplyLatest() {
     let testButton = new buttonModule.Button();
     testButton.className = 'red green';
-    
+
     let testCss = ".red { background-color: #FF0000; } Button.green { background-color: #00FF00; }";
-    
+
     let testFunc = function (views: Array<viewModule.View>) {
         // style from correct type css should be applied
         helper.assertViewBackgroundColor(testButton, "#00FF00");
@@ -1435,6 +1436,55 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     });
 }
 
+export function test_resolveFileNameFromUrl_local_file_tilda() {
+    const localFileExistsMock = (fileName: string ) => true;
+    let url = "~/theme/core.css";
+    let appDirectory = "app";
+    let expected = `${appDirectory}/theme/core.css`;
+    let result = resolveFileNameFromUrl(url, appDirectory, localFileExistsMock);
+
+    TKUnit.assertEqual(result, expected, "Should resolve local file with leading tilda (~/)");
+}
+
+export function test_resolveFileNameFromUrl_local_file_no_tilda() {
+    const localFileExistsMock = (fileName: string ) => true;
+    let url = "theme/core.css";
+    let appDirectory = "app";
+    let expected = `${appDirectory}/theme/core.css`;
+    let result = resolveFileNameFromUrl(url, appDirectory, localFileExistsMock);
+
+    TKUnit.assertEqual(result, expected, "Should resolve local file without leading tilda (no ~/)");
+}
+
+export function test_resolveFileNameFromUrl_external_file_tilda() {
+    const externalFileExistsMock = (fileName: string) => (fileName.indexOf("tns_modules") !== -1);
+    let url = "~/theme/core.css";
+    let appDirectory = "app";
+    let expected = `${appDirectory}/tns_modules/theme/core.css`;
+    let result = resolveFileNameFromUrl(url, appDirectory, externalFileExistsMock);
+
+    TKUnit.assertEqual(result, expected, "Should resolve file from tns_modules with leading tilda (~/)");
+}
+
+export function test_resolveFileNameFromUrl_external_file_no_tilda() {
+    const externalFileExistsMock = (fileName: string) => (fileName.indexOf("tns_modules") !== -1);
+    let url = "theme/core.css";
+    let appDirectory = "app";
+    let expected = `${appDirectory}/tns_modules/theme/core.css`;
+    let result = resolveFileNameFromUrl(url, appDirectory, externalFileExistsMock);
+
+    TKUnit.assertEqual(result, expected, "Should resolve file from tns_modules without leading tilda (no ~/)");
+}
+
+export function test_resolveFileNameFromUrl_unexisting_file() {
+    const fileDoesNotExistMock = (fileName: string) => false;
+    let url = "~/theme/core.css";
+    let appDirectory = "app";
+    let result = resolveFileNameFromUrl(url, appDirectory, fileDoesNotExistMock);
+
+    TKUnit.assertNull(result, "Shouldn't resolve unexisting file");
+}
+
 // <snippet module="ui/styling" title="styling">
-// For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic. 
+// For information and example how to use style properties please refer to special [**Styling**](../../../styling.md) topic.
 // </snippet>
