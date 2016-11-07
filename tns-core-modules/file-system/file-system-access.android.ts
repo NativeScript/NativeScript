@@ -192,7 +192,7 @@ export class FileSystemAccess {
         var dir = utils.ad.getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();
     }
-    
+
     public getCurrentAppPath(): string {
         return this.getLogicalRootPath() + "/app";
     }
@@ -428,7 +428,7 @@ export class FileSystemAccess {
         var file1 = new java.io.File(left);
         var file2 = new java.io.File(file1, right);
 
-        return file2.getAbsolutePath();
+        return file2.getPath();
     }
 
     public joinPaths(paths: string[]): string {
@@ -446,6 +446,6 @@ export class FileSystemAccess {
             result = this.joinPath(result, paths[i]);
         }
 
-        return this.normalizePath(result);
+        return result;
     }
 }
