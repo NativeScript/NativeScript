@@ -179,3 +179,8 @@ export module AnimationCurve {
         return new animationModule.CubicBezierAnimationCurve(x1, y1 ,x2, y2);
     }
 }
+
+export module StatusBarStyle {
+    export var light = "light";
+    export var dark = "dark";
+}

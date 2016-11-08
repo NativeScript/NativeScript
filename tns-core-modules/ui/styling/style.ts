@@ -835,6 +835,21 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(zIndexProperty, value);
     }
 
+    // Page-specific properties
+    get statusBarStyle(): string {
+        return this._getValue(statusBarStyleProperty);
+    }
+    set statusBarStyle(value: string) {
+        this._setValue(statusBarStyleProperty, value);
+    }
+    
+    get androidStatusBarBackground(): Color {
+        return this._getValue(androidStatusBarBackgroundProperty);
+    }
+    set androidStatusBarBackground(value: Color) {
+        this._setValue(androidStatusBarBackgroundProperty, value);
+    }
+
     // TabView-specific properties
     get tabTextColor(): Color {
         return this._getValue(tabTextColorProperty);
@@ -1136,6 +1151,14 @@ export var selectedTabTextColorProperty = new styleProperty.Property("selectedTa
     converters.colorConverter);
 
 export var androidSelectedTabHighlightColorProperty = new styleProperty.Property("androidSelectedTabHighlightColor", "android-selected-tab-highlight-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);
+
+//Page-specific props
+export var statusBarStyleProperty = new styleProperty.Property("statusBarStyle", "status-bar-style",
+    new PropertyMetadata(undefined));
+
+export var androidStatusBarBackgroundProperty = new styleProperty.Property("androidStatusBarBackground", "android-status-bar-background",
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
 

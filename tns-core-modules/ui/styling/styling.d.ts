@@ -319,6 +319,16 @@
         androidSelectedTabHighlightColor: color.Color;
 
         /**
+         * Gets or sets the style of the status bar.
+         */
+        statusBarStyle: string;
+
+        /**
+         * Gets or sets background color of the status bar for Android 
+         */
+        androidStatusBarBackground: color.Color;
+
+        /**
          * Gets or sets the selected background color of a SegmentedBar.
          */
         selectedBackgroundColor: color.Color;

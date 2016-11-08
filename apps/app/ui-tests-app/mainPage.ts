@@ -38,6 +38,7 @@ export function pageLoaded(args: EventData) {
     examples.set("segStyle", "segmented-bar/all");
     examples.set("list-view", "list-view/list-view");
     examples.set("issues", "issues/main-page");
+    examples.set("page", "page/main-page");
 
     //examples.set("listview_binding", "pages/listview_binding");
     //examples.set("textfield", "text-field/text-field");
@@ -56,7 +57,7 @@ export function pageLoaded(args: EventData) {
 
     refresh();
 }
-
+  
 // should be removes
 export function refresh() {
     oldExamples.set("actStyle", "action-bar/all");
