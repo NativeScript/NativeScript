@@ -8,7 +8,7 @@ description: "Examples for using flexbox-layout"
 Using a FlexboxLayout requires the FlexboxLayout module.
 {%snippet flexbox-layout-require%}
 
-Using the flexbox layout in the NativeScript framework requires the FleboxLayout view with children.
+Using the flexbox layout in the NativeScript framework requires the FlexboxLayout view with children.
 The FlexboxLayout will automatically serve as if it were a *div* with `{ display: flex; }`.
 
 [Here is a good guide on using flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/).
@@ -24,20 +24,20 @@ The supported properties on the FlexboxLayout container are:
  - ~~**display:**~~ This works as if set to `flex` by default on the *FlexboxLayout*
  - **flex-direction:**
     - Set in JavaScript using the property - `fb.flexDirection = FlexDirection.ROW`
-    - Set in XML using the attribute - `<FleboxLayout flexDirection="row">`
+    - Set in XML using the attribute - `<FlexboxLayout flexDirection="row">`
  - **flex-wrap:** Use the property - `flexWrap`
     - Set in JavaScript using the property - `fb.flexWrap = FlexWrap`
-    - Set in XML using the attribute - `<FleboxLayout flexWrap="wrap">`
+    - Set in XML using the attribute - `<FlexboxLayout flexWrap="wrap">`
  - ~~**flex-flow:**~~ the shorthand property has no alternative, set the flex properties one by one
  - **justify-content:** Use the property - `justifyContent`
     - Set in JavaScript using the property - `fb.justifyContent = JustifyContent.SPACE_BETWEEN`
-    - Set in XML using the attribute - `<FleboxLayout justifyContent = "space-between">`
+    - Set in XML using the attribute - `<FlexboxLayout justifyContent = "space-between">`
  - **align-items:** Use the property - `alignItems`
     - Set in JavaScript using the property - `fb.alignItems = AlignItems.STRETCH`
-    - Set in XML using the attribute - `<FleboxLayout alignItems = "stretch">`
+    - Set in XML using the attribute - `<FlexboxLayout alignItems = "stretch">`
  - **align-content:** Use the property - `alignContent`
     - Set in JavaScript using the property - `fb.alignContent = AlignContent.SPACE_BETWEEN`
-    - Set in XML using the attribute - `<FleboxLayout alignContent = "space-between">`
+    - Set in XML using the attribute - `<FlexboxLayout alignContent = "space-between">`
 
 > **NOTE:** There is a limitation for `align-items` in **iOS**, the `baseline` option can **not** be used.
 
