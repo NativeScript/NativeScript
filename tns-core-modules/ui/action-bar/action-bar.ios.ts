@@ -51,7 +51,7 @@ export class ActionBar extends common.ActionBar {
 
         var viewController = (<UIViewController>this.page.ios);
         var navigationItem: UINavigationItem = viewController.navigationItem;
-        var navController = frameModule.topmost().ios.controller; 
+        var navController = frameModule.topmost().ios.controller;
         var navigationBar = navController ? <UINavigationBar>navController.navigationBar : null;
         var previousController: UIViewController;
 
@@ -86,7 +86,7 @@ export class ActionBar extends common.ActionBar {
             img = imageSource.fromFileOrResource(this.navigationButton.icon);
         }
 
-        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to 
+        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
         // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
         // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
         if (img && img.ios) {
@@ -99,7 +99,7 @@ export class ActionBar extends common.ActionBar {
             navigationBar.backIndicatorTransitionMaskImage = null;
         }
 
-        // Set back button visibility 
+        // Set back button visibility
         if (this.navigationButton) {
             navigationItem.setHidesBackButtonAnimated(!common.isVisible(this.navigationButton), true);
         }
@@ -229,7 +229,7 @@ export class ActionBar extends common.ActionBar {
 
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView) {
-                view.View.measureChild(this, actionItem.actionView, 
+                view.View.measureChild(this, actionItem.actionView,
                     utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
                     utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
             }
@@ -245,7 +245,10 @@ export class ActionBar extends common.ActionBar {
             if (actionItem.actionView && actionItem.actionView.ios) {
                 let measuredWidth = actionItem.actionView.getMeasuredWidth();
                 let measuredHeight = actionItem.actionView.getMeasuredHeight();
-                view.View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
+                if (measuredWidth !== actionItem.actionView.ios.frame.size.width ||
+                    measuredHeight !== actionItem.actionView.ios.frame.size.height) {
+                    view.View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
+                }
             }
         });
 

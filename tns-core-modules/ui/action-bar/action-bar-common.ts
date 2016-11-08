@@ -6,6 +6,7 @@ import enums = require("ui/enums");
 import proxy = require("ui/core/proxy");
 import view = require("ui/core/view");
 import * as styleModule from "../styling/style";
+import styleScope = require("ui/styling/style-scope");
 
 var ACTION_ITEMS = "actionItems";
 
@@ -126,7 +127,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
     public static onTitleChanged
 
     public update() {
-        // 
+        //
     }
 
     public _onTitlePropertyChanged() {
@@ -293,7 +294,7 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
             this._actionView = value;
 
             this._addActionViewToActionBar();
-            
+
             if (this._actionBar) {
                 this._actionBar.update();
             }
@@ -360,6 +361,8 @@ export class ActionItem extends bindable.Bindable implements dts.ActionItem {
             ensureStyle();
             this._actionView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, dependencyObservable.ValueSource.Inherited);
             this._actionView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, dependencyObservable.ValueSource.Inherited);
+            let scope: styleScope.StyleScope = this.page._getStyleScope();
+            scope.applySelectors(this._actionView);
             this._actionBar._addView(this._actionView);
         }
     }
