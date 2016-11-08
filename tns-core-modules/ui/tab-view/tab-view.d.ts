@@ -115,6 +115,12 @@ declare module "ui/tab-view" {
         iosIconRenderingMode: string;
 
         /**
+         * Gets or sets the number of tabs that should be retained to either side of the current tab in the view hierarchy in an idle state. 
+         * Tabs beyond this limit will be recreated from the TabView when needed.  
+         */
+        androidOffscreenTabLimit: number;
+
+        /**
          * String value used when hooking to the selectedIndexChanged event.
          */
         public static selectedIndexChangedEvent: string;
