@@ -27,7 +27,7 @@ function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
-    if (picker.android && picker.android.getDayOfMonth !== data.newValue) {
+    if (picker.android && picker.android.getDayOfMonth() !== data.newValue) {
         updateNativeDate(picker);
     }
 }
@@ -36,7 +36,7 @@ function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
 
 function updateNativeDate(picker: DatePicker) {
     var year = types.isNumber(picker.year) ? picker.year : picker.android.getYear();
-    var month = types.isNumber(picker.month) ? (picker.month - 1) : picker.android.getMonth();
+    var month = types.isNumber(picker.month) ? (picker.month - 1) : Math.max(0, picker.android.getMonth() - 1);
     var day = types.isNumber(picker.day) ? picker.day : picker.android.getDayOfMonth();
 
     picker.date = new Date(year, month, day);
@@ -68,7 +68,7 @@ function onDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var picker = <DatePicker>data.object;
 
     var newValue = <Date>data.newValue;
-    if (picker.android && (picker.android.getDayOfMonth() !== newValue.getDay() 
+    if (picker.android && (picker.android.getDayOfMonth() !== newValue.getDate()
                             || picker.android.getMonth() !== newValue.getMonth() 
                             || picker.android.getYear() !== newValue.getFullYear())) {
         picker.android.updateDate(newValue.getFullYear(), newValue.getMonth(), newValue.getDate());
