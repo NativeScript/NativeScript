@@ -17,7 +17,7 @@ language: android
 node_js:
   - 4.2.3
 jdk:
-  - oraclejdk8
+  - oracle-java8-installer
 android:
   components:
     - platform-tools
