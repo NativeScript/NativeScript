@@ -37,7 +37,7 @@ before_script:
   - android-wait-for-emulator
   - adb shell input keyevent 82 &
 script:
-  - jdk_switcher use oraclejdk8
+  - java -version
   - grunt default --verbose &&
     FULL_PACKAGE_VERSION=`node -e 'console.log(require("./bin/dist/tns-core-modules/package.json").version);'` &&
     (cd tns-platform-declarations && npm pack) &&
