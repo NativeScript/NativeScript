@@ -214,6 +214,9 @@ export class TabView extends common.TabView {
         }
         
         this._viewPager = new android.support.v4.view.ViewPager(this._context);
+        if (this._androidOffscreenTabLimit !== 1) {
+            this._viewPager.setOffscreenPageLimit(this._androidOffscreenTabLimit);
+        }
         this._viewPager.setId(this._androidViewId);
         var lp = new org.nativescript.widgets.CommonLayoutParams();
         lp.row = 1;
@@ -332,6 +335,20 @@ export class TabView extends common.TabView {
     public _getAndroidTabView(): org.nativescript.widgets.TabLayout {
         return this._tabLayout;
     }
+
+    private _androidOffscreenTabLimit: number = 1;
+    get androidOffscreenTabLimit(): number {
+        return this._androidOffscreenTabLimit;
+    }
+    set androidOffscreenTabLimit(value: number) {
+        if (value !== this._androidOffscreenTabLimit) {
+            this._androidOffscreenTabLimit = value;
+            if (this._viewPager) {
+                this._viewPager.setOffscreenPageLimit(value);
+            }
+        }
+    }
+
 }
 
 export class TabViewStyler implements style.Styler {

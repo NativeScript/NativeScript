@@ -244,6 +244,13 @@ export class TabView extends View implements definition.TabView, AddArrayFromBui
         //
     }
 
+    get androidOffscreenTabLimit(): number {
+        return undefined;
+    }
+    set androidOffscreenTabLimit(value: number) {
+        //
+    }
+
     public _onSelectedIndexPropertyChangedSetNativeValue(data: PropertyChangeData) {
         var index = this.selectedIndex;
         if (types.isUndefined(index)) {
