@@ -24,6 +24,22 @@ import UNSPECIFIED = utils.layout.UNSPECIFIED;
 import MEASURED_SIZE_MASK = utils.layout.MEASURED_SIZE_MASK;
 import MEASURED_STATE_TOO_SMALL = utils.layout.MEASURED_STATE_TOO_SMALL;
 
+function childHandler(view) {
+    if (!(view instanceof View)) {
+        throw new Error("Element is not View or its descendant.");
+    }
+    let flexbox = view.parent;
+    if (flexbox instanceof FlexboxLayoutBase) {
+        flexbox.requestLayout();
+    }
+}
+
+export const _onNativeOrderPropertyChanged = childHandler;
+export const _onNativeFlexGrowPropertyChanged = childHandler;
+export const _onNativeFlexShrinkPropertyChanged = childHandler;
+export const _onNativeAlignSelfPropertyChanged = childHandler;
+export const _onNativeFlexWrapBeforePropertyChanged = childHandler;
+
 const MATCH_PARENT = -1;
 const WRAP_CONTENT = -2;
 
@@ -87,23 +103,19 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _flexLines: FlexLine[] = [];
     private _childrenFrozen: boolean[];
 
-    protected invalidate() {
-        this.requestLayout();
-    }
-
-    protected setNativeFlexDirection(flexDirection: FlexDirection) {
+    _setNativeFlexDirection(flexDirection: FlexDirection) {
         // lint happy no-op
     }
-    protected setNativeFlexWrap(flexWrap: FlexWrap) {
+    _setNativeFlexWrap(flexWrap: FlexWrap) {
         // lint happy no-op
     }
-    protected setNativeJustifyContent(justifyContent: JustifyContent) {
+    _setNativeJustifyContent(justifyContent: JustifyContent) {
         // lint happy no-op
     }
-    protected setNativeAlignItems(alignItems: AlignItems) {
+    _setNativeAlignItems(alignItems: AlignItems) {
         // lint happy no-op
     }
-    protected setNativeAlignContent(alignContent: AlignContent) {
+    _setNativeAlignContent(alignContent: AlignContent) {
         // lint happy no-op
     }
 
