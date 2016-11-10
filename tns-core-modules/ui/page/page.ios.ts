@@ -139,6 +139,7 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     public viewWillAppear(animated: boolean): void {
+        super.viewWillAppear(animated);
         let page = this._owner.get();
         if (trace.enabled) {
             if (trace.enabled) {
@@ -157,6 +158,8 @@ class UIViewControllerImpl extends UIViewController {
             let isBack = isBackNavigationTo(page, newEntry);
             page.onNavigatingTo(newEntry.entry.context, isBack, newEntry.entry.bindingContext);
         }
+
+        page._enableLoadedEvents = true;
 
         if (frame) {
             if (!page.parent) {
@@ -178,7 +181,6 @@ class UIViewControllerImpl extends UIViewController {
         //https://github.com/NativeScript/NativeScript/issues/1201
         page._viewWillDisappear = false;
 
-        page._enableLoadedEvents = true;
         // Pages in backstack are unloaded so raise loaded here.
         if (!page.isLoaded) {
             page.onLoaded();
@@ -188,6 +190,7 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     public viewDidAppear(animated: boolean): void {
+        super.viewDidAppear(animated);
         let page = this._owner.get();
         if (trace.enabled) {
             trace.write(page + " viewDidAppear", trace.categories.Navigation);
@@ -233,7 +236,7 @@ class UIViewControllerImpl extends UIViewController {
         if (!this.presentedViewController) {
             // clear presented viewController here only if no presented controller.
             // this is needed because in iOS9 the order of events could be - willAppear, willDisappear, didAppear.
-            // If we clean it when we have viewController then once presented VC is dismissed then 
+            // If we clean it when we have viewController then once presented VC is dismissed then
             page._presentedViewController = null;
         }
     };
@@ -247,7 +250,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        // Cache presentedViewController if any. We don't want to raise 
+        // Cache presentedViewController if any. We don't want to raise
         // navigation events in case of presenting view controller.
         if (!page._presentedViewController) {
             page._presentedViewController = this.presentedViewController;
@@ -444,7 +447,7 @@ export class Page extends pageCommon.Page {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
         View.adjustChildLayoutParams(this.layoutView, widthMeasureSpec, heightMeasureSpec);
-        
+
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -468,7 +471,7 @@ export class Page extends pageCommon.Page {
         }
 
         if (this.frame && this.frame._getNavBarVisible(this)) {
-            // Measure ActionBar with the full height. 
+            // Measure ActionBar with the full height.
             let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
             actionBarWidth = actionBarSize.measuredWidth;
             actionBarHeight = actionBarSize.measuredHeight;
