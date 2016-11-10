@@ -513,13 +513,51 @@ public class BorderDrawable extends ColorDrawable {
         String value = clipPath.substring(clipPath.indexOf("(") + 1, clipPath.indexOf(")"));
 
         String[] arr;
+        float top;
+        float right;
+        float bottom;
+        float left;
         switch (functionName){
             case "rect":
                 arr = spaceAndComma.split(value);
-                float top = cssValueToDevicePixels(arr[0], bounds.top, density);
-                float left = cssValueToDevicePixels(arr[1], bounds.left, density);
-                float bottom = cssValueToDevicePixels(arr[2], bounds.bottom, density);
-                float right = cssValueToDevicePixels(arr[3], bounds.right, density);
+
+                top = cssValueToDevicePixels(arr[0], bounds.bottom, density);
+                right = cssValueToDevicePixels(arr[1], bounds.right, density);
+                bottom = cssValueToDevicePixels(arr[2], bounds.bottom, density);
+                left = cssValueToDevicePixels(arr[3], bounds.right, density);
+                
+                canvas.drawRect(left, top, right, bottom, paint);
+                break;
+            case "inset":
+                arr = spaceAndComma.split(value);
+                String topString = "0";
+                String rightString = "0";
+                String bottomString = "0";
+                String leftString = "0";
+                if (arr.length == 1) {
+                    topString = rightString = bottomString = leftString = arr[0];
+                }
+                else if (arr.length == 2) {
+                    topString = bottomString = arr[0];
+                    rightString = leftString = arr[1];
+                }
+                else if (arr.length == 3) {
+                    topString = arr[0];
+                    rightString = leftString = arr[1];
+                    bottomString = arr[2];
+                }
+                else if (arr.length == 4) {
+                    topString = arr[0];
+                    rightString = arr[1];
+                    bottomString = arr[2];
+                    leftString = arr[3];
+                }
+
+                top = cssValueToDevicePixels(topString, bounds.bottom, density);
+                right = cssValueToDevicePixels("100%", bounds.right, density) - cssValueToDevicePixels(rightString, bounds.right, density);
+                bottom = cssValueToDevicePixels("100%", bounds.bottom, density) - cssValueToDevicePixels(bottomString, bounds.bottom, density);
+                left = cssValueToDevicePixels(leftString, bounds.right, density);
+
                 canvas.drawRect(left, top, right, bottom, paint);
                 break;
             case "circle":
