@@ -3,6 +3,7 @@ import * as cameraCommonModule from "./camera-common";
 import * as imageSourceModule from "image-source";
 import * as frameModule from "ui/frame";
 
+@Deprecated
 class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePickerControllerDelegate {
     public static ObjCProtocols = [UIImagePickerControllerDelegate];
 
@@ -79,6 +80,9 @@ class UIImagePickerControllerDelegateImpl extends NSObject implements UIImagePic
 
 var listener;
 
+/**
+ * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
+ */
 export var takePicture = function (options): Promise<any> {
     return new Promise((resolve, reject) => {
         listener = null;
@@ -125,6 +129,9 @@ export var takePicture = function (options): Promise<any> {
     });
 }
 
+/**
+ * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
+ */
 export var isAvailable = function () {
     return UIImagePickerController.isSourceTypeAvailable(UIImagePickerControllerSourceType.Camera);
 }

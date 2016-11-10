@@ -6,16 +6,18 @@ declare module "camera" {
     import imageSource = require("image-source");
 
     /**
-     * Take a photo using the camera.
-     * @param options - Optional parameter for setting different camera options.
+     * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
      */
     export function takePicture(options?: CameraOptions): Promise<imageSource.ImageSource>;
     
     /**
-     * Is the camera available to use
+     * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
      */
     export function isAvailable(): Boolean;
 
+    /**
+     * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
+     */
     export interface CameraOptions {
         /**
          * Defines the desired width (in device independent pixels) of the taken image. It should be used with height property.

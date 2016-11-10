@@ -1,1 +1,1 @@
-Allows you to use the geolocation of the device.
+Deprecated. Please use same functionality from `nativescript-geolocation` npm module.
