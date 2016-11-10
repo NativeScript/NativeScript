@@ -12,6 +12,7 @@ declare module "location" {
 
    /**
     * A data class that encapsulates common properties for a geolocation.
+    * [Deprecated. Please use same functionality from `nativescript-geolocation` npm module]
     */
     export class Location {
        /**
@@ -67,6 +68,7 @@ declare module "location" {
 
    /**
     * Provides options for location monitoring.
+    * [Deprecated. Please use same functionality from `nativescript-geolocation` npm module]
     */
     export interface Options {
        /**
@@ -97,6 +99,7 @@ declare module "location" {
 
    /**
     * Provides methods for querying geolocation (in case available) on the target platform.
+    * [Deprecated. Please use same functionality from `nativescript-geolocation` npm module]
     */
     export class LocationManager {
        /**
@@ -157,6 +160,7 @@ declare module "location" {
 
 	/**
 	 * Provides Android specific data related to location.
+     * [Deprecated. Please use same functionality from `nativescript-geolocation` npm module]
 	 */
 	export interface AndroidLocationManager {
 		/**
@@ -175,12 +179,14 @@ declare module "location" {
 	 * If you specify timeout = 0 it just requests the last known location.
 	 * However if you specify maximumAge and the location received is older it won't be received.
 	 * @param options - An optional object specifying location update settings.
+     * [Deprecated. Please use same functionality from `nativescript-geolocation` npm module]
 	 */
     export function getLocation(options?: Options): Promise<Location>;
 
 	/* tslint:disable */
 	/**
 	 * Provides iOS specific data related to location.
+     * [Deprecated. Please use same functionality from `nativescript-geolocation` npm module]
 	 */
 	export interface iOSLocationManager {
 		/**

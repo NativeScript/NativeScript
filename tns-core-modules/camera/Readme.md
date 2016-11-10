@@ -1,1 +1,1 @@
-Allows you to take pictures with the device's camera.
+Deprecated. Please use same functionality from `nativescript-camera` npm module.
