@@ -300,7 +300,7 @@ function isNonNegativeFiniteNumber(value: number): boolean {
     return isFinite(value) && !isNaN(value) && value >= 0;
 }
 
-var supportedPaths = ["rect", "circle", "ellipse", "polygon"];
+var supportedPaths = ["rect", "circle", "ellipse", "polygon", "inset"];
 function isClipPathValid(value: string): boolean {
     if (!value) {
         return true;

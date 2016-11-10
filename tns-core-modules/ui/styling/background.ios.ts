@@ -255,13 +255,46 @@ function drawClipPath(nativeView: UIView, background: common.Background) {
         var arr = value.split(/[\s]+/);
 
         var top = common.cssValueToDevicePixels(arr[0], bounds.top);
-        var left = common.cssValueToDevicePixels(arr[1], bounds.left);
+        var right = common.cssValueToDevicePixels(arr[1], bounds.right);
         var bottom = common.cssValueToDevicePixels(arr[2], bounds.bottom);
-        var right = common.cssValueToDevicePixels(arr[3], bounds.right);
+        var left = common.cssValueToDevicePixels(arr[3], bounds.left);
 
-        path = UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right, bottom)).CGPath;
+        path = UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
+    } 
+    else if (functionName === "inset") {
+        var arr = value.split(/[\s]+/);
+        
+        let topString: string;
+        let rightString: string;
+        let bottomString: string;
+        let leftString: string;
+        if (arr.length === 1) {
+            topString = rightString = bottomString = leftString = arr[0];
+        }
+        else if (arr.length === 2) {
+            topString = bottomString = arr[0];
+            rightString = leftString = arr[1];
+        }
+        else if (arr.length === 3) {
+            topString = arr[0];
+            rightString = leftString = arr[1];
+            bottomString = arr[2];
+        }
+        else if (arr.length === 4) {
+            topString = arr[0];
+            rightString = arr[1];
+            bottomString = arr[2];
+            leftString = arr[3];
+        }
 
-    } else if (functionName === "circle") {
+        var top = common.cssValueToDevicePixels(topString, bounds.bottom);
+        var right = common.cssValueToDevicePixels("100%", bounds.right) - common.cssValueToDevicePixels(rightString, bounds.right);
+        var bottom = common.cssValueToDevicePixels("100%", bounds.bottom) - common.cssValueToDevicePixels(bottomString, bounds.bottom);
+        var left = common.cssValueToDevicePixels(leftString, bounds.right);
+
+        path = UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
+    } 
+    else if (functionName === "circle") {
         var arr = value.split(/[\s]+/);
 
         var radius = common.cssValueToDevicePixels(arr[0], (bounds.right > bounds.bottom ? bounds.bottom : bounds.right) / 2);
@@ -270,7 +303,8 @@ function drawClipPath(nativeView: UIView, background: common.Background) {
 
         path = UIBezierPath.bezierPathWithArcCenterRadiusStartAngleEndAngleClockwise(CGPointMake(x, y), radius, 0, 360, true).CGPath;
 
-    } else if (functionName === "ellipse") {
+    } 
+    else if (functionName === "ellipse") {
         var arr = value.split(/[\s]+/);
 
         var rX = common.cssValueToDevicePixels(arr[0], bounds.right);
@@ -285,7 +319,8 @@ function drawClipPath(nativeView: UIView, background: common.Background) {
 
         path = UIBezierPath.bezierPathWithOvalInRect(CGRectMake(left, top, width, height)).CGPath;
 
-    } else if (functionName === "polygon") {
+    } 
+    else if (functionName === "polygon") {
 
         path = CGPathCreateMutable()
 
