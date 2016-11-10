@@ -22,6 +22,7 @@ export function pageLoaded(args: EventData) {
     examples.set("switch", "css/views");
     examples.set("zindex", "css/zindex");
     examples.set("clipPath", "css/clip-path");
+    examples.set("clipPathInset", "css/clip-path-inset");
     examples.set("padding", "css/padding");
     examples.set("label-background-image", "css/label-background-image");
     examples.set("transform-decoration-color", "css/transform-decoration-color");
