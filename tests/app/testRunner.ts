@@ -28,9 +28,6 @@ export function isRunningOnEmulator(): boolean {
 }
 
 export var allTests = {};
-if (!isRunningOnEmulator()) {
-    allTests["LOCATION"] = require("./location-tests");
-}
 
 allTests["PLATFORM"] = require("./platform-tests");
 allTests["FILE SYSTEM"] = require("./file-system-tests");

@@ -7,6 +7,9 @@ import * as platform from "platform";
 
 var REQUEST_IMAGE_CAPTURE = 3453;
 
+/**
+ * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
+ */
 export var takePicture = function (options?): Promise<any> {
     return new Promise((resolve, reject) => {
         try {
@@ -96,6 +99,9 @@ export var takePicture = function (options?): Promise<any> {
     });
 }
 
+/**
+ * [Deprecated. Please use same functionality from `nativescript-camera` npm module]
+ */
 export var isAvailable = function () {
     var utils: typeof utilsModule = require("utils/utils");
     
