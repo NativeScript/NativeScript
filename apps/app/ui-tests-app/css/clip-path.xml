@@ -1,5 +1,5 @@
 <Page>
-    <GridLayout columns="*,*" rows="*,*,*,*">
+    <GridLayout columns="*,*" rows="*,*,*,*" automationText="clipPath">
         <StackLayout col="0" colSpan="2" row="0" width="100" height="100" style.backgroundColor="magenta">
             <Button text="no clip-path" width="100" height="100" style="background-image: url('~/ui-tests-app/css/inset-test.png'); background-size: 100% 100%; background-repeat: no-repeat;"/>
         </StackLayout>
