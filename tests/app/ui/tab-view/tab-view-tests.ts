@@ -304,7 +304,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
             }
         }
 
-        TKUnit.assertTrue(viewsWithoutParent > viewsWithParent, "Most of the views should be recycled!");
+        TKUnit.assertTrue(viewsWithoutParent > viewsWithParent, `Most of the views should be recycled: viewsWithoutParent = ${viewsWithoutParent}; viewsWithParent = ${viewsWithParent};`);
     }
 
     public testAndroidOffscreenTabLimit_KeepAllAlive = function () {
