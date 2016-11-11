@@ -10,6 +10,8 @@ export function pageLoaded(args: EventData) {
     let examples = new Map<string, string>();
 
     examples.set("flexboxall", "flexbox/flexbox");
+    examples.set("flexboxcss", "flexbox/flexbox-css");
+    examples.set("flexboxdemo", "flexbox/flexbox-demo");
     examples.set("flexrepeat", "flexbox/flexbox-repeater");
 
     let viewModel = new FlexboxMainPageViewModel(wrapLayout, examples);
