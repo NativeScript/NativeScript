@@ -11,6 +11,7 @@ export function pageLoaded(args: EventData) {
 
     examples.set("flexboxall", "flexbox/flexbox");
     examples.set("flexrepeat", "flexbox/flexbox-repeater");
+    examples.set("flex-perf", "flexbox/flexbox-perf-comparison");
 
     let viewModel = new FlexboxMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
