@@ -17,25 +17,31 @@ The FlexboxLayout implementation is based on existing Apache-2 licensed flexbox 
 [github.com/google/flexbox-layout](https://github.com/google/flexbox-layout).
 
 ## Properties
-The flexbox properties supported at the moment can be set in JavaScript or the NativeScript markup.
-Support for flexbox properties in CSS is yet missing.
+The flexbox properties supported at the moment can be set in JavaScript, the NativeScript markup or in CSS.
 
 The supported properties on the FlexboxLayout container are:
  - ~~**display:**~~ This works as if set to `flex` by default on the *FlexboxLayout*
  - **flex-direction:**
+    - Set in CSS using `style="flex-direction: row;"`
     - Set in JavaScript using the property - `fb.flexDirection = FlexDirection.ROW`
     - Set in XML using the attribute - `<FlexboxLayout flexDirection="row">`
- - **flex-wrap:** Use the property - `flexWrap`
+ - **flex-wrap:**
+    - Set in CSS using `style="flex-wrap: wrap;"`
     - Set in JavaScript using the property - `fb.flexWrap = FlexWrap`
     - Set in XML using the attribute - `<FlexboxLayout flexWrap="wrap">`
- - ~~**flex-flow:**~~ the shorthand property has no alternative, set the flex properties one by one
- - **justify-content:** Use the property - `justifyContent`
+ - **flex-flow:**
+    - Set in CSS using `style="flex-flow: row wrap;"`
+    - The shorthand property has no alternative in JavaScript or in the markup
+ - **justify-content:**
+    - Set in CSS using `style="justify-content: space-between;"`
     - Set in JavaScript using the property - `fb.justifyContent = JustifyContent.SPACE_BETWEEN`
     - Set in XML using the attribute - `<FlexboxLayout justifyContent = "space-between">`
- - **align-items:** Use the property - `alignItems`
+ - **align-items:**
+    - Set in CSS using `style="align-items: stretch;"`
     - Set in JavaScript using the property - `fb.alignItems = AlignItems.STRETCH`
     - Set in XML using the attribute - `<FlexboxLayout alignItems = "stretch">`
- - **align-content:** Use the property - `alignContent`
+ - **align-content:**
+    - Set in CSS using `style="align-content: space-between;"`
     - Set in JavaScript using the property - `fb.alignContent = AlignContent.SPACE_BETWEEN`
     - Set in XML using the attribute - `<FlexboxLayout alignContent = "space-between">`
 
@@ -43,20 +49,26 @@ The supported properties on the FlexboxLayout container are:
 
 The supported flexbox properties on child elements are as follow:
  - **order:**
+    - Set in CSS using `style="order: 1;"`
     - Set in JavaScript using the method `flexbox.FlexboxLayout.setOrder(child, 1)`
     - Set in XML using the attribute `order="1"`
  - **flex-grow:**
+    - Set in CSS using `style="flex-grow: 1;"`
     - Set in JavaScript using the method `flexbox.FlexboxLayout.setFlexGrow(child, 1)`
     - Set in XML using the attribute `flexGrow="1"`
  - **flex-shrink:**
+    - Set in CSS using `style="flex-shrink: 1;"`
     - Set in JavaScript using the method `flexbox.FlexboxLayout.setFlexShrink(child, 1)`
     - Set in XML using the attribute `flexShrink="1"`
  - ~~**flex-basis:**~~ The NativeScript layout supports setting width or height as fixed values or percent, use them instead
- - ~~**flex:**~~ the shorthand proeprty has no alternative, set the `flex-grow`, `flex-shrink`, `width` or `height` instead
+ - **flex:**
+    - Set in CSS using `style="flex: 1 1;"`
+    - The shorthand property has no alternative in JavaScript or markup, set the `flex-grow`, `flex-shrink`, `width` or `height` instead
  - **align-self:**
     - Set in JavaScript using the method `flexbox.FlexboxLayout.setAlignSelf(child, AlignSelf.STRETCH)`
     - Set in XML using the attribute `<FlexboxLayout><Button alignSelf="stretch" /></FlexboxLayout>`
  - **flex-wrap-before:** Non-spec property controlling item wrapping, setting to *true* on flexbox child will force it to wrap on a new line
+    - Set in CSS using: `style="flex-wrap-before: true"`
     - Set in JavaScript using the method `flexbox.FlexboxLayout.setFlexWrapBefore(child, true)`
     - Set in XML using the attribute `<FlexboxLayout><Button flexWrapBefore="true" /></FlexboxLayout>`
 
