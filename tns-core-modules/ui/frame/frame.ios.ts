@@ -195,7 +195,11 @@ export class Frame extends frameCommon.Frame {
         page = page || this.currentPage;
         let newValue = this._getNavBarVisible(page);
 
+        var disableNavBarAnimation = this._ios._disableNavBarAnimation;
+        this._ios._disableNavBarAnimation = true;
         this._ios.showNavigationBar = newValue;
+        this._ios._disableNavBarAnimation = disableNavBarAnimation;
+
         if (this._ios.controller.navigationBar) {
             this._ios.controller.navigationBar.userInteractionEnabled = this.navigationQueueIsEmpty();
         }
@@ -314,6 +318,12 @@ export class Frame extends frameCommon.Frame {
         // If background does not span under statusbar - reduce available height and adjust top offset.
         let statusBarHeight = (page && !page.backgroundSpanUnderStatusBar && !this.parent) ? uiUtils.ios.getStatusBarHeight() : 0;
 
+        // Status bar height should be ignored when UINavigationBar is visible and not translucent
+        if (this._ios.showNavigationBar &&
+            !this._ios.controller.navigationBar.translucent &&
+            page && (<any>page)._ios && !(<any>page)._ios.shown) {
+            statusBarHeight = 0;
+        }
         View.layoutChild(this, page, 0, statusBarHeight, this._right, this._bottom);
     }
 

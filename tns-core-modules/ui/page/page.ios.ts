@@ -57,11 +57,13 @@ class UIViewControllerImpl extends UIViewController {
 
     public isBackstackSkipped: boolean;
     public isBackstackCleared: boolean;
+    public shown: boolean;
 
     public static initWithOwner(owner: WeakRef<Page>): UIViewControllerImpl {
         let controller = <UIViewControllerImpl>UIViewControllerImpl.new();
         controller._owner = owner;
         controller.automaticallyAdjustsScrollViewInsets = false;
+        controller.shown = false;
         return controller;
     }
 
@@ -140,6 +142,7 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillAppear(animated: boolean): void {
         super.viewWillAppear(animated);
+        this.shown = false;
         let page = this._owner.get();
         if (trace.enabled) {
             if (trace.enabled) {
@@ -191,6 +194,7 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidAppear(animated: boolean): void {
         super.viewDidAppear(animated);
+        this.shown = true;
         let page = this._owner.get();
         if (trace.enabled) {
             trace.write(page + " viewDidAppear", trace.categories.Navigation);
@@ -320,7 +324,7 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends pageCommon.Page {
-    private _ios: UIViewController = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+    private _ios: UIViewControllerImpl = UIViewControllerImpl.initWithOwner(new WeakRef(this));
     public _enableLoadedEvents: boolean;
     public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
@@ -497,6 +501,14 @@ export class Page extends pageCommon.Page {
         let navigationBarHeight: number = 0;
         if (this.frame && this.frame._getNavBarVisible(this)) {
             navigationBarHeight = this.actionBar.getMeasuredHeight();
+        }
+
+        // Navigation bar height should be ignored when it is visible and not translucent
+        if (this.frame && this.frame.ios &&
+            this.frame.ios.controller.navigationBar &&
+            !this.frame.ios.controller.navigationBar.translucent &&
+            !this._ios.shown) {
+            navigationBarHeight = 0;
         }
 
         let statusBarHeight = this.backgroundSpanUnderStatusBar ? uiUtils.ios.getStatusBarHeight() : 0;
