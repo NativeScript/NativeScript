@@ -13,6 +13,7 @@ export function pageLoaded(args: EventData) {
     examples.set("flexboxcss", "flexbox/flexbox-css");
     examples.set("flexboxdemo", "flexbox/flexbox-demo");
     examples.set("flexrepeat", "flexbox/flexbox-repeater");
+    examples.set("flex-perf", "flexbox/flexbox-perf-comparison");
 
     let viewModel = new FlexboxMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
