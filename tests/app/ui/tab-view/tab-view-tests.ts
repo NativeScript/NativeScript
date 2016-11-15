@@ -276,36 +276,35 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
     }
 
-    public testAndroidOffscreenTabLimit_Default = function () {
-        let tabView = this.testView;
-        if (!tabView.android){
-            return;
-        }
+//     public testAndroidOffscreenTabLimit_Default = function () {
+//         let tabView = this.testView;
+//         if (!tabView.android){
+//             return;
+//         }
         
-        // The default setting is 1.
-        // tabView.androidOffscreenTabLimit = 1;
-        tabView.items = this._createItems(20);
-        this.waitUntilTestElementIsLoaded();
-        for (let index = 0, length = tabView.items.length; index < length; index++){
-            tabViewTestsNative.selectNativeTab(tabView, index);
-            TKUnit.waitUntilReady(function () {
-                return tabView.selectedIndex === index;
-            }, helper.ASYNC);
-        }
+//         tabView.androidOffscreenTabLimit = 1;
+//         tabView.items = this._createItems(20);
+//         this.waitUntilTestElementIsLoaded();
+//         for (let index = 0, length = tabView.items.length; index < length; index++){
+//             tabViewTestsNative.selectNativeTab(tabView, index);
+//             TKUnit.waitUntilReady(function () {
+//                 return tabView.selectedIndex === index;
+//             }, helper.ASYNC);
+//         }
 
-        let viewsWithParent = 0;
-        let viewsWithoutParent = 0;
-        for (let i = 0, length = tabView.items.length; i < length; i++){
-            if (tabView.items[i].view.parent) {
-                viewsWithParent++;
-            }
-            else {
-                viewsWithoutParent++;
-            }
-        }
+//         let viewsWithParent = 0;
+//         let viewsWithoutParent = 0;
+//         for (let i = 0, length = tabView.items.length; i < length; i++){
+//             if (tabView.items[i].view.parent) {
+//                 viewsWithParent++;
+//             }
+//             else {
+//                 viewsWithoutParent++;
+//             }
+//         }
 
-        TKUnit.assertTrue(viewsWithoutParent > viewsWithParent, `Most of the views should be recycled: viewsWithoutParent = ${viewsWithoutParent}; viewsWithParent = ${viewsWithParent};`);
-    }
+//         TKUnit.assertTrue(viewsWithoutParent > viewsWithParent, `Most of the views should be recycled: viewsWithoutParent = ${viewsWithoutParent}; viewsWithParent = ${viewsWithParent};`);
+//     }
 
     public testAndroidOffscreenTabLimit_KeepAllAlive = function () {
         let tabView = this.testView;
