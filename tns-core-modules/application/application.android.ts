@@ -33,6 +33,10 @@ function initLifecycleCallbacks() {
         },
 
         onActivityDestroyed: function (activity: any) {
+            if (activity === androidApp.foregroundActivity) {
+                androidApp.foregroundActivity = undefined;
+            }
+            
             if (activity === androidApp.startActivity) {
                 androidApp.startActivity = undefined;
             }
@@ -47,10 +51,6 @@ function initLifecycleCallbacks() {
         },
 
         onActivityPaused: function (activity: any) {
-            if (activity === androidApp.foregroundActivity) {
-                androidApp.foregroundActivity = undefined;
-            }
-
             if (activity.isNativeScriptActivity) {
                 androidApp.paused = true;
 
