@@ -1,6 +1,6 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true" loaded="onLoaded">
     <GridLayout rows="200, *">
-        <FlexboxLayout style="flex-wrap: wrap;" automationText="container">
+        <FlexboxLayout style="flex-wrap: wrap;">
 
             <!--container-->
             <Button text="f" tag="flex-flow: row-reverse wrap-reverse;" tap="flexFlow" automationText="flexFlow" />
@@ -18,7 +18,7 @@
 
         </FlexboxLayout>
 
-        <FlexboxLayout id="container" row="1">
+        <FlexboxLayout row="1" id="container" automationText="container">
             <Label text="row"            tap="select" backgroundColor="yellow"      automationText="itemRow-0" id="itemRow-0" class="zero" margin="10" />
             <Label text="row-reverse"    tap="select" backgroundColor="lightgreen"  automationText="itemRowReverse-0" id="itemRowReverse-0" class="zero" />
             <Label text="column"         tap="select" backgroundColor="lightblue"   automationText="itemColumn-0" id="itemColumn-0" class="zero" />
