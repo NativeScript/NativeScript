@@ -4,8 +4,8 @@ import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);
 
-var WIFI = "WIFI";
-var MOBILE = "MOBILE";
+let wifi = "wifi";
+let mobile = "mobile";
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
@@ -13,7 +13,7 @@ function getConnectivityManager(): android.net.ConnectivityManager {
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {
-    var connectivityManager = getConnectivityManager();
+    let connectivityManager = getConnectivityManager();
     if (!connectivityManager) {
         return null;
     }
@@ -22,23 +22,26 @@ function getActiveNetworkInfo(): android.net.NetworkInfo {
 }
 
 export function getConnectionType(): number {
-    var activeNetworkInfo = getActiveNetworkInfo();
+    let activeNetworkInfo = getActiveNetworkInfo();
     if (!activeNetworkInfo || !activeNetworkInfo.isConnected()) {
         return common.connectionType.none;
     }
 
-    var connectionType = activeNetworkInfo.getTypeName();
-    switch (connectionType) {
-        case WIFI:
-            return common.connectionType.wifi;
-        case MOBILE:
-            return common.connectionType.mobile;
+    let connectionType = activeNetworkInfo.getTypeName().toLowerCase();
+    if (connectionType.indexOf(wifi) !== -1){
+        return common.connectionType.wifi;
     }
+    
+    if (connectionType.indexOf(mobile) !== -1){
+        return common.connectionType.mobile;
+    }
+        
+    return common.connectionType.none;
 }
 
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
-    var onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
-        var newConnectionType = getConnectionType();
+    let onReceiveCallback = function onReceiveCallback(context: android.content.Context, intent: android.content.Intent) {
+        let newConnectionType = getConnectionType();
         connectionTypeChangedCallback(newConnectionType);
     }
     appModule.android.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, onReceiveCallback);
