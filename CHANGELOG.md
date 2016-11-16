@@ -1,6 +1,80 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.4.0 (2016, November 22)
+
+### Fixed
+
+- [(#2942)](https://github.com/NativeScript/NativeScript/issues/2942) ListView with TextField in the Item template not showing Keyboard on Portrait mode
+
+- [(#2911)](https://github.com/NativeScript/NativeScript/issues/2911) CSS scale breaks background properties on iOS
+
+- [(#2884)](https://github.com/NativeScript/NativeScript/issues/2884) Dialogs stop working in android after another activity is shown
+
+- [(#2879)](https://github.com/NativeScript/NativeScript/issues/2879) Function get allTouches() is not working on iOS 10
+
+- [(#2873)](https://github.com/NativeScript/NativeScript/issues/2873) CSS padding requires background-color in latest tns-core-modules on Android
+
+- [(#2850)](https://github.com/NativeScript/NativeScript/issues/2850) [iOS only] Percentage margin of layouts not possible
+
+- [(#2834)](https://github.com/NativeScript/NativeScript/issues/2834) Animations: scale() syntax does not support only one argument
+
+- [(#2813)](https://github.com/NativeScript/NativeScript/issues/2813) The Camera module in Android doesn't handle pemissions for you
+
+- [(#2789)](https://github.com/NativeScript/NativeScript/issues/2789) CSS border-width causes text to overflow TextView
+
+- [(#2781)](https://github.com/NativeScript/NativeScript/issues/2781) CSS border-color does not recognize rgb and rgba values
+
+- [(#2751)](https://github.com/NativeScript/NativeScript/issues/2751) Camera module not working on IOS 10 (only in devices) / It hangs and exit the app
+
+- [(#2742)](https://github.com/NativeScript/NativeScript/issues/2742) A failure in the modules on debugging with NativeScript inspector
+
+- [(#2741)](https://github.com/NativeScript/NativeScript/issues/2741) Memory leak when using slide transition on Android (API Level 23)
+
+- [(#2735)](https://github.com/NativeScript/NativeScript/issues/2735) Navigation is slow on Android with tns-core-modules version 2.3.0
+
+- [(#2733)](https://github.com/NativeScript/NativeScript/issues/2733) [2.3.0] Image gets covered with color of Page color property
+
+- [(#2714)](https://github.com/NativeScript/NativeScript/issues/2714) NativeScript IOS Apps Broadcast as iPad in UserAgent String EVEN on iPhone Using http.getJSON()
+
+- [(#2712)](https://github.com/NativeScript/NativeScript/issues/2712) Memory leak in GridLayout on Page Navigation
+
+- [(#2661)](https://github.com/NativeScript/NativeScript/issues/2661) Styling ActionBar in css file carries over to other view
+
+- [(#2596)](https://github.com/NativeScript/NativeScript/issues/2596) Cannot set View id to just a number
+
+- [(#2571)](https://github.com/NativeScript/NativeScript/issues/2571) [Android] memory leak for Images
+
+- [(#2460)](https://github.com/NativeScript/NativeScript/issues/2460) Taking several picture leads to OutOfMemory Exeption
+
+### New
+
+- [(#3044)](https://github.com/NativeScript/NativeScript/issues/3044) FlexboxLayout CSS properties
+
+- [(#2986)](https://github.com/NativeScript/NativeScript/issues/2986) Enhancement: Page Imports
+
+- [(#2820)](https://github.com/NativeScript/NativeScript/issues/2820) ListView item template selector
+
+- [(#2796)](https://github.com/NativeScript/NativeScript/issues/2796) ActionItems lacks proper support for VoiceOver on iOS
+
+- [(#2739)](https://github.com/NativeScript/NativeScript/issues/2739) Feature Request: SegmentedBar CSS Support
+
+- [(#2738)](https://github.com/NativeScript/NativeScript/issues/2738) Feature Request: Improved TabView CSS Support
+
+- [(#2656)](https://github.com/NativeScript/NativeScript/issues/2656) TextField Line Color
+
+- [(#2621)](https://github.com/NativeScript/NativeScript/issues/2621) Feature request: Add accessibility labels to views.
+
+- [(#2608)](https://github.com/NativeScript/NativeScript/issues/2608) Move the camera module to a plugin
+
+- [(#1763)](https://github.com/NativeScript/NativeScript/issues/1763) Default design/theme for the cross-platform UI. A-la Bootstrap?
+
+- [(#1650)](https://github.com/NativeScript/NativeScript/issues/1650) Flexbox Layout support
+
+- [(#699)](https://github.com/NativeScript/NativeScript/issues/699) Suggestion : Add image rotate left/right
+
+- [(#50)](https://github.com/NativeScript/NativeScript/issues/50) Support for pseudo/state selectors in CSS
+
 ##2.3.0 (2016, September 16)
 
 ### Fixed
