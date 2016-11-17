@@ -1,6 +1,8 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true" loaded="onLoaded">
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" android:actionBarHidden="true" loaded="resetStyles">
     <GridLayout rows="200, *">
         <FlexboxLayout style="flex-wrap: wrap;" automationText="container">
+
+            <Button text="r" tap="resetStyles" automationText="reset" />
 
             <!--container-->
             <Button text="f" tag="flex-flow: row-reverse wrap-reverse;" tap="flexFlow" automationText="flexFlow" />
