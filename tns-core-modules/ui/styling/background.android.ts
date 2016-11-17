@@ -69,7 +69,12 @@ export module ad {
                 
                 backgroundDrawable = new org.nativescript.widgets.BorderDrawable(density);
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
-                nativeView.setBackground(backgroundDrawable);
+
+                if (getSDK() >= 16) {
+                    nativeView.setBackground(backgroundDrawable);
+                } else {
+                    nativeView.setBackgroundDrawable(backgroundDrawable);
+                }
             }
             else {
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
@@ -86,12 +91,21 @@ export module ad {
             // reset the value with the default native value
             if (v instanceof button.Button) {
                 let nativeButton = new android.widget.Button(nativeView.getContext());
-                nativeView.setBackground(nativeButton.getBackground());
+
+                if (getSDK() >= 16) {
+                    nativeView.setBackground(nativeButton.getBackground());
+                } else {
+                    nativeView.setBackgroundDrawable(nativeButton.getBackground());
+                }
             }
             else {
                 let viewClass = types.getClass(v);
                 if (_defaultBackgrounds.has(viewClass)) {
-                    nativeView.setBackground(_defaultBackgrounds.get(viewClass));
+                    if (getSDK() >= 16) {
+                        nativeView.setBackground(_defaultBackgrounds.get(viewClass));
+                    } else {
+                        nativeView.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
+                    }
                 }
             }
 
