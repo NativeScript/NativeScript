@@ -290,7 +290,11 @@ export class SegmentedBarStyler implements style.Styler {
             stateDrawable.addState(arr, colorDrawable);
             stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
 
-            vg.setBackground(stateDrawable);
+            if (android.os.Build.VERSION.SDK_INT >= 16) {
+                vg.setBackground(stateDrawable);
+            } else {
+                vg.setBackgroundDrawable(stateDrawable);
+            }
         }
     }
 
@@ -299,7 +303,12 @@ export class SegmentedBarStyler implements style.Styler {
         ensureSegmentedBarColorDrawableClass();
         for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-            vg.setBackground(nativeValue[tabIndex]);
+
+            if (android.os.Build.VERSION.SDK_INT >= 16) {
+                vg.setBackground(nativeValue[tabIndex]);
+            } else {
+                vg.setBackgroundDrawable(nativeValue[tabIndex]);
+            }
         }
     }
 
