@@ -8,8 +8,6 @@ import { textProperty } from "ui/text-base";
 export * from "./editable-text-base-common";
 
 import { UpdateTextTrigger, KeyboardType, ReturnKeyType, AutocapitalizationType } from "ui/enums";
-import { toUIString } from "utils/types";
-import * as utils from "utils/utils";
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
     public nativeView: UITextField | UITextView;

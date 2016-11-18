@@ -1,15 +1,13 @@
 declare module "ui/core/view" {
-    import {Style} from "ui/styling/style";
-    import {Observable} from "data/observable";
-    // import proxy = require("ui/core/proxy");
-    import gestures = require("ui/gestures");
-    import color = require("color");
-    import {EventData} from "data/observable";
-    import animation = require("ui/animation");
-    import keyframeAnimationModule = require("ui/animation/keyframe-animation");
-    import {Property} from "ui/core/properties";
-    import {BindingOptions} from "ui/core/bindable";
-    import {ViewBase} from "ui/core/view-base";
+    import { Style } from "ui/styling/style";
+    import { Observable, EventData } from "data/observable";
+    import { GestureTypes, GesturesObserver, GestureEventData } from "ui/gestures";
+    import { Color } from "color";
+    import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
+    import { KeyframeAnimation } from "ui/animation/keyframe-animation";
+    import { Property } from "ui/core/properties";
+    import { BindingOptions } from "ui/core/bindable";
+    import { ViewBase } from "ui/core/view-base";
 
     /**
      * Gets a child view by id.
@@ -25,14 +23,6 @@ declare module "ui/core/view" {
      * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
      */
     export function eachDescendant(view: View, callback: (child: View) => boolean);
-
-    /**
-     * Gets an ancestor from a given type.
-     * @param view - Starting view (child view).
-     * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
-     * Returns an instance of a view (if found), otherwise undefined.
-     */
-    export function getAncestor(view: View, criterion: string | Function): View;
 
     export function isEventOrGesture(name: string, view: View): boolean;
 
@@ -70,11 +60,36 @@ declare module "ui/core/view" {
         height: number;
     }
 
+    interface Thickness {
+        top: Length,
+        right: Length,
+        bottom: Length,
+        left: Length
+    }
+
+    let classNameProperty: Property<View, string>;
+    let idProperty: Property<View, string>;
+    let automationTextProperty: Property<View, string>;
+    let originXProperty: Property<View, number>;
+    let originYProperty: Property<View, number>;
+    let isEnabledProperty: Property<View, boolean>;
+    let isUserInteractionEnabledProperty: Property<View, boolean>
+
+    interface Length {
+        readonly unit: "%" | "dip" | "px";
+        readonly value: number;
+        effectiveValue: number;
+    }
+
+    export namespace Length {
+        function parse(text: string): Length;
+    }
+
     /**
      * This class is the base class for all UI components. 
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
-    export class View extends ViewBase implements ApplyXmlAttributes {
+    export abstract class View extends ViewBase implements ApplyXmlAttributes {
 
         /**
          * Get the nativeView created for this object.
@@ -99,27 +114,27 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the border color of the view.
          */
-        borderColor: string | color.Color;
-        
+        borderColor: string | Color;
+
         /**
          * Gets or sets the top border color of the view.
          */
-        borderTopColor: color.Color;
-        
+        borderTopColor: Color;
+
         /**
          * Gets or sets the right border color of the view.
          */
-        borderRightColor: color.Color;
-        
+        borderRightColor: Color;
+
         /**
          * Gets or sets the bottom border color of the view.
          */
-        borderBottomColor: color.Color;
-        
+        borderBottomColor: Color;
+
         /**
          * Gets or sets the left border color of the view.
          */
-        borderLeftColor: color.Color;
+        borderLeftColor: Color;
 
         /**
          * Gets or sets the border width of the view.
@@ -221,12 +236,12 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the color of the view.
          */
-        color: color.Color;
+        color: Color;
 
         /**
          * Gets or sets the background color of the view.
          */
-        backgroundColor: color.Color;
+        backgroundColor: Color;
 
         /**
          * Gets or sets the background image of the view.
@@ -246,37 +261,37 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the desired width of the view.
          */
-        width: number;
+        width: Length;
 
         /**
          * Gets or sets the desired height of the view.
          */
-        height: number;
+        height: Length;
 
         /**
          * Gets or sets margin style property.
          */
-        margin: string;
+        margin: string | number | Thickness;
 
         /**
          * Specifies extra space on the left side of this view.
          */
-        marginLeft: number;
+        marginLeft: Length;
 
         /**
          * Specifies extra space on the top side of this view.
          */
-        marginTop: number;
+        marginTop: Length;
 
         /**
          * Specifies extra space on the right side of this view.
          */
-        marginRight: number;
+        marginRight: Length;
 
         /**
          * Specifies extra space on the bottom side of this view.
          */
-        marginBottom: number;
+        marginBottom: Length;
 
         /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
@@ -360,10 +375,10 @@ declare module "ui/core/view" {
          */
         className: string;
 
-        /**
-         * Gets the View instance that parents this view. This property is read-only.
-         */
-        parent: View;
+        // /**
+        //  * Gets the View instance that parents this view. This property is read-only.
+        //  */
+        // parent: View;
 
         /**
          * Gets is layout is valid. This is a read-only property.
@@ -515,7 +530,7 @@ declare module "ui/core/view" {
          */
         public setInlineStyle(style: string): void;
 
-        public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver>;
+        public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
         /**
          * [Deprecated. Please use the on() instead.] Adds a gesture observer.
@@ -523,7 +538,7 @@ declare module "ui/core/view" {
          * @param callback - A function that will be executed when gesture is received.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution. 
          */
-        observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any);
+        observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any);
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -531,7 +546,7 @@ declare module "ui/core/view" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string | gestures.GestureTypes, callback: (data: EventData) => void, thisArg?: any);
+        on(eventNames: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any);
 
         /**
          * Removes listener(s) for the specified event name.
@@ -539,7 +554,7 @@ declare module "ui/core/view" {
          * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
          * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
          */
-        off(eventNames: string | gestures.GestureTypes, callback?: (data: EventData) => void, thisArg?: any);
+        off(eventNames: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a loaded event occurs.
@@ -554,12 +569,12 @@ declare module "ui/core/view" {
         /**
          * Animates one or more properties of the view based on the supplied options. 
          */
-        public animate(options: animation.AnimationDefinition): animation.AnimationPromise;
+        public animate(options: AnimationDefinition): AnimationPromise;
 
         /**
          * Creates an Animation object based on the supplied options. 
          */
-        public createAnimation(options: animation.AnimationDefinition): animation.Animation;
+        public createAnimation(options: AnimationDefinition): Animation;
 
         /**
          * Returns the location of this view in the window coordinate system.
@@ -634,8 +649,8 @@ declare module "ui/core/view" {
         _cssState: any /* "ui/styling/style-scope" */;
         _setCssState(next: any /* "ui/styling/style-scope" */);
 
-        _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
-        _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
+        _registerAnimation(animation: KeyframeAnimation);
+        _unregisterAnimation(animation: KeyframeAnimation);
         _unregisterAllAnimations();
 
         _isAddedToNativeVisualTree: boolean;

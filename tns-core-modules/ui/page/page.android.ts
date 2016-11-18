@@ -8,6 +8,7 @@ import * as actionBar from "ui/action-bar";
 import * as gridLayout from "ui/layouts/grid-layout";
 import * as traceModule from "trace";
 import * as colorModule from "color";
+import { DIALOG_FRAGMENT_TAG } from "./constants";
 
 global.moduleMerge(pageCommon, exports);
 
@@ -25,7 +26,6 @@ function ensureColor() {
     }
 }
 
-export var DIALOG_FRAGMENT_TAG = "dialog";
 const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
 const STATUS_BAR_LIGHT_BCKG = "#F5F5F5";
 const STATUS_BAR_DARK_BCKG = "#66000000";

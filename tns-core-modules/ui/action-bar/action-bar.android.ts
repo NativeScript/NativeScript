@@ -1,12 +1,12 @@
-import {AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings} from "ui/action-bar";
-import {ActionItemBase, ActionBarBase, isVisible} from "./action-bar-common";
-import {isDefined, isNullOrUndefined, isString} from "utils/types";
-import {View} from "ui/core/view";
-import {RESOURCE_PREFIX} from "utils/utils";
-import {fromFileOrResource} from "image-source";
-import {AndroidActionItemPosition, AndroidActionBarIconVisibility} from "ui/enums";
-import {colorProperty} from "ui/styling/style";
-import {Color} from "color";
+import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from "ui/action-bar";
+import { ActionItemBase, ActionBarBase, isVisible } from "./action-bar-common";
+import { isDefined, isNullOrUndefined, isString } from "utils/types";
+import { View } from "ui/core/view";
+import { RESOURCE_PREFIX } from "utils/utils";
+import { fromFileOrResource } from "image-source";
+import { AndroidActionItemPosition, AndroidActionBarIconVisibility } from "ui/enums";
+import { colorProperty } from "ui/styling/style";
+import { Color } from "color";
 import * as application from "application";
 import * as trace from "trace";
 
@@ -104,7 +104,7 @@ export class ActionBar extends ActionBarBase {
         let ownerRef = new WeakRef(this);
         this.nativeView.setOnMenuItemClickListener(new android.support.v7.widget.Toolbar.OnMenuItemClickListener({
             onMenuItemClick: function (item: android.view.IMenuItem): boolean {
-				let ownerValue = ownerRef.get();
+                let ownerValue = ownerRef.get();
                 if (!ownerValue) {
                     return false;
                 }
@@ -326,21 +326,20 @@ export class ActionBar extends ActionBarBase {
     }
 
 
-    get [colorProperty.native](): Color {
+    get [colorProperty.native](): number {
         if (!defaultTitleTextColor) {
             let textView = new android.widget.TextView(this._context);
-            let color = textView.getTextColors().getDefaultColor();
-            defaultTitleTextColor = new Color(color);
+            defaultTitleTextColor = textView.getTextColors().getDefaultColor();
         }
 
         return defaultTitleTextColor;
     }
-    set [colorProperty.native](value: Color) {
-        this.nativeView.setTitleTextColor(value.android);
+    set [colorProperty.native](value: number) {
+        this.nativeView.setTitleTextColor(value);
     }
 }
 
-let defaultTitleTextColor: Color;
+let defaultTitleTextColor: number;
 
 function getDrawableOrResourceId(icon: string, resources: android.content.res.Resources): any {
     if (!isString(icon)) {

@@ -1,14 +1,14 @@
-import {IOSActionItemSettings, ActionItem as ActionItemDefinition} from "ui/action-bar";
-import {ActionItemBase, ActionBarBase, isVisible} from "./action-bar-common";
+import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
+import { ActionItemBase, ActionBarBase, isVisible } from "./action-bar-common";
 import utils = require("utils/utils");
-import {isNumber} from "utils/types";
-import {Frame, topmost as topmostFrame} from "ui/frame";
-import {View} from "ui/core/view";
-import {ImageSource, fromFileOrResource} from "image-source";
-import {IOSActionItemPosition} from "ui/enums";
-import {colorProperty, backgroundColorProperty, backgroundInternalProperty} from "ui/styling/style";
-import {Color} from "color";
-import {Background} from "ui/styling/background";
+import { isNumber } from "utils/types";
+import { Frame, topmost as topmostFrame } from "ui/frame";
+import { View } from "ui/core/view";
+import { ImageSource, fromFileOrResource } from "image-source";
+import { IOSActionItemPosition } from "ui/enums";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/styling/style";
+import { Color } from "color";
+import { Background } from "ui/styling/background";
 
 export * from "./action-bar-common";
 
@@ -327,6 +327,6 @@ export class ActionBar extends ActionBarBase {
         return null;
     }
     set [backgroundInternalProperty.native](value: UIColor) {
-        
+
     }
 }

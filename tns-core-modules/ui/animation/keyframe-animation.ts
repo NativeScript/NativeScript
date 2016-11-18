@@ -1,11 +1,13 @@
-import {KeyframeDeclaration as KeyframeDeclarationDefinition,
+import {
+    KeyframeDeclaration as KeyframeDeclarationDefinition,
     KeyframeInfo as KeyframeInfoDefinition,
     KeyframeAnimationInfo as KeyframeAnimationInfoDefinition,
-    KeyframeAnimation as KeyframeAnimationDefinition} from "ui/animation/keyframe-animation";
-import {Animation} from "ui/animation";
-import {View} from "ui/core/view";
-import {AnimationCurve} from "ui/enums";
-import {unsetValue} from "ui/core/dependency-observable";
+    KeyframeAnimation as KeyframeAnimationDefinition
+} from "ui/animation/keyframe-animation";
+import { Animation } from "ui/animation";
+import { View } from "ui/core/view";
+import { AnimationCurve } from "ui/enums";
+import { unsetValue } from "ui/core/dependency-observable";
 
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;

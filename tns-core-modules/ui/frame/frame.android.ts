@@ -1,22 +1,26 @@
-﻿import definition = require("ui/frame");
-import frameCommon = require("./frame-common");
-import pages = require("ui/page");
-import transitionModule = require("ui/transition");
-import trace = require("trace");
-import {View} from "ui/core/view";
-import {Observable} from "data/observable";
+﻿import {
+    AndroidFrame as AndroidFrameDefinition, BackstackEntry,
+    NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
+} from "ui/frame";
+import { FrameBase, NavigationContext, stack, goBack } from "./frame-common";
+import { Page } from "ui/page";
+import { View } from "ui/core/view";
+import { Observable } from "data/observable";
+import { DIALOG_FRAGMENT_TAG } from "../page/constants";
+import * as transitionModule from "ui/transition";
+import * as trace from "trace";
 import * as application from "application";
 import * as types from "utils/types";
 
-global.moduleMerge(frameCommon, exports);
+export * from "./frame-common";
 
-let HIDDEN = "_hidden";
-let INTENT_EXTRA = "com.tns.activity";
-let FRAMEID = "_frameId";
+const HIDDEN = "_hidden";
+const INTENT_EXTRA = "com.tns.activity";
+const FRAMEID = "_frameId";
+const CALLBACKS = "_callbacks";
 let navDepth = -1;
 let fragmentId = -1;
 let activityInitialized = false;
-const CALLBACKS = "_callbacks";
 
 function onFragmentShown(fragment: android.app.Fragment) {
     if (trace.enabled) {
@@ -78,9 +82,9 @@ function onFragmentHidden(fragment: android.app.Fragment, destroyed: boolean) {
     transitionModule._onFragmentHidden(fragment, isBack, destroyed);
 }
 
-export class Frame extends frameCommon.Frame {
+export class Frame extends FrameBase {
     private _android: AndroidFrame;
-    private _delayedNavigationEntry: definition.BackstackEntry;
+    private _delayedNavigationEntry: BackstackEntry;
     private _containerViewId: number = -1;
     private _listener: android.view.View.OnAttachStateChangeListener;
     constructor() {
@@ -93,17 +97,17 @@ export class Frame extends frameCommon.Frame {
     }
 
     public static get defaultAnimatedNavigation(): boolean {
-        return frameCommon.Frame.defaultAnimatedNavigation;
+        return FrameBase.defaultAnimatedNavigation;
     }
     public static set defaultAnimatedNavigation(value: boolean) {
-        frameCommon.Frame.defaultAnimatedNavigation = value;
+        FrameBase.defaultAnimatedNavigation = value;
     }
 
-    public static get defaultTransition(): definition.NavigationTransition {
-        return frameCommon.Frame.defaultTransition;
+    public static get defaultTransition(): NavigationTransition {
+        return FrameBase.defaultTransition;
     }
-    public static set defaultTransition(value: definition.NavigationTransition) {
-        frameCommon.Frame.defaultTransition = value;
+    public static set defaultTransition(value: NavigationTransition) {
+        FrameBase.defaultTransition = value;
     }
 
     get containerViewId(): number {
@@ -118,7 +122,7 @@ export class Frame extends frameCommon.Frame {
         return this._android.rootViewGroup;
     }
 
-    public _navigateCore(backstackEntry: definition.BackstackEntry) {
+    public _navigateCore(backstackEntry: BackstackEntry) {
         super._navigateCore(backstackEntry);
 
         let activity = this._android.activity;
@@ -274,7 +278,7 @@ export class Frame extends frameCommon.Frame {
         transitionModule._removePageNativeViewFromAndroidParent(callbacks.entry.resolvedPage);
     }
 
-    public _goBackCore(backstackEntry: definition.BackstackEntry) {
+    public _goBackCore(backstackEntry: BackstackEntry) {
         super._goBackCore(backstackEntry);
 
         navDepth = backstackEntry.navDepth;
@@ -347,7 +351,7 @@ export class Frame extends frameCommon.Frame {
         }
     }
 
-    public _getNavBarVisible(page: pages.Page): boolean {
+    public _getNavBarVisible(page: Page): boolean {
         if (types.isDefined(page.actionBarHidden)) {
             return !page.actionBarHidden;
         }
@@ -359,7 +363,7 @@ export class Frame extends frameCommon.Frame {
         return true;
     }
 
-    protected _processNavigationContext(navigationContext: frameCommon.NavigationContext) {
+    protected _processNavigationContext(navigationContext: NavigationContext) {
         let activity = this._android.activity;
         if (activity) {
             let isForegroundActivity = activity === application.android.foregroundActivity;
@@ -410,7 +414,7 @@ export class Frame extends frameCommon.Frame {
 let framesCounter = 0;
 let framesCache: Array<WeakRef<AndroidFrame>> = new Array<WeakRef<AndroidFrame>>();
 
-class AndroidFrame extends Observable implements definition.AndroidFrame {
+class AndroidFrame extends Observable implements AndroidFrameDefinition {
     public rootViewGroup: android.view.ViewGroup;
     public hasOwnActivity = false;
     public frameId;
@@ -478,14 +482,9 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
             return activity;
         }
 
-        let stack = frameCommon.stack(),
-            length = stack.length,
-            i = length - 1,
-            frame: definition.Frame;
-
-        for (i; i >= 0; i--) {
-            frame = stack[i];
-            activity = frame.android.activity;
+        let frames = stack();
+        for (let length = frames.length, i = length - 1; i >= 0; i--) {
+            activity = frames[i].android.activity;
             if (activity) {
                 return activity;
             }
@@ -524,7 +523,7 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
         return this.activity.getIntent().getAction() !== android.content.Intent.ACTION_MAIN;
     }
 
-    public fragmentForPage(page: pages.Page): any {
+    public fragmentForPage(page: Page): any {
         if (!page) {
             return undefined;
         }
@@ -541,14 +540,14 @@ class AndroidFrame extends Observable implements definition.AndroidFrame {
 
 function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
     let fragmentTag = fragment.getTag();
-    let page: pages.Page;
-    let entry: definition.BackstackEntry;
+    let page: Page;
+    let entry: BackstackEntry;
 
     if (trace.enabled) {
         trace.write(`Finding page for ${fragmentTag}.`, trace.categories.NativeLifecycle);
     }
 
-    if (fragmentTag === (<any>pages).DIALOG_FRAGMENT_TAG) {
+    if (fragmentTag === DIALOG_FRAGMENT_TAG) {
         if (trace.enabled) {
             trace.write(`No need to find page for dialog fragment.`, trace.categories.NativeLifecycle);
         }
@@ -640,9 +639,9 @@ export function setFragmentClass(clazz: any) {
     fragmentClass = clazz;
 }
 
-class FragmentCallbacksImplementation implements definition.AndroidFragmentCallbacks {
+class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     public frame: Frame;
-    public entry: definition.BackstackEntry;
+    public entry: BackstackEntry;
     public clearHistory: boolean;
 
     public onHiddenChanged(fragment: android.app.Fragment, hidden: boolean, superFunc: Function): void {
@@ -684,8 +683,8 @@ class FragmentCallbacksImplementation implements definition.AndroidFragmentCallb
             trace.write(`${fragment}.onCreate(${savedInstanceState})`, trace.categories.NativeLifecycle);
         }
 
-        superFunc.call(fragment, savedInstanceState);
 
+        superFunc.call(fragment, savedInstanceState);
         // There is no entry set to the fragment, so this must be destroyed fragment that was recreated by Android.
         // We should find its corresponding page in our backstack and set it manually.
         if (!this.entry) {
@@ -750,7 +749,7 @@ class FragmentCallbacksImplementation implements definition.AndroidFragmentCallb
     }
 }
 
-class ActivityCallbacksImplementation implements definition.AndroidActivityCallbacks {
+class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     private _rootView: View;
 
     public onCreate(activity: android.app.Activity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
@@ -897,7 +896,7 @@ class ActivityCallbacksImplementation implements definition.AndroidActivityCallb
             return;
         }
 
-        if (!frameCommon.goBack()) {
+        if (!goBack()) {
             superFunc.call(activity);
         }
     }

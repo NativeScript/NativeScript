@@ -17,28 +17,28 @@
         /**
          * Gets or sets the soft keyboard type. Possible values are contained in the [KeyboardType enumeration](../enums/KeyboardType/README.md).
          */
-        keyboardType: string;
+        keyboardType: "datetime"| "phone" | "number" | "url" | "email";
 
         /**
          * Gets or sets the soft keyboard return key flavor. Possible values are contained in the [ReturnKeyType enumeration](../enums/ReturnKeyType/README.md).
          */
-        returnKeyType: string;
-
-        /**
-         * Gets or sets whether the instance is editable.
-         */
-        editable: boolean;
+        returnKeyType: "done" | "next" | "go" | "search" | "send";
 
         /**
          * Gets or sets a value indicating when the text property will be updated. 
          * Possible values are contained in the [UpdateTextTrigger enumeration](../enums/UpdateTextTrigger/README.md).
          */
-        updateTextTrigger: string;
+        updateTextTrigger: "focusLost" | "textChanged";
 
         /**
          * Gets or sets the autocapitalization type. Possible values are contained in the [AutocapitalizationType enumeration](../enums/AutocapitalizationType/README.md).
          */
-        autocapitalizationType: string;
+        autocapitalizationType: "none" | "words" | "sentences" | "allCharacters";
+        
+        /**
+         * Gets or sets whether the instance is editable.
+         */
+        editable: boolean;
 
         /**
          * Enables or disables autocorrection.

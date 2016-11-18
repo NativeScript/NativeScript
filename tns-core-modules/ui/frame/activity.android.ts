@@ -1,4 +1,4 @@
-import {setActivityCallbacks, AndroidActivityCallbacks} from "ui/frame";
+import { setActivityCallbacks, AndroidActivityCallbacks } from "ui/frame";
 
 @JavaProxy("com.tns.NativeScriptActivity")
 class NativeScriptActivity extends android.app.Activity {

@@ -1,19 +1,19 @@
-﻿import {isString, isDefined, isFunction} from "utils/types";
-import {Page} from "ui/page";
-import {View, isEventOrGesture} from "ui/core/view";
-import {ComponentModule} from "ui/builder/component-builder";
-import {File, path, knownFolders} from "file-system";
-import {getBindingOptions, bindingConstants} from "./binding-builder";
+﻿import { isString, isDefined, isFunction } from "utils/types";
+import { Page } from "ui/page";
+import { View, isEventOrGesture } from "ui/core/view";
+import { ComponentModule } from "ui/builder/component-builder";
+import { File, path, knownFolders } from "file-system";
+import { getBindingOptions, bindingConstants } from "./binding-builder";
 import * as debugModule from "utils/debug";
 import * as platformModule from "platform";
-import {convertString} from "utils/utils";
+import { convertString } from "utils/utils";
 
 //the imports below are needed for special property registration
 import "ui/layouts/dock-layout";
 import "ui/layouts/grid-layout";
 import "ui/layouts/absolute-layout";
 
-import {getSpecialPropertySetter} from "ui/builder/special-properties";
+import { getSpecialPropertySetter } from "ui/builder/special-properties";
 
 var UI_PATH = "ui/";
 var MODULES = {
@@ -185,7 +185,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
             expression: bindOptions[bindingConstants.expression],
             twoWay: bindOptions[bindingConstants.twoWay]
         }, bindOptions[bindingConstants.source]);
-    } 
+    }
     else if (isEventOrGesture(propertyName, instance)) {
         // Get the event handler from page module exports.
         var handler = exports && exports[propertyValue];
@@ -196,7 +196,7 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         }
     }
     else if (isKnownFunction(propertyName, instance) && isFunction(exports && exports[propertyValue])) {
-        instance[propertyName] = exports[propertyValue];             
+        instance[propertyName] = exports[propertyValue];
     }
     else {
         let attrHandled = false;
@@ -232,7 +232,7 @@ function isBinding(value: any): boolean {
 // For example, ListView.itemTemplateSelector
 let KNOWN_FUNCTIONS = "knownFunctions";
 function isKnownFunction(name: string, instance: View): boolean {
-    return instance.constructor 
-        && KNOWN_FUNCTIONS in instance.constructor 
+    return instance.constructor
+        && KNOWN_FUNCTIONS in instance.constructor
         && instance.constructor[KNOWN_FUNCTIONS].indexOf(name) !== -1;
 }

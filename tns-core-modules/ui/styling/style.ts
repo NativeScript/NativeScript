@@ -1,21 +1,26 @@
 import definition = require("ui/styling/style");
-import {Observable} from "data/observable";
-import {View} from "ui/core/view";
-import {Color} from "color";
-import {Font} from "ui/styling/font";
-import {Background} from "ui/styling/background";
-import {isAndroid, isIOS} from "platform";
-import {CssProperty, InheritedCssProperty} from "ui/core/properties";
-import {fromBase64, fromFileOrResource, fromUrl} from "image-source";
-import {isDataURI, isFileOrResourcePath} from "utils/utils";
+import { Observable } from "data/observable";
+import { View } from "ui/core/view";
+import { Color } from "color";
+import { Font } from "ui/styling/font";
+import { Background } from "ui/styling/background";
+import { isAndroid, isIOS } from "platform";
+import { CssProperty, InheritedCssProperty } from "ui/core/properties";
+import { fromBase64, fromFileOrResource, fromUrl } from "image-source";
+import { isDataURI, isFileOrResourcePath } from "utils/utils";
+import { Length } from "ui/core/view";
 
-import {HorizontalAlignment, VerticalAlignment, Visibility,
+import {
+    HorizontalAlignment, VerticalAlignment, Visibility,
     TextDecoration, TextTransform, TextAlignment,
-    WhiteSpace, FontWeight, FontStyle} from "ui/enums";
+    WhiteSpace, FontWeight, FontStyle
+} from "ui/enums";
 
-import {numberConverter, colorConverter, fontSizeConverter,
+import {
+    numberConverter, colorConverter, fontSizeConverter,
     textAlignConverter, textDecorationConverter, textTransformConverter,
-    whiteSpaceConverter, transformConverter} from "./converters";
+    whiteSpaceConverter, transformConverter
+} from "./converters";
 
 // on Android we explicitly set AffectsLayout to False because android will invalidate its layout when needed so we skip unnecessary native calls.
 let affectsIOSLayout = isIOS;
@@ -27,88 +32,9 @@ interface Thickness {
     bottom: Object;
 }
 
-interface PercentHelper {
-    value: number;
-    isPercent: boolean;
-    isError: boolean;
-}
 
-// function parseMargin(value: any): Thickness {
-//     if (types.isString(value)) {
-//         let arr = (<string>value).split(/[ ,]+/);
 
-//         let top: Object;
-//         let right: Object;
-//         let bottom: Object;
-//         let left: Object;
 
-//         if (arr.length === 1) {
-//             top = right = bottom = left = arr[0];
-//         }
-//         else if (arr.length === 2) {
-//             top = bottom = arr[0];
-//             right = left = arr[1];
-//         }
-//         else if (arr.length === 4) {
-//             top = arr[0];
-//             right = arr[1];
-//             bottom = arr[2];
-//             left = arr[3];
-//         }
-//         else {
-//             throw new Error("Invalid value for margin: " + value);
-//         }
-
-//         return {
-//             top: top,
-//             right: right,
-//             bottom: bottom,
-//             left: left
-//         }
-//     }
-//     else if (types.isNumber(value)) {
-//         return {
-//             top: value,
-//             right: value,
-//             bottom: value,
-//             left: value
-//         }
-//     }
-//     else {
-//         return value;
-//     }
-// }
-
-// function parseThickness(value: any): definition.Thickness {
-//     let result: definition.Thickness = { top: 0, right: 0, bottom: 0, left: 0 };
-//     if (types.isString(value)) {
-//         let arr = value.split(/[ ,]+/);
-//         let top = parseInt(arr[0]);
-//         top = isNaN(top) ? 0 : top;
-
-//         let right = parseInt(arr[1]);
-//         right = isNaN(right) ? top : right;
-
-//         let bottom = parseInt(arr[2]);
-//         bottom = isNaN(bottom) ? top : bottom;
-
-//         let left = parseInt(arr[3]);
-//         left = isNaN(left) ? right : left;
-
-//         result.top = top;
-//         result.right = right;
-//         result.bottom = bottom;
-//         result.left = left;
-
-//     } else if (types.isNumber(value)) {
-//         result.top = result.right = result.bottom = result.left = value;
-//     }
-//     else {
-//         result = value;
-//     }
-
-//     return result;
-// }
 
 // function layoutParamsComparer(x: definition.CommonLayoutParams, y: definition.CommonLayoutParams): boolean {
 //     return x.width === y.width
@@ -171,8 +97,8 @@ interface PercentHelper {
 // }
 
 // function onPaddingValueChanged(data: PropertyChangeData) {
-//     var style = <Style>data.object;
-//     var thickness: definition.Thickness = {
+//     let style = <Style>data.object;
+//     let thickness: definition.Thickness = {
 //         top: style.paddingTop,
 //         right: style.paddingRight,
 //         bottom: style.paddingBottom,
@@ -188,73 +114,6 @@ interface PercentHelper {
 //     }
 //     return !x === !y;
 // }
-
-function convertToPercentHelper(value: Object): PercentHelper {
-    let numberValue = 0;
-    let isPercent = false;
-    let isError = true;
-    let valueType = typeof value;
-    if (valueType === "string") {
-        var stringValue = (<string>value).trim();
-        var percentIndex = stringValue.indexOf("%");
-        if (percentIndex !== -1) {
-            // if only % or % is not last we treat it as invalid value.
-            if (percentIndex !== (stringValue.length - 1) || percentIndex === 0) {
-                numberValue = 0;
-            }
-            else {
-                isPercent = true;
-                numberValue = numberConverter(stringValue.substring(0, stringValue.length - 1).trim());
-                isError = numberValue === 0;
-            }
-        }
-        else {
-            isError = false;
-            isPercent = false;
-            numberValue = numberConverter(stringValue);
-        }
-    }
-    else if (valueType === "number") {
-        isError = false;
-        isPercent = false;
-        numberValue = <number>value;
-    }
-
-    return {
-        isError: isError,
-        isPercent: isPercent,
-        value: numberValue
-    }
-}
-
-function numberOrPercentConverter(value: Object) {
-    let result = convertToPercentHelper(value);
-    if (result.isError) {
-        throw new Error("Invalid value: " + value);
-    }
-    return result.isPercent ? value : result.value;
-}
-
-function widthHeightConverter(value: Object): Object {
-    var result = convertToPercentHelper(value);
-    let newValue = result.value;
-    if (result.isError || !(isNaN(newValue) || (newValue >= 0.0 && isFinite(newValue)))) {
-        throw new Error("Invalid value: " + value);
-    }
-
-    return value;
-}
-
-function minWidthMinHeightConverter(value: any): number {
-    let newValue = parseFloat(value);
-    if (isNaN(value) || value < 0.0 || !isFinite(value)) {
-        throw new Error(`Invalid value: ${newValue}`);
-    }
-
-    return newValue;
-}
-
-
 
 function onBackgroundColorPropertyChanged(style: Style, oldValue: Color, newValue: Color) {
     let currentBackground = style.backgroundInternal;
@@ -412,7 +271,7 @@ function isNonNegativeFiniteNumber(value: number): boolean {
 
 
 function isMarginValid(value: number): boolean {
-    var result = convertToPercentHelper(value);
+    let result = convertToPercentHelper(value);
     if (result.isError) {
         return false;
     }
@@ -429,7 +288,7 @@ function opacityConverter(value: any): number {
     throw new Error(`Opacity should be between [0, 1]. Value: ${newValue}`);
 }
 function isOpacityValid(value: string): boolean {
-    var parsedValue: number = parseFloat(value);
+    let parsedValue: number = parseFloat(value);
     return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
 }
 
@@ -515,38 +374,36 @@ export class Style extends Observable implements definition.Style {
 
     public clipPath: string;
     public color: Color;
+    public tintColor: Color;
+    public placeholderColor: Color;
+
     public backgroundColor: Color;
     public backgroundImage: string;
     public backgroundRepeat: string;
     public backgroundSize: string;
     public backgroundPosition: string;
-    public borderColor: Color;
-    public borderWidth: number;
-    public borderRadius: number;
+
+    public borderColor: string | Color;
+    public borderTopColor: Color;
+    public borderRightColor: Color;
+    public borderBottomColor: Color;
+    public borderLeftColor: Color;
+    public borderWidth: string | number;
+    public borderTopWidth: number;
+    public borderRightWidth: number;
+    public borderBottomWidth: number;
+    public borderLeftWidth: number;
+    public borderRadius: string | number;
+    public borderTopLeftRadius: number;
+    public borderTopRightRadius: number;
+    public borderBottomRightRadius: number;
+    public borderBottomLeftRadius: number;
 
     public fontSize: number;
     public fontFamily: string;
     public fontStyle: string;
     public fontWeight: string;
     public font: string;
-    public fontInternal: Font;
-
-    public minWidth: number;
-    public minHeight: number;
-    public width: number;
-    public height: number;
-    public margin: string;
-    public marginLeft: number;
-    public marginTop: number;
-    public marginRight: number;
-    public marginBottom: number;
-    public padding: string;
-    public paddingLeft: number;
-    public paddingTop: number;
-    public paddingRight: number;
-    public paddingBottom: number;
-    public horizontalAlignment: string;
-    public verticalAlignment: string;
 
     public zIndex: number;
     public opacity: number;
@@ -558,11 +415,41 @@ export class Style extends Observable implements definition.Style {
     public letterSpacing: number;
     public whiteSpace: string;
 
+    // TODO: Change minWidth/Height to Length to support 'px'
+    public minWidth: number;
+    public minHeight: number;
+    public width: Length;
+    public height: Length;
+    public margin: string;
+    public marginLeft: Length;
+    public marginTop: Length;
+    public marginRight: Length;
+    public marginBottom: Length;
+    public padding: string;
+    public paddingLeft: Length;
+    public paddingTop: Length;
+    public paddingRight: Length;
+    public paddingBottom: Length;
+    public horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
+    public verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+
+    // TabView-specific props
+    public tabTextColor: Color;
+    public tabBackgroundColor: Color;
+    public selectedTabTextColor: Color;
+    public androidSelectedTabHighlightColor: Color;
+
+    //SegmentedBar-specific props
+    public selectedBackgroundColor: Color;
+
+    _transform: string;
+    _cssTransform: string;
+
     // public _updateTextDecoration() {
     //     if (this.textDecoration !== TextDecoration.none) {
     //         this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
-    //     }
     // }
+    //     }
 
     // public _updateTextTransform() {
     //     if (this._getValue(textTransformProperty) !== TextTransform.none) {
@@ -698,7 +585,7 @@ export class Style extends Observable implements definition.Style {
     // }
 
     // private _setShorthandProperty(name: string, value: any): void {
-    //     var pairs = styleProperty.getShorthandPairs(name, value);
+    //     let pairs = styleProperty.getShorthandPairs(name, value);
     //     if (pairs) {
     //         this._beginUpdate();
     //         for (let j = 0; j < pairs.length; j++) {
@@ -714,339 +601,179 @@ export class Style extends Observable implements definition.Style {
 
 export let rotateProperty = new CssProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0 });
 rotateProperty.register(Style);
-// export var rotateProperty = new styleProperty.Property("rotate", "rotate", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+// export let rotateProperty = new styleProperty.Property("rotate", "rotate", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
 
 export let scaleXProperty = new CssProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1 });
 scaleXProperty.register(Style);
-// export var scaleXProperty = new styleProperty.Property("scaleX", "scaleX", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+// export let scaleXProperty = new styleProperty.Property("scaleX", "scaleX", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
 
 export let scaleYProperty = new CssProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1 });
 scaleYProperty.register(Style);
-// export var scaleYProperty = new styleProperty.Property("scaleY", "scaleY", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+// export let scaleYProperty = new styleProperty.Property("scaleY", "scaleY", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
 
 export let translateXProperty = new CssProperty<Style, number>({ name: "translateX", cssName: "translateX", defaultValue: 0 });
 translateXProperty.register(Style);
-// export var translateXProperty = new styleProperty.Property("translateX", "translateX", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
+// export let translateXProperty = new styleProperty.Property("translateX", "translateX", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
 
 export let translateYProperty = new CssProperty<Style, number>({ name: "translateY", cssName: "translateY", defaultValue: 0 });
 translateYProperty.register(Style);
-// export var translateYProperty = new styleProperty.Property("translateY", "translateY", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
-
-export var color = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: colorConverter });
-color.register(Style);
-// export var colorProperty = new styleProperty.Property("color", "color", new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals), colorConverter);
+// export let translateYProperty = new styleProperty.Property("translateY", "translateY", new PropertyMetadata(undefined, PropertyMetadataSettings.None, null));
 
 // NOTE: clip-path should not affects layout.
-export var clipPathProperty = new CssProperty<Style, string>({ name: "clipPath", cssName: "clip-path", valueChanged: onClipPathPropertyChanged });
+export let clipPathProperty = new CssProperty<Style, string>({ name: "clipPath", cssName: "clip-path", valueChanged: onClipPathPropertyChanged });
 clipPathProperty.register(Style);
-// export var clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
+// export let clipPathProperty = new styleProperty.Property("clipPath", "clip-path",
 //     new PropertyMetadata(undefined, AffectsLayout, onClipPathPropertyChanged, isClipPathValid));
+
+export let color = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: colorConverter });
+color.register(Style);
+// export let colorProperty = new styleProperty.Property("color", "color", new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, undefined, Color.isValid, Color.equals), colorConverter);
+
+export let tintColorProperty = new CssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: colorConverter });
+tintColorProperty.register(Style);
+
+export let placeholderColorProperty = new CssProperty<Style, Color>({ name: "placeholderColor", cssName: "placeholder-color", equalityComparer: Color.equals, valueConverter: colorConverter });
+placeholderColorProperty.register(Style);
 
 export let backgroundColorProperty = new CssProperty<Style, Color>({ name: "backgroundColor", cssName: "background-color", valueChanged: onBackgroundColorPropertyChanged, equalityComparer: Color.equals, valueConverter: colorConverter });
 backgroundColorProperty.register(Style);
-// export var backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
+// export let backgroundColorProperty = new styleProperty.Property("backgroundColor", "background-color",
 //     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundColorPropertyChanged, Color.isValid, Color.equals), colorConverter);
 
 export let backgroundImageProperty = new CssProperty<Style, string>({ name: "backgroundImage", cssName: "background-image", valueChanged: onBackgroundImagePropertyChanged });
 backgroundImageProperty.register(Style);
-// export var backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image", new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
+// export let backgroundImageProperty = new styleProperty.Property("backgroundImage", "background-image", new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundImagePropertyChanged));
 
-export var backgroundRepeatProperty = new CssProperty<Style, string>({ name: "backgroundRepeat", cssName: "background-repeat", valueChanged: onBackgroundRepeatPropertyChanged });
+export let backgroundRepeatProperty = new CssProperty<Style, string>({ name: "backgroundRepeat", cssName: "background-repeat", valueChanged: onBackgroundRepeatPropertyChanged });
 backgroundRepeatProperty.register(Style);
-// export var backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
+// export let backgroundRepeatProperty = new styleProperty.Property("backgroundRepeat", "background-repeat",
 //     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundRepeatPropertyChanged));
 
 export let backgroundSizeProperty = new CssProperty<Style, string>({ name: "backgroundSize", cssName: "background-size", valueChanged: onBackgroundSizePropertyChanged });
 backgroundSizeProperty.register(Style);
-// export var backgroundSizeProperty = new styleProperty.Property("backgroundSize", "background-size",
+// export let backgroundSizeProperty = new styleProperty.Property("backgroundSize", "background-size",
 //     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundSizePropertyChanged));
 
 export let backgroundPositionProperty = new CssProperty<Style, string>({ name: "backgroundPosition", cssName: "background-position", valueChanged: onBackgroundPositionPropertyChanged });
 backgroundPositionProperty.register(Style);
-// export var backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
+// export let backgroundPositionProperty = new styleProperty.Property("backgroundPosition", "background-position",
 //     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBackgroundPositionPropertyChanged));
 
 export let borderColorProperty = new CssProperty<Style, Color>({ name: "borderColor", cssName: "border-color", valueChanged: onBorderColorPropertyChanged, equalityComparer: Color.equals, valueConverter: colorConverter });
 borderColorProperty.register(Style);
-// export var borderColorProperty = new styleProperty.Property("borderColor", "border-color",
+// export let borderColorProperty = new styleProperty.Property("borderColor", "border-color",
 //     new PropertyMetadata(undefined, PropertyMetadataSettings.None, onBorderColorPropertyChanged, Color.isValid, Color.equals), colorConverter);
+
+export let borderTopColorProperty = new CssProperty<Style, Color>({ name: "borderTopColor", cssName: "border-top-color", valueChanged: NOTIMPLEMENTED, equalityComparer: Color.equals, valueConverter: colorConverter });
+borderTopColorProperty.register(Style);
+export let borderRightColorProperty = new CssProperty<Style, Color>({ name: "borderRightColor", cssName: "border-right-color", valueChanged: NOTIMPLEMENTED, equalityComparer: Color.equals, valueConverter: colorConverter });
+borderRightColorProperty.register(Style);
+export let borderBottomColorProperty = new CssProperty<Style, Color>({ name: "borderBottomColor", cssName: "border-bottom-color", valueChanged: NOTIMPLEMENTED, equalityComparer: Color.equals, valueConverter: colorConverter });
+borderBottomColorProperty.register(Style);
+export let borderLeftColorProperty = new CssProperty<Style, Color>({ name: "borderLeftColor", cssName: "border-left-color", valueChanged: NOTIMPLEMENTED, equalityComparer: Color.equals, valueConverter: colorConverter });
+borderLeftColorProperty.register(Style);
 
 export let borderWidthProperty = new CssProperty<Style, number>({ name: "borderWidth", cssName: "border-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: onBorderWidthPropertyChanged, valueConverter: isNonNegativeFiniteNumberConverter });
 borderWidthProperty.register(Style);
-// export var borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
+// export let borderWidthProperty = new styleProperty.Property("borderWidth", "border-width",
 //     new PropertyMetadata(0, AffectsLayout, onBorderWidthPropertyChanged, isNonNegativeFiniteNumber), numberConverter);
+
+export let borderTopWidthProperty = new CssProperty<Style, number>({ name: "borderTopWidth", cssName: "border-top-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderTopWidthProperty.register(Style);
+export let borderRightWidthProperty = new CssProperty<Style, number>({ name: "borderRightWidth", cssName: "border-right-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderRightWidthProperty.register(Style);
+export let borderBottomWidthProperty = new CssProperty<Style, number>({ name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderBottomWidthProperty.register(Style);
+export let borderLeftWidthProperty = new CssProperty<Style, number>({ name: "borderLeftWidth", cssName: "border-left-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderLeftWidthProperty.register(Style);
+
 
 export let borderRadiusProperty = new CssProperty<Style, number>({ name: "borderRadius", cssName: "border-radius", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: onBorderRadiusPropertyChanged, valueConverter: isNonNegativeFiniteNumberConverter });
 borderRadiusProperty.register(Style);
-// export var borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
+// export let borderRadiusProperty = new styleProperty.Property("borderRadius", "border-radius",
 //     new PropertyMetadata(0, AffectsLayout, onBorderRadiusPropertyChanged, isNonNegativeFiniteNumber), numberConverter);
 
-export var backgroundInternalProperty = new CssProperty<Style, Background>({ name: "backgroundInternal", cssName: "backgroundInternal", defaultValue: Background.default, equalityComparer: Background.equals });
+export let borderTopLeftRadiusProperty = new CssProperty<Style, number>({ name: "borderTopLeftRadius", cssName: "border-top-left-radius", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderTopLeftRadiusProperty.register(Style);
+export let borderTopRightRadiusProperty = new CssProperty<Style, number>({ name: "borderTopRightRadius", cssName: "border-top-right-radius", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderTopRightRadiusProperty.register(Style);
+export let borderBottomRightRadiusProperty = new CssProperty<Style, number>({ name: "borderBottomRightRadius", cssName: "border-bottom-right-radius", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderBottomRightRadiusProperty.register(Style);
+export let borderBottomLeftRadiusProperty = new CssProperty<Style, number>({ name: "borderBottomLeftRadius", cssName: "border-bottom-left-radius", defaultValue: 0, affectsLayout: affectsIOSLayout, valueChanged: NOTIMPLEMENTED, valueConverter: isNonNegativeFiniteNumberConverter });
+borderBottomLeftRadiusProperty.register(Style);
+
+
+export let backgroundInternalProperty = new CssProperty<Style, Background>({ name: "backgroundInternal", cssName: "backgroundInternal", defaultValue: Background.default, equalityComparer: Background.equals });
 backgroundInternalProperty.register(Style);
-// export var backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
+// export let backgroundInternalProperty = new styleProperty.Property("_backgroundInternal", "_backgroundInternal",
 //     new PropertyMetadata(Background.default, PropertyMetadataSettings.None, undefined, undefined, Background.equals));
 
 export let fontSizeProperty = new InheritedCssProperty<Style, number>({ name: "fontSize", cssName: "font-size", valueChanged: onFontSizeChanged, valueConverter: fontSizeConverter });
 fontSizeProperty.register(Style);
-// export var fontSizeProperty = new styleProperty.Property("fontSize", "font-size",
+// export let fontSizeProperty = new styleProperty.Property("fontSize", "font-size",
 //     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, onFontSizeChanged), fontSizeConverter);
 
 export let fontFamilyProperty = new InheritedCssProperty<Style, string>({ name: "fontFamily", cssName: "font-family", valueChanged: onFontFamilyChanged });
 fontFamilyProperty.register(Style);
-// export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
+// export let fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family",
 // new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, onFontFamilyChanged));
 
 export let fontStyleProperty = new InheritedCssProperty<Style, string>({ name: "fontStyle", cssName: "font-style", defaultValue: FontStyle.normal, valueChanged: onFontStyleChanged });
 fontStyleProperty.register(Style);
-// export var fontStyleProperty = new styleProperty.Property("fontStyle", "font-style",
+// export let fontStyleProperty = new styleProperty.Property("fontStyle", "font-style",
 //     new PropertyMetadata(FontStyle.normal, PropertyMetadataSettings.Inheritable, onFontStyleChanged, isFontStyleValid));
 
 export let fontWeightProperty = new InheritedCssProperty<Style, string>({ name: "fontWeight", cssName: "font-weight", defaultValue: FontWeight.normal, valueChanged: onFontWeightChanged });
 fontWeightProperty.register(Style);
-// export var fontWeightProperty = new styleProperty.Property("fontWeight", "font-weight",
+// export let fontWeightProperty = new styleProperty.Property("fontWeight", "font-weight",
 //     new PropertyMetadata(FontWeight.normal, PropertyMetadataSettings.Inheritable, onFontWeightChanged, isFontWeightValid));
 
 export let fontProperty = new InheritedCssProperty<Style, Font>({ name: "font", cssName: "font", defaultValue: Font.default, valueChanged: onFontChanged, equalityComparer: Font.equals, valueConverter: Font.parse });
 fontProperty.register(Style);
-// export var fontInternal = new styleProperty.Property("_fontInternal", "_fontInternal",
+// export let fontInternal = new styleProperty.Property("_fontInternal", "_fontInternal",
 //     new PropertyMetadata(Font.default, AffectsLayout, null, null, Font.equals), Font.parse);
 
-export var zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: 0, valueConverter: isFloatValueConverter });
+export let zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: 0, valueConverter: isFloatValueConverter });
 zIndexProperty.register(Style);
-// export var zIndexProperty = new styleProperty.Property("zIndex", "z-index",
+// export let zIndexProperty = new styleProperty.Property("zIndex", "z-index",
 //     new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), floatConverter);
 
-export var visibilityProperty = new CssProperty<Style, string>({ name: "visibility", cssName: "visibility", defaultValue: Visibility.visible, affectsLayout: affectsIOSLayout, valueChanged: onVisibilityChanged });
+export let visibilityProperty = new CssProperty<Style, string>({ name: "visibility", cssName: "visibility", defaultValue: Visibility.visible, affectsLayout: affectsIOSLayout, valueChanged: onVisibilityChanged });
 visibilityProperty.register(Style);
-// export var visibilityProperty = new styleProperty.Property("visibility", "visibility",
+// export let visibilityProperty = new styleProperty.Property("visibility", "visibility",
 //     new PropertyMetadata(Visibility.visible, AffectsLayout, onVisibilityChanged, isVisibilityValid), visibilityConverter);
 
-export var opacityProperty = new CssProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
+export let opacityProperty = new CssProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
 opacityProperty.register(Style);
-// export var opacityProperty = new styleProperty.Property("opacity", "opacity",
+// export let opacityProperty = new styleProperty.Property("opacity", "opacity",
 //     new PropertyMetadata(1.0, PropertyMetadataSettings.None, undefined, isOpacityValid), opacityConverter);
 
 // NOTE: text-align should not affects layout.
 export let textAlignmentProperty = new InheritedCssProperty<Style, string>({ name: "textAlignment", cssName: "text-align", valueConverter: textAlignConverter });
 textAlignmentProperty.register(Style);
-// export var textAlignmentProperty = new styleProperty.Property("textAlignment", "text-align",
+// export let textAlignmentProperty = new styleProperty.Property("textAlignment", "text-align",
 //     new PropertyMetadata(undefined, AffectsLayout | PropertyMetadataSettings.Inheritable), textAlignConverter);
 
 // NOTE: textDecorationConverter throws if value it fails.
-export var textDecorationProperty = new CssProperty<Style, string>({ name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.none, valueConverter: textDecorationConverter });
+export let textDecorationProperty = new CssProperty<Style, string>({ name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.none, valueConverter: textDecorationConverter });
 textDecorationProperty.register(Style);
-// export var textDecorationProperty = new styleProperty.Property("textDecoration", "text-decoration",
+// export let textDecorationProperty = new styleProperty.Property("textDecoration", "text-decoration",
 //     new PropertyMetadata(TextDecoration.none, PropertyMetadataSettings.None, undefined, isTextDecorationValid), textDecorationConverter);
 
-export var textTransformProperty = new CssProperty<Style, string>({ name: "textTransform", cssName: "text-transform", defaultValue: TextTransform.none, valueConverter: textTransformConverter });
+export let textTransformProperty = new CssProperty<Style, string>({ name: "textTransform", cssName: "text-transform", defaultValue: TextTransform.none, valueConverter: textTransformConverter });
 textTransformProperty.register(Style);
-// export var textTransformProperty = new styleProperty.Property("textTransform", "text-transform",
+// export let textTransformProperty = new styleProperty.Property("textTransform", "text-transform",
 //     new PropertyMetadata(TextTransform.none, PropertyMetadataSettings.None, undefined, isTextTransformValid), textTransformConverter);
 
-export var letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: Number.NaN, affectsLayout: affectsIOSLayout, valueConverter: isFloatValueConverter });
+export let letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: Number.NaN, affectsLayout: affectsIOSLayout, valueConverter: isFloatValueConverter });
 letterSpacingProperty.register(Style);
-// export var letterSpacingProperty = new styleProperty.Property("letterSpacing", "letter-spacing",
+// export let letterSpacingProperty = new styleProperty.Property("letterSpacing", "letter-spacing",
 //     new PropertyMetadata(Number.NaN, AffectsLayout, undefined, isFloatValueValid), floatConverter);
 
-export var whiteSpaceProperty = new CssProperty<Style, string>({ name: "whiteSpace", cssName: "white-space", valueConverter: whiteSpaceConverter });
+export let whiteSpaceProperty = new CssProperty<Style, string>({ name: "whiteSpace", cssName: "white-space", valueConverter: whiteSpaceConverter });
 whiteSpaceProperty.register(Style);
-// export var whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
+// export let whiteSpaceProperty = new styleProperty.Property("whiteSpace", "white-space",
 //     new PropertyMetadata(undefined, AffectsLayout, undefined, isWhiteSpaceValid), whiteSpaceConverter);
-
-// // Helper property holding most layout related properties available in CSS.
-// // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
-// export var nativeLayoutParamsProperty = new CssProperty<Style, definition.CommonLayoutParams>(
-//     {
-//         name: "nativeLayoutParams", cssName: "nativeLayoutParams",
-//         defaultValue: {
-//             width: -1,
-//             widthPercent: -1,
-//             height: -1,
-//             heightPercent: -1,
-//             leftMargin: 0,
-//             leftMarginPercent: -1,
-//             topMargin: 0,
-//             topMarginPercent: -1,
-//             rightMargin: 0,
-//             rightMarginPercent: -1,
-//             bottomMargin: 0,
-//             bottomMarginPercent: -1,
-//             horizontalAlignment: HorizontalAlignment.stretch,
-//             verticalAlignment: VerticalAlignment.stretch
-//         },
-//         equalityComparer: layoutParamsComparer
-//     });
-// nativeLayoutParamsProperty.register(Style);
-// export var nativeLayoutParamsProperty = new styleProperty.Property("nativeLayoutParams", "nativeLayoutParams",
-//     new PropertyMetadata({
-//         width: -1,
-//         widthPercent: -1,
-//         height: -1,
-//         heightPercent: -1,
-//         leftMargin: 0,
-//         leftMarginPercent: -1,
-//         topMargin: 0,
-//         topMarginPercent: -1,
-//         rightMargin: 0,
-//         rightMarginPercent: -1,
-//         bottomMargin: 0,
-//         bottomMarginPercent: -1,
-//         horizontalAlignment: HorizontalAlignment.stretch,
-//         verticalAlignment: VerticalAlignment.stretch
-//     }, null, null, null, layoutParamsComparer));
-
-// TODO: Use different converter that calls isMinWidthHeightValid.
-export let minWidthProperty = new CssProperty<Style, number>({ name: "minWidth", cssName: "min-width", defaultValue: 0, affectsLayout: affectsIOSLayout });
-minWidthProperty.register(Style);
-// export var minWidthProperty = new styleProperty.Property("minWidth", "min-width",
-//     new PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), numberConverter);
-
-export let minHeightProperty = new CssProperty<Style, number>({ name: "minHeight", cssName: "min-height", defaultValue: 0, affectsLayout: affectsIOSLayout });
-minHeightProperty.register(Style);
-// export var minHeightProperty = new styleProperty.Property("minHeight", "min-height",
-//     new PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), numberConverter);
-
-export let widthProperty = new CssProperty<Style, number>({ name: "width", cssName: "width", defaultValue: -1, affectsLayout: affectsIOSLayout });
-widthProperty.register(Style);
-// export var widthProperty = new styleProperty.Property("width", "width",
-//     new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
-
-export let heightProperty = new CssProperty<Style, number>({ name: "height", cssName: "height", defaultValue: -1, affectsLayout: affectsIOSLayout });
-heightProperty.register(Style);
-// export var heightProperty = new styleProperty.Property("height", "height",
-//     new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
-
-export let marginProperty = new CssProperty<Style, Thickness>({ name: "margin", cssName: "margin", defaultValue: { left: 0, top: 0, right: 0, bottom: 0 }, affectsLayout: affectsIOSLayout });
-marginProperty.register(Style);
-
-export let marginLeftProperty = new CssProperty<Style, number>({ name: "marginLeft", cssName: "margin-left", defaultValue: 0, affectsLayout: affectsIOSLayout });
-marginLeftProperty.register(Style);
-// export var marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
-
-export let marginRightProperty = new CssProperty<Style, number>({ name: "marginRight", cssName: "margin-right", defaultValue: 0, affectsLayout: affectsIOSLayout });
-marginRightProperty.register(Style);
-// export var marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
-
-export let marginTopProperty = new CssProperty<Style, number>({ name: "marginTop", cssName: "margin-top", defaultValue: 0, affectsLayout: affectsIOSLayout });
-marginTopProperty.register(Style);
-// export var marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
-
-export let marginBottomProperty = new CssProperty<Style, number>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: 0, affectsLayout: affectsIOSLayout });
-marginBottomProperty.register(Style);
-// export var marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
-
-// function getNativePadding(nativeView: android.view.View, callback: (view: android.view.View) => number): NativeValueResult {
-//     return {
-//         result: nativeView ? callback(nativeView) / utils.layout.getDisplayDensity() : 0,
-//         cacheable: !!nativeView
-//     };
-// }
-
-// function getNativePaddingLeft(instance: DependencyObservable): NativeValueResult {
-//     var nativeView: android.view.View = (<any>instance)._nativeView;
-//     return getNativePadding(nativeView, (view) => { return view.getPaddingLeft(); });
-// }
-
-// function getNativePaddingTop(instance: DependencyObservable): NativeValueResult {
-//     var nativeView: android.view.View = (<any>instance)._nativeView;
-//     return getNativePadding(nativeView, (view) => { return view.getPaddingTop(); });
-// }
-
-// function getNativePaddingRight(instance: DependencyObservable): NativeValueResult {
-//     var nativeView: android.view.View = (<any>instance)._nativeView;
-//     return getNativePadding(nativeView, (view) => { return view.getPaddingRight(); });
-// }
-
-// function getNativePaddingBottom(instance: DependencyObservable): NativeValueResult {
-//     var nativeView: android.view.View = (<any>instance)._nativeView;
-//     return getNativePadding(nativeView, (view) => { return view.getPaddingBottom(); });
-// }
-
-// Helper property holding all paddings. When paddings are set through CSS we cache them and send them to the native view in a single call.
-// export let nativePaddingsProperty = new CssProperty<Style, definition.Thickness>({ name: "paddingNative", cssName: "paddingNative", equalityComparer: thicknessComparer });
-// nativePaddingsProperty.register(Style);
-// export var nativePaddingsProperty = new styleProperty.Property("paddingNative", "paddingNative",
-//     new PropertyMetadata(undefined, null, null, null, thicknessComparer));
-
-export let paddingProperty = new CssProperty<Style, definition.Thickness>({ name: "padding", cssName: "padding", defaultValue: { left: 0, top: 0, right: 0, bottom: 0 }, affectsLayout: affectsIOSLayout });
-paddingProperty.register(Style);
-
-export let paddingLeftProperty = new CssProperty<Style, number>({ name: "paddingLeft", cssName: "padding-left", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: isNonNegativeFiniteNumberConverter });
-paddingLeftProperty.register(Style);
-// export var paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
-
-export let paddingRightProperty = new CssProperty<Style, number>({ name: "paddingRight", cssName: "padding-right", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: isNonNegativeFiniteNumberConverter });
-paddingRightProperty.register(Style);
-// export var paddingRightProperty = new styleProperty.Property("paddingRight", "padding-right",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
-
-export let paddingTopProperty = new CssProperty<Style, number>({ name: "paddingTop", cssName: "padding-top", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: isNonNegativeFiniteNumberConverter });
-paddingTopProperty.register(Style);
-// export var paddingTopProperty = new styleProperty.Property("paddingTop", "padding-top",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
-
-export let paddingBottomProperty = new CssProperty<Style, number>({ name: "paddingBottom", cssName: "padding-bottom", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: isNonNegativeFiniteNumberConverter });
-paddingBottomProperty.register(Style);
-// export var paddingBottomProperty = new styleProperty.Property("paddingBottom", "padding-bottom",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
-
-export let verticalAlignmentProperty = new CssProperty<Style, string>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: VerticalAlignment.stretch, affectsLayout: affectsIOSLayout });
-verticalAlignmentProperty.register(Style);
-// export var verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
-//     new PropertyMetadata(VerticalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
-
-// Helper property holding most layout related properties available in CSS.
-// When layout related properties are set in CSS we chache them and send them to the native view in a single call.
-export var nativeLayoutParamsProperty = new styleProperty.Property("nativeLayoutParams", "nativeLayoutParams",
-    new PropertyMetadata({
-        width: -1,
-        widthPercent: -1,
-        height: -1,
-        heightPercent: -1,
-        leftMargin: 0,
-        leftMarginPercent: -1,
-        topMargin: 0,
-        topMarginPercent: -1,
-        rightMargin: 0,
-        rightMarginPercent: -1,
-        bottomMargin: 0,
-        bottomMarginPercent: -1,
-        horizontalAlignment: enums.HorizontalAlignment.stretch,
-        verticalAlignment: enums.VerticalAlignment.stretch
-    }, null, null, null, layoutParamsComparer));
-
-// // TODO: separate into .android/.ios files so that there is no need for such checks
-// if (isAndroid) {
-//     paddingTopProperty.defaultValueGetter = getNativePaddingTop;
-//     paddingLeftProperty.defaultValueGetter = getNativePaddingLeft;
-//     paddingRightProperty.defaultValueGetter = getNativePaddingRight;
-//     paddingBottomProperty.defaultValueGetter = getNativePaddingBottom;
-// }
-
-// function onPaddingChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
-//     var thickness = parseThickness(value);
-//     var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
-//     array.push({ property: paddingTopProperty, value: thickness.top });
-//     array.push({ property: paddingRightProperty, value: thickness.right });
-//     array.push({ property: paddingBottomProperty, value: thickness.bottom });
-//     array.push({ property: paddingLeftProperty, value: thickness.left });
-//     return array;
-// }
-
-// function onMarginChanged(value: any): Array<styleProperty.KeyValuePair<styleProperty.Property, any>> {
-//     var thickness = parseMargin(value);
-//     var array = new Array<styleProperty.KeyValuePair<styleProperty.Property, any>>();
-//     array.push({ property: marginTopProperty, value: thickness.top });
-//     array.push({ property: marginRightProperty, value: thickness.right });
-//     array.push({ property: marginBottomProperty, value: thickness.bottom });
-//     array.push({ property: marginLeftProperty, value: thickness.left });
-//     return array;
-// }
 
 function onFontChanged(style: Style, oldValue: Font, newValue: Font): void {
     // TODO: Do we need these here?
@@ -1056,60 +783,211 @@ function onFontChanged(style: Style, oldValue: Font, newValue: Font): void {
     style.fontSize = newValue.fontSize;
 }
 
+function shorthand(name: string, parser: (value: string) => {}) {
+    Object.defineProperty(Style, "css-" + name, {
+        set(value: string) {
+            const kvps = parser(value);
+            for (const key in kvps) {
+                const value = kvps[key];
+                Style["css-" + key] = value;
+            }
+        }
+    });
+    Object.defineProperty(Style, name, {
+        set(value: string) {
+            const kvps = parser(value);
+            for (const key in kvps) {
+                const value = kvps[key];
+                Style["css-" + key] = value;
+            }
+        }
+    })
+}
+
+
+class ShorthandProperty<T> {
+    constructor(name: string, private convert: (value: string) => T, private convertback) {
+    }
+}
+
+const margin1 = new ShorthandProperty("margin", (value: string) => {
+    {
+        [this.style.paddingTop]: 
+}, () => {
+    return `${this.style.paddingTop} ${this.style.paddingRight} ${this.style.paddingBottom} ${this.style.paddingLeft}`;
+});
+
+shorthand("transform", {
+    get() {
+    },
+    set(value: string) {
+        const parsed = //...
+        this["css-translateX"] = parsed.translateX;
+    }
+});
+
+Object.defineProperty(Style, "css-transform", {
+    enumerable: true,
+    configurable: true,
+    get: function (this: Style): string {
+        return this._cssTransform;
+    },
+    set: function (this: Style, value: string) {
+        let oldValue = this._cssTransform;
+        this._cssTransform = value;
+        if (oldValue !== value) {
+            if (oldValue.indexOf("none") !== -1) {
+                onCssTransformChanged(this, "none");
+            }
+
+            // We reset it from above so no need to 
+            if (value.indexOf("none") !== -1)
+                onCssTransformChanged(this, transformConverter(value));
+        }
+    }
+})
+
+Object.defineProperty(Style, "transform", {
+    enumerable: true,
+    configurable: true,
+    get: function (this: Style): string {
+        return this._transform;
+    },
+    set: function (this: Style, value: string) {
+        let oldValue = this._transform;
+        this._transform = value;
+        if (oldValue !== value) {
+            if (oldValue.indexOf("none") !== -1) {
+                onTransformChanged(this, "none");
+            }
+
+            // We reset it from above so no need to 
+            if (value.indexOf("none") !== -1)
+                onTransformChanged(this, transformConverter(value));
+        }
+    }
+})
+
 export let transformProperty = new CssProperty<Style, Object>({ name: "transform", cssName: "transform", defaultValue: "none", valueChanged: onTransformChanged, valueConverter: transformConverter });
 transformProperty.register(Style);
 
-function onTransformChanged(style: Style, oldValue: Object, value: Object): void {
-    for (var transform in value) {
+function onTransformChanged(stlyle: Style, value: Object): void {
+    for (let transform in value) {
         switch (transform) {
             case "scaleX":
-                style.scaleX = parseFloat(value[transform]);
+                stlyle.scaleX = parseFloat(value[transform]);
                 break;
+
             case "scaleY":
-                style.scaleY = parseFloat(value[transform]);
+                stlyle.scaleY = parseFloat(value[transform]);
                 break;
+
             case "scale":
             case "scale3d":
                 let scaleValues = value[transform].split(",");
-                if (scaleValues.length > 2) {
-                    style.scaleX = parseFloat(scaleValues[0]);
-                    style.scaleY = parseFloat(scaleValues[1]);
-                }  else if (values.length === 1) {
-		    style.scaleX = parseFloat(scaleValues[0]);
-                    style.scaleY = parseFloat(scaleValues[0]);
-		}
+                if (scaleValues.length === 2 || scaleValues.length === 3) {
+                    stlyle.scaleX = parseFloat(scaleValues[0]);
+                    stlyle.scaleY = parseFloat(scaleValues[1]);
+                }
                 break;
+
             case "translateX":
-                style.translateX = parseFloat(value[transform]);
+                stlyle.translateX = parseFloat(value[transform]);
                 break;
+
             case "translateY":
-                style.translateY = parseFloat(value[transform]);
+                stlyle.translateY = parseFloat(value[transform]);
                 break;
+
             case "translate":
             case "translate3d":
                 let values = value[transform].split(",");
-                if (values.length > 2) {
-                    style.translateX = parseFloat(values[0]);
-                    style.translateY = parseFloat(values[1]);
-                } else if (values.length === 1) {
-		    style.translateX = parseFloat(values[0]);
-                    style.translateY = parseFloat(values[0]);
-		}
+                if (values.length === 2 || values.length === 3) {
+                    stlyle.translateX = parseFloat(values[0]);
+                    stlyle.translateY = parseFloat(values[1]);
+                }
                 break;
+
             case "rotate":
                 let text = value[transform];
                 let val = parseFloat(text);
                 if (text.slice(-3) === "rad") {
                     val = val * (180.0 / Math.PI);
                 }
-                style.rotate = val;
+                stlyle.rotate = val;
                 break;
+
             case "none":
-                style.scaleX = 1;
-                style.scaleY = 1;
-                style.translateX = 0;
-                style.translateY = 0;
-                style.rotate = 0;
+                stlyle.scaleX = 1;
+                stlyle.scaleY = 1;
+                stlyle.translateX = 0;
+                stlyle.translateY = 0;
+                stlyle.rotate = 0;
+                break;
+        }
+    }
+}
+
+let margin = new ShorthandProperty("margin", [top, right, bottom, left], convert, convertBack);
+
+function onCssTransformChanged(style: Style, value: Object): void {
+    for (let transform in value) {
+        switch (transform) {
+            case "scaleX":
+                style[scaleXProperty.cssName] = parseFloat(value[transform]);
+                break;
+
+            case "scaleY":
+                style[scaleYProperty.cssName] = parseFloat(value[transform]);
+                break;
+
+            case "scale":
+            case "scale3d":
+                let scaleValues = value[transform].split(",");
+                if (scaleValues.length >= 2) {
+                    style[scaleXProperty.cssName] = parseFloat(scaleValues[0]);
+                    style[scaleYProperty.cssName] = parseFloat(scaleValues[1]);
+                } else if (scaleValues.length === 1) {
+		    style[scaleXProperty.cssName] = parseFloat(scaleValues[0]);
+                    style[scaleYProperty.cssName] = parseFloat(scaleValues[0]);
+		}
+                break;
+
+            case "translateX":
+                style[translateXProperty.cssName] = parseFloat(value[transform]);
+                break;
+
+            case "translateY":
+                style[translateYProperty.cssName] = parseFloat(value[transform]);
+                break;
+
+            case "translate":
+            case "translate3d":
+                let values = value[transform].split(",");
+                if (values.length >= 2) {
+                    style[translateXProperty.cssName] = parseFloat(values[0]);
+                    style[translateYProperty.cssName] = parseFloat(values[1]);
+                } else if (values.length === 1) {
+		    style[translateXProperty.cssName] = parseFloat(values[0]);
+                    style[translateYProperty.cssName] = parseFloat(values[0]);
+		}
+                break;
+
+            case "rotate":
+                let text = value[transform];
+                let val = parseFloat(text);
+                if (text.slice(-3) === "rad") {
+                    val = val * (180.0 / Math.PI);
+                }
+                style[rotateProperty.cssName] = val;
+                break;
+
+            case "none":
+                style[scaleXProperty.cssName] = 1;
+                style[scaleYProperty.cssName] = 1;
+                style[translateXProperty.cssName] = 0;
+                style[translateYProperty.cssName] = 0;
+                style[rotateProperty.cssName] = 0;
                 break;
         }
     }

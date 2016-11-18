@@ -1,7 +1,15 @@
 declare module "ui/core/view-base" {
-    import {Observable} from "data/observable";
-    import {BindingOptions} from "ui/core/bindable";
-    import {Style} from "ui/styling/style";
+    import { Observable } from "data/observable";
+    import { BindingOptions } from "ui/core/bindable";
+    import { Style } from "ui/styling/style";
+
+    /**
+     * Gets an ancestor from a given type.
+     * @param view - Starting view (child view).
+     * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
+     * Returns an instance of a view (if found), otherwise undefined.
+     */
+    export function getAncestor(view: ViewBase, criterion: string | Function): ViewBase;
 
     export class ViewBase extends Observable {
         public ios: any;
@@ -15,7 +23,7 @@ declare module "ui/core/view-base" {
         /**
          * Gets the style object associated to this view.
          */
-        public style: Style;
+        public readonly style: Style;
 
         public bind(options: BindingOptions, source: Object): void;
         public unbind(property: string): void;
@@ -26,8 +34,8 @@ declare module "ui/core/view-base" {
 }
 
 declare module "ui/core/properties" {
-    import {ViewBase} from "ui/core/view-base";
-    import {Style} from "ui/styling/style";
+    import { ViewBase } from "ui/core/view-base";
+    import { Style } from "ui/styling/style";
 
     interface PropertyOptions<T, U> {
         name: string,
@@ -39,13 +47,13 @@ declare module "ui/core/properties" {
     }
 
     interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
-        cssName: string;
+        readonly cssName: string;
     }
 
-    class Property<T extends ViewBase, U> implements PropertyDescriptor {
+    class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
         constructor(options: PropertyOptions<T, U>);
 
-        public native: symbol;
+        public readonly native: symbol;
         public register(cls: { prototype: T }): void;
     }
 
@@ -56,9 +64,9 @@ declare module "ui/core/properties" {
     class CssProperty<T extends Style, U> {
         constructor(options: CssPropertyOptions<T, U>);
 
-        public native: symbol;
-        public name: string;
-        public cssName: string;
+        public readonly native: symbol;
+        public readonly name: string;
+        public readonly cssName: string;
         public register(cls: { prototype: T }): void;
     }
 

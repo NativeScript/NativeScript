@@ -1,13 +1,15 @@
-﻿import {AnimationDefinition} from "ui/animation";
-import {AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise} from "./animation-common";
-import {Color} from "color";
-import {isNullOrUndefined} from "utils/types";
-import {AnimationCurve} from "ui/enums";
+﻿import { AnimationDefinition } from "ui/animation";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise } from "./animation-common";
+import { Color } from "color";
+import { isNullOrUndefined } from "utils/types";
+import { AnimationCurve } from "ui/enums";
 import lazy from "utils/lazy";
 import { CacheLayerType, layout } from "utils/utils";
-import {opacityProperty, backgroundColorProperty, rotateProperty,
+import {
+    opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty } from "ui/styling/style";
+    scaleXProperty, scaleYProperty
+} from "ui/styling/style";
 import * as trace from "trace";
 
 export * from "./animation-common";
@@ -36,6 +38,50 @@ propertyKeys[Properties.opacity] = Symbol(keyPrefix + Properties.opacity);
 propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
 propertyKeys[Properties.scale] = Symbol(keyPrefix + Properties.scale);
 propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
+
+export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
+    switch (curve) {
+        case AnimationCurve.easeIn:
+            if (trace.enabled) {
+                trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
+            }
+            return easeIn();
+        case AnimationCurve.easeOut:
+            if (trace.enabled) {
+                trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
+            }
+            return easeOut();
+        case AnimationCurve.easeInOut:
+            if (trace.enabled) {
+                trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
+            }
+            return easeInOut();
+        case AnimationCurve.linear:
+            if (trace.enabled) {
+                trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
+            }
+            return linear();
+        case AnimationCurve.spring:
+            if (trace.enabled) {
+                trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
+            }
+            return bounce();
+        case AnimationCurve.ease:
+            return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
+        default:
+            if (trace.enabled) {
+                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+            }
+            if (curve instanceof CubicBezierAnimationCurve) {
+                return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
+            } else if (curve instanceof android.view.animation.Interpolator) {
+                return curve;
+            }
+            else {
+                throw new Error("Invalid android.view.animation.Interpolator.");
+            }
+    }
+}
 
 export class Animation extends AnimationBase {
     private _animatorListener: android.animation.Animator.AnimatorListener;
@@ -126,47 +172,7 @@ export class Animation extends AnimationBase {
     }
 
     public _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
-        switch (curve) {
-            case AnimationCurve.easeIn:
-                if (trace.enabled) {
-                    trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
-                }
-                return easeIn();
-            case AnimationCurve.easeOut:
-                if (trace.enabled) {
-                    trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
-                }
-                return easeOut();
-            case AnimationCurve.easeInOut:
-                if (trace.enabled) {
-                    trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
-                }
-                return easeInOut();
-            case AnimationCurve.linear:
-                if (trace.enabled) {
-                    trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
-                }
-                return linear();
-            case AnimationCurve.spring:
-                if (trace.enabled) {
-                    trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
-                }
-                return bounce();
-            case AnimationCurve.ease:
-                return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
-            default:
-                if (trace.enabled) {
-                    trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
-                }
-                if (curve instanceof CubicBezierAnimationCurve) {
-                    return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
-                } else if (curve instanceof android.view.animation.Interpolator) {
-                    return curve;
-                }
-                else {
-                    throw new Error("Invalid android.view.animation.Interpolator.");
-                }
-        }
+       return _resolveAnimationCurve(curve);
     }
 
     private _onAndroidAnimationEnd() {

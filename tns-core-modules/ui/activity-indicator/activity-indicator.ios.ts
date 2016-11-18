@@ -1,6 +1,6 @@
-import {ActivityIndicatorBase, busyProperty} from "./activity-indicator-common";
-import {Visibility} from "ui/enums";
-import {colorProperty, visibilityProperty} from "ui/styling/style";
+import { ActivityIndicatorBase, busyProperty } from "./activity-indicator-common";
+import { Visibility } from "ui/enums";
+import { colorProperty, visibilityProperty } from "ui/styling/style";
 import * as utils from "utils/utils";
 
 export * from "./activity-indicator-common";

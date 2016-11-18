@@ -1,5 +1,5 @@
-﻿import {TextView as TextViewDefinition} from "ui/text-view";
-import {EditableTextBase} from "ui/editable-text-base";
+﻿import { TextView as TextViewDefinition } from "ui/text-view";
+import { EditableTextBase } from "ui/editable-text-base";
 
 export * from "ui/text-base";
 

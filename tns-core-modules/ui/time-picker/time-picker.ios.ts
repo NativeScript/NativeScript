@@ -1,24 +1,26 @@
-﻿import { TimePickerBase, getValidTime, timeProperty, minuteProperty, hourProperty } from "./time-picker-common";
+﻿import { TimePickerBase, timeProperty, minuteIntervalProperty, 
+    minuteProperty, minMinuteProperty, maxMinuteProperty,
+    hourProperty, minHourProperty, maxHourProperty } from "./time-picker-common";
 import { colorProperty } from "ui/styling/style";
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 export * from "./time-picker-common";
 
-
 function getDate(hour: number, minute: number): Date {
     let components = NSDateComponents.alloc().init();
     components.hour = hour;
     components.minute = minute;
-    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>components);
+    return getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>components);
 }
 
 function getComponents(date: Date | NSDate): NSDateComponents {
-    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
+    return getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
 export class TimePicker extends TimePickerBase {
     private _ios: UIDatePicker;
     private _changeHandler: NSObject;
+    public nativeView: UIDatePicker;
 
     constructor() {
         super();
@@ -38,28 +40,60 @@ export class TimePicker extends TimePickerBase {
         return this._ios;
     }
 
-    public _setNativeTime() {
-        if (this.ios) {
-            this.ios.date = <any>getDate(this.hour, this.minute);
-        }
+    get [timeProperty.native](): Date {
+        return this.nativeView.date;
+    }
+    set [timeProperty.native](value: Date) {
+        this.nativeView.date = getDate(this.hour, this.minute);
     }
 
-    public _setNativeMinTime() {
-        if (this.ios) {
-            this.ios.minimumDate = <any>getDate(this.minHour, this.minMinute);
-        }
+    get [minuteProperty.native](): number {
+        return this.nativeView.date.getMinutes();
+    }
+    set [minuteProperty.native](value: number) {
+        this.nativeView.date = getDate(this.hour, value);
     }
 
-    public _setNativeMaxTime() {
-        if (this.ios) {
-            this.ios.maximumDate = <any>getDate(this.maxHour, this.maxMinute);
-        }
+    get [hourProperty.native](): number {
+        return this.nativeView.date.getHours();
+    }
+    set [hourProperty.native](value: number) {
+        this.nativeView.date = getDate(value, this.minute);
     }
 
-    public _setNativeMinuteIntervalTime() {
-        if (this.ios) {
-            this.ios.minuteInterval = this.minuteInterval;
-        }
+    get [minHourProperty.native](): number {
+        return this.nativeView.minimumDate.getHours();
+    }
+    set [minHourProperty.native](value: number) {
+        this.nativeView.minimumDate = getDate(value, this.minute);
+    }
+
+    get [maxHourProperty.native](): number {
+        return this.nativeView.maximumDate.getHours();
+    }
+    set [maxHourProperty.native](value: number) {
+        this.nativeView.maximumDate = getDate(value, this.minute);
+    }
+
+    get [minMinuteProperty.native](): number {
+        return this.nativeView.minimumDate.getMinutes();
+    }
+    set [minMinuteProperty.native](value: number) {
+        this.nativeView.minimumDate = getDate(this.hour, value);
+    }
+
+    get [maxMinuteProperty.native](): number {
+        return this.nativeView.maximumDate.getMinutes();
+    }
+    set [maxMinuteProperty.native](value: number) {
+        this.nativeView.maximumDate = getDate(this.hour, value);
+    }
+
+    get [timeProperty.native](): number {
+        return this.nativeView.minuteInterval;
+    }
+    set [timeProperty.native](value: number) {
+        this.nativeView.minuteInterval = value;
     }
 
     get [colorProperty.native](): UIColor {

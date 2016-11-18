@@ -1,15 +1,32 @@
-import {Observable, EventData} from "data/observable";
+import { Observable, EventData } from "data/observable";
 
-import {propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty} from "./properties";
-import {Binding, BindingOptions} from "ui/core/bindable";
+import { propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty } from "./properties";
+import { Binding, BindingOptions } from "ui/core/bindable";
 
-import {ViewBase as ViewBaseDefinition} from "ui/core/view-base";
-import {Style} from "ui/styling/style";
+import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
+import { Style } from "ui/styling/style";
 
-let bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" })
+export let bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
 
 let defaultBindingSource = {};
+
+export function getAncestor(view: ViewBaseDefinition, criterion: string | Function): ViewBaseDefinition {
+    let matcher: (view: ViewBaseDefinition) => boolean = null;
+    if (typeof criterion === "string") {
+        matcher = (view: ViewBaseDefinition) => view.typeName === criterion;
+    } else {
+        matcher = (view: ViewBaseDefinition) => view instanceof criterion;
+    }
+
+    for (let parent = view.parent; parent != null; parent = parent.parent) {
+        if (matcher(parent)) {
+            return parent;
+        }
+    }
+
+    return null;
+}
 
 export class ViewBase extends Observable implements ViewBaseDefinition {
     private _updatingJSPropertiesDict = {};

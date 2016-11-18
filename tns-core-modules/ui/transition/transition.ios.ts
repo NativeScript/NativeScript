@@ -1,7 +1,6 @@
-﻿import definition = require("ui/transition");
-import frame = require("ui/frame");
-import types = require("utils/types");
-import trace = require("trace");
+﻿import { Transition as TransitionDefinition } from "ui/transition";
+import { NavigationTransition } from "ui/frame";
+import * as trace from "trace";
 import * as _slideTransitionModule from "./slide-transition";
 import * as _fadeTransitionModule from "./fade-transition";
 
@@ -23,13 +22,13 @@ module UIViewControllerAnimatedTransitioningMethods {
 class AnimatedTransitioning extends NSObject implements UIViewControllerAnimatedTransitioning {
     public static ObjCProtocols = [UIViewControllerAnimatedTransitioning];
 
-    private _transition: definition.Transition;
+    private _transition: TransitionDefinition;
     private _operation: UINavigationControllerOperation;
     private _fromVC: UIViewController;
     private _toVC: UIViewController;
     private _transitionType: string;
 
-    public static init(transition: definition.Transition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): AnimatedTransitioning {
+    public static init(transition: TransitionDefinition, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): AnimatedTransitioning {
         let impl = <AnimatedTransitioning>AnimatedTransitioning.new();
         impl._transition = transition;
         impl._operation = operation;
@@ -72,7 +71,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 }
 
 let transitionId = 0;
-export class Transition implements definition.Transition {
+export class Transition implements TransitionDefinition {
     private _duration: number;
     private _curve: UIViewAnimationCurve;
     private _id: number;
@@ -100,12 +99,12 @@ export class Transition implements definition.Transition {
     }
 
     public toString(): string {
-        return `${types.getClass(this)}@${this._id}`;
+        return `${this}@${this._id}`;
     }
 }
 
-export function _createIOSAnimatedTransitioning(navigationTransition: frame.NavigationTransition, nativeCurve: UIViewAnimationCurve, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
-    let transition: definition.Transition;
+export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: UIViewAnimationCurve, operation: UINavigationControllerOperation, fromVC: UIViewController, toVC: UIViewController): UIViewControllerAnimatedTransitioning {
+    let transition: TransitionDefinition;
 
     if (navigationTransition.name) {
         let name = navigationTransition.name.toLowerCase();

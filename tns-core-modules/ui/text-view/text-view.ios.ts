@@ -1,15 +1,14 @@
 ﻿import { TextView as TextViewDefinition } from "ui/text-view";
-import { EditableTextBase } from "ui/editable-text-base";
+import { EditableTextBase, editableProperty, hintProperty } from "ui/editable-text-base";
 import { textProperty } from "ui/text-base";
 import { UpdateTextTrigger } from "ui/enums";
 import {
     colorProperty, borderTopWidthProperty, borderRightWidthProperty,
     borderBottomWidthProperty, borderLeftWidthProperty, nativePaddingsProperty
 } from "ui/styling/style";
-import { isNullOrUndefined } from "utils/types";
 import * as utils from "utils/utils";
 
-export * from "ui/text-base";
+export * from "ui/editable-text-base";
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static ObjCProtocols = [UITextViewDelegate];
@@ -102,19 +101,6 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         return this._ios;
     }
 
-    public _onEditablePropertyChanged(data: PropertyChangeData) {
-        this._ios.editable = data.newValue;
-    }
-
-    public _onHintPropertyChanged(data: PropertyChangeData) {
-        this._refreshHintState(data.newValue, this.text);
-    }
-
-    public _onTextPropertyChanged(data: PropertyChangeData) {
-        super._onTextPropertyChanged(data);
-        this._refreshHintState(this.hint, data.newValue);
-    }
-
     public _refreshHintState(hint: string, text: string) {
         if (hint && !text) {
             this._showHint(hint);
@@ -125,15 +111,38 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     public _showHint(hint: string) {
-        this.ios.textColor = this.ios.textColor ? this.ios.textColor.colorWithAlphaComponent(0.22) : utils.ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
-        this.ios.text = isNullOrUndefined(hint) ? "" : hint + "";
+        let nativeView = this.nativeView;
+        nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : utils.ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
+        nativeView.text = hint + "";
         this._isShowingHint = true;
     }
 
     public _hideHint() {
-        this.ios.textColor = this.color ? this.color.ios : null;
-        this.ios.text = isNullOrUndefined(this.text) ? "" : this.text + "";
+        let nativeView = this.nativeView;
+        nativeView.textColor = this.color ? this.color.ios : null;
+        nativeView.text = this.text + "";
         this._isShowingHint = false;
+    }
+
+    get [textProperty.native](): string {
+        return "";
+    }
+    set [textProperty.native](value: string) {
+        this._refreshHintState(this.hint, value);
+    }
+
+    get [hintProperty.native](): string {
+        return "";
+    }
+    set [hintProperty.native](value: string) {
+        this._refreshHintState(value, this.text);
+    }
+
+    get [editableProperty.native](): boolean {
+        return this.nativeView.editable;
+    }
+    set [editableProperty.native](value: boolean) {
+        this.nativeView.editable = value;
     }
 
     get [colorProperty.native](): UIColor {
@@ -149,8 +158,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         let textView = this.nativeView;
         if (this._isShowingHint && color) {
             textView.textColor = color.colorWithAlphaComponent(0.22);
-        }
-        else {
+        } else {
             textView.textColor = color;
             textView.tintColor = color;
         }

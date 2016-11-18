@@ -234,9 +234,7 @@ function canLoadFont(fontFamily: string, fontFace: string) {
 }
 
 function findCorrectWeightString(fontFamily: string, weightStringAlternatives: Array<string>, isItalic: boolean) {
-    var i = 0;
-    let length = weightStringAlternatives.length;
-    for (; i < length; i++) {
+    for (let i = 0, length = weightStringAlternatives.length; i < length; i++) {
         var possibleFontFace = combineWeightStringWithItalic(weightStringAlternatives[i], isItalic);
         if (canLoadFont(fontFamily, possibleFontFace)) {
             return weightStringAlternatives[i];

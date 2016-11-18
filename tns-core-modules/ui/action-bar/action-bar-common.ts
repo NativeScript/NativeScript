@@ -1,16 +1,18 @@
-﻿import {ActionBar as ActionBarDefinition,
+﻿import {
+    ActionBar as ActionBarDefinition,
     ActionItems as ActionItemsDefinition,
     ActionItem as ActionItemDefinition,
     IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings,
-    NavigationButton} from "ui/action-bar";
-import {Page} from "ui/page";
-import {Bindable} from "ui/core/bindable";
-import {HorizontalAlignment, VerticalAlignment, Visibility} from "ui/enums";
-import {View} from "ui/core/view";
-import {horizontalAlignmentProperty, verticalAlignmentProperty} from "ui/styling/style";
-import {Property} from "ui/core/properties";
-import {unsetValue} from "ui/core/dependency-observable";
-import {ViewBase} from "ui/core/view-base";
+    NavigationButton
+} from "ui/action-bar";
+import { Page } from "ui/page";
+import { Bindable } from "ui/core/bindable";
+import { HorizontalAlignment, VerticalAlignment, Visibility } from "ui/enums";
+import { View } from "ui/core/view";
+import { horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/styling/style";
+import { Property } from "ui/core/properties";
+import { unsetValue } from "ui/core/dependency-observable";
+import { ViewBase } from "ui/core/view-base";
 
 let ACTION_ITEMS = "actionItems";
 

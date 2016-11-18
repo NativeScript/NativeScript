@@ -58,13 +58,6 @@ declare module "ui/time-picker" {
          * Gets or sets the minute interval.
          */
         minuteInterval: number;
-
-        //@private
-        _setNativeTime(): void;
-        _setNativeMinTime(): void;
-        _setNativeMaxTime(): void;
-        _setNativeMinuteIntervalTime(): void;
-        //@endprivate
     }
 
     export let hourProperty: Property<TimePicker, number>;

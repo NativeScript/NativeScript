@@ -2,7 +2,7 @@
 import { Property } from "ui/core/properties";
 import { TextBase } from "ui/text-base";
 
-import {UpdateTextTrigger, AutocapitalizationType} from "ui/enums";
+import { UpdateTextTrigger, AutocapitalizationType } from "ui/enums";
 
 export let keyboardTypeProperty = new Property<EditableTextBase, string>({ name: "keyboardType" });
 keyboardTypeProperty.register(EditableTextBase);

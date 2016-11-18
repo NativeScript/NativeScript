@@ -1,17 +1,17 @@
 ﻿declare module "ui/builder" {
-    import view = require("ui/core/view");
-    import page = require("ui/page");
+    import { View, Template, KeyedTemplate } from "ui/core/view";
+    import { Page } from "ui/page";
 
-    export function load(fileName: string, exports?: any): view.View;
-    export function load(options: LoadOptions): view.View;
-    export function parse(value: string | view.Template, exports?: any): view.View;
-    export function parseMultipleTemplates(value: string, exports?: any): Array<view.KeyedTemplate>;
+    export function load(fileName: string, exports?: any): View;
+    export function load(options: LoadOptions): View;
+    export function parse(value: string | Template, exports?: any): View;
+    export function parseMultipleTemplates(value: string, exports?: any): Array<KeyedTemplate>;
 
     export interface LoadOptions {
         path: string;
         name: string;
         attributes?: any;
         exports?: any;
-        page?: page.Page;
+        page?: Page;
     }
 }

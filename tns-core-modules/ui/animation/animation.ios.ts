@@ -1,11 +1,13 @@
-import {AnimationDefinition} from "ui/animation";
-import {AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise} from "./animation-common";
-import {View} from "ui/core/view";
-import {AnimationCurve} from "ui/enums";
+import { AnimationDefinition } from "ui/animation";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise } from "./animation-common";
+import { View } from "ui/core/view";
+import { AnimationCurve } from "ui/enums";
 import * as utils from "utils/utils";
-import {opacityProperty, backgroundColorProperty, rotateProperty,
+import {
+    opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty } from "ui/styling/style";
+    scaleXProperty, scaleYProperty
+} from "ui/styling/style";
 import * as trace from "trace";
 
 export * from "./animation-common";
@@ -115,6 +117,32 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
     }
 }
 
+export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | CAMediaTimingFunction): CAMediaTimingFunction {
+    switch (curve) {
+        case AnimationCurve.easeIn:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseIn);
+        case AnimationCurve.easeOut:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseOut);
+        case AnimationCurve.easeInOut:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
+        case AnimationCurve.linear:
+            return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
+        case AnimationCurve.spring:
+            return <CAMediaTimingFunction>curve;
+        case AnimationCurve.ease:
+            return CAMediaTimingFunction.functionWithControlPoints(0.25, 0.1, 0.25, 1.0);
+        default:
+            if (curve instanceof CAMediaTimingFunction) {
+                return curve;
+            }
+            else if (curve instanceof CubicBezierAnimationCurve) {
+                let animationCurve = <CubicBezierAnimationCurve>curve;
+                return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
+            }
+            return undefined;
+    }
+}
+
 export class Animation extends AnimationBase {
     private _iOSAnimationFunction: Function;
     private _finishedAnimations: number;
@@ -203,29 +231,7 @@ export class Animation extends AnimationBase {
     }
 
     public _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | CAMediaTimingFunction): CAMediaTimingFunction {
-        switch (curve) {
-            case AnimationCurve.easeIn:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseIn);
-            case AnimationCurve.easeOut:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseOut);
-            case AnimationCurve.easeInOut:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
-            case AnimationCurve.linear:
-                return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
-            case AnimationCurve.spring:
-                return <CAMediaTimingFunction>curve;
-            case AnimationCurve.ease:
-                return CAMediaTimingFunction.functionWithControlPoints(0.25, 0.1, 0.25, 1.0);
-            default:
-                if (curve instanceof CAMediaTimingFunction) {
-                    return curve;
-                }
-                else if (curve instanceof CubicBezierAnimationCurve) {
-                    let animationCurve = <CubicBezierAnimationCurve>curve;
-                    return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
-                }
-                return undefined;
-        }
+        return _resolveAnimationCurve(curve);
     }
 
     private static _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, valueSource: number, finishedCallback: (cancelled?: boolean) => void): Function {

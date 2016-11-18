@@ -202,27 +202,33 @@
 
                 public static getWidth(view: android.view.View): number;
                 public static setWidth(view: android.view.View, value: number): void;
+                public static setWidthPercent(view: android.view.View, value: number): void;
 
                 public static getHeight(view: android.view.View): number;
                 public static setHeight(view: android.view.View, value: number): void;
+                public static setHeightPercent(view: android.view.View, value: number): void;
 
                 public static getMargin(view: android.view.View): { left: number, top: number, right: number, bottom: number };
                 public static setMargin(view: android.view.View, left: number, top: number, right: number, bottom: number): void;
 
                 public static getMarginLeft(view: android.view.View): number;
                 public static setMarginLeft(view: android.view.View, value: number): void;
+                public static setMarginLeftPercent(view: android.view.View, value: number): void;
 
                 public static getMarginTop(view: android.view.View): number;
                 public static setMarginTop(view: android.view.View, value: number): void;
+                public static setMarginTopPercent(view: android.view.View, value: number): void;
 
                 public static getMarginRight(view: android.view.View): number;
                 public static setMarginRight(view: android.view.View, value: number): void;
+                public static setMarginRightPercent(view: android.view.View, value: number): void;
 
                 public static getMarginBottom(view: android.view.View): number;
                 public static setMarginBottom(view: android.view.View, value: number): void;
+                public static setMarginBottomPercent(view: android.view.View, value: number): void;
 
-                public static getHorizontalAlighment(view: android.view.View): string;
-                public static setHorizontalAlighment(view: android.view.View, value: string): void;
+                public static getHorizontalAlignment(view: android.view.View): string;
+                public static setHorizontalAlignment(view: android.view.View, value: string): void;
 
                 public static getVerticalAlignment(view: android.view.View): string;
                 public static setVerticalAlignment(view: android.view.View, value: string): void;

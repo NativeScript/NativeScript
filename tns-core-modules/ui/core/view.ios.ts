@@ -53,14 +53,9 @@ var PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends viewCommon.View {
     private _hasTransfrom = false;
-    private _privateFlags: number;
+    private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
-
-    constructor() {
-        super();
-        this._privateFlags = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
-    }
 
     public _addViewCore(view: viewCommon.View, atIndex?: number) {
         super._addViewCore(view, atIndex);

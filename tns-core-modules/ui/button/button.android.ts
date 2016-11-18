@@ -10,7 +10,7 @@ class ClickListener implements android.view.View.OnClickListener {
 
     public onClick(v: android.view.View): void {
         let btn = this.owner.get();
-        if (btn) { 
+        if (btn) {
             btn._emit(ButtonBase.tapEvent);
         }
     }
@@ -22,7 +22,7 @@ class TouchListener implements android.view.View.OnTouchListener {
 
     public onTouch(v: android.view.View, event: android.view.MotionEvent): boolean {
         let btn = this.owner.get();
-        if (!btn) { 
+        if (!btn) {
             return false;
         }
 

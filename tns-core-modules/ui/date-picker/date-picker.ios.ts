@@ -3,41 +3,22 @@
     dateProperty, maxDateProperty, minDateProperty
 } from "./date-picker-common";
 import { colorProperty } from "ui/styling/style"
+import * as utils from "utils/utils";
 
 export * from "./date-picker-common";
 
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
-
-import * as utils from "utils/utils";
-
-function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.ios) {
-        picker.ios.minimumDate = <any>NSDate.dateWithTimeIntervalSince1970((<Date>data.newValue).getTime() / 1000);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
-
 export class DatePicker extends DatePickerBase {
-    private _ios: UIDatePicker;
     private _changeHandler: NSObject;
     public nativeView: UIDatePicker;
 
     constructor() {
         super();
 
-        this._ios = UIDatePicker.new();
-        this._ios.datePickerMode = UIDatePickerMode.Date;
+        this.nativeView = UIDatePicker.new();
+        this.nativeView.datePickerMode = UIDatePickerMode.Date;
 
         this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
-    }
-
-    get ios(): UIDatePicker {
-        return this._ios;
+        this.nativeView.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
     }
 
     get [yearProperty.native](): number {

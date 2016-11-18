@@ -2,7 +2,7 @@
  * Contains the DependencyObservable class, which represents an extended Observable object that uses Property instances for value backing mechanism.
  */
 declare module "ui/core/dependency-observable" {
-    import observable = require("data/observable");
+    import { Observable, EventData } from "data/observable";
 
     /**
      * Value specifing that Property value should be reset. Used when bindingContext on bound property is creared/null.
@@ -122,7 +122,7 @@ declare module "ui/core/dependency-observable" {
     /**
      * The data for the event raised when a value of a Property changes for a DependencyObservable instance.
      */
-    export interface PropertyChangeData extends observable.EventData {
+    export interface PropertyChangeData extends EventData {
         /**
          * The Property associated with the change.
          */
@@ -203,7 +203,7 @@ declare module "ui/core/dependency-observable" {
      * Represents an extended Observable Object that uses Property instances for value backing mechanism.
      * This routine allows for various value modifiers per Property, which is used for inheritance, data-binding and styling purposes.
      */
-    export class DependencyObservable extends observable.Observable {
+    export class DependencyObservable extends Observable {
         // TODO: Do we want to expose the get/setValue methods as public?
         /**
          * Gets a value for the property.

@@ -2,8 +2,11 @@
 import * as enums from "ui/enums";
 import * as utils from "utils/utils";
 import * as backgroundModule from "ui/styling/background";
-import {View} from "ui/core/view";
+import { View } from "ui/core/view";
 import style = require("ui/styling/style");
+
+import { whiteSpaceProperty } from "ui/styling/style";
+import { WhiteSpace } from "ui/enums";
 
 global.moduleMerge(common, exports);
 
@@ -91,6 +94,21 @@ export class Label extends common.Label {
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
+
+    get [whiteSpaceProperty.native](): string {
+        return WhiteSpace.normal;
+    }
+    set [whiteSpaceProperty.native](value: string) {
+        let nativeView = this.nativeView;
+        if (value === WhiteSpace.normal) {
+            nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+            nativeView.numberOfLines = 0;
+        }
+        else {
+            nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+            nativeView.numberOfLines = 1;
+        }
+    }
 }
 
 let zeroInsets = UIEdgeInsetsZero;
@@ -137,10 +155,10 @@ export class LabelStyler implements style.Styler {
     private static setNativeBorderTopWidth(view: View, newValue: number) {
         let nativeView = <UIView>view._nativeView;
         if (nativeView instanceof TNSLabel) {
-            nativeView.borderThickness = { 
-                top: newValue, 
-                right: nativeView.borderThickness.right, 
-                bottom: nativeView.borderThickness.bottom, 
+            nativeView.borderThickness = {
+                top: newValue,
+                right: nativeView.borderThickness.right,
+                bottom: nativeView.borderThickness.bottom,
                 left: nativeView.borderThickness.left
             };
         }
@@ -165,10 +183,10 @@ export class LabelStyler implements style.Styler {
     private static setNativeBorderRightWidth(view: View, newValue: number) {
         let nativeView = <UIView>view._nativeView;
         if (nativeView instanceof TNSLabel) {
-            nativeView.borderThickness = { 
-                top: nativeView.borderThickness.top, 
-                right: newValue, 
-                bottom: nativeView.borderThickness.bottom, 
+            nativeView.borderThickness = {
+                top: nativeView.borderThickness.top,
+                right: newValue,
+                bottom: nativeView.borderThickness.bottom,
                 left: nativeView.borderThickness.left
             };
         }
@@ -193,10 +211,10 @@ export class LabelStyler implements style.Styler {
     private static setNativeBorderBottomWidth(view: View, newValue: number) {
         let nativeView = <UIView>view._nativeView;
         if (nativeView instanceof TNSLabel) {
-            nativeView.borderThickness = { 
-                top: nativeView.borderThickness.top, 
-                right: nativeView.borderThickness.right, 
-                bottom: newValue, 
+            nativeView.borderThickness = {
+                top: nativeView.borderThickness.top,
+                right: nativeView.borderThickness.right,
+                bottom: newValue,
                 left: nativeView.borderThickness.left
             };
         }
@@ -221,10 +239,10 @@ export class LabelStyler implements style.Styler {
     private static setNativeBorderLeftWidth(view: View, newValue: number) {
         let nativeView = <UIView>view._nativeView;
         if (nativeView instanceof TNSLabel) {
-            nativeView.borderThickness = { 
-                top: nativeView.borderThickness.top, 
-                right: nativeView.borderThickness.right, 
-                bottom: nativeView.borderThickness.bottom, 
+            nativeView.borderThickness = {
+                top: nativeView.borderThickness.top,
+                right: nativeView.borderThickness.right,
+                bottom: nativeView.borderThickness.bottom,
                 left: newValue
             };
         }
@@ -266,7 +284,7 @@ export class LabelStyler implements style.Styler {
             LabelStyler.setBackgroundInternalProperty,
             LabelStyler.resetBackgroundInternalProperty,
             LabelStyler.getNativeBackgroundInternalValue), "Label");
-        
+
         style.registerHandler(style.borderTopWidthProperty, new style.StylePropertyChangedHandler(
             LabelStyler.setBorderTopWidthProperty,
             LabelStyler.resetBorderTopWidthProperty,

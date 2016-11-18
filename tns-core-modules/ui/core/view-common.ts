@@ -1,23 +1,24 @@
-import {View as ViewDefinition, Point, Size} from "ui/core/view";
-import {Style} from "ui/styling/style";
-import {CssState, StyleScope, applyInlineSyle} from "ui/styling/style-scope";
-import {VerticalAlignment, HorizontalAlignment} from "ui/enums";
-
-import {Color} from "color";
-import {Animation} from "ui/animation";
-import {KeyframeAnimation} from "ui/animation/keyframe-animation";
-import {Source} from "utils/debug";
-import {Observable, EventData} from "data/observable";
-import {ViewBase} from "./view-base";
-
-import {propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty} from "./properties";
-import bindable = require("ui/core/bindable");
-
-import {isString, isNumber} from "utils/types";
+import { View as ViewDefinition, Point, Size, Thickness } from "ui/core/view";
+import { Style, CommonLayoutParams } from "ui/styling/style";
+import { CssState, StyleScope, applyInlineSyle } from "ui/styling/style-scope";
+import { VerticalAlignment, HorizontalAlignment } from "ui/enums";
+import { Color } from "color";
+import { Animation, AnimationPromise } from "ui/animation";
+import { KeyframeAnimation } from "ui/animation/keyframe-animation";
+import { Source } from "utils/debug";
+import { Observable, EventData } from "data/observable";
+import { ViewBase } from "./view-base";
+import { propagateInheritedProperties, clearInheritedProperties, Property, InheritedProperty, CssProperty, ShorthandProperty } from "./properties";
+import { isString, isNumber } from "utils/types";
+import { observe, fromString, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
+import { isAndroid, isIOS } from "platform";
 
 import * as trace from "trace";
 import * as utils from "utils/utils";
-import {observe, fromString, GesturesObserver, GestureTypes, GestureEventData} from "ui/gestures";
+import bindable = require("ui/core/bindable");
+
+// on Android we explicitly set AffectsLayout to False because android will invalidate its layout when needed so we skip unnecessary native calls.
+let affectsIOSLayout = isIOS;
 
 // registerSpecialProperty("class", (instance: ViewDefinition, propertyValue: string) => {
 //     instance.className = propertyValue;
@@ -30,10 +31,62 @@ function getEventOrGestureName(name: string): string {
     return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
 }
 
-export function isEventOrGesture(name: string, view: View): boolean {
+export namespace layout {
+    let MODE_SHIFT = 30;
+    let MODE_MASK = 0x3 << MODE_SHIFT;
+
+    export let UNSPECIFIED = 0 << MODE_SHIFT;
+    export let EXACTLY = 1 << MODE_SHIFT;
+    export let AT_MOST = 2 << MODE_SHIFT;
+
+    export let MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
+    export let MEASURED_STATE_TOO_SMALL = 0x01000000;
+    export let MEASURED_STATE_MASK = 0xff000000;
+    export let MEASURED_SIZE_MASK = 0x00ffffff;
+
+    export function getMeasureSpecMode(spec: number): number {
+        return (spec & MODE_MASK);
+    }
+
+    export function getMeasureSpecSize(spec: number): number {
+        return (spec & ~MODE_MASK);
+    }
+
+    export function getDisplayDensity(): number {
+        return 1;
+    }
+
+    export function makeMeasureSpec(size: number, mode: number): number {
+        return (Math.round(size) & ~MODE_MASK) | (mode & MODE_MASK);
+    }
+
+    export function measureSpecToString(measureSpec: number): string {
+        let mode = getMeasureSpecMode(measureSpec);
+        let size = getMeasureSpecSize(measureSpec);
+
+        let text = "MeasureSpec: ";
+
+        if (mode === UNSPECIFIED) {
+            text += "UNSPECIFIED ";
+        }
+        else if (mode === EXACTLY) {
+            text += "EXACTLY ";
+        }
+        else if (mode === AT_MOST) {
+            text += "AT_MOST ";
+        }
+        else {
+            text += mode + " ";
+        }
+
+        text += size;
+        return text;
+    }
+}
+export function isEventOrGesture(name: string, view: ViewDefinition): boolean {
     if (isString(name)) {
-        var eventOrGestureName = getEventOrGestureName(name);
-        var evt = `${eventOrGestureName}Event`;
+        let eventOrGestureName = getEventOrGestureName(name);
+        let evt = `${eventOrGestureName}Event`;
 
         return view.constructor && evt in view.constructor ||
             fromString(eventOrGestureName.toLowerCase()) !== undefined;
@@ -42,7 +95,7 @@ export function isEventOrGesture(name: string, view: View): boolean {
     return false;
 }
 
-export function getViewById(view: View, id: string): View {
+export function getViewById(view: ViewDefinition, id: string): ViewDefinition {
     if (!view) {
         return undefined;
     }
@@ -51,8 +104,8 @@ export function getViewById(view: View, id: string): View {
         return view;
     }
 
-    var retVal: View;
-    var descendantsCallback = function (child: View): boolean {
+    let retVal: ViewDefinition;
+    let descendantsCallback = function (child: ViewDefinition): boolean {
         if (child.id === id) {
             retVal = child;
             // break the iteration by returning false
@@ -66,13 +119,13 @@ export function getViewById(view: View, id: string): View {
     return retVal;
 }
 
-export function eachDescendant(view: ViewDefinition, callback: (child: View) => boolean) {
+export function eachDescendant(view: ViewDefinition, callback: (child: ViewDefinition) => boolean) {
     if (!callback || !view) {
         return;
     }
 
-    var continueIteration: boolean;
-    var localCallback = function (child: View): boolean {
+    let continueIteration: boolean;
+    let localCallback = function (child: ViewDefinition): boolean {
         continueIteration = callback(child);
         if (continueIteration) {
             child._eachChildView(localCallback);
@@ -81,23 +134,6 @@ export function eachDescendant(view: ViewDefinition, callback: (child: View) => 
     }
 
     view._eachChildView(localCallback);
-}
-
-export function getAncestor(view: View, criterion: string | Function): ViewDefinition {
-    let matcher: (view: ViewDefinition) => boolean = null;
-    if (typeof criterion === "string") {
-        matcher = (view: ViewDefinition) => view.typeName === criterion;
-    } else {
-        matcher = (view: ViewDefinition) => view instanceof criterion;
-    }
-
-    for (let parent = view.parent; parent != null; parent = parent.parent) {
-        if (matcher(parent)) {
-            return parent;
-        }
-    }
-
-    return null;
 }
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
@@ -119,7 +155,7 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 
 let viewIdCounter = 0;
 
-function onCssClassPropertyChanged(view: View, oldValue: string, newValue: string) {
+function onCssClassPropertyChanged(view: ViewDefinition, oldValue: string, newValue: string) {
     let classes = view.cssClasses;
     classes.clear();
     if (isString(newValue)) {
@@ -127,15 +163,15 @@ function onCssClassPropertyChanged(view: View, oldValue: string, newValue: strin
     }
 }
 
-// var cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
-let cssClassProperty = new Property<View, string>({ name: "cssClass", valueChanged: onCssClassPropertyChanged });
-cssClassProperty.register(View);
+// let cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
+export let cssClassProperty = new Property<ViewCommon, string>({ name: "cssClass", valueChanged: onCssClassPropertyChanged });
+cssClassProperty.register(ViewCommon);
 
-// var classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
-let classNameProperty = new Property<View, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
-classNameProperty.register(View);
+// let classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
+export let classNameProperty = new Property<ViewCommon, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
+classNameProperty.register(ViewCommon);
 
-function resetStyles(view: View): void {
+function resetStyles(view: ViewCommon): void {
     // view.style._resetCssValues();
     // view._applyStyleFromScope();
     view._eachChildView((child) => {
@@ -143,70 +179,56 @@ function resetStyles(view: View): void {
         return true;
     });
 }
-// var idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
-let idProperty = new Property<View, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
-idProperty.register(View);
+// let idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
+export let idProperty = new Property<ViewCommon, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
+idProperty.register(ViewCommon);
 
-// var automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
-let automationTextProperty = new Property<View, string>({ name: "automationText" });
-automationTextProperty.register(View);
+// let automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
+export let automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
+automationTextProperty.register(ViewCommon);
 
-// var originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
-let originXProperty = new Property<View, number>({ name: "originX", defaultValue: 0.5 });
-originXProperty.register(View);
+// let originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
+export let originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5 });
+originXProperty.register(ViewCommon);
 
-// var originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
-let originYProperty = new Property<View, number>({ name: "originY", defaultValue: 0.5 });
-originYProperty.register(View);
+// let originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
+export let originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5 });
+originYProperty.register(ViewCommon);
 
-// var isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
-let isEnabledProperty = new Property<View, boolean>({ name: "isEnabled", defaultValue: true });
-isEnabledProperty.register(View);
+// let isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
+export let isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true });
+isEnabledProperty.register(ViewCommon);
 
-// var isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
-let isUserInteractionEnabledProperty = new Property<View, boolean>({ name: "isUserInteractionEnabled", defaultValue: true });
-isUserInteractionEnabledProperty.register(View);
+// let isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
+export let isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true });
+isUserInteractionEnabledProperty.register(ViewCommon);
 
-let bindingContextProperty = new InheritedProperty<View, any>({ name: "bindingContext" })
-bindingContextProperty.register(View);
-
-let defaultBindingSource = {};
-
-export class View extends ViewBase implements ViewDefinition {
+export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
-    public static automationTextProperty = automationTextProperty;
-    public static idProperty = idProperty;
-    public static cssClassProperty = cssClassProperty;
-    public static classNameProperty = classNameProperty;
-    public static originXProperty = originXProperty;
-    public static originYProperty = originYProperty;
-    public static isEnabledProperty = isEnabledProperty;
-    public static isUserInteractionEnabledProperty = isUserInteractionEnabledProperty;
+    private _measuredWidth: number;
+    private _measuredHeight: number;
 
-    private _measuredWidth: number = Number.NaN;
-    private _measuredHeight: number = Number.NaN;
+    _currentWidthMeasureSpec: number;
+    _currentHeightMeasureSpec: number;
+    private _oldLeft: number;
+    private _oldTop: number;
+    private _oldRight: number;
+    private _oldBottom: number;
 
-    private _oldWidthMeasureSpec: number = Number.NaN;
-    private _oldHeightMeasureSpec: number = Number.NaN;
-    private _oldLeft: number = 0;
-    private _oldTop: number = 0;
-    private _oldRight: number = 0;
-    private _oldBottom: number = 0;
-
-    private _parent: View;
+    private _parent: ViewCommon;
 
     private _visualState: string;
     private _isLoaded: boolean;
-    private _isLayoutValid: boolean = false;
+    private _isLayoutValid: boolean;
     private _cssType: string;
 
     private _updatingInheritedProperties: boolean;
     private _registeredAnimations: Array<KeyframeAnimation>;
 
     public _domId: number;
-    public _isAddedToNativeVisualTree = false;
+    public _isAddedToNativeVisualTree: boolean;
     public _gestureObservers = {};
 
     public cssClasses: Set<string> = new Set();
@@ -214,8 +236,24 @@ export class View extends ViewBase implements ViewDefinition {
 
     public _cssState: CssState;
     public isVisible = true;
+    public parent: this;
 
-
+    public layoutParams: CommonLayoutParams = {
+        width: -1,
+        widthPercent: -1,
+        height: -1,
+        heightPercent: -1,
+        leftMargin: 0,
+        leftMarginPercent: -1,
+        topMargin: 0,
+        topMarginPercent: -1,
+        rightMargin: 0,
+        rightMarginPercent: -1,
+        bottomMargin: 0,
+        bottomMarginPercent: -1,
+        horizontalAlignment: "stretch",
+        verticalAlignment: "stretch"
+    };
 
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
         return this._gestureObservers[type];
@@ -240,14 +278,14 @@ export class View extends ViewBase implements ViewDefinition {
             this._gestureObservers[type] = [];
         }
 
-        this._gestureObservers[type].push(gestures.observe(this, type, callback, thisArg));
+        this._gestureObservers[type].push(observe(this, type, callback, thisArg));
     }
 
-    public addEventListener(arg: string | gestures.GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
+    public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
         if (isString(arg)) {
             arg = getEventOrGestureName(<string>arg);
 
-            let gesture = gestures.fromString(<string>arg);
+            let gesture = fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this.observe(gesture, callback, thisArg);
             } else {
@@ -255,7 +293,7 @@ export class View extends ViewBase implements ViewDefinition {
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
-                        let gst = gestures.fromString(evt);
+                        let gst = fromString(evt);
                         if (gst && !this._isEvent(<string>arg)) {
                             this.observe(gst, callback, thisArg);
                         } else {
@@ -267,13 +305,13 @@ export class View extends ViewBase implements ViewDefinition {
                 }
             }
         } else if (isNumber(arg)) {
-            this.observe(<gestures.GestureTypes>arg, callback, thisArg);
+            this.observe(<GestureTypes>arg, callback, thisArg);
         }
     }
 
-    public removeEventListener(arg: string | gestures.GestureTypes, callback?: any, thisArg?: any) {
+    public removeEventListener(arg: string | GestureTypes, callback?: any, thisArg?: any) {
         if (isString(arg)) {
-            let gesture = gestures.fromString(<string>arg);
+            let gesture = fromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this._disconnectGestureObservers(gesture);
             } else {
@@ -281,7 +319,7 @@ export class View extends ViewBase implements ViewDefinition {
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
-                        let gst = gestures.fromString(evt);
+                        let gst = fromString(evt);
                         if (gst && !this._isEvent(<string>arg)) {
                             this._disconnectGestureObservers(gst);
                         } else {
@@ -294,11 +332,11 @@ export class View extends ViewBase implements ViewDefinition {
 
             }
         } else if (isNumber(arg)) {
-            this._disconnectGestureObservers(<gestures.GestureTypes>arg);
+            this._disconnectGestureObservers(<GestureTypes>arg);
         }
     }
 
-    public eachChild(callback: (child: View) => boolean): void {
+    public eachChild(callback: (child: ViewCommon) => boolean): void {
         this._eachChildView(callback);
     }
 
@@ -306,8 +344,8 @@ export class View extends ViewBase implements ViewDefinition {
         return this.constructor && `${name}Event` in this.constructor;
     }
 
-    private _disconnectGestureObservers(type: gestures.GestureTypes): void {
-        var observers = this.getGestureObservers(type);
+    private _disconnectGestureObservers(type: GestureTypes): void {
+        let observers = this.getGestureObservers(type);
         if (observers) {
             for (let i = 0; i < observers.length; i++) {
                 observers[i].disconnect();
@@ -315,7 +353,7 @@ export class View extends ViewBase implements ViewDefinition {
         }
     }
 
-    getViewById<T extends View>(id: string): T {
+    getViewById<T extends ViewDefinition>(id: string): T {
         return <T>getViewById(this, id);
     }
 
@@ -462,17 +500,17 @@ export class View extends ViewBase implements ViewDefinition {
         this.style.minHeight = value;
     }
 
-    get width(): number {
+    get width(): Length {
         return this.style.width;
     }
-    set width(value: number) {
+    set width(value: Length) {
         this.style.width = value;
     }
 
-    get height(): number {
+    get height(): Length {
         return this.style.height;
     }
-    set height(value: number) {
+    set height(value: Length) {
         this.style.height = value;
     }
 
@@ -483,45 +521,45 @@ export class View extends ViewBase implements ViewDefinition {
         this.style.margin = value;
     }
 
-    get marginLeft(): number {
+    get marginLeft(): Length {
         return this.style.marginLeft;
     }
-    set marginLeft(value: number) {
+    set marginLeft(value: Length) {
         this.style.marginLeft = value;
     }
 
-    get marginTop(): number {
+    get marginTop(): Length {
         return this.style.marginTop;
     }
-    set marginTop(value: number) {
+    set marginTop(value: Length) {
         this.style.marginTop = value;
     }
 
-    get marginRight(): number {
+    get marginRight(): Length {
         return this.style.marginRight;
     }
-    set marginRight(value: number) {
+    set marginRight(value: Length) {
         this.style.marginRight = value;
     }
 
-    get marginBottom(): number {
+    get marginBottom(): Length {
         return this.style.marginBottom;
     }
-    set marginBottom(value: number) {
+    set marginBottom(value: Length) {
         this.style.marginBottom = value;
     }
 
-    get horizontalAlignment(): string {
+    get horizontalAlignment(): "left" | "center" | "middle" | "right" | "stretch" {
         return this.style.horizontalAlignment;
     }
-    set horizontalAlignment(value: string) {
+    set horizontalAlignment(value: "left" | "center" | "middle" | "right" | "stretch") {
         this.style.horizontalAlignment = value;
     }
 
-    get verticalAlignment(): string {
+    get verticalAlignment(): "top" | "center" | "middle" | "bottom" | "stretch" {
         return this.style.verticalAlignment;
     }
-    set verticalAlignment(value: string) {
+    set verticalAlignment(value: "top" | "center" | "middle" | "bottom" | "stretch") {
         this.style.verticalAlignment = value;
     }
 
@@ -618,9 +656,9 @@ export class View extends ViewBase implements ViewDefinition {
         return this._cssType;
     }
 
-    get parent(): View {
-        return this._parent;
-    }
+    // get parent(): ViewCommon {
+    //     return this.parent;
+    // }
 
     get isLoaded(): boolean {
         return this._isLoaded;
@@ -636,7 +674,7 @@ export class View extends ViewBase implements ViewDefinition {
     public _loadEachChildView() {
         if (this._childrenCount > 0) {
             // iterate all children and call onLoaded on them first
-            var eachChild = function (child: View): boolean {
+            let eachChild = function (child: ViewCommon): boolean {
                 child.onLoaded();
                 return true;
             }
@@ -655,7 +693,7 @@ export class View extends ViewBase implements ViewDefinition {
 
     public _unloadEachChildView() {
         if (this._childrenCount > 0) {
-            this._eachChildView((child) => {
+            this._eachChildView((child: ViewCommon) => {
                 if (child.isLoaded) {
                     child.onUnloaded();
                 }
@@ -687,7 +725,7 @@ export class View extends ViewBase implements ViewDefinition {
     //     if (this._updatingInheritedProperties) {
     //         return true;
     //     }
-    //     var parentView: View;
+    //     let parentView: ViewDefinition;
     //     parentView = <View>(this.parent);
     //     while (parentView) {
     //         if (parentView._updatingInheritedProperties) {
@@ -747,17 +785,9 @@ export class View extends ViewBase implements ViewDefinition {
         this._isLayoutValid = false;
     }
 
-    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        //
-    }
-
-    public onLayout(left: number, top: number, right: number, bottom: number): void {
-        //
-    }
-
-    public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-        //
-    }
+    public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
+    public abstract onLayout(left: number, top: number, right: number, bottom: number): void;
+    public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
 
     private pseudoClassAliases = {
         'highlighted': [
@@ -798,7 +828,7 @@ export class View extends ViewBase implements ViewDefinition {
     }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
-        var result = size;
+        let result = size;
         switch (specMode) {
             case utils.layout.UNSPECIFIED:
                 result = size;
@@ -822,12 +852,11 @@ export class View extends ViewBase implements ViewDefinition {
         return curState | newState;
     }
 
-    public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void {
+    public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number): void {
         if (!child || !child.isVisible) {
             return;
         }
 
-        let density = utils.layout.getDisplayDensity();
         let childStyle = child.style;
 
         let childTop: number;
@@ -837,7 +866,7 @@ export class View extends ViewBase implements ViewDefinition {
         let childHeight = child.getMeasuredHeight();
 
         let vAlignment: string;
-        if (childStyle.height >= 0 && childStyle.verticalAlignment === VerticalAlignment.stretch) {
+        if (childStyle.height.effectiveValue >= 0 && childStyle.verticalAlignment === VerticalAlignment.stretch) {
             vAlignment = VerticalAlignment.center;
         }
         else {
@@ -851,27 +880,27 @@ export class View extends ViewBase implements ViewDefinition {
 
         switch (vAlignment) {
             case VerticalAlignment.top:
-                childTop = top + marginTop * density;
+                childTop = top + marginTop.effectiveValue;
                 break;
 
             case VerticalAlignment.center:
             case VerticalAlignment.middle:
-                childTop = top + (bottom - top - childHeight + (marginTop - marginBottom) * density) / 2;
+                childTop = top + (bottom - top - childHeight + (marginTop.effectiveValue - marginBottom.effectiveValue)) / 2;
                 break;
 
             case VerticalAlignment.bottom:
-                childTop = bottom - childHeight - (marginBottom * density);
+                childTop = bottom - childHeight - marginBottom.effectiveValue;
                 break;
 
             case VerticalAlignment.stretch:
             default:
-                childTop = top + marginTop * density;
-                childHeight = bottom - top - (marginTop + marginBottom) * density;
+                childTop = top + marginTop.effectiveValue;
+                childHeight = bottom - top - (marginTop.effectiveValue + marginBottom.effectiveValue);
                 break;
         }
 
         let hAlignment: string;
-        if (childStyle.width >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.stretch) {
+        if (childStyle.width.effectiveValue >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.stretch) {
             hAlignment = HorizontalAlignment.center;
         }
         else {
@@ -880,21 +909,21 @@ export class View extends ViewBase implements ViewDefinition {
 
         switch (hAlignment) {
             case HorizontalAlignment.left:
-                childLeft = left + marginLeft * density;
+                childLeft = left + marginLeft.effectiveValue;
                 break;
 
             case HorizontalAlignment.center:
-                childLeft = left + (right - left - childWidth + (marginLeft - marginRight) * density) / 2;
+                childLeft = left + (right - left - childWidth + (marginLeft.effectiveValue - marginRight.effectiveValue)) / 2;
                 break;
 
             case HorizontalAlignment.right:
-                childLeft = right - childWidth - (marginRight * density);
+                childLeft = right - childWidth - marginRight.effectiveValue;
                 break;
 
             case HorizontalAlignment.stretch:
             default:
-                childLeft = left + marginLeft * density;
-                childWidth = right - left - (marginLeft + marginRight) * density;
+                childLeft = left + marginLeft.effectiveValue;
+                childWidth = right - left - (marginLeft.effectiveValue + marginRight.effectiveValue);
                 break;
         }
 
@@ -910,169 +939,111 @@ export class View extends ViewBase implements ViewDefinition {
         child.layout(childLeft, childTop, childRight, childBottom);
     }
 
-    public static measureChild(parent: View, child: View, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
+    public static measureChild(parent: ViewCommon, child: ViewCommon, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number } {
         let measureWidth = 0;
         let measureHeight = 0;
 
         if (child && child.isVisible) {
-            let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+            let density = layout.getDisplayDensity();
+            let width = layout.getMeasureSpecSize(widthMeasureSpec);
+            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-            let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+            let height = layout.getMeasureSpecSize(heightMeasureSpec);
+            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            let childWidthMeasureSpec = View.getMeasureSpec(child, width, widthMode, true);
-            let childHeightMeasureSpec = View.getMeasureSpec(child, height, heightMode, false);
+            let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
+            updateChildLayoutParams(child, parent, density);
+
+            let style = child.style;
+            let horizontalMargins = style.marginLeft.effectiveValue + style.marginRight.effectiveValue;
+            let verticalMargins = style.marginTop.effectiveValue + style.marginRight.effectiveValue;
+
+            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, style.width.effectiveValue, style.horizontalAlignment === HorizontalAlignment.stretch);
+            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, style.height.effectiveValue, style.verticalAlignment === VerticalAlignment.stretch);
 
             if (trace.enabled) {
-                trace.write(child.parent + " :measureChild: " + child + " " + utils.layout.measureSpecToString(childWidthMeasureSpec) + ", " + utils.layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
+                trace.write(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
             }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
-            measureWidth = child.getMeasuredWidth();
-            measureHeight = child.getMeasuredHeight();
-
-            let density = utils.layout.getDisplayDensity();
-            let childStyle = child.style;
-
-            // Convert to pixels.
-            measureWidth = Math.round(measureWidth + (childStyle.marginLeft + childStyle.marginRight) * density);
-            measureHeight = Math.round(measureHeight + (childStyle.marginTop + childStyle.marginBottom) * density);
+            measureWidth = Math.round(child.getMeasuredWidth() + horizontalMargins);
+            measureHeight = Math.round(child.getMeasuredHeight() + verticalMargins);
         }
 
         return { measuredWidth: measureWidth, measuredHeight: measureHeight };
     }
 
-    private static getMeasureSpec(view: View, parentLength: number, parentSpecMode: number, horizontal: boolean): number {
-        let childStyle = view.style;
-
-        let density = utils.layout.getDisplayDensity();
-        let margins = horizontal ? childStyle.marginLeft + childStyle.marginRight : childStyle.marginTop + childStyle.marginBottom;
-        margins = Math.round(margins * density);
-
+    private static getMeasureSpec(parentLength: number, parentSpecMode: number, margins: number, childLength: number, stretched: boolean): number {
         let resultSize = 0;
         let resultMode = 0;
 
-        let measureLength = Math.max(0, parentLength - margins);
-
-        // Convert to pixels.
-        let childLength = Math.round((horizontal ? childStyle.width : childStyle.height) * density);
-
         // We want a specific size... let be it.
         if (childLength >= 0) {
-            if (parentSpecMode !== utils.layout.UNSPECIFIED) {
-                resultSize = Math.min(parentLength, childLength);
-            }
-            else {
-                resultSize = childLength;
-            }
-
-            resultMode = utils.layout.EXACTLY;
+            // If mode !== UNSPECIFIED we take the smaller of parentLength and childLength
+            // Otherwise we will need to clip the view but this is not possible in all Android API levels.
+            resultSize = parentSpecMode === layout.UNSPECIFIED ? childLength : Math.min(parentLength, childLength);
+            resultMode = layout.EXACTLY;
         }
         else {
             switch (parentSpecMode) {
                 // Parent has imposed an exact size on us
-                case utils.layout.EXACTLY:
-                    resultSize = measureLength;
-                    let stretched = horizontal ? childStyle.horizontalAlignment === HorizontalAlignment.stretch : childStyle.verticalAlignment === VerticalAlignment.stretch;
-
+                case layout.EXACTLY:
+                    resultSize = Math.max(0, parentLength - margins);
                     // if stretched - nativeView wants to be our size. So be it.
                     // else - nativeView wants to determine its own size. It can't be bigger than us.
-                    resultMode = stretched ? utils.layout.EXACTLY : utils.layout.AT_MOST;
+                    resultMode = stretched ? layout.EXACTLY : layout.AT_MOST;
                     break;
 
                 // Parent has imposed a maximum size on us
-                case utils.layout.AT_MOST:
-                    resultSize = measureLength;
-                    resultMode = utils.layout.AT_MOST;
+                case layout.AT_MOST:
+                    resultSize = Math.max(0, parentLength - margins);
+                    resultMode = layout.AT_MOST;
                     break;
 
-                case utils.layout.UNSPECIFIED:
-                    // Equivalent to measure with Infinity.
+                // Equivalent to measure with Infinity.
+                case layout.UNSPECIFIED:
                     resultSize = 0;
-                    resultMode = utils.layout.UNSPECIFIED;
+                    resultMode = layout.UNSPECIFIED;
                     break;
             }
         }
 
-        return utils.layout.makeMeasureSpec(resultSize, resultMode);
+        return layout.makeMeasureSpec(resultSize, resultMode);
     }
 
     _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean {
-        let changed: boolean = this._oldWidthMeasureSpec !== widthMeasureSpec || this._oldHeightMeasureSpec !== heightMeasureSpec;
-        this._oldWidthMeasureSpec = widthMeasureSpec;
-        this._oldHeightMeasureSpec = heightMeasureSpec;
+        let changed: boolean = this._currentWidthMeasureSpec !== widthMeasureSpec || this._currentHeightMeasureSpec !== heightMeasureSpec;
+        this._currentWidthMeasureSpec = widthMeasureSpec;
+        this._currentHeightMeasureSpec = heightMeasureSpec;
         return changed;
     }
 
-    protected static adjustChildLayoutParams(view: View, widthMeasureSpec: number, heightMeasureSpec: number): void {
-        if (!view) {
-            return;
-        }
+    // protected static restoreChildOriginalParams(view: ViewDefinition): void {
+    //     if (!view) {
+    //         return;
+    //     }
 
-        let availableWidth = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthSpec = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+    //     let lp: CommonLayoutParams = view.layoutParams;
+    //     if (lp.widthPercent > 0) {
+    //         lp.width = -1;
+    //     }
 
-        let availableHeight = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightSpec = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-
-         let lp: CommonLayoutParams = view.style[nativeLayoutParamsProperty];
-
-        if (widthSpec !== utils.layout.UNSPECIFIED) {
-            if (lp.widthPercent > 0) {
-                lp.width = Math.round(availableWidth * lp.widthPercent);
-            }
-
-            if (lp.leftMarginPercent > 0) {
-                lp.leftMargin = Math.round(availableWidth * lp.leftMarginPercent);
-            }
-
-            if (lp.rightMarginPercent > 0) {
-                lp.rightMargin = Math.round(availableWidth * lp.rightMarginPercent);
-            }
-        }
-
-        if (heightSpec !== utils.layout.UNSPECIFIED) {
-            if (lp.heightPercent > 0) {
-                lp.height = Math.round(availableHeight * lp.heightPercent);
-            }
-
-            if (lp.topMarginPercent > 0) {
-                lp.topMargin = Math.round(availableHeight * lp.topMarginPercent);
-            }
-
-            if (lp.bottomMarginPercent > 0) {
-                lp.bottomMargin = Math.round(availableHeight * lp.bottomMarginPercent);
-            }
-        }
-    }
-
-    protected static restoreChildOriginalParams(view: View): void {
-        if (!view) {
-            return;
-        }
-        let lp: CommonLayoutParams = view.style._getValue(style.nativeLayoutParamsProperty);
-
-        if (lp.widthPercent > 0) {
-            lp.width = -1;
-        }
-
-        if (lp.heightPercent > 0) {
-            lp.height = -1;
-        }
-        if (lp.leftMarginPercent > 0) {
-            lp.leftMargin = 0;
-        }
-        if (lp.topMarginPercent > 0) {
-            lp.topMargin = 0;
-        }
-        if (lp.rightMarginPercent > 0) {
-            lp.rightMargin = 0;
-        }
-        if (lp.bottomMarginPercent > 0) {
-            lp.bottomMargin = 0;
-        }
-    }
+    //     if (lp.heightPercent > 0) {
+    //         lp.height = -1;
+    //     }
+    //     if (lp.leftMarginPercent > 0) {
+    //         lp.leftMargin = 0;
+    //     }
+    //     if (lp.topMarginPercent > 0) {
+    //         lp.topMargin = 0;
+    //     }
+    //     if (lp.rightMarginPercent > 0) {
+    //         lp.rightMargin = 0;
+    //     }
+    //     if (lp.bottomMarginPercent > 0) {
+    //         lp.bottomMargin = 0;
+    //     }
+    // }
 
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
         return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom }
@@ -1140,7 +1111,7 @@ export class View extends ViewBase implements ViewDefinition {
         return 0;
     }
 
-    public _eachChildView(callback: (view: View) => boolean) {
+    public _eachChildView(callback: (view: ViewCommon) => boolean) {
         //
     }
 
@@ -1168,7 +1139,7 @@ export class View extends ViewBase implements ViewDefinition {
      * Core logic for adding a child view to this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      * // TODO: Think whether we need the base Layout routine.
      */
-    public _addView(view: View, atIndex?: number) {
+    public _addView(view: ViewDefinition, atIndex?: number) {
         if (trace.enabled) {
             trace.write(`${this}._addView(${view}, ${atIndex})`, trace.categories.ViewHierarchy);
         }
@@ -1176,14 +1147,14 @@ export class View extends ViewBase implements ViewDefinition {
         if (!view) {
             throw new Error("Expecting a valid View instance.");
         }
-        if (!(view instanceof View)) {
+        if (!(view instanceof ViewBase)) {
             throw new Error(view + " is not a valid View instance.");
         }
-        if (view._parent) {
-            throw new Error("View already has a parent. View: " + view + " Parent: " + view._parent);
+        if (view.parent) {
+            throw new Error("View already has a parent. View: " + view + " Parent: " + view.parent);
         }
 
-        view._parent = this;
+        view.parent = this;
         this._addViewCore(view, atIndex);
         view._parentChanged(null);
     }
@@ -1191,7 +1162,7 @@ export class View extends ViewBase implements ViewDefinition {
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _addViewCore(view: View, atIndex?: number) {
+    public _addViewCore(view: ViewDefinition, atIndex?: number) {
         this._propagateInheritableProperties(view);
 
         if (!view._isAddedToNativeVisualTree) {
@@ -1205,13 +1176,13 @@ export class View extends ViewBase implements ViewDefinition {
         }
     }
 
-    public _propagateInheritableProperties(view: View) {
+    public _propagateInheritableProperties(view: ViewDefinition) {
         propagateInheritedProperties(this);
         // view._inheritProperties(this);
         // view.style._inheritStyleProperties(this);
     }
 
-    // public _inheritProperties(parentView: View) {
+    // public _inheritProperties(parentView: ViewDefinition) {
     //     parentView._eachSetProperty((property) => {
     //         if (!(property instanceof styling.Property) && property.inheritable) {
     //             let baseValue = parentView._getValue(property);
@@ -1224,23 +1195,25 @@ export class View extends ViewBase implements ViewDefinition {
     /**
      * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      */
-    public _removeView(view: View) {
+    public _removeView(view: ViewDefinition) {
         if (trace.enabled) {
             trace.write(`${this}._removeView(${view})`, trace.categories.ViewHierarchy);
         }
-        if (view._parent !== this) {
-            throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view._parent + " ExpectedParent: " + this);
+        if (view.parent !== this) {
+            throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
         }
 
         this._removeViewCore(view);
-        view._parent = undefined;
+        view.parent = undefined;
         view._parentChanged(this);
     }
 
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _removeViewCore(view: View) {
+    public _removeViewCore(view: ViewDefinition) {
+        // TODO: Change type from ViewCommon to ViewBase. Probably this 
+        // method will need to go to ViewBase class.
         // Remove the view from the native visual scene first
         this._removeViewFromNativeVisualTree(view);
 
@@ -1249,7 +1222,7 @@ export class View extends ViewBase implements ViewDefinition {
             view.onUnloaded();
         }
 
-        view.unsetInheritedProperties();
+        // view.unsetInheritedProperties();
     }
 
     public unsetInheritedProperties(): void {
@@ -1262,7 +1235,7 @@ export class View extends ViewBase implements ViewDefinition {
         // });
     }
 
-    public _parentChanged(oldParent: View): void {
+    public _parentChanged(oldParent: ViewDefinition): void {
         //Overridden
         if (oldParent) {
             // Move these method in property class.
@@ -1273,7 +1246,7 @@ export class View extends ViewBase implements ViewDefinition {
     /**
      * Method is intended to be overridden by inheritors and used as "protected".
      */
-    public _addViewToNativeVisualTree(view: View, atIndex?: number): boolean {
+    public _addViewToNativeVisualTree(view: ViewDefinition, atIndex?: number): boolean {
         if (view._isAddedToNativeVisualTree) {
             throw new Error("Child already added to the native visual tree.");
         }
@@ -1284,7 +1257,7 @@ export class View extends ViewBase implements ViewDefinition {
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _removeViewFromNativeVisualTree(view: View) {
+    public _removeViewFromNativeVisualTree(view: ViewDefinition) {
         view._isAddedToNativeVisualTree = false;
     }
 
@@ -1348,7 +1321,7 @@ export class View extends ViewBase implements ViewDefinition {
     }
 
     public getActualSize(): Size {
-        var currentBounds = this._getCurrentLayoutBounds();
+        let currentBounds = this._getCurrentLayoutBounds();
         if (!currentBounds) {
             return undefined;
         }
@@ -1359,7 +1332,7 @@ export class View extends ViewBase implements ViewDefinition {
         }
     }
 
-    public animate(animation: any): animModule.AnimationPromise {
+    public animate(animation: any): AnimationPromise {
         return this.createAnimation(animation).play();
     }
 
@@ -1393,13 +1366,13 @@ export class View extends ViewBase implements ViewDefinition {
     }
 
     public toString(): string {
-        var str = this.typeName;
+        let str = this.typeName;
         if (this.id) {
             str += `<${this.id}>`;
         } else {
             str += `(${this._domId})`;
         }
-        var source = Source.get(this);
+        let source = Source.get(this);
         if (source) {
             str += `@${source};`;
         }
@@ -1501,4 +1474,248 @@ export class View extends ViewBase implements ViewDefinition {
         this._cssState.apply();
         // this.style._endUpdate();
     }
+}
+
+function updateEffectiveValues(prentAvailableLength: number, density: number, ...params: Length[]): void {
+    for (let param of params) {
+        switch (param.unit) {
+            case "%":
+                param.effectiveValue = Math.round(prentAvailableLength * param.value);
+                break;
+
+            case "dip":
+                param.effectiveValue = Math.round(density * param.value);
+                break;
+
+            case "px":
+            default:
+                param.effectiveValue = Math.round(param.value);
+                break;
+        }
+    }
+}
+
+function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density: number): void {
+    let style = child.style;
+
+    let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
+    let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
+    let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
+    let parentAvailableWidth = parentWidthMeasureMode === utils.layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
+    updateEffectiveValues(parentAvailableWidth, density, style.width, style.marginLeft, style.marginRight);
+
+    let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
+    let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
+    let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
+    let parentAvailableHeight = parentHeightMeasureMode === utils.layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+    updateEffectiveValues(parentAvailableHeight, density, style.height, style.marginTop, style.marginBottom);
+}
+
+interface Length {
+    readonly unit: "%" | "dip" | "px";
+    readonly value: number;
+    effectiveValue: number;
+}
+
+export namespace Length {
+    export function parse(value: string | Length): Length {
+        let numberValue = 0;
+        let type: "%" | "dip" | "px";
+        if (typeof value === "string") {
+            let stringValue = value.trim();
+            let percentIndex = stringValue.indexOf("%");
+            if (percentIndex !== -1) {
+                type = "%";
+                // if only % or % is not last we treat it as invalid value.
+                if (percentIndex !== (stringValue.length - 1) || percentIndex === 0) {
+                    numberValue = Number.NaN;
+                } else {
+                    numberValue = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
+                }
+            } else {
+                if (stringValue.indexOf("px")) {
+                    type = "px";
+                    stringValue = stringValue.replace("px", "").trim();
+                } else {
+                    type = "dip";
+                }
+
+                numberValue = parseFloat(stringValue);
+            }
+
+            if (isNaN(numberValue) || !isFinite(numberValue) || numberValue < 0) {
+                throw new Error("Invalid value: " + value);
+            }
+
+            return {
+                value: numberValue,
+                unit: type,
+                effectiveValue: undefined
+            }
+        } else {
+            return value;
+        }
+    }
+}
+
+function minWidthMinHeightConverter(value: string | number): number {
+    let newValue: number = typeof value === "string" ? parseFloat(value) : value;
+    if (isNaN(newValue) || value < 0.0 || !isFinite(newValue)) {
+        throw new Error(`Invalid value: ${newValue}`);
+    }
+
+    return newValue;
+}
+
+// TODO: Use different converter that calls isMinWidthHeightValid.
+export let minWidthProperty = new CssProperty<Style, number>({ name: "minWidth", cssName: "min-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: minWidthMinHeightConverter });
+minWidthProperty.register(Style);
+// export let minWidthProperty = new styleProperty.Property("minWidth", "min-width",
+//     new PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), numberConverter);
+
+export let minHeightProperty = new CssProperty<Style, number>({ name: "minHeight", cssName: "min-height", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: minWidthMinHeightConverter });
+minHeightProperty.register(Style);
+// export let minHeightProperty = new styleProperty.Property("minHeight", "min-height",
+//     new PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), numberConverter);
+
+export let widthProperty = new CssProperty<Style, Length>({ name: "width", cssName: "width", defaultValue: Length.parse("-1"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+widthProperty.register(Style);
+// export let widthProperty = new styleProperty.Property("width", "width",
+//     new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
+
+export let heightProperty = new CssProperty<Style, Length>({ name: "height", cssName: "height", defaultValue: Length.parse("-1"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+heightProperty.register(Style);
+// export let heightProperty = new styleProperty.Property("height", "height",
+//     new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
+
+export let marginProperty = new ShorthandProperty<Style>({
+    name: "margin", cssName: "margin",
+    getter: () => { return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`; },
+    converter: convertToMargins
+});
+marginProperty.register(Style);
+
+export let marginLeftProperty = new CssProperty<Style, Length>({ name: "marginLeft", cssName: "margin-left", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+marginLeftProperty.register(Style);
+// export let marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
+//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export let marginRightProperty = new CssProperty<Style, Length>({ name: "marginRight", cssName: "margin-right", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+marginRightProperty.register(Style);
+// export let marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
+//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export let marginTopProperty = new CssProperty<Style, Length>({ name: "marginTop", cssName: "margin-top", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+marginTopProperty.register(Style);
+// export let marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
+//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export let marginBottomProperty = new CssProperty<Style, Length>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+marginBottomProperty.register(Style);
+// export let marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
+//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
+
+export let paddingProperty = new ShorthandProperty<Style>({
+    name: "padding", cssName: "padding",
+    getter: () => { return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`; },
+    converter: convertToPaddings
+});
+paddingProperty.register(Style);
+
+export let paddingLeftProperty = new CssProperty<Style, Length>({ name: "paddingLeft", cssName: "padding-left", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+paddingLeftProperty.register(Style);
+// export let paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
+//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
+
+export let paddingRightProperty = new CssProperty<Style, Length>({ name: "paddingRight", cssName: "padding-right", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+paddingRightProperty.register(Style);
+// export let paddingRightProperty = new styleProperty.Property("paddingRight", "padding-right",
+//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
+
+export let paddingTopProperty = new CssProperty<Style, Length>({ name: "paddingTop", cssName: "padding-top", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+paddingTopProperty.register(Style);
+// export let paddingTopProperty = new styleProperty.Property("paddingTop", "padding-top",
+//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
+
+export let paddingBottomProperty = new CssProperty<Style, Length>({ name: "paddingBottom", cssName: "padding-bottom", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+paddingBottomProperty.register(Style);
+// export let paddingBottomProperty = new styleProperty.Property("paddingBottom", "padding-bottom",
+//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
+
+export let verticalAlignmentProperty = new CssProperty<Style, string>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: VerticalAlignment.stretch, affectsLayout: affectsIOSLayout });
+verticalAlignmentProperty.register(Style);
+// export let verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
+//     new PropertyMetadata(VerticalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
+
+export let horizontalAlignmentProperty = new CssProperty<Style, string>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: HorizontalAlignment.stretch, affectsLayout: affectsIOSLayout });
+horizontalAlignmentProperty.register(Style);
+// export let horizontalAlignmentProperty = new styleProperty.Property("horizontalAlignment", "horizontal-align",
+//     new PropertyMetadata(HorizontalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
+
+function parseThickness(value: string): Thickness {
+    if (typeof value === "string") {
+        let arr = value.split(/[ ,]+/);
+
+        let top: Length;
+        let right: Length;
+        let bottom: Length;
+        let left: Length;
+
+        if (arr.length === 1) {
+            top = Length.parse(arr[0]);
+            right = Length.parse(arr[0]);
+            bottom = Length.parse(arr[0]);
+            left = Length.parse(arr[0]);
+        }
+        else if (arr.length === 2) {
+            top = Length.parse(arr[0]);
+            bottom = Length.parse(arr[0]);
+            right = Length.parse(arr[1]);
+            left = Length.parse(arr[1]);
+        }
+        else if (arr.length === 3) {
+            top = Length.parse(arr[0]);
+            right = Length.parse(arr[1]);
+            left = Length.parse(arr[1]);
+            bottom = Length.parse(arr[2]);
+        }
+        else if (arr.length === 4) {
+            top = Length.parse(arr[0]);
+            right = Length.parse(arr[1]);
+            bottom = Length.parse(arr[2]);
+            left = Length.parse(arr[3]);
+        }
+        else {
+            throw new Error("Expected 1, 2, 3 or 4 parameters. Actual: " + value);
+        }
+
+        return {
+            top: top,
+            right: right,
+            bottom: bottom,
+            left: left
+        }
+    } else {
+        return value;
+    }
+}
+
+function convertToMargins(this: Style, value: string): [CssProperty<any, any>, any][] {
+    let thickness = parseThickness(value);
+    return [
+        [marginTopProperty, thickness.top],
+        [marginRightProperty, thickness.right],
+        [marginBottomProperty, thickness.bottom],
+        [marginLeftProperty, thickness.left]
+    ];
+}
+
+function convertToPaddings(this: Style, value: string): [CssProperty<any, any>, any][] {
+    let thickness = parseThickness(value);
+    return [
+        [paddingTopProperty, thickness.top],
+        [paddingRightProperty, thickness.right],
+        [paddingBottomProperty, thickness.bottom],
+        [paddingLeftProperty, thickness.left]
+    ];
 }

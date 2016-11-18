@@ -1,13 +1,13 @@
-import {Border as BorderDefinition} from "ui/border";
-import {View} from "ui/core/view";
-import {ContentView} from "ui/content-view";
-import {layout} from "utils/utils";
-import {isNumber} from "utils/types";
+import { Border as BorderDefinition } from "ui/border";
+import { View } from "ui/core/view";
+import { ContentView } from "ui/content-view";
+import { layout } from "utils/utils";
+import { isNumber } from "utils/types";
 
 @Deprecated
 export class Border extends ContentView implements BorderDefinition {
     get cornerRadius(): number {
-        if (isNumber(this.borderRadius)){
+        if (isNumber(this.borderRadius)) {
             return <number>this.borderRadius;
         }
         return 0;
@@ -27,7 +27,7 @@ export class Border extends ContentView implements BorderDefinition {
 
         let density = layout.getDisplayDensity();
         let borderWidth = 0;
-        if (isNumber(this.borderWidth)){
+        if (isNumber(this.borderWidth)) {
             borderWidth = <number>this.borderWidth;
         }
         let borderSize = (2 * borderWidth) * density;
@@ -45,7 +45,7 @@ export class Border extends ContentView implements BorderDefinition {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         let density = layout.getDisplayDensity();
         let borderWidth = 0;
-        if (isNumber(this.borderWidth)){
+        if (isNumber(this.borderWidth)) {
             borderWidth = <number>this.borderWidth;
         }
         let borderSize = borderWidth * density;

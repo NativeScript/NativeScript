@@ -1,10 +1,11 @@
-﻿declare module "ui/styling/style" {
-    import {Observable} from "data/observable";
-    import {ViewBase} from "ui/core/view-base";
-    import {Color} from "color";
-    import {CssProperty, InheritedCssProperty} from "ui/core/properties";
-    import {Font} from "ui/styling/font";
-    import {Background} from "ui/styling/background";
+declare module "ui/styling/style" {
+    import { Observable } from "data/observable";
+    import { ViewBase } from "ui/core/view-base";
+    import { Color } from "color";
+    import { CssProperty, InheritedCssProperty } from "ui/core/properties";
+    import { Font } from "ui/styling/font";
+    import { Background } from "ui/styling/background";
+    import { Length } from "ui/core/view";
     
     export interface Thickness {
         left: number;
@@ -20,26 +21,26 @@
         left: Color;
     }
 
-    // export interface CommonLayoutParams {
-    //     width: number;
-    //     height: number;
+    export interface CommonLayoutParams {
+        width: number;
+        height: number;
 
-    //     widthPercent: number;
-    //     heightPercent: number;
+        widthPercent: number;
+        heightPercent: number;
 
-    //     leftMargin: number;
-    //     topMargin: number;
-    //     rightMargin: number;
-    //     bottomMargin: number;
+        leftMargin: number;
+        topMargin: number;
+        rightMargin: number;
+        bottomMargin: number;
 
-    //     leftMarginPercent: number;
-    //     topMarginPercent: number;
-    //     rightMarginPercent: number;
-    //     bottomMarginPercent: number;
+        leftMarginPercent: number;
+        topMarginPercent: number;
+        rightMarginPercent: number;
+        bottomMarginPercent: number;
 
-    //     horizontalAlignment: string;
-    //     verticalAlignment: string;
-    // }
+        horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
+        verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+    }
 
     export class Style extends Observable {
 
@@ -50,7 +51,7 @@
         public translateY: number;
 
         public clipPath: string;
-		public color: Color;
+        public color: Color;
         public tintColor: Color;
         public placeholderColor: Color;
 
@@ -92,26 +93,36 @@
         public letterSpacing: number;
         public whiteSpace: string;
 
+        // TODO: Change minWidth/Height to Length to support 'px'
         public minWidth: number;
         public minHeight: number;
-        public width: number;
-        public height: number;
+        public width: Length;
+        public height: Length;
         public margin: string;
-        public marginLeft: number;
-        public marginTop: number;
-        public marginRight: number;
-        public marginBottom: number;
+        public marginLeft: Length;
+        public marginTop: Length;
+        public marginRight: Length;
+        public marginBottom: Length;
         public padding: string;
-        public paddingLeft: number;
-        public paddingTop: number;
-        public paddingRight: number;
-        public paddingBottom: number;
-        public horizontalAlignment: string;
-        public verticalAlignment: string;
+        public paddingLeft: Length;
+        public paddingTop: Length;
+        public paddingRight: Length;
+        public paddingBottom: Length;
+        public horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
+        public verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+
+        // TabView-specific props
+        public tabTextColor: Color;
+        public tabBackgroundColor: Color;
+        public selectedTabTextColor: Color;
+        public androidSelectedTabHighlightColor: Color;
+
+        //SegmentedBar-specific props
+        public selectedBackgroundColor: Color;
 
         constructor(ownerView: ViewBase);
         public view: ViewBase;
-        
+
         // public _beginUpdate();
         // public _endUpdate();
         // public _resetCssValues(): void;
@@ -128,13 +139,15 @@
     // Property registration
 
     export let rotateProperty: CssProperty<Style, number>;
-    export let translateXProperty: CssProperty<Style, number>;
-    export let translateYProperty: CssProperty<Style, number>;
     export let scaleXProperty: CssProperty<Style, number>;
     export let scaleYProperty: CssProperty<Style, number>;
+    export let translateXProperty: CssProperty<Style, number>;
+    export let translateYProperty: CssProperty<Style, number>;
 
-    export let colorProperty: InheritedCssProperty<Style, Color>;
     export let clipPathProperty: CssProperty<Style, string>;
+    export let colorProperty: InheritedCssProperty<Style, Color>;
+    export let tintColorProperty: InheritedCssProperty<Style, Color>;
+    export let placeholderColorProperty: InheritedCssProperty<Style, Color>;
 
     export let backgroundColorProperty: CssProperty<Style, Color>;
     export let backgroundImageProperty: CssProperty<Style, string>;
@@ -143,10 +156,22 @@
     export let backgroundPositionProperty: CssProperty<Style, string>;
 
     export let borderColorProperty: CssProperty<Style, Color>;
+    export let borderTopColorProperty: CssProperty<Style, Color>;
+    export let borderRightColorProperty: CssProperty<Style, Color>;
+    export let borderBottomColorProperty: CssProperty<Style, Color>;
+    export let borderLeftColorProperty: CssProperty<Style, Color>;
+    
     export let borderWidthProperty: CssProperty<Style, number>;
-    export let borderRadiusProperty: CssProperty<Style, number>;
+    export let borderTopWidthProperty: CssProperty<Style, number>;
+    export let borderRightWidthProperty: CssProperty<Style, number>;
+    export let borderBottomWidthProperty: CssProperty<Style, number>;
+    export let borderLeftWidthProperty: CssProperty<Style, number>;
 
-    export let backgroundInternalProperty: CssProperty<Style, Background>;
+    export let borderRadiusProperty: CssProperty<Style, number>;
+    export let borderTopLeftRadiusProperty: CssProperty<Style, number>;
+    export let borderTopRightRadiusProperty: CssProperty<Style, number>;
+    export let borderBottomRightRadiusProperty: CssProperty<Style, number>;
+    export let borderBottomLeftRadiusProperty: CssProperty<Style, number>; 
 
     // Helper property holding most layout related properties available in CSS.
     // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
@@ -173,18 +198,18 @@
     export let minWidthProperty: CssProperty<Style, number>;
     export let minHeightProperty: CssProperty<Style, number>;
     export let widthProperty: CssProperty<Style, number>;
-    export let heightProperty: CssProperty<Style, number>;
-    export let marginProperty: CssProperty<Style, Thickness>;
-    export let marginLeftProperty: CssProperty<Style, number>;
-    export let marginRightProperty: CssProperty<Style, number>;
-    export let marginTopProperty: CssProperty<Style, number>;
-    export let marginBottomProperty: CssProperty<Style, number>;
+    export let heightProperty: CssProperty<Style, Length>;
+    export let marginProperty: CssProperty<Style, string>;
+    export let marginLeftProperty: CssProperty<Style, Length>;
+    export let marginRightProperty: CssProperty<Style, Length>;
+    export let marginTopProperty: CssProperty<Style, Length>;
+    export let marginBottomProperty: CssProperty<Style, Length>;
 
-    export let paddingProperty: CssProperty<Style, Thickness>;
-    export let paddingLeftProperty: CssProperty<Style, number>;
-    export let paddingRightProperty: CssProperty<Style, number>;
-    export let paddingTopProperty: CssProperty<Style, number>;
-    export let paddingBottomProperty: CssProperty<Style, number>;
+    export let paddingProperty: CssProperty<Style, string>;
+    export let paddingLeftProperty: CssProperty<Style, Length>;
+    export let paddingRightProperty: CssProperty<Style, Length>;
+    export let paddingTopProperty: CssProperty<Style, Length>;
+    export let paddingBottomProperty: CssProperty<Style, Length>;
 
     export let verticalAlignmentProperty: CssProperty<Style, string>;
     export let horizontalAlignmentProperty: CssProperty<Style, string>;

@@ -1,4 +1,4 @@
-﻿import {Transition, AndroidTransitionType} from "ui/transition";
+﻿import { Transition, AndroidTransitionType } from "ui/transition";
 
 export class FadeTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {

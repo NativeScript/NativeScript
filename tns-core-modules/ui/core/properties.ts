@@ -1,7 +1,7 @@
-import {unsetValue} from "ui/core/dependency-observable";
-import {WrappedValue} from "data/observable";
-import {ViewBase} from "./view-base";
-import {Style} from "ui/styling/style";
+import { unsetValue } from "ui/core/dependency-observable";
+import { WrappedValue } from "data/observable";
+import { ViewBase } from "./view-base";
+import { Style } from "ui/styling/style";
 
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
@@ -22,6 +22,13 @@ export interface PropertyOptions<T, U> {
     equalityComparer?: (x: U, y: U) => boolean,
     valueChanged?: (target: T, oldValue: U, newValue: U) => void,
     valueConverter?: (value: any) => U
+}
+
+export interface ShorthandPropertyOptions {
+    name: string,
+    cssName: string;
+    converter: (value: string) => [CssProperty<any, any>, any][],
+    getter: (this: Style) => string
 }
 
 export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
@@ -454,6 +461,83 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         this.localValueDescriptor.set = setFunc(ValueSource.Local);
 
         inheritableCssProperties.push(this);
+    }
+}
+
+export class ShorthandProperty<T extends Style> {
+    private setLocalValue: (value: string) => void;
+    private setCssValue: (value: string) => void;
+
+    public key: symbol;
+    public name: string;
+    public cssName: string;
+
+    protected cssValueDescriptor: PropertyDescriptor;
+    protected localValueDescriptor: PropertyDescriptor;
+
+    public native: symbol;
+    public sourceKey: symbol;
+
+    constructor(options: ShorthandPropertyOptions) {
+        let name = options.name;
+        this.name = name;
+
+        let key = Symbol(name + ":propertyKey");
+        this.key = key;
+
+        let cssName = `css-${options.cssName}`;
+        this.cssName = cssName;
+
+        let sourceKey = Symbol(name + ":valueSourceKey");
+        this.sourceKey = sourceKey;
+
+        let converter = options.converter;
+
+        function setLocalValue(this: T, value: string): void {
+            this[sourceKey] = ValueSource.Local;
+            if (this[key] !== value) {
+                this[key] = value;
+                for (let [p, v] of converter(value)) {
+                    this[p.name] = v;
+                }
+            }
+        }
+
+        function setCssValue(this: T, value: string): void {
+            let currentValueSource: number = this[sourceKey] || ValueSource.Default;
+            // We have localValueSource - NOOP.
+            if (currentValueSource === ValueSource.Local) {
+                return;
+            }
+
+            if (this[key] !== value) {
+                this[key] = value;
+                for (let [p, v] of converter(value)) {
+                    this[p.cssName] = v;
+                }
+            }
+        }
+
+        this.cssValueDescriptor = {
+            enumerable: true,
+            configurable: true,
+            get: options.getter,
+            set: setCssValue
+        };
+
+        this.localValueDescriptor = {
+            enumerable: true,
+            configurable: true,
+            get: options.getter,
+            set: setLocalValue
+        };
+
+        cssSymbolPropertyMap[key] = this;
+    }
+
+    public register(cls: { prototype: T }): void {
+        Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
+        Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
     }
 }
 

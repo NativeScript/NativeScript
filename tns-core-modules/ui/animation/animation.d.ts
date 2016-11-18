@@ -1,6 +1,6 @@
 ﻿declare module "ui/animation" {
-    import {View} from "ui/core/view";
-    import {Color} from "color";
+    import { View } from "ui/core/view";
+    import { Color } from "color";
 
     /**
      * Defines animation options for the View.animate method.
@@ -102,4 +102,6 @@
         public isPlaying: boolean;
         public _resolveAnimationCurve(curve: any): any;
     }
+
+    function _resolveAnimationCurve(curve: any): any;
 }
