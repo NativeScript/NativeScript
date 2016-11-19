@@ -297,7 +297,7 @@ export class Frame extends frameCommon.Frame {
     public _createUI() {
         let root = new org.nativescript.widgets.ContentLayout(this._context);
         if (this._containerViewId < 0) {
-            this._containerViewId = android.view.View.generateViewId();
+            this._containerViewId = org.nativescript.widgets.ViewHelper.generateViewId();
         }
 
         this._android.rootViewGroup = root;

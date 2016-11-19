@@ -210,7 +210,7 @@ export class TabView extends common.TabView {
         }
 
         if (this._androidViewId < 0) {
-            this._androidViewId = android.view.View.generateViewId();
+            this._androidViewId = org.nativescript.widgets.ViewHelper.generateViewId();
         }
         
         this._viewPager = new android.support.v4.view.ViewPager(this._context);

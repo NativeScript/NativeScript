@@ -86,7 +86,7 @@ export class ScrollView extends common.ScrollView implements definition.ScrollVi
         }
 
         if (this._androidViewId < 0) {
-            this._androidViewId = android.view.View.generateViewId();
+            this._androidViewId = org.nativescript.widgets.ViewHelper.generateViewId();
         }
 
         this._android.setId(this._androidViewId);
