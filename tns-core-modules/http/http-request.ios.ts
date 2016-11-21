@@ -143,7 +143,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
 
 function NSDataToString(data: any,encode?:http.ResponseEncode): string {
     let code = 4; //UTF8
-    if(encode == http.ResponseEncode.GBK) {
+    if(encode === http.ResponseEncode.GBK) {
         code = 1586;
     }
     return NSString.alloc().initWithDataEncoding(data, code).toString();

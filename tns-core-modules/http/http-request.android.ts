@@ -210,7 +210,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
 
 function decodeResponse(raw:any,encode?:http.ResponseEncode){
     let charsetName = "UTF-8";
-    if(encode == http.ResponseEncode.GBK) {
+    if(encode === http.ResponseEncode.GBK) {
         charsetName = 'GBK';
     }
     return raw.toString(charsetName)
