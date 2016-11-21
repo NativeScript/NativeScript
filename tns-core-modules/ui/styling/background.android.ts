@@ -154,10 +154,10 @@ function refreshBorderDrawable(view: view.View, borderDrawable: org.nativescript
         
         borderDrawable.refresh(
             
-            (background.borderTopColor && background.borderTopColor.android) ? background.borderTopColor.android : 0,
-            (background.borderRightColor && background.borderRightColor.android) ? background.borderRightColor.android : 0,
-            (background.borderBottomColor && background.borderBottomColor.android) ? background.borderBottomColor.android : 0,
-            (background.borderLeftColor && background.borderLeftColor.android) ? background.borderLeftColor.android : 0,
+            (!types.isNullOrUndefined(background.borderTopColor) && !types.isNullOrUndefined(background.borderTopColor.android)) ? background.borderTopColor.android : android.graphics.Color.BLACK,
+            (!types.isNullOrUndefined(background.borderRightColor) && !types.isNullOrUndefined(background.borderRightColor.android)) ? background.borderRightColor.android : android.graphics.Color.BLACK,
+            (!types.isNullOrUndefined(background.borderBottomColor) && !types.isNullOrUndefined(background.borderBottomColor.android)) ? background.borderBottomColor.android : android.graphics.Color.BLACK,
+            (!types.isNullOrUndefined(background.borderLeftColor) && !types.isNullOrUndefined(background.borderLeftColor.android)) ? background.borderLeftColor.android : android.graphics.Color.BLACK,
 
             background.borderTopWidth, 
             background.borderRightWidth, 
