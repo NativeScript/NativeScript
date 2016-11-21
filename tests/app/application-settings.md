@@ -17,6 +17,7 @@ Using application settings methods requires to load "application settings" modul
 {%snippet application-settings-string%}
 
 ### Set and get numeric value.
+Use this method to set numbers with floating point and up to 9 digits long. For larger numbers use `setString`.
 We use `toFixed()` here in order to avoid floating point errors - ex: `54.321` becoming `54.320999999537`.
 Beware the result of `toFixed()` is a string not a number therefore you cannot use `===` or `!==` when comparing with a number.
 {%snippet application-settings-number%}
