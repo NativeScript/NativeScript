@@ -1,5 +1,5 @@
 ﻿<Page xmlns="http://schemas.nativescript.org/tns.xsd" shownModally="onShownModally" loaded="onLoaded" unloaded="onUnloaded" backgroundColor="Red">
-  <StackLayout backgroundColor="PaleGreen">
+  <StackLayout backgroundColor="PaleGreen" margin="10">
     <TextField hint="username" id="username" text="username"/>
     <TextField hint="password" id="password" text="password" secure="true"/>
     <Button text="Login" tap="onLoginButtonTap"/>

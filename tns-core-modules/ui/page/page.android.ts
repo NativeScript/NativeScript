@@ -161,6 +161,7 @@ export class Page extends pageCommon.Page {
 
         this._onAttached(parent._context);
         this._isAddedToNativeVisualTree = true;
+        this._syncNativeProperties();
 
         ensureDialogFragmentClass();
 
