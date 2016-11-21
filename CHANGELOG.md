@@ -1,7 +1,7 @@
 Cross Platform Modules Changelog
 ==============================
 
-##2.4.0 (2016, November 22)
+##2.4.0 (2016, November 16)
 
 ### Fixed
 
