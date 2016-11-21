@@ -75,7 +75,12 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
         content: {
             raw: result.raw,
             toString: (encode?:http.ResponseEncode) => {
-                let str = decodeResponse(result.raw,encode);
+                let str:string;
+                if(encode) {
+                    str = decodeResponse(result.raw,encode);
+                }else{
+                    str = result.responseAsString;
+                }
                 if (types.isString(str)) {
                     return str;
                 } else {
@@ -84,7 +89,12 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
             },
             toJSON: (encode?:http.ResponseEncode) => {
                 ensureUtils();
-                let str = decodeResponse(result.raw,encode);
+                let str:string;
+                if(encode) {
+                    str = decodeResponse(result.raw,encode);
+                }else{
+                    str = result.responseAsString;
+                }
                 return utils.parseJSON(str);
             },
             toImage: () => {
