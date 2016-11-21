@@ -306,27 +306,27 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 //         TKUnit.assertTrue(viewsWithoutParent > viewsWithParent, `Most of the views should be recycled: viewsWithoutParent = ${viewsWithoutParent}; viewsWithParent = ${viewsWithParent};`);
 //     }
 
-    public testAndroidOffscreenTabLimit_KeepAllAlive = function () {
-        let tabView = this.testView;
-        if (!tabView.android){
-            return;
-        }
+    // public testAndroidOffscreenTabLimit_KeepAllAlive = function () {
+    //     let tabView = this.testView;
+    //     if (!tabView.android){
+    //         return;
+    //     }
         
-        tabView.androidOffscreenTabLimit = 20;
+    //     tabView.androidOffscreenTabLimit = 20;
         
-        tabView.items = this._createItems(20);
-        this.waitUntilTestElementIsLoaded();
-        for (let index = 0, length = tabView.items.length; index < length; index++){
-            tabViewTestsNative.selectNativeTab(tabView, index);
-            TKUnit.waitUntilReady(function () {
-                return tabView.selectedIndex === index;
-            }, helper.ASYNC);
-        }
+    //     tabView.items = this._createItems(20);
+    //     this.waitUntilTestElementIsLoaded();
+    //     for (let index = 0, length = tabView.items.length; index < length; index++){
+    //         tabViewTestsNative.selectNativeTab(tabView, index);
+    //         TKUnit.waitUntilReady(function () {
+    //             return tabView.selectedIndex === index;
+    //         }, helper.ASYNC);
+    //     }
 
-        for (let i = 0, length = tabView.items.length; i < length; i++){
-            TKUnit.assertNotNull(tabView.items[i].view.parent, `tabView.items[${i}].view should have a parent!`);
-        }
-    }
+    //     for (let i = 0, length = tabView.items.length; i < length; i++){
+    //         TKUnit.assertNotNull(tabView.items[i].view.parent, `tabView.items[${i}].view should have a parent!`);
+    //     }
+    // }
 
     /*
     public testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelectedAgain() {

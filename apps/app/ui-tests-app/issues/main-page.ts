@@ -16,6 +16,7 @@ export function pageLoaded(args: EventData) {
     examples.set("2942", "issues/issue-2942");
     examples.set("3007", "issues/issue-3007");
     examples.set("2661", "issues/issue-2661");
+    examples.set("3113", "issues/issue-3113");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
