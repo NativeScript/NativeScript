@@ -66,7 +66,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
         var pair: org.nativescript.widgets.Async.Http.KeyValuePair;
         for (i = 0; i < length; i++) {
             pair = jHeaders.get(i);
-            
+
             (<any>http).addHeader(headers, pair.key, pair.value);
         }
     }
@@ -74,11 +74,11 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     callbacks.resolveCallback({
         content: {
             raw: result.raw,
-            toString: (encode?:http.ResponseEncode) => {
-                let str:string;
-                if(encode) {
-                    str = decodeResponse(result.raw,encode);
-                }else{
+            toString: (encoding?: http.HttpResponseEncoding) => {
+                let str: string;
+                if (encoding) {
+                    str = decodeResponse(result.raw, encoding);
+                } else {
                     str = result.responseAsString;
                 }
                 if (types.isString(str)) {
@@ -87,12 +87,12 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                     throw new Error("Response content may not be converted to string");
                 }
             },
-            toJSON: (encode?:http.ResponseEncode) => {
+            toJSON: (encoding?: http.HttpResponseEncoding) => {
                 ensureUtils();
-                let str:string;
-                if(encode) {
-                    str = decodeResponse(result.raw,encode);
-                }else{
+                let str: string;
+                if (encoding) {
+                    str = decodeResponse(result.raw, encoding);
+                } else {
                     str = result.responseAsString;
                 }
                 return utils.parseJSON(str);
@@ -208,9 +208,9 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     });
 }
 
-function decodeResponse(raw:any,encode?:http.ResponseEncode){
+function decodeResponse(raw: any, encoding?: http.HttpResponseEncoding) {
     let charsetName = "UTF-8";
-    if(encode == http.ResponseEncode.GBK) {
+    if (encoding === http.HttpResponseEncoding.GBK) {
         charsetName = 'GBK';
     }
     return raw.toString(charsetName)

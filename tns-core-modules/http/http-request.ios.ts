@@ -65,12 +65,12 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         var headers: http.Headers = {};
                         if (response && response.allHeaderFields) {
                             var headerFields = response.allHeaderFields;
-                            
+
                             headerFields.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
                                 (<any>http).addHeader(headers, key, value);
                             });
                         }
-                        
+
                         if (debugRequest) {
                             debugRequest.mimeType = response.MIMEType;
                             debugRequest.data = data;
@@ -89,9 +89,9 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         resolve({
                             content: {
                                 raw: data,
-                                toString: (encode?:http.ResponseEncode) => { return NSDataToString(data,encode); },
-                                toJSON: (encode?:http.ResponseEncode) => {
-                                    return utils.parseJSON(NSDataToString(data,encode));
+                                toString: (encoding?: http.HttpResponseEncoding) => { return NSDataToString(data, encoding); },
+                                toJSON: (encoding?: http.HttpResponseEncoding) => {
+                                    return utils.parseJSON(NSDataToString(data, encoding));
                                 },
                                 toImage: () => {
                                     ensureImageSource();
@@ -125,7 +125,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                     }
                 });
 
-            if(options.url && debugRequest) {
+            if (options.url && debugRequest) {
                 var request = {
                     url: options.url,
                     method: "GET",
@@ -141,9 +141,9 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     });
 }
 
-function NSDataToString(data: any,encode?:http.ResponseEncode): string {
+function NSDataToString(data: any, encoding?: http.HttpResponseEncoding): string {
     let code = 4; //UTF8
-    if(encode == http.ResponseEncode.GBK) {
+    if (encoding === http.HttpResponseEncoding.GBK) {
         code = 1586;
     }
     return NSString.alloc().initWithDataEncoding(data, code).toString();
