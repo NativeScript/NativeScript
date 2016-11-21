@@ -22,7 +22,7 @@ var VIEW_GROUP = "_viewGroup";
 
 function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
     var view = <View>data.object;
-    view._nativeView.setContentDescription(data.newValue);
+    view._nativeView.setContentDescription(data.newValue + "");
 }
 (<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
 
