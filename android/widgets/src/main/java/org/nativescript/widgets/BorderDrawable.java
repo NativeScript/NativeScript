@@ -367,9 +367,6 @@ public class BorderDrawable extends ColorDrawable {
             int borderColor = this.getUniformBorderColor();
 
             // iOS and browsers use black when no color is specified.
-            if (borderColor == Color.TRANSPARENT){
-                borderColor = Color.BLACK;
-            }
             if (borderWidth > 0) {
                 float halfBorderWidth = borderWidth / 2.0f;
                 RectF middleBoundsF = new RectF(bounds.left + halfBorderWidth, bounds.top + halfBorderWidth, bounds.right - halfBorderWidth, bounds.bottom - halfBorderWidth);
