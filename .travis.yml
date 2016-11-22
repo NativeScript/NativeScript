@@ -3,7 +3,6 @@ env:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
     - PACKAGE_NAME=tns-core-modules
-    - NODE_VERSION=5.10.1
     - EMULATOR_API_VER=21
     - RUNTIMEVERSION=next
     - AVD_NAME=Arm$EMULATOR_API_VER
@@ -14,7 +13,7 @@ addons:
 sudo: false
 language: android
 node_js:
-  - 4.2.3
+  - 6
 jdk:
   - oraclejdk8
 android:
@@ -28,7 +27,8 @@ android:
     - extra-android-m2repository
     - sys-img-armeabi-v7a-android-$EMULATOR_API_VER
 before_script:
-  - nvm install $NODE_VERSION
+  - node -v
+  - npm -v
   - npm install -g grunt-cli
   - npm install
   - echo no | android create avd --force -n $AVD_NAME -t android-$EMULATOR_API_VER --abi default/armeabi-v7a -c 12M
