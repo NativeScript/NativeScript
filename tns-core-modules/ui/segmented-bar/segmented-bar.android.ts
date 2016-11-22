@@ -129,7 +129,7 @@ export class SegmentedBar extends common.SegmentedBar {
         var that = new WeakRef(this);
 
         this._listener = new android.widget.TabHost.OnTabChangeListener({
-            onTabChanged: function(id: string) {
+            onTabChanged: function (id: string) {
                 var bar = that.get();
                 if (bar) {
                     bar.selectedIndex = parseInt(id);
@@ -156,11 +156,11 @@ export class SegmentedBar extends common.SegmentedBar {
     get android(): android.widget.TabHost {
         return this._android;
     }
-    
+
     public insertTab(tabItem: SegmentedBarItem, index?: number): void {
         super.insertTab(tabItem, index);
         tabItem._parent = this;
-        
+
         var tab = this.android.newTabSpec(this.getValidIndex(index) + "");
         tab.setIndicator(tabItem.title || "");
         let that = this;
@@ -282,18 +282,23 @@ export class SegmentedBarStyler implements style.Styler {
         for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
             let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
 
-            let stateDrawable = new android.graphics.drawable.StateListDrawable();
-
-            let arr = (<any>Array).create("int", 1);
-            arr[0] = R_ATTR_STATE_SELECTED;
-            let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(newValue)
-            stateDrawable.addState(arr, colorDrawable);
-            stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
-
-            if (android.os.Build.VERSION.SDK_INT >= 16) {
-                vg.setBackground(stateDrawable);
+            var backgroundDrawable = vg.getBackground();
+            if (android.os.Build.VERSION.SDK_INT >= 21 && backgroundDrawable && types.isFunction(backgroundDrawable.setColorFilter)) {
+                backgroundDrawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
-                vg.setBackgroundDrawable(stateDrawable);
+                let stateDrawable = new android.graphics.drawable.StateListDrawable();
+
+                let arr = (<any>Array).create("int", 1);
+                arr[0] = R_ATTR_STATE_SELECTED;
+                let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(newValue)
+                stateDrawable.addState(arr, colorDrawable);
+                stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
+
+                if (android.os.Build.VERSION.SDK_INT >= 16) {
+                    vg.setBackground(stateDrawable);
+                } else {
+                    vg.setBackgroundDrawable(stateDrawable);
+                }
             }
         }
     }
@@ -319,7 +324,7 @@ export class SegmentedBarStyler implements style.Styler {
             let background = tabHost.getTabWidget().getChildTabViewAt(tabIndex).getBackground();
             result.push(background);
         }
-        
+
         return result;
     }
 
