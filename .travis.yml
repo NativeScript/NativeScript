@@ -12,6 +12,7 @@ addons:
     paths:
       - "$HOME/test-run-results$PACKAGE_VERSION.xml"
 sudo: false
+dist: trusty
 language: android
 node_js:
   - 4.2.3
