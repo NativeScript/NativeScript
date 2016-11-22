@@ -176,7 +176,9 @@ function printRunTestStats() {
     testFileContent.push("</testsuite>");
     testFileContent.push("</testsuites>");
 
-    let testFilePath = fs.path.join(fs.knownFolders.documents().path, "test-results.xml");
+    let testFilePath = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "Documents", "test-results.xml");
+    console.log("testFilePath =====>>>>>>> " + testFilePath);
+
     let testFile = fs.File.fromPath(testFilePath);
     testFile.writeTextSync(testFileContent.join(""));
 

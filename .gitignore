@@ -11,6 +11,7 @@ dist/
 package/
 
 *.js
+!tests/hooks/**/*.*
 !gruntfile.js
 !js-libs/**/*.*
 !css/**/*.*
