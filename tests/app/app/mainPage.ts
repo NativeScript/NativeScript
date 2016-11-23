@@ -35,7 +35,7 @@ function onNavigatedTo(args) {
     page.content = label;
     args.object.off(Page.navigatedToEvent, onNavigatedTo);
 
-    if (parseInt(platform.device.sdkVersion) >= 23) {
+    if (platform.isAndroid && parseInt(platform.device.sdkVersion) >= 23) {
         let handler = (args: application.AndroidActivityRequestPermissionsEventData) => {
             application.android.off(application.AndroidApplication.activityRequestPermissionsEvent, handler);    
             if (args.requestCode === 1234 && args.grantResults.length > 0 && args.grantResults[0] === android.content.pm.PackageManager.PERMISSION_GRANTED) {

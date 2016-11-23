@@ -176,8 +176,13 @@ function printRunTestStats() {
     testFileContent.push("</testsuite>");
     testFileContent.push("</testsuites>");
 
-    let testFilePath = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "Documents", "test-results.xml");
-    console.log("testFilePath =====>>>>>>> " + testFilePath);
+    let testFilePath: string;
+    let testResultsFileName = "test-results.xml";
+    if (platform.isIOS) {
+        testFilePath = fs.path.join(fs.knownFolders.documents().path, testResultsFileName); 
+    } else {
+        testFilePath = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "Documents", testResultsFileName);
+    }
 
     let testFile = fs.File.fromPath(testFilePath);
     testFile.writeTextSync(testFileContent.join(""));
