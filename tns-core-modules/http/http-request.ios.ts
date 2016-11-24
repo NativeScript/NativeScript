@@ -89,9 +89,9 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         resolve({
                             content: {
                                 raw: data,
-                                toString: () => { return NSDataToString(data); },
-                                toJSON: () => {
-                                    return utils.parseJSON(NSDataToString(data));
+                                toString: (encode?:http.ResponseEncode) => { return NSDataToString(data,encode); },
+                                toJSON: (encode?:http.ResponseEncode) => {
+                                    return utils.parseJSON(NSDataToString(data,encode));
                                 },
                                 toImage: () => {
                                     ensureImageSource();
@@ -141,6 +141,10 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     });
 }
 
-function NSDataToString(data: any): string {
-    return NSString.alloc().initWithDataEncoding(data, 4).toString();
+function NSDataToString(data: any,encode?:http.ResponseEncode): string {
+    let code = 4; //UTF8
+    if(encode === http.ResponseEncode.GBK) {
+        code = 1586;
+    }
+    return NSString.alloc().initWithDataEncoding(data, code).toString();
 }

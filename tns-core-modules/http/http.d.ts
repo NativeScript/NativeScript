@@ -113,6 +113,10 @@ declare module "http" {
     
     export type Headers = { [key: string]: string | string[] };
 
+    export const enum ResponseEncode{
+      UTF8,
+      GBK
+    }
    /**
     * Encapsulates the content of an HttpResponse.
     */
@@ -125,7 +129,7 @@ declare module "http" {
        /**
         * Gets the response body as string.
         */
-        toString: () => string;
+        toString: (encode?:ResponseEncode) => string;
 
        /**
         * Gets the response body as JSON object.
