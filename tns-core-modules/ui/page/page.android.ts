@@ -1,6 +1,9 @@
-﻿import pageCommon = require("./page-common");
-import view = require("ui/core/view");
+﻿import app = require("application");
 import enums = require("ui/enums");
+import pageCommon = require("./page-common");
+import platform = require("platform");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
 import * as actionBar from "ui/action-bar";
 import * as gridLayout from "ui/layouts/grid-layout";
 import * as traceModule from "trace";
@@ -23,9 +26,12 @@ function ensureColor() {
 }
 
 export var DIALOG_FRAGMENT_TAG = "dialog";
+const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
+const STATUS_BAR_LIGHT_BCKG = "#F5F5F5";
+const STATUS_BAR_DARK_BCKG = "#66000000";
 
 interface DialogFragmentClass {
-    new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
+new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
 }
 var DialogFragmentClass: DialogFragmentClass;
     
@@ -69,7 +75,7 @@ function ensureDialogFragmentClass() {
             super.onStart();
             if (!this._owner.isLoaded) {
                 this._owner.onLoaded();
-            }
+    }
             this._shownCallback();
         }
         
@@ -169,7 +175,7 @@ export class Page extends pageCommon.Page {
 
         super._raiseShowingModallyEvent();
 
-        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
+    this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
     }
 
     protected _hideNativeModalView(parent: Page) {
@@ -184,4 +190,86 @@ export class Page extends pageCommon.Page {
     public _updateActionBar(hidden: boolean) {
         this.actionBar.update();
     }
+
+    public _updateStatusBar () {
+        this._updateStatusBarStyle(this.statusBarStyle);
+        this._updateStatusBarBackground();
+    }
+
+    public _updateStatusBarStyle(value?: string) {
+        if (value && platform.device.sdkVersion >= "23") {
+            let window = app.android.startActivity.getWindow();
+            let decorView = window.getDecorView();
+            if (value === enums.StatusBarStyle.light) {
+                let nativeColor = new colorModule.Color(STATUS_BAR_LIGHT_BCKG).android;
+                window.setStatusBarColor(nativeColor);
+                decorView.setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
+            } else {
+                let nativeColor = new colorModule.Color(STATUS_BAR_DARK_BCKG).android;
+                window.setStatusBarColor(nativeColor);
+                decorView.setSystemUiVisibility(0);
+            }
+        }
+    }
+
+    private _updateStatusBarBackground() {
+         if (this.androidStatusBarBackground && platform.device.sdkVersion >= "23") {
+            let window = app.android.startActivity.getWindow();
+            
+            let nativeColor = this.androidStatusBarBackground.android;
+
+            window.setStatusBarColor(nativeColor);
+         }
+    }
 }
+
+export class PageStyler implements style.Styler {
+    // statusBarStyle
+     private static setStatusBarStyleProperty(v: view.View, newValue: any) {
+        let page = <Page>v;
+        page._updateStatusBarStyle(newValue);
+    }
+
+    private static resetStatusBarStyleProperty(v: view.View, nativeValue: any) {
+        let page = <Page>v;
+        page._updateStatusBarStyle(nativeValue);
+    }
+
+    private static getStatusBarStyleProperty(v: view.View): any {
+        let page = <Page>v;
+        return page.statusBarStyle;
+    }
+
+    // android-status-bar-background-property
+    private static setAndroidStatusBarBackgroundProperty(v: view.View, newValue: any) {
+        let window = app.android.startActivity.getWindow();
+        let nativeColor = new colorModule.Color(newValue).android;
+        window.setStatusBarColor(nativeColor);
+    }
+
+    private static resetAndroidStatusBarBackgroundProperty(v: view.View, nativeValue: any) {
+        let window = app.android.startActivity.getWindow();
+        let nativeColor = (nativeValue instanceof colorModule.Color) ? (<colorModule.Color>nativeValue).android : new colorModule.Color(nativeValue).android;
+        window.setStatusBarColor(nativeColor);
+    }
+
+    private static getAndroidStatusBarBackgroundProperty(v: view.View): any {
+        let page = <Page>v;
+        return page.androidStatusBarBackground;
+    }
+
+    public static registerHandlers() {
+       style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
+            PageStyler.setStatusBarStyleProperty,
+            PageStyler.resetStatusBarStyleProperty,
+            PageStyler.getStatusBarStyleProperty), "Page");
+
+        style.registerHandler(style.androidStatusBarBackgroundProperty, new style.StylePropertyChangedHandler(
+            PageStyler.setAndroidStatusBarBackgroundProperty,
+            PageStyler.resetAndroidStatusBarBackgroundProperty,
+            PageStyler.getAndroidStatusBarBackgroundProperty), "Page");
+    }
+}
+
+PageStyler.registerHandlers();

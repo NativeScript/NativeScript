@@ -600,4 +600,19 @@
          */
         export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
     }
+
+    /**
+     * Specifies the types of the status bar style.
+     */
+    export module StatusBarStyle {
+        /**
+         * The light style of the status bar - light background with dark letters.
+         */
+        export var light: string;
+
+        /**
+         * The dark style of the status bar - dark background with light letters.
+         */
+        export var dark: string;
+    }
 }

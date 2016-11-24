@@ -5,7 +5,7 @@ import trace = require("trace");
 import uiUtils = require("ui/utils");
 import { device } from "platform";
 import { DeviceType } from "ui/enums";
-
+import style = require("ui/styling/style");
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 
@@ -133,7 +133,7 @@ class UIViewControllerImpl extends UIViewController {
             }
         }
         else {
-            if(!application.ios.window) {
+            if (!application.ios.window) {
                 uiUtils.ios._layoutRootView(owner, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
             }
             owner._updateLayout();
@@ -440,6 +440,20 @@ export class Page extends pageCommon.Page {
         }
     }
 
+    public updateStatusBar() {
+        this._updateStatusBarStyle(this.statusBarStyle);
+    }
+
+    public _updateStatusBarStyle(value?: string) {
+        const frame = this.frame;
+        if (this.frame && value) {
+            let navigationController = frame.ios.controller;
+            let navigationBar = navigationController.navigationBar;
+            
+            navigationBar.barStyle = value === "dark" ? 1 : 0;
+        }
+    }
+
     public _updateEnableSwipeBackNavigation(enabled: boolean) {
         const navController = this._ios.navigationController;
         if (this.frame && navController && navController.interactivePopGestureRecognizer) {
@@ -537,3 +551,30 @@ export class Page extends pageCommon.Page {
         return super._addViewToNativeVisualTree(view);
     }
 }
+
+export class PageStyler implements style.Styler {
+    // statusBarStyle
+     private static setStatusBarStyleProperty(v: View, newValue: any) {
+        let page = <Page>v;
+        page._updateStatusBarStyle(newValue);
+    }
+
+    private static resetStatusBarStyleProperty(v: View, nativeValue: any) {
+        let page = <Page>v;
+        page._updateStatusBarStyle(nativeValue);
+    }
+
+    private static getStatusBarStyleProperty(v: View): any {
+        let page = <Page>v;
+        return page.statusBarStyle;
+    }
+
+    public static registerHandlers() {
+       style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
+            PageStyler.setStatusBarStyleProperty,
+            PageStyler.resetStatusBarStyleProperty,
+            PageStyler.getStatusBarStyleProperty), "Page");
+    }
+}
+
+PageStyler.registerHandlers();

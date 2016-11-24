@@ -10,6 +10,7 @@ import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
 import keyframeAnimation = require("ui/animation/keyframe-animation");
 import types = require("utils/types");
+import {Color} from "color";
 
 let fs: typeof fileSystemModule;
 function ensureFS() {
@@ -29,7 +30,18 @@ function ensureFrame() {
 const AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 const backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
+const statusBarStyleProperty = new Property("statusBarStyle", "Page", new proxy.PropertyMetadata(undefined));
 
+function onStatusBarStylePropertyChanged(data: PropertyChangeData) {
+    const page = <Page>data.object;
+    if (page.isLoaded) {
+        page._updateStatusBar();
+    }
+}
+
+(<proxy.PropertyMetadata>statusBarStyleProperty.metadata).onSetNativeValue = onStatusBarStylePropertyChanged;
+
+const androidStatusBarBackgroundProperty = new Property("androidStatusBarBackground", "Page", new proxy.PropertyMetadata(undefined));
 const actionBarHiddenProperty = new Property("actionBarHidden", "Page", new proxy.PropertyMetadata(undefined, AffectsLayout));
 
 function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
@@ -54,6 +66,8 @@ function enableSwipeBackNavigationPropertyChanged(data: PropertyChangeData) {
 
 export class Page extends ContentView implements dts.Page {
     public static backgroundSpanUnderStatusBarProperty = backgroundSpanUnderStatusBarProperty;
+    public static statusBarStyleProperty = statusBarStyleProperty;
+    public static androidStatusBarBackgroundProperty = androidStatusBarBackgroundProperty;
     public static actionBarHiddenProperty = actionBarHiddenProperty;
     public static iosSwipeBackNavigationEnabledProperty = enableSwipeBackNavigationProperty;
     public static navigatingToEvent = "navigatingTo";
@@ -90,6 +104,8 @@ export class Page extends ContentView implements dts.Page {
             this._updateActionBar(this.actionBarHidden);
         }
 
+        this._updateStatusBar();
+
         super.onLoaded();
     }
 
@@ -99,6 +115,21 @@ export class Page extends ContentView implements dts.Page {
 
     set backgroundSpanUnderStatusBar(value: boolean) {
         this._setValue(Page.backgroundSpanUnderStatusBarProperty, value);
+    }
+
+    get statusBarStyle(): string {
+        return this.style._getValue(Page.statusBarStyleProperty);
+    }
+
+    set statusBarStyle(value: string) {
+        this.style._setValue(Page.statusBarStyleProperty, value);
+    }
+
+    get androidStatusBarBackground(): Color {
+        return this.style.androidStatusBarBackground;
+    }
+    set androidStatusBarBackground(value: Color) {
+        this.style.androidStatusBarBackground = value;
     }
 
     get actionBarHidden(): boolean {
@@ -118,6 +149,10 @@ export class Page extends ContentView implements dts.Page {
     }
 
     public _updateActionBar(hidden: boolean) {
+        //
+    }
+
+    public _updateStatusBar() {
         //
     }
 
