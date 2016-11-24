@@ -66,7 +66,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
         var pair: org.nativescript.widgets.Async.Http.KeyValuePair;
         for (i = 0; i < length; i++) {
             pair = jHeaders.get(i);
-            
+
             (<any>http).addHeader(headers, pair.key, pair.value);
         }
     }
@@ -74,16 +74,28 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     callbacks.resolveCallback({
         content: {
             raw: result.raw,
-            toString: () => {
-                if (types.isString(result.responseAsString)) {
-                    return result.responseAsString;
+            toString: (encoding?: http.HttpResponseEncoding) => {
+                let str: string;
+                if (encoding) {
+                    str = decodeResponse(result.raw, encoding);
+                } else {
+                    str = result.responseAsString;
+                }
+                if (types.isString(str)) {
+                    return str;
                 } else {
                     throw new Error("Response content may not be converted to string");
                 }
             },
-            toJSON: () => {
+            toJSON: (encoding?: http.HttpResponseEncoding) => {
                 ensureUtils();
-                return utils.parseJSON(result.responseAsString);
+                let str: string;
+                if (encoding) {
+                    str = decodeResponse(result.raw, encoding);
+                } else {
+                    str = result.responseAsString;
+                }
+                return utils.parseJSON(str);
             },
             toImage: () => {
                 ensureImageSource();
@@ -194,4 +206,12 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
             reject(ex);
         }
     });
+}
+
+function decodeResponse(raw: any, encoding?: http.HttpResponseEncoding) {
+    let charsetName = "UTF-8";
+    if (encoding === http.HttpResponseEncoding.GBK) {
+        charsetName = 'GBK';
+    }
+    return raw.toString(charsetName)
 }
