@@ -49,10 +49,10 @@ export function test_percent_margin_set_to_page_support() {
     let marginTop = topFrameHeight * 0.1;
 
     let bounds = currentPage._getCurrentLayoutBounds();
-    TKUnit.assertEqual(bounds.left, Math.round(marginLeft), "Current page LEFT position incorrect");
-    TKUnit.assertEqual(bounds.top, Math.round(marginTop), "Current page  TOP position incorrect");
-    TKUnit.assertEqual(bounds.right, Math.round(marginLeft + currentPageWidth), "Current page  RIGHT position incorrect");
-    TKUnit.assertEqual(bounds.bottom, Math.round(marginTop + currentPageHeight), "Current page  BOTTOM position incorrect");
+    TKUnit.assertEqual(bounds.left, Math.floor(marginLeft), "Current page LEFT position incorrect");
+    TKUnit.assertEqual(bounds.top, Math.floor(marginTop), "Current page  TOP position incorrect");
+    TKUnit.assertEqual(bounds.right, Math.floor(marginLeft + currentPageWidth), "Current page  RIGHT position incorrect");
+    TKUnit.assertEqual(bounds.bottom, Math.floor(marginTop + currentPageHeight), "Current page  BOTTOM position incorrect");
 
     //reset values.
     currentPage.margin = "0";
