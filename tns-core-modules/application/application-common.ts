@@ -34,6 +34,10 @@ export var mainEntry: frame.NavigationEntry;
 
 export var cssFile: string = "app.css"
 
+export function setCssFileName(cssFileName: string) {
+    cssFile = cssFileName;
+}
+
 export var appSelectors: RuleSet[] = [];
 export var additionalSelectors: RuleSet[] = [];
 export var cssSelectors: RuleSet[] = [];
@@ -41,6 +45,10 @@ export var cssSelectorVersion: number = 0;
 export var keyframes: any = {};
 
 export var resources: any = {};
+
+export function setResources(res: any) {
+    resources = res;
+}
 
 export var onUncaughtError: (error: definition.NativeScriptError) => void = undefined;
 
