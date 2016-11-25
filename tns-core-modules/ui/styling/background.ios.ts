@@ -22,16 +22,6 @@ export module ios {
         }
         ensureStyle();
 
-        let background = <common.Background>view.style._getValue(style.backgroundInternalProperty);
-        if (!background || background.isEmpty()) {
-            return undefined;
-        }
-
-        // Clip-path
-        if (background.clipPath) {
-            drawClipPath(nativeView, background);
-        }
-
         // Borders
 
         // Clear all borders
@@ -54,6 +44,16 @@ export module ios {
         
         if (nativeView["leftBorderLayer"]){
             (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
+        }
+
+        let background = <common.Background>view.style._getValue(style.backgroundInternalProperty);
+        if (!background || background.isEmpty()) {
+            return undefined;
+        }
+
+        // Clip-path
+        if (background.clipPath) {
+            drawClipPath(nativeView, background);
         }
         
         if (background.hasUniformBorder()){
