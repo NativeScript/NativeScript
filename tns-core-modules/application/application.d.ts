@@ -117,10 +117,20 @@ declare module "application" {
     export var resources: any;
 
     /**
+     * Sets application level static resources.
+     */
+    export function setResources(resources: any);
+
+    /**
      * The application level css file name (starting from the application root). Used to set css across all pages.
      * Css will be applied for every page and page css will be applied after.
      */
     export var cssFile: string;
+
+    /**
+     * Sets css file name for the application. 
+     */
+    export function setCssFileName(cssFile: string);
 
     //@private
     export var appSelectors: RuleSet[];
