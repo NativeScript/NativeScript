@@ -125,7 +125,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         // Omit: super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (this._isOrderChangedFromLastMeasurement) {
-            this._reorderedIndices = this._createReorderedIndices1();
+            this._reorderedIndices = this._createReorderedIndices();
         }
         if (!this._childrenFrozen || this._childrenFrozen.length < this.getChildrenCount()) {
             this._childrenFrozen = new Array(this.getChildrenCount());
@@ -158,44 +158,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         return child;
     }
 
-    public addChild(child: View) {
-        let index = this.getChildrenCount(); // Goes last
-        this._reorderedIndices = this._createReorderedIndices2(child, index);
-        super.addChild(child);
-    }
-
-    public insertChild(child: View, index: number): void {
-        this._reorderedIndices = this._createReorderedIndices2(child, index);
-        super.addChild(child);
-    }
-
-    
-    private _createReorderedIndices1(): number[] {
+    private _createReorderedIndices(): number[] {
         let childCount = this.getChildrenCount();
         let orders = this._createOrders(childCount);
         return this._sortOrdersIntoReorderedIndices(childCount, orders);
-    }
-
-    private _createReorderedIndices2(viewBeforeAdded: View, indexForViewBeforeAdded: number): number[] {
-        let childCount: number = this.getChildrenCount();
-        let orders = this._createOrders(childCount);
-        let orderForViewToBeAdded = new Order();
-
-        orderForViewToBeAdded.order = FlexboxLayout.getOrder(viewBeforeAdded);
-
-        if (indexForViewBeforeAdded === -1 || indexForViewBeforeAdded === childCount) {
-            orderForViewToBeAdded.index = childCount;
-        } else if (indexForViewBeforeAdded) {
-            orderForViewToBeAdded.index = indexForViewBeforeAdded;
-            for (let i = indexForViewBeforeAdded; i < childCount; i++) {
-                orders[i].index++;
-            }
-        } else {
-            orderForViewToBeAdded.index = childCount;
-        }
-        orders.push(orderForViewToBeAdded);
-
-        return this._sortOrdersIntoReorderedIndices(childCount + 1, orders);
     }
 
     private _sortOrdersIntoReorderedIndices(childCount: number, orders: Order[]): number[] {
