@@ -204,8 +204,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             if (view === null) {
                 continue;
             }
-            
-            let lp = <CommonLayoutParams>view.style._getValue(nativeLayoutParamsProperty);
+
             if (FlexboxLayout.getOrder(view) !== this._orderCache[i]) {
                 return true;
             }
@@ -415,7 +414,6 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     private _checkSizeConstraints(view: View) {
         let needsMeasure = false;
-        let lp = <CommonLayoutParams>view.style._getValue(nativeLayoutParamsProperty);
         let childWidth = view.getMeasuredWidth();
         let childHeight = view.getMeasuredHeight();
 
@@ -755,7 +753,6 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             this._flexLines.forEach(flexLine => {
                 for (let i = 0; i < flexLine.itemCount; i++, viewIndex++) {
                     let view = this._getReorderedChildAt(viewIndex);
-                    let lp = <CommonLayoutParams>view.style._getValue(nativeLayoutParamsProperty);
                     let alignSelf = FlexboxLayout.getAlignSelf(view);
                     if (alignSelf !== AlignSelf.AUTO && alignSelf !== AlignSelf.STRETCH) {
                         continue;
