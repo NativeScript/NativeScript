@@ -224,6 +224,11 @@
          * The view is not visible and won't take place in the layout.
          */
         export var collapse: string;
+
+        /**
+         * The view is not visible but will take place in the layout.
+         */
+        export var hidden: string;
     }
 
     /**

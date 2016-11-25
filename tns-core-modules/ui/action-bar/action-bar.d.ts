@@ -157,7 +157,7 @@ declare module "ui/action-bar" {
          *  3. popup - item is shown in the popup menu.
          * Note: Property not applicable to NavigationButton
          */
-        position: string;
+        position: "actionBar" | "actionBarIfRoom" | "popup";
 
         /**
          * Gets or sets the name of the system drawable resource to be displayed.
@@ -178,7 +178,7 @@ declare module "ui/action-bar" {
          *  2. right - items is shown at the right part of the navigation bar.
          * Note: Property not applicable to NavigationButton
          */
-        position: string;
+        position: "left" | "right";
 
         /**
          * Gets or sets a number representing the iOS system item to be displayed.

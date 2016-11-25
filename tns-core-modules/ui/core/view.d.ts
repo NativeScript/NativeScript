@@ -5,9 +5,10 @@ declare module "ui/core/view" {
     import { Color } from "color";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
-    import { Property } from "ui/core/properties";
+    import { Property, CssProperty, InheritedCssProperty } from "ui/core/properties";
     import { BindingOptions } from "ui/core/bindable";
     import { ViewBase } from "ui/core/view-base";
+    import { Background } from "ui/styling/background";
 
     /**
      * Gets a child view by id.
@@ -60,25 +61,9 @@ declare module "ui/core/view" {
         height: number;
     }
 
-    interface Thickness {
-        top: Length,
-        right: Length,
-        bottom: Length,
-        left: Length
-    }
-
-    let classNameProperty: Property<View, string>;
-    let idProperty: Property<View, string>;
-    let automationTextProperty: Property<View, string>;
-    let originXProperty: Property<View, number>;
-    let originYProperty: Property<View, number>;
-    let isEnabledProperty: Property<View, boolean>;
-    let isUserInteractionEnabledProperty: Property<View, boolean>
-
-    interface Length {
+    export interface Length {
         readonly unit: "%" | "dip" | "px";
         readonly value: number;
-        effectiveValue: number;
     }
 
     export namespace Length {
@@ -90,7 +75,6 @@ declare module "ui/core/view" {
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
     export abstract class View extends ViewBase implements ApplyXmlAttributes {
-
         /**
          * Get the nativeView created for this object.
          */
@@ -110,6 +94,8 @@ declare module "ui/core/view" {
          * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
          */
         bindingContext: any;
+
+        //----------Style property shortcuts----------
 
         /**
          * Gets or sets the border color of the view.
@@ -144,22 +130,22 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the top border width of the view.
          */
-        borderTopWidth: number;
+        borderTopWidth: Length;
 
         /**
          * Gets or sets the right border width of the view.
          */
-        borderRightWidth: number;
+        borderRightWidth: Length;
 
         /**
          * Gets or sets the bottom border width of the view.
          */
-        borderBottomWidth: number;
+        borderBottomWidth: Length;
 
         /**
          * Gets or sets the left border width of the view.
          */
-        borderLeftWidth: number;
+        borderLeftWidth: Length;
 
         /**
          * Gets or sets the border radius of the view.
@@ -187,53 +173,6 @@ declare module "ui/core/view" {
         borderBottomLeftRadius: number;
 
         /**
-         * Gets or sets the automation text of the view.
-         */
-        automationText: string;
-
-        /**
-         * String value used when hooking to loaded event.
-         */
-        public static loadedEvent: string;
-
-        /**
-         * String value used when hooking to unloaded event.
-         */
-        public static unloadedEvent: string;
-
-        /**
-         * Represents the observable property backing the automationText property of each View.
-         */
-        // public static automationTextProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the id property of each View.
-         */
-        // public static idProperty: dependencyObservable.Property;
-
-        /**
-         * [Deprecated. Please use className instead.] Represents the observable property backing the cssClass property of each View.
-         */
-        // public static cssClassProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the className property of each View.
-         */
-        // public static classNameProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the isEnabled property of each View.
-         */
-        // public static isEnabledProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the isUserInteractionEnabled property of each View.
-         */
-        // public static isUserInteractionEnabledProperty: dependencyObservable.Property;
-
-        //----------Style property shortcuts----------
-
-        /**
          * Gets or sets the color of the view.
          */
         color: Color;
@@ -251,12 +190,12 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the minimum width the view may grow to.
          */
-        minWidth: number;
+        minWidth: Length;
 
         /**
          * Gets or sets the minimum height the view may grow to.
          */
-        minHeight: number;
+        minHeight: Length;
 
         /**
          * Gets or sets the desired width of the view.
@@ -271,7 +210,7 @@ declare module "ui/core/view" {
         /**
          * Gets or sets margin style property.
          */
-        margin: string | number | Thickness;
+        margin: string;
 
         /**
          * Specifies extra space on the left side of this view.
@@ -296,24 +235,27 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
          */
-        horizontalAlignment: string;
+        horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
 
         /**
          * Gets or sets the alignment of this view within its parent along the Vertical axis.
          */
-        verticalAlignment: string;
+        verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
 
         /**
          * Gets or sets the visibility of the view.
          */
-        visibility: string;
+        visibility: "visible" | "hidden" | "collapse" | "collapsed";
 
         /**
          * Gets or sets the opacity style property.
          */
         opacity: number;
 
-        //----------Style property shortcuts----------
+        /**
+         * Gets or sets the rotate affine transform of the view.
+         */
+        rotate: number;
 
         /**
          * Gets or sets the translateX affine transform of the view.
@@ -335,6 +277,13 @@ declare module "ui/core/view" {
          */
         scaleY: number;
 
+        //END Style property shortcuts
+
+        /**
+         * Gets or sets the automation text of the view.
+         */
+        automationText: string;
+
         /**
          * Gets or sets the X component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
          */
@@ -344,11 +293,6 @@ declare module "ui/core/view" {
          * Gets or sets the Y component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
          */
         originY: number;
-
-        /**
-         * Gets or sets the rotate affine transform of the view.
-         */
-        rotate: number;
 
         /**
          * Gets or sets a value indicating whether the the view is enabled. This affects the appearance of the view.
@@ -366,19 +310,9 @@ declare module "ui/core/view" {
         id: string;
 
         /**
-         * [Deprecated. Please use className instead.] Gets or sets the CSS class for this view.
-         */
-        cssClass: string;
-
-        /**
          * Gets or sets the CSS class name for this view.
          */
         className: string;
-
-        // /**
-        //  * Gets the View instance that parents this view. This property is read-only.
-        //  */
-        // parent: View;
 
         /**
          * Gets is layout is valid. This is a read-only property.
@@ -487,19 +421,6 @@ declare module "ui/core/view" {
          * @param bottom	Bottom position, relative to parent
          */
         public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void;
-
-        /**
-         * Changes the width, height and margins of the child to one calculated from percentage values.
-         *
-         * @param widthMeasureSpec  Width MeasureSpec of the parent layout.
-         * @param heightMeasureSpec Height MeasureSpec of the parent layout.
-         */
-        protected static adjustChildLayoutParams(view: View, widthMeasureSpec: number, heightMeasureSpec: number): void;
-
-        /**
-         * Restores the original dimensions of the child that were changed for percentage values.
-         */
-        protected static restoreChildOriginalParams(view: View): void;
 
         /**
          * Utility to reconcile a desired size and state, with constraints imposed
@@ -639,7 +560,7 @@ declare module "ui/core/view" {
         public bind(options: BindingOptions, source: any): void;
         public unbind(property: string): void;
 
-        isVisible: boolean;
+        isCollapsed: boolean;
         isLayoutRequired: boolean;
         _parentChanged(oldParent: View): void;
         _gestureObservers: any;
@@ -766,4 +687,89 @@ declare module "ui/core/view" {
          */
         _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
     }
+
+    export namespace layout {
+        export const UNSPECIFIED: number;
+        export const EXACTLY: number;
+        export const AT_MOST: number;
+
+        export const MEASURED_HEIGHT_STATE_SHIFT: number;
+        export const MEASURED_STATE_TOO_SMALL: number;
+        export const MEASURED_STATE_MASK: number;
+        export const MEASURED_SIZE_MASK: number;
+
+        export function getMeasureSpecMode(spec: number): number;
+        export function getMeasureSpecSize(spec: number): number;
+        export function getDisplayDensity(): number;
+        export function makeMeasureSpec(size: number, mode: number): number;
+        export function toDevicePixels(value: number): number;
+        export function toDeviceIndependentPixels(value: number): number;
+        export function measureSpecToString(measureSpec: number): string;
+    }
+
+    export const classNameProperty: Property<View, string>;
+    export const idProperty: Property<View, string>;
+    export const automationTextProperty: Property<View, string>;
+    export const originXProperty: Property<View, number>;
+    export const originYProperty: Property<View, number>;
+    export const isEnabledProperty: Property<View, boolean>;
+    export const isUserInteractionEnabledProperty: Property<View, boolean>;
+
+    export const rotateProperty: CssProperty<Style, number>;
+    export const scaleXProperty: CssProperty<Style, number>;
+    export const scaleYProperty: CssProperty<Style, number>;
+    export const translateXProperty: CssProperty<Style, number>;
+    export const translateYProperty: CssProperty<Style, number>;
+
+    export const clipPathProperty: CssProperty<Style, string>;
+    export const colorProperty: InheritedCssProperty<Style, Color>;
+
+    export const backgroundColorProperty: CssProperty<Style, Color>;
+    export const backgroundImageProperty: CssProperty<Style, string>;
+    export const backgroundRepeatProperty: CssProperty<Style, string>;
+    export const backgroundSizeProperty: CssProperty<Style, string>;
+    export const backgroundPositionProperty: CssProperty<Style, string>;
+
+    export const borderColorProperty: CssProperty<Style, Color>;
+    export const borderTopColorProperty: CssProperty<Style, Color>;
+    export const borderRightColorProperty: CssProperty<Style, Color>;
+    export const borderBottomColorProperty: CssProperty<Style, Color>;
+    export const borderLeftColorProperty: CssProperty<Style, Color>;
+
+    export const borderWidthProperty: CssProperty<Style, number>;
+    export const borderTopWidthProperty: CssProperty<Style, Length>;
+    export const borderRightWidthProperty: CssProperty<Style, Length>;
+    export const borderBottomWidthProperty: CssProperty<Style, Length>;
+    export const borderLeftWidthProperty: CssProperty<Style, Length>;
+
+    export const borderRadiusProperty: CssProperty<Style, number>;
+    export const borderTopLeftRadiusProperty: CssProperty<Style, number>;
+    export const borderTopRightRadiusProperty: CssProperty<Style, number>;
+    export const borderBottomRightRadiusProperty: CssProperty<Style, number>;
+    export const borderBottomLeftRadiusProperty: CssProperty<Style, number>;
+
+    export const zIndexProperty: CssProperty<Style, number>;
+    export const visibilityProperty: CssProperty<Style, string>;
+    export const opacityProperty: CssProperty<Style, number>;
+
+    export const minWidthProperty: CssProperty<Style, Length>;
+    export const minHeightProperty: CssProperty<Style, Length>;
+    export const widthProperty: CssProperty<Style, Length>;
+    export const heightProperty: CssProperty<Style, Length>;
+    export const marginProperty: CssProperty<Style, string>;
+    export const marginLeftProperty: CssProperty<Style, Length>;
+    export const marginRightProperty: CssProperty<Style, Length>;
+    export const marginTopProperty: CssProperty<Style, Length>;
+    export const marginBottomProperty: CssProperty<Style, Length>;
+
+    export const paddingProperty: CssProperty<Style, string>;
+    export const paddingLeftProperty: CssProperty<Style, Length>;
+    export const paddingRightProperty: CssProperty<Style, Length>;
+    export const paddingTopProperty: CssProperty<Style, Length>;
+    export const paddingBottomProperty: CssProperty<Style, Length>;
+
+    export const verticalAlignmentProperty: CssProperty<Style, string>;
+    export const horizontalAlignmentProperty: CssProperty<Style, string>;
+
+    export const backgroundInternalProperty: CssProperty<Style, Background>;
 }

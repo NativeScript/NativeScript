@@ -1,24 +1,23 @@
-import { View as ViewDefinition, Point, Size, Thickness } from "ui/core/view";
-import { Style, CommonLayoutParams } from "ui/styling/style";
+import { View as ViewDefinition, Point, Size } from "ui/core/view";
+import { Style } from "ui/styling/style";
 import { CssState, StyleScope, applyInlineSyle } from "ui/styling/style-scope";
-import { VerticalAlignment, HorizontalAlignment } from "ui/enums";
 import { Color } from "color";
 import { Animation, AnimationPromise } from "ui/animation";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 import { Source } from "utils/debug";
 import { Observable, EventData } from "data/observable";
-import { ViewBase } from "./view-base";
-import { propagateInheritedProperties, clearInheritedProperties, Property, InheritedProperty, CssProperty, ShorthandProperty } from "./properties";
-import { isString, isNumber } from "utils/types";
-import { observe, fromString, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
-import { isAndroid, isIOS } from "platform";
+import { Background } from "ui/styling/background";
+import { ViewBase, getEventOrGestureName } from "./view-base";
+import { propagateInheritedProperties, clearInheritedProperties, Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty } from "./properties";
+import { observe, fromString as gestureFromString, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
+import { isIOS } from "platform";
 
-import * as trace from "trace";
-import * as utils from "utils/utils";
-import bindable = require("ui/core/bindable");
+// TODO: Remove this and start using string as source (for android).
+import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
 
-// on Android we explicitly set AffectsLayout to False because android will invalidate its layout when needed so we skip unnecessary native calls.
-let affectsIOSLayout = isIOS;
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
+import { isDataURI, isFileOrResourcePath } from "utils/utils";
+export * from "./view-base";
 
 // registerSpecialProperty("class", (instance: ViewDefinition, propertyValue: string) => {
 //     instance.className = propertyValue;
@@ -27,22 +26,39 @@ let affectsIOSLayout = isIOS;
 //     instance.set("text", propertyValue);
 // });
 
-function getEventOrGestureName(name: string): string {
-    return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
+declare module "ui/styling/style" {
+    interface Style {
+        effectiveMinWidth: number;
+        effectiveMinHeight: number;
+        effectiveWidth: number;
+        effectiveHeight: number;
+        effectiveMarginTop: number;
+        effectiveMarginRight: number;
+        effectiveMarginBottom: number;
+        effectiveMarginLeft: number;
+        effectivePaddingTop: number;
+        effectivePaddingRight: number;
+        effectivePaddingBottom: number;
+        effectivePaddingLeft: number;
+        effectiveBorderTopWidth: number;
+        effectiveBorderRightWidth: number;
+        effectiveBorderBottomWidth: number;
+        effectiveBorderLeftWidth: number;
+    }
 }
 
 export namespace layout {
-    let MODE_SHIFT = 30;
-    let MODE_MASK = 0x3 << MODE_SHIFT;
+    const MODE_SHIFT = 30;
+    const MODE_MASK = 0x3 << MODE_SHIFT;
 
-    export let UNSPECIFIED = 0 << MODE_SHIFT;
-    export let EXACTLY = 1 << MODE_SHIFT;
-    export let AT_MOST = 2 << MODE_SHIFT;
+    export const UNSPECIFIED = 0 << MODE_SHIFT;
+    export const EXACTLY = 1 << MODE_SHIFT;
+    export const AT_MOST = 2 << MODE_SHIFT;
 
-    export let MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
-    export let MEASURED_STATE_TOO_SMALL = 0x01000000;
-    export let MEASURED_STATE_MASK = 0xff000000;
-    export let MEASURED_SIZE_MASK = 0x00ffffff;
+    export const MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
+    export const MEASURED_STATE_TOO_SMALL = 0x01000000;
+    export const MEASURED_STATE_MASK = 0xff000000;
+    export const MEASURED_SIZE_MASK = 0x00ffffff;
 
     export function getMeasureSpecMode(spec: number): number {
         return (spec & MODE_MASK);
@@ -58,6 +74,14 @@ export namespace layout {
 
     export function makeMeasureSpec(size: number, mode: number): number {
         return (Math.round(size) & ~MODE_MASK) | (mode & MODE_MASK);
+    }
+
+    export function toDevicePixels(value: number): number {
+        return value * getDisplayDensity();
+    }
+
+    export function toDeviceIndependentPixels(value: number): number {
+        return value / getDisplayDensity();
     }
 
     export function measureSpecToString(measureSpec: number): string {
@@ -82,17 +106,6 @@ export namespace layout {
         text += size;
         return text;
     }
-}
-export function isEventOrGesture(name: string, view: ViewDefinition): boolean {
-    if (isString(name)) {
-        let eventOrGestureName = getEventOrGestureName(name);
-        let evt = `${eventOrGestureName}Event`;
-
-        return view.constructor && evt in view.constructor ||
-            fromString(eventOrGestureName.toLowerCase()) !== undefined;
-    }
-
-    return false;
 }
 
 export function getViewById(view: ViewDefinition, id: string): ViewDefinition {
@@ -155,54 +168,6 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 
 let viewIdCounter = 0;
 
-function onCssClassPropertyChanged(view: ViewDefinition, oldValue: string, newValue: string) {
-    let classes = view.cssClasses;
-    classes.clear();
-    if (isString(newValue)) {
-        newValue.split(" ").forEach(c => classes.add(c));
-    }
-}
-
-// let cssClassProperty = new Property("cssClass", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
-export let cssClassProperty = new Property<ViewCommon, string>({ name: "cssClass", valueChanged: onCssClassPropertyChanged });
-cssClassProperty.register(ViewCommon);
-
-// let classNameProperty = new Property("className", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle, onCssClassPropertyChanged));
-export let classNameProperty = new Property<ViewCommon, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
-classNameProperty.register(ViewCommon);
-
-function resetStyles(view: ViewCommon): void {
-    // view.style._resetCssValues();
-    // view._applyStyleFromScope();
-    view._eachChildView((child) => {
-        resetStyles(child);
-        return true;
-    });
-}
-// let idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
-export let idProperty = new Property<ViewCommon, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
-idProperty.register(ViewCommon);
-
-// let automationTextProperty = new Property("automationText", "View", new PropertyMetadata(undefined));
-export let automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
-automationTextProperty.register(ViewCommon);
-
-// let originXProperty = new Property("originX", "View", new PropertyMetadata(0.5));
-export let originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5 });
-originXProperty.register(ViewCommon);
-
-// let originYProperty = new Property("originY", "View", new PropertyMetadata(0.5));
-export let originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5 });
-originYProperty.register(ViewCommon);
-
-// let isEnabledProperty = new Property("isEnabled", "View", new PropertyMetadata(true));
-export let isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true });
-isEnabledProperty.register(ViewCommon);
-
-// let isUserInteractionEnabledProperty = new Property("isUserInteractionEnabled", "View", new PropertyMetadata(true));
-export let isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true });
-isUserInteractionEnabledProperty.register(ViewCommon);
-
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
@@ -235,36 +200,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public cssPseudoClasses: Set<string> = new Set();
 
     public _cssState: CssState;
-    public isVisible = true;
-    public parent: this;
-
-    public layoutParams: CommonLayoutParams = {
-        width: -1,
-        widthPercent: -1,
-        height: -1,
-        heightPercent: -1,
-        leftMargin: 0,
-        leftMarginPercent: -1,
-        topMargin: 0,
-        topMarginPercent: -1,
-        rightMargin: 0,
-        rightMarginPercent: -1,
-        bottomMargin: 0,
-        bottomMarginPercent: -1,
-        horizontalAlignment: "stretch",
-        verticalAlignment: "stretch"
-    };
-
-    public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
-        return this._gestureObservers[type];
-    }
-
-
-
-
-
-
-
+    public parent: ViewCommon;
 
     constructor() {
         super();
@@ -281,11 +217,15 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this._gestureObservers[type].push(observe(this, type, callback, thisArg));
     }
 
+    public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
+        return this._gestureObservers[type];
+    }
+
     public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
-        if (isString(arg)) {
+        if (typeof arg === "string") {
             arg = getEventOrGestureName(<string>arg);
 
-            let gesture = fromString(<string>arg);
+            let gesture = gestureFromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this.observe(gesture, callback, thisArg);
             } else {
@@ -293,7 +233,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
-                        let gst = fromString(evt);
+                        let gst = gestureFromString(evt);
                         if (gst && !this._isEvent(<string>arg)) {
                             this.observe(gst, callback, thisArg);
                         } else {
@@ -304,14 +244,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                     super.addEventListener(<string>arg, callback, thisArg);
                 }
             }
-        } else if (isNumber(arg)) {
+        } else if (typeof arg === "number") {
             this.observe(<GestureTypes>arg, callback, thisArg);
         }
     }
 
     public removeEventListener(arg: string | GestureTypes, callback?: any, thisArg?: any) {
-        if (isString(arg)) {
-            let gesture = fromString(<string>arg);
+        if (typeof arg === "string") {
+            let gesture = gestureFromString(<string>arg);
             if (gesture && !this._isEvent(<string>arg)) {
                 this._disconnectGestureObservers(gesture);
             } else {
@@ -319,7 +259,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
-                        let gst = fromString(evt);
+                        let gst = gestureFromString(evt);
                         if (gst && !this._isEvent(<string>arg)) {
                             this._disconnectGestureObservers(gst);
                         } else {
@@ -331,7 +271,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 }
 
             }
-        } else if (isNumber(arg)) {
+        } else if (typeof arg === "number") {
             this._disconnectGestureObservers(<GestureTypes>arg);
         }
     }
@@ -356,8 +296,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     getViewById<T extends ViewDefinition>(id: string): T {
         return <T>getViewById(this, id);
     }
-
-    public automationText: string;
 
     // START Style property shortcuts
     get borderColor(): string | Color {
@@ -402,31 +340,31 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.borderWidth = value;
     }
 
-    get borderTopWidth(): number {
+    get borderTopWidth(): Length {
         return this.style.borderTopWidth;
     }
-    set borderTopWidth(value: number) {
+    set borderTopWidth(value: Length) {
         this.style.borderTopWidth = value;
     }
 
-    get borderRightWidth(): number {
+    get borderRightWidth(): Length {
         return this.style.borderRightWidth;
     }
-    set borderRightWidth(value: number) {
+    set borderRightWidth(value: Length) {
         this.style.borderRightWidth = value;
     }
 
-    get borderBottomWidth(): number {
+    get borderBottomWidth(): Length {
         return this.style.borderBottomWidth;
     }
-    set borderBottomWidth(value: number) {
+    set borderBottomWidth(value: Length) {
         this.style.borderBottomWidth = value;
     }
 
-    get borderLeftWidth(): number {
+    get borderLeftWidth(): Length {
         return this.style.borderLeftWidth;
     }
-    set borderLeftWidth(value: number) {
+    set borderLeftWidth(value: Length) {
         this.style.borderLeftWidth = value;
     }
 
@@ -486,17 +424,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.backgroundImage = value;
     }
 
-    get minWidth(): number {
+    get minWidth(): Length {
         return this.style.minWidth;
     }
-    set minWidth(value: number) {
+    set minWidth(value: Length) {
         this.style.minWidth = value;
     }
 
-    get minHeight(): number {
+    get minHeight(): Length {
         return this.style.minHeight;
     }
-    set minHeight(value: number) {
+    set minHeight(value: Length) {
         this.style.minHeight = value;
     }
 
@@ -563,10 +501,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.verticalAlignment = value;
     }
 
-    get visibility(): string {
+    get visibility(): "visible" | "hidden" | "collapse" | "collapsed" {
         return this.style.visibility;
     }
-    set visibility(value: string) {
+    set visibility(value: "visible" | "hidden" | "collapse" | "collapsed") {
         this.style.visibility = value;
     }
 
@@ -623,30 +561,16 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return null;
     }
 
+    public id: string;
+    public automationText: string;
     public originX: number;
     public originY: number;
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
-    public id: string;
-    public cssClass: string;
     public className: string;
-
-    // get style(): Style {
-    //     return this._style;
-    // }
-    // set style(value) {
-    //     throw new Error("View.style property is read-only.");
-    // }
-
-    get isLayoutRequired(): boolean {
-        return true;
-    }
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
-    }
-    set isLayoutValid(value: boolean) {
-        throw new Error("isLayoutValid is read-only property.");
     }
 
     get cssType(): string {
@@ -656,9 +580,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return this._cssType;
     }
 
-    // get parent(): ViewCommon {
-    //     return this.parent;
-    // }
+    get isLayoutRequired(): boolean {
+        return true;
+    }
 
     get isLoaded(): boolean {
         return this._isLoaded;
@@ -760,24 +684,24 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public getMeasuredWidth(): number {
-        return this._measuredWidth & utils.layout.MEASURED_SIZE_MASK || 0;
+        return this._measuredWidth & layout.MEASURED_SIZE_MASK || 0;
     }
 
     public getMeasuredHeight(): number {
-        return this._measuredHeight & utils.layout.MEASURED_SIZE_MASK || 0;
+        return this._measuredHeight & layout.MEASURED_SIZE_MASK || 0;
     }
 
     public getMeasuredState(): number {
-        return (this._measuredWidth & utils.layout.MEASURED_STATE_MASK)
-            | ((this._measuredHeight >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT)
-                & (utils.layout.MEASURED_STATE_MASK >> utils.layout.MEASURED_HEIGHT_STATE_SHIFT));
+        return (this._measuredWidth & layout.MEASURED_STATE_MASK)
+            | ((this._measuredHeight >> layout.MEASURED_HEIGHT_STATE_SHIFT)
+                & (layout.MEASURED_STATE_MASK >> layout.MEASURED_HEIGHT_STATE_SHIFT));
     }
 
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
         this._measuredWidth = measuredWidth;
         this._measuredHeight = measuredHeight;
-        if (trace.enabled) {
-            trace.write(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, trace.categories.Layout);
+        if (traceEnabled) {
+            traceWrite(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, traceCategories.Layout);
         }
     }
 
@@ -830,22 +754,22 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
         let result = size;
         switch (specMode) {
-            case utils.layout.UNSPECIFIED:
+            case layout.UNSPECIFIED:
                 result = size;
                 break;
 
-            case utils.layout.AT_MOST:
+            case layout.AT_MOST:
                 if (specSize < size) {
-                    result = Math.round(specSize + 0.499) | utils.layout.MEASURED_STATE_TOO_SMALL;
+                    result = Math.round(specSize + 0.499) | layout.MEASURED_STATE_TOO_SMALL;
                 }
                 break;
 
-            case utils.layout.EXACTLY:
+            case layout.EXACTLY:
                 result = specSize;
                 break;
         }
 
-        return Math.round(result + 0.499) | (childMeasuredState & utils.layout.MEASURED_STATE_MASK);
+        return Math.round(result + 0.499) | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
     public static combineMeasuredStates(curState: number, newState): number {
@@ -853,7 +777,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public static layoutChild(parent: ViewDefinition, child: ViewDefinition, left: number, top: number, right: number, bottom: number): void {
-        if (!child || !child.isVisible) {
+        if (!child || child.isCollapsed) {
             return;
         }
 
@@ -865,9 +789,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let childWidth = child.getMeasuredWidth();
         let childHeight = child.getMeasuredHeight();
 
+        let effectiveMarginTop = childStyle.effectiveMarginTop;
+        let effectiveMarginBottom = childStyle.effectiveMarginBottom;
+
         let vAlignment: string;
-        if (childStyle.height.effectiveValue >= 0 && childStyle.verticalAlignment === VerticalAlignment.stretch) {
-            vAlignment = VerticalAlignment.center;
+        if (childStyle.effectiveHeight >= 0 && childStyle.verticalAlignment === "stretch") {
+            vAlignment = "center";
         }
         else {
             vAlignment = childStyle.verticalAlignment;
@@ -879,51 +806,55 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let marginRight = childStyle.marginRight;
 
         switch (vAlignment) {
-            case VerticalAlignment.top:
-                childTop = top + marginTop.effectiveValue;
+            case "top":
+                childTop = top + effectiveMarginTop;
                 break;
 
-            case VerticalAlignment.center:
-            case VerticalAlignment.middle:
-                childTop = top + (bottom - top - childHeight + (marginTop.effectiveValue - marginBottom.effectiveValue)) / 2;
+            case "center":
+            case "middle":
+                childTop = top + (bottom - top - childHeight + (effectiveMarginTop - effectiveMarginBottom)) / 2;
                 break;
 
-            case VerticalAlignment.bottom:
-                childTop = bottom - childHeight - marginBottom.effectiveValue;
+            case "bottom":
+                childTop = bottom - childHeight - effectiveMarginBottom;
                 break;
 
-            case VerticalAlignment.stretch:
+            case "stretch":
             default:
-                childTop = top + marginTop.effectiveValue;
-                childHeight = bottom - top - (marginTop.effectiveValue + marginBottom.effectiveValue);
+                childTop = top + effectiveMarginTop;
+                childHeight = bottom - top - (effectiveMarginTop + effectiveMarginBottom);
                 break;
         }
 
+        let effectiveMarginLeft = childStyle.effectiveMarginLeft;
+        let effectiveMarginRight = childStyle.effectiveMarginRight;
+
         let hAlignment: string;
-        if (childStyle.width.effectiveValue >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.stretch) {
-            hAlignment = HorizontalAlignment.center;
+        if (childStyle.effectiveWidth >= 0 && childStyle.horizontalAlignment === "stretch") {
+            hAlignment = "center";
         }
         else {
             hAlignment = childStyle.horizontalAlignment;
         }
 
         switch (hAlignment) {
-            case HorizontalAlignment.left:
-                childLeft = left + marginLeft.effectiveValue;
+            case "left":
+                childLeft = left + effectiveMarginLeft;
                 break;
 
-            case HorizontalAlignment.center:
-                childLeft = left + (right - left - childWidth + (marginLeft.effectiveValue - marginRight.effectiveValue)) / 2;
+            case "center":
+            case "middle":
+                childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
                 break;
 
-            case HorizontalAlignment.right:
-                childLeft = right - childWidth - marginRight.effectiveValue;
+            case "right":
+                childLeft = right - childWidth - effectiveMarginRight;
                 break;
 
-            case HorizontalAlignment.stretch:
+            case "stretch":
             default:
-                childLeft = left + marginLeft.effectiveValue;
-                childWidth = right - left - (marginLeft.effectiveValue + marginRight.effectiveValue);
+                childLeft = left + effectiveMarginLeft;
+                childWidth = right - left - (effectiveMarginLeft + effectiveMarginRight);
                 break;
         }
 
@@ -932,8 +863,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         childLeft = Math.round(childLeft);
         childTop = Math.round(childTop);
 
-        if (trace.enabled) {
-            trace.write(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, trace.categories.Layout);
+        if (traceEnabled) {
+            traceWrite(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, traceCategories.Layout);
         }
 
         child.layout(childLeft, childTop, childRight, childBottom);
@@ -943,7 +874,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let measureWidth = 0;
         let measureHeight = 0;
 
-        if (child && child.isVisible) {
+        if (child && !child.isCollapsed) {
             let density = layout.getDisplayDensity();
             let width = layout.getMeasureSpecSize(widthMeasureSpec);
             let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -955,14 +886,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             updateChildLayoutParams(child, parent, density);
 
             let style = child.style;
-            let horizontalMargins = style.marginLeft.effectiveValue + style.marginRight.effectiveValue;
-            let verticalMargins = style.marginTop.effectiveValue + style.marginRight.effectiveValue;
+            let horizontalMargins = style.effectiveMarginLeft + style.effectiveMarginRight;
+            let verticalMargins = style.effectiveMarginTop + style.effectiveMarginRight;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, style.width.effectiveValue, style.horizontalAlignment === HorizontalAlignment.stretch);
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, style.height.effectiveValue, style.verticalAlignment === VerticalAlignment.stretch);
+            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, style.effectiveWidth, style.horizontalAlignment === "stretch");
+            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, style.effectiveHeight, style.verticalAlignment === "stretch");
 
-            if (trace.enabled) {
-                trace.write(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), trace.categories.Layout);
+            if (traceEnabled) {
+                traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
             }
 
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
@@ -1018,33 +949,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return changed;
     }
 
-    // protected static restoreChildOriginalParams(view: ViewDefinition): void {
-    //     if (!view) {
-    //         return;
-    //     }
-
-    //     let lp: CommonLayoutParams = view.layoutParams;
-    //     if (lp.widthPercent > 0) {
-    //         lp.width = -1;
-    //     }
-
-    //     if (lp.heightPercent > 0) {
-    //         lp.height = -1;
-    //     }
-    //     if (lp.leftMarginPercent > 0) {
-    //         lp.leftMargin = 0;
-    //     }
-    //     if (lp.topMarginPercent > 0) {
-    //         lp.topMargin = 0;
-    //     }
-    //     if (lp.rightMarginPercent > 0) {
-    //         lp.rightMargin = 0;
-    //     }
-    //     if (lp.bottomMarginPercent > 0) {
-    //         lp.bottomMargin = 0;
-    //     }
-    // }
-
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
         return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom }
     }
@@ -1073,7 +977,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     private _applyInlineStyle(inlineStyle) {
-        if (isString(inlineStyle)) {
+        if (typeof inlineStyle === "string") {
             try {
                 // this.style._beginUpdate();
                 applyInlineSyle(this, <string>inlineStyle);
@@ -1140,8 +1044,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
      * // TODO: Think whether we need the base Layout routine.
      */
     public _addView(view: ViewDefinition, atIndex?: number) {
-        if (trace.enabled) {
-            trace.write(`${this}._addView(${view}, ${atIndex})`, trace.categories.ViewHierarchy);
+        if (traceEnabled) {
+            traceWrite(`${this}._addView(${view}, ${atIndex})`, traceCategories.ViewHierarchy);
         }
 
         if (!view) {
@@ -1196,8 +1100,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
      * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
      */
     public _removeView(view: ViewDefinition) {
-        if (trace.enabled) {
-            trace.write(`${this}._removeView(${view})`, trace.categories.ViewHierarchy);
+        if (traceEnabled) {
+            traceWrite(`${this}._removeView(${view})`, traceCategories.ViewHierarchy);
         }
         if (view.parent !== this) {
             throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
@@ -1262,8 +1166,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _goToVisualState(state: string) {
-        if (trace.enabled) {
-            trace.write(this + " going to state: " + state, trace.categories.Style);
+        if (traceEnabled) {
+            traceWrite(this + " going to state: " + state, traceCategories.Style);
         }
         if (state === this._visualState) {
             return;
@@ -1284,7 +1188,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public setInlineStyle(style: string): void {
-        if (!isString(style)) {
+        if (typeof style !== "string") {
             throw new Error("Parameter should be valid CSS string!");
         }
 
@@ -1327,8 +1231,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         }
 
         return {
-            width: utils.layout.toDeviceIndependentPixels(currentBounds.right - currentBounds.left),
-            height: utils.layout.toDeviceIndependentPixels(currentBounds.bottom - currentBounds.top),
+            width: layout.toDeviceIndependentPixels(currentBounds.right - currentBounds.left),
+            height: layout.toDeviceIndependentPixels(currentBounds.bottom - currentBounds.top),
         }
     }
 
@@ -1476,22 +1380,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 }
 
-function updateEffectiveValues(prentAvailableLength: number, density: number, ...params: Length[]): void {
-    for (let param of params) {
-        switch (param.unit) {
-            case "%":
-                param.effectiveValue = Math.round(prentAvailableLength * param.value);
-                break;
+function getEffectiveValue(prentAvailableLength: number, density: number, param: Length): number {
+    switch (param.unit) {
+        case "%":
+            return Math.round(prentAvailableLength * param.value);
 
-            case "dip":
-                param.effectiveValue = Math.round(density * param.value);
-                break;
+        case "px":
+            return Math.round(param.value);
 
-            case "px":
-            default:
-                param.effectiveValue = Math.round(param.value);
-                break;
-        }
+        default:
+        case "dip":
+            return Math.round(density * param.value);
     }
 }
 
@@ -1501,27 +1400,30 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
     let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
     let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
     let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
-    let parentAvailableWidth = parentWidthMeasureMode === utils.layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-    updateEffectiveValues(parentAvailableWidth, density, style.width, style.marginLeft, style.marginRight);
+    let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
+    style.effectiveWidth = getEffectiveValue(parentAvailableWidth, density, style.width);
+    style.effectiveMarginLeft = getEffectiveValue(parentAvailableWidth, density, style.marginLeft);
+    style.effectiveMarginRight = getEffectiveValue(parentAvailableWidth, density, style.marginRight);
 
     let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
     let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
     let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
-    let parentAvailableHeight = parentHeightMeasureMode === utils.layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-    updateEffectiveValues(parentAvailableHeight, density, style.height, style.marginTop, style.marginBottom);
+    let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+    style.effectiveHeight = getEffectiveValue(parentAvailableHeight, density, style.height);
+    style.effectiveMarginTop = getEffectiveValue(parentAvailableHeight, density, style.marginTop);
+    style.effectiveMarginBottom = getEffectiveValue(parentAvailableHeight, density, style.marginBottom);
 }
 
 interface Length {
     readonly unit: "%" | "dip" | "px";
     readonly value: number;
-    effectiveValue: number;
 }
 
 export namespace Length {
     export function parse(value: string | Length): Length {
-        let numberValue = 0;
-        let type: "%" | "dip" | "px";
         if (typeof value === "string") {
+            let type: "%" | "dip" | "px";
+            let numberValue = 0;
             let stringValue = value.trim();
             let percentIndex = stringValue.indexOf("%");
             if (percentIndex !== -1) {
@@ -1533,7 +1435,7 @@ export namespace Length {
                     numberValue = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
                 }
             } else {
-                if (stringValue.indexOf("px")) {
+                if (stringValue.indexOf("px") !== -1) {
                     type = "px";
                     stringValue = stringValue.replace("px", "").trim();
                 } else {
@@ -1543,14 +1445,13 @@ export namespace Length {
                 numberValue = parseFloat(stringValue);
             }
 
-            if (isNaN(numberValue) || !isFinite(numberValue) || numberValue < 0) {
+            if (isNaN(numberValue) || !isFinite(numberValue)) {
                 throw new Error("Invalid value: " + value);
             }
 
             return {
                 value: numberValue,
-                unit: type,
-                effectiveValue: undefined
+                unit: type
             }
         } else {
             return value;
@@ -1558,132 +1459,168 @@ export namespace Length {
     }
 }
 
-function minWidthMinHeightConverter(value: string | number): number {
-    let newValue: number = typeof value === "string" ? parseFloat(value) : value;
-    if (isNaN(newValue) || value < 0.0 || !isFinite(newValue)) {
-        throw new Error(`Invalid value: ${newValue}`);
+function onCssClassPropertyChanged(view: ViewCommon, oldValue: string, newValue: string) {
+    let classes = view.cssClasses;
+    classes.clear();
+    if (typeof newValue === "string") {
+        newValue.split(" ").forEach(c => classes.add(c));
     }
-
-    return newValue;
 }
 
-// TODO: Use different converter that calls isMinWidthHeightValid.
-export let minWidthProperty = new CssProperty<Style, number>({ name: "minWidth", cssName: "min-width", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: minWidthMinHeightConverter });
+export const classNameProperty = new Property<ViewCommon, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
+classNameProperty.register(ViewCommon);
+
+function resetStyles(view: ViewCommon): void {
+    // view.style._resetCssValues();
+    // view._applyStyleFromScope();
+    view._eachChildView((child) => {
+        // TODO.. Check old implementation....
+        resetStyles(child);
+        return true;
+    });
+}
+// let idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
+export const idProperty = new Property<ViewCommon, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
+idProperty.register(ViewCommon);
+
+export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
+automationTextProperty.register(ViewCommon);
+
+export const originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5 });
+originXProperty.register(ViewCommon);
+
+export const originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5 });
+originYProperty.register(ViewCommon);
+
+export const isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true });
+isEnabledProperty.register(ViewCommon);
+
+export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true });
+isUserInteractionEnabledProperty.register(ViewCommon);
+
+const zeroLength: Length = { value: 0, unit: "px" };
+
+export const minWidthProperty = new CssProperty<Style, Length>({
+    name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        target.effectiveMinWidth = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+    }, valueConverter: Length.parse
+});
 minWidthProperty.register(Style);
-// export let minWidthProperty = new styleProperty.Property("minWidth", "min-width",
-//     new PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), numberConverter);
 
-export let minHeightProperty = new CssProperty<Style, number>({ name: "minHeight", cssName: "min-height", defaultValue: 0, affectsLayout: affectsIOSLayout, valueConverter: minWidthMinHeightConverter });
+export const minHeightProperty = new CssProperty<Style, Length>({
+    name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        target.effectiveMinHeight = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+    }, valueConverter: Length.parse
+});
 minHeightProperty.register(Style);
-// export let minHeightProperty = new styleProperty.Property("minHeight", "min-height",
-//     new PropertyMetadata(0, AffectsLayout, null, isMinWidthHeightValid), numberConverter);
 
-export let widthProperty = new CssProperty<Style, Length>({ name: "width", cssName: "width", defaultValue: Length.parse("-1"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+const matchParent: Length = { value: -1, unit: "px" };
+
+export const widthProperty = new CssProperty<Style, Length>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: Length.parse });
 widthProperty.register(Style);
-// export let widthProperty = new styleProperty.Property("width", "width",
-//     new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
 
-export let heightProperty = new CssProperty<Style, Length>({ name: "height", cssName: "height", defaultValue: Length.parse("-1"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const heightProperty = new CssProperty<Style, Length>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: Length.parse });
 heightProperty.register(Style);
-// export let heightProperty = new styleProperty.Property("height", "height",
-//     new PropertyMetadata(Number.NaN, AffectsLayout, onLayoutParamsChanged, isWidthHeightValid), numberOrPercentConverter);
 
-export let marginProperty = new ShorthandProperty<Style>({
+export const marginProperty = new ShorthandProperty<Style>({
     name: "margin", cssName: "margin",
-    getter: () => { return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`; },
+    getter: function (this: Style) { return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`; },
     converter: convertToMargins
 });
 marginProperty.register(Style);
 
-export let marginLeftProperty = new CssProperty<Style, Length>({ name: "marginLeft", cssName: "margin-left", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const marginLeftProperty = new CssProperty<Style, Length>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
 marginLeftProperty.register(Style);
-// export let marginLeftProperty = new styleProperty.Property("marginLeft", "margin-left",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
 
-export let marginRightProperty = new CssProperty<Style, Length>({ name: "marginRight", cssName: "margin-right", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const marginRightProperty = new CssProperty<Style, Length>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
 marginRightProperty.register(Style);
-// export let marginRightProperty = new styleProperty.Property("marginRight", "margin-right",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
 
-export let marginTopProperty = new CssProperty<Style, Length>({ name: "marginTop", cssName: "margin-top", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const marginTopProperty = new CssProperty<Style, Length>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
 marginTopProperty.register(Style);
-// export let marginTopProperty = new styleProperty.Property("marginTop", "margin-top",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
 
-export let marginBottomProperty = new CssProperty<Style, Length>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const marginBottomProperty = new CssProperty<Style, Length>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
 marginBottomProperty.register(Style);
-// export let marginBottomProperty = new styleProperty.Property("marginBottom", "margin-bottom",
-//     new PropertyMetadata(0, AffectsLayout, onLayoutParamsChanged, isMarginValid), numberOrPercentConverter);
 
-export let paddingProperty = new ShorthandProperty<Style>({
+export const paddingProperty = new ShorthandProperty<Style>({
     name: "padding", cssName: "padding",
-    getter: () => { return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`; },
+    getter: function (this: Style) { return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`; },
     converter: convertToPaddings
 });
 paddingProperty.register(Style);
 
-export let paddingLeftProperty = new CssProperty<Style, Length>({ name: "paddingLeft", cssName: "padding-left", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const paddingLeftProperty = new CssProperty<Style, Length>({
+    name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        target.effectivePaddingLeft = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+    }, valueConverter: Length.parse
+});
 paddingLeftProperty.register(Style);
-// export let paddingLeftProperty = new styleProperty.Property("paddingLeft", "padding-left",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
 
-export let paddingRightProperty = new CssProperty<Style, Length>({ name: "paddingRight", cssName: "padding-right", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const paddingRightProperty = new CssProperty<Style, Length>({
+    name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        target.effectivePaddingRight = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+    }, valueConverter: Length.parse
+});
 paddingRightProperty.register(Style);
-// export let paddingRightProperty = new styleProperty.Property("paddingRight", "padding-right",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
 
-export let paddingTopProperty = new CssProperty<Style, Length>({ name: "paddingTop", cssName: "padding-top", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const paddingTopProperty = new CssProperty<Style, Length>({
+    name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        target.effectivePaddingTop = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+    }, valueConverter: Length.parse
+});
 paddingTopProperty.register(Style);
-// export let paddingTopProperty = new styleProperty.Property("paddingTop", "padding-top",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
 
-export let paddingBottomProperty = new CssProperty<Style, Length>({ name: "paddingBottom", cssName: "padding-bottom", defaultValue: Length.parse("0"), affectsLayout: affectsIOSLayout, valueConverter: Length.parse });
+export const paddingBottomProperty = new CssProperty<Style, Length>({
+    name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        target.effectivePaddingBottom = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+    }, valueConverter: Length.parse
+});
 paddingBottomProperty.register(Style);
-// export let paddingBottomProperty = new styleProperty.Property("paddingBottom", "padding-bottom",
-//     new PropertyMetadata(defaultPadding, AffectsLayout, onPaddingValueChanged, isNonNegativeFiniteNumber), numberConverter);
 
-export let verticalAlignmentProperty = new CssProperty<Style, string>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: VerticalAlignment.stretch, affectsLayout: affectsIOSLayout });
+export const verticalAlignmentProperty = new CssProperty<Style, string>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: "stretch", affectsLayout: isIOS });
 verticalAlignmentProperty.register(Style);
-// export let verticalAlignmentProperty = new styleProperty.Property("verticalAlignment", "vertical-align",
-//     new PropertyMetadata(VerticalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
 
-export let horizontalAlignmentProperty = new CssProperty<Style, string>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: HorizontalAlignment.stretch, affectsLayout: affectsIOSLayout });
+export const horizontalAlignmentProperty = new CssProperty<Style, string>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: "stretch", affectsLayout: isIOS });
 horizontalAlignmentProperty.register(Style);
-// export let horizontalAlignmentProperty = new styleProperty.Property("horizontalAlignment", "horizontal-align",
-//     new PropertyMetadata(HorizontalAlignment.stretch, AffectsLayout, onLayoutParamsChanged));
+
+interface Thickness {
+    top: string,
+    right: string,
+    bottom: string,
+    left: string
+}
 
 function parseThickness(value: string): Thickness {
     if (typeof value === "string") {
         let arr = value.split(/[ ,]+/);
 
-        let top: Length;
-        let right: Length;
-        let bottom: Length;
-        let left: Length;
+        let top: string;
+        let right: string;
+        let bottom: string;
+        let left: string;
 
         if (arr.length === 1) {
-            top = Length.parse(arr[0]);
-            right = Length.parse(arr[0]);
-            bottom = Length.parse(arr[0]);
-            left = Length.parse(arr[0]);
+            top = arr[0];
+            right = arr[0];
+            bottom = arr[0];
+            left = arr[0];
         }
         else if (arr.length === 2) {
-            top = Length.parse(arr[0]);
-            bottom = Length.parse(arr[0]);
-            right = Length.parse(arr[1]);
-            left = Length.parse(arr[1]);
+            top = arr[0];
+            bottom = arr[0];
+            right = arr[1];
+            left = arr[1];
         }
         else if (arr.length === 3) {
-            top = Length.parse(arr[0]);
-            right = Length.parse(arr[1]);
-            left = Length.parse(arr[1]);
-            bottom = Length.parse(arr[2]);
+            top = arr[0];
+            right = arr[1];
+            left = arr[1];
+            bottom = arr[2];
         }
         else if (arr.length === 4) {
-            top = Length.parse(arr[0]);
-            right = Length.parse(arr[1]);
-            bottom = Length.parse(arr[2]);
-            left = Length.parse(arr[3]);
+            top = arr[0];
+            right = arr[1];
+            bottom = arr[2];
+            left = arr[3];
         }
         else {
             throw new Error("Expected 1, 2, 3 or 4 parameters. Actual: " + value);
@@ -1703,19 +1640,534 @@ function parseThickness(value: string): Thickness {
 function convertToMargins(this: Style, value: string): [CssProperty<any, any>, any][] {
     let thickness = parseThickness(value);
     return [
-        [marginTopProperty, thickness.top],
-        [marginRightProperty, thickness.right],
-        [marginBottomProperty, thickness.bottom],
-        [marginLeftProperty, thickness.left]
+        [marginTopProperty, Length.parse(thickness.top)],
+        [marginRightProperty, Length.parse(thickness.right)],
+        [marginBottomProperty, Length.parse(thickness.bottom)],
+        [marginLeftProperty, Length.parse(thickness.left)]
     ];
 }
 
 function convertToPaddings(this: Style, value: string): [CssProperty<any, any>, any][] {
     let thickness = parseThickness(value);
     return [
-        [paddingTopProperty, thickness.top],
-        [paddingRightProperty, thickness.right],
-        [paddingBottomProperty, thickness.bottom],
-        [paddingLeftProperty, thickness.left]
+        [paddingTopProperty, Length.parse(thickness.top)],
+        [paddingRightProperty, Length.parse(thickness.right)],
+        [paddingBottomProperty, Length.parse(thickness.bottom)],
+        [paddingLeftProperty, Length.parse(thickness.left)]
     ];
 }
+
+export const rotateProperty = new CssProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0 });
+rotateProperty.register(Style);
+
+export const scaleXProperty = new CssProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1 });
+scaleXProperty.register(Style);
+
+export const scaleYProperty = new CssProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1 });
+scaleYProperty.register(Style);
+
+export const translateXProperty = new CssProperty<Style, number>({ name: "translateX", cssName: "translateX", defaultValue: 0 });
+translateXProperty.register(Style);
+
+export const translateYProperty = new CssProperty<Style, number>({ name: "translateY", cssName: "translateY", defaultValue: 0 });
+translateYProperty.register(Style);
+
+export const transformProperty = new ShorthandProperty<Style>({
+    name: "transform", cssName: "transform",
+    getter: function (this: Style) {
+        let scaleX = this.scaleX;
+        let scaleY = this.scaleY;
+        let translateX = this.translateX;
+        let translateY = this.translateY;
+        let rotate = this.rotate;
+        let result = "";
+        if (translateX !== 0 || translateY !== 0) {
+            result += `translate(${translateX}, ${translateY}) `;
+        }
+        if (scaleX !== 1 || scaleY !== 1) {
+            result += `scale(${scaleX}, ${scaleY}) `;
+        }
+        if (rotate !== 0) {
+            result += `rotate (${rotate})`;
+        }
+
+        return result.trim();
+    },
+    converter: convertToTransform
+});
+transformProperty.register(Style);
+
+function transformConverter(value: string): Object {
+    if (value.indexOf("none") !== -1) {
+        let operations = {};
+        operations[value] = value;
+        return operations;
+    }
+
+    let operations = {};
+    let operator = "";
+    let pos = 0;
+    while (pos < value.length) {
+        if (value[pos] === " " || value[pos] === ",") {
+            pos++;
+        }
+        else if (value[pos] === "(") {
+            let start = pos + 1;
+            while (pos < value.length && value[pos] !== ")") {
+                pos++;
+            }
+            let operand = value.substring(start, pos);
+            operations[operator] = operand.trim();
+            operator = "";
+            pos++;
+        }
+        else {
+            operator += value[pos++];
+        }
+    }
+    return operations;
+}
+
+function convertToTransform(value: string): [CssProperty<any, any>, any][] {
+    let newTransform = transformConverter(value);
+    let array = [];
+    let values: Array<string>;
+    for (var transform in newTransform) {
+        switch (transform) {
+            case "scaleX":
+                array.push([scaleXProperty, parseFloat(newTransform[transform])]);
+                break;
+            case "scaleY":
+                array.push([scaleYProperty, parseFloat(newTransform[transform])]);
+                break;
+            case "scale":
+            case "scale3d":
+                values = newTransform[transform].split(",");
+                if (values.length >= 2) {
+                    array.push([scaleXProperty, parseFloat(values[0])]);
+                    array.push([scaleYProperty, parseFloat(values[1])]);
+                }
+                else if (values.length === 1) {
+                    array.push([scaleXProperty, parseFloat(values[0])]);
+                    array.push([scaleYProperty, parseFloat(values[0])]);
+                }
+                break;
+            case "translateX":
+                array.push([translateXProperty, parseFloat(newTransform[transform])]);
+                break;
+            case "translateY":
+                array.push([translateYProperty, parseFloat(newTransform[transform])]);
+                break;
+            case "translate":
+            case "translate3d":
+                values = newTransform[transform].split(",");
+                if (values.length >= 2) {
+                    array.push([translateXProperty, parseFloat(values[0])]);
+                    array.push([translateYProperty, parseFloat(values[1])]);
+                }
+                else if (values.length === 1) {
+                    array.push([translateXProperty, parseFloat(values[0])]);
+                    array.push([translateYProperty, parseFloat(values[0])]);
+                }
+                break;
+            case "rotate":
+                let text = newTransform[transform];
+                let val = parseFloat(text);
+                if (text.slice(-3) === "rad") {
+                    val = val * (180.0 / Math.PI);
+                }
+                array.push([rotateProperty, val]);
+                break;
+            case "none":
+                array.push([scaleXProperty, 1]);
+                array.push([scaleYProperty, 1]);
+                array.push([translateXProperty, 0]);
+                array.push([translateYProperty, 0]);
+                array.push([rotateProperty, 0]);
+                break;
+        }
+    }
+    return array;
+}
+
+// Background properties.
+export const backgroundInternalProperty = new CssProperty<Style, Background>({ name: "backgroundInternal", cssName: "_backgroundInternal", defaultValue: Background.default });
+
+let pattern: RegExp = /url\(('|")(.*?)\1\)/;
+export const backgroundImageProperty = new CssProperty<Style, string>({
+    name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
+        let style = target;
+        let currentBackground = target.backgroundInternal;
+        let url: string = newValue;
+        let isValid = false;
+
+        let match = url.match(pattern);
+        if (match && match[2]) {
+            url = match[2];
+        }
+
+        if (isDataURI(url)) {
+            let base64Data = url.split(",")[1];
+            if (typeof base64Data !== "undefined") {
+                style.backgroundInternal = currentBackground.withImage(fromBase64(base64Data));
+                isValid = true;
+            } else {
+                style.backgroundInternal, currentBackground.withImage(undefined);
+            }
+        }
+        else if (isFileOrResourcePath(url)) {
+            style.backgroundInternal = currentBackground.withImage(fromFileOrResource(url));
+            isValid = true;
+        }
+        else if (url.indexOf("http") !== -1) {
+            style["_url"] = url;
+            style.backgroundInternal = currentBackground.withImage(undefined);
+            fromUrl(url).then((r) => {
+                if (style && style["_url"] === url) {
+                    // Get the current background again, as it might have changed while doing the request.
+                    currentBackground = target.backgroundInternal;
+                    target.backgroundInternal = currentBackground.withImage(r);
+                }
+            });
+            isValid = true;
+        }
+
+        if (!isValid) {
+            style.backgroundInternal = currentBackground.withImage(undefined);
+        }
+    }
+});
+backgroundImageProperty.register(Style);
+
+export const backgroundColorProperty = new CssProperty<Style, Color>({
+    name: "backgroundColor", cssName: "background-color", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withColor(newValue);
+    }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
+});
+backgroundColorProperty.register(Style);
+
+export const backgroundRepeatProperty = new CssProperty<Style, string>({
+    name: "backgroundRepeat", cssName: "background-repeat", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withRepeat(newValue);
+    }
+});
+backgroundRepeatProperty.register(Style);
+
+export const backgroundSizeProperty = new CssProperty<Style, string>({
+    name: "backgroundSize", cssName: "background-size", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withSize(newValue);
+    }
+});
+backgroundSizeProperty.register(Style);
+
+export const backgroundPositionProperty = new CssProperty<Style, string>({
+    name: "backgroundPosition", cssName: "background-position", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withPosition(newValue);
+    }
+});
+backgroundPositionProperty.register(Style);
+
+function isNonNegativeFiniteNumberConverter(value: string): number {
+    let number = parseFloat(value);
+    if (!isNonNegativeFiniteNumber(number)) {
+        throw new Error("border-width should be Non-Negative Finite number.");
+    }
+    return number;
+}
+
+function parseBorderColor(value: string): { top: Color, right: Color, bottom: Color, left: Color } {
+    let result: { top: Color, right: Color, bottom: Color, left: Color };
+    if (value.indexOf("rgb") === 0) {
+        result.top = result.right = result.bottom = result.left = new Color(value);
+        return result;
+    }
+
+    let arr = value.split(/[ ,]+/);
+    if (arr.length === 1) {
+        let arr0 = new Color(arr[0]);
+        result.top = arr0;
+        result.right = arr0;
+        result.bottom = arr0;
+        result.left = arr0;
+    }
+    else if (arr.length === 2) {
+        let arr0 = new Color(arr[0]);
+        let arr1 = new Color(arr[1]);
+        result.top = arr0;
+        result.right = arr1;
+        result.bottom = arr0;
+        result.left = arr1;
+    }
+    else if (arr.length === 3) {
+        let arr0 = new Color(arr[0]);
+        let arr1 = new Color(arr[1]);
+        let arr2 = new Color(arr[2]);
+        result.top = arr0;
+        result.right = arr1;
+        result.bottom = arr2;
+        result.left = arr1;
+    }
+    else if (arr.length === 4) {
+        let arr0 = new Color(arr[0]);
+        let arr1 = new Color(arr[1]);
+        let arr2 = new Color(arr[2]);
+        let arr3 = new Color(arr[3]);
+        result.top = arr0;
+        result.right = arr1;
+        result.bottom = arr2;
+        result.left = arr3;
+    }
+    else {
+        throw new Error("Expected 1, 2, 3 or 4 parameters. Actual: " + value);
+    }
+}
+
+// Border Color properties.
+export const borderColorProperty = new ShorthandProperty<Style>({
+    name: "borderColor", cssName: "border-color",
+    getter: function (this: Style) {
+        if (Color.equals(this.borderTopColor, this.borderRightColor) &&
+            Color.equals(this.borderTopColor, this.borderBottomColor) &&
+            Color.equals(this.borderTopColor, this.borderLeftColor)) {
+            return this.borderTopColor ? this.borderTopColor.toString() : "";
+        } else {
+            return `${this.borderTopColor} ${this.borderRightColor} ${this.borderBottomColor} ${this.borderLeftColor}`;
+        }
+    },
+    converter: function (value: string) {
+        let fourColors = parseBorderColor(value);
+        return [
+            [borderTopColorProperty, fourColors.top],
+            [borderRightColorProperty, fourColors.right],
+            [borderBottomColorProperty, fourColors.bottom],
+            [borderLeftColorProperty, fourColors.left]
+        ];
+    }
+})
+borderColorProperty.register(Style);
+
+export const borderTopColorProperty = new CssProperty<Style, Color>({
+    name: "borderTopColor", cssName: "border-top-color", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderTopColor(newValue);
+    },
+    equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
+});
+borderTopColorProperty.register(Style);
+
+export const borderRightColorProperty = new CssProperty<Style, Color>({
+    name: "borderRightColor", cssName: "border-right-color", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderRightColor(newValue);
+    }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
+});
+borderRightColorProperty.register(Style);
+
+export const borderBottomColorProperty = new CssProperty<Style, Color>({
+    name: "borderBottomColor", cssName: "border-bottom-color", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderBottomColor(newValue);
+    }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
+});
+borderBottomColorProperty.register(Style);
+
+export const borderLeftColorProperty = new CssProperty<Style, Color>({
+    name: "borderLeftColor", cssName: "border-left-color", valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderLeftColor(newValue);
+    }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
+});
+borderLeftColorProperty.register(Style);
+
+// Border Width properties.
+export const borderWidthProperty = new ShorthandProperty<Style>({
+    name: "borderWidth", cssName: "border-width",
+    getter: function (this: Style) {
+        if (Color.equals(this.borderTopColor, this.borderRightColor) &&
+            Color.equals(this.borderTopColor, this.borderBottomColor) &&
+            Color.equals(this.borderTopColor, this.borderLeftColor)) {
+            return this.borderTopColor + "";
+        } else {
+            return `${this.borderTopColor} ${this.borderRightColor} ${this.borderBottomColor} ${this.borderLeftColor}`;
+        }
+    },
+    converter: function (value: string) {
+        let borderWidths = parseThickness(value);
+        return [
+            [borderTopWidthProperty, borderWidths.top],
+            [borderRightWidthProperty, borderWidths.right],
+            [borderBottomWidthProperty, borderWidths.bottom],
+            [borderLeftWidthProperty, borderWidths.left]
+        ];
+    }
+})
+borderWidthProperty.register(Style);
+
+export const borderTopWidthProperty = new CssProperty<Style, Length>({
+    name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
+        }
+        target.effectiveBorderTopWidth = value;
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderTopWidth(value);
+    }, valueConverter: Length.parse
+});
+borderTopWidthProperty.register(Style);
+
+export const borderRightWidthProperty = new CssProperty<Style, Length>({
+    name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
+        }
+        target.effectiveBorderRightWidth = value;
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderRightWidth(value);
+    }, valueConverter: Length.parse
+});
+borderRightWidthProperty.register(Style);
+
+export const borderBottomWidthProperty = new CssProperty<Style, Length>({
+    name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
+        }
+        target.effectiveBorderBottomWidth = value;
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderBottomWidth(value);
+    }, valueConverter: Length.parse
+});
+borderBottomWidthProperty.register(Style);
+
+export const borderLeftWidthProperty = new CssProperty<Style, Length>({
+    name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
+        }
+        target.effectiveBorderLeftWidth = value;
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderLeftWidth(value);
+    }, valueConverter: Length.parse
+});
+borderLeftWidthProperty.register(Style);
+
+// Border Radius properties.
+export const borderRadiusProperty = new ShorthandProperty<Style>({
+    name: "borderRadius", cssName: "border-radius",
+    getter: function (this: Style) {
+        if (this.borderTopLeftRadius === this.borderTopRightRadius &&
+            this.borderTopLeftRadius === this.borderBottomRightRadius &&
+            this.borderTopLeftRadius === this.borderBottomLeftRadius) {
+            return this.borderTopLeftRadius + "";
+        } else {
+            return `${this.borderTopLeftRadius} ${this.borderTopRightRadius} ${this.borderBottomRightRadius} ${this.borderBottomLeftRadius}`;
+        }
+    },
+    converter: function (value: string) {
+        let borderRadius = parseThickness(value);
+        return [
+            [borderTopLeftRadiusProperty, borderRadius.top],
+            [borderTopRightRadiusProperty, borderRadius.right],
+            [borderBottomRightRadiusProperty, borderRadius.bottom],
+            [borderBottomLeftRadiusProperty, borderRadius.left]
+        ];
+    }
+})
+borderRadiusProperty.register(Style);
+
+export const borderTopLeftRadiusProperty = new CssProperty<Style, number>({
+    name: "borderTopLeftRadius", cssName: "border-top-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderTopLeftRadius(newValue);
+    }, valueConverter: isNonNegativeFiniteNumberConverter
+});
+borderTopLeftRadiusProperty.register(Style);
+
+export const borderTopRightRadiusProperty = new CssProperty<Style, number>({
+    name: "borderTopRightRadius", cssName: "border-top-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderTopRightRadius(newValue);
+    }, valueConverter: isNonNegativeFiniteNumberConverter
+});
+borderTopRightRadiusProperty.register(Style);
+
+export const borderBottomRightRadiusProperty = new CssProperty<Style, number>({
+    name: "borderBottomRightRadius", cssName: "border-bottom-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderBottomLeftRadius(newValue);
+    }, valueConverter: isNonNegativeFiniteNumberConverter
+});
+borderBottomRightRadiusProperty.register(Style);
+
+export const borderBottomLeftRadiusProperty = new CssProperty<Style, number>({
+    name: "borderBottomLeftRadius", cssName: "border-bottom-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withBorderBottomRightRadius(newValue);
+    }, valueConverter: isNonNegativeFiniteNumberConverter
+});
+borderBottomLeftRadiusProperty.register(Style);
+
+function isNonNegativeFiniteNumber(value: number): boolean {
+    return isFinite(value) && !isNaN(value) && value >= 0;
+}
+
+let supportedPaths = ["rect", "circle", "ellipse", "polygon"];
+function isClipPathValid(value: string): boolean {
+    if (!value) {
+        return true;
+    }
+    let functionName = value.substring(0, value.indexOf("(")).trim();
+    return supportedPaths.indexOf(functionName) !== -1;
+}
+
+export const clipPathProperty = new CssProperty<Style, string>({
+    name: "clipPath", cssName: "clip-path", valueChanged: (target, newValue) => {
+        if (!isClipPathValid(newValue)) {
+            throw new Error("clip-path is not valid.");
+        }
+
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withClipPath(newValue);
+    }
+});
+clipPathProperty.register(Style);
+
+function isFloatValueConverter(value: string): number {
+    let newValue = parseFloat(value);
+    if (isNaN(newValue)) {
+        throw new Error(`Invalid value: ${newValue}`);
+    }
+
+    return newValue;
+}
+
+export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: 0, valueConverter: isFloatValueConverter });
+zIndexProperty.register(Style);
+
+function opacityConverter(value: any): number {
+    let newValue = parseFloat(value);
+    if (!isNaN(newValue) && 0 <= newValue && newValue <= 1) {
+        return newValue;
+    }
+
+    throw new Error(`Opacity should be between [0, 1]. Value: ${newValue}`);
+}
+
+function isOpacityValid(value: string): boolean {
+    let parsedValue: number = parseFloat(value);
+    return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
+}
+
+export const opacityProperty = new CssProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
+opacityProperty.register(Style);
+
+export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v: string) => new Color(v) });
+colorProperty.register(Style);

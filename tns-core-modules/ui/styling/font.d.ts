@@ -3,7 +3,7 @@
         public static default: Font;
 
         public fontFamily: string;
-        public fontStyle: string;
+        public fontStyle: "normal" | "italic";
         public fontWeight: string;
         public fontSize: number;
 

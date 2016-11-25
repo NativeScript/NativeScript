@@ -1,6 +1,5 @@
 ﻿import { ActivityIndicatorBase, busyProperty } from "./activity-indicator-common";
-import { Visibility } from "ui/enums";
-import { colorProperty, visibilityProperty } from "ui/styling/style";
+import { colorProperty, visibilityProperty } from "ui/core/view";
 
 export * from "./activity-indicator-common";
 

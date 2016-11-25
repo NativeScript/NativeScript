@@ -1,7 +1,6 @@
 import { ActivityIndicatorBase, busyProperty } from "./activity-indicator-common";
-import { Visibility } from "ui/enums";
-import { colorProperty, visibilityProperty } from "ui/styling/style";
-import * as utils from "utils/utils";
+import { colorProperty, visibilityProperty } from "ui/core/view";
+import { ios } from "utils/utils";
 
 export * from "./activity-indicator-common";
 
@@ -15,7 +14,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     get [busyProperty.native](): boolean {
-        if (utils.ios.MajorVersion > 9) {
+        if (ios.MajorVersion > 9) {
             return this.nativeView.animating;
         }
         else {
@@ -36,10 +35,10 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     get [visibilityProperty.native](): string {
-        return this.nativeView.hidden ? Visibility.collapse : Visibility.visible;
+        return this.nativeView.hidden ? "collapse" : "visible";
     }
     set [visibilityProperty.native](value: string) {
-        this.nativeView.hidden = value !== Visibility.visible;
+        this.nativeView.hidden = value !== "visible";
     }
 
     get [colorProperty.native](): UIColor {

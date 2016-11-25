@@ -161,7 +161,7 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
         
         this._eachChildView((cv) => {
             cv._eachLayoutView((lv) => {
-                if (lastChild && lastChild.isVisible) {
+                if (lastChild && !lastChild.isCollapsed) {
                     callback(lastChild, false);
                 }
 
@@ -171,7 +171,7 @@ export class LayoutBase extends view.CustomLayoutView implements definition.Layo
             return true;
         });
         
-        if (lastChild && lastChild.isVisible) {
+        if (lastChild && !lastChild.isCollapsed) {
             callback(lastChild, true);
         }
 

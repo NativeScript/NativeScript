@@ -88,6 +88,10 @@ export class GesturesObserver extends GesturesObserverBase {
         this._recognizers = {};
     }
 
+    public androidOnTouchEvent(motionEvent: android.view.MotionEvent): void {
+        //
+    }
+    
     public observe(type: GestureTypes) {
         if (this.target) {
             this.type = type;

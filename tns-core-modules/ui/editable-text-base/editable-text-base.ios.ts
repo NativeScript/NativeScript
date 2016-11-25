@@ -7,51 +7,54 @@ import { textProperty } from "ui/text-base";
 
 export * from "./editable-text-base-common";
 
-import { UpdateTextTrigger, KeyboardType, ReturnKeyType, AutocapitalizationType } from "ui/enums";
-
 export abstract class EditableTextBase extends EditableTextBaseCommon {
     public nativeView: UITextField | UITextView;
     public dismissSoftInput() {
         this.nativeView.resignFirstResponder();
     }
 
-    get [keyboardTypeProperty.native](): string {
+    get [keyboardTypeProperty.native](): "datetime"| "phone" | "number" | "url" | "email" | string {
         let keyboardType = this.nativeView.keyboardType;
         switch (keyboardType) {
             case UIKeyboardType.NumbersAndPunctuation:
-                return KeyboardType.number;
+                return "number";
 
             case UIKeyboardType.PhonePad:
-                return KeyboardType.phone;
+                return "phone";
 
             case UIKeyboardType.URL:
-                return KeyboardType.url;
+                return "url";
 
             case UIKeyboardType.EmailAddress:
-                return KeyboardType.email;
+                return "email";
 
             default:
                 return keyboardType.toString();
         }
     }
-    set [keyboardTypeProperty.native](value: string) {
+    set [keyboardTypeProperty.native](value: "datetime"| "phone" | "number" | "url" | "email" | string) {
         let newKeyboardType: UIKeyboardType;
         switch (value) {
-            case KeyboardType.datetime:
+            case "datetime":
                 newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
                 break;
-            case KeyboardType.phone:
+
+            case "phone":
                 newKeyboardType = UIKeyboardType.PhonePad;
                 break;
-            case KeyboardType.number:
+
+            case "number":
                 newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
                 break;
-            case KeyboardType.url:
+
+            case "url":
                 newKeyboardType = UIKeyboardType.URL;
-                break;
-            case KeyboardType.email:
+                break
+                ;
+            case "email":
                 newKeyboardType = UIKeyboardType.EmailAddress;
                 break;
+
             default:
                 let kt = +value;
                 if (!isNaN(kt)) {
@@ -65,44 +68,44 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.keyboardType = newKeyboardType;
     }
 
-    get [returnKeyTypeProperty.native](): string {
+    get [returnKeyTypeProperty.native](): "done" | "next" | "go" | "search" | "send" | string {
         let returnKeyType = this.nativeView.returnKeyType;
         switch (returnKeyType) {
             case UIReturnKeyType.Done:
-                return ReturnKeyType.done;
+                return "done";
 
             case UIReturnKeyType.Go:
-                return ReturnKeyType.go;
+                return "go";
 
             case UIReturnKeyType.Next:
-                return ReturnKeyType.next;
+                return "next";
 
             case UIReturnKeyType.Search:
-                return ReturnKeyType.search;
+                return "search";
 
             case UIReturnKeyType.Send:
-                return ReturnKeyType.send;
+                return "send";
 
             default:
                 return returnKeyType.toString();
         }
     }
-    set [returnKeyTypeProperty.native](value: string) {
+    set [returnKeyTypeProperty.native](value: "done" | "next" | "go" | "search" | "send" | string) {
         let newValue;
         switch (value) {
-            case ReturnKeyType.done:
+            case "done":
                 newValue = UIReturnKeyType.Done;
                 break;
-            case ReturnKeyType.go:
+            case "go":
                 newValue = UIReturnKeyType.Go;
                 break;
-            case ReturnKeyType.next:
+            case "next":
                 newValue = UIReturnKeyType.Next;
                 break;
-            case ReturnKeyType.search:
+            case "search":
                 newValue = UIReturnKeyType.Search;
                 break;
-            case ReturnKeyType.send:
+            case "send":
                 newValue = UIReturnKeyType.Send;
                 break;
             default:
@@ -118,38 +121,38 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.returnKeyType = newValue;
     }
 
-    get [autocapitalizationTypeProperty.native](): string {
+    get [autocapitalizationTypeProperty.native](): "none" | "words" | "sentences" | "allCharacters" {
         let autocapitalizationType = this.nativeView.autocapitalizationType;
         switch (autocapitalizationType) {
             case UITextAutocapitalizationType.None:
-                return AutocapitalizationType.none;
+                return "none";
 
             case UITextAutocapitalizationType.Words:
-                return AutocapitalizationType.words;
+                return "words";
 
             case UITextAutocapitalizationType.Sentences:
-                return AutocapitalizationType.sentences;
+                return "sentences";
 
             case UITextAutocapitalizationType.AllCharacters:
-                return AutocapitalizationType.allCharacters;
+                return "allCharacters";
 
             default:
                 throw new Error("Invalid autocapitalizationType value:" + autocapitalizationType);
         }
     }
-    set [autocapitalizationTypeProperty.native](value: string) {
+    set [autocapitalizationTypeProperty.native](value: "none" | "words" | "sentences" | "allCharacters") {
         let newValue: UITextAutocapitalizationType;
         switch (value) {
-            case AutocapitalizationType.none:
+            case "none":
                 newValue = UITextAutocapitalizationType.None;
                 break;
-            case AutocapitalizationType.words:
+            case "words":
                 newValue = UITextAutocapitalizationType.Words;
                 break;
-            case AutocapitalizationType.sentences:
+            case "sentences":
                 newValue = UITextAutocapitalizationType.Sentences;
                 break;
-            case AutocapitalizationType.allCharacters:
+            case "allCharacters":
                 newValue = UITextAutocapitalizationType.AllCharacters;
                 break;
             default:

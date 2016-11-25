@@ -1,11 +1,17 @@
-﻿import common = require("./label-common");
-import {textProperty, formattedTextProperty} from "../text-base/text-base-common";
-import {FormattedString} from "text/formatted-string";
+﻿import { Label as LabelDefinition } from "ui/label";
+import { TextBase } from "ui/text-base";
 
-global.moduleMerge(common, exports);
+export * from "ui/text-base";
 
-export class Label extends common.Label {
+export class LabelBase extends TextBase implements LabelDefinition {
     private _android: android.widget.TextView;
+
+    get textWrap(): boolean {
+        return this.style.whiteSpace === "normal";
+    }
+    set textWrap(value: boolean) {
+        this.style.whiteSpace = value ? "normal" : "nowrap";
+    }
 
     get android(): android.widget.TextView {
         return this._android;

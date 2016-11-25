@@ -3,6 +3,8 @@ import { WrappedValue } from "data/observable";
 import { ViewBase } from "./view-base";
 import { Style } from "ui/styling/style";
 
+export { unsetValue };
+
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
 let inheritableProperties = new Array<InheritedProperty<any, any>>();
@@ -33,9 +35,11 @@ export interface ShorthandPropertyOptions {
 
 export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
     cssName: string;
+    dependentProperty?: CssProperty<T, any>;
 }
 
 export class Property<T extends ViewBase, U> implements PropertyDescriptor {
+    private registered: boolean;
     private name: string;
     public key: symbol;
     public native: symbol;
@@ -62,8 +66,7 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
         let valueChanged = options.valueChanged;
         let valueConverter = options.valueConverter;
 
-        this.set = function (value: any): void {
-            let that = <T>this;
+        this.set = function (this: T, value: any): void {
             if (value === unsetValue) {
                 value = defaultValue;
             }
@@ -75,31 +78,31 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
                 unboxedValue = valueConverter(unboxedValue);
             }
 
-            let currentValue = key in that ? that[key] : defaultValue;
+            let currentValue = key in this ? this[key] : defaultValue;
             let changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
-                that[key] = unboxedValue;
+                this[key] = unboxedValue;
                 if (valueChanged) {
-                    valueChanged(that, currentValue, unboxedValue);
+                    valueChanged(this, currentValue, unboxedValue);
                 }
 
-                if (that.hasListeners(eventName)) {
-                    that.notify({
+                if (this.hasListeners(eventName)) {
+                    this.notify({
                         eventName: eventName,
                         propertyName: name,
-                        object: that,
+                        object: this,
                         value: unboxedValue
                     });
                 }
 
-                let nativeObject = that.nativeView;
+                let nativeObject = this.nativeView;
                 if (nativeObject) {
-                    that[native] = unboxedValue;
+                    this[native] = unboxedValue;
                 }
 
                 if (affectsLayout) {
-                    that.requestLayout();
+                    this.requestLayout();
                 }
             }
         }
@@ -112,6 +115,10 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
     }
 
     public register(cls: { prototype: T }): void {
+        if (this.registered) {
+            throw new Error(`Property ${this.name} already registered.`);
+        }
+        this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this);
     }
 }
@@ -190,6 +197,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
 }
 
 export class CssProperty<T extends Style, U> {
+    private registered: boolean;
     private setLocalValue: (value: U) => void;
     private setCssValue: (value: U) => void;
 
@@ -226,41 +234,47 @@ export class CssProperty<T extends Style, U> {
         let valueChanged = options.valueChanged;
         let valueConverter = options.valueConverter;
 
-        function setLocalValue(value: U): void {
-            let that = <T>this;
+        let dependentProperty = options.dependentProperty;
+        let dependentPropertyKey = dependentProperty ? dependentProperty.key : undefined;
+        let dependentPropertyNativeKey = dependentProperty ? dependentProperty.native : undefined;
+
+        function setLocalValue(this: T, value: U): void {
             if (value === unsetValue) {
                 value = defaultValue;
-                that[sourceKey] = ValueSource.Default;
+                this[sourceKey] = ValueSource.Default;
             }
             else {
-                that[sourceKey] = ValueSource.Local;
+                this[sourceKey] = ValueSource.Local;
                 if (valueConverter) {
                     value = valueConverter(value);
                 }
             }
 
-            let currentValue: U = key in that ? that[key] : defaultValue;
+            let currentValue: U = key in this ? this[key] : defaultValue;
             let changed: boolean = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
 
             if (changed) {
-                that[key] = value;
+                this[key] = value;
                 if (valueChanged) {
-                    valueChanged(that, currentValue, value);
+                    valueChanged(this, currentValue, value);
                 }
 
-                if (that.hasListeners(eventName)) {
-                    that.notify({
+                if (this.hasListeners(eventName)) {
+                    this.notify({
                         eventName: eventName,
                         propertyName: name,
-                        object: that,
+                        object: this,
                         value: value
                     });
                 }
 
-                let view = that.view;
-                let nativeView = view.nativeView;
-                if (nativeView) {
+                let view = this.view;
+                if (view.nativeView) {
                     view[native] = value;
+                    if (dependentPropertyNativeKey) {
+                        // Call the native setter for dependent property. 
+                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                    }
                 }
 
                 if (affectsLayout) {
@@ -269,11 +283,10 @@ export class CssProperty<T extends Style, U> {
             }
         }
 
-        function setCssValue(value: U): void {
-            let that = <T>this;
+        function setCssValue(this: T, value: U): void {
             let resetValue = value === unsetValue;
             let newValueSource: ValueSource;
-            let currentValueSource: number = that[sourceKey] || ValueSource.Default;
+            let currentValueSource: number = this[sourceKey] || ValueSource.Default;
 
             // We have localValueSource - NOOP.
             if (currentValueSource === ValueSource.Local) {
@@ -290,29 +303,32 @@ export class CssProperty<T extends Style, U> {
                 }
             }
 
-            let currentValue: U = key in that ? that[key] : defaultValue;
+            let currentValue: U = key in this ? this[key] : defaultValue;
             let changed: boolean = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
-            that[sourceKey] = newValueSource;
+            this[sourceKey] = newValueSource;
 
             if (changed) {
-                that[key] = value;
+                this[key] = value;
                 if (valueChanged) {
-                    valueChanged(that, currentValue, value);
+                    valueChanged(this, currentValue, value);
                 }
 
-                if (that.hasListeners(eventName)) {
-                    that.notify({
+                if (this.hasListeners(eventName)) {
+                    this.notify({
                         eventName: eventName,
                         propertyName: name,
-                        object: that,
+                        object: this,
                         value: value
                     });
                 }
 
-                let view = that.view;
-                let nativeView = view.nativeView;
-                if (nativeView) {
+                let view = this.view;
+                if (view.nativeView) {
                     view[native] = value;
+                    if (dependentPropertyNativeKey) {
+                        // Call the native setter for dependent property. 
+                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                    }
                 }
 
                 if (affectsLayout) {
@@ -343,6 +359,10 @@ export class CssProperty<T extends Style, U> {
     }
 
     public register(cls: { prototype: T }): void {
+        if (this.registered) {
+            throw new Error(`Property ${this.name} already registered.`);
+        }
+        this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
         Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
     }
@@ -370,10 +390,13 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         let valueChanged = options.valueChanged;
         let valueConverter = options.valueConverter;
 
-        let setFunc = (valueSource: ValueSource) => function (value: any): void {
-            let that = <T>this;
+        let dependentProperty = options.dependentProperty;
+        let dependentPropertyKey = dependentProperty ? dependentProperty.key : undefined;
+        let dependentPropertyNativeKey = dependentProperty ? dependentProperty.native : undefined;
+
+        let setFunc = (valueSource: ValueSource) => function (this: T, value: any): void {
             let resetValue = value === unsetValue;
-            let currentValueSource: number = that[sourceKey] || ValueSource.Default;
+            let currentValueSource: number = this[sourceKey] || ValueSource.Default;
             if (resetValue) {
                 // If we want to reset cssValue and we have localValue - return;
                 if (valueSource === ValueSource.Css && currentValueSource === ValueSource.Local) {
@@ -385,7 +408,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 }
             }
 
-            let view = that.view;
+            let view = this.view;
             let newValue: U;
             if (resetValue) {
                 // If unsetValue - we want to reset this property.
@@ -394,14 +417,14 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 // If we have parent and it has non-default value we use as our inherited value.
                 if (style && style[sourceKey] !== ValueSource.Default) {
                     newValue = style[key];
-                    that[sourceKey] = ValueSource.Inherited;
+                    this[sourceKey] = ValueSource.Inherited;
                 }
                 else {
                     newValue = defaultValue;
-                    that[sourceKey] = ValueSource.Default;
+                    this[sourceKey] = ValueSource.Default;
                 }
             } else {
-                that[sourceKey] = valueSource;
+                this[sourceKey] = valueSource;
                 if (valueConverter) {
                     newValue = valueConverter(value);
                 } else {
@@ -409,20 +432,20 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 }
             }
 
-            let currentValue: U = key in that ? that[key] : defaultValue;
+            let currentValue: U = key in this ? this[key] : defaultValue;
             let changed: boolean = equalityComparer ? !equalityComparer(currentValue, newValue) : currentValue !== newValue;
 
             if (changed) {
-                that[key] = newValue;
+                this[key] = newValue;
                 if (valueChanged) {
-                    valueChanged(that, currentValue, newValue);
+                    valueChanged(this, currentValue, newValue);
                 }
 
-                if (that.hasListeners(eventName)) {
-                    that.notify({
+                if (this.hasListeners(eventName)) {
+                    this.notify({
                         eventName: eventName,
                         propertyName: name,
-                        object: that,
+                        object: this,
                         value: newValue
                     });
                 }
@@ -430,6 +453,10 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 let nativeView = view.nativeView;
                 if (nativeView) {
                     view[native] = value;
+                    if (dependentPropertyNativeKey) {
+                        // Call the native setter for dependent property. 
+                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                    }
                 }
 
                 if (affectsLayout) {

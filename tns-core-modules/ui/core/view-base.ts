@@ -1,13 +1,10 @@
 import { Observable, EventData } from "data/observable";
-
-import { propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty } from "./properties";
+import { propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty, CssProperty } from "./properties";
 import { Binding, BindingOptions } from "ui/core/bindable";
-
+import { isIOS } from "platform";
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Style } from "ui/styling/style";
-
-export let bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
-bindingContextProperty.register(ViewBase);
+import { fromString as gestureFromString } from "ui/gestures";
 
 let defaultBindingSource = {};
 
@@ -28,6 +25,22 @@ export function getAncestor(view: ViewBaseDefinition, criterion: string | Functi
     return null;
 }
 
+export function getEventOrGestureName(name: string): string {
+    return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
+}
+
+export function isEventOrGesture(name: string, view: ViewBaseDefinition): boolean {
+    if (typeof name === "string") {
+        let eventOrGestureName = getEventOrGestureName(name);
+        let evt = `${eventOrGestureName}Event`;
+
+        return view.constructor && evt in view.constructor ||
+            gestureFromString(eventOrGestureName.toLowerCase()) !== undefined;
+    }
+
+    return false;
+}
+
 export class ViewBase extends Observable implements ViewBaseDefinition {
     private _updatingJSPropertiesDict = {};
     private _style: Style;
@@ -35,6 +48,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public bindingContext: any;
     public nativeView: any;
     public parent: ViewBase;
+    public isCollapsed;
 
     constructor() {
         super();
@@ -111,3 +125,17 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         //
     }
 }
+
+export const visibilityProperty = new CssProperty<Style, "visible" | "hidden" | "collapse" | "collapsed">({
+    name: "visibility", cssName: "visibility", defaultValue: "visible", affectsLayout: isIOS, valueChanged: (target, newValue) => {
+        if (newValue !== "visible" && newValue !== "collapse" && newValue !== "collapsed" && newValue !== "hidden") {
+            throw new Error(`Invalid visibility value: ${newValue}`);
+        }
+
+        target.view.isCollapsed = (newValue === "collapse" || newValue === "collapsed");
+    }
+});
+visibilityProperty.register(Style);
+
+export let bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
+bindingContextProperty.register(ViewBase);

@@ -1,46 +1,41 @@
-﻿import common = require("./html-view-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import * as typesModule from "utils/types";
+﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
+import { Property } from "ui/core/properties";
+import { View } from "ui/core/view";
 
-function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <HtmlView>data.object;
-    if (!view.android) {
-        return;
-    }
+export * from "ui/core/view";
 
-    var types: typeof typesModule = require("utils/types");
-    if (types.isString(data.newValue)) {
-        // If the data.newValue actually has a <a...> in it; we need to disable autolink mask
-        // it internally disables the coloring, but then the <a> links won't work..  So to support both
-        // styles of links (html and just text based) we have to manually enable/disable the autolink mask
-        var mask = 15;
-        if (data.newValue.search(/<a\s/i) >= 0) {
-            mask = 0;
-        }
-        view.android.setAutoLinkMask(mask);
-        view.android.setText(<any>android.text.Html.fromHtml(data.newValue));
-    } else {
-        view.android.setText("");
-    }
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>common.HtmlView.htmlProperty.metadata).onSetNativeValue = onHtmlPropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class HtmlView extends common.HtmlView {
+export class HtmlView extends View implements HtmlViewDefinition {
     private _android: android.widget.TextView;
 
     get android(): android.widget.TextView {
         return this._android;
     }
 
+    public html: string;
+
     public _createUI() {
         this._android = new android.widget.TextView(this._context);
-        // This makes the html <a href...> vwork
+        // This makes the html <a href...> work
         this._android.setLinksClickable(true);
         this._android.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
     }
+
+    get [htmlProperty.native](): string {
+        return "";
+    }
+    set [htmlProperty.native](value: string) {
+        // If the data.newValue actually has a <a...> in it; we need to disable autolink mask
+        // it internally disables the coloring, but then the <a> links won't work..  So to support both
+        // styles of links (html and just text based) we have to manually enable/disable the autolink mask
+        let mask = 15;
+        if (value.search(/<a\s/i) >= 0) {
+            mask = 0;
+        }
+        this._android.setAutoLinkMask(mask);
+        this._android.setText(<any>android.text.Html.fromHtml(value));
+    }
 }
+
+// TODO: Can we use Label.ios optimization for affectsLayout???
+export const htmlProperty = new Property<HtmlView, string>({ name: "html", defaultValue: "", affectsLayout: true });
+htmlProperty.register(HtmlView);

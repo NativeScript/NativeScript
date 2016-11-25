@@ -40,6 +40,7 @@ function formatString(text: string, textTransform: string): string {
 class TextTransformation extends android.text.method.ReplacementTransformationMethod {
     constructor(public originalText: string, public formattedText: FormattedString, public textTransform: string) {
         super();
+        return global.__native(this);
     }
 
     protected getOriginal(): native.Array<string> {

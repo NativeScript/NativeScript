@@ -7,9 +7,7 @@
 } from "ui/action-bar";
 import { Page } from "ui/page";
 import { Bindable } from "ui/core/bindable";
-import { HorizontalAlignment, VerticalAlignment, Visibility } from "ui/enums";
-import { View } from "ui/core/view";
-import { horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/styling/style";
+import { View, horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/core/view";
 import { Property } from "ui/core/properties";
 import { unsetValue } from "ui/core/dependency-observable";
 import { ViewBase } from "ui/core/view-base";
@@ -68,8 +66,8 @@ export class ActionBarBase extends View implements ActionBarDefinition {
             this._titleView = value;
 
             if (this._titleView) {
-                this._titleView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.center;
-                this._titleView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.center;
+                this._titleView.style[horizontalAlignmentProperty.cssName] = "center";
+                this._titleView.style[verticalAlignmentProperty.cssName] = "center";
                 this._addView(this._titleView);
             }
 
@@ -310,15 +308,15 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
 
     private _addActionViewToActionBar() {
         if (this._actionView && !this._actionView._isAddedToNativeVisualTree && this._actionBar) {
-            this._actionView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.center;
-            this._actionView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.center;
+            this._actionView.style[horizontalAlignmentProperty.cssName] = "center";
+            this._actionView.style[verticalAlignmentProperty.cssName] = "center";
             this._actionBar._addView(this._actionView);
         }
     }
 }
 
 export function isVisible(item: ActionItemDefinition) {
-    return item.visibility === Visibility.visible;
+    return item.visibility === "visible";
 }
 
 function onTitlePropertyChanged(actionBar: ActionBarBase, oldValue: string, newValue: string) {
@@ -341,5 +339,5 @@ textProperty.register(ActionItemBase);
 let iconProperty = new Property<ActionItemBase, string>({ name: "icon", valueChanged: onItemChanged });
 iconProperty.register(ActionItemBase);
 
-let visibilityProperty = new Property({ name: "visibility", defaultValue: Visibility.visible, valueChanged: onItemChanged });
+let visibilityProperty = new Property({ name: "visibility", defaultValue: "visible", valueChanged: onItemChanged });
 visibilityProperty.register(ActionItemBase);

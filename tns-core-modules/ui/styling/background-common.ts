@@ -22,10 +22,10 @@ interface CSSValue {
 
 export class Background implements definition.Background {
     public static default = new Background();
-    
+
     public color: colorModule.Color;
     public image: imageSource.ImageSource;
-    public repeat: string;
+    public repeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
     public position: string;
     public size: string;
     public borderTopColor: colorModule.Color;
@@ -42,9 +42,9 @@ export class Background implements definition.Background {
     public borderBottomRightRadius: number = 0;
     public clipPath: string;
 
-    private clone(): Background{
+    private clone(): Background {
         let clone = new Background();
-        
+
         clone.color = this.color;
         clone.image = this.image;
         clone.repeat = this.repeat;
@@ -63,8 +63,8 @@ export class Background implements definition.Background {
         clone.borderBottomRightRadius = this.borderBottomRightRadius;
         clone.borderBottomLeftRadius = this.borderBottomLeftRadius;
         clone.clipPath = this.clipPath;
-        
-        return clone;        
+
+        return clone;
     }
 
     public withColor(value: colorModule.Color): Background {
@@ -96,25 +96,25 @@ export class Background implements definition.Background {
         clone.size = value;
         return clone;
     }
-    
+
     public withBorderTopColor(value: colorModule.Color): Background {
         let clone = this.clone();
         clone.borderTopColor = value;
         return clone;
     }
-    
+
     public withBorderRightColor(value: colorModule.Color): Background {
         let clone = this.clone();
         clone.borderRightColor = value;
         return clone;
     }
-    
+
     public withBorderBottomColor(value: colorModule.Color): Background {
         let clone = this.clone();
         clone.borderBottomColor = value;
         return clone;
     }
-    
+
     public withBorderLeftColor(value: colorModule.Color): Background {
         let clone = this.clone();
         clone.borderLeftColor = value;
@@ -304,7 +304,7 @@ export class Background implements definition.Background {
                 type: "ident",
                 string: "center"
             };
-            
+
             // If you only one keyword is specified, the other value is "center"
             if (val === "left" || val === "right") {
                 return {
@@ -335,7 +335,7 @@ export class Background implements definition.Background {
         ensureTypes();
 
         return types.isNullOrUndefined(this.color)
-            && types.isNullOrUndefined(this.image) 
+            && types.isNullOrUndefined(this.image)
             && !this.hasBorderWidth()
             && !this.hasBorderRadius()
             && !this.clipPath;
@@ -353,14 +353,14 @@ export class Background implements definition.Background {
         }
 
         return colorModule.Color.equals(value1.color, value2.color)
-            && value1.image === value2.image 
-            && value1.position === value2.position 
-            && value1.repeat === value2.repeat 
-            && value1.size === value2.size 
-            && colorModule.Color.equals(value1.borderTopColor, value2.borderTopColor) 
-            && colorModule.Color.equals(value1.borderRightColor, value2.borderRightColor) 
-            && colorModule.Color.equals(value1.borderBottomColor, value2.borderBottomColor) 
-            && colorModule.Color.equals(value1.borderLeftColor, value2.borderLeftColor) 
+            && value1.image === value2.image
+            && value1.position === value2.position
+            && value1.repeat === value2.repeat
+            && value1.size === value2.size
+            && colorModule.Color.equals(value1.borderTopColor, value2.borderTopColor)
+            && colorModule.Color.equals(value1.borderRightColor, value2.borderRightColor)
+            && colorModule.Color.equals(value1.borderBottomColor, value2.borderBottomColor)
+            && colorModule.Color.equals(value1.borderLeftColor, value2.borderLeftColor)
             && value1.borderTopWidth === value2.borderTopWidth
             && value1.borderRightWidth === value2.borderRightWidth
             && value1.borderBottomWidth === value2.borderBottomWidth
@@ -373,66 +373,66 @@ export class Background implements definition.Background {
     }
 
     public hasBorderColor(): boolean {
-        return !types.isNullOrUndefined(this.borderTopColor) 
-            || !types.isNullOrUndefined(this.borderRightColor) 
-            || !types.isNullOrUndefined(this.borderBottomColor) 
+        return !types.isNullOrUndefined(this.borderTopColor)
+            || !types.isNullOrUndefined(this.borderRightColor)
+            || !types.isNullOrUndefined(this.borderBottomColor)
             || !types.isNullOrUndefined(this.borderLeftColor);
     }
 
     public hasBorderWidth(): boolean {
-        return this.borderTopWidth > 0 
-            || this.borderRightWidth > 0 
-            || this.borderBottomWidth > 0 
+        return this.borderTopWidth > 0
+            || this.borderRightWidth > 0
+            || this.borderBottomWidth > 0
             || this.borderLeftWidth > 0
     }
-    
+
     public hasBorderRadius(): boolean {
-        return this.borderTopLeftRadius > 0 
-            || this.borderTopRightRadius > 0 
-            || this.borderBottomRightRadius > 0 
+        return this.borderTopLeftRadius > 0
+            || this.borderTopRightRadius > 0
+            || this.borderBottomRightRadius > 0
             || this.borderBottomLeftRadius > 0
     }
 
     public hasUniformBorderColor(): boolean {
-        return colorModule.Color.equals(this.borderTopColor, this.borderRightColor) 
+        return colorModule.Color.equals(this.borderTopColor, this.borderRightColor)
             && colorModule.Color.equals(this.borderTopColor, this.borderBottomColor)
-            && colorModule.Color.equals(this.borderTopColor, this.borderLeftColor); 
+            && colorModule.Color.equals(this.borderTopColor, this.borderLeftColor);
     }
-    
+
     public hasUniformBorderWidth(): boolean {
-        return this.borderTopWidth === this.borderRightWidth 
+        return this.borderTopWidth === this.borderRightWidth
             && this.borderTopWidth === this.borderBottomWidth
             && this.borderTopWidth === this.borderLeftWidth;
     }
-    
+
     public hasUniformBorderRadius(): boolean {
-        return this.borderTopLeftRadius === this.borderTopRightRadius 
+        return this.borderTopLeftRadius === this.borderTopRightRadius
             && this.borderTopLeftRadius === this.borderBottomRightRadius
             && this.borderTopLeftRadius === this.borderBottomLeftRadius;
     }
-    
+
     public hasUniformBorder(): boolean {
-        return this.hasUniformBorderColor() 
-            && this.hasUniformBorderWidth() 
+        return this.hasUniformBorderColor()
+            && this.hasUniformBorderWidth()
             && this.hasUniformBorderRadius();
     }
-    
+
     public getUniformBorderColor(): colorModule.Color {
-        if (this.hasUniformBorderColor()){
+        if (this.hasUniformBorderColor()) {
             return this.borderTopColor;
         }
         return undefined;
     };
 
     public getUniformBorderWidth(): number {
-        if (this.hasUniformBorderWidth()){
+        if (this.hasUniformBorderWidth()) {
             return this.borderTopWidth;
         }
         return 0;
     };
 
     public getUniformBorderRadius(): number {
-        if (this.hasUniformBorderRadius()){
+        if (this.hasUniformBorderRadius()) {
             return this.borderTopLeftRadius;
         }
         return 0;

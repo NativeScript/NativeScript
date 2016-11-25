@@ -1,5 +1,5 @@
 declare module "ui/core/weak-event-listener" {
-    import observable = require("data/observable");
+    import { Observable, EventData } from "data/observable";
 
     /**
      * Attaches a WeakEventListener.
@@ -8,7 +8,7 @@ declare module "ui/core/weak-event-listener" {
      * @param handler The function which should be called when event occurs.
      * @param target Subscriber (target) of the event listener. It will be used as a thisArg in the handler function.
      */
-    export function addWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) : void;
+    export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any): void;
 
     /**
      * Removes a WeakEventListener.
@@ -17,5 +17,5 @@ declare module "ui/core/weak-event-listener" {
      * @param handler The function which should be called when event occurs.
      * @param target Subscriber (target) of the event listener. It will be used as a thisArg in the handler function.
      */
-    export function removeWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any): void;
+    export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any): void;
 }

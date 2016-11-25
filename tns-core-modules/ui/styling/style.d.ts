@@ -44,6 +44,9 @@ declare module "ui/styling/style" {
 
     export class Style extends Observable {
 
+        public fontInternal: Font;
+        public backgroundInternal: Background;
+
         public rotate: number;
         public scaleX: number;
         public scaleY: number;
@@ -57,7 +60,7 @@ declare module "ui/styling/style" {
 
         public backgroundColor: Color;
         public backgroundImage: string;
-        public backgroundRepeat: string;
+        public backgroundRepeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";;
         public backgroundSize: string;
         public backgroundPosition: string;
 
@@ -67,10 +70,10 @@ declare module "ui/styling/style" {
         public borderBottomColor: Color;
         public borderLeftColor: Color;
         public borderWidth: string | number;
-        public borderTopWidth: number;
-        public borderRightWidth: number;
-        public borderBottomWidth: number;
-        public borderLeftWidth: number;
+        public borderTopWidth: Length;
+        public borderRightWidth: Length;
+        public borderBottomWidth: Length;
+        public borderLeftWidth: Length;
         public borderRadius: string | number;
         public borderTopLeftRadius: number;
         public borderTopRightRadius: number;
@@ -79,23 +82,22 @@ declare module "ui/styling/style" {
 
         public fontSize: number;
         public fontFamily: string;
-        public fontStyle: string;
+        public fontStyle: "normal" | "italic";
         public fontWeight: string;
         public font: string;
 
         public zIndex: number;
         public opacity: number;
-        public visibility: string;
+        public visibility: "visible" | "hidden" | "collapse" | "collapsed";
 
-        public textAlignment: string;
-        public textDecoration: string;
-        public textTransform: string;
         public letterSpacing: number;
-        public whiteSpace: string;
+        public textAlignment:  "left" | "center" | "right";
+        public textDecoration: "none" | "underline" | "lineThrough";
+        public textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
+        public whiteSpace: "normal" | "nowrap";
 
-        // TODO: Change minWidth/Height to Length to support 'px'
-        public minWidth: number;
-        public minHeight: number;
+        public minWidth: Length;
+        public minHeight: Length;
         public width: Length;
         public height: Length;
         public margin: string;
@@ -132,87 +134,27 @@ declare module "ui/styling/style" {
         // public _boundsChanged(): void;
         // public _updateTextDecoration(): void;
         // public _updateTextTransform(): void;
+        // public _sizeChanged(): void;
     }
 
     // export function registerNoStylingClass(className);
     // export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
     // Property registration
 
-    export let rotateProperty: CssProperty<Style, number>;
-    export let scaleXProperty: CssProperty<Style, number>;
-    export let scaleYProperty: CssProperty<Style, number>;
-    export let translateXProperty: CssProperty<Style, number>;
-    export let translateYProperty: CssProperty<Style, number>;
-
-    export let clipPathProperty: CssProperty<Style, string>;
-    export let colorProperty: InheritedCssProperty<Style, Color>;
     export let tintColorProperty: InheritedCssProperty<Style, Color>;
     export let placeholderColorProperty: InheritedCssProperty<Style, Color>;
 
-    export let backgroundColorProperty: CssProperty<Style, Color>;
-    export let backgroundImageProperty: CssProperty<Style, string>;
-    export let backgroundRepeatProperty: CssProperty<Style, string>;
-    export let backgroundSizeProperty: CssProperty<Style, string>;
-    export let backgroundPositionProperty: CssProperty<Style, string>;
-
-    export let borderColorProperty: CssProperty<Style, Color>;
-    export let borderTopColorProperty: CssProperty<Style, Color>;
-    export let borderRightColorProperty: CssProperty<Style, Color>;
-    export let borderBottomColorProperty: CssProperty<Style, Color>;
-    export let borderLeftColorProperty: CssProperty<Style, Color>;
-    
-    export let borderWidthProperty: CssProperty<Style, number>;
-    export let borderTopWidthProperty: CssProperty<Style, number>;
-    export let borderRightWidthProperty: CssProperty<Style, number>;
-    export let borderBottomWidthProperty: CssProperty<Style, number>;
-    export let borderLeftWidthProperty: CssProperty<Style, number>;
-
-    export let borderRadiusProperty: CssProperty<Style, number>;
-    export let borderTopLeftRadiusProperty: CssProperty<Style, number>;
-    export let borderTopRightRadiusProperty: CssProperty<Style, number>;
-    export let borderBottomRightRadiusProperty: CssProperty<Style, number>;
-    export let borderBottomLeftRadiusProperty: CssProperty<Style, number>; 
-
-    // Helper property holding most layout related properties available in CSS.
-    // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
-    export var nativeLayoutParamsProperty: styleProperty.Property;
-    export var widthProperty: styleProperty.Property;
-    export var heightProperty: styleProperty.Property;
-    export var verticalAlignmentProperty: styleProperty.Property;
-    export var horizontalAlignmentProperty: styleProperty.Property;
-    export var marginLeftProperty: styleProperty.Property;
-    export var marginRightProperty: styleProperty.Property;
-    export var marginTopProperty: styleProperty.Property;
-    export var marginBottomProperty: styleProperty.Property;
-
-    export let zIndexProperty: CssProperty<Style, number>;
-    export let visibilityProperty: CssProperty<Style, string>;
-    export let opacityProperty: CssProperty<Style, number>;
+    export let fontSizeProperty: InheritedCssProperty<Style, number>;
+    export let fontFamilyProperty: InheritedCssProperty<Style, string>;
+    export let fontStyleProperty: InheritedCssProperty<Style, string>;
+    export let fontWeightProperty: InheritedCssProperty<Style, string>;
+    export let fontProperty: InheritedCssProperty<Style, Font>;
 
     export let textAlignmentProperty: InheritedCssProperty<Style, string>;
     export let textDecorationProperty: CssProperty<Style, string>;
     export let textTransformProperty: CssProperty<Style, string>;
     export let letterSpacingProperty: CssProperty<Style, number>;
     export let whiteSpaceProperty: CssProperty<Style, string>;
-
-    export let minWidthProperty: CssProperty<Style, number>;
-    export let minHeightProperty: CssProperty<Style, number>;
-    export let widthProperty: CssProperty<Style, number>;
-    export let heightProperty: CssProperty<Style, Length>;
-    export let marginProperty: CssProperty<Style, string>;
-    export let marginLeftProperty: CssProperty<Style, Length>;
-    export let marginRightProperty: CssProperty<Style, Length>;
-    export let marginTopProperty: CssProperty<Style, Length>;
-    export let marginBottomProperty: CssProperty<Style, Length>;
-
-    export let paddingProperty: CssProperty<Style, string>;
-    export let paddingLeftProperty: CssProperty<Style, Length>;
-    export let paddingRightProperty: CssProperty<Style, Length>;
-    export let paddingTopProperty: CssProperty<Style, Length>;
-    export let paddingBottomProperty: CssProperty<Style, Length>;
-
-    export let verticalAlignmentProperty: CssProperty<Style, string>;
-    export let horizontalAlignmentProperty: CssProperty<Style, string>;
 
     // /**
     //  * Represents an object that defines how style property should be applied on a native view/widget.

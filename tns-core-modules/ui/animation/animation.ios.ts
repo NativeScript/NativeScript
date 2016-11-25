@@ -7,7 +7,7 @@ import {
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
     scaleXProperty, scaleYProperty
-} from "ui/styling/style";
+} from "ui/core/view";
 import * as trace from "trace";
 
 export * from "./animation-common";

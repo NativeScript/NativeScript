@@ -1,5 +1,5 @@
-﻿import {ContentView as ContentViewDefinition} from "ui/content-view";
-import {View, CustomLayoutView, AddChildFromBuilder} from "ui/core/view";
+﻿import { ContentView as ContentViewDefinition } from "ui/content-view";
+import { View, CustomLayoutView, AddChildFromBuilder } from "ui/core/view";
 import * as utils from "utils/utils";
 
 export class ContentView extends CustomLayoutView implements ContentViewDefinition, AddChildFromBuilder {
@@ -67,8 +67,6 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
 
     // This method won't be called in Android because we use the native android layout.
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        View.adjustChildLayoutParams(this.layoutView, widthMeasureSpec, heightMeasureSpec);
-
         let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
 
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
@@ -77,9 +75,9 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
         let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let density = utils.layout.getDisplayDensity();
-        let measureWidth = Math.max(result.measuredWidth, this.minWidth * density);
-        let measureHeight = Math.max(result.measuredHeight, this.minHeight * density);
+        let style = this.style;
+        let measureWidth = Math.max(result.measuredWidth, style.effectiveMinWidth);
+        let measureHeight = Math.max(result.measuredHeight, style.effectiveMinHeight);
 
         let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -90,7 +88,5 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
     // This method won't be called in Android because we use the native android layout.
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         View.layoutChild(this, this.layoutView, 0, 0, right - left, bottom - top);
-
-        View.restoreChildOriginalParams(this.layoutView);
     }
 }

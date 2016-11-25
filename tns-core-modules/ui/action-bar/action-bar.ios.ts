@@ -1,12 +1,9 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
 import { ActionItemBase, ActionBarBase, isVisible } from "./action-bar-common";
 import utils = require("utils/utils");
-import { isNumber } from "utils/types";
 import { Frame, topmost as topmostFrame } from "ui/frame";
-import { View } from "ui/core/view";
+import { View, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
 import { ImageSource, fromFileOrResource } from "image-source";
-import { IOSActionItemPosition } from "ui/enums";
-import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/styling/style";
 import { Color } from "color";
 import { Background } from "ui/styling/background";
 
@@ -35,7 +32,7 @@ class TapBarItemHandlerImpl extends NSObject {
 
 export class ActionItem extends ActionItemBase {
     private _ios: IOSActionItemSettings = {
-        position: IOSActionItemPosition.left,
+        position: "left",
         systemIcon: undefined
     };
 
@@ -142,7 +139,7 @@ export class ActionBar extends ActionBarBase {
         let rightBarItems = [];
         for (let i = 0; i < items.length; i++) {
             let barButtonItem = this.createBarButtonItem(items[i]);
-            if (items[i].ios.position === IOSActionItemPosition.left) {
+            if (items[i].ios.position === "left") {
                 leftBarItems.push(barButtonItem);
             }
             else {
@@ -168,7 +165,7 @@ export class ActionBar extends ActionBarBase {
             item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
         }
-        else if (isNumber(item.ios.systemIcon)) {
+        else if (typeof item.ios.systemIcon === "number") {
             barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
         }
         else if (item.icon) {
@@ -294,7 +291,7 @@ export class ActionBar extends ActionBarBase {
         let page = this.page;
         // Page should be attached to frame to update the action bar.
         if (!page || !page.frame) {
-            return;
+            return undefined;
         }
 
         return (<UINavigationController>page.frame.ios.controller).navigationBar;

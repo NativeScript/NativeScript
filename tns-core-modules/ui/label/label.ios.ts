@@ -1,21 +1,8 @@
-﻿import common = require("./label-common");
-import * as enums from "ui/enums";
-import * as utils from "utils/utils";
-import * as backgroundModule from "ui/styling/background";
-import { View } from "ui/core/view";
-import style = require("ui/styling/style");
+﻿import { Label as LabelDefinition } from "ui/label";
+import { TextBase, View, whiteSpaceProperty, layout } from "ui/text-base";
+import { Background } from "ui/styling/background";
 
-import { whiteSpaceProperty } from "ui/styling/style";
-import { WhiteSpace } from "ui/enums";
-
-global.moduleMerge(common, exports);
-
-var background: typeof backgroundModule;
-function ensureBackground() {
-    if (!background) {
-        background = require("ui/styling/background");
-    }
-}
+export * from "ui/text-base";
 
 enum FixedSize {
     NONE = 0,
@@ -24,7 +11,7 @@ enum FixedSize {
     BOTH = 3
 }
 
-export class Label extends common.Label {
+export class LabelBase extends TextBase implements LabelDefinition {
     private _ios: UILabel;
     private _fixedSize: FixedSize;
 
@@ -41,6 +28,13 @@ export class Label extends common.Label {
 
     get _nativeView(): UILabel {
         return this._ios;
+    }
+
+    get textWrap(): boolean {
+        return this.style.whiteSpace === "normal";
+    }
+    set textWrap(value: boolean) {
+        this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
     public onLoaded() {
@@ -61,32 +55,33 @@ export class Label extends common.Label {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
         if (nativeView) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+            var width = layout.getMeasureSpecSize(widthMeasureSpec);
+            var widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+            var height = layout.getMeasureSpecSize(heightMeasureSpec);
+            var heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            if (widthMode === utils.layout.UNSPECIFIED) {
+            if (widthMode === layout.UNSPECIFIED) {
                 width = Number.POSITIVE_INFINITY;
             }
 
-            if (heightMode === utils.layout.UNSPECIFIED) {
+            if (heightMode === layout.UNSPECIFIED) {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            this._fixedSize = (widthMode === utils.layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
-                | (heightMode === utils.layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
+            this._fixedSize = (widthMode === layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
+                | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
             var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             var labelWidth = nativeSize.width;
 
-            if (!this.textWrap && this.style.whiteSpace !== enums.WhiteSpace.nowrap) {
+            if (!this.textWrap && this.style.whiteSpace !== "nowrap") {
                 labelWidth = Math.min(labelWidth, width);
             }
 
-            var measureWidth = Math.max(labelWidth, this.minWidth);
-            var measureHeight = Math.max(nativeSize.height, this.minHeight);
+            let style = this.sltye;
+            var measureWidth = Math.max(labelWidth, style.effectiveMinWidth);
+            var measureHeight = Math.max(nativeSize.height, style.effectiveMinHeight);
 
             var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

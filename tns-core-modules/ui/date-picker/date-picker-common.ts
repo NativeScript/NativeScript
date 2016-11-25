@@ -2,6 +2,8 @@
 import { View } from "ui/core/view";
 import { Property } from "ui/core/properties";
 
+export * from "ui/core/view";
+
 export class DatePickerBase extends View implements DatePickerDefinition {
     public year: number;
     public month: number;

@@ -1,11 +1,10 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from "ui/action-bar";
 import { ActionItemBase, ActionBarBase, isVisible } from "./action-bar-common";
 import { isDefined, isNullOrUndefined, isString } from "utils/types";
-import { View } from "ui/core/view";
+import { View, colorProperty } from "ui/core/view";
 import { RESOURCE_PREFIX } from "utils/utils";
 import { fromFileOrResource } from "image-source";
-import { AndroidActionItemPosition, AndroidActionBarIconVisibility } from "ui/enums";
-import { colorProperty } from "ui/styling/style";
+import { AndroidActionBarIconVisibility } from "ui/enums";
 import { Color } from "color";
 import * as application from "application";
 import * as trace from "trace";
@@ -23,7 +22,7 @@ function generateItemId(): number {
 
 export class ActionItem extends ActionItemBase {
     private _androidPosition: AndroidActionItemSettings = {
-        position: AndroidActionItemPosition.actionBar,
+        position: "actionBar",
         systemIcon: undefined
     };
 
@@ -249,7 +248,7 @@ export class ActionBar extends ActionBarBase {
 
             if (item.actionView && item.actionView.android) {
                 // With custom action view, the menuitem cannot be displayed in a popup menu. 
-                item.android.position = AndroidActionItemPosition.actionBar;
+                item.android.position = "actionBar";
                 menuItem.setActionView(item.actionView.android);
                 ActionBar._setOnClickListener(item);
             }
@@ -368,13 +367,13 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
 
 function getShowAsAction(menuItem: ActionItem): number {
     switch (menuItem.android.position) {
-        case AndroidActionItemPosition.actionBarIfRoom:
+        case "actionBarIfRoom":
             return android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 
-        case AndroidActionItemPosition.popup:
+        case "popup":
             return android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 
-        case AndroidActionItemPosition.actionBar:
+        case "actionBar":
         default:
             return android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
     }

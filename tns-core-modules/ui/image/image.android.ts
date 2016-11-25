@@ -1,18 +1,15 @@
-﻿import imageCommon = require("./image-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
-import enums = require("ui/enums");
-import types = require("utils/types");
-import imageSource = require("image-source");
-import utils = require("utils/utils");
-import * as fs from "file-system";
+﻿import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty } from "./image-common";
+import { unsetValue } from "ui/core/dependency-observable";
+import { Color } from "color";
+import { ImageSource } from "image-source";
+import { path, knownFolders } from "file-system";
+import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
 
-global.moduleMerge(imageCommon, exports);
+export * from "./image-common";
 
 const FILE_PREFIX = "file:///";
-let ASYNC = "async";
+const ASYNC = "async";
+
 let imageFetcher: org.nativescript.widgets.image.Fetcher;
 let imageCache: org.nativescript.widgets.image.Cache;
 
@@ -23,38 +20,6 @@ export enum CacheMode {
 }
 
 export let currentCacheMode: CacheMode;
-
-function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    let image = <Image>data.object;
-    if (!image.android) {
-        return;
-    }
-
-    switch (data.newValue) {
-        case enums.Stretch.aspectFit:
-            image.android.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-            break;
-        case enums.Stretch.aspectFill:
-            image.android.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
-            break;
-        case enums.Stretch.fill:
-            image.android.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
-            break;
-        case enums.Stretch.none:
-        default:
-            image.android.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
-            break;
-    }
-}
-
-function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var image = <Image>data.object;
-    if (!image.android) {
-        return;
-    }
-
-    image._setNativeImage(data.newValue);
-}
 
 export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
     if (currentCacheMode === mode) {
@@ -83,12 +48,9 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
     imageFetcher.initCache();
 }
 
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>imageCommon.Image.imageSourceProperty.metadata).onSetNativeValue = onImageSourcePropertyChanged;
-(<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
-
-export class Image extends imageCommon.Image {
+export class Image extends ImageBase {
     private _android: org.nativescript.widgets.ImageView;
+    private _imageLoadedListener: org.nativescript.widgets.image.Worker.OnImageLoadedListener;
 
     public decodeWidth = 0;
     public decodeHeight = 0;
@@ -126,64 +88,89 @@ export class Image extends imageCommon.Image {
         let value = this.src;
         let async = this.loadMode === ASYNC;
         let owner = new WeakRef<Image>(this);
-        let listener = new org.nativescript.widgets.image.Worker.OnImageLoadedListener({
-            onImageLoaded: function (success) {
-                let that = owner.get();
-                if (that) {
-                    that._setValue(Image.isLoadingProperty, false);
-                }
-            }
-        });
-
-        this._resetValue(Image.imageSourceProperty);
-        if (types.isString(value)) {
+        this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
+        
+        this.imageSource = unsetValue;
+        if (typeof value === "string") {
             value = value.trim();
-            this._setValue(Image.isLoadingProperty, true);
+            this.isLoading = true;
 
-            if (utils.isDataURI(value)) {
+            if (isDataURI(value)) {
                 // TODO: Check with runtime what should we do in case of base64 string.
                 super._createImageSourceFromSrc();
             }
             else if (imageSource.isFileOrResourcePath(value)) {
                 if (value.indexOf(utils.RESOURCE_PREFIX) === 0) {
-                    imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async, listener);
+                    imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async, this._imageLoadedListener);
                 }
                 else {
                     let fileName = value;
                     if (fileName.indexOf("~/") === 0) {
-                        fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
+                        fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
                     }
 
-                    imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async, listener);
+                    imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async, this._imageLoadedListener);
                 }
             }
             else {
                 // For backwards compatibility http always use async loading.
-                imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true, listener);
+                imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true, this._imageLoadedListener);
             }
         } else {
             super._createImageSourceFromSrc();
         }
     }
+
+    get [stretchProperty.native](): "aspectFit" {
+        return "aspectFit";
+    }
+    set [stretchProperty.native](value: "none" | "aspectFill" | "aspectFit" | "fill") {
+        switch (value) {
+            case "aspectFit":
+                this.android.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+                break;
+            case "aspectFill":
+                this.android.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+                break;
+            case "fill":
+                this.android.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+                break;
+            case "none":
+            default:
+                this.android.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
+                break;
+        }
+    }
+
+    get [tintColorProperty.native](): Color {
+        return undefined;
+    }
+    set [tintColorProperty.native](value: Color) {
+        if (value === undefined) {
+            this._android.clearColorFilter();
+        } else {
+            this._android.setColorFilter(value.android);
+        }
+    }
+
+    get [imageSourceProperty.native](): ImageSource {
+        return undefined;
+    }
+    set [imageSourceProperty.native](value: ImageSource) {
+        this._setNativeImage(value ? value.android : null);
+    }
 }
 
-export class ImageStyler implements style.Styler {
-    // tint color
-    private static setTintColorProperty(view: view.View, newValue: any) {
-        var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
-        imageView.setColorFilter(newValue);
+@Interfaces([org.nativescript.widgets.image.Worker.OnImageLoadedListener])
+class ImageLoadedListener implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
+    constructor(private owner: WeakRef<Image>) {
+        return global.__native(this);
     }
 
-    private static resetTintColorProperty(view: view.View, nativeValue: number) {
-        var imageView = <org.nativescript.widgets.ImageView>view._nativeView;
-        imageView.clearColorFilter();
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.tintColorProperty, new style.StylePropertyChangedHandler(
-            ImageStyler.setTintColorProperty,
-            ImageStyler.resetTintColorProperty), "Image");
+    onImageLoaded(success: boolean): void {
+        let owner = this.owner.get();
+        if (owner) {
+            owner.isLoading = false;
+        }
     }
 }
-
-ImageStyler.registerHandlers();

@@ -1,17 +1,16 @@
 ﻿import { ControlStateChangeListener } from "ui/core/control-state-change";
-import { whiteSpaceProperty, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingProperty } from "ui/styling/style";
+import { View, PseudoClassHandler, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingProperty } from "ui/core/view";
 
-import { View, PseudoClassHandler } from "ui/core/view";
 import types = require("utils/types");
 
 import { ButtonBase } from "./button-common";
-import { textProperty, formattedTextProperty } from "../text-base/text-base-common";
-import { WhiteSpace } from "ui/enums";
+import { textProperty, formattedTextProperty, whiteSpaceProperty } from "../text-base/text-base-common";
 
 export * from "./button-common";
 
 export class Button extends ButtonBase {
     public nativeView: UIButton;
+
     private _tapHandler: NSObject;
     private _stateChangedHandler: ControlStateChangeListener;
 
@@ -44,12 +43,12 @@ export class Button extends ButtonBase {
         }
     }
 
-    get [whiteSpaceProperty.native](): string {
-        return WhiteSpace.normal;
+    get [whiteSpaceProperty.native](): "normal" | "nowrap" {
+        return "normal";
     }
-    set [whiteSpaceProperty.native](value: string) {
+    set [whiteSpaceProperty.native](value: "normal" | "nowrap") {
         let nativeView = this.nativeView.titleLabel;
-        if (value === WhiteSpace.normal) {
+        if (value === "normal") {
             nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
             nativeView.numberOfLines = 0;
         }
@@ -65,7 +64,7 @@ export class Button extends ButtonBase {
     set [borderTopWidthProperty.native](value: number) {
         let nativeView = this.nativeView;
         let insets = nativeView.contentEdgeInsets;
-        insets.top = this.style.paddingTop + value;
+        insets.top = this.style.effectivePaddingTop + value;
         nativeView.contentEdgeInsets = insets;
     }
 
@@ -75,7 +74,7 @@ export class Button extends ButtonBase {
     set [borderRightWidthProperty.native](value: number) {
         let nativeView = this.nativeView;
         let insets = nativeView.contentEdgeInsets;
-        insets.right = this.style.paddingRight + value;
+        insets.right = this.style.effectivePaddingRight + value;
         nativeView.contentEdgeInsets = insets;
     }
 
@@ -85,7 +84,7 @@ export class Button extends ButtonBase {
     set [borderBottomWidthProperty.native](value: number) {
         let nativeView = this.nativeView;
         let insets = nativeView.contentEdgeInsets;
-        insets.bottom = this.style.paddingBottom + value;
+        insets.bottom = this.style.effectivePaddingBottom + value;
         nativeView.contentEdgeInsets = insets;
     }
 
@@ -95,22 +94,22 @@ export class Button extends ButtonBase {
     set [borderLeftWidthProperty.native](value: number) {
         let nativeView = this.nativeView;
         let insets = nativeView.contentEdgeInsets;
-        insets.left = this.style.paddingLeft + value;
+        insets.left = this.style.effectivePaddingLeft + value;
         nativeView.contentEdgeInsets = insets;
     }
 
-    get [paddingProperty.native](): UIEdgeInsets {
-        return this.nativeView.contentEdgeInsets;
-    }
-    set [paddingProperty.native](value: UIEdgeInsets) {
-        let nativeView = this.nativeView;
-        let style = this.style;
-        var top = value.top + style.borderTopWidth;
-        var left = value.left + style.borderLeftWidth;
-        var bottom = value.bottom + style.borderBottomWidth;
-        var right = value.right + style.borderRightWidth;
-        this.nativeView.contentEdgeInsets = { left, top, right, bottom };
-    }
+    // get [paddingProperty.native](): UIEdgeInsets {
+    //     return this.nativeView.contentEdgeInsets;
+    // }
+    // set [paddingProperty.native](value: UIEdgeInsets) {
+    //     const nativeView = this.nativeView;
+    //     const style = this.style;
+    //     const top = value.top + style.effectiveBorderTopWidth;
+    //     const left = value.left + style.effectiveBorderLeftWidth;
+    //     const bottom = value.bottom + style.effectiveBorderBottomWidth;
+    //     const right = value.right + style.effectiveBorderRightWidth;
+    //     this.nativeView.contentEdgeInsets = { left, top, right, bottom };
+    // }
 }
 
 class TapHandlerImpl extends NSObject {

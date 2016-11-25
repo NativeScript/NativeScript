@@ -1,32 +1,10 @@
-﻿import common = require("./html-view-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import * as utils from "utils/utils";
-import * as view from "ui/core/view";
+﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
+import { Property } from "ui/core/properties";
+import { View, layout } from "ui/core/view";
 
-function onHtmlPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <HtmlView>data.object;
-    if (!view.ios) {
-        return;
-    }
+export * from "ui/core/view";
 
-    var types = require("utils/types");
-
-    if (types.isString(data.newValue)) {
-        var htmlString = NSString.stringWithString(data.newValue);
-        var nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-        view.ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
-    } else {
-        view.ios.attributedText = NSAttributedString.new();
-    }
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>common.HtmlView.htmlProperty.metadata).onSetNativeValue = onHtmlPropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class HtmlView extends common.HtmlView {
+export class HtmlView extends View implements HtmlViewDefinition {
     private _ios: UITextView;
 
     constructor() {
@@ -40,6 +18,8 @@ export class HtmlView extends common.HtmlView {
         this._ios.dataDetectorTypes = UIDataDetectorTypes.All;
     }
 
+    public html: string;
+
     get ios(): UITextView {
         return this._ios;
     }
@@ -52,32 +32,45 @@ export class HtmlView extends common.HtmlView {
         var nativeView = this._nativeView;
         if (nativeView) {
 
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+            let width = layout.getMeasureSpecSize(widthMeasureSpec);
+            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+            let height = layout.getMeasureSpecSize(heightMeasureSpec);
+            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            if (widthMode === utils.layout.UNSPECIFIED) {
+            if (widthMode === layout.UNSPECIFIED) {
                 width = Number.POSITIVE_INFINITY;
             }
 
-            if (heightMode === utils.layout.UNSPECIFIED) {
+            if (heightMode === layout.UNSPECIFIED) {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            var nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
-            var labelWidth = nativeSize.width;
+            let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
+            let labelWidth = nativeSize.width;
 
             labelWidth = Math.min(labelWidth, width);
+            let style = this.style;
+            let measureWidth = Math.max(labelWidth, style.effectiveMinWidth);
+            let measureHeight = Math.max(nativeSize.height, style.effectiveMinHeight);
 
-            var measureWidth = Math.max(labelWidth, this.minWidth);
-            var measureHeight = Math.max(nativeSize.height, this.minHeight);
-
-            var widthAndState = view.View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            var heightAndState = view.View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
-} 
+
+    get [htmlProperty.native](): string {
+        return "";
+    }
+    set [htmlProperty.native](value: string) {
+        const htmlString = NSString.stringWithString(value + "");
+        const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
+        this._ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+    }
+}
+
+// TODO: Can we use Label.ios optimization for affectsLayout???
+export const htmlProperty = new Property<HtmlView, string>({ name: "html", defaultValue: "", affectsLayout: true });
+htmlProperty.register(HtmlView);

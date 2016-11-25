@@ -10,8 +10,19 @@ declare module "ui/core/view-base" {
      * Returns an instance of a view (if found), otherwise undefined.
      */
     export function getAncestor(view: ViewBase, criterion: string | Function): ViewBase;
+    export function isEventOrGesture(name: string, view: ViewBase): boolean;
 
     export class ViewBase extends Observable {
+        /**
+         * String value used when hooking to loaded event.
+         */
+        public static loadedEvent: string;
+
+        /**
+         * String value used when hooking to unloaded event.
+         */
+        public static unloadedEvent: string;
+
         public ios: any;
         public android: any;
         public nativeView: any;
@@ -24,6 +35,11 @@ declare module "ui/core/view-base" {
          * Gets the style object associated to this view.
          */
         public readonly style: Style;
+
+        /**
+         * Returns true if visibility is set to 'collapse'.
+         */
+        public isCollapsed: boolean;
 
         public bind(options: BindingOptions, source: Object): void;
         public unbind(property: string): void;
@@ -38,12 +54,12 @@ declare module "ui/core/properties" {
     import { Style } from "ui/styling/style";
 
     interface PropertyOptions<T, U> {
-        name: string,
-        defaultValue?: U,
-        affectsLayout?: boolean,
-        equalityComparer?: (x: U, y: U) => boolean,
-        valueChanged?: (target: T, oldValue: U, newValue: U) => void,
-        valueConverter?: (value: any) => U
+        readonly name: string,
+        readonly defaultValue?: U,
+        readonly affectsLayout?: boolean,
+        readonly equalityComparer?: (x: U, y: U) => boolean,
+        readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void,
+        readonly valueConverter?: (value: any) => U
     }
 
     interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
@@ -72,5 +88,21 @@ declare module "ui/core/properties" {
 
     class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> {
         constructor(options: CssPropertyOptions<T, U>);
+    }
+
+    export interface ShorthandPropertyOptions {
+        readonly name: string,
+        readonly cssName: string;
+        readonly converter: (value: string) => [CssProperty<any, any>, any][],
+        readonly getter: (this: Style) => string
+    }
+
+    export class ShorthandProperty<T extends Style> {
+        constructor(options: ShorthandPropertyOptions);
+
+        public readonly native: symbol;
+        public readonly name: string;
+        public readonly cssName: string;
+        public register(cls: { prototype: T }): void;
     }
 }

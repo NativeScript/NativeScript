@@ -4,6 +4,7 @@
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty
 } from "./editable-text-base-common";
 import { textProperty } from "ui/text-base";
+import { ad } from "utils/utils";
 
 export class EditableTextBase extends common.EditableTextBase {
     private _android: android.widget.EditText;
@@ -13,13 +14,11 @@ export class EditableTextBase extends common.EditableTextBase {
     private _dirtyTextAccumulator: string;
     /* tslint:enable */
 
-import { UpdateTextTrigger, KeyboardType, ReturnKeyType, AutocapitalizationType } from "ui/enums";
-import * as utils from "utils/utils";
 
 @Interfaces([android.text.TextWatcher])
 class TextWatcher implements android.text.TextWatcher {
     constructor(private owner: WeakRef<EditableTextBase>) {
-        //        
+        return global.__native(this);
     }
 
     public beforeTextChanged(text: string, start: number, count: number, after: number) {
@@ -49,10 +48,10 @@ class TextWatcher implements android.text.TextWatcher {
         }
 
         switch (owner.updateTextTrigger) {
-            case UpdateTextTrigger.focusLost:
+            case "focusLost":
                 owner._dirtyTextAccumulator = editable.toString();
                 break;
-            case UpdateTextTrigger.textChanged:
+            case "textChanged":
                 owner.nativePropertyChanged(textProperty, editable.toString());
                 break;
             default:
@@ -64,7 +63,7 @@ class TextWatcher implements android.text.TextWatcher {
 @Interfaces([android.view.View.OnFocusChangeListener])
 class FocusChangeListener implements android.view.View.OnFocusChangeListener {
     constructor(private owner: WeakRef<EditableTextBase>) {
-        //        
+        return global.__native(this);
     }
 
     public onFocusChange(view: android.view.View, hasFocus: boolean) {
@@ -100,7 +99,7 @@ class FocusChangeListener implements android.view.View.OnFocusChangeListener {
 @Interfaces([android.widget.TextView.OnEditorActionListener])
 class EditorActionListener implements android.widget.TextView.OnEditorActionListener {
     constructor(private owner: WeakRef<EditableTextBase>) {
-        //        
+        return global.__native(this);
     }
 
     public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
@@ -146,7 +145,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     public abstract _configureEditText(): void;
 
     public abstract _onReturnPress(): void;
-    
+
     public _createUI() {
         this._android = new android.widget.EditText(this._context);
         this._configureEditText();
@@ -184,14 +183,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     public dismissSoftInput() {
-        utils.ad.dismissSoftInput(this._nativeView);
+        ad.dismissSoftInput(this._nativeView);
     }
 
     public focus(): boolean {
         let result = super.focus();
 
         if (result) {
-            utils.ad.showSoftInput(this._nativeView);
+            ad.showSoftInput(this._nativeView);
         }
 
         return result;
@@ -221,46 +220,51 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
     }
 
-    get [keyboardTypeProperty.native](): string {
+    get [keyboardTypeProperty.native](): "datetime" | "phone" | "number" | "url" | "email" | string {
         let inputType = this.nativeView.getInputType();
         switch (inputType) {
             case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
-                return KeyboardType.datetime;
+                return "datetime";
 
             case android.text.InputType.TYPE_CLASS_PHONE:
-                return KeyboardType.phone;
+                return "phone";
 
             case android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL:
-                return KeyboardType.number;
+                return "number";
 
             case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI:
-                return KeyboardType.url;
+                return "url";
 
             case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
-                return KeyboardType.email;
+                return "email";
 
             default:
                 return inputType.toString();
         }
     }
-    set [keyboardTypeProperty.native](value: string) {
+    set [keyboardTypeProperty.native](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
         let newInputType;
         switch (value) {
-            case KeyboardType.datetime:
+            case "datetime":
                 newInputType = android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
                 break;
-            case KeyboardType.phone:
+
+            case "phone":
                 newInputType = android.text.InputType.TYPE_CLASS_PHONE;
                 break;
-            case KeyboardType.number:
+
+            case "number":
                 newInputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
                 break;
-            case KeyboardType.url:
+
+            case "url":
                 newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI;
                 break;
-            case KeyboardType.email:
+
+            case "email":
                 newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
                 break;
+
             default:
                 let inputType = +value;
                 if (!isNaN(inputType)) {
@@ -274,44 +278,44 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(newInputType);
     }
 
-    get [returnKeyTypeProperty.native](): string {
+    get [returnKeyTypeProperty.native](): "done" | "next" | "go" | "search" | "send" | string {
         let ime = this.nativeView.getImeOptions();
         switch (ime) {
             case android.view.inputmethod.EditorInfo.IME_ACTION_DONE:
-                return ReturnKeyType.done;
+                return "done";
 
             case android.view.inputmethod.EditorInfo.IME_ACTION_GO:
-                return ReturnKeyType.go;
+                return "go";
 
             case android.view.inputmethod.EditorInfo.IME_ACTION_NEXT:
-                return ReturnKeyType.next;
+                return "next";
 
             case android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH:
-                return ReturnKeyType.search;
+                return "search";
 
             case android.view.inputmethod.EditorInfo.IME_ACTION_SEND:
-                return ReturnKeyType.send;
+                return "send";
 
             default:
                 return ime.toString();
         }
     }
-    set [returnKeyTypeProperty.native](value: string) {
+    set [returnKeyTypeProperty.native](value: "done" | "next" | "go" | "search" | "send" | string) {
         let newImeOptions;
         switch (value) {
-            case ReturnKeyType.done:
+            case "done":
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_DONE;
                 break;
-            case ReturnKeyType.go:
+            case "go":
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_GO;
                 break;
-            case ReturnKeyType.next:
+            case "next":
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_NEXT;
                 break;
-            case ReturnKeyType.search:
+            case "search":
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH;
                 break;
-            case ReturnKeyType.send:
+            case "send":
                 newImeOptions = android.view.inputmethod.EditorInfo.IME_ACTION_SEND;
                 break;
             default:
@@ -339,14 +343,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    get [autocapitalizationTypeProperty.native](): string {
+    get [autocapitalizationTypeProperty.native](): "none" | "words" | "sentences" | "allCharacters" | string {
         let inputType = this.nativeView.getInputType();
         if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
-            return AutocapitalizationType.words;
+            return "words";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) === android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) {
-            return AutocapitalizationType.sentences;
+            return "sentences";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) {
-            return AutocapitalizationType.allCharacters;
+            return "allCharacters";
         } else {
             return inputType.toString();
         }
@@ -356,16 +360,16 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         inputType = inputType & ~28672; //28672 (0x00070000) 13,14,15bits (111 0000 0000 0000)
 
         switch (value) {
-            case AutocapitalizationType.none:
+            case "none":
                 //Do nothing, we have lowered the three bits above.
                 break;
-            case AutocapitalizationType.words:
+            case "words":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00020000) 14th bit
                 break;
-            case AutocapitalizationType.sentences:
+            case "sentences":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00040000) 15th bit
                 break;
-            case AutocapitalizationType.allCharacters:
+            case "allCharacters":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
                 break;
             default:

@@ -2,19 +2,12 @@
  * Contains the Label class, which represents a standard label widget.
  */
 declare module "ui/label" {
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import textBase = require("ui/text-base");
+    import { TextBase } from "ui/text-base";
 
     /**
      * Represents a text label.
      */
-    export class Label extends textBase.TextBase {
-
-        /**
-         * Dependency property used to support binding operations for the text wrapping of the current label instance.
-         */
-        public static textWrapProperty: dependencyObservable.Property;
-
+    export class Label extends TextBase {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/TextView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */

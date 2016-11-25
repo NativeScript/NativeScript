@@ -3,9 +3,11 @@ export * from "./time-picker-common";
 
 @Interfaces([android.widget.TimePicker.OnTimeChangedListener])
 class TimeChangedListener implements android.widget.TimePicker.OnTimeChangedListener {
-    constructor(public owner: WeakRef<TimePicker>) { }
+    constructor(public owner: WeakRef<TimePicker>) {
+        return global.__native(this);
+    }
 
-    onTimeChanged(picker: android.widget.TimePicker, hour: number, minute: number) {
+    onTimeChanged(picker: android.widget.TimePicker, hour: number, minute: number): void {
         let timePicker = this.owner.get();
         if (timePicker) {
             let validTime = getValidTime(timePicker, hour, minute);

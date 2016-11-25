@@ -259,8 +259,6 @@ export class Frame extends FrameBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        View.adjustChildLayoutParams(this.currentPage, widthMeasureSpec, heightMeasureSpec);
-
         let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
         let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -304,8 +302,6 @@ export class Frame extends FrameBase {
         if (this._navigateToEntry && this.currentPage) {
             this.layoutPage(this._navigateToEntry.resolvedPage);
         }
-
-        View.restoreChildOriginalParams(this.currentPage);
     }
 
     public layoutPage(page: Page): void {

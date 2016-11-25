@@ -1,6 +1,6 @@
 ﻿declare module "ui/core/bindable" {
-    import {DependencyObservable} from "ui/core/dependency-observable";
-    import {ViewBase} from "ui/core/view-base";
+    import { DependencyObservable } from "ui/core/dependency-observable";
+    import { ViewBase } from "ui/core/view-base";
 
     /**
      * The options object used in the Bindable.bind method.

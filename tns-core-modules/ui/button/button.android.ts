@@ -6,7 +6,9 @@ export * from "./button-common";
 
 @Interfaces([android.view.View.OnClickListener])
 class ClickListener implements android.view.View.OnClickListener {
-    constructor(public owner: WeakRef<Button>) { }
+    constructor(public owner: WeakRef<Button>) {
+        return global.__native(this);
+    }
 
     public onClick(v: android.view.View): void {
         let btn = this.owner.get();
@@ -18,7 +20,9 @@ class ClickListener implements android.view.View.OnClickListener {
 
 @Interfaces([android.view.View.OnTouchListener])
 class TouchListener implements android.view.View.OnTouchListener {
-    constructor(public owner: WeakRef<Button>) { }
+    constructor(public owner: WeakRef<Button>) { 
+        return global.__native(this);
+    }
 
     public onTouch(v: android.view.View, event: android.view.MotionEvent): boolean {
         let btn = this.owner.get();

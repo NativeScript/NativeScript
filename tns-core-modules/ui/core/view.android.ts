@@ -1,97 +1,76 @@
-import { ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty } from "./view-common";
 import { Length, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
-import * as trace from "trace";
-import * as utils from "utils/utils";
-import * as types from "utils/types";
+import { applyNativeSetters, Property } from "./properties";
 import { GestureTypes, GestureEventData } from "ui/gestures";
+import { Background, ad } from "ui/styling/background";
 import {
-    visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
     widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
     marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
-    translateXProperty, translateYProperty, zIndexProperty
-} from "ui/styling/style";
-import { Visibility } from "ui/enums";
-import background = require("ui/styling/background");
-// import {CommonLayoutParams} from "ui/styling/style";
-import { device } from "platform";
-
-import { applyNativeSetters, Property } from "./properties";
+    translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
+    layout
+} from "./view-common";
+import { write as traceWrite, enabled as traceEnabled, categories as traceCategories, notifyEvent as traceNotifyEvent } from "trace";
 
 export * from "./view-common";
 let flexbox;
 
-let ANDROID = "_android";
-let NATIVE_VIEW = "_nativeView";
-let VIEW_GROUP = "_viewGroup";
+const ANDROID = "_android";
+const NATIVE_VIEW = "_nativeView";
+const VIEW_GROUP = "_viewGroup";
 let density = -1;
 
-// function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-//     let view = <View>data.object;
-//     view._nativeView.setContentDescription(data.newValue);
-// }
-// (<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
+// TODO: Move this class into widgets.
+@Interfaces([android.view.View.OnTouchListener])
+class DisableUserInteractionListener implements android.view.View.OnTouchListener {
+    constructor() {
+        return global.__native(this);
+    }
 
-// function onIdPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-//     let view = <View>data.object;
-//     view._nativeView.setTag(data.newValue + "");
-// }
-// (<proxy.PropertyMetadata>viewCommon.View.idProperty.metadata).onSetNativeValue = onIdPropertyChanged;
+    onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
+        return true;
+    }
+}
 
-// function onOriginXPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-//     org.nativescript.widgets.OriginPoint.setX((<View>data.object)._nativeView, data.newValue);
-// }
-// (<proxy.PropertyMetadata>viewCommon.View.originXProperty.metadata).onSetNativeValue = onOriginXPropertyChanged;
+@Interfaces([android.view.View.OnTouchListener])
+class TouchListener implements android.view.View.OnTouchListener {
+    constructor(private owner: WeakRef<View>) {
+        return global.__native(this);
+    }
 
-// function onOriginYPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-//     org.nativescript.widgets.OriginPoint.setY((<View>data.object)._nativeView, data.newValue);
-// }
-// (<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginYPropertyChanged;
+    onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
+        let owner = this.owner.get();
+        if (!owner) {
+            return false;
+        }
 
-// function onIsEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-//     let view = <View>data.object;
-//     view._nativeView.setEnabled(data.newValue);
-// }
-// (<proxy.PropertyMetadata>viewCommon.View.isEnabledProperty.metadata).onSetNativeValue = onIsEnabledPropertyChanged;
+        for (let type in owner._gestureObservers) {
+            let list = owner._gestureObservers[type];
+            for (let i = 0; i < list.length; i++) {
+                list[i].androidOnTouchEvent(event);
+            }
+        }
 
-// function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-//     let view = <View>data.object;
-//     view._updateOnTouchListener(data.newValue);
-// }
-// (<proxy.PropertyMetadata>viewCommon.View.isUserInteractionEnabledProperty.metadata).onSetNativeValue = onIsUserInteractionEnabledPropertyChanged;
+        let nativeView = owner._nativeView;
+        if (!nativeView || !nativeView.onTouchEvent) {
+            return false;
+        }
 
-// let styleHandlersInitialized: boolean;
+        return nativeView.onTouchEvent(event);
+    }
+}
+
+const disableUserInteractionListener = new DisableUserInteractionListener();
 
 export class View extends ViewCommon {
+    private touchListenerIsSet: boolean;
+    private touchListener: android.view.View.OnTouchListener;
+    private _gesturesListener: android.view.View.OnTouchListener;
+
     public nativeView: android.view.View;
 
-    // TODO: Move this into widgets as helper method.
-    private _disableUserInteractionListener: android.view.View.OnTouchListener = new android.view.View.OnTouchListener({
-        onTouch: function (view: android.view.View, event: android.view.MotionEvent) {
-            return true;
-        }
-    });
-
-    // constructor() {
-    //     super();
-    //     if (!styleHandlersInitialized) {
-    //         styleHandlersInitialized = true;
-    //         ViewStyler.registerHandlers();
-    //     }
-    // }
-
-    public _updateOnTouchListener(isUserInteractionEnabled: boolean) {
-        // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-        this._nativeView.setOnTouchListener(!isUserInteractionEnabled ? this._disableUserInteractionListener : this._gesturesListener);
-    }
-
-    private _gesturesListener: android.view.View.OnTouchListener;
-    set gesturesListener(value: android.view.View.OnTouchListener) {
-        this._gesturesListener = value;
-        this._updateOnTouchListener(this.isUserInteractionEnabled);
-    }
-
+    // TODO: Implement unobserve that detach the touchListener.
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         super.observe(type, callback, thisArg);
         if (this.isLoaded && !this.touchListenerIsSet) {
@@ -99,20 +78,16 @@ export class View extends ViewCommon {
         }
     }
 
-    private touchListenerIsSet: boolean;
-
     public onLoaded() {
         super.onLoaded();
         this.setOnTouchListener();
     }
 
     public onUnloaded() {
-        super.onUnloaded();
+        this._nativeView.setOnTouchListener(null);
+        this.touchListenerIsSet = false;
         this._unregisterAllAnimations();
-        if (this._nativeView && this._nativeView.setOnTouchListener) {
-            this._nativeView.setOnTouchListener(null);
-            this.touchListenerIsSet = false;
-        }
+        super.onUnloaded();
     }
 
     private hasGestureObservers() {
@@ -120,33 +95,14 @@ export class View extends ViewCommon {
     }
 
     private setOnTouchListener() {
-        if (this._nativeView && this._nativeView.setOnTouchListener && this.hasGestureObservers()) {
+        if (this._nativeView && this.hasGestureObservers()) {
             this.touchListenerIsSet = true;
-            let that = new WeakRef(this);
             if (this._nativeView.setClickable) {
                 this._nativeView.setClickable(true);
             }
-            this._nativeView.setOnTouchListener(new android.view.View.OnTouchListener({
-                onTouch: function (view: android.view.View, motionEvent: android.view.MotionEvent) {
-                    let owner = that.get();
-                    if (!owner) {
-                        return false;
-                    }
 
-                    for (let type in owner._gestureObservers) {
-                        let list = owner._gestureObservers[type];
-                        for (let i = 0; i < list.length; i++) {
-                            list[i].androidOnTouchEvent(motionEvent);
-                        }
-                    }
-
-                    if (!owner._nativeView || !owner._nativeView.onTouchEvent) {
-                        return false;
-                    }
-
-                    return owner._nativeView.onTouchEvent(motionEvent);
-                }
-            }));
+            let touchListener = this.touchListener || new TouchListener(new WeakRef(this));
+            this._nativeView.setOnTouchListener(touchListener);
         }
     }
 
@@ -170,8 +126,8 @@ export class View extends ViewCommon {
             throw new Error("Expected valid android.content.Context instance.");
         }
 
-        if (trace.enabled) {
-            trace.write(`${this}._onAttached(context)`, trace.categories.VisualTreeEvents);
+        if (traceEnabled) {
+            traceWrite(`${this}._onAttached(context)`, traceCategories.VisualTreeEvents);
         }
         if (this._context === context) {
             return;
@@ -184,7 +140,9 @@ export class View extends ViewCommon {
         this._context = context;
         this._onContextChanged();
 
-        trace.notifyEvent(this, "_onAttached");
+        if (traceEnabled) {
+            traceNotifyEvent(this, "_onAttached");
+        }
 
         if (this._childrenCount > 0) {
             // Notify each child for the _onAttached event
@@ -206,8 +164,8 @@ export class View extends ViewCommon {
     }
 
     public _onDetached(force?: boolean) {
-        if (trace.enabled) {
-            trace.write(`${this}._onDetached(force)`, trace.categories.VisualTreeEvents);
+        if (traceEnabled) {
+            traceWrite(`${this}._onDetached(force)`, traceCategories.VisualTreeEvents);
         }
 
         if (this._childrenCount > 0) {
@@ -227,8 +185,9 @@ export class View extends ViewCommon {
 
         this._clearAndroidReference();
         this._context = undefined;
-
-        trace.notifyEvent(this, "_onDetached");
+        if (traceEnabled) {
+            traceNotifyEvent(this, "_onDetached");
+        }
     }
 
     // TODO: revise this method
@@ -248,8 +207,8 @@ export class View extends ViewCommon {
     }
 
     public _onContextChanged() {
-        if (trace.enabled) {
-            trace.write(`${this}._onContextChanged`, trace.categories.VisualTreeEvents);
+        if (traceEnabled) {
+            traceWrite(`${this}._onContextChanged`, traceCategories.VisualTreeEvents);
         }
         this._createUI();
         // Ensure layout params
@@ -257,7 +216,9 @@ export class View extends ViewCommon {
             this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
         }
 
-        trace.notifyEvent(this, "_onContextChanged");
+        if (traceEnabled) {
+            traceNotifyEvent(this, "_onContextChanged");
+        }
     }
 
     get _nativeView(): android.view.View {
@@ -359,8 +320,8 @@ export class View extends ViewCommon {
         let nativeArray = (<any>Array).create("int", 2);
         this._nativeView.getLocationInWindow(nativeArray);
         return {
-            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
-            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+            x: layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: layout.toDeviceIndependentPixels(nativeArray[1]),
         }
     }
 
@@ -372,8 +333,8 @@ export class View extends ViewCommon {
         let nativeArray = (<any>Array).create("int", 2);
         this._nativeView.getLocationOnScreen(nativeArray);
         return {
-            x: utils.layout.toDeviceIndependentPixels(nativeArray[0]),
-            y: utils.layout.toDeviceIndependentPixels(nativeArray[1]),
+            x: layout.toDeviceIndependentPixels(nativeArray[0]),
+            y: layout.toDeviceIndependentPixels(nativeArray[1]),
         }
     }
 
@@ -389,30 +350,30 @@ export class View extends ViewCommon {
         let otherArray = (<any>Array).create("int", 2);
         otherView._nativeView.getLocationOnScreen(otherArray);
         return {
-            x: utils.layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
-            y: utils.layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
+            x: layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
+            y: layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
         }
     }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
         let result = size;
         switch (specMode) {
-            case utils.layout.UNSPECIFIED:
+            case layout.UNSPECIFIED:
                 result = size;
                 break;
 
-            case utils.layout.AT_MOST:
+            case layout.AT_MOST:
                 if (specSize < size) {
-                    result = specSize | utils.layout.MEASURED_STATE_TOO_SMALL;
+                    result = specSize | layout.MEASURED_STATE_TOO_SMALL;
                 }
                 break;
 
-            case utils.layout.EXACTLY:
+            case layout.EXACTLY:
                 result = specSize;
                 break;
         }
 
-        return result | (childMeasuredState & utils.layout.MEASURED_STATE_MASK);
+        return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
     get [isEnabledProperty.native](): boolean {
@@ -447,38 +408,35 @@ export class View extends ViewCommon {
         return true;
     }
     set [isUserInteractionEnabledProperty.native](value: boolean) {
-        this._updateOnTouchListener(value);
+        if (!value) {
+            // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
+            this._nativeView.setOnTouchListener(disableUserInteractionListener);
+        } else {
+            this.setOnTouchListener();
+        }
     }
 
-    // TODO: Do we need to use setTag??
-    // get [idProperty.native](): string {
-    //     return this.nativeView.getTag();
-    // }
-    // set [idProperty.native](value: string) {
-    //     this.nativeView.setTag(value);
-    // }
-
-    get [visibilityProperty.native](): string {
+    get [visibilityProperty.native](): "visible" | "hidden" | "collapse" {
         let visibility = this.nativeView.getVisibility();
         if (visibility === android.view.View.VISIBLE) {
-            return Visibility.visible;
+            return "visible";
         }
         else if (visibility === android.view.View.INVISIBLE) {
-            return Visibility.collapse;
+            return "hidden";
         }
         else {
-            return Visibility.collapse;
+            return "collapse";
         }
     }
     set [visibilityProperty.native](value: string) {
-        if (value === Visibility.visible) {
+        if (value === "visible") {
             this.nativeView.setVisibility(android.view.View.VISIBLE);
         }
-        else if (value === Visibility.collapse || value === Visibility.collapsed) {
-            this.nativeView.setVisibility(android.view.View.GONE);
+        else if (value === "hidden") {
+            this.nativeView.setVisibility(android.view.View.INVISIBLE);
         }
         else {
-            this.nativeView.setVisibility(android.view.View.INVISIBLE);
+            this.nativeView.setVisibility(android.view.View.GONE);
         }
     }
 
@@ -489,22 +447,24 @@ export class View extends ViewCommon {
         this.nativeView.setAlpha(value);
     }
 
-    get [minWidthProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getMinWidth(this.nativeView) / utils.layout.getDisplayDensity();
+    get [minWidthProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMinWidth(this.nativeView), unit: "px" };
     }
-    set [minWidthProperty.native](value: number) {
-        org.nativescript.widgets.ViewHelper.setMinWidth(this.nativeView, value * utils.layout.getDisplayDensity());
-    }
-
-    get [minHeightProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getMinHeight(this.nativeView) / utils.layout.getDisplayDensity();
-    }
-    set [minHeightProperty.native](value: number) {
-        org.nativescript.widgets.ViewHelper.setMinHeight(this.nativeView, value * utils.layout.getDisplayDensity());
+    set [minWidthProperty.native](value: Length) {
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
+        org.nativescript.widgets.ViewHelper.setMinWidth(this.nativeView, value.value * density);
     }
 
-    get [widthProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getWidth(this.nativeView) / utils.layout.getDisplayDensity();
+    get [minHeightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMinHeight(this.nativeView), unit: "px" };
+    }
+    set [minHeightProperty.native](value: Length) {
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
+        org.nativescript.widgets.ViewHelper.setMinHeight(this.nativeView, value.value * density);
+    }
+
+    get [widthProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getWidth(this.nativeView), unit: "px" };
     }
     set [widthProperty.native](value: Length) {
         let type = value.unit;
@@ -513,12 +473,12 @@ export class View extends ViewCommon {
         } else if (type === "px") {
             org.nativescript.widgets.ViewHelper.setWidth(this.nativeView, value.value);
         } else {
-            org.nativescript.widgets.ViewHelper.setWidth(this.nativeView, value.value * utils.layout.getDisplayDensity());
+            org.nativescript.widgets.ViewHelper.setWidth(this.nativeView, value.value * layout.getDisplayDensity());
         }
     }
 
-    get [heightProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getHeight(this.nativeView) / utils.layout.getDisplayDensity();
+    get [heightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getHeight(this.nativeView), unit: "px" };
     }
     set [heightProperty.native](value: Length) {
         let type = value.unit;
@@ -527,12 +487,12 @@ export class View extends ViewCommon {
         } else if (type === "px") {
             org.nativescript.widgets.ViewHelper.setHeight(this.nativeView, value.value);
         } else {
-            org.nativescript.widgets.ViewHelper.setHeight(this.nativeView, value.value * utils.layout.getDisplayDensity());
+            org.nativescript.widgets.ViewHelper.setHeight(this.nativeView, value.value * layout.getDisplayDensity());
         }
     }
 
-    get [marginLeftProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getMarginLeft(this.nativeView) / utils.layout.getDisplayDensity();
+    get [marginLeftProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginLeft(this.nativeView), unit: "px" };
     }
     set [marginLeftProperty.native](value: Length) {
         let type = value.unit;
@@ -541,12 +501,12 @@ export class View extends ViewCommon {
         } else if (type === "px") {
             org.nativescript.widgets.ViewHelper.setMarginLeft(this.nativeView, value.value);
         } else {
-            org.nativescript.widgets.ViewHelper.setMarginLeft(this.nativeView, value.value * utils.layout.getDisplayDensity());
+            org.nativescript.widgets.ViewHelper.setMarginLeft(this.nativeView, value.value * layout.getDisplayDensity());
         }
     }
 
-    get [marginTopProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getMarginTop(this.nativeView) / utils.layout.getDisplayDensity();
+    get [marginTopProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginTop(this.nativeView), unit: "px" };
     }
     set [marginTopProperty.native](value: Length) {
         let type = value.unit;
@@ -555,12 +515,12 @@ export class View extends ViewCommon {
         } else if (type === "px") {
             org.nativescript.widgets.ViewHelper.setMarginTop(this.nativeView, value.value);
         } else {
-            org.nativescript.widgets.ViewHelper.setMarginTop(this.nativeView, value.value * utils.layout.getDisplayDensity());
+            org.nativescript.widgets.ViewHelper.setMarginTop(this.nativeView, value.value * layout.getDisplayDensity());
         }
     }
 
-    get [marginRightProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getMarginRight(this.nativeView) / utils.layout.getDisplayDensity();
+    get [marginRightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginRight(this.nativeView), unit: "px" };
     }
     set [marginRightProperty.native](value: Length) {
         let type = value.unit;
@@ -569,12 +529,12 @@ export class View extends ViewCommon {
         } else if (type === "px") {
             org.nativescript.widgets.ViewHelper.setMarginRight(this.nativeView, value.value);
         } else {
-            org.nativescript.widgets.ViewHelper.setMarginRight(this.nativeView, value.value * utils.layout.getDisplayDensity());
+            org.nativescript.widgets.ViewHelper.setMarginRight(this.nativeView, value.value * layout.getDisplayDensity());
         }
     }
 
-    get [marginBottomProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getMarginBottom(this.nativeView) / utils.layout.getDisplayDensity();
+    get [marginBottomProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginBottom(this.nativeView), unit: "px" };
     }
     set [marginBottomProperty.native](value: Length) {
         let type = value.unit;
@@ -583,7 +543,7 @@ export class View extends ViewCommon {
         } else if (type === "px") {
             org.nativescript.widgets.ViewHelper.setMarginBottom(this.nativeView, value.value);
         } else {
-            org.nativescript.widgets.ViewHelper.setMarginBottom(this.nativeView, value.value * utils.layout.getDisplayDensity());
+            org.nativescript.widgets.ViewHelper.setMarginBottom(this.nativeView, value.value * layout.getDisplayDensity());
         }
     }
 
@@ -601,52 +561,35 @@ export class View extends ViewCommon {
         org.nativescript.widgets.ViewHelper.setVerticalAlignment(this.nativeView, value);
     }
 
-    // get [paddingProperty.native](): style.Thickness {
-    //     let paddings = org.nativescript.widgets.ViewHelper.getPadding(this.nativeView);
-    //     return {
-    //         left: paddings.left / utils.layout.getDisplayDensity(),
-    //         top: paddings.top / utils.layout.getDisplayDensity(),
-    //         right: paddings.right / utils.layout.getDisplayDensity(),
-    //         bottom: paddings.bottom / utils.layout.getDisplayDensity()
-    //     };
-    // }
-    // set [style.paddingProperty.native](value: style.Thickness) {
-    //     org.nativescript.widgets.ViewHelper.setPadding(this.nativeView,
-    //         value.left * utils.layout.getDisplayDensity(),
-    //         value.top * utils.layout.getDisplayDensity(),
-    //         value.right * utils.layout.getDisplayDensity(),
-    //         value.bottom * utils.layout.getDisplayDensity());
-    // }
-
-    get [paddingLeftProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView) / utils.layout.getDisplayDensity();
+    get [paddingLeftProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView), unit: "px" };
     }
     set [paddingLeftProperty.native](value: Length) {
-        let density = value.unit === "dip" ? utils.layout.getDisplayDensity() : 1;
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, value.value * density);
     }
 
-    get [paddingTopProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView) / utils.layout.getDisplayDensity();
+    get [paddingTopProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView), unit: "px" };
     }
     set [paddingTopProperty.native](value: Length) {
-        let density = value.unit === "dip" ? utils.layout.getDisplayDensity() : 1;
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, value.value * density);
     }
 
-    get [paddingRightProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView) / utils.layout.getDisplayDensity();
+    get [paddingRightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView), unit: "px" };
     }
     set [paddingRightProperty.native](value: Length) {
-        let density = value.unit === "dip" ? utils.layout.getDisplayDensity() : 1;
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, value.value * density);
     }
 
-    get [paddingBottomProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView) / utils.layout.getDisplayDensity();
+    get [paddingBottomProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView), unit: "px" };
     }
     set [paddingBottomProperty.native](value: Length) {
-        let density = value.unit === "dip" ? utils.layout.getDisplayDensity() : 1;
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, value.value * density);
     }
 
@@ -695,6 +638,18 @@ export class View extends ViewCommon {
         //     nativeView.setStateListAnimator(null);
         // }
     }
+
+    get [backgroundInternalProperty.native](): android.graphics.drawable.Drawable {
+        return this.nativeView.getBackground();
+    }
+    set [backgroundInternalProperty.native](value: android.graphics.drawable.Drawable | Background) {
+        if (value instanceof android.graphics.drawable.Drawable) {
+            this.nativeView.setBackground(value);
+        } else {
+            ad.onBackgroundOrBorderPropertyChanged(this);
+        }
+
+    }
 }
 
 // export class ViewStyler implements style.Styler {
@@ -728,7 +683,7 @@ export class View extends ViewCommon {
 
 //     // minWidth methods
 //     private static setMinWidthProperty(view: View, newValue: any) {
-//         (<android.view.View>view._nativeView).setMinimumWidth(Math.round(newValue * utils.layout.getDisplayDensity()));
+//         (<android.view.View>view._nativeView).setMinimumWidth(Math.round(newValue * layout.getDisplayDensity()));
 //     }
 
 //     private static resetMinWidthProperty(view: View, nativeValue: any) {
@@ -737,7 +692,7 @@ export class View extends ViewCommon {
 
 //     // minHeight methods
 //     private static setMinHeightProperty(view: View, newValue: any) {
-//         (<android.view.View>view._nativeView).setMinimumHeight(Math.round(newValue * utils.layout.getDisplayDensity()));
+//         (<android.view.View>view._nativeView).setMinimumHeight(Math.round(newValue * layout.getDisplayDensity()));
 //     }
 
 //     private static resetMinHeightProperty(view: View, nativeValue: any) {
@@ -747,8 +702,8 @@ export class View extends ViewCommon {
 //     private static setNativeLayoutParamsProperty(view: View, params: CommonLayoutParams): void {
 //         let nativeView: android.view.View = view._nativeView;
 
-//         let width = params.width * utils.layout.getDisplayDensity();
-//         let height = params.height * utils.layout.getDisplayDensity();
+//         let width = params.width * layout.getDisplayDensity();
+//         let height = params.height * layout.getDisplayDensity();
 
 //         // If width is not specified set it as WRAP_CONTENT
 //         if (width < 0) {
@@ -823,10 +778,10 @@ export class View extends ViewCommon {
 //             lp.topMarginPercent = params.topMarginPercent;
 //             lp.rightMarginPercent = params.rightMarginPercent;
 //             lp.bottomMarginPercent = params.bottomMarginPercent;
-//             lp.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
-//             lp.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
-//             lp.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
-//             lp.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+//             lp.leftMargin = Math.round(params.leftMargin * layout.getDisplayDensity());
+//             lp.topMargin = Math.round(params.topMargin * layout.getDisplayDensity());
+//             lp.rightMargin = Math.round(params.rightMargin * layout.getDisplayDensity());
+//             lp.bottomMargin = Math.round(params.bottomMargin * layout.getDisplayDensity());
 //             lp.gravity = gravity;
 //	           if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
 //                if (!flexbox) {
@@ -862,19 +817,19 @@ export class View extends ViewCommon {
 //             }
 
 //             if (types.isDefined(layoutParams.leftMargin)) {
-//                 layoutParams.leftMargin = Math.round(params.leftMargin * utils.layout.getDisplayDensity());
+//                 layoutParams.leftMargin = Math.round(params.leftMargin * layout.getDisplayDensity());
 //             }
 
 //             if (types.isDefined(layoutParams.topMargin)) {
-//                 layoutParams.topMargin = Math.round(params.topMargin * utils.layout.getDisplayDensity());
+//                 layoutParams.topMargin = Math.round(params.topMargin * layout.getDisplayDensity());
 //             }
 
 //             if (types.isDefined(layoutParams.rightMargin)) {
-//                 layoutParams.rightMargin = Math.round(params.rightMargin * utils.layout.getDisplayDensity());
+//                 layoutParams.rightMargin = Math.round(params.rightMargin * layout.getDisplayDensity());
 //             }
 
 //             if (types.isDefined(layoutParams.bottomMargin)) {
-//                 layoutParams.bottomMargin = Math.round(params.bottomMargin * utils.layout.getDisplayDensity());
+//                 layoutParams.bottomMargin = Math.round(params.bottomMargin * layout.getDisplayDensity());
 //             }
 
 //             if (types.isDefined(layoutParams.gravity)) {
@@ -890,28 +845,28 @@ export class View extends ViewCommon {
 //     }
 
 //     private static getNativePaddingLeft(view: View): number {
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         return view._nativeView.getPaddingLeft() / density;
 //     }
 
 //     private static getNativePaddingTop(view: View): number {
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         return view._nativeView.getPaddingTop() / density;
 //     }
 
 //     private static getNativePaddingRight(view: View): number {
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         return view._nativeView.getPaddingRight() / density;
 //     }
 
 //     private static getNativePaddingBottom(view: View): number {
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         return view._nativeView.getPaddingBottom() / density;
 //     }
 
 //     private static setNativePaddingLeft(view: View, value: number): void {
 //         let nativeView = view._nativeView;
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         let left = (value + view.borderWidth) * density;
 //         let top = nativeView.getPaddingTop();
 //         let right = nativeView.getPaddingRight();
@@ -921,7 +876,7 @@ export class View extends ViewCommon {
 
 //     private static setNativePaddingTop(view: View, value: number): void {
 //         let nativeView = view._nativeView;
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         let left = nativeView.getPaddingLeft();
 //         let top = (value + view.borderWidth) * density;
 //         let right = nativeView.getPaddingRight();
@@ -931,7 +886,7 @@ export class View extends ViewCommon {
 
 //     private static setNativePaddingRight(view: View, value: number): void {
 //         let nativeView = view._nativeView;
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         let left = nativeView.getPaddingLeft();
 //         let top = nativeView.getPaddingTop();
 //         let right = (value + view.borderWidth) * density;
@@ -941,7 +896,7 @@ export class View extends ViewCommon {
 
 //     private static setNativePaddingBottom(view: View, value: number): void {
 //         let nativeView = view._nativeView;
-//         let density = utils.layout.getDisplayDensity();
+//         let density = layout.getDisplayDensity();
 //         let left = nativeView.getPaddingLeft();
 //         let top = nativeView.getPaddingTop();
 //         let right = nativeView.getPaddingRight();
@@ -978,7 +933,7 @@ export class View extends ViewCommon {
 
 //     // TranslateX
 //     private static setTranslateXProperty(view: View, newValue: any) {
-//         view._nativeView.setTranslationX(newValue * utils.layout.getDisplayDensity());
+//         view._nativeView.setTranslationX(newValue * layout.getDisplayDensity());
 //     }
 
 //     private static resetTranslateXProperty(view: View, nativeValue: any) {
@@ -987,7 +942,7 @@ export class View extends ViewCommon {
 
 //     // TranslateY
 //     private static setTranslateYProperty(view: View, newValue: any) {
-//         view._nativeView.setTranslationY(newValue * utils.layout.getDisplayDensity());
+//         view._nativeView.setTranslationY(newValue * layout.getDisplayDensity());
 //     }
 
 //     private static resetTranslateYProperty(view: View, nativeValue: any) {
@@ -1115,22 +1070,14 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
     }
 
-    public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex: number = -1): boolean {
         super._addViewToNativeVisualTree(child);
 
-        if (this._nativeView && child._nativeView) {
-            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
-                if (trace.enabled) {
-                    trace.write(`${this}._nativeView.addView(${child}._nativeView)`, trace.categories.VisualTreeEvents);
-                }
-                this._nativeView.addView(child._nativeView);
+        if (this.nativeView && child.nativeView) {
+            if (traceEnabled) {
+                traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
             }
-            else {
-                if (trace.enabled) {
-                    trace.write(`${this}._nativeView.addView(${child}._nativeView, ${atIndex})`, trace.categories.VisualTreeEvents);
-                }
-                this._nativeView.addView(child._nativeView, atIndex);
-            }
+            this._nativeView.addView(child._nativeView, atIndex);
             return true;
         }
 
@@ -1141,11 +1088,11 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         super._removeViewFromNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {
-            if (trace.enabled) {
-                trace.write(`${this}._nativeView.removeView(${child}._nativeView)`, trace.categories.VisualTreeEvents);
-            }
             this._nativeView.removeView(child._nativeView);
-            trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
+            if (traceEnabled) {
+                traceWrite(`${this}._nativeView.removeView(${child}._nativeView)`, traceCategories.VisualTreeEvents);
+                traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
+            }
         }
     }
 }

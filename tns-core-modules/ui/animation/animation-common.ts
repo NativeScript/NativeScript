@@ -1,11 +1,13 @@
-﻿import {CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
-        AnimationPromise as AnimationPromiseDefinition,
-        Animation as AnimationBaseDefinition,
-        AnimationDefinition,
-        Pair} from "ui/animation";
-import {View} from "ui/core/view";
-import {Color} from "color";
-import {isDefined, isNumber, isString} from "utils/types";
+﻿import {
+    CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
+    AnimationPromise as AnimationPromiseDefinition,
+    Animation as AnimationBaseDefinition,
+    AnimationDefinition,
+    Pair
+} from "ui/animation";
+import { View } from "ui/core/view";
+import { Color } from "color";
+import { isDefined, isNumber, isString } from "utils/types";
 import * as trace from "trace";
 
 export module Properties {
@@ -64,8 +66,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         if (trace.enabled) {
             trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
         }
-        
-        this._propertyAnimations = new Array<PropertyAnimation>();        
+
+        this._propertyAnimations = new Array<PropertyAnimation>();
         for (let i = 0, length = animationDefinitions.length; i < length; i++) {
             animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
             this._propertyAnimations = this._propertyAnimations.concat(AnimationBase._createPropertyAnimations(animationDefinitions[i]));
@@ -108,13 +110,13 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             _this.cancel();
         };
         var _then = promise.then;
-        promise.then = function() {
+        promise.then = function () {
             var r = _then.apply(promise, arguments);
             _this.fixupAnimationPromise(r);
             return r;
         };
         var _catch = promise.catch;
-        promise.catch = function() {
+        promise.catch = function () {
             var r = _catch.apply(promise, arguments);
             _this.fixupAnimationPromise(r);
             return r;
@@ -187,7 +189,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             propertyAnimations.push({
                 target: animationDefinition.target,
                 property: Properties.backgroundColor,
-                value: isString(animationDefinition.backgroundColor) ? 
+                value: isString(animationDefinition.backgroundColor) ?
                     new Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
                 duration: animationDefinition.duration,
                 delay: animationDefinition.delay,

@@ -1,7 +1,8 @@
 ﻿declare module "ui/text-base" {
     import { View, AddChildFromBuilder } from "ui/core/view";
     import { FormattedString, FormattedStringView } from "text/formatted-string";
-    import { Property } from "ui/core/properties";
+    import { Property, CssProperty, InheritedCssProperty } from "ui/core/properties";
+    import { Style } from "ui/styling/style";
 
     /**
      * Represents the base class for all text views.
@@ -13,9 +14,9 @@
         text: string;
 
         /**
-         * Gets or sets text-alignment style property.
+         * Gets or sets a formatted string.
          */
-        textAlignment: string;
+        formattedText: FormattedString;
 
         /**
          * Gets or sets font-size style property.
@@ -23,9 +24,29 @@
         fontSize: number;
 
         /**
-         * Gets or sets a formatted string.
+         * Gets or sets letterSpace style property.
          */
-        formattedText: FormattedString;
+        letterSpacing: number;
+
+        /**
+         * Gets or sets text-alignment style property.
+         */
+        textAlignment: "left" | "center" | "right";
+
+        /**
+         * Gets or sets text decorations style property.
+         */
+        textDecoration: "none" | "underline" | "lineThrough";
+
+        /**
+         * Gets or sets text transform style property.
+         */
+        textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
+
+        /**
+         * Gets or sets white space style property.
+         */
+        whiteSpace: "normal" | "nowrap";
 
         /**
          * Called for every child element declared in xml.
@@ -48,4 +69,10 @@
 
     export let textProperty: Property<TextBase, string>;
     export let formattedTextProperty: Property<TextBase, FormattedString>;
+
+    export let textAlignmentProperty: InheritedCssProperty<Style, string>;
+    export let textDecorationProperty: CssProperty<Style, string>;
+    export let textTransformProperty: CssProperty<Style, string>;
+    export let whiteSpaceProperty: CssProperty<Style, string>;
+    export let letterSpacingProperty: CssProperty<Style, number>;
 }
