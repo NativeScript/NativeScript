@@ -29,5 +29,5 @@ export function listViewItemTap(args: ListViewItemEventData) {
 
 export function listViewLoadMoreItems(args: ObservableEventData) {
     // Increase model items length with model items loadSize property value
-    appViewModel.redditItems.length += appViewModel.redditItems.loadSize;
+    //appViewModel.redditItems.length += appViewModel.redditItems.loadSize;
 }
