@@ -125,7 +125,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         // Omit: super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         if (this._isOrderChangedFromLastMeasurement) {
-            this._reorderedIndices = this._createReorderedIndices();
+            this._reorderedIndices = this._createReorderedIndices1();
         }
         if (!this._childrenFrozen || this._childrenFrozen.length < this.getChildrenCount()) {
             this._childrenFrozen = new Array(this.getChildrenCount());
@@ -160,46 +160,42 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     public addChild(child: View) {
         let index = this.getChildrenCount(); // Goes last
-        this._reorderedIndices = this._createReorderedIndices(child, index, FlexboxLayout.getLayoutParams(child));
+        this._reorderedIndices = this._createReorderedIndices2(child, index);
         super.addChild(child);
     }
 
     public insertChild(child: View, index: number): void {
-        this._reorderedIndices = this._createReorderedIndices(child, index, FlexboxLayout.getLayoutParams(child));
+        this._reorderedIndices = this._createReorderedIndices2(child, index);
         super.addChild(child);
     }
 
-    private _createReorderedIndices(viewBeforeAdded: View, indexForViewBeforeAdded: number, paramsForViewBeforeAdded: FlexboxLayout.LayoutParams): number[];
-    private _createReorderedIndices(): number[];
-    private _createReorderedIndices(viewBeforeAdded?: View, indexForViewBeforeAdded?: number, paramsForViewBeforeAdded?: FlexboxLayout.LayoutParams) {
-        if (arguments.length === 0) {
-            let childCount = this.getChildrenCount();
-            let orders = this._createOrders(childCount);
-            return this._sortOrdersIntoReorderedIndices(childCount, orders);
+    
+    private _createReorderedIndices1(): number[] {
+        let childCount = this.getChildrenCount();
+        let orders = this._createOrders(childCount);
+        return this._sortOrdersIntoReorderedIndices(childCount, orders);
+    }
+
+    private _createReorderedIndices2(viewBeforeAdded: View, indexForViewBeforeAdded: number): number[] {
+        let childCount: number = this.getChildrenCount();
+        let orders = this._createOrders(childCount);
+        let orderForViewToBeAdded = new Order();
+
+        orderForViewToBeAdded.order = FlexboxLayout.getOrder(viewBeforeAdded);
+
+        if (indexForViewBeforeAdded === -1 || indexForViewBeforeAdded === childCount) {
+            orderForViewToBeAdded.index = childCount;
+        } else if (indexForViewBeforeAdded) {
+            orderForViewToBeAdded.index = indexForViewBeforeAdded;
+            for (let i = indexForViewBeforeAdded; i < childCount; i++) {
+                orders[i].index++;
+            }
         } else {
-            let childCount: number = this.getChildrenCount();
-            let orders = this._createOrders(childCount);
-            let orderForViewToBeAdded = new Order();
-            if (viewBeforeAdded !== null) {
-                orderForViewToBeAdded.order = paramsForViewBeforeAdded.order;
-            } else {
-                orderForViewToBeAdded.order = 1 /* Default order */;
-            }
-
-            if (indexForViewBeforeAdded === -1 || indexForViewBeforeAdded === childCount) {
-                orderForViewToBeAdded.index = childCount;
-            } else if (indexForViewBeforeAdded) {
-                orderForViewToBeAdded.index = indexForViewBeforeAdded;
-                for (let i = indexForViewBeforeAdded; i < childCount; i++) {
-                    orders[i].index++;
-                }
-            } else {
-                orderForViewToBeAdded.index = childCount;
-            }
-            orders.push(orderForViewToBeAdded);
-
-            return this._sortOrdersIntoReorderedIndices(childCount + 1, orders);
+            orderForViewToBeAdded.index = childCount;
         }
+        orders.push(orderForViewToBeAdded);
+
+        return this._sortOrdersIntoReorderedIndices(childCount + 1, orders);
     }
 
     private _sortOrdersIntoReorderedIndices(childCount: number, orders: Order[]): number[] {
