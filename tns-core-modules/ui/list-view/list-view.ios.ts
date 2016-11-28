@@ -214,8 +214,8 @@ export class ListView extends common.ListView {
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
-    private _preparingCell: boolean = false;
-    private _isDataDirty: boolean = false;
+    private _preparingCell: boolean;
+    private _isDataDirty: boolean;
     private _map: Map<ListViewCell, view.View>;
     public _rowHeight: number = -1;
     widthMeasureSpec: number = 0;
@@ -233,7 +233,7 @@ export class ListView extends common.ListView {
         this._map = new Map<ListViewCell, view.View>();
     }
 
-    public _onItemTemplatesPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+    protected _onItemTemplatesPropertyChanged(data: dependencyObservable.PropertyChangeData) {
         this._itemTemplatesInternal = new Array<view.KeyedTemplate>(this._defaultTemplate); 
         if (data.newValue) {
             for(let i = 0, length = data.newValue.length; i < length; i++){
@@ -304,16 +304,16 @@ export class ListView extends common.ListView {
         this._heights[index] = value;
     }
 
-    public _onRowHeightPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        this._rowHeight = data.newValue;
-        if (data.newValue < 0) {
+    public _onRowHeightPropertyChanged(oldValue: number, newValue: number) {
+        this._rowHeight = newValue;
+        if (newValue < 0) {
             this._nativeView.rowHeight = UITableViewAutomaticDimension;
             this._nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
             this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         }
         else {
-            this._nativeView.rowHeight = data.newValue;
-            this._nativeView.estimatedRowHeight = data.newValue;
+            this._nativeView.rowHeight = newValue;
+            this._nativeView.estimatedRowHeight = newValue;
             this._delegate = UITableViewRowHeightDelegateImpl.initWithOwner(new WeakRef(this));
         }
 
@@ -321,7 +321,7 @@ export class ListView extends common.ListView {
             this._nativeView.delegate = this._delegate;
         }
 
-        super._onRowHeightPropertyChanged(data);
+        super._onRowHeightPropertyChanged(oldValue, newValue);
     }
 
     public requestLayout(): void {

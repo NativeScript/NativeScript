@@ -330,6 +330,11 @@ declare module "ui/core/view" {
         cssPseudoClasses: Set<string>;
 
         /**
+         * Gets the parent view. This property is read-only.
+         */
+        public parent: View;
+
+        /**
          * Gets owner page. This is a read-only property.
          */
         page: View;
@@ -776,7 +781,7 @@ declare module "ui/core/view" {
     export const fontFamilyProperty: InheritedCssProperty<Style, string>;
     export const fontStyleProperty: InheritedCssProperty<Style, string>;
     export const fontWeightProperty: InheritedCssProperty<Style, string>;
-    
+
     export const backgroundInternalProperty: CssProperty<Style, Background>;
     export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 }

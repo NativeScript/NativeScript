@@ -1,50 +1,41 @@
-﻿import observable = require("data/observable");
-import common = require("./list-view-common");
-import viewModule = require("ui/core/view");
-import stackLayout = require("ui/layouts/stack-layout");
-import proxy = require("ui/core/proxy");
-import dependencyObservable = require("ui/core/dependency-observable");
-import definition = require("ui/list-view");
-import {ProxyViewContainer} from "ui/proxy-view-container";
-import * as layoutBase from "ui/layouts/layout-base";
-import * as colorModule from "color";
-import { separatorColorProperty, registerHandler, Styler, StylePropertyChangedHandler } from "ui/styling/style";
+﻿import { ItemEventData, ItemsSource } from "ui/list-view";
+import { ListViewBase, separatorColor, itemTemplatesProperty } from "./list-view-common";
+import { View, KeyedTemplate } from "ui/core/view";
+import { Property } from "ui/core/properties";
+import { unsetValue } from "ui/core/dependency-observable";
+import { Observable } from "data/observable";
+import { StackLayout } from "ui/layouts/stack-layout";
+import { ProxyViewContainer } from "ui/proxy-view-container";
+import { LayoutBase } from "ui/layouts/layout-base";
+import { Color } from "color";
 
-let color: typeof colorModule;
-function ensureColor() {
-    if (!color) {
-        color = require("color");
+export * from "./list-view-common";
+
+let ITEMLOADING = ListViewBase.itemLoadingEvent;
+let LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
+let ITEMTAP = ListViewBase.itemTapEvent;
+
+@Interfaces([])
+class ItemClickListener implements android.widget.AdapterView.OnItemClickListener {
+    constructor(private owner: WeakRef<ListView>) {
+        return global.__native(this);
+    }
+
+    onItemClick<T extends android.widget.Adapter>(parent: android.widget.AdapterView<T>, convertView: android.view.View, index: number, id: number) {
+        let owner = this.owner.get();
+        if (owner) {
+            let view = owner._realizedTemplates.get(owner._getItemTemplate(index).key).get(convertView);
+            owner.notify({ eventName: ITEMTAP, object: owner, index: index, view: view });
+        }
     }
 }
 
-let ITEMLOADING = common.ListView.itemLoadingEvent;
-let LOADMOREITEMS = common.ListView.loadMoreItemsEvent;
-let ITEMTAP = common.ListView.itemTapEvent;
-
-global.moduleMerge(common, exports);
-
-function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    let listView = <ListView>data.object;
-    if (!listView.android) {
-        return;
-    }
-
-    ensureColor();
-
-    if (data.newValue instanceof color.Color) {
-        listView.android.setDivider(new android.graphics.drawable.ColorDrawable(data.newValue.android));
-        listView.android.setDividerHeight(1);
-    }
-}
-
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.ListView.separatorColorProperty.metadata).onSetNativeValue = onSeparatorColorPropertyChanged;
-
-export class ListView extends common.ListView {
+export class ListView extends ListViewBase {
     private _androidViewId: number = -1;
     private _android: android.widget.ListView;
-    public _realizedItems = new Map<android.view.View, viewModule.View>();    
-    public _realizedTemplates = new Map<string, Map<android.view.View, viewModule.View>>();
+    private _itemClickListener: android.widget.AdapterView.OnItemClickListener;
+    public _realizedItems = new Map<android.view.View, View>();
+    public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
     public _createUI() {
         this._android = new android.widget.ListView(this._context);
@@ -61,15 +52,8 @@ export class ListView extends common.ListView {
         this.android.setAdapter(new ListViewAdapterClass(this));
 
         let that = new WeakRef(this);
-        this.android.setOnItemClickListener(new android.widget.AdapterView.OnItemClickListener({
-            onItemClick: function (parent: any, convertView: android.view.View, index: number, id: number) {
-                let owner = that.get();
-                if (owner) {
-                    let view = owner._realizedTemplates.get(owner._getItemTemplate(index).key).get(convertView);
-                    owner.notify({ eventName: ITEMTAP, object: owner, index: index, view: view });
-                }
-            }
-        }));
+        this._itemClickListener = this._itemClickListener || new ItemClickListener(new WeakRef(this));
+        this.android.setOnItemClickListener(this._itemClickListener);
     }
 
     get android(): android.widget.ListView {
@@ -82,12 +66,12 @@ export class ListView extends common.ListView {
         }
 
         // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
-        this._realizedItems.forEach((view, nativeView, map) => {            
-            if (!(view.bindingContext instanceof observable.Observable)) {
+        this._realizedItems.forEach((view, nativeView, map) => {
+            if (!(view.bindingContext instanceof Observable)) {
                 view.bindingContext = null;
             }
         });
-        
+
         (<android.widget.BaseAdapter>this.android.getAdapter()).notifyDataSetChanged();
     }
 
@@ -106,7 +90,7 @@ export class ListView extends common.ListView {
         return this._realizedItems.size;
     }
 
-    public _eachChildView(callback: (child: viewModule.View) => boolean): void {
+    public _eachChildView(callback: (child: View) => boolean): void {
         this._realizedItems.forEach((view, nativeView, map) => {
             if (view.parent instanceof ListView) {
                 callback(view);
@@ -120,16 +104,16 @@ export class ListView extends common.ListView {
         });
     }
 
-    public _dumpRealizedTemplates(){
-        console.log(`Realized Templates:`);    
+    public _dumpRealizedTemplates() {
+        console.log(`Realized Templates:`);
         this._realizedTemplates.forEach((value, index, map) => {
             console.log(`\t${index}:`);
             value.forEach((value, index, map) => {
                 console.log(`\t\t${index.hashCode()}: ${value}`);
             });
         });
-        console.log(`Realized Items Size: ${this._realizedItems.size}`);    
-    } 
+        console.log(`Realized Items Size: ${this._realizedItems.size}`);
+    }
 
     private clearRealizedCells(): void {
         // clear the cache
@@ -147,17 +131,30 @@ export class ListView extends common.ListView {
         this._realizedTemplates.clear();
     }
 
-    public _onItemTemplatesPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        this._itemTemplatesInternal = new Array<viewModule.KeyedTemplate>(this._defaultTemplate); 
-        if (data.newValue){
-            this._itemTemplatesInternal = this._itemTemplatesInternal.concat(data.newValue);
+    get [separatorColor.native](): number {
+        return null;
+    }
+    set [separatorColor.native](value: Color) {
+        let nativeView = this._android;
+        if (value) {
+            nativeView.setDivider(new android.graphics.drawable.ColorDrawable(value.android));
+            nativeView.setDividerHeight(1);
+        } else {
+            nativeView.setDivider(null);
+            nativeView.setDividerHeight(0);
         }
-        
-        if (this.android){
-            ensureListViewAdapterClass();
-            this.android.setAdapter(new ListViewAdapterClass(this));
+    }
+
+    get [itemTemplatesProperty.native](): KeyedTemplate[] {
+        return null;
+    }
+    set [itemTemplatesProperty.native](value: KeyedTemplate[]) {
+        this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
+        if (value) {
+            this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
         }
-        
+
+        this.android.setAdapter(new ListViewAdapterClass(this));
         this.refresh();
     }
 }
@@ -173,9 +170,7 @@ function ensureListViewAdapterClass() {
 
         constructor(listView: ListView) {
             super();
-
             this._listView = listView;
-
             return global.__native(this);
         }
 
@@ -185,7 +180,8 @@ function ensureListViewAdapterClass() {
 
         public getItem(i: number) {
             if (this._listView && this._listView.items && i < this._listView.items.length) {
-                return this._listView.items.getItem ? this._listView.items.getItem(i) : this._listView.items[i];
+                let getItem = (<ItemsSource>this._listView.items).getItem
+                return getItem ? getItem(i) : this._listView.items[i];
             }
 
             return null;
@@ -200,7 +196,7 @@ function ensureListViewAdapterClass() {
         }
 
         public getViewTypeCount() {
-            return this._listView._itemTemplatesInternal.length; 
+            return this._listView._itemTemplatesInternal.length;
         }
 
         public getItemViewType(index: number) {
@@ -208,10 +204,10 @@ function ensureListViewAdapterClass() {
             let itemViewType = this._listView._itemTemplatesInternal.indexOf(template);
             return itemViewType;
         }
-        
+
         public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
             //this._listView._dumpRealizedTemplates();
-            
+
             if (!this._listView) {
                 return null;
             }
@@ -223,10 +219,10 @@ function ensureListViewAdapterClass() {
 
             // Recycle an existing view or create a new one if needed.
             let template = this._listView._getItemTemplate(index);
-            let view: viewModule.View;
-            if (convertView){
+            let view: View;
+            if (convertView) {
                 view = this._listView._realizedTemplates.get(template.key).get(convertView);
-                if (!view){
+                if (!view) {
                     throw new Error(`There is no entry with key '${convertView}' in the realized views cache for template with key'${template.key}'.`);
                 }
             }
@@ -234,7 +230,7 @@ function ensureListViewAdapterClass() {
                 view = template.createView();
             }
 
-            let args: definition.ItemEventData = {
+            let args: ItemEventData = {
                 eventName: ITEMLOADING, object: this._listView, index: index, view: view,
                 android: parent,
                 ios: undefined
@@ -251,19 +247,19 @@ function ensureListViewAdapterClass() {
                     args.view.height = this._listView.rowHeight;
                 }
                 else {
-                    args.view.height = Number.NaN;
+                    args.view.height = unsetValue;
                 }
 
                 this._listView._prepareItem(args.view, index);
                 if (!args.view.parent) {
                     // Proxy containers should not get treated as layouts.
                     // Wrap them in a real layout as well.
-                    if (args.view instanceof layoutBase.LayoutBase &&
+                    if (args.view instanceof LayoutBase &&
                         !(args.view instanceof ProxyViewContainer)) {
                         this._listView._addView(args.view);
                         convertView = args.view.android;
                     } else {
-                        let sp = new stackLayout.StackLayout();
+                        let sp = new StackLayout();
                         sp.addChild(args.view);
                         this._listView._addView(sp);
 
@@ -273,10 +269,10 @@ function ensureListViewAdapterClass() {
 
                 // Cache the view for recycling
                 let realizedItemsForTemplateKey = this._listView._realizedTemplates.get(template.key);
-                if (!realizedItemsForTemplateKey){
-                    realizedItemsForTemplateKey = new Map<android.view.View, viewModule.View>();
+                if (!realizedItemsForTemplateKey) {
+                    realizedItemsForTemplateKey = new Map<android.view.View, View>();
                     this._listView._realizedTemplates.set(template.key, realizedItemsForTemplateKey);
-                } 
+                }
                 realizedItemsForTemplateKey.set(convertView, args.view);
                 this._listView._realizedItems.set(convertView, args.view);
             }

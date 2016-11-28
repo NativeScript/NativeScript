@@ -2,10 +2,10 @@
  * Contains the ListView class, which represents a standard list view widget.
  */
 declare module "ui/list-view" {
-    import observable = require("data/observable");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import view = require("ui/core/view");
-    import color = require("color");
+    import { EventData } from "data/observable";
+    import { View, Template, KeyedTemplate } from "ui/core/view";
+    import { Property } from "ui/core/properties";
+    import { Color } from "color";
 
     /**
      * Known template names.
@@ -20,7 +20,7 @@ declare module "ui/list-view" {
     /**
      * Represents a view that shows items in a vertically scrolling list.
      */
-    export class ListView extends view.View {
+    export class ListView extends View {
         /**
          * String value used when hooking to itemLoading event.
          */
@@ -35,27 +35,6 @@ declare module "ui/list-view" {
         public static loadMoreItemsEvent: string;
 
         /**
-         * Represents the observable property backing the items property of each ListView instance.
-         */
-        public static itemsProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the item template property of each ListView instance.
-         */
-        public static itemTemplateProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the isScrolling property of each ListView instance.
-         */
-        @Deprecated // in 2.1
-        public static isScrollingProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the rowHeight property of each ListView instance.
-         */
-        public static rowHeightProperty: dependencyObservable.Property;
-
-        /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ListView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
         android: any /* android.widget.ListView */;
@@ -66,26 +45,20 @@ declare module "ui/list-view" {
         ios: any /* UITableView */;
 
         /**
-         * Gets a value indicating whether the ListView is currently scrolling.
-         */
-        @Deprecated // in 2.1
-        isScrolling: boolean;
-
-        /**
          * Gets or set the items collection of the ListView. 
          * The items property can be set to an array or an object defining length and getItem(index) method.
          */
-        items: any;
+        items: any[] | ItemsSource;
 
         /**
          * Gets or set the item template of the ListView. 
          */
-        itemTemplate: string | view.Template;
+        itemTemplate: string | Template;
 
         /**
          * Gets or set the list of item templates for the item template selector 
          */
-        itemTemplates: string | Array<view.KeyedTemplate>;
+        itemTemplates: string | Array<KeyedTemplate>;
 
         /**
          * A function that returns the appropriate ket template based on the data item.
@@ -95,7 +68,7 @@ declare module "ui/list-view" {
         /**
          * Gets or set the items separator line color of the ListView. 
          */
-        separatorColor: color.Color;
+        separatorColor: Color;
 
         /**
          * Gets or set row height of the ListView.
@@ -121,7 +94,7 @@ declare module "ui/list-view" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a View for the data at the specified index should be created. 
@@ -139,13 +112,13 @@ declare module "ui/list-view" {
         /**
          * Raised when the ListView is scrolled so that its last item is visible.
          */
-        on(event: "loadMoreItems", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "loadMoreItems", callback: (args: EventData) => void, thisArg?: any);
     }
 
     /**
      * Event data containing information for the index and the view associated to a list view item.
      */
-    export interface ItemEventData extends observable.EventData {
+    export interface ItemEventData extends EventData {
         /**
          * The index of the item, for which the event is raised.
          */
@@ -154,7 +127,7 @@ declare module "ui/list-view" {
         /**
          * The view that is associated to the item, for which the event is raised.
          */
-        view: view.View;
+        view: View;
 
         /**
          * Gets the native [iOS view](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UITableViewCell_Class/) that represents the user interface where the view is hosted. Valid only when running on iOS.
@@ -166,4 +139,34 @@ declare module "ui/list-view" {
          */
         android: any /* android.view.ViewGroup */;
     }
+
+    export interface ItemsSource {
+        length: number;
+        getItem(index: number): any;
+    }
+
+    /**
+     * Represents the property backing the items property of each ListView instance.
+     */
+    export const itemsProperty: Property<ListView, any[] | ItemsSource>;
+
+    /**
+     * Represents the item template property of each ListView instance.
+     */
+    export const itemTemplateProperty: Property<ListView, string | Template>;
+
+    /**
+     * Represents the items template property of each ListView instance.
+     */
+    export const itemTemplatesProperty: Property<ListView, string | Array<KeyedTemplate>>;
+
+    /**
+     * Represents the separator color backing property. 
+     */
+    export const separatorColor: Property<ListView, Color>;
+
+    /**
+     * Represents the observable property backing the rowHeight property of each ListView instance.
+     */
+    export const rowHeightProperty: Property<ListView, number>;
 }
