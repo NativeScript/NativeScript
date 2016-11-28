@@ -8,12 +8,6 @@ import types = require("utils/types");
 import getter = utils.ios.getter;
 
 export * from "./gestures-common";
-// import common = require("./gestures-common");
-// import definition = require("ui/gestures");
-// import view = require("ui/core/view");
-// import observable = require("data/observable");
-// import trace = require("trace");
-
 
 export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver {
     let observer = new GesturesObserver(target, callback, context);

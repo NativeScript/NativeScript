@@ -2,7 +2,6 @@ declare module "ui/styling/style" {
     import { Observable } from "data/observable";
     import { ViewBase } from "ui/core/view-base";
     import { Color } from "color";
-    import { CssProperty, InheritedCssProperty } from "ui/core/properties";
     import { Font } from "ui/styling/font";
     import { Background } from "ui/styling/background";
     import { Length } from "ui/core/view";
@@ -83,7 +82,7 @@ declare module "ui/styling/style" {
         public fontSize: number;
         public fontFamily: string;
         public fontStyle: "normal" | "italic";
-        public fontWeight: string;
+        public fontWeight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
         public font: string;
 
         public zIndex: number;
@@ -140,21 +139,6 @@ declare module "ui/styling/style" {
     // export function registerNoStylingClass(className);
     // export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
     // Property registration
-
-    export let tintColorProperty: InheritedCssProperty<Style, Color>;
-    export let placeholderColorProperty: InheritedCssProperty<Style, Color>;
-
-    export let fontSizeProperty: InheritedCssProperty<Style, number>;
-    export let fontFamilyProperty: InheritedCssProperty<Style, string>;
-    export let fontStyleProperty: InheritedCssProperty<Style, string>;
-    export let fontWeightProperty: InheritedCssProperty<Style, string>;
-    export let fontProperty: InheritedCssProperty<Style, Font>;
-
-    export let textAlignmentProperty: InheritedCssProperty<Style, string>;
-    export let textDecorationProperty: CssProperty<Style, string>;
-    export let textTransformProperty: CssProperty<Style, string>;
-    export let letterSpacingProperty: CssProperty<Style, number>;
-    export let whiteSpaceProperty: CssProperty<Style, string>;
 
     // /**
     //  * Represents an object that defines how style property should be applied on a native view/widget.

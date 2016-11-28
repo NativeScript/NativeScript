@@ -3,7 +3,7 @@
  */
 declare module "ui/image" {
     import { View } from "ui/core/view";
-    import { Property, CssProperty } from "ui/core/properties";
+    import { Property, InheritedCssProperty } from "ui/core/properties";
     import { Color } from "color";
     import { ImageSource } from "image-source";
     import { Style } from "ui/styling/style";
@@ -61,5 +61,5 @@ declare module "ui/image" {
     export const isLoadingProperty: Property<Image, string>;
     export const loadMode: Property<Image, "sync" | "async">;
     export const stretchProperty: Property<Image, "none" | "aspectFill" | "aspectFit" | "fill">;
-    export const tintColorProperty: CssProperty<Style, Color>;
+    export const tintColorProperty: InheritedCssProperty<Style, Color>;
 }

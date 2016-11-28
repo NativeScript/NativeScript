@@ -123,5 +123,5 @@ isLoadingProperty.register(ImageBase);
 export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS })
 stretchProperty.register(ImageBase);
 
-export const tintColorProperty = new CssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });
+export const tintColorProperty = new InheritedCssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });
 tintColorProperty.register(Style);

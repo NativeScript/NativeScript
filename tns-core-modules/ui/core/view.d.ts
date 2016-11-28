@@ -5,10 +5,11 @@ declare module "ui/core/view" {
     import { Color } from "color";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
-    import { Property, CssProperty, InheritedCssProperty } from "ui/core/properties";
+    import { Property, CssProperty, InheritedCssProperty, ShorthandProperty } from "ui/core/properties";
     import { BindingOptions } from "ui/core/bindable";
     import { ViewBase } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
+    import { Font } from "ui/styling/font";
 
     /**
      * Gets a child view by id.
@@ -771,5 +772,11 @@ declare module "ui/core/view" {
     export const verticalAlignmentProperty: CssProperty<Style, string>;
     export const horizontalAlignmentProperty: CssProperty<Style, string>;
 
+    export const fontSizeProperty: InheritedCssProperty<Style, number>;
+    export const fontFamilyProperty: InheritedCssProperty<Style, string>;
+    export const fontStyleProperty: InheritedCssProperty<Style, string>;
+    export const fontWeightProperty: InheritedCssProperty<Style, string>;
+    
     export const backgroundInternalProperty: CssProperty<Style, Background>;
+    export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 }

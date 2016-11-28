@@ -122,8 +122,8 @@ textProperty.register(TextBaseCommon);
 export let formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
 formattedTextProperty.register(TextBaseCommon);
 
-export let textAlignmentProperty = new InheritedCssProperty<Style, string>({
-    name: "textAlignment", cssName: "text-align", valueConverter: (value: string) => {
+export let textAlignmentProperty = new InheritedCssProperty<Style, "left" | "center" | "right">({
+    name: "textAlignment", cssName: "text-align", valueConverter: (value) => {
         switch (value) {
             case "left":
             case "center":
@@ -131,27 +131,27 @@ export let textAlignmentProperty = new InheritedCssProperty<Style, string>({
                 return value;
 
             default:
-                throw new Error("CSS text-align \"" + value + "\" is not supported.");
+                throw new Error(`CSS text-align ${value} is not supported.`);
         }
     }
 });
 textAlignmentProperty.register(Style);
 
-export let textDecorationProperty = new CssProperty<Style, string>({
-    name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: (value: string) => {
+export let textDecorationProperty = new CssProperty<Style, "none" | "underline" | "line-through">({
+    name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: (value) => {
         let values = (value + "").split(" ");
 
         if (values.indexOf("none") !== -1 || values.indexOf("underline") !== -1 || values.indexOf("lineThrough") !== -1) {
             return value;
         } else {
-            throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
+            throw new Error(`CSS text-decoration ${value} is not supported.`);
         }
     }
 });
 textDecorationProperty.register(Style);
 
-export let textTransformProperty = new CssProperty<Style, string>({
-    name: "textTransform", cssName: "text-transform", defaultValue: "none", valueConverter: (value: string) => {
+export let textTransformProperty = new CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">({
+    name: "textTransform", cssName: "text-transform", defaultValue: "none", valueConverter: (value) => {
         switch (value) {
             case "none":
             case "uppercase":
@@ -160,7 +160,7 @@ export let textTransformProperty = new CssProperty<Style, string>({
                 return value;
 
             default:
-                throw new Error("CSS text-transform \"" + value + "\" is not supported.");
+                throw new Error(`CSS text-transform ${value} is not supported.`);
         }
     }
 });
@@ -173,7 +173,7 @@ export let whiteSpaceProperty = new CssProperty<Style, "normal" | "nowrap">({
             case "nowrap":
                 return value;
             default:
-                throw new Error("CSS white-space \"" + value + "\" is not supported.");
+                throw new Error(`CSS white-space ${value} is not supported.`);
         }
     }
 });

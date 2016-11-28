@@ -3,7 +3,7 @@ import { TextBase } from "ui/text-base";
 
 export * from "ui/text-base";
 
-export class LabelBase extends TextBase implements LabelDefinition {
+export class Label extends TextBase implements LabelDefinition {
     private _android: android.widget.TextView;
 
     get textWrap(): boolean {

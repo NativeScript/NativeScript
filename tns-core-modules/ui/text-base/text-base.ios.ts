@@ -1,10 +1,9 @@
-﻿import { TextBaseCommon, textProperty, formattedTextProperty } from "./text-base-common";
-import { FormattedString } from "text/formatted-string";
-import {
-    colorProperty, fontInternalProperty, textAlignmentProperty, textDecorationProperty,
+﻿import {
+    TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, whiteSpaceProperty, letterSpacingProperty
-} from "ui/styling/style";
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/enums";
+} from "./text-base-common";
+import { FormattedString } from "text/formatted-string";
+import { colorProperty, fontInternalProperty } from "ui/core/view";
 import { toUIString, isNumber } from "utils/types";
 import { Font } from "ui/styling/font";
 import { Color } from "color";
@@ -15,18 +14,18 @@ function NSStringFromNSAttributedString(source: NSAttributedString | string): NS
     return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
 }
 
-function getTransformedText(text: string, transform: string): string {
+function getTransformedText(text: string, transform: "none" | "capitalize" | "uppercase" | "lowercase"): string {
     switch (transform) {
-        case TextTransform.uppercase:
+        case "uppercase":
             return NSStringFromNSAttributedString(text).uppercaseString;
 
-        case TextTransform.lowercase:
+        case "lowercase":
             return NSStringFromNSAttributedString(text).lowercaseString;
 
-        case TextTransform.capitalize:
+        case "capitalize":
             return NSStringFromNSAttributedString(text).capitalizedString;
 
-        case TextTransform.none:
+        case "none":
         default:
             return text;
     }

@@ -1,15 +1,13 @@
-﻿import common = require("./list-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import * as types from "utils/types";
-import { backgroundColorProperty, colorProperty, registerHandler, Styler, StylePropertyChangedHandler } from "ui/styling/style";
-import { View } from "ui/core/view";
+﻿import { ListPickerBase, selectedIndexProperty, itemsProperty } from "./list-picker-common";
+import { ItemsSource } from "ui/list-picker";
 
-global.moduleMerge(common, exports);
+export * from "./list-picker-common";
 
-export class ListPicker extends common.ListPicker {
+export class ListPicker extends ListPickerBase {
     private _ios: UIPickerView;
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
+    private itemsSet: boolean;
 
     constructor() {
         super();
@@ -33,19 +31,42 @@ export class ListPicker extends common.ListPicker {
         return this._ios;
     }
 
-    public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        super._onSelectedIndexPropertyChanged(data);
-        if (this.ios && types.isNumber(data.newValue)) {
-            this.ios.selectRowInComponentAnimated(data.newValue, 0, false);
+    private updateSelectedValue(): void {
+        let selectedIndex = this.getSelectedIndex(this.items);
+        if (selectedIndex >= 0) {
+            this.ios.selectRowInComponentAnimated(selectedIndex, 0, false);
         }
     }
 
-    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.ios) {
-            this.ios.reloadAllComponents();
-        }
+    private onItemsPropertyChanged(items: any[] | ItemsSource) {
+        this.ios.reloadAllComponents();
+        this.updateSelectedValue();
+    }
 
-        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
+    get [selectedIndexProperty.native](): number {
+        return -1;
+    }
+    set [selectedIndexProperty.native](value: number) {
+        if (this.itemsSet) {
+            this.updateSelectedValue();
+        }
+    }
+
+    get [itemsProperty.native](): any[] {
+        return null;
+    }
+    set [itemsProperty.native](value: any[] | ItemsSource) {
+        this.onItemsPropertyChanged(value);
+        // items are cleared - set selectedIndex to -1
+        if (!value) {
+            this.itemsSet = false;
+            this.selectedIndex = -1;
+        } else if (this.selectedIndex < 0) {
+            // items are set and selectedIndex is set - update maxValue & value.
+            this.selectedIndex = 0;
+            // set this flag later so no native call happens
+            this.itemsSet = true;
+        }
     }
 }
 
@@ -93,7 +114,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
     public pickerViewDidSelectRowInComponent(pickerView: UIPickerView, row: number, component: number): void {
         let owner = this._owner.get();
         if (owner) {
-            owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, row);
+            owner.nativePropertyChanged(selectedIndexProperty, row);
         }
     }
 }

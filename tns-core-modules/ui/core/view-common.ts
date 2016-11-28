@@ -11,6 +11,7 @@ import { ViewBase, getEventOrGestureName } from "./view-base";
 import { propagateInheritedProperties, clearInheritedProperties, Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty } from "./properties";
 import { observe, fromString as gestureFromString, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { isIOS } from "platform";
+import { Font } from "ui/styling/font";
 
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
@@ -2171,3 +2172,134 @@ opacityProperty.register(Style);
 
 export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v: string) => new Color(v) });
 colorProperty.register(Style);
+
+
+export let fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal", defaultValue: Font.default });
+
+export let fontFamilyProperty = new InheritedCssProperty<Style, string>({
+    name: "fontFamily", cssName: "font-family", valueChanged: (target, newValue) => {
+        let currentFont = target.fontInternal;
+        if (currentFont.fontFamily !== newValue) {
+            target.fontInternal = currentFont.withFontFamily(newValue);
+        }
+    }
+});
+fontFamilyProperty.register(Style);
+
+export let fontSizeProperty = new InheritedCssProperty<Style, number>({
+    name: "fontSize", cssName: "font-size", valueChanged: (target, newValue) => {
+        let currentFont = target.fontInternal;
+        if (currentFont.fontSize !== newValue) {
+            target.fontInternal = currentFont.withFontSize(newValue);
+        }
+    },
+    valueConverter: (v) => parseFloat(v)
+});
+fontSizeProperty.register(Style);
+
+export let fontStyleProperty = new InheritedCssProperty<Style, "normal" | "italic">({
+    name: "fontStyle", cssName: "font-style", defaultValue: "normal", valueChanged: (target, newValue) => {
+        if (!(newValue === "normal" || newValue === "italic")) {
+            throw new Error(`font-style should be 'normal' or 'italic'. value: ${newValue}`)
+        }
+
+        let currentFont = target.fontInternal;
+        if (currentFont.fontStyle !== newValue) {
+            target.fontInternal = currentFont.withFontStyle(newValue);
+        }
+    }
+});
+fontStyleProperty.register(Style);
+
+export let fontWeightProperty = new InheritedCssProperty<Style, "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900">({
+    name: "fontWeight", cssName: "font-weight", defaultValue: "normal", valueChanged: (target, newValue) => {
+        if (!newValue) {
+            console.trace();
+        }
+
+        // TODO: Console.log errors or throw error?
+        if (!(newValue === "normal" || newValue === "bold"
+            || newValue === "100" || newValue === "200" || newValue === "300"
+            || newValue === "400" || newValue === "500" || newValue === "600"
+            || newValue === "700" || newValue === "800" || newValue === "900")) {
+            throw new Error(`Invalid font-weight value: ${newValue}`);
+        }
+
+        let currentFont = target.fontInternal;
+        if (currentFont.fontWeight !== newValue) {
+            target.fontInternal = currentFont.withFontWeight(newValue);
+        }
+    }
+});
+fontWeightProperty.register(Style);
+
+export let fontProperty = new ShorthandProperty<Style>({
+    name: "font", cssName: "font",
+    getter: function (this: Style) {
+        return `${this.fontStyle} ${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
+    },
+    converter: function (value: string) {
+        return parseFont(value);
+    }
+})
+fontProperty.register(Style);
+
+function parseFont(font: string): [CssProperty<any, any>, any][] {
+    let fontSize: number;
+    let fontFamily: string;
+    let fontStyle: "normal" | "italic" = "normal";
+    let fontWeight: string = "normal";
+
+    let elements = font.split(/\s+/);
+    let element: string;
+    while (element = elements.shift()) {
+        switch (element) {
+            case "normal":
+                break;
+
+            // TODO: add support for oblique font style.
+            case "italic":
+                // case "oblique":
+                fontStyle = "italic";
+                break;
+
+            case "100":
+            case "200":
+            case "300":
+            case "normal":
+            case "400":
+            case "500":
+            case "600":
+            case "bold":
+            case "700":
+            case "800":
+            case "900":
+                fontWeight = element;
+                break;
+
+            default:
+                if (!fontSize) {
+                    let parts = element.split("/");
+                    // TODO: add support for px support.
+                    fontSize = parseFloat(parts[0]);
+                    // TODO: add support for lineHeight.
+                    // if (parts.length > 1) {
+                    //     lineHeight = parts[1];
+                    // }
+                    break;
+                }
+
+                fontFamily = element;
+            // if (elements.length) {
+            //     fontFamily += " " + elements.join(" ");
+            // }
+        }
+    }
+
+    return [
+        [fontStyleProperty, fontStyle],
+        [fontWeightProperty, fontWeight],
+        [fontSizeProperty, fontSize],
+        [fontFamilyProperty, fontFamily]
+    ]
+}

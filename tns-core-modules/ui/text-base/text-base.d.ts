@@ -67,12 +67,12 @@
         //@endprivate
     }
 
-    export let textProperty: Property<TextBase, string>;
-    export let formattedTextProperty: Property<TextBase, FormattedString>;
+    export const textProperty: Property<TextBase, string>;
+    export const formattedTextProperty: Property<TextBase, FormattedString>;
 
-    export let textAlignmentProperty: InheritedCssProperty<Style, string>;
-    export let textDecorationProperty: CssProperty<Style, string>;
-    export let textTransformProperty: CssProperty<Style, string>;
-    export let whiteSpaceProperty: CssProperty<Style, string>;
-    export let letterSpacingProperty: CssProperty<Style, number>;
+    export const textAlignmentProperty: InheritedCssProperty<Style, "left" | "center" | "right">;
+    export const textDecorationProperty: CssProperty<Style, "none" | "underline" | "line-through">;
+    export const textTransformProperty: CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">;
+    export const whiteSpaceProperty: CssProperty<Style, "normal" | "nowrap">;
+    export const letterSpacingProperty: CssProperty<Style, number>;
 }

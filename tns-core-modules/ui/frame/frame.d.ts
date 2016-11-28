@@ -350,7 +350,7 @@ declare module "ui/frame" {
          * Gets or sets the visibility of navigationBar.
          * Use NavBarVisibility enumeration - auto, never, always
          */
-        navBarVisibility: string;
+        navBarVisibility: "auto" | "never" | "always";
 
         //@private
         _disableNavBarAnimation: boolean;

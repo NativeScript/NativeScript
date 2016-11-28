@@ -2,7 +2,6 @@
 import { FrameBase } from "./frame-common";
 import { Page } from "ui/page";
 import { View } from "ui/core/view";
-import { NavigationBarVisibility, AnimationCurve } from "ui/enums";
 
 import * as transitionModule from "ui/transition";
 import * as trace from "trace";
@@ -206,13 +205,13 @@ export class Frame extends FrameBase {
 
     public _getNavBarVisible(page: Page): boolean {
         switch (this._ios.navBarVisibility) {
-            case NavigationBarVisibility.always:
+            case "always":
                 return true;
 
-            case NavigationBarVisibility.never:
+            case "never":
                 return false;
 
-            case NavigationBarVisibility.auto:
+            case "auto":
                 let newValue: boolean;
 
                 if (page && page.actionBarHidden !== undefined) {
@@ -637,26 +636,30 @@ function _getNativeTransition(navigationTransition: NavigationTransition, push: 
 export function _getNativeCurve(transition: NavigationTransition): UIViewAnimationCurve {
     if (transition.curve) {
         switch (transition.curve) {
-            case AnimationCurve.easeIn:
+            case "easeIn":
                 if (trace.enabled) {
                     trace.write("Transition curve resolved to UIViewAnimationCurve.EaseIn.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.EaseIn;
-            case AnimationCurve.easeOut:
+
+            case "easeOut":
                 if (trace.enabled) {
                     trace.write("Transition curve resolved to UIViewAnimationCurve.EaseOut.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.EaseOut;
-            case AnimationCurve.easeInOut:
+
+            case "easeInOut":
                 if (trace.enabled) {
                     trace.write("Transition curve resolved to UIViewAnimationCurve.EaseInOut.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.EaseInOut;
-            case AnimationCurve.linear:
+
+            case "linear":
                 if (trace.enabled) {
                     trace.write("Transition curve resolved to UIViewAnimationCurve.Linear.", trace.categories.Transition);
                 }
                 return UIViewAnimationCurve.Linear;
+                
             default:
                 if (trace.enabled) {
                     trace.write("Transition curve resolved to original: " + transition.curve, trace.categories.Transition);
@@ -673,7 +676,7 @@ class iOSFrame implements iOSFrameDefinition {
     /* tslint:enable */
     private _controller: UINavigationControllerImpl;
     private _showNavigationBar: boolean;
-    private _navBarVisibility: string;
+    private _navBarVisibility: "auto" | "never" | "always" = "auto";
     private _frame: Frame;
 
     // TabView uses this flag to disable animation while showing/hiding the navigation bar because of the "< More" bar.
@@ -684,8 +687,6 @@ class iOSFrame implements iOSFrameDefinition {
         this._frame = frame;
         this._controller = UINavigationControllerImpl.initWithOwner(new WeakRef(frame));
         this._controller.automaticallyAdjustsScrollViewInsets = false;
-        //this.showNavigationBar = false;
-        this._navBarVisibility = NavigationBarVisibility.auto;
     }
 
     public get controller() {
@@ -708,10 +709,10 @@ class iOSFrame implements iOSFrameDefinition {
         }
     }
 
-    public get navBarVisibility(): string {
+    public get navBarVisibility(): "auto" | "never" | "always" {
         return this._navBarVisibility;
     }
-    public set navBarVisibility(value: string) {
+    public set navBarVisibility(value: "auto" | "never" | "always") {
         this._navBarVisibility = value;
     }
 }
