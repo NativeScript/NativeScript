@@ -107,7 +107,12 @@ export class EditableTextBase extends common.EditableTextBase {
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
                         actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT ||
                         (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
-                        owner.dismissSoftInput();
+                        
+                        // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
+                        // https://github.com/NativeScript/NativeScript/issues/3111
+                        if (textView.getMaxLines() === 1){
+                            owner.dismissSoftInput();
+                        }
                         owner._onReturnPress();
                     }
                 }
