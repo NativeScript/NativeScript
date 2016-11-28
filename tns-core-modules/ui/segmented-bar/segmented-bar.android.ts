@@ -283,7 +283,7 @@ export class SegmentedBarStyler implements style.Styler {
             let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
 
             var backgroundDrawable = vg.getBackground();
-            if (android.os.Build.VERSION.SDK_INT >= 21 && backgroundDrawable && types.isFunction(backgroundDrawable.setColorFilter)) {
+            if (android.os.Build.VERSION.SDK_INT > 21 && backgroundDrawable && types.isFunction(backgroundDrawable.setColorFilter)) {
                 backgroundDrawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
             } else {
                 let stateDrawable = new android.graphics.drawable.StateListDrawable();
