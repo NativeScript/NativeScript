@@ -529,9 +529,7 @@ function test_font_shorthand_property(short: string, family: string, size: numbe
     TKUnit.assertEqual(testView.style.fontWeight, weight, "style.fontWeight");
     TKUnit.assertEqual(testView.style.fontSize, size, "style.fontSize");
 }
-
 export function test_setting_font_properties_sets_native_font() {
-
     if (fontModule.ios) {
         var basePath = "fonts";
         fontModule.ios.registerFont(basePath + "/Roboto-Regular.ttf");
@@ -569,6 +567,22 @@ function test_native_font(style: string, weight: string) {
         TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.font.fontName.toLowerCase(), (fontName + "-" + fontNameSuffix).toLowerCase(), "native font " + weight + " " + style);
     }
     //TODO: If needed add tests for other platforms
+}
+
+export function test_FontWeightsParsedAsNumbersByTheXmlParserAreConvertedToStrings() {
+    var testView = new buttonModule.Button();
+    // The XML parser will interpret "100" as a number and feed it to Style, so simulate this here.
+    (<any>testView.style).fontWeight = 100; TKUnit.assertEqual(testView.style.fontWeight, "100");
+    (<any>testView.style).fontWeight = 200; TKUnit.assertEqual(testView.style.fontWeight, "200");
+    (<any>testView.style).fontWeight = 300; TKUnit.assertEqual(testView.style.fontWeight, "300");
+    (<any>testView.style).fontWeight = 400; TKUnit.assertEqual(testView.style.fontWeight, "400");
+    (<any>testView.style).fontWeight = "normal"; TKUnit.assertEqual(testView.style.fontWeight, "normal");
+    (<any>testView.style).fontWeight = 500; TKUnit.assertEqual(testView.style.fontWeight, "500");
+    (<any>testView.style).fontWeight = 600; TKUnit.assertEqual(testView.style.fontWeight, "600");
+    (<any>testView.style).fontWeight = 700; TKUnit.assertEqual(testView.style.fontWeight, "700");
+    (<any>testView.style).fontWeight = "bold"; TKUnit.assertEqual(testView.style.fontWeight, "bold");
+    (<any>testView.style).fontWeight = 800; TKUnit.assertEqual(testView.style.fontWeight, "800");
+    (<any>testView.style).fontWeight = 900; TKUnit.assertEqual(testView.style.fontWeight, "900");
 }
 
 export var test_setting_button_whiteSpace_normal_sets_native = function () {
