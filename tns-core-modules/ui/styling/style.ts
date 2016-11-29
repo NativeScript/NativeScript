@@ -650,7 +650,8 @@ export class Style extends DependencyObservable implements styling.Style {
         return this._getValue(fontWeightProperty);
     }
     set fontWeight(value: string) {
-        this._setValue(fontWeightProperty, value);
+        let stringValue = value ? value.toString() : undefined;
+        this._setValue(fontWeightProperty, stringValue);
     }
 
     get font(): string {
