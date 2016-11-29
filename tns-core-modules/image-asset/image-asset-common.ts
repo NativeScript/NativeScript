@@ -1,7 +1,8 @@
 import definition = require("image-asset");
+import observable = require("data/observable");
 import platform = require("platform");
 
-export class ImageAsset implements definition.ImageAsset {
+export class ImageAsset  extends observable.Observable implements definition.ImageAsset {
     private _options: definition.ImageAssetOptions;
     private _ios: PHAsset;
     private _nativeImage: any;

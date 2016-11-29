@@ -1,5 +1,7 @@
 declare module "image-asset" {
-    export class ImageAsset {
+    import observable = require("data/observable");
+
+    export class ImageAsset extends observable.Observable {
         constructor(asset: any);
         getImageAsync(callback: (image: any, error: any) => void); //UIImage for iOS and android.graphics.Bitmap for Android
         ios: any; //PHAsset
