@@ -122,7 +122,9 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public setNativeSource(source: any): boolean {
-        this.ios = source;
+        if (source instanceof UIImage) {
+            this.ios = source;
+        }
         return source != null;
     }
 
