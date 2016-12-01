@@ -782,7 +782,7 @@ export function test_NonExistingElementError() {
     var basePath = "xml-declaration/";
     var expectedErrorStart =
         "Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element.xml:11:5\n" +
-        " ↳Module 'ui/unicorn' not found for element 'Unicorn'.";
+        " > Module 'ui/unicorn' not found for element 'Unicorn'.";
     var message;
     try {
         builder.load(__dirname + "/errors/non-existing-element.xml");
@@ -796,7 +796,7 @@ export function test_NonExistingElementInTemplateError() {
     var basePath = "xml-declaration/";
     var expectedErrorStart =
         "Building UI from XML. @file:///app/" + basePath + "errors/non-existing-element-in-template.xml:14:17\n" +
-        " ↳Module 'ui/unicorn' not found for element 'Unicorn'.";
+        " > Module 'ui/unicorn' not found for element 'Unicorn'.";
     var message;
     var page = builder.load(__dirname + "/errors/non-existing-element-in-template.xml");
     TKUnit.assert(view, "Expected the xml to generate a page");

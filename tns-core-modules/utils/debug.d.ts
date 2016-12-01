@@ -43,35 +43,15 @@ declare module "utils/debug" {
 	/**
 	 * An Error class that provides additional context to an error.
 	 */
-	export class ScopeError implements Error {
+	export class ScopeError extends Error {
 		/**
 		 * Creates a new ScopeError providing addtional context to the child error.
 		 * @param child The child error to extend.
 		 * @param message Additional message to prepend to the child error.
 		 */
 		constructor(child: Error, message?: string);
-		
-		/**
-		 * Gets the child error.
-		 */
-		child: Error;
-		
-		/**
-		 * Gets the error message.
-		 */
-		message: string;
-		
-		/**
-		 * Gets the stack trace.
-		 */
-		stack: string;
-		
-		/**
-		 * Gets the error name.
-		 */
-		name: string;
 	}
-	
+
 	/**
 	 * Represents a scope error providing addiot
 	 */
@@ -83,10 +63,5 @@ declare module "utils/debug" {
 		 * @param message Additonal message to prepend along the source location and the child error's message.
 		 */
 		constructor(child: Error, source: Source, message?: string);
-		
-		/**
-		 * Gets the error source.
-		 */
-		source: Source;
 	}
 }

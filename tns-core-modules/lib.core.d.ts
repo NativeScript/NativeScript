@@ -878,6 +878,7 @@ declare var RegExp: RegExpConstructor;
 
 interface Error {
     name: string;
+    stack: string;
     message: string;
 }
 
