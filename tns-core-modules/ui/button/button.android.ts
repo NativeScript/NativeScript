@@ -4,6 +4,9 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import style = require("ui/styling/style");
 import { TextBaseStyler as TBS } from "ui/text-base/text-base-styler";
 import {device} from "platform";
+import {GestureTypes, TouchGestureEventData, TouchAction} from "ui/gestures";
+import {PseudoClassHandler} from "ui/core/view";
+
 let styleHandlersInitialized: boolean;
 
 global.moduleMerge(common, exports);
@@ -11,6 +14,7 @@ global.moduleMerge(common, exports);
 export class Button extends common.Button {
     private _android: android.widget.Button;
     private _isPressed: boolean;
+    private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     constructor() {
         super();
@@ -44,24 +48,6 @@ export class Button extends common.Button {
                     }
                 }
             }));
-
-        this._android.setOnTouchListener(new android.view.View.OnTouchListener(
-            <utils.Owned & android.view.View.IOnTouchListener>{
-                get owner() {
-                    return that.get();
-                },
-
-                onTouch: function (v, ev) {
-                    if (ev.getAction() === 0) { // down
-                        this.owner._goToVisualState("highlighted");
-                    }
-                    else if (ev.getAction() === 1) { // up
-                        this.owner._goToVisualState("normal");
-                    }
-                    return false;
-                }
-            }
-        ));
     }
 
     public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
@@ -86,6 +72,25 @@ export class Button extends common.Button {
             }
 
             this.android.setText(newText);
+        }
+    }
+
+    @PseudoClassHandler("normal", "highlighted", "pressed", "active")
+    _updateHandler(subscribe: boolean) {
+        if (subscribe) {
+            this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
+                switch(args.action) {
+                    case TouchAction.up:
+                        this._goToVisualState("normal");
+                        break;
+                    case TouchAction.down:
+                        this._goToVisualState("highlighted");
+                        break;
+                }
+            });
+            this.on(GestureTypes.touch, this._highlightedHandler);
+        } else {
+            this.off(GestureTypes.touch, this._highlightedHandler);
         }
     }
 }
