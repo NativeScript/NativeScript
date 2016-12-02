@@ -2,6 +2,8 @@
 import dependencyObservable = require("ui/core/dependency-observable");
 import utils = require("utils/utils")
 import * as types from "utils/types";
+import { Styler, colorProperty, registerHandler, StylePropertyChangedHandler } from "ui/styling/style";
+import { View } from "ui/core/view";
 
 global.moduleMerge(common, exports);
 
@@ -60,7 +62,7 @@ export class ListPicker extends common.ListPicker {
         mInputTextField.setAccessible(true);
         this._editText = <android.widget.EditText>mInputTextField.get(this._android);
         this._editText.setFilters([]);
-        
+
         //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
         this._editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
     }
@@ -93,7 +95,7 @@ export class ListPicker extends common.ListPicker {
         if (!this.android) {
             return;
         }
-        
+
         //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
         this.android.setFormatter(null);
         this.android.setFormatter(this._formatter); //Force the NumberPicker to call our Formatter 
@@ -103,4 +105,40 @@ export class ListPicker extends common.ListPicker {
         this._editText.invalidate(); //Force the EditText to redraw
         this.android.invalidate();
     }
-} 
+}
+
+export class ListPickerStyler implements Styler {
+    // color
+    private static setColorProperty(view: View, newValue: any) {
+        var picker = <android.widget.NumberPicker>view._nativeView;
+        ListPickerStyler._setNumberPickerTextColor(picker, newValue);
+    }
+
+    private static resetColorProperty(view: View, nativeValue: any) {
+        var picker = <android.widget.NumberPicker>view._nativeView;
+        ListPickerStyler._setNumberPickerTextColor(picker, nativeValue);
+    }
+
+    public static registerHandlers() {
+        registerHandler(colorProperty, new StylePropertyChangedHandler(
+            ListPickerStyler.setColorProperty,
+            ListPickerStyler.resetColorProperty), "ListPicker");
+    }
+
+    private static _setNumberPickerTextColor(picker: android.widget.NumberPicker, newValue: any) {
+        let childrenCount = picker.getChildCount();
+
+        for (let i = 0; i < childrenCount; i++) {
+            let child = picker.getChildAt(i);
+            if (child instanceof android.widget.EditText) {
+                let selectorWheelPaintField = picker.getClass().getDeclaredField("mSelectorWheelPaint");
+                selectorWheelPaintField.setAccessible(true);
+
+                selectorWheelPaintField.get(picker).setColor(newValue);
+                (<android.widget.EditText>picker.getChildAt(i)).setTextColor(newValue);
+            }
+        }
+    }
+}
+
+ListPickerStyler.registerHandlers();
