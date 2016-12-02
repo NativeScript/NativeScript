@@ -1,17 +1,8 @@
-import imageSource = require("image-source");
-import colorModule = require("color");
-import enums = require("ui/enums");
-import definition = require("ui/styling/background");
+import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
+import { layout } from "ui/core/view";
+import { ImageSource } from "image-source";
+import { Color } from "color";
 import cssValue = require("css-value");
-import utils = require("utils/utils");
-
-import * as typesModule from "utils/types";
-var types: typeof typesModule;
-function ensureTypes() {
-    if (!types) {
-        types = require("utils/types");
-    }
-}
 
 interface CSSValue {
     type: string;
@@ -20,18 +11,18 @@ interface CSSValue {
     value?: number;
 }
 
-export class Background implements definition.Background {
+export class Background implements BackgroundDefinition {
     public static default = new Background();
 
-    public color: colorModule.Color;
-    public image: imageSource.ImageSource;
+    public color: Color;
+    public image: ImageSource;
     public repeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
     public position: string;
     public size: string;
-    public borderTopColor: colorModule.Color;
-    public borderRightColor: colorModule.Color;
-    public borderBottomColor: colorModule.Color;
-    public borderLeftColor: colorModule.Color;
+    public borderTopColor: Color;
+    public borderRightColor: Color;
+    public borderBottomColor: Color;
+    public borderLeftColor: Color;
     public borderTopWidth: number = 0;
     public borderRightWidth: number = 0;
     public borderBottomWidth: number = 0;
@@ -67,19 +58,19 @@ export class Background implements definition.Background {
         return clone;
     }
 
-    public withColor(value: colorModule.Color): Background {
+    public withColor(value: Color): Background {
         let clone = this.clone();
         clone.color = value;
         return clone;
     }
 
-    public withImage(value: imageSource.ImageSource): Background {
+    public withImage(value: ImageSource): Background {
         let clone = this.clone();
         clone.image = value;
         return clone;
     }
 
-    public withRepeat(value: string): Background {
+    public withRepeat(value: "repeat" | "repeat-x" | "repeat-y" | "no-repeat"): Background {
         let clone = this.clone();
         clone.repeat = value;
         return clone;
@@ -97,25 +88,25 @@ export class Background implements definition.Background {
         return clone;
     }
 
-    public withBorderTopColor(value: colorModule.Color): Background {
+    public withBorderTopColor(value: Color): Background {
         let clone = this.clone();
         clone.borderTopColor = value;
         return clone;
     }
 
-    public withBorderRightColor(value: colorModule.Color): Background {
+    public withBorderRightColor(value: Color): Background {
         let clone = this.clone();
         clone.borderRightColor = value;
         return clone;
     }
 
-    public withBorderBottomColor(value: colorModule.Color): Background {
+    public withBorderBottomColor(value: Color): Background {
         let clone = this.clone();
         clone.borderBottomColor = value;
         return clone;
     }
 
-    public withBorderLeftColor(value: colorModule.Color): Background {
+    public withBorderLeftColor(value: Color): Background {
         let clone = this.clone();
         clone.borderLeftColor = value;
         return clone;
@@ -175,12 +166,12 @@ export class Background implements definition.Background {
         return clone;
     }
 
-    public getDrawParams(width: number, height: number): definition.BackgroundDrawParams {
+    public getDrawParams(width: number, height: number): BackgroundDrawParams {
         if (!this.image) {
             return null;
         }
 
-        var res: definition.BackgroundDrawParams = {
+        let res: BackgroundDrawParams = {
             repeatX: true,
             repeatY: true,
             posX: 0,
@@ -190,23 +181,23 @@ export class Background implements definition.Background {
         // repeat
         if (this.repeat) {
             switch (this.repeat.toLowerCase()) {
-                case enums.BackgroundRepeat.noRepeat:
+                case "no-repeat":
                     res.repeatX = false;
                     res.repeatY = false;
                     break;
 
-                case enums.BackgroundRepeat.repeatX:
+                case "repeat-x":
                     res.repeatY = false;
                     break;
 
-                case enums.BackgroundRepeat.repeatY:
+                case "repeat-y":
                     res.repeatX = false;
                     break;
             }
         }
 
-        var imageWidth = this.image.width;
-        var imageHeight = this.image.height;
+        let imageWidth = this.image.width;
+        let imageHeight = this.image.height;
 
         // size
         if (this.size) {
@@ -332,10 +323,8 @@ export class Background implements definition.Background {
     };
 
     public isEmpty(): boolean {
-        ensureTypes();
-
-        return types.isNullOrUndefined(this.color)
-            && types.isNullOrUndefined(this.image)
+        return this.color
+            && this.image
             && !this.hasBorderWidth()
             && !this.hasBorderRadius()
             && !this.clipPath;
@@ -352,15 +341,15 @@ export class Background implements definition.Background {
             return false;
         }
 
-        return colorModule.Color.equals(value1.color, value2.color)
+        return Color.equals(value1.color, value2.color)
             && value1.image === value2.image
             && value1.position === value2.position
             && value1.repeat === value2.repeat
             && value1.size === value2.size
-            && colorModule.Color.equals(value1.borderTopColor, value2.borderTopColor)
-            && colorModule.Color.equals(value1.borderRightColor, value2.borderRightColor)
-            && colorModule.Color.equals(value1.borderBottomColor, value2.borderBottomColor)
-            && colorModule.Color.equals(value1.borderLeftColor, value2.borderLeftColor)
+            && Color.equals(value1.borderTopColor, value2.borderTopColor)
+            && Color.equals(value1.borderRightColor, value2.borderRightColor)
+            && Color.equals(value1.borderBottomColor, value2.borderBottomColor)
+            && Color.equals(value1.borderLeftColor, value2.borderLeftColor)
             && value1.borderTopWidth === value2.borderTopWidth
             && value1.borderRightWidth === value2.borderRightWidth
             && value1.borderBottomWidth === value2.borderBottomWidth
@@ -373,10 +362,7 @@ export class Background implements definition.Background {
     }
 
     public hasBorderColor(): boolean {
-        return !types.isNullOrUndefined(this.borderTopColor)
-            || !types.isNullOrUndefined(this.borderRightColor)
-            || !types.isNullOrUndefined(this.borderBottomColor)
-            || !types.isNullOrUndefined(this.borderLeftColor);
+        return !!this.borderTopColor || !!this.borderRightColor || !!this.borderBottomColor || !!this.borderLeftColor;
     }
 
     public hasBorderWidth(): boolean {
@@ -394,9 +380,9 @@ export class Background implements definition.Background {
     }
 
     public hasUniformBorderColor(): boolean {
-        return colorModule.Color.equals(this.borderTopColor, this.borderRightColor)
-            && colorModule.Color.equals(this.borderTopColor, this.borderBottomColor)
-            && colorModule.Color.equals(this.borderTopColor, this.borderLeftColor);
+        return Color.equals(this.borderTopColor, this.borderRightColor)
+            && Color.equals(this.borderTopColor, this.borderBottomColor)
+            && Color.equals(this.borderTopColor, this.borderLeftColor);
     }
 
     public hasUniformBorderWidth(): boolean {
@@ -417,7 +403,7 @@ export class Background implements definition.Background {
             && this.hasUniformBorderRadius();
     }
 
-    public getUniformBorderColor(): colorModule.Color {
+    public getUniformBorderColor(): Color {
         if (this.hasUniformBorderColor()) {
             return this.borderTopColor;
         }
@@ -444,16 +430,16 @@ export class Background implements definition.Background {
 }
 
 export function cssValueToDevicePixels(source: string, total: number): number {
-    var result;
+    let result;
     source = source.trim();
 
     if (source.indexOf("px") !== -1) {
         result = parseFloat(source.replace("px", ""));
     }
     else if (source.indexOf("%") !== -1 && total > 0) {
-        result = (parseFloat(source.replace("%", "")) / 100) * utils.layout.toDeviceIndependentPixels(total);
+        result = (parseFloat(source.replace("%", "")) / 100) * layout.toDeviceIndependentPixels(total);
     } else {
         result = parseFloat(source);
     }
-    return utils.layout.toDevicePixels(result);
+    return layout.toDevicePixels(result);
 }

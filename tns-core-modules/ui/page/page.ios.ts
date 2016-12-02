@@ -1,15 +1,18 @@
-﻿import application = require("application");
-import pageCommon = require("./page-common");
-import { View } from "ui/core/view";
-import trace = require("trace");
-import uiUtils = require("ui/utils");
+﻿import { ios as iosApp } from "application";
 import { device } from "platform";
-import { DeviceType } from "ui/enums";
-import style = require("ui/styling/style");
-import * as utils from "utils/utils";
-import getter = utils.ios.getter;
+import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from "./page-common";
+import { View, layout } from "ui/core/view";
+import { ActionBar } from "ui/action-bar";
+import { GridLayout } from "ui/layouts/grid-layout";
+import { Color } from "color";
+import * as uiUtils from "ui/utils";
+import * as trace from "trace";
 
-global.moduleMerge(pageCommon, exports);
+export * from "./page-common";
+
+import { ios } from "utils/utils";
+import getter = ios.getter;
+
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
 
@@ -82,13 +85,13 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         if (owner._modalParent) {
-            let isTablet = device.deviceType === DeviceType.Tablet;
+            let isTablet = device.deviceType === "Tablet";
             let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
             let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
             let size = frame.size;
             let width = size.width;
             let height = size.height;
-            let mode: number = utils.layout.EXACTLY;
+            let mode: number = layout.EXACTLY;
 
             let superViewRotationRadians;
             if (this.view.superview) {
@@ -96,7 +99,7 @@ class UIViewControllerImpl extends UIViewController {
                 superViewRotationRadians = atan2f(transform.b, transform.a);
             }
 
-            if (utils.ios.MajorVersion < 8 && utils.ios.isLandscape() && !superViewRotationRadians) {
+            if (ios.MajorVersion < 8 && ios.isLandscape() && !superViewRotationRadians) {
                 // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
                 width = size.height;
                 height = size.width;
@@ -110,16 +113,16 @@ class UIViewControllerImpl extends UIViewController {
                 height -= statusBarHeight;
             }
 
-            let widthSpec = utils.layout.makeMeasureSpec(width, mode);
-            let heightSpec = utils.layout.makeMeasureSpec(height, mode);
+            let widthSpec = layout.makeMeasureSpec(width, mode);
+            let heightSpec = layout.makeMeasureSpec(height, mode);
 
             View.measureChild(null, owner, widthSpec, heightSpec);
-            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || utils.ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
+            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
             View.layoutChild(null, owner, 0, top, width, bottom);
 
-            if (utils.ios.MajorVersion < 8) {
+            if (ios.MajorVersion < 8) {
                 if (!backgroundSpanUnderStatusBar && (!isTablet || isFullScreen)) {
-                    if (utils.ios.isLandscape() && !superViewRotationRadians) {
+                    if (ios.isLandscape() && !superViewRotationRadians) {
                         this.view.center = CGPointMake(this.view.center.x - statusBarHeight, this.view.center.y);
                     }
                     else {
@@ -133,8 +136,8 @@ class UIViewControllerImpl extends UIViewController {
             }
         }
         else {
-            if (!application.ios.window) {
-                uiUtils.ios._layoutRootView(owner, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+            if (!iosApp.window) {
+                uiUtils.ios._layoutRootView(owner, getter(UIScreen, UIScreen.mainScreen).bounds);
             }
             owner._updateLayout();
         }
@@ -323,8 +326,8 @@ class UIViewControllerImpl extends UIViewController {
     }
 }
 
-export class Page extends pageCommon.Page {
-    private _ios: UIViewControllerImpl = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+export class Page extends PageBase {
+    private _ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
     public _enableLoadedEvents: boolean;
     public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
@@ -349,7 +352,10 @@ export class Page extends pageCommon.Page {
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
-        this._updateActionBar(false);
+
+        if (this.actionBarHidden !== undefined) {
+            this.updateActionBar(this.actionBarHidden);
+        }
     }
 
     public onUnloaded() {
@@ -413,7 +419,7 @@ export class Page extends pageCommon.Page {
 
         super._raiseShowingModallyEvent();
 
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 7, null);
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, ios.MajorVersion >= 7, null);
         let transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
@@ -428,12 +434,12 @@ export class Page extends pageCommon.Page {
 
     protected _hideNativeModalView(parent: Page) {
         parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(utils.ios.MajorVersion >= 7);
+        parent._ios.dismissModalViewControllerAnimated(ios.MajorVersion >= 7);
 
         super._hideNativeModalView(parent);
     }
 
-    public _updateActionBar(hidden: boolean) {
+    private updateActionBar(hidden: boolean) {
         const frame = this.frame;
         if (frame) {
             frame._updateActionBar(this);
@@ -464,13 +470,11 @@ export class Page extends pageCommon.Page {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        View.adjustChildLayoutParams(this.layoutView, widthMeasureSpec, heightMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let actionBarWidth: number = 0;
         let actionBarHeight: number = 0;
@@ -484,7 +488,7 @@ export class Page extends pageCommon.Page {
         }
 
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === "Tablet") {
             statusBarHeight = 0;
         }
 
@@ -495,13 +499,14 @@ export class Page extends pageCommon.Page {
             actionBarHeight = actionBarSize.measuredHeight;
         }
 
-        let heightSpec = utils.layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
+        let heightSpec = layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
 
         // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
         let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightSpec);
 
-        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.minWidth);
-        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.minHeight);
+        let style = this.style;
+        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, style.effectiveMinWidth);
+        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, style.effectiveMinHeight);
 
         let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -533,13 +538,11 @@ export class Page extends pageCommon.Page {
         }
 
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === "Tablet") {
             statusBarHeight = 0;
         }
 
         View.layoutChild(this, this.layoutView, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
-
-        View.restoreChildOriginalParams(this.layoutView);
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {
@@ -550,31 +553,11 @@ export class Page extends pageCommon.Page {
 
         return super._addViewToNativeVisualTree(view);
     }
-}
 
-export class PageStyler implements style.Styler {
-    // statusBarStyle
-     private static setStatusBarStyleProperty(v: View, newValue: any) {
-        let page = <Page>v;
-        page._updateStatusBarStyle(newValue);
+    get [actionBarHiddenProperty.native](): boolean {
+        return undefined;
     }
-
-    private static resetStatusBarStyleProperty(v: View, nativeValue: any) {
-        let page = <Page>v;
-        page._updateStatusBarStyle(nativeValue);
-    }
-
-    private static getStatusBarStyleProperty(v: View): any {
-        let page = <Page>v;
-        return page.statusBarStyle;
-    }
-
-    public static registerHandlers() {
-       style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
-            PageStyler.setStatusBarStyleProperty,
-            PageStyler.resetStatusBarStyleProperty,
-            PageStyler.getStatusBarStyleProperty), "Page");
+    set [actionBarHiddenProperty.native](value: boolean) {
+        this._updateEnableSwipeBackNavigation(value);
     }
 }
-
-PageStyler.registerHandlers();

@@ -4,7 +4,6 @@ import { isDefined, isNullOrUndefined, isString } from "utils/types";
 import { View, colorProperty } from "ui/core/view";
 import { RESOURCE_PREFIX } from "utils/utils";
 import { fromFileOrResource } from "image-source";
-import { AndroidActionBarIconVisibility } from "ui/enums";
 import { Color } from "color";
 import * as application from "application";
 import * as trace from "trace";
@@ -47,7 +46,7 @@ export class ActionItem extends ActionItemBase {
 export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinition {
     private _actionBar: ActionBar;
     private _icon: string;
-    private _iconVisibility: string = AndroidActionBarIconVisibility.auto;
+    private _iconVisibility: "auto" | "never" | "always" = "auto";
 
     constructor(actionBar: ActionBar) {
         this._actionBar = actionBar;
@@ -63,10 +62,10 @@ export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinit
         }
     }
 
-    public get iconVisibility(): string {
+    public get iconVisibility(): "auto" | "never" | "always" {
         return this._iconVisibility;
     }
-    public set iconVisibility(value: string) {
+    public set iconVisibility(value: "auto" | "never" | "always") {
         if (value !== this._iconVisibility) {
             this._iconVisibility = value;
             this._actionBar._onIconPropertyChanged();
@@ -381,11 +380,11 @@ function getShowAsAction(menuItem: ActionItem): number {
 
 function getIconVisibility(iconVisibility: string): boolean {
     switch (iconVisibility) {
-        case AndroidActionBarIconVisibility.always:
+        case "always":
             return true;
 
-        case AndroidActionBarIconVisibility.auto:
-        case AndroidActionBarIconVisibility.never:
+        case "auto":
+        case "never":
         default:
             return false;
     }

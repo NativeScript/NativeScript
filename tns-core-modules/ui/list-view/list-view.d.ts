@@ -3,7 +3,7 @@
  */
 declare module "ui/list-view" {
     import { EventData } from "data/observable";
-    import { View, Template, KeyedTemplate } from "ui/core/view";
+    import { View, Template, KeyedTemplate, Length } from "ui/core/view";
     import { Property } from "ui/core/properties";
     import { Color } from "color";
 
@@ -73,7 +73,7 @@ declare module "ui/list-view" {
         /**
          * Gets or set row height of the ListView.
          */
-        rowHeight: number;
+        rowHeight: Length;
 
         /**
          * Forces the ListView to reload all its items.
@@ -168,5 +168,5 @@ declare module "ui/list-view" {
     /**
      * Represents the observable property backing the rowHeight property of each ListView instance.
      */
-    export const rowHeightProperty: Property<ListView, number>;
+    export const rowHeightProperty: Property<ListView, Length>;
 }

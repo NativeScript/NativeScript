@@ -2,16 +2,16 @@
  * Contains the TabView class, which represents a standard content component with tabs.
  */
 declare module "ui/tab-view" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import observable = require("data/observable");
-    import bindable = require("ui/core/bindable");
-    import color = require("color");
+    import { View } from "ui/core/view";
+    import { Property } from "ui/core/properties";
+    import { EventData } from "data/observable";
+    import { Bindable } from "ui/core/bindable";
+    import { Color } from "color";
 
     /**
      * Represents a tab view entry.
      */
-    class TabViewItem extends bindable.Bindable {
+    class TabViewItem extends Bindable {
         /**
          * Gets or sets the title of the TabViewItem.
          */
@@ -20,8 +20,8 @@ declare module "ui/tab-view" {
         /**
          * Gets or sets the view of the TabViewItem.
          */
-        public view: view.View;
-        
+        public view: View;
+
         /**
          * Gets or sets the icon source of the TabViewItem. This could either be a a file name or resource id.
          */
@@ -31,12 +31,12 @@ declare module "ui/tab-view" {
     /**
      * Defines the data for the TabView.selectedIndexChanged event.
      */
-    export interface SelectedIndexChangedEventData extends observable.EventData {
+    export interface SelectedIndexChangedEventData extends EventData {
         /**
          * The old selected index.
          */
         oldIndex: number;
-        
+
         /**
          * The new selected index.
          */
@@ -46,10 +46,7 @@ declare module "ui/tab-view" {
     /**
      * Represents a tab view.
      */
-    class TabView extends view.View {
-        public static itemsProperty: dependencyObservable.Property;
-        public static selectedIndexProperty: dependencyObservable.Property;
-
+    class TabView extends View {
         /**
          * Gets or sets the items of the TabView.
          */
@@ -63,12 +60,12 @@ declare module "ui/tab-view" {
         /**
          * [Deprecated. Please use `selectedTabTextColor` to color the titles of the tabs on both platforms and `androidSelectedTabHighlightColor` to color the horizontal line at the bottom of the tab on Android.] Gets or sets the color used for selected item.
          */
-        selectedColor: color.Color;
+        selectedColor: Color;
 
         /**
          * [Deprecated. Please use `tabBackgroundColor` instead] Gets or sets the color used for background of the tab items.
          */
-        tabsBackgroundColor: color.Color;
+        tabsBackgroundColor: Color;
 
         /**
          * Gets or sets the text color of the tabs titles.
@@ -124,14 +121,14 @@ declare module "ui/tab-view" {
          * String value used when hooking to the selectedIndexChanged event.
          */
         public static selectedIndexChangedEvent: string;
-        
+
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
          * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when the selected index changes.
@@ -143,4 +140,8 @@ declare module "ui/tab-view" {
         _updateIOSTabBarColorsAndFonts(): void;
         //@endprivate
     }
+
+        export const itemsProperty: Property<TabView, TabViewItem[]>;
+        export const selectedIndexProperty: Property<TabView, number>;
+        export const selectedColorProperty: Property<TabView, Color>;
 }

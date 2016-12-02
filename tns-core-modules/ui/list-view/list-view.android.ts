@@ -1,6 +1,6 @@
 ﻿import { ItemEventData, ItemsSource } from "ui/list-view";
 import { ListViewBase, separatorColor, itemTemplatesProperty } from "./list-view-common";
-import { View, KeyedTemplate } from "ui/core/view";
+import { View, KeyedTemplate, Length } from "ui/core/view";
 import { Property } from "ui/core/properties";
 import { unsetValue } from "ui/core/dependency-observable";
 import { Observable } from "data/observable";
@@ -11,11 +11,11 @@ import { Color } from "color";
 
 export * from "./list-view-common";
 
-let ITEMLOADING = ListViewBase.itemLoadingEvent;
-let LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
-let ITEMTAP = ListViewBase.itemTapEvent;
+const ITEMLOADING = ListViewBase.itemLoadingEvent;
+const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
+const ITEMTAP = ListViewBase.itemTapEvent;
 
-@Interfaces([])
+@Interfaces([android.widget.AdapterView.OnItemClickListener])
 class ItemClickListener implements android.widget.AdapterView.OnItemClickListener {
     constructor(private owner: WeakRef<ListView>) {
         return global.__native(this);
@@ -36,8 +36,10 @@ export class ListView extends ListViewBase {
     private _itemClickListener: android.widget.AdapterView.OnItemClickListener;
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
+    public _effectiveRowHeight: number;
 
     public _createUI() {
+        this.updateEffectiveRowHeight();
         this._android = new android.widget.ListView(this._context);
         this._android.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
 
@@ -49,7 +51,7 @@ export class ListView extends ListViewBase {
         this._android.setId(this._androidViewId);
 
         ensureListViewAdapterClass();
-        this.android.setAdapter(new ListViewAdapterClass(this));
+        this._android.setAdapter(new ListViewAdapterClass(this));
 
         let that = new WeakRef(this);
         this._itemClickListener = this._itemClickListener || new ItemClickListener(new WeakRef(this));
@@ -72,7 +74,7 @@ export class ListView extends ListViewBase {
             }
         });
 
-        (<android.widget.BaseAdapter>this.android.getAdapter()).notifyDataSetChanged();
+        (<android.widget.BaseAdapter>this._android.getAdapter()).notifyDataSetChanged();
     }
 
     public scrollToIndex(index: number) {
@@ -243,11 +245,11 @@ function ensureListViewAdapterClass() {
             }
 
             if (args.view) {
-                if (this._listView.rowHeight > -1) {
+                if (this._listView._effectiveRowHeight > -1) {
                     args.view.height = this._listView.rowHeight;
                 }
                 else {
-                    args.view.height = unsetValue;
+                    args.view.height = <Length>unsetValue;
                 }
 
                 this._listView._prepareItem(args.view, index);

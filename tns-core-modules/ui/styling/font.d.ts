@@ -4,7 +4,7 @@
 
         public fontFamily: string;
         public fontStyle: "normal" | "italic";
-        public fontWeight: string;
+        public fontWeight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
         public fontSize: number;
 
         public isBold: boolean;
@@ -21,8 +21,18 @@
         public withFontSize(size: number): Font;
 
         public static equals(value1: Font, value2: Font): boolean;
-        public static parse(cssValue: string): Font;
     }
+
+    interface ParsedFont {
+        fontStyle?: "normal" | "italic";
+        fontVariant?: string;
+        fontWeight?: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900",
+        lineHeight?: string,
+        fontSize?: string,
+        fontFamily?: string
+    }
+
+    export function parseFont(fontValue: string): ParsedFont;
 
     export module ios {
         export function registerFont(fontFile: string);

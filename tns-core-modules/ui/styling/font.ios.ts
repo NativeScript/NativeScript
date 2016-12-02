@@ -1,17 +1,31 @@
-﻿import enums = require("ui/enums");
-import common = require("./font-common");
+﻿import { FontBase, parseFontFamily, genericFontFamilies, parseFont } from "./font-common";
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 import fs = require("file-system");
-import * as traceModule from "trace";
-
 import * as utils from "utils/utils";
 
-export class Font extends common.Font {
-    public static default = new Font(undefined, undefined, enums.FontStyle.normal, enums.FontWeight.normal);
+export class Font extends FontBase {
+    public static default = new Font(undefined, undefined, "normal", "normal");
 
     private _uiFont: UIFont;
 
-    constructor(family: string, size: number, style: string, weight: string) {
+    constructor(family: string, size: number, style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
         super(family, size, style, weight);
+    }
+
+    public withFontFamily(family: string): Font {
+        return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
+    }
+
+    public withFontStyle(style: "normal" | "italic"): Font {
+        return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
+    }
+
+    public withFontWeight(weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900"): Font {
+        return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
+    }
+
+    public withFontSize(size: number): Font {
+        return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
     }
 
     public getUIFont(defaultFont: UIFont): UIFont {
@@ -21,40 +35,29 @@ export class Font extends common.Font {
         return this._uiFont;
     }
 
-    public withFontFamily(family: string): Font {
-        return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
-    }
-
-    public withFontStyle(style: string): Font {
-        return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
-    }
-
-    public withFontWeight(weight: string): Font {
-        return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
-    }
-
-    public withFontSize(size: number): Font {
-        return new Font(this.fontFamily, size, this.fontStyle, this.fontWeight);
+    public getAndroidTypeface(): android.graphics.Typeface {
+        return undefined;
     }
 }
 
-var areSystemFontSetsValid: boolean = false;
-export var systemFontFamilies = new Set<string>();
-export var systemFonts = new Set<string>();
 
+export const systemFontFamilies = new Set<string>();
+export const systemFonts = new Set<string>();
+
+let areSystemFontSetsValid: boolean = false;
 export function ensureSystemFontSets() {
     if (areSystemFontSetsValid) {
         return;
     }
 
-    var nsFontFamilies = utils.ios.getter(UIFont, UIFont.familyNames);
-    for (var i = 0; i < nsFontFamilies.count; i++) {
-        var family = nsFontFamilies.objectAtIndex(i);
+    const nsFontFamilies = utils.ios.getter(UIFont, UIFont.familyNames);
+    for (let i = 0; i < nsFontFamilies.count; i++) {
+        const family = nsFontFamilies.objectAtIndex(i);
         systemFontFamilies.add(family);
 
-        var nsFonts = UIFont.fontNamesForFamilyName(family);
-        for (var j = 0; j < nsFonts.count; j++) {
-            var font = nsFonts.objectAtIndex(j);
+        const nsFonts = UIFont.fontNamesForFamilyName(family);
+        for (let j = 0; j < nsFonts.count; j++) {
+            const font = nsFonts.objectAtIndex(j);
             systemFonts.add(font);
         }
     }
@@ -70,10 +73,10 @@ function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
     }
 
     switch (fontFamily.toLowerCase()) {
-        case common.genericFontFamilies.serif:
+        case genericFontFamilies.serif:
             return DEFAULT_SERIF;
 
-        case common.genericFontFamilies.monospace:
+        case genericFontFamilies.monospace:
             return DEFAULT_MONOSPACE;
 
         default:
@@ -82,10 +85,10 @@ function getFontFamilyRespectingGenericFonts(fontFamily: string): string {
 }
 
 function createUIFont(font: Font, defaultFont: UIFont) {
-    var size = font.fontSize || defaultFont.pointSize;
-    var descriptor: UIFontDescriptor;
+    let size = font.fontSize || defaultFont.pointSize;
+    let descriptor: UIFontDescriptor;
 
-    var symbolicTraits: number = 0;
+    let symbolicTraits: number = 0;
     if (font.isBold) {
         symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
     }
@@ -107,10 +110,11 @@ function createUIFont(font: Font, defaultFont: UIFont) {
 }
 
 function tryResolveWithSystemFont(font: Font, size: number, symbolicTraits: number): UIFontDescriptor {
-    var systemFont: UIFont;
+    let systemFont: UIFont;
+    let result: UIFontDescriptor;
     switch (font.fontFamily) {
-        case common.genericFontFamilies.sansSerif:
-        case common.genericFontFamilies.system:
+        case genericFontFamilies.sansSerif:
+        case genericFontFamilies.system:
             if ((<any>UIFont).systemFontOfSizeWeight) {// This method is available on iOS 8.2 and later.
                 systemFont = (<any>UIFont).systemFontOfSizeWeight(size, getiOSFontWeight(font.fontWeight));
             }
@@ -120,7 +124,7 @@ function tryResolveWithSystemFont(font: Font, size: number, symbolicTraits: numb
             result = utils.ios.getter(systemFont, systemFont.fontDescriptor).fontDescriptorWithSymbolicTraits(symbolicTraits);
             break;
 
-        case common.genericFontFamilies.monospace:
+        case genericFontFamilies.monospace:
             if ((<any>UIFont).monospacedDigitSystemFontOfSizeWeight) {// This method is available on iOS 9.0 and later.
                 systemFont = (<any>UIFont).monospacedDigitSystemFontOfSizeWeight(size, getiOSFontWeight(font.fontWeight));
                 result = utils.ios.getter(systemFont, systemFont.fontDescriptor).fontDescriptorWithSymbolicTraits(symbolicTraits);
@@ -129,7 +133,7 @@ function tryResolveWithSystemFont(font: Font, size: number, symbolicTraits: numb
     }
 
     if (systemFont) {
-        var result = utils.ios.getter(systemFont, systemFont.fontDescriptor).fontDescriptorWithSymbolicTraits(symbolicTraits);
+        result = utils.ios.getter(systemFont, systemFont.fontDescriptor).fontDescriptorWithSymbolicTraits(symbolicTraits);
         return result;
     }
 
@@ -137,17 +141,17 @@ function tryResolveWithSystemFont(font: Font, size: number, symbolicTraits: numb
 }
 
 function tryResolveByFamily(font: Font): UIFontDescriptor {
-    var fonts = common.parseFontFamily(font.fontFamily);
-    var result: UIFontDescriptor = null;
+    const fonts = parseFontFamily(font.fontFamily);
+    let result: UIFontDescriptor = null;
     if (fonts.length === 0) {
         return null;
     }
 
     ensureSystemFontSets();
 
-    for (var i = 0; i < fonts.length; i++) {
-        var fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);
-        var fontFace = getiOSFontFace(fontFamily, font.fontWeight, font.isItalic);
+    for (let i = 0; i < fonts.length; i++) {
+        const fontFamily = getFontFamilyRespectingGenericFonts(fonts[i]);
+        const fontFace = getiOSFontFace(fontFamily, font.fontWeight, font.isItalic);
         if (systemFonts.has(fontFamily) && !fontFace) { // This is an actual font like `HelveticaNeue-UltraLightItalic` - don't apply font face attribute
             result = UIFontDescriptor.fontDescriptorWithNameSize(fontFamily, 0);
         }
@@ -163,8 +167,8 @@ function tryResolveByFamily(font: Font): UIFontDescriptor {
     return null;
 }
 
-function createFontDescriptor(fontFamily: string, fontFace: string): UIFontDescriptor  {
-    var fontAttributes = NSMutableDictionary.alloc<string, any>().init();
+function createFontDescriptor(fontFamily: string, fontFace: string): UIFontDescriptor {
+    let fontAttributes = NSMutableDictionary.alloc<string, any>().init();
     fontAttributes.setObjectForKey(fontFamily, "NSFontFamilyAttribute");
     if (fontFace) {
         fontAttributes.setObjectForKey(fontFace, "NSFontFaceAttribute");
@@ -173,42 +177,43 @@ function createFontDescriptor(fontFamily: string, fontFace: string): UIFontDescr
 }
 
 // Available in iOS 8.2 and later. 
-declare var UIFontWeightThin: number;       //0.8
-declare var UIFontWeightUltraLight: number; //0.6
-declare var UIFontWeightLight: number;      //0.4
-declare var UIFontWeightRegular: number;    //0
-declare var UIFontWeightMedium: number;     //0.23
-declare var UIFontWeightSemibold: number;   //0.3
-declare var UIFontWeightBold: number;       //0.4
-declare var UIFontWeightHeavy: number;      //0.56
-declare var UIFontWeightBlack: number;      //0.62
+declare const UIFontWeightThin: number;       //0.8
+declare const UIFontWeightUltraLight: number; //0.6
+declare const UIFontWeightLight: number;      //0.4
+declare const UIFontWeightRegular: number;    //0
+declare const UIFontWeightMedium: number;     //0.23
+declare const UIFontWeightSemibold: number;   //0.3
+declare const UIFontWeightBold: number;       //0.4
+declare const UIFontWeightHeavy: number;      //0.56
+declare const UIFontWeightBlack: number;      //0.62
+
 function getiOSFontWeight(fontWeight: string): number {
     if (!(<any>UIFont).systemFontOfSizeWeight) {
         throw new Error("Font weight is available in iOS 8.2 and later.");
     }
 
     switch (fontWeight) {
-        case enums.FontWeight.thin:
+        case "100":
             return UIFontWeightThin;
-        case enums.FontWeight.extraLight:
+        case "200":
             return UIFontWeightUltraLight;
-        case enums.FontWeight.light:
+        case "300":
             return UIFontWeightLight;
-        case enums.FontWeight.normal:
+        case "normal":
         case "400":
         case undefined:
         case null:
             return UIFontWeightRegular;
-        case enums.FontWeight.medium:
+        case "500":
             return UIFontWeightMedium;
-        case enums.FontWeight.semiBold:
+        case "600":
             return UIFontWeightSemibold;
-        case enums.FontWeight.bold:
+        case "bold":
         case "700":
             return UIFontWeightBold;
-        case enums.FontWeight.extraBold:
+        case "800":
             return UIFontWeightHeavy;
-        case enums.FontWeight.black:
+        case "900":
             return UIFontWeightBlack;
         default:
             throw new Error(`Invalid font weight: "${fontWeight}"`);
@@ -228,54 +233,54 @@ function combineWeightStringWithItalic(weight: string, isItalic: boolean) {
 }
 
 function canLoadFont(fontFamily: string, fontFace: string) {
-    var trialDescriptor = createFontDescriptor(fontFamily, fontFace);
-    var trialFont = UIFont.fontWithDescriptorSize(trialDescriptor, 0);
+    const trialDescriptor = createFontDescriptor(fontFamily, fontFace);
+    const trialFont = UIFont.fontWithDescriptorSize(trialDescriptor, 0);
     return trialFont.familyName === fontFamily;
 }
 
 function findCorrectWeightString(fontFamily: string, weightStringAlternatives: Array<string>, isItalic: boolean) {
     for (let i = 0, length = weightStringAlternatives.length; i < length; i++) {
-        var possibleFontFace = combineWeightStringWithItalic(weightStringAlternatives[i], isItalic);
+        const possibleFontFace = combineWeightStringWithItalic(weightStringAlternatives[i], isItalic);
         if (canLoadFont(fontFamily, possibleFontFace)) {
             return weightStringAlternatives[i];
         }
     }
     return weightStringAlternatives[0];
-} 
+}
 
 function getiOSFontFace(fontFamily: string, fontWeight: string, isItalic: boolean): string {
     // ... with a lot of fuzzy logic and artificial intelligence thanks to the lack of font naming standards.
-    var weight: string;
+    let weight: string;
     switch (fontWeight) {
-        case enums.FontWeight.thin:
+        case "100":
             weight = "Thin";
             break;
-        case enums.FontWeight.extraLight:
+        case "200":
             weight = findCorrectWeightString(fontFamily, ["Ultra Light", "UltraLight", "Extra Light", "ExtraLight", "Ultra light", "Ultralight", "Extra light", "Extralight"], isItalic);
             break;
-        case enums.FontWeight.light:
+        case "300":
             weight = "Light";
             break;
-        case enums.FontWeight.normal:
+        case "normal":
         case "400":
         case undefined:
         case null:
             weight = ""; // We dont' need to write Regular
             break;
-        case enums.FontWeight.medium:
+        case "500":
             weight = "Medium";
             break;
-        case enums.FontWeight.semiBold:
+        case "600":
             weight = findCorrectWeightString(fontFamily, ["Demi Bold", "DemiBold", "Semi Bold", "SemiBold", "Demi bold", "Demibold", "Semi bold", "Semibold"], isItalic);
             break;
-        case enums.FontWeight.bold:
+        case "bold":
         case "700":
             weight = "Bold";
             break;
-        case enums.FontWeight.extraBold:
+        case "800":
             weight = findCorrectWeightString(fontFamily, ["Heavy", "Extra Bold", "ExtraBold", "Extra bold", "Extrabold"], isItalic);
             break;
-        case enums.FontWeight.black:
+        case "900":
             weight = "Black";
             break;
         default:
@@ -287,27 +292,27 @@ function getiOSFontFace(fontFamily: string, fontWeight: string, isItalic: boolea
 
 export module ios {
     export function registerFont(fontFile: string) {
-        var filePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFile);
+        let filePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFile);
         if (!fs.File.exists(filePath)) {
             filePath = fs.path.join(fs.knownFolders.currentApp().path, fontFile);
         }
-        var fontData = utils.ios.getter(NSFileManager, NSFileManager.defaultManager).contentsAtPath(filePath);
+        const fontData = utils.ios.getter(NSFileManager, NSFileManager.defaultManager).contentsAtPath(filePath);
         if (!fontData) {
             throw new Error("Could not load font from: " + fontFile);
         }
-        var provider = CGDataProviderCreateWithCFData(fontData);
-        var font = CGFontCreateWithDataProvider(provider);
+        const provider = CGDataProviderCreateWithCFData(fontData);
+        const font = CGFontCreateWithDataProvider(provider);
 
         if (!font) {
             throw new Error("Could not load font from: " + fontFile);
         }
 
-        var error = new interop.Reference<NSError>();
+        const error = new interop.Reference<NSError>();
         if (!CTFontManagerRegisterGraphicsFont(font, error)) {
-            var trace: typeof traceModule = require("trace");
+           
 
-            if (trace.enabled) {
-                trace.write("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), trace.categories.Error, trace.messageType.error);
+            if (traceEnabled) {
+                traceWrite("Error occur while registering font: " + CFErrorCopyDescription(<NSError>error.value), traceCategories.Error, traceMessageType.error);
             }
         }
 

@@ -2,18 +2,13 @@
  * Contains the Switch class, which represents a standard switch component.
  */
 declare module "ui/switch" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import { View } from "ui/core/view";
+    import { Property } from "ui/core/properties";
 
     /**
      * Represents a switch component.
      */
-    export class Switch extends view.View {
-
-        /**
-         * Represents the observable property backing the checked property of each Switch instance.
-         */
-        public static checkedProperty: dependencyObservable.Property;
+    export class Switch extends View {
 
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/Switch.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -30,4 +25,9 @@ declare module "ui/switch" {
          */
         checked: boolean;
     }
+
+    /**
+     * Represents the observable property backing the checked property of each Switch instance.
+     */
+    export const checkedProperty: Property<Switch, boolean>;
 }

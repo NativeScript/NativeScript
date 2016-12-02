@@ -1,71 +1,55 @@
-﻿import view = require("ui/core/view");
-import definition = require("ui/slider");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
+﻿import { Slider as SliderDefinition } from "ui/slider";
+import { View } from "ui/core/view";
+import { Property } from "ui/core/properties";
 
 // TODO: Extract base Range class for slider and progress
-export class Slider extends view.View implements definition.Slider {
+export class SliderBase extends View implements SliderDefinition {
+    public value: number;
+    public minValue: number;
+    public maxValue: number;
+}
 
-    public static valueProperty = new dependencyObservable.Property(
-        "value",
-        "Slider",
-        new proxy.PropertyMetadata(0)
-        );
-
-    public static minValueProperty = new dependencyObservable.Property(
-        "minValue",
-        "Slider",
-        new proxy.PropertyMetadata(0)
-        );
-
-    public static maxValueProperty = new dependencyObservable.Property(
-        "maxValue",
-        "Slider",
-        new proxy.PropertyMetadata(100)
-        );
-
-    constructor() {
-        super();
-    }
-
-    get value(): number {
-        return this._getValue(Slider.valueProperty);
-    }
-    set value(value: number) {
-        var newValue = value;
+/**
+ * Represents the observable property backing the value property of each Slider instance.
+ */
+export const valueProperty = new Property<SliderBase, number>({
+    name: "value", defaultValue: 0, valueChanged: (target, oldValue, newValue) => {
         newValue = Math.max(newValue, this.minValue);
         newValue = Math.min(newValue, this.maxValue);
 
-        this._setValue(Slider.valueProperty, newValue);
+        target.value = newValue;
     }
+});
+valueProperty.register(SliderBase);
 
-    get minValue(): number {
-        return this._getValue(Slider.minValueProperty);
-    }
-    set minValue(newValue: number) {
-        this._setValue(Slider.minValueProperty, newValue);
-
-        if (newValue > this.maxValue) {
-            this._setValue(Slider.maxValueProperty, newValue);
+/**
+ * Represents the observable property backing the minValue property of each Slider instance.
+ */
+export const minValueProperty = new Property<SliderBase, number>({
+    name: "minValue", defaultValue: 0, valueChanged: (target, oldValue, newValue) => {
+        if (newValue > target.maxValue) {
+            target.maxValue = newValue;
         }
 
-        if (newValue > this.value) {
-            this._setValue(Slider.valueProperty, newValue);
+        if (newValue > target.value) {
+            target.value = newValue;
         }
     }
+});
+minValueProperty.register(SliderBase);
 
-    get maxValue(): number {
-        return this._getValue(Slider.maxValueProperty);
-    }
-    set maxValue(newValue: number) {
-        this._setValue(Slider.maxValueProperty, newValue);
-
-        if (newValue < this.minValue) {
-            this._setValue(Slider.minValueProperty, newValue);
+/**
+ * Represents the observable property backing the maxValue property of each Slider instance.
+ */
+export const maxValueProperty = new Property<SliderBase, number>({
+    name: "maxValue", defaultValue: 100, valueChanged: (target, oldValue, newValue) => {
+        if (newValue < target.minValue) {
+            target.minValue = newValue;
         }
 
-        if (newValue < this.value) {
-            this._setValue(Slider.valueProperty, newValue);
+        if (newValue < target.value) {
+            target.value = newValue;
         }
     }
-}
+});
+maxValueProperty.register(SliderBase);

@@ -11,7 +11,8 @@ import { ViewBase, getEventOrGestureName } from "./view-base";
 import { propagateInheritedProperties, clearInheritedProperties, Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty } from "./properties";
 import { observe, fromString as gestureFromString, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { isIOS } from "platform";
-import { Font } from "ui/styling/font";
+import { Font, parseFont } from "ui/styling/font";
+import { fontSizeConverter } from "../styling/converters";
 
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
@@ -439,17 +440,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.minHeight = value;
     }
 
-    get width(): Length {
+    get width(): PercentLength {
         return this.style.width;
     }
-    set width(value: Length) {
+    set width(value: PercentLength) {
         this.style.width = value;
     }
 
-    get height(): Length {
+    get height(): PercentLength {
         return this.style.height;
     }
-    set height(value: Length) {
+    set height(value: PercentLength) {
         this.style.height = value;
     }
 
@@ -460,31 +461,31 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.margin = value;
     }
 
-    get marginLeft(): Length {
+    get marginLeft(): PercentLength {
         return this.style.marginLeft;
     }
-    set marginLeft(value: Length) {
+    set marginLeft(value: PercentLength) {
         this.style.marginLeft = value;
     }
 
-    get marginTop(): Length {
+    get marginTop(): PercentLength {
         return this.style.marginTop;
     }
-    set marginTop(value: Length) {
+    set marginTop(value: PercentLength) {
         this.style.marginTop = value;
     }
 
-    get marginRight(): Length {
+    get marginRight(): PercentLength {
         return this.style.marginRight;
     }
-    set marginRight(value: Length) {
+    set marginRight(value: PercentLength) {
         this.style.marginRight = value;
     }
 
-    get marginBottom(): Length {
+    get marginBottom(): PercentLength {
         return this.style.marginBottom;
     }
-    set marginBottom(value: Length) {
+    set marginBottom(value: PercentLength) {
         this.style.marginBottom = value;
     }
 
@@ -1381,7 +1382,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 }
 
-function getEffectiveValue(prentAvailableLength: number, density: number, param: Length): number {
+function getLengthEffectiveValue(density: number, param: Length): number {
+    switch (param.unit) {
+        case "px":
+            return Math.round(param.value);
+
+        default:
+        case "dip":
+            return Math.round(density * param.value);
+    }
+}
+
+function getPercentLengthEffectiveValue(prentAvailableLength: number, density: number, param: PercentLength): number {
     switch (param.unit) {
         case "%":
             return Math.round(prentAvailableLength * param.value);
@@ -1402,26 +1414,31 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
     let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
     let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
     let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-    style.effectiveWidth = getEffectiveValue(parentAvailableWidth, density, style.width);
-    style.effectiveMarginLeft = getEffectiveValue(parentAvailableWidth, density, style.marginLeft);
-    style.effectiveMarginRight = getEffectiveValue(parentAvailableWidth, density, style.marginRight);
+    style.effectiveWidth = getPercentLengthEffectiveValue(parentAvailableWidth, density, style.width);
+    style.effectiveMarginLeft = getPercentLengthEffectiveValue(parentAvailableWidth, density, style.marginLeft);
+    style.effectiveMarginRight = getPercentLengthEffectiveValue(parentAvailableWidth, density, style.marginRight);
 
     let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
     let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
     let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
     let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-    style.effectiveHeight = getEffectiveValue(parentAvailableHeight, density, style.height);
-    style.effectiveMarginTop = getEffectiveValue(parentAvailableHeight, density, style.marginTop);
-    style.effectiveMarginBottom = getEffectiveValue(parentAvailableHeight, density, style.marginBottom);
+    style.effectiveHeight = getPercentLengthEffectiveValue(parentAvailableHeight, density, style.height);
+    style.effectiveMarginTop = getPercentLengthEffectiveValue(parentAvailableHeight, density, style.marginTop);
+    style.effectiveMarginBottom = getPercentLengthEffectiveValue(parentAvailableHeight, density, style.marginBottom);
 }
 
 interface Length {
+    readonly unit: "dip" | "px";
+    readonly value: number;
+}
+
+interface PercentLength {
     readonly unit: "%" | "dip" | "px";
     readonly value: number;
 }
 
-export namespace Length {
-    export function parse(value: string | Length): Length {
+export namespace PercentLength {
+    export function parse(value: string | Length): PercentLength {
         if (typeof value === "string") {
             let type: "%" | "dip" | "px";
             let numberValue = 0;
@@ -1447,7 +1464,36 @@ export namespace Length {
             }
 
             if (isNaN(numberValue) || !isFinite(numberValue)) {
-                throw new Error("Invalid value: " + value);
+                throw new Error(`Invalid value: ${value}`);
+            }
+
+            return {
+                value: numberValue,
+                unit: type
+            }
+        } else {
+            return value;
+        }
+    }
+}
+
+export namespace Length {
+    export function parse(value: string | Length): Length {
+        if (typeof value === "string") {
+            let type: "dip" | "px";
+            let numberValue = 0;
+            let stringValue = value.trim();
+            if (stringValue.indexOf("px") !== -1) {
+                type = "px";
+                stringValue = stringValue.replace("px", "").trim();
+            } else {
+                type = "dip";
+            }
+
+            numberValue = parseFloat(stringValue);
+
+            if (isNaN(numberValue) || !isFinite(numberValue)) {
+                throw new Error(`Invalid value: ${value}`);
             }
 
             return {
@@ -1503,24 +1549,24 @@ const zeroLength: Length = { value: 0, unit: "px" };
 
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        target.effectiveMinWidth = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        target.effectiveMinWidth = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
 
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        target.effectiveMinHeight = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        target.effectiveMinHeight = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 minHeightProperty.register(Style);
 
 const matchParent: Length = { value: -1, unit: "px" };
 
-export const widthProperty = new CssProperty<Style, Length>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: Length.parse });
+export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
 
-export const heightProperty = new CssProperty<Style, Length>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: Length.parse });
+export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: PercentLength.parse });
 heightProperty.register(Style);
 
 export const marginProperty = new ShorthandProperty<Style>({
@@ -1530,16 +1576,16 @@ export const marginProperty = new ShorthandProperty<Style>({
 });
 marginProperty.register(Style);
 
-export const marginLeftProperty = new CssProperty<Style, Length>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
+export const marginLeftProperty = new CssProperty<Style, PercentLength>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
 marginLeftProperty.register(Style);
 
-export const marginRightProperty = new CssProperty<Style, Length>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
+export const marginRightProperty = new CssProperty<Style, PercentLength>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
 marginRightProperty.register(Style);
 
-export const marginTopProperty = new CssProperty<Style, Length>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
+export const marginTopProperty = new CssProperty<Style, PercentLength>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
 marginTopProperty.register(Style);
 
-export const marginBottomProperty = new CssProperty<Style, Length>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: Length.parse });
+export const marginBottomProperty = new CssProperty<Style, PercentLength>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
 marginBottomProperty.register(Style);
 
 export const paddingProperty = new ShorthandProperty<Style>({
@@ -1551,28 +1597,28 @@ paddingProperty.register(Style);
 
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        target.effectivePaddingLeft = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        target.effectivePaddingLeft = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
 
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        target.effectivePaddingRight = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        target.effectivePaddingRight = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
 
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        target.effectivePaddingTop = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        target.effectivePaddingTop = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
 
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        target.effectivePaddingBottom = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        target.effectivePaddingBottom = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingBottomProperty.register(Style);
@@ -2010,7 +2056,7 @@ borderWidthProperty.register(Style);
 
 export const borderTopWidthProperty = new CssProperty<Style, Length>({
     name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -2023,7 +2069,7 @@ borderTopWidthProperty.register(Style);
 
 export const borderRightWidthProperty = new CssProperty<Style, Length>({
     name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -2036,7 +2082,7 @@ borderRightWidthProperty.register(Style);
 
 export const borderBottomWidthProperty = new CssProperty<Style, Length>({
     name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -2049,7 +2095,7 @@ borderBottomWidthProperty.register(Style);
 
 export const borderLeftWidthProperty = new CssProperty<Style, Length>({
     name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        let value = getEffectiveValue(0, layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -2239,67 +2285,15 @@ export let fontProperty = new ShorthandProperty<Style>({
         return `${this.fontStyle} ${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
     },
     converter: function (value: string) {
-        return parseFont(value);
+        let font = parseFont(value);
+        let fontSize = fontSizeConverter(font.fontSize);
+       
+        return [
+            [fontStyleProperty, font.fontStyle],
+            [fontWeightProperty, font.fontWeight],
+            [fontSizeProperty, fontSize],
+            [fontFamilyProperty, font.fontFamily]
+        ]
     }
 })
 fontProperty.register(Style);
-
-function parseFont(font: string): [CssProperty<any, any>, any][] {
-    let fontSize: number;
-    let fontFamily: string;
-    let fontStyle: "normal" | "italic" = "normal";
-    let fontWeight: string = "normal";
-
-    let elements = font.split(/\s+/);
-    let element: string;
-    while (element = elements.shift()) {
-        switch (element) {
-            case "normal":
-                break;
-
-            // TODO: add support for oblique font style.
-            case "italic":
-                // case "oblique":
-                fontStyle = "italic";
-                break;
-
-            case "100":
-            case "200":
-            case "300":
-            case "normal":
-            case "400":
-            case "500":
-            case "600":
-            case "bold":
-            case "700":
-            case "800":
-            case "900":
-                fontWeight = element;
-                break;
-
-            default:
-                if (!fontSize) {
-                    let parts = element.split("/");
-                    // TODO: add support for px support.
-                    fontSize = parseFloat(parts[0]);
-                    // TODO: add support for lineHeight.
-                    // if (parts.length > 1) {
-                    //     lineHeight = parts[1];
-                    // }
-                    break;
-                }
-
-                fontFamily = element;
-            // if (elements.length) {
-            //     fontFamily += " " + elements.join(" ");
-            // }
-        }
-    }
-
-    return [
-        [fontStyleProperty, fontStyle],
-        [fontWeightProperty, fontWeight],
-        [fontSizeProperty, fontSize],
-        [fontFamilyProperty, fontFamily]
-    ]
-}

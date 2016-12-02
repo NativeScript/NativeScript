@@ -352,11 +352,11 @@ export class Frame extends FrameBase {
     }
 
     public _getNavBarVisible(page: Page): boolean {
-        if (types.isDefined(page.actionBarHidden)) {
+        if (page.actionBarHidden !== undefined) {
             return !page.actionBarHidden;
         }
 
-        if (this._android && types.isDefined(this._android.showActionBar)) {
+        if (this._android && this._android.showActionBar !== undefined) {
             return this._android.showActionBar;
         }
 

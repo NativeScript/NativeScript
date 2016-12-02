@@ -1,90 +1,53 @@
-﻿import enums = require("ui/enums");
-import definitios = require("ui/styling/font");
-import * as converters from "./converters";
+﻿import { Font as FontDefinition, ParsedFont } from "ui/styling/font";
 
-export class Font implements definitios.Font {
+export abstract class FontBase implements FontDefinition {
     public static default = undefined;
 
     private _fontFamily: string;
-    private _fontStyle: string;
-    private _fontWeight: string;
+    private _fontStyle: "normal" | "italic";
+    private _fontWeight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
     private _fontSize: number;
 
     get fontFamily(): string {
         return this._fontFamily;
     }
-    set fontFamily(value: string) {
-        throw new Error("fontFamily is read-only");
-    }
 
-    get fontStyle(): string {
+    get fontStyle(): "normal" | "italic" {
         return this._fontStyle;
     }
-    set fontStyle(value: string) {
-        throw new Error("fontStyle is read-only");
-    }
 
-    get fontWeight(): string {
+    get fontWeight(): "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900" {
         return this._fontWeight;
-    }
-    set fontWeight(value: string) {
-        throw new Error("fontWeight is read-only");
     }
 
     get fontSize(): number {
         return this._fontSize;
     }
-    set fontSize(value: number) {
-        throw new Error("fontSize is read-only");
-    }
 
     get isBold(): boolean {
-        return this._fontWeight.toLowerCase() === enums.FontWeight.bold
+        return this._fontWeight.toLowerCase() === "bold"
             || this._fontWeight.toLowerCase() === "700";
-    }
-    set isBold(value: boolean) {
-        throw new Error("isBold is read-only");
     }
 
     get isItalic(): boolean {
-        return this._fontStyle.toLowerCase() === enums.FontStyle.italic;
-    }
-    set isItalic(value: boolean) {
-        throw new Error("isItalic is read-only");
+        return this._fontStyle.toLowerCase() === "italic";
     }
 
-    constructor(family: string, size: number, style: string, weight: string) {
+    protected constructor(family: string, size: number, style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
         this._fontFamily = family;
         this._fontSize = size;
         this._fontStyle = style;
         this._fontWeight = weight;
     }
 
-    public getAndroidTypeface(): android.graphics.Typeface {
-        return undefined;
-    }
+    public abstract getAndroidTypeface(): android.graphics.Typeface;
+    public abstract getUIFont(defaultFont: UIFont): UIFont;
+    public abstract withFontFamily(family: string): FontBase;
+    public abstract withFontStyle(style: string): FontBase;
+    public abstract withFontWeight(weight: string):FontBase;
+    public abstract withFontSize(size: number): FontBase;
 
-    public getUIFont(defaultFont: UIFont): UIFont {
-        return undefined;
-    }
-
-    public withFontFamily(family: string): Font {
-        throw new Error("This should be called on the derived class");
-    }
-
-    public withFontStyle(style: string): Font {
-        throw new Error("This should be called on the derived class");
-    }
-
-    public withFontWeight(weight: string): Font {
-        throw new Error("This should be called on the derived class");
-    }
-
-    public withFontSize(size: number): Font {
-        throw new Error("This should be called on the derived class");
-    }
-
-    public static equals(value1: Font, value2: Font): boolean {
+    public static equals(value1: FontBase, value2: FontBase): boolean {
         // both values are falsy
         if (!value1 && !value2) {
             return true;
@@ -100,26 +63,17 @@ export class Font implements definitios.Font {
             value1.fontStyle === value2.fontStyle &&
             value1.fontWeight === value2.fontWeight;
     }
-
-    public static parse(cssValue: string): Font {
-        var parsed = parseFont(cssValue);
-
-        var size = converters.fontSizeConverter(parsed.fontSize);
-        size = !!size ? size : undefined;
-
-        return new Font(parsed.fontFamily, size, parsed.fontStyle, parsed.fontWeight);
-    }
 }
 
 export function parseFontFamily(value: string): Array<string> {
-    var result = new Array<string>();
+    const result = new Array<string>();
     if (!value) {
         return result;
     }
 
-    var split = value.split(",");
-    for (var i = 0; i < split.length; i++) {
-        var str = split[i].trim().replace(/['"]+/g, '');
+    const split = value.split(",");
+    for (let i = 0; i < split.length; i++) {
+        let str = split[i].trim().replace(/['"]+/g, '');
         if (str) {
             result.push(str);
         }
@@ -128,13 +82,13 @@ export function parseFontFamily(value: string): Array<string> {
 }
 
 export module genericFontFamilies {
-    export var serif = "serif";
-    export var sansSerif = "sans-serif";
-    export var monospace = "monospace";
-    export var system = "system";
+    export const serif = "serif";
+    export const sansSerif = "sans-serif";
+    export const monospace = "monospace";
+    export const system = "system";
 }
 
-var styles = new Set();
+const styles = new Set();
 ["italic", "oblique"].forEach((val, i, a) => styles.add(val));
 
 // http://www.w3schools.com/cssref/pr_font_weight.asp
@@ -149,27 +103,18 @@ var styles = new Set();
 //- 700(Bold) (API16 -bold)
 //- 800(Extra Bold / Ultra Bold) (API16 -bold)
 //- 900(Black / Heavy) (API21 -black)
-var weights = new Set();
+const weights = new Set();
 ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"].forEach((val, i, a) => weights.add(val));
 
-interface ParsedFont {
-    fontStyle?: string;
-    fontVariant?: string;
-    fontWeight?: string,
-    lineHeight?: string,
-    fontSize?: string,
-    fontFamily?: string
-}
-
-function parseFont(fontValue: string): ParsedFont {
-    var result: ParsedFont = {
+export function parseFont(fontValue: string): ParsedFont {
+    let result: ParsedFont = {
         fontStyle: "normal",
         fontVariant: "normal",
-        fontWeight: "normal",
+        fontWeight: "normal"
     }
 
-    var parts = fontValue.split(/\s+/);
-    var part: string;
+    const parts = fontValue.split(/\s+/);
+    let part: string;
     while (part = parts.shift()) {
         if (part === "normal") {
             // nothing to do here
@@ -179,13 +124,13 @@ function parseFont(fontValue: string): ParsedFont {
             result.fontVariant = part;
         }
         else if (styles.has(part)) {
-            result.fontStyle = part
+            result.fontStyle = <any>part;
         }
         else if (weights.has(part)) {
-            result.fontWeight = part;
+            result.fontWeight = <any>part;
         }
         else if (!result.fontSize) {
-            var sizes = part.split("/");
+            let sizes = part.split("/");
             result.fontSize = sizes[0];
             result.lineHeight = sizes.length > 1 ? sizes[1] : undefined;
         }

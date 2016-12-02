@@ -63,12 +63,21 @@ declare module "ui/core/view" {
     }
 
     export interface Length {
+        readonly unit: "dip" | "px";
+        readonly value: number;
+    }
+
+    export interface PercentLength {
         readonly unit: "%" | "dip" | "px";
         readonly value: number;
     }
 
     export namespace Length {
         function parse(text: string): Length;
+    }
+
+    export namespace PercentLength {
+        function parse(text: string): PercentLength;
     }
 
     /**

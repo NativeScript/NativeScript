@@ -1,76 +1,44 @@
-﻿import common = require("./slider-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
-import proxy = require("ui/core/proxy");
-import style = require("ui/styling/style");
+﻿import { SliderBase, valueProperty, minValueProperty, maxValueProperty } from "./slider-common";
+import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
+import { Color } from "color";
+import { Background } from "ui/styling/background";
 
-function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var slider = <Slider>data.object;
-    if (!slider.android) {
-        return;
+export * from "./slider-common";
+
+@Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
+class SeekBarChangeListener implements android.widget.SeekBar.OnSeekBarChangeListener {
+    constructor(private owner: WeakRef<Slider>) {
+        return global.__native(this);
     }
 
-    slider._setNativeValuesSilently(data.newValue - slider.minValue, slider.maxValue - slider.minValue);
-}
-
-function onMinValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var slider = <Slider>data.object;
-    if (!slider.android) {
-        return;
+    onProgressChanged(seekBar: android.widget.SeekBar, progress: number, fromUser: boolean): void {
+        let owner = this.owner.get();
+        if (owner) {
+            if (!owner._supressNativeValue) {
+                let newValue: number = seekBar.getProgress() + owner.minValue;
+                owner.nativePropertyChanged(valueProperty, newValue);
+            }
+        }
     }
 
-    // There is no minValue in Android, so we translate the value and maxValue to simulate it.
-    slider._setNativeValuesSilently(slider.value - data.newValue, slider.maxValue - data.newValue);
-}
-
-function onMaxValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var slider = <Slider>data.object;
-    if (!slider.android) {
-        return;
+    onStartTrackingTouch(seekBar: android.widget.SeekBar): void {
+        //
     }
 
-    slider.android.setMax(data.newValue - slider.minValue);
+    onStopTrackingTouch(seekBar: android.widget.SeekBar): void {
+        //
+    }
 }
 
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.Slider.valueProperty.metadata).onSetNativeValue = onValuePropertyChanged;
-(<proxy.PropertyMetadata>common.Slider.minValueProperty.metadata).onSetNativeValue = onMinValuePropertyChanged;
-(<proxy.PropertyMetadata>common.Slider.maxValueProperty.metadata).onSetNativeValue = onMaxValuePropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class Slider extends common.Slider {
-    private _supressNativeValue: boolean;
+export class Slider extends SliderBase {
+    _supressNativeValue: boolean;
     private _android: android.widget.SeekBar;
-    private _changeListener: android.widget.SeekBar.OnSeekBarChangeListener;
+    private changeListener: android.widget.SeekBar.OnSeekBarChangeListener;
 
     public _createUI() {
+        this.changeListener = this.changeListener || new SeekBarChangeListener(new WeakRef(this));
         this._android = new android.widget.SeekBar(this._context);
-
-        var that = new WeakRef(this);
-
-        this._changeListener = new android.widget.SeekBar.OnSeekBarChangeListener({
-
-            onProgressChanged: function (seekBar: android.widget.SeekBar, progress: number, fromUser: boolean) {
-                var owner = <Slider>that.get();
-                if (owner) {
-                    if (!owner._supressNativeValue) {
-                        var newValue: number = seekBar.getProgress() + owner.minValue;
-                        owner._onPropertyChangedFromNative(common.Slider.valueProperty, newValue);
-                    }
-                }
-            },
-
-            onStartTrackingTouch: (seekBar: android.widget.SeekBar) => {
-                //
-            },
-
-            onStopTrackingTouch: (seekBar: android.widget.SeekBar) => {
-                //
-            }
-        });
-
-        this._android.setOnSeekBarChangeListener(this._changeListener);
+        this._android.setOnSeekBarChangeListener(this.changeListener);
     }
 
     get android(): android.widget.SeekBar {
@@ -82,11 +50,7 @@ export class Slider extends common.Slider {
      * We need this method to call native setMax and setProgress methods when minValue property is changed,
      * without handling the native value changed callback.
      */
-    public _setNativeValuesSilently(newValue: number, newMaxValue: number) {
-        if (!this.android) {
-            return;
-        }
-
+    private setNativeValuesSilently(newValue: number, newMaxValue: number) {
         this._supressNativeValue = true;
         try {
             this.android.setMax(newMaxValue);
@@ -96,39 +60,52 @@ export class Slider extends common.Slider {
             this._supressNativeValue = false;
         }
     }
+
+    get [valueProperty.native](): number {
+        return 0;
+    }
+    set [valueProperty.native](value: number) {
+        this.setNativeValuesSilently(value - this.minValue, this.maxValue - this.minValue);
+    }
+    get [minValueProperty.native](): number {
+        return 0;
+    }
+    set [minValueProperty.native](value: number) {
+        this.setNativeValuesSilently(this.value - value, this.maxValue - value);
+    }
+    get [maxValueProperty.native](): number {
+        return 100;
+    }
+    set [maxValueProperty.native](value: number) {
+        this._android.setMax(value - this.minValue);
+    }
+
+    get [colorProperty.native](): number {
+        return -1;
+    }
+    set [colorProperty.native](value: number | Color) {
+        if (value instanceof Color) {
+            this._android.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+        } else {
+            this._android.getThumb().clearColorFilter();
+        }
+    }
+
+    get [backgroundColorProperty.native](): number {
+        return -1;
+    }
+    set [backgroundColorProperty.native](value: number | Color) {
+        if (value instanceof Color) {
+            this._android.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+        } else {
+            this._android.getProgressDrawable().clearColorFilter();
+        }
+    }
+
+    get [backgroundInternalProperty.native](): Background {
+        return null;
+    }
+    set [backgroundInternalProperty.native](value: Background) {
+        //
+    }
 }
-
-export class SliderStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <android.widget.SeekBar>view._nativeView;
-        bar.getThumb().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
-    }
-
-    private static resetColorProperty(view: view.View, nativeValue: number) {
-        var bar = <android.widget.SeekBar>view._nativeView;
-        bar.getThumb().clearColorFilter();
-    }
-
-    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
-        var bar = <android.widget.SeekBar>view._nativeView;
-        bar.getProgressDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
-    }
-
-    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
-        // Do nothing.
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SliderStyler.setColorProperty,
-            SliderStyler.resetColorProperty), "Slider");
-
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            SliderStyler.setBackgroundAndBorderProperty,
-            SliderStyler.resetBackgroundAndBorderProperty), "Slider");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Slider");
-    }
-}
-
-SliderStyler.registerHandlers();

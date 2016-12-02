@@ -2,23 +2,13 @@
  * Contains the Progress class, which represents a component capable of showing progress.
  */
 declare module "ui/progress" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import { View } from "ui/core/view";
+    import { Property } from "ui/core/properties";
 
     /**
      * Represents a progress component.
      */
-    export class Progress extends view.View {
-        /**
-         * Represents the observable property backing the value property of each Progress instance.
-         */
-        public static valueProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the maxValue property of each Progress instance.
-         */
-        public static maxValueProperty: dependencyObservable.Property;
-
+    export class Progress extends View {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ProgressBar.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -39,4 +29,14 @@ declare module "ui/progress" {
          */
         maxValue: number;
     }
+
+    /**
+     * Represents the observable property backing the value property of each Progress instance.
+     */
+    export const valueProperty: Property<Progress, number>;
+
+    /**
+     * Represents the observable property backing the maxValue property of each Progress instance.
+     */
+    export const maxValueProperty: Property<Progress, number>;
 }

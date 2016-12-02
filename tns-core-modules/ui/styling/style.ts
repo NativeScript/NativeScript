@@ -6,9 +6,7 @@ import { Font } from "ui/styling/font";
 import { Background } from "ui/styling/background";
 import { isIOS } from "platform";
 import { Property, CssProperty, InheritedCssProperty, ShorthandProperty } from "ui/core/properties";
-import { Length } from "ui/core/view";
-
-import { FontWeight, FontStyle } from "ui/enums";
+import { Length, PercentLength } from "ui/core/view";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {
@@ -57,7 +55,7 @@ export class Style extends Observable implements StyleDefinition {
     public fontSize: number;
     public fontFamily: string;
     public fontStyle: "normal" | "italic";
-    public fontWeight: string;
+    public fontWeight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
     public font: string;
 
     public zIndex: number;
@@ -73,13 +71,13 @@ export class Style extends Observable implements StyleDefinition {
     // TODO: Change minWidth/Height to Length to support 'px'
     public minWidth: Length;
     public minHeight: Length;
-    public width: Length;
-    public height: Length;
+    public width: PercentLength;
+    public height: PercentLength;
     public margin: string;
-    public marginLeft: Length;
-    public marginTop: Length;
-    public marginRight: Length;
-    public marginBottom: Length;
+    public marginLeft: PercentLength;
+    public marginTop: PercentLength;
+    public marginRight: PercentLength;
+    public marginBottom: PercentLength;
     public padding: string;
     public paddingLeft: Length;
     public paddingTop: Length;

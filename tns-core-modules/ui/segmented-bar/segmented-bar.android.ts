@@ -1,84 +1,22 @@
-﻿import definition = require("ui/segmented-bar");
-import common = require("./segmented-bar-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import types = require("utils/types");
-import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import view = require("ui/core/view");
+﻿import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from "./segmented-bar-common";
+import { colorProperty, fontInternalProperty } from "ui/core/view";
+import { Color } from "color";
+import { Font } from "ui/styling/font";
+
+export * from "./segmented-bar-common";
 
 const R_ID_TABS = 0x01020013;
 const R_ID_TABCONTENT = 0x01020011;
 const R_ATTR_STATE_SELECTED = 0x010100a1;
 
-global.moduleMerge(common, exports);
+// TODO: Make SegmentedBarItem inherit from ViewBase and use ._addView.
+// TODO: Move colorProperty.native get/set from SegmentedBar to SegmentedBarItem.
+// TODO: Fix selectedIndex coerce implementation.
+// TODO: Use addView instead of _parent property. This way
+// bindingContext and style propagation will work out fo the box. 
 
-function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <SegmentedBar>data.object;
-    if (!view.android || !view.items) {
-        return;
-    }
-
-    var index = <number>data.newValue;
-
-    if (types.isNumber(index)) {
-        if (index >= 0 && index <= view.items.length - 1) {
-            view.android.setCurrentTab(index);
-            view.notify({ eventName: SegmentedBar.selectedIndexChangedEvent, object: view, oldIndex: data.oldValue, newIndex: data.newValue });
-        } else {
-            view.selectedIndex = undefined;
-            throw new Error("selectedIndex should be between [0, " + (view.items.length - 1) + "]");
-        }
-    }
-}
-(<proxy.PropertyMetadata>common.SegmentedBar.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
-
-function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <SegmentedBar>data.object;
-    if (!view.android) {
-        return;
-    }
-
-    var oldItems = <Array<definition.SegmentedBarItem>>data.oldValue;
-    if (oldItems && oldItems.length) {
-        for (var i = 0; i < oldItems.length; i++) {
-            (<SegmentedBarItem>oldItems[i])._parent = null;
-        }
-    }
-    view.android.clearAllTabs();
-
-    var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
-
-    view._adjustSelectedIndex(newItems);
-
-    if (newItems && newItems.length) {
-        for (var i = 0; i < newItems.length; i++) {
-            view.insertTab((<SegmentedBarItem>newItems[i]), i);
-        }
-
-        if (types.isNumber(view.selectedIndex) && view.android.getCurrentTab() !== view.selectedIndex) {
-            view.android.setCurrentTab(view.selectedIndex);
-        }
-
-        var tabHost = <android.widget.TabHost>view.android;
-        var tabIndex: number;
-
-        for (tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            var tabChild = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-            var t = <android.widget.TextView>tabChild.getChildAt(1);
-
-            if (view.color) {
-                t.setTextColor(view.color.android);
-            }
-
-            t.setMaxLines(1);
-            t.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        }
-    }
-}
-(<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
-
-var SegmentedBarColorDrawableClass;
+// TODO: Move this into widgets.
+let SegmentedBarColorDrawableClass;
 function ensureSegmentedBarColorDrawableClass() {
     if (SegmentedBarColorDrawableClass) {
         return;
@@ -92,7 +30,7 @@ function ensureSegmentedBarColorDrawableClass() {
         }
 
         public draw(canvas: android.graphics.Canvas): void {
-            var p = new android.graphics.Paint();
+            let p = new android.graphics.Paint();
             p.setColor(this.getColor());
             p.setStyle(android.graphics.Paint.Style.FILL);
             canvas.drawRect(0, this.getBounds().height() - 15, this.getBounds().width(), this.getBounds().height(), p);
@@ -102,49 +40,82 @@ function ensureSegmentedBarColorDrawableClass() {
     SegmentedBarColorDrawableClass = SegmentedBarColorDrawable;
 }
 
-export class SegmentedBarItem extends common.SegmentedBarItem {
+export class SegmentedBarItem extends SegmentedBarItemBase {
     public _update() {
         if (this._parent && this._parent.android) {
             // TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
             // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android
-            var tabIndex = this._parent.items.indexOf(this);
-            var titleTextViewId = 16908310; // http://developer.android.com/reference/android/R.id.html#title
-            var titleTextView = <android.widget.TextView>this._parent.android.getTabWidget().getChildAt(tabIndex).findViewById(titleTextViewId);
+            const tabIndex = this._parent.items.indexOf(this);
+            const titleTextViewId = 16908310; // http://developer.android.com/reference/android/R.id.html#title
+            const titleTextView = <android.widget.TextView>this._parent.android.getTabWidget().getChildAt(tabIndex).findViewById(titleTextViewId);
             titleTextView.setText(this.title || "");
         }
     }
 }
 
-export class SegmentedBar extends common.SegmentedBar {
+@Interfaces([android.widget.TabHost.OnTabChangeListener])
+class TabChangeListener implements android.widget.TabHost.OnTabChangeListener {
+    constructor(private owner: WeakRef<SegmentedBar>) {
+        return global.__native(this);
+    }
+
+    onTabChanged(id: string): void {
+        let owner = this.owner.get();
+        if (owner) {
+            owner.selectedIndex = parseInt(id);
+        }
+    }
+}
+
+@Interfaces([android.widget.TabHost.TabContentFactory])
+class TabContentFactory implements android.widget.TabHost.TabContentFactory {
+    constructor(private owner: WeakRef<SegmentedBar>) {
+        return global.__native(this);
+    }
+
+    createTabContent(tag: string): android.view.View {
+        let owner = this.owner.get();
+        if (owner) {
+            let tv = new android.widget.TextView(owner._context);
+            // TODO: Why do we set it to collapse???
+            tv.setVisibility(android.view.View.GONE);
+            return tv;
+        } else {
+            throw new Error(`Invalid owner: ${this.owner}`);
+        }
+    }
+}
+
+export class SegmentedBar extends SegmentedBarBase {
     private _android: android.widget.TabHost;
-    public _listener: android.widget.TabHost.OnTabChangeListener;
+    private listener: android.widget.TabHost.OnTabChangeListener;
+    private tabContentFactory: android.widget.TabHost.TabContentFactory;
+    private apiLevel: number;
 
     public _createUI() {
         ensureTabHostClass();
-        this._android = new TabHostClass(this._context, null);
-        if (types.isNumber(this.selectedIndex) && this._android.getCurrentTab() !== this.selectedIndex) {
-            this._android.setCurrentTab(this.selectedIndex);
+        ensureSegmentedBarColorDrawableClass();
+        if (this.apiLevel === undefined) {
+            this.apiLevel = android.os.Build.VERSION.SDK_INT;
         }
 
-        var that = new WeakRef(this);
+        let weakRef = new WeakRef(this);
+        this._android = new TabHostClass(this._context, null);
+        // We don't have native tabs here.
+        // if (typeof this.selectedIndex === "number" && this._android.getCurrentTab() !== this.selectedIndex) {
+        //     this._android.setCurrentTab(this.selectedIndex);
+        // }
+        this.listener = this.listener || new TabChangeListener(weakRef);
+        this.tabContentFactory = this.tabContentFactory || new TabContentFactory(weakRef);
 
-        this._listener = new android.widget.TabHost.OnTabChangeListener({
-            onTabChanged: function (id: string) {
-                var bar = that.get();
-                if (bar) {
-                    bar.selectedIndex = parseInt(id);
-                }
-            }
-        });
-
-        var tabHostLayout = new android.widget.LinearLayout(this._context);
+        const tabHostLayout = new android.widget.LinearLayout(this._context);
         tabHostLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
 
-        var tabWidget = new android.widget.TabWidget(this._context);
+        const tabWidget = new android.widget.TabWidget(this._context);
         tabWidget.setId(R_ID_TABS);
         tabHostLayout.addView(tabWidget);
 
-        var frame = new android.widget.FrameLayout(this._context);
+        const frame = new android.widget.FrameLayout(this._context);
         frame.setId(R_ID_TABCONTENT);
         frame.setVisibility(android.view.View.GONE);
         tabHostLayout.addView(frame);
@@ -158,31 +129,181 @@ export class SegmentedBar extends common.SegmentedBar {
     }
 
     public insertTab(tabItem: SegmentedBarItem, index?: number): void {
-        super.insertTab(tabItem, index);
         tabItem._parent = this;
 
-        var tab = this.android.newTabSpec(this.getValidIndex(index) + "");
-        tab.setIndicator(tabItem.title || "");
-        let that = this;
-        tab.setContent(new android.widget.TabHost.TabContentFactory({
-            createTabContent: function (tag: string): android.view.View {
-                var tv = new android.widget.TextView(that._context);
-                tv.setVisibility(android.view.View.GONE);
-                return tv;
-            }
-        }));
+        const tab = this.android.newTabSpec(this.getValidIndex(index) + "");
+        tab.setIndicator(tabItem.title);
+        tab.setContent(this.tabContentFactory);
 
         this.android.addTab(tab);
+        // TODO: Why do we need to call this for every added tab?
         this.resetNativeListener();
     }
 
     private resetNativeListener() {
         this.android.setOnTabChangedListener(null);
-        this.android.setOnTabChangedListener(this._listener);
+        this.android.setOnTabChangedListener(this.listener);
+    }
+
+    get [selectedIndexProperty.native](): number {
+        return -1;
+    }
+    set [selectedIndexProperty.native](value: number) {
+        let items = this.items;
+        if (!items) {
+            return;
+        }
+
+        if (value >= 0 && value <= (items.length - 1)) {
+            this._android.setCurrentTab(value);
+            this.notify({ eventName: SegmentedBar.selectedIndexChangedEvent, object: this, oldIndex: this.previousSelectedIndex, newIndex: value });
+        }
+    }
+
+    private previousItems: SegmentedBarItem[];
+    get [itemsProperty.native](): SegmentedBarItem[] {
+        return null;
+    }
+    set [itemsProperty.native](value: SegmentedBarItem[]) {
+        const oldItems = this.previousItems;
+        if (oldItems) {
+            for (let i = 0, length = oldItems.length; i < length; i++) {
+                oldItems[i]._parent = null;
+            }
+        }
+
+        this._android.clearAllTabs();
+
+        const newItems = value;
+        this._adjustSelectedIndex(newItems);
+
+        let tabHost = this._android;
+        if (newItems && newItems.length) {
+            for (let i = 0; i < newItems.length; i++) {
+                this.insertTab(newItems[i], i);
+            }
+
+            if (this.selectedIndex !== undefined && tabHost.getCurrentTab() !== this.selectedIndex) {
+                tabHost.setCurrentTab(this.selectedIndex);
+            }
+
+            let color = this.color ? this.color.android : -1;
+            for (let i = 0, count = tabHost.getTabWidget().getTabCount(); i < count; i++) {
+                let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(i);
+                let t = <android.widget.TextView>vg.getChildAt(1);
+                if (color > -1) {
+                    t.setTextColor(color);
+                }
+
+                t.setMaxLines(1);
+                t.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            }
+        }
+    }
+
+    get [selectedBackgroundColorProperty.native](): android.graphics.drawable.Drawable[] {
+        let tabHost = this._android;
+        let result = [];
+        for (let i = 0, count = tabHost.getTabWidget().getTabCount(); i < count; i++) {
+            let background = tabHost.getTabWidget().getChildTabViewAt(i).getBackground();
+            result.push(background);
+        }
+
+        return result;
+    }
+    set [selectedBackgroundColorProperty.native](value: Color | android.graphics.drawable.Drawable[]) {
+        let setValue: boolean;
+        let color: number;
+        if (value instanceof Color) {
+            setValue = true;
+            color = value.android;
+        }
+        
+        let tabHost = this._android;
+        let apiLevel = this.apiLevel;
+        for (let i = 0, count = tabHost.getTabWidget().getTabCount(); i < count; i++) {
+            let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(i);
+            if (setValue) {
+                let backgroundDrawable = vg.getBackground();
+                if (apiLevel > 21 && backgroundDrawable && typeof backgroundDrawable.setColorFilter === "function") {
+                    backgroundDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+                } else {
+                    let stateDrawable = new android.graphics.drawable.StateListDrawable();
+
+                    let arr = Array.create("int", 1);
+                    arr[0] = R_ATTR_STATE_SELECTED;
+                    let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(color);
+                    stateDrawable.addState(arr, colorDrawable);
+                    stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
+
+                    if (android.os.Build.VERSION.SDK_INT >= 16) {
+                        vg.setBackground(stateDrawable);
+                    } else {
+                        vg.setBackgroundDrawable(stateDrawable);
+                    }
+                }
+            } else {
+                if (apiLevel >= 16) {
+                    vg.setBackground(value[i]);
+                } else {
+                    vg.setBackgroundDrawable(value[i]);
+                }
+            }
+        }
+    }
+
+    get [colorProperty.native](): number {
+        let textView = new android.widget.TextView(this._context);
+        return textView.getCurrentTextColor();
+    }
+    set [colorProperty.native](value: Color | number) {
+        let tabHost = this._android;
+        let color = typeof value === "number" ? value : value.android;
+        for (let i = 0, count = tabHost.getTabWidget().getTabCount(); i < count; i++) {
+            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(i);
+            let t = <android.widget.TextView>tab.getChildAt(1);
+            t.setTextColor(color);
+        }
+    }
+
+    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
+        let textView = new android.widget.TextView(this._context);
+        return {
+            typeface: textView.getTypeface(),
+            fontSize: textView.getTextSize()
+        };
+    }
+    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
+        let typeface: android.graphics.Typeface;
+        let fontSize: number;
+        let isFont: boolean;
+        if (value instanceof Font) {
+            isFont = true;
+            typeface = value.getAndroidTypeface();
+            fontSize = value.fontSize;
+        } else {
+            typeface = value.typeface;
+            fontSize = value.fontSize;
+        }
+
+        let tabHost = this._android;
+        for (let i = 0, count = tabHost.getTabWidget().getTabCount(); i < count; i++) {
+            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(i);
+            let t = <android.widget.TextView>tab.getChildAt(1);
+
+            t.setTypeface(typeface);
+
+            if (isFont) {
+                t.setTextSize(fontSize);
+            }
+            else {
+                t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, fontSize);
+            }
+        }
     }
 }
 
-var TabHostClass;
+let TabHostClass;
 function ensureTabHostClass() {
     if (TabHostClass) {
         return;
@@ -202,146 +323,3 @@ function ensureTabHostClass() {
 
     TabHostClass = OurTabHost;
 }
-
-export class SegmentedBarStyler implements style.Styler {
-    //Text color methods
-    private static setColorProperty(v: view.View, newValue: any) {
-        var tabHost = <android.widget.TabHost>v._nativeView;
-
-        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-            var t = <android.widget.TextView>tab.getChildAt(1);
-            t.setTextColor(newValue);
-        }
-    }
-
-    private static resetColorProperty(v: view.View, nativeValue: number) {
-        var tabHost = <android.widget.TabHost>v._nativeView;
-
-        for (var tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            var tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-            var t = <android.widget.TextView>tab.getChildAt(1);
-            t.setTextColor(nativeValue);
-        }
-    }
-
-    private static getColorProperty(v: view.View): number {
-        var tabHost = <android.widget.TabHost>v._nativeView;
-        var textView = new android.widget.TextView(tabHost.getContext());
-        return textView.getCurrentTextColor();
-    }
-
-    //Font methods
-    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
-        let tabHost = <android.widget.TabHost>v._nativeView;
-        let fontValue = <font.Font>newValue;
-
-        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-            let t = <android.widget.TextView>tab.getChildAt(1);
-            let typeface = fontValue.getAndroidTypeface();
-            if (typeface) {
-                t.setTypeface(typeface);
-            }
-            else {
-                t.setTypeface(nativeValue.typeface);
-            }
-
-            if (fontValue.fontSize) {
-                t.setTextSize(fontValue.fontSize);
-            }
-            else {
-                t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
-            }
-        }
-    }
-
-    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
-        let tabHost = <android.widget.TabHost>v._nativeView;
-        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            let tab = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-            let t = <android.widget.TextView>tab.getChildAt(1);
-            t.setTypeface(nativeValue.typeface);
-            t.setTextSize(nativeValue.size);
-        }
-    }
-
-    private static getFontInternalProperty(v: view.View): any {
-        let tabHost = <android.widget.TabHost>v._nativeView;
-        var textView = new android.widget.TextView(tabHost.getContext());
-        return {
-            typeface: textView.getTypeface(),
-            size: textView.getTextSize()
-        };
-    }
-
-    // selectedBackgroundColor methods
-    private static setSelectedBackgroundColorProperty(v: view.View, newValue: any) {
-        ensureSegmentedBarColorDrawableClass();
-        let tabHost = <android.widget.TabHost>v._nativeView;
-        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-
-            var backgroundDrawable = vg.getBackground();
-            if (android.os.Build.VERSION.SDK_INT > 21 && backgroundDrawable && types.isFunction(backgroundDrawable.setColorFilter)) {
-                backgroundDrawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
-            } else {
-                let stateDrawable = new android.graphics.drawable.StateListDrawable();
-
-                let arr = (<any>Array).create("int", 1);
-                arr[0] = R_ATTR_STATE_SELECTED;
-                let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(newValue)
-                stateDrawable.addState(arr, colorDrawable);
-                stateDrawable.setBounds(0, 15, vg.getRight(), vg.getBottom());
-
-                if (android.os.Build.VERSION.SDK_INT >= 16) {
-                    vg.setBackground(stateDrawable);
-                } else {
-                    vg.setBackgroundDrawable(stateDrawable);
-                }
-            }
-        }
-    }
-
-    private static resetSelectedBackgroundColorProperty(v: view.View, nativeValue: Array<android.graphics.drawable.Drawable>) {
-        let tabHost = <android.widget.TabHost>v._nativeView;
-        ensureSegmentedBarColorDrawableClass();
-        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            let vg = <android.view.ViewGroup>tabHost.getTabWidget().getChildTabViewAt(tabIndex);
-
-            if (android.os.Build.VERSION.SDK_INT >= 16) {
-                vg.setBackground(nativeValue[tabIndex]);
-            } else {
-                vg.setBackgroundDrawable(nativeValue[tabIndex]);
-            }
-        }
-    }
-
-    private static getSelectedBackgroundColorProperty(v: view.View): Array<android.graphics.drawable.Drawable> {
-        var tabHost = <android.widget.TabHost>v._nativeView;
-        let result = [];
-        for (let tabIndex = 0; tabIndex < tabHost.getTabWidget().getTabCount(); tabIndex++) {
-            let background = tabHost.getTabWidget().getChildTabViewAt(tabIndex).getBackground();
-            result.push(background);
-        }
-
-        return result;
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SegmentedBarStyler.setColorProperty,
-            SegmentedBarStyler.resetColorProperty,
-            SegmentedBarStyler.getColorProperty), "SegmentedBar");
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            SegmentedBarStyler.setFontInternalProperty,
-            SegmentedBarStyler.resetFontInternalProperty,
-            SegmentedBarStyler.getFontInternalProperty), "SegmentedBar");
-        style.registerHandler(style.selectedBackgroundColorProperty, new style.StylePropertyChangedHandler(
-            SegmentedBarStyler.setSelectedBackgroundColorProperty,
-            SegmentedBarStyler.resetSelectedBackgroundColorProperty,
-            SegmentedBarStyler.getSelectedBackgroundColorProperty), "SegmentedBar");
-    }
-}
-
-SegmentedBarStyler.registerHandlers();

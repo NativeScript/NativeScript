@@ -1,17 +1,8 @@
-﻿import definition = require("ui/segmented-bar");
-import view = require("ui/core/view");
-import proxy = require("ui/core/proxy");
-import dependencyObservable = require("ui/core/dependency-observable");
-import color = require("color");
-import bindable = require("ui/core/bindable");
-import * as typesModule from "utils/types";
-
-var types: typeof typesModule;
-function ensureTypes() {
-    if (!types) {
-        types = require("utils/types");
-    }
-}
+﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition } from "ui/segmented-bar";
+import { View, AddChildFromBuilder, AddArrayFromBuilder } from "ui/core/view";
+import { Property } from "ui/core/properties";
+import { Color } from "color";
+import { Bindable } from "ui/core/bindable";
 
 export module knownCollections {
     export var items = "items";
@@ -19,14 +10,13 @@ export module knownCollections {
 
 var CHILD_SEGMENTED_BAR_ITEM = "SegmentedBarItem";
 
-export class SegmentedBarItem extends bindable.Bindable implements definition.SegmentedBarItem {
+export abstract class SegmentedBarItemBase extends Bindable implements SegmentedBarItemDefinition {
     private _title: string = "";
-    public _parent: SegmentedBar;
+    public _parent: SegmentedBarBase;
 
     get title(): string {
         return this._title;
     }
-
     set title(value: string) {
         if (this._title !== value) {
             this._title = value;
@@ -34,58 +24,46 @@ export class SegmentedBarItem extends bindable.Bindable implements definition.Se
         }
     }
 
-    public _update() {
-        //
-    }
+    public abstract _update();
 }
 
-export class SegmentedBar extends view.View implements definition.SegmentedBar {
-    public _addArrayFromBuilder(name: string, value: Array<any>) {
+export abstract class SegmentedBarBase extends View implements SegmentedBarDefinition, AddChildFromBuilder, AddArrayFromBuilder {
+    public static selectedIndexChangedEvent = "selectedIndexChanged";
+    
+    protected previousSelectedIndex: number;
+
+    public selectedIndex: number;
+    public items: Array<SegmentedBarItemDefinition>;
+    public selectedBackgroundColor: Color;
+
+    public _addArrayFromBuilder(name: string, value: Array<any>): void {
         if (name === "items") {
-            this._setValue(SegmentedBar.itemsProperty, value);
+            this.items = value;
         }
     }
 
-    public _adjustSelectedIndex(items: Array<definition.SegmentedBarItem>) {
+    public _addChildFromBuilder(name: string, value: any): void {
+        if (name === CHILD_SEGMENTED_BAR_ITEM) {
+            if (!this.items) {
+                this.items = new Array<SegmentedBarItemBase>();
+            }
+            this.items.push(<SegmentedBarItemBase>value);
+        }
+    }
+
+    public _adjustSelectedIndex(items: Array<SegmentedBarItemDefinition>) {
         if (this.items) {
             if (this.items.length > 0) {
-                ensureTypes();
-
-                if (types.isUndefined(this.selectedIndex) || (this.selectedIndex > this.items.length - 1)) {
-                    this._setValue(SegmentedBar.selectedIndexProperty, 0);
+                if (this.selectedIndex === undefined || (this.selectedIndex > this.items.length - 1)) {
+                    this.selectedIndex = 0;
                 }
             } else {
-                this._setValue(SegmentedBar.selectedIndexProperty, undefined);
+                this.selectedIndex = undefined;
             }
         } else {
-            this._setValue(SegmentedBar.selectedIndexProperty, undefined);
+            this.selectedIndex = undefined;
         }
     }
-
-    get selectedIndex(): number {
-        return this._getValue(SegmentedBar.selectedIndexProperty);
-    }
-    set selectedIndex(value: number) {
-        this._setValue(SegmentedBar.selectedIndexProperty, value);
-    }
-
-    get items(): Array<definition.SegmentedBarItem> {
-        return this._getValue(SegmentedBar.itemsProperty);
-    }
-    set items(value: Array<definition.SegmentedBarItem>) {
-        this._setValue(SegmentedBar.itemsProperty, value);
-    }
-
-    get selectedBackgroundColor(): color.Color {
-        return this.style.selectedBackgroundColor;
-    }
-    set selectedBackgroundColor(value: color.Color) {
-        this.style.selectedBackgroundColor = value;
-    }
-    
-    public static selectedIndexProperty = new dependencyObservable.Property("selectedIndex", "SegmentedBar", new proxy.PropertyMetadata(undefined));
-    public static itemsProperty = new dependencyObservable.Property("items", "SegmentedBar", new proxy.PropertyMetadata(undefined));
-    public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
@@ -97,27 +75,13 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
             }
         }
     }
-    
-    public _addChildFromBuilder(name: string, value: any): void {
-        if(name === CHILD_SEGMENTED_BAR_ITEM) {
-            if (!this.items) {
-                this.items = new Array<SegmentedBarItem>();
-            }
-            this.items.push(<SegmentedBarItem>value);
-            this.insertTab(<SegmentedBarItem>value);
-            
-        }
-    }
-    
-    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
-        //
-    }
-    
+
+    public abstract insertTab(tabItem: SegmentedBarItemBase, index?: number): void;
+
     public getValidIndex(index?: number): number {
-        ensureTypes();
         let idx: number;
-        let itemsLength = this.items ? this.items.length : 0; 
-        if (types.isNullOrUndefined(index)) {
+        let itemsLength = this.items ? this.items.length : 0;
+        if (index === null || index === undefined) {
             idx = itemsLength - 1;
         } else {
             if (index < 0 || index > itemsLength) {
@@ -128,4 +92,28 @@ export class SegmentedBar extends view.View implements definition.SegmentedBar {
         }
         return idx;
     }
+
+    public onSelectedIndexChanged(oldValue: number, newValue: number): void {
+        this.previousSelectedIndex = oldValue;
+    }
 }
+
+/**
+ * Gets or sets the selected index dependency property of the SegmentedBar.
+ */
+export const selectedIndexProperty = new Property<SegmentedBarBase, number>({
+    name: "selectedIndex",  defaultValue: -1, valueConverter: (v) => parseInt(v), valueChanged: (target, oldValue, newValue) => target.onSelectedIndexChanged(oldValue, newValue)
+});
+selectedIndexProperty.register(SegmentedBarBase);
+
+/**
+ * Gets or sets the selected background color property of the SegmentedBar.
+ */
+export const selectedBackgroundColorProperty = new Property<SegmentedBarBase, Color>({ name: "selectedBackgroundColor", valueConverter: (v) => new Color(v) })
+selectedBackgroundColorProperty.register(SegmentedBarBase);
+
+/**
+ * Gets or sets the items dependency property of the SegmentedBar.
+ */
+export const itemsProperty = new Property<SegmentedBarBase, SegmentedBarItemDefinition[]>({ name: "items" });
+itemsProperty.register(SegmentedBarBase);

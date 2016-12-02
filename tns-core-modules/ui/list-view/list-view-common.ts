@@ -1,12 +1,12 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
 import { EventData, Observable } from "data/observable";
-import { View, Template, KeyedTemplate } from "ui/core/view";
+import { View, Template, KeyedTemplate, Length, layout } from "ui/core/view";
 import { Property } from "ui/core/properties";
 import { Color } from "color";
 
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
-import { ObservableArray } from "data/observable-array";
+import { ObservableArray, ChangedData } from "data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { Bindable } from "ui/core/bindable";
 
@@ -17,6 +17,17 @@ export module knownTemplates {
 
 export module knownMultiTemplates {
     export let itemTemplates = "itemTemplates";
+}
+
+function getLengthEffectiveValue(param: Length): number {
+    switch (param.unit) {
+        case "px":
+            return Math.round(param.value);
+
+        default:
+        case "dip":
+            return Math.round(layout.getDisplayDensity() * param.value);
+    }
 }
 
 export abstract class ListViewBase extends View implements ListViewDefinition {
@@ -39,8 +50,8 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     }
 
     public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
-
-    public rowHeight: number;
+    public _effectiveRowHeight: number;
+    public rowHeight: Length;
     public separatorColor: Color;
     public items: any[] | ItemsSource;
     public itemTemplate: string | Template;
@@ -112,12 +123,16 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
         return lbl;
     }
 
-    public _onItemsChanged(args: EventData) {
+    public _onItemsChanged(args: ChangedData<any>) {
         this.refresh();
     }
 
-    public _onRowHeightPropertyChanged(oldValue: number, newValue: number) {
+    public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
         this.refresh();
+    }
+
+    protected updateEffectiveRowHeight(): void {
+        this._effectiveRowHeight = getLengthEffectiveValue(this.rowHeight);
     }
 }
 
@@ -126,17 +141,18 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
  */
 export const itemsProperty = new Property<ListViewBase, any[] | ItemsSource>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
-        if (oldValue instanceof Observable) {
+        if (oldValue instanceof ObservableArray) {
             removeWeakEventListener(oldValue, ObservableArray.changeEvent, target._onItemsChanged, target);
         }
 
-        if (newValue instanceof Observable) {
+        if (newValue instanceof ObservableArray) {
             addWeakEventListener(newValue, ObservableArray.changeEvent, target._onItemsChanged, target);
         }
 
         target.refresh();
     }
 });
+itemsProperty.register(ListViewBase);
 
 /**
  * Represents the item template property of each ListView instance.
@@ -146,6 +162,7 @@ export const itemTemplateProperty = new Property<ListViewBase, string | Template
         target.refresh();
     }
 });
+itemTemplateProperty.register(ListViewBase);
 
 /**
  * Represents the items template property of each ListView instance.
@@ -159,6 +176,7 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
         return value;
     }
 })
+itemTemplatesProperty.register(ListViewBase);
 
 /**
  * Represents the separator color backing property. 
@@ -172,10 +190,16 @@ export const separatorColor = new Property<ListViewBase, Color>({
         return value;
     }
 })
+separatorColor.register(ListViewBase);
 
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
-export const rowHeightProperty = new Property<ListViewBase, number>({
-    name: "rowHeight", defaultValue: -1, valueChanged: (target, oldValue, newValue) => target._onRowHeightPropertyChanged(oldValue, newValue)
+export const rowHeightProperty = new Property<ListViewBase, Length>({
+    name: "rowHeight", defaultValue: { value: -1, unit: "px" }, valueConverter: Length.parse,
+    valueChanged: (target, oldValue, newValue) => {
+        target._effectiveRowHeight = getLengthEffectiveValue(newValue);
+        target._onRowHeightPropertyChanged(oldValue, newValue);
+    }
 });
+rowHeightProperty.register(ListViewBase);

@@ -1,9 +1,9 @@
 ﻿//@private
 declare module "ui/styling/style-scope" {
-    import view = require("ui/core/view");
-    import cssParser = require("css");
-    import {RuleSet, Node, SelectorCore, ChangeMap} from "ui/styling/css-selector";
-    import {KeyframeAnimationInfo} from "ui/animation/keyframe-animation";
+    import { View } from "ui/core/view";
+    import { SyntaxTree } from "css";
+    import { RuleSet, Node, SelectorCore, ChangeMap } from "ui/styling/css-selector";
+    import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
 
     export class CssState {
         /**
@@ -14,7 +14,7 @@ declare module "ui/styling/style-scope" {
         /**
          * Gets the static selectors that match the view and the dynamic selectors that may potentially match the view.
          */
-        public changeMap: ChangeMap<view.View>;
+        public changeMap: ChangeMap<View>;
     }
 
     export class StyleScope {
@@ -22,10 +22,10 @@ declare module "ui/styling/style-scope" {
         public addCss(cssString: string, cssFileName: string): void;
 
         public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): RuleSet[];
-        public static createSelectorsFromImports(tree: cssParser.SyntaxTree, keyframes: Object): RuleSet[];
+        public static createSelectorsFromImports(tree: SyntaxTree, keyframes: Object): RuleSet[];
         public ensureSelectors(): boolean;
 
-        public applySelectors(view: view.View): void
+        public applySelectors(view: View): void
         public query(options: Node): SelectorCore[];
 
         public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo;
@@ -33,5 +33,5 @@ declare module "ui/styling/style-scope" {
     }
 
     export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean): string;
-    export function applyInlineSyle(view: view.View, style: string): void;
+    export function applyInlineSyle(view: View, style: string): void;
 }

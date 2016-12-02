@@ -4,7 +4,7 @@ declare module "ui/styling/style" {
     import { Color } from "color";
     import { Font } from "ui/styling/font";
     import { Background } from "ui/styling/background";
-    import { Length } from "ui/core/view";
+    import { Length, PercentLength } from "ui/core/view";
     
     export interface Thickness {
         left: number;
@@ -97,13 +97,13 @@ declare module "ui/styling/style" {
 
         public minWidth: Length;
         public minHeight: Length;
-        public width: Length;
-        public height: Length;
+        public width: PercentLength;
+        public height: PercentLength;
         public margin: string;
-        public marginLeft: Length;
-        public marginTop: Length;
-        public marginRight: Length;
-        public marginBottom: Length;
+        public marginLeft: PercentLength;
+        public marginTop: PercentLength;
+        public marginRight: PercentLength;
+        public marginBottom: PercentLength;
         public padding: string;
         public paddingLeft: Length;
         public paddingTop: Length;

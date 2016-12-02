@@ -1,8 +1,7 @@
-import {Pair} from "ui/animation";
-import {Color} from "color";
-import {KeyframeAnimationInfo, KeyframeInfo, KeyframeDeclaration} from "ui/animation/keyframe-animation";
-import converters = require("../styling/converters");
-import types = require("utils/types");
+import { Pair } from "ui/animation";
+import { Color } from "color";
+import { KeyframeAnimationInfo, KeyframeInfo, KeyframeDeclaration } from "ui/animation/keyframe-animation";
+import { timeConverter, numberConverter, transformConverter, animationTimingFunctionConverter } from "../styling/converters";
 
 interface TransformInfo {
     scale: Pair;
@@ -11,10 +10,10 @@ interface TransformInfo {
 
 let animationProperties = {
     "animation-name": (info, declaration) => info.name = declaration.value,
-    "animation-duration": (info, declaration) => info.duration = converters.timeConverter(declaration.value),
-    "animation-delay": (info, declaration) => info.delay = converters.timeConverter(declaration.value),
-    "animation-timing-function": (info, declaration) => info.curve = converters.animationTimingFunctionConverter(declaration.value),
-    "animation-iteration-count": (info, declaration) => declaration.value === "infinite" ? info.iterations = Number.MAX_VALUE : info.iterations = converters.numberConverter(declaration.value),
+    "animation-duration": (info, declaration) => info.duration = timeConverter(declaration.value),
+    "animation-delay": (info, declaration) => info.delay = timeConverter(declaration.value),
+    "animation-timing-function": (info, declaration) => info.curve = animationTimingFunctionConverter(declaration.value),
+    "animation-iteration-count": (info, declaration) => declaration.value === "infinite" ? info.iterations = Number.MAX_VALUE : info.iterations = numberConverter(declaration.value),
     "animation-direction": (info, declaration) => info.isReverse = declaration.value === "reverse",
     "animation-fill-mode": (info, declaration) => info.isForwards = declaration.value === "forwards"
 };
@@ -72,7 +71,7 @@ export class CssAnimationParser {
                 }
                 for (let declaration of <any>keyframe.declarations) {
                     if (declaration.property === "animation-timing-function") {
-                        current.curve = converters.animationTimingFunctionConverter(declaration.value);
+                        current.curve = animationTimingFunctionConverter(declaration.value);
                     }
                 }
                 current.declarations = declarations;
@@ -88,7 +87,7 @@ export class CssAnimationParser {
 }
 
 function keyframeAnimationsFromCSSProperty(value: any, animations: Array<KeyframeAnimationInfo>) {
-    if (types.isString(value)) {
+    if (typeof value === "string") {
         let values = value.split(/[,]+/);
         for (let parsedValue of values) {
             let animationInfo = new KeyframeAnimationInfo();
@@ -98,13 +97,13 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
                 animationInfo.name = arr[0];
             }
             if (arr.length > 1) {
-                animationInfo.duration = converters.timeConverter(arr[1]);
+                animationInfo.duration = timeConverter(arr[1]);
             }
             if (arr.length > 2) {
-                animationInfo.curve = converters.animationTimingFunctionConverter(arr[2]);
+                animationInfo.curve = animationTimingFunctionConverter(arr[2]);
             }
             if (arr.length > 3) {
-                animationInfo.delay = converters.timeConverter(arr[3]);
+                animationInfo.delay = timeConverter(arr[3]);
             }
             if (arr.length > 4) {
                 animationInfo.iterations = parseInt(arr[4]);
@@ -124,7 +123,7 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
 }
 
 function getTransformationValues(value: any): Array<{ propertyName: string, value: number }> {
-    let newTransform = converters.transformConverter(value);
+    let newTransform = transformConverter(value);
     let array = new Array<{ propertyName: string, value: number }>();
     let values = undefined;
     for (let transform in newTransform) {
@@ -191,9 +190,9 @@ function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration>
             let values = getTransformationValues(value);
             if (values) {
                 for (let pair of values) {
-                     if (!preprocessAnimationValues(pair.propertyName, pair.value, transforms)) {
-                         declarations[pair.propertyName] = pair.value;
-                     }
+                    if (!preprocessAnimationValues(pair.propertyName, pair.value, transforms)) {
+                        declarations[pair.propertyName] = pair.value;
+                    }
                 }
             }
             declarations[propertyName] = parseFloat(value);

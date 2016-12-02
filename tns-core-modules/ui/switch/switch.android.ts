@@ -1,26 +1,28 @@
-﻿import common = require("./switch-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import utils = require("utils/utils")
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+﻿import { Switch as SwitchDefinition } from "ui/switch";
+import { View, layout, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
+import { Property } from "ui/core/properties";
+import { Color } from "color";
 
-function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var swtch = <Switch>data.object;
-    if (!swtch.android) {
-        return;
+export * from "ui/core/view";
+
+@Interfaces([android.widget.CompoundButton.OnCheckedChangeListener])
+class CheckedChangeListener implements android.widget.CompoundButton.OnCheckedChangeListener {
+    constructor(private owner: WeakRef<Switch>) {
+        return global.__native(this);
     }
 
-    swtch.android.setChecked(data.newValue);
+    onCheckedChanged(buttonView: android.widget.CompoundButton, isChecked: boolean): void {
+        let owner = this.owner.get();
+        if (owner) {
+            owner.nativePropertyChanged(checkedProperty, isChecked);
+        }
+    }
 }
 
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.Switch.checkedProperty.metadata).onSetNativeValue = onCheckedPropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class Switch extends common.Switch {
+export class Switch extends View implements SwitchDefinition {
     private _android: android.widget.Switch;
+    private listener: android.widget.CompoundButton.OnCheckedChangeListener;
+    public checked: boolean;
 
     get android(): android.widget.Switch {
         return this._android;
@@ -28,61 +30,46 @@ export class Switch extends common.Switch {
 
     public _createUI() {
         this._android = new android.widget.Switch(this._context);
-
-        var that = new WeakRef(this);
-
-        this._android.setOnCheckedChangeListener(new android.widget.CompoundButton.OnCheckedChangeListener(<utils.Owned & android.widget.CompoundButton.IOnCheckedChangeListener>{
-            get owner() {
-                return that.get();
-            },
-
-            onCheckedChanged: function (sender, isChecked) {
-                if (this.owner) {
-                    this.owner._onPropertyChangedFromNative(common.Switch.checkedProperty, isChecked);
-                }
-            }
-        }));
+        this.listener = this.listener || new CheckedChangeListener(new WeakRef(this));
+        this._android.setOnCheckedChangeListener(this.listener);
     }
-} 
 
-export class SwitchStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
-        var sw = <android.widget.Switch>view._nativeView;
+    get [checkedProperty.native](): boolean {
+        return false;
+    }
+    set [checkedProperty.native](value: boolean) {
+        this._android.setChecked(value);
+    }
 
-        var drawable = <android.graphics.drawable.StateListDrawable>sw.getThumbDrawable();
-        if (drawable) {
-            drawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    get [colorProperty.native](): number {
+        return -1;
+    }
+    set [colorProperty.native](value: number | Color) {
+        if (value instanceof Color) {
+            this._android.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+        } else {
+            this._android.getThumbDrawable().clearColorFilter();
         }
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: number) {
-        // Do nothing.
+    get [backgroundColorProperty.native](): number {
+        return -1;
     }
-
-    private static setBackgroundAndBorderProperty(view: view.View, newValue: any) {
-        var sw = <android.widget.Switch>view._nativeView;
-
-        var drawable = <android.graphics.drawable.StateListDrawable>sw.getTrackDrawable();
-        if (drawable) {
-            drawable.setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+    set [backgroundColorProperty.native](value: number | Color) {
+        if (value instanceof Color) {
+            this._android.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+        } else {
+            this._android.getTrackDrawable().clearColorFilter();
         }
     }
 
-    private static resetBackgroundAndBorderProperty(view: view.View, nativeValue: number) {
-        // Do nothing.
+    get [backgroundInternalProperty.native](): any {
+        return null;
     }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SwitchStyler.setColorProperty,
-            SwitchStyler.resetColorProperty), "Switch");
-
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            SwitchStyler.setBackgroundAndBorderProperty,
-            SwitchStyler.resetBackgroundAndBorderProperty), "Switch");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Switch");
+    set [backgroundInternalProperty.native](value: any) {
+        //
     }
 }
 
-SwitchStyler.registerHandlers();
+export const checkedProperty = new Property<Switch, boolean>({ name: "checked", defaultValue: false, valueConverter: (v) => !!v });
+checkedProperty.register(Switch);
