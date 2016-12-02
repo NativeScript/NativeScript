@@ -205,10 +205,10 @@ export class ListView extends view.View implements definition.ListView {
     }
 
     get separatorColor(): color.Color {
-        return this._getValue(ListView.separatorColorProperty);
+        return this.style._getValue(ListView.separatorColorProperty);
     }
     set separatorColor(value: color.Color) {
-        this._setValue(ListView.separatorColorProperty,
+        this.style._setValue(ListView.separatorColorProperty,
             value instanceof color.Color ? value : new color.Color(<any>value));
     }
 

@@ -333,6 +333,11 @@
          */
         selectedBackgroundColor: color.Color;
 
+        /**
+         * Gets or sets the color of the line(separator) between the items of ListView.
+         */
+        separatorColor: color.Color;
+
         //@private
         public _beginUpdate();
         public _endUpdate();

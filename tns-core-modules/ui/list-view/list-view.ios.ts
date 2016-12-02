@@ -8,6 +8,7 @@ import {StackLayout} from "ui/layouts/stack-layout";
 import {ProxyViewContainer} from "ui/proxy-view-container";
 import dependencyObservable = require("ui/core/dependency-observable");
 import * as colorModule from "color";
+import { separatorColorProperty, registerHandler, Styler, StylePropertyChangedHandler } from "ui/styling/style";
 
 var color: typeof colorModule;
 function ensureColor() {
@@ -193,15 +194,15 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 }
 
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var bar = <ListView>data.object;
-    if (!bar.ios) {
+    var listView = <ListView>data.object;
+    if (!listView.ios) {
         return;
     }
 
     ensureColor();
 
     if (data.newValue instanceof color.Color) {
-        bar.ios.separatorColor = data.newValue.ios;
+        listView.ios.separatorColor = data.newValue.ios;
     }
 }
 
@@ -405,3 +406,30 @@ export class ListView extends common.ListView {
         this._map.delete(cell);
     }
 }
+
+export class ListViewStyler implements Styler {
+    // separator-color
+    private static setSeparatorColorProperty(view: view.View, newValue: any) {
+        let tableView = <UITableView>view._nativeView;
+        tableView.separatorColor = newValue;
+    }
+
+    private static resetSeparatorColorProperty(view: view.View, nativeValue: any) {
+        let tableView = <UITableView>view._nativeView;
+        tableView.separatorColor = nativeValue;
+    }
+
+    private static getSeparatorColorProperty(view: view.View): any {
+        let tableView = <UITableView>view._nativeView;
+        return tableView.separatorColor;
+    }
+
+    public static registerHandlers() {
+        registerHandler(separatorColorProperty, new StylePropertyChangedHandler(
+            ListViewStyler.setSeparatorColorProperty,
+            ListViewStyler.resetSeparatorColorProperty,
+            ListViewStyler.getSeparatorColorProperty), "ListView");
+    }
+}
+
+ListViewStyler.registerHandlers();
