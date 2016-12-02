@@ -273,33 +273,28 @@ function createRootView(v?) {
 
 var started: boolean = false;
 typedExports.start = function (entry?: NavigationEntry) {
-    if (!started) {
-        if (entry) {
-            exports.mainEntry = entry;
-        }
-        started = true;
-        loadCss();
+    if (entry) {
+        exports.mainEntry = entry;
+    }
 
-        if(!iosApp.nativeApp) {
-            // Normal NativeScript app will need UIApplicationMain. 
-            UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
-        } else {
-            let rootView = createRootView();
-            if(rootView) {
-                // Attach to the existing iOS app
-                var window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
-                if(window) {
-                    var rootController = window.rootViewController;
-                    if(rootController) {
-                        rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
-                        uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
-                    }
+    loadCss();
+
+    if(!iosApp.nativeApp) {
+        // Normal NativeScript app will need UIApplicationMain. 
+        UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
+    } else {
+        let rootView = createRootView();
+        if(rootView) {
+            // Attach to the existing iOS app
+            var window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
+            if(window) {
+                var rootController = window.rootViewController;
+                if(rootController) {
+                    rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
+                    uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
                 }
             }
         }
-
-    } else {
-        throw new Error("iOS Application already started!");
     }
 }
 
