@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/NativeScript/NativeScript.png?label=ready&title=Ready)](https://waffle.io/NativeScript/NativeScript)
 # NativeScript [![Build Status](https://travis-ci.org/NativeScript/NativeScript.svg?branch=master)](https://travis-ci.org/NativeScript/NativeScript)
 
 ![NativeScript logo](http://i.imgur.com/YmNIMqS.png)
