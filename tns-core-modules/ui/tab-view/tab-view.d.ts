@@ -144,4 +144,5 @@ declare module "ui/tab-view" {
         export const itemsProperty: Property<TabView, TabViewItem[]>;
         export const selectedIndexProperty: Property<TabView, number>;
         export const selectedColorProperty: Property<TabView, Color>;
+        export const tabsBackgroundColorProperty: Property<TabView, Color>;
 }

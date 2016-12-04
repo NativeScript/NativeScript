@@ -5,14 +5,13 @@ import { Bindable } from "ui/core/bindable";
 import { isIOS } from "platform";
 import { Color } from "color";
 
-import types = require("utils/types");
 import trace = require("trace");
 
-export let traceCategory = "TabView";
+export const traceCategory = "TabView";
 
 // TODO: Change base class to ViewBase and use addView method to add it.
 // This way we will support property and binding propagation automatically.
-export class TabViewItemBase extends Bindable implements TabViewItemDefinition {
+export abstract class TabViewItemBase extends Bindable implements TabViewItemDefinition {
     private _title: string = "";
     private _view: View;
     private _iconSource: string;
@@ -31,7 +30,6 @@ export class TabViewItemBase extends Bindable implements TabViewItemDefinition {
     get view(): View {
         return this._view;
     }
-
     set view(value: View) {
         if (this._view !== value) {
             if (this._view) {
@@ -45,7 +43,6 @@ export class TabViewItemBase extends Bindable implements TabViewItemDefinition {
     get iconSource(): string {
         return this._iconSource;
     }
-
     set iconSource(value: string) {
         if (this._iconSource !== value) {
             this._iconSource = value;
@@ -53,9 +50,7 @@ export class TabViewItemBase extends Bindable implements TabViewItemDefinition {
         }
     }
 
-    public _update() {
-        //
-    }
+    public abstract _update();
 }
 
 export module knownCollections {
@@ -78,20 +73,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         }
     }
 
-    public _onItemsPropertyChangedSetNativeValue() {
-        let oldValue = this.previousItems;
-        if (oldValue) {
-            this._removeTabs(oldValue);
-        }
-
-        let newValue = this.items;
-        if (newValue) {
-            this._addTabs(newValue);
-        }
-
-        this._updateSelectedIndexOnItemsPropertyChanged(newValue);
-    }
-
     public _updateSelectedIndexOnItemsPropertyChanged(newItems) {
         if (trace.enabled) {
             trace.write("TabView._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
@@ -104,7 +85,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         if (newItemsCount === 0) {
             this.selectedIndex = undefined;
         }
-        else if (types.isUndefined(this.selectedIndex) || this.selectedIndex >= newItemsCount) {
+        else if (this.selectedIndex < 0 || this.selectedIndex >= newItemsCount) {
             this.selectedIndex = 0;
         }
     }
@@ -143,13 +124,13 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
 
     public _onSelectedIndexPropertyChangedSetNativeValue() {
         let index = this.selectedIndex;
-        if (types.isUndefined(index)) {
+        if (index < 0) {
             return;
         }
 
-        if (types.isDefined(this.items)) {
-            if (index < 0 || index >= this.items.length) {
-                this.selectedIndex = undefined;
+        if (this.items) {
+            if (index >= this.items.length) {
+                this.selectedIndex = unsetValue;
                 throw new Error("SelectedIndex should be between [0, items.length)");
             }
         }
@@ -194,9 +175,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
         if (this.items && this.items.length > 0) {
-            let i = 0;
-            let length = this.items.length;
-            for (; i < length; i++) {
+            
+            for (let i = 0, length = this.items.length; i < length; i++) {
                 this.items[i].bindingContext = newValue;
             }
         }
@@ -216,13 +196,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
     }
     set [selectedIndexProperty.native](value: number) {
         this._onSelectedIndexPropertyChangedSetNativeValue();
-    }
-
-    get [itemsProperty.native](): TabViewItemBase[] {
-        return null;
-    }
-    set [itemsProperty.native](value: TabViewItemBase[]) {
-        this._onItemsPropertyChangedSetNativeValue();
     }
 
     public onItemsPropertyChanged(oldValue: TabViewItemDefinition[], newValue: TabViewItemDefinition[]) {
