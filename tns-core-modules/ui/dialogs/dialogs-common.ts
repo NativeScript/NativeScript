@@ -60,6 +60,18 @@ export function getButtonColor(): color.Color {
     return buttonColor;
 }
 
+var buttonBackgroundColor: color.Color;
+export function getButtonBackgroundColor(): color.Color {
+    if (!buttonBackgroundColor) {
+        var btn = new button.Button();
+        applySelectors(btn);
+        buttonBackgroundColor = btn.backgroundColor;
+        btn.onUnloaded();
+    }
+
+    return buttonBackgroundColor;
+}
+
 var textFieldColor: color.Color;
 export function getTextFieldColor(): color.Color {
     if (!textFieldColor) {
