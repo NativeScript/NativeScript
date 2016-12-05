@@ -62,6 +62,10 @@ declare module "ui/core/properties" {
         readonly valueConverter?: (value: any) => U
     }
 
+    export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
+        coerceValue(T, U): U
+    }
+
     interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
         readonly cssName: string;
     }
@@ -70,6 +74,14 @@ declare module "ui/core/properties" {
         constructor(options: PropertyOptions<T, U>);
 
         public readonly native: symbol;
+        public register(cls: { prototype: T }): void;
+    }
+
+    class CoercibleProperty<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
+        constructor(options: CoerciblePropertyOptions<T, U>);
+
+        public readonly native: symbol;
+        public readonly coerce: (target: T) => void;
         public register(cls: { prototype: T }): void;
     }
 

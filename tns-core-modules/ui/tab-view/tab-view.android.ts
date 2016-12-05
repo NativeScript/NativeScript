@@ -1,16 +1,15 @@
 import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory } from "./tab-view-common"
-import { View, colorProperty, fontInternalProperty } from "ui/core/view";
+import { View, colorProperty, fontInternalProperty, layout } from "ui/core/view";
 import { Property } from "ui/core/properties";
 import { Bindable } from "ui/core/bindable";
 import { isIOS } from "platform";
 import { Color } from "color";
 import { Font } from "ui/styling/font";
 import { fromFileOrResource } from "image-source";
-import trace = require("trace");
+import { enabled as traceEnabled, write as traceWrite } from "trace";
+import { RESOURCE_PREFIX, ad } from "utils/utils";
 
 export * from "./tab-view-common";
-
-
 
 const VIEWS_STATES = "_viewStates";
 const ACCENT_COLOR = "colorAccent";
@@ -59,8 +58,8 @@ function ensurePagerAdapterClass() {
         }
 
         instantiateItem(container: android.view.ViewGroup, index: number) {
-            if (trace.enabled) {
-                trace.write("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, traceCategory);
+            if (traceEnabled) {
+                traceWrite("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, traceCategory);
             }
 
             let item = this.items[index];
@@ -69,8 +68,8 @@ function ensurePagerAdapterClass() {
             }
 
             if (this[VIEWS_STATES]) {
-                if (trace.enabled) {
-                    trace.write("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
+                if (traceEnabled) {
+                    traceWrite("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
                 }
                 item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
             }
@@ -80,8 +79,8 @@ function ensurePagerAdapterClass() {
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
-            if (trace.enabled) {
-                trace.write("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, traceCategory);
+            if (traceEnabled) {
+                traceWrite("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, traceCategory);
             }
             let item = this.items[index];
             let nativeView = item.view._nativeView;
@@ -104,8 +103,8 @@ function ensurePagerAdapterClass() {
         }
 
         saveState(): android.os.Parcelable {
-            if (trace.enabled) {
-                trace.write("TabView.PagerAdapter.saveState", traceCategory);
+            if (traceEnabled) {
+                traceWrite("TabView.PagerAdapter.saveState", traceCategory);
             }
 
             let owner: TabView = this.owner;
@@ -132,8 +131,8 @@ function ensurePagerAdapterClass() {
         }
 
         restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader) {
-            if (trace.enabled) {
-                trace.write("TabView.PagerAdapter.restoreState", traceCategory);
+            if (traceEnabled) {
+                traceWrite("TabView.PagerAdapter.restoreState", traceCategory);
             }
             let bundle: android.os.Bundle = <android.os.Bundle>state;
             bundle.setClassLoader(loader);
@@ -180,8 +179,8 @@ export class TabView extends TabViewBase {
     }
 
     public _createUI() {
-        if (trace.enabled) {
-            trace.write("TabView._createUI(" + this + ");", traceCategory);
+        if (traceEnabled) {
+            traceWrite("TabView._createUI(" + this + ");", traceCategory);
         }
 
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
@@ -193,12 +192,12 @@ export class TabView extends TabViewBase {
 
         this.setElevation();
 
-        let accentColor = utils.ad.resources.getPalleteColor(ACCENT_COLOR, this._context);
+        let accentColor = ad.resources.getPalleteColor(ACCENT_COLOR, this._context);
         if (accentColor) {
             this._tabLayout.setSelectedIndicatorColors([accentColor]);
         }
 
-        let primaryColor = utils.ad.resources.getPalleteColor(PRIMARY_COLOR, this._context);
+        let primaryColor = ad.resources.getPalleteColor(PRIMARY_COLOR, this._context);
         if (primaryColor) {
             this._tabLayout.setBackgroundColor(primaryColor);
         }
@@ -225,7 +224,7 @@ export class TabView extends TabViewBase {
     private setElevation() {
         let compat = <any>android.support.v4.view.ViewCompat;
         if (compat.setElevation) {
-            let val = DEFAULT_ELEVATION * utils.layout.getDisplayDensity();
+            let val = DEFAULT_ELEVATION * layout.getDisplayDensity();
             compat.setElevation(this._grid, val);
             compat.setElevation(this._tabLayout, val);
         }
@@ -271,34 +270,13 @@ export class TabView extends TabViewBase {
     }
 
     public _updateTabForItem(item: TabViewItem) {
-        if (this.items && this.items.length > 0) {
+        let items = this.items;
+        if (items && items.length > 0) {
             let index = this.items.indexOf(item);
             if (index >= 0) {
                 this._tabLayout.updateItemAt(index, this.createTabItem(item));
             }
         }
-    }
-
-    public _onSelectedIndexPropertyChangedSetNativeValue() {
-        if (trace.enabled) {
-            trace.write("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + data.oldValue + " ---> " + data.newValue + ");", traceCategory);
-        }
-        super._onSelectedIndexPropertyChangedSetNativeValue(data);
-
-        let index = data.newValue;
-        if (!types.isNullOrUndefined(index)) {
-            // Select the respective page in the ViewPager
-            let viewPagerSelectedIndex = this._viewPager.getCurrentItem();
-            if (viewPagerSelectedIndex !== index) {
-                if (trace.enabled) {
-                    trace.write("TabView this._viewPager.setCurrentItem(" + index + ", true);", traceCategory);
-                }
-                this._viewPager.setCurrentItem(index, true);
-            }
-        }
-
-        let args = { eventName: TabView.selectedIndexChangedEvent, object: this, oldIndex: data.oldValue, newIndex: data.newValue };
-        this.notify(args);
     }
 
     private createTabItem(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -307,11 +285,11 @@ export class TabView extends TabViewBase {
 
         if (item.iconSource) {
 
-            if (item.iconSource.indexOf(utils.RESOURCE_PREFIX) === 0) {
-                result.iconId = utils.ad.resources.getDrawableId(item.iconSource.substr(utils.RESOURCE_PREFIX.length));
+            if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+                result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
             }
             else {
-                let is = imageSource.fromFileOrResource(item.iconSource);
+                let is = fromFileOrResource(item.iconSource);
                 if (is) {
                     result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
                 }
@@ -319,6 +297,16 @@ export class TabView extends TabViewBase {
         }
 
         return result;
+    }
+
+    get [selectedIndexProperty.native](): number {
+        return -1;
+    }
+    set [selectedIndexProperty.native](value: number) {
+        if (traceEnabled) {
+            traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", true);", traceCategory);
+        }
+        this._viewPager.setCurrentItem(value, true);
     }
 
     get [itemsProperty.native](): TabViewItemBase[] {

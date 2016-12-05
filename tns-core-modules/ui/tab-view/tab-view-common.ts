@@ -1,5 +1,5 @@
 ﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from "ui/tab-view";
-import { Property } from "ui/core/properties";
+import { Property, CoercibleProperty } from "ui/core/properties";
 import { View, AddArrayFromBuilder } from "ui/core/view";
 import { Bindable } from "ui/core/bindable";
 import { isIOS } from "platform";
@@ -122,20 +122,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         }
     }
 
-    public _onSelectedIndexPropertyChangedSetNativeValue() {
-        let index = this.selectedIndex;
-        if (index < 0) {
-            return;
-        }
-
-        if (this.items) {
-            if (index >= this.items.length) {
-                this.selectedIndex = unsetValue;
-                throw new Error("SelectedIndex should be between [0, items.length)");
-            }
-        }
-    }
-
     get _selectedView(): View {
         let items = this.items;
         let selectedIndex = this.selectedIndex;
@@ -175,7 +161,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
     public _onBindingContextChanged(oldValue: any, newValue: any) {
         super._onBindingContextChanged(oldValue, newValue);
         if (this.items && this.items.length > 0) {
-            
+
             for (let i = 0, length = this.items.length; i < length; i++) {
                 this.items[i].bindingContext = newValue;
             }
@@ -191,13 +177,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         // iOS sepcific
     }
 
-    get [selectedIndexProperty.native](): number {
-        return -1;
-    }
-    set [selectedIndexProperty.native](value: number) {
-        this._onSelectedIndexPropertyChangedSetNativeValue();
-    }
-
     public onItemsPropertyChanged(oldValue: TabViewItemDefinition[], newValue: TabViewItemDefinition[]) {
         this.previousItems = oldValue;
     }
@@ -206,11 +185,29 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
 export const itemsProperty = new Property<TabViewBase, TabViewItemBase[]>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         target.onItemsPropertyChanged(oldValue, newValue);
+        selectedIndexProperty.coerce(target);
     }
 });
 itemsProperty.register(TabViewBase);
 
-export const selectedIndexProperty = new Property<TabViewBase, number>({ name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS });
+export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
+    name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+        let args = { eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue };
+        target.notify(args);
+    }, coerceValue: (target, value) => {
+        let items = target.items;
+        if (items) {
+            let max = items.length - 1;
+            if (value > max) {
+                value = max;
+            }
+        } else {
+            value = -1;
+        }
+
+        return value;
+    }
+});
 selectedIndexProperty.register(TabViewBase);
 
 export const selectedColorProperty = new Property<TabViewBase, Color>({ name: "selectedColor" });

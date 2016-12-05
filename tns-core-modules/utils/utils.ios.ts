@@ -1,6 +1,6 @@
 ﻿import dts = require("utils/utils");
 import common = require("./utils-common");
-import {Color} from "color";
+import { Color } from "color";
 import enums = require("ui/enums");
 import * as fsModule from "file-system";
 import * as traceModule from "trace";
@@ -56,9 +56,9 @@ export module ios {
         }
     }
 
-    export function getter<T>(_this: any, property: T | {(): T}): T {
+    export function getter<T>(_this: any, property: T | { (): T }): T {
         if (typeof property === "function") {
-            return (<{(): T}>property).call(_this);
+            return (<{ (): T }>property).call(_this);
         } else {
             return <T>property;
         }
