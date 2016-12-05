@@ -887,6 +887,13 @@ export class Style extends DependencyObservable implements styling.Style {
         this._setValue(selectedBackgroundColorProperty, value);
     }
 
+     get separatorColor(): Color {
+        return this._getValue(separatorColorProperty);
+    }
+    set separatorColor(value: Color) {
+        this._setValue(separatorColorProperty, value);
+    }
+
     public _updateTextDecoration() {
         if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
             this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
@@ -1162,11 +1169,16 @@ export var statusBarStyleProperty = new styleProperty.Property("statusBarStyle",
 export var androidStatusBarBackgroundProperty = new styleProperty.Property("androidStatusBarBackground", "android-status-bar-background",
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
-
+   
 // SegmentedBar-specific props
 export var selectedBackgroundColorProperty = new styleProperty.Property("selectedBackgroundColor", "selected-background-color",
     new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
     converters.colorConverter);
+
+// ListView-specific props
+export var separatorColorProperty = new styleProperty.Property("separatorColor", "separator-color",
+    new PropertyMetadata(undefined, PropertyMetadataSettings.None, undefined, Color.isValid, Color.equals),
+    converters.colorConverter);    
 
 // Helper property holding most layout related properties available in CSS.
 // When layout related properties are set in CSS we chache them and send them to the native view in a single call.

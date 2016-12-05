@@ -8,6 +8,7 @@ import definition = require("ui/list-view");
 import {ProxyViewContainer} from "ui/proxy-view-container";
 import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
+import { separatorColorProperty, registerHandler, Styler, StylePropertyChangedHandler } from "ui/styling/style";
 
 let color: typeof colorModule;
 function ensureColor() {
@@ -23,16 +24,16 @@ let ITEMTAP = common.ListView.itemTapEvent;
 global.moduleMerge(common, exports);
 
 function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    let bar = <ListView>data.object;
-    if (!bar.android) {
+    let listView = <ListView>data.object;
+    if (!listView.android) {
         return;
     }
 
     ensureColor();
 
     if (data.newValue instanceof color.Color) {
-        bar.android.setDivider(new android.graphics.drawable.ColorDrawable(data.newValue.android));
-        bar.android.setDividerHeight(1);
+        listView.android.setDivider(new android.graphics.drawable.ColorDrawable(data.newValue.android));
+        listView.android.setDividerHeight(1);
     }
 }
 
@@ -286,3 +287,26 @@ function ensureListViewAdapterClass() {
 
     ListViewAdapterClass = ListViewAdapter;
 }
+
+export class ListViewStyler implements Styler {
+    // separator-color
+    private static setSeparatorColorProperty(view: viewModule.View, newValue: any) {
+        let listView = <android.widget.ListView>view._nativeView;
+        listView.setDivider(new android.graphics.drawable.ColorDrawable(newValue));
+        listView.setDividerHeight(1);
+    }
+
+    private static resetSeparatorColorProperty(view: viewModule.View, nativeValue: any) {
+        let listView = <android.widget.ListView>view._nativeView;
+        listView.setDivider(new android.graphics.drawable.ColorDrawable(nativeValue));
+        listView.setDividerHeight(1);
+    }
+
+    public static registerHandlers() {
+        registerHandler(separatorColorProperty, new StylePropertyChangedHandler(
+            ListViewStyler.setSeparatorColorProperty,
+            ListViewStyler.resetSeparatorColorProperty), "ListView");
+    }
+}
+
+ListViewStyler.registerHandlers();
