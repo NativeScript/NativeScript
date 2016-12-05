@@ -73,25 +73,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         }
     }
 
-    public _updateSelectedIndexOnItemsPropertyChanged(newItems) {
-        if (trace.enabled) {
-            trace.write("TabView._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
-        }
-        let newItemsCount = 0;
-        if (newItems) {
-            newItemsCount = newItems.length;
-        }
-
-        if (newItemsCount === 0) {
-            this.selectedIndex = undefined;
-        }
-        else if (this.selectedIndex < 0 || this.selectedIndex >= newItemsCount) {
-            this.selectedIndex = 0;
-        }
-    }
-
     public _removeTabs(oldItems: Array<TabViewItemDefinition>) {
-
         for (let i = 0, length = oldItems.length; i < length; i++) {
             let oldItem = oldItems[i];
 
@@ -123,14 +105,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
     }
 
     get _selectedView(): View {
-        let items = this.items;
         let selectedIndex = this.selectedIndex;
-
-        if (!items || items.length === 0 || selectedIndex < (items.length - 1)) {
-            return undefined;
-        }
-
-        return items[selectedIndex].view;
+        return selectedIndex > -1 ? this.items[selectedIndex].view : null;
     }
 
     get _childrenCount(): number {
@@ -166,15 +142,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
                 this.items[i].bindingContext = newValue;
             }
         }
-    }
-
-    public _getAndroidTabView(): org.nativescript.widgets.TabLayout {
-        // Android specific
-        return undefined;
-    }
-
-    public _updateIOSTabBarColorsAndFonts(): void {
-        // iOS sepcific
     }
 
     public onItemsPropertyChanged(oldValue: TabViewItemDefinition[], newValue: TabViewItemDefinition[]) {

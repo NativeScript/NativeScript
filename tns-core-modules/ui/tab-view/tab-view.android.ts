@@ -284,13 +284,12 @@ export class TabView extends TabViewBase {
         result.title = item.title;
 
         if (item.iconSource) {
-
             if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
                 result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-            }
-            else {
+            } else {
                 let is = fromFileOrResource(item.iconSource);
                 if (is) {
+                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
                     result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
                 }
             }

@@ -134,11 +134,6 @@ declare module "ui/tab-view" {
          * Raised when the selected index changes.
          */
         on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
-
-        //@private
-        _getAndroidTabView(): any /* org.nativescript.widgets.TabLayout */;
-        _updateIOSTabBarColorsAndFonts(): void;
-        //@endprivate
     }
 
         export const itemsProperty: Property<TabView, TabViewItem[]>;
