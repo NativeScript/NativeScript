@@ -7,7 +7,7 @@ import * as style from "ui/styling/style";
 import {View} from "ui/core/view";
 
 function onSecurePropertyChanged(data: PropertyChangeData) {
-    var textField = <TextField>data.object;
+    const textField = <TextField>data.object;
     textField.ios.secureTextEntry = data.newValue;
 }
 
@@ -46,7 +46,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
             owner.dismissSoftInput();
 
-            if (owner.formattedText){
+            if (owner.formattedText) {
                 owner.formattedText.createFormattedStringCore();
             }
         }
@@ -86,8 +86,8 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
                     }
                 }
             }
-            
-            if (owner.formattedText){
+
+            if (owner.formattedText) {
                 owner.formattedText._updateCharactersInRangeReplacementString(range.location, range.length, replacementString);
             }
         }
@@ -156,24 +156,24 @@ export class TextField extends common.TextField {
     }
 
     public _onHintPropertyChanged(data: PropertyChangeData) {
-        var textField = <TextField>data.object;
+        const textField = <TextField>data.object;
         textField.ios.placeholder = data.newValue + "";
     }
-} 
+};
 
 export class TextFieldStyler implements style.Styler {
     private static setColorProperty(view: View, newValue: any) {
-        var tf: UITextField = <UITextField>view._nativeView;
+        const  tf: UITextField = <UITextField>view._nativeView;
         TextFieldStyler._setTextFieldColor(tf, newValue);
     }
 
     private static resetColorProperty(view: View, nativeValue: any) {
-        var tf: UITextField = <UITextField>view._nativeView;
+        const  tf: UITextField = <UITextField>view._nativeView;
         TextFieldStyler._setTextFieldColor(tf, nativeValue);
     }
 
     private static _setTextFieldColor(tf: UITextField, newValue: any) {
-        var color: UIColor = <UIColor>newValue;
+        const  color: UIColor = <UIColor>newValue;
         if ((<any>tf).isShowingHint && color) {
             tf.textColor = (<UIColor>color).colorWithAlphaComponent(0.22);
         }
@@ -184,27 +184,32 @@ export class TextFieldStyler implements style.Styler {
     }
 
     private static getNativeColorValue(view: View): any {
-        var tf: UITextField = <UITextField>view._nativeView;
+        const  tf: UITextField = <UITextField>view._nativeView;
         return tf.tintColor;
     }
 
     // placeholder-color
     private static setPlaceholderColorProperty(textBase: View, newValue: any) {
-        let ios = <UITextField>textBase._nativeView;
-        let colorAttibutes = NSMutableDictionary.alloc().init();
-        colorAttibutes.setValueForKey(newValue, NSForegroundColorAttributeName);
-        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(ios.placeholder, colorAttibutes.copy());
+        const ios = <UITextField>textBase._nativeView;
+        const text = ios.placeholder + "";
+        const colorAttributes = NSMutableDictionary.alloc().init();
+        colorAttributes.setValueForKey(newValue, NSForegroundColorAttributeName);
+        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(text, colorAttributes.copy());
     }
 
     private static resetPlaceholderColorProperty(textBase: View, nativeValue: any) {
-        var ios = <UITextField>textBase._nativeView;
-        let colorAttibutes = NSMutableDictionary.alloc().init();
-        colorAttibutes.setValueForKey(nativeValue, NSForegroundColorAttributeName);
-        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(ios.placeholder, colorAttibutes.copy());
+        const ios = <UITextField>textBase._nativeView;
+        const text = ios.placeholder + "";
+        const colorAttributes = NSMutableDictionary.alloc().init();
+        colorAttributes.setValueForKey(nativeValue, NSForegroundColorAttributeName);
+        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(text, colorAttributes.copy());
     }
 
     private static getNativePlaceholderColorValue(textBase: View): any {
-        var ios = <UITextField>textBase._nativeView;
+        const  ios = <UITextField>textBase._nativeView;
+        if (!ios.attributedPlaceholder) {
+            return null;
+        }
         return ios.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null);
     }
 
