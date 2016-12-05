@@ -116,13 +116,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     }
 }
 
-export let textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
+export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
 textProperty.register(TextBaseCommon);
 
-export let formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
+export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
 formattedTextProperty.register(TextBaseCommon);
 
-export let textAlignmentProperty = new InheritedCssProperty<Style, "left" | "center" | "right">({
+export const textAlignmentProperty = new InheritedCssProperty<Style, "left" | "center" | "right">({
     name: "textAlignment", cssName: "text-align", valueConverter: (value) => {
         switch (value) {
             case "left":
@@ -137,7 +137,7 @@ export let textAlignmentProperty = new InheritedCssProperty<Style, "left" | "cen
 });
 textAlignmentProperty.register(Style);
 
-export let textDecorationProperty = new CssProperty<Style, "none" | "underline" | "line-through">({
+export const textDecorationProperty = new CssProperty<Style, "none" | "underline" | "line-through">({
     name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: (value) => {
         let values = (value + "").split(" ");
 
@@ -150,7 +150,7 @@ export let textDecorationProperty = new CssProperty<Style, "none" | "underline" 
 });
 textDecorationProperty.register(Style);
 
-export let textTransformProperty = new CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">({
+export const textTransformProperty = new CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">({
     name: "textTransform", cssName: "text-transform", defaultValue: "none", valueConverter: (value) => {
         switch (value) {
             case "none":
@@ -166,7 +166,7 @@ export let textTransformProperty = new CssProperty<Style, "none" | "capitalize" 
 });
 textTransformProperty.register(Style);
 
-export let whiteSpaceProperty = new CssProperty<Style, "normal" | "nowrap">({
+export const whiteSpaceProperty = new CssProperty<Style, "normal" | "nowrap">({
     name: "whiteSpace", cssName: "white-space", valueConverter: (value: "normal" | "nowrap") => {
         switch (value) {
             case "normal":
@@ -179,5 +179,5 @@ export let whiteSpaceProperty = new CssProperty<Style, "normal" | "nowrap">({
 });
 whiteSpaceProperty.register(Style);
 
-export let letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: (v: string) => parseFloat(v) });
+export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: (v: string) => parseFloat(v) });
 letterSpacingProperty.register(Style);

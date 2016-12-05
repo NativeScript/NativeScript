@@ -1,10 +1,8 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, whiteSpaceProperty, letterSpacingProperty
+    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty 
 } from "./text-base-common";
 import { FormattedString } from "text/formatted-string";
-import { colorProperty, fontInternalProperty } from "ui/core/view";
-import { toUIString, isNumber } from "utils/types";
 import { Font } from "ui/styling/font";
 import { Color } from "color";
 
@@ -36,18 +34,18 @@ function updateFormattedStringTextDecoration(formattedText: FormattedString, dec
     // TODO: Refactor this method so it doesn't modify FormattedString properties.
     // Instead it should create NSAttributedString and apply it to the nativeView.
     let textDecoration = decoration + "";
-    if (textDecoration.indexOf(TextDecoration.none) !== -1) {
+    if (textDecoration.indexOf("none") !== -1) {
         formattedText.underline = NSUnderlineStyle.StyleNone;
         formattedText.strikethrough = NSUnderlineStyle.StyleNone;
     }
     else {
-        if (textDecoration.indexOf(TextDecoration.underline) !== -1) {
+        if (textDecoration.indexOf("underline") !== -1) {
             formattedText.underline = NSUnderlineStyle.StyleSingle;
         } else {
             formattedText.underline = NSUnderlineStyle.StyleNone;
         }
 
-        if (textDecoration.indexOf(TextDecoration.lineThrough) !== -1) {
+        if (textDecoration.indexOf("line-through") !== -1) {
             formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
         } else {
             formattedText.strikethrough = NSUnderlineStyle.StyleNone;
@@ -55,7 +53,7 @@ function updateFormattedStringTextDecoration(formattedText: FormattedString, dec
     }
 }
 
-function updateFormattedStringTextTransformation(formattedText: FormattedString, transform: string): void {
+function updateFormattedStringTextTransformation(formattedText: FormattedString, transform: "none" | "capitalize" | "uppercase" | "lowercase"): void {
     // TODO: Refactor this method so it doesn't modify Span properties.
     // Instead it should create NSAttributedString and apply it to the nativeView.
     for (let i = 0, length = formattedText.spans.length; i < length; i++) {
@@ -64,11 +62,11 @@ function updateFormattedStringTextTransformation(formattedText: FormattedString,
     }
 }
 
-function setFormattedTextDecorationAndTransform(formattedText: FormattedString, nativeView: UITextField | UITextView | UILabel | UIButton, decoration: string, transform: string, letterSpacing: number) {
+function setFormattedTextDecorationAndTransform(formattedText: FormattedString, nativeView: UITextField | UITextView | UILabel | UIButton, decoration: string, transform: "none" | "capitalize" | "uppercase" | "lowercase", letterSpacing: number) {
     updateFormattedStringTextDecoration(formattedText, decoration);
     updateFormattedStringTextTransformation(formattedText, transform);
 
-    if (isNumber(letterSpacing) && !isNaN(letterSpacing)) {
+    if (typeof letterSpacing === "number" && !isNaN(letterSpacing)) {
         if (nativeView instanceof UIButton) {
             let attrText = NSMutableAttributedString.alloc().initWithAttributedString(nativeView.attributedTitleForState(UIControlState.Normal));
             attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * nativeView.font.pointSize, { location: 0, length: attrText.length });
@@ -81,17 +79,17 @@ function setFormattedTextDecorationAndTransform(formattedText: FormattedString, 
     }
 }
 
-function setTextDecorationAndTransform(text: string, nativeView: UITextField | UITextView | UILabel | UIButton, decoration: string, transform: string, letterSpacing: number, color: Color) {
-    let hasLetterSpacing = isNumber(letterSpacing) && !isNaN(letterSpacing);
+function setTextDecorationAndTransform(text: string, nativeView: UITextField | UITextView | UILabel | UIButton, decoration: string, transform: "none" | "capitalize" | "uppercase" | "lowercase", letterSpacing: number, color: Color) {
+    let hasLetterSpacing = typeof letterSpacing === "number" && !isNaN(letterSpacing);
 
     let decorationValues = decoration + "";
     let dict = new Map<string, number>();
-    if (decorationValues.indexOf(TextDecoration.none) === -1) {
-        if (decorationValues.indexOf(TextDecoration.underline) !== -1) {
+    if (decorationValues.indexOf("none") === -1) {
+        if (decorationValues.indexOf("underline") !== -1) {
             dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
         }
 
-        if (decorationValues.indexOf(TextDecoration.lineThrough) !== -1) {
+        if (decorationValues.indexOf("line-through") !== -1) {
             dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
         }
     }
@@ -204,12 +202,12 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [fontIntenal.native](): UIFont {
+    get [fontInternalProperty.native](): UIFont {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         return nativeView.font;
     }
-    set [fontIntenal.native](value: Font) {
+    set [fontInternalProperty.native](value: Font) {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         let font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
@@ -221,13 +219,13 @@ export class TextBase extends TextBaseCommon {
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         switch (nativeView.textAlignment) {
             case NSTextAlignment.Left:
-                return TextAlignment.left;
+                return "left";
 
             case NSTextAlignment.Center:
-                return TextAlignment.center;
+                return "center";
 
             case NSTextAlignment.Right:
-                return TextAlignment.right;
+                return "right";
         }
     }
     set [textAlignmentProperty.native](value: string) {
@@ -235,13 +233,13 @@ export class TextBase extends TextBaseCommon {
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         // NOTE: if Button textAlignment is not enough - set also btn.contentHorizontalAlignment
         switch (value) {
-            case TextAlignment.left:
+            case "left":
                 nativeView.textAlignment = NSTextAlignment.Left;
                 break;
-            case TextAlignment.center:
+            case "center":
                 nativeView.textAlignment = NSTextAlignment.Center;
                 break;
-            case TextAlignment.right:
+            case "right":
                 nativeView.textAlignment = NSTextAlignment.Right;
                 break;
             default:
@@ -250,7 +248,7 @@ export class TextBase extends TextBaseCommon {
     }
 
     get [textDecorationProperty.native](): string {
-        return TextDecoration.none;
+        return "none";
     }
     set [textDecorationProperty.native](value: string) {
         if (this.formattedText) {
@@ -261,9 +259,9 @@ export class TextBase extends TextBaseCommon {
     }
 
     get [textTransformProperty.native](): string {
-        return TextTransform.none;
+        return "none";
     }
-    set [textTransformProperty.native](value: string) {
+    set [textTransformProperty.native](value: "none" | "capitalize" | "uppercase" | "lowercase") {
         if (this.formattedText) {
             setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, this.style.textDecoration, value, this.style.letterSpacing);
         } else {

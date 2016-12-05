@@ -75,4 +75,6 @@
     export const textTransformProperty: CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">;
     export const whiteSpaceProperty: CssProperty<Style, "normal" | "nowrap">;
     export const letterSpacingProperty: CssProperty<Style, number>;
+
+    export * from "ui/core/view";
 }

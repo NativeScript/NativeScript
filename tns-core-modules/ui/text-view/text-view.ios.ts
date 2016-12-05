@@ -1,12 +1,11 @@
 ﻿import { TextView as TextViewDefinition } from "ui/text-view";
-import { EditableTextBase, editableProperty, hintProperty } from "ui/editable-text-base";
-import { textProperty } from "ui/text-base";
-import { UpdateTextTrigger } from "ui/enums";
 import {
-    colorProperty, borderTopWidthProperty, borderRightWidthProperty,
-    borderBottomWidthProperty, borderLeftWidthProperty, nativePaddingsProperty
-} from "ui/styling/style";
-import * as utils from "utils/utils";
+    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty,
+    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length
+
+} from "ui/editable-text-base";
+import { ios } from "utils/utils";
 
 export * from "ui/editable-text-base";
 
@@ -33,7 +32,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewDidEndEditing(textView: UITextView) {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === UpdateTextTrigger.focusLost) {
+            if (owner.updateTextTrigger === "focusLost") {
                 owner.nativePropertyChangeded(textProperty, textView.text);
             }
 
@@ -54,7 +53,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewDidChange(textView: UITextView) {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
+            if (owner.updateTextTrigger === "textChanged") {
                 owner.nativePropertyChangeded(textProperty, textView.text);
             }
         }
@@ -112,7 +111,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     public _showHint(hint: string) {
         let nativeView = this.nativeView;
-        nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : utils.ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
+        nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
         nativeView.text = hint + "";
         this._isShowingHint = true;
     }
@@ -164,60 +163,107 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         }
     }
 
-    get [borderTopWidthProperty.native](): number {
-        return this.nativeView.textContainerInset.top;
+    get [borderTopWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.top,
+            unit: "px"
+        };
     }
-    set [borderTopWidthProperty.native](value: number) {
+    set [borderTopWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let top = this.style.paddingTop + value;
+        let style = this.style;
+        let top = style.effectivePaddingTop + style.effectiveBorderTopWidth;
         this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
-    get [borderRightWidthProperty.native](): number {
-        return this.nativeView.textContainerInset.right;
+
+    get [borderRightWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.right,
+            unit: "px"
+        };
     }
-    set [borderRightWidthProperty.native](value: number) {
+    set [borderRightWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let right = this.style.paddingRight + value;
+        let style = this.style;
+        let right = style.effectivePaddingRight + style.effectiveBorderRightWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
-    get [borderBottomWidthProperty.native](): number {
-        return this.nativeView.textContainerInset.bottom;
+
+    get [borderBottomWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.bottom,
+            unit: "px"
+        };
     }
-    set [borderBottomWidthProperty.native](value: number) {
+    set [borderBottomWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let bottom = this.style.paddingBottom + value;
+        let style = this.style;
+        let bottom = style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
-    get [borderLeftWidthProperty.native](): number {
-        return this.nativeView.textContainerInset.left;
+
+    get [borderLeftWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.left,
+            unit: "px"
+        };
     }
-    set [borderLeftWidthProperty.native](value: number) {
+    set [borderLeftWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let left = this.style.paddingLeft + value;
+        let style = this.style;
+        let left = style.effectivePaddingLeft + style.effectiveBorderLeftWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [nativePaddingsProperty.native](): UIEdgeInsets {
-        return this.nativeView.textContainerInset;
+    get [paddingTopProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.top,
+            unit: "px"
+        };
     }
-    set [nativePaddingsProperty.native](value: UIEdgeInsets) {
-        let inset: UIEdgeInsets;
-        if (!value) {
-            inset = {
-                top: this.style.borderTopWidth,
-                left: this.style.borderLeftWidth,
-                bottom: this.style.borderBottomWidth,
-                right: this.style.borderRightWidth
-            };
-        } else {
-            inset = {
-                top: this.style.borderTopWidth + value.top,
-                left: this.style.borderLeftWidth + value.left,
-                bottom: this.style.borderBottomWidth + value.bottom,
-                right: this.style.borderRightWidth + value.right
-            };
-        }
+    set [paddingTopProperty.native](value: Length) {
+        let inset = this.nativeView.textContainerInset;
+        let style = this.style;
+        let top = style.effectivePaddingTop + style.effectiveBorderTopWidth;
+        this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
+    }
 
-        this.nativeView.textContainerInset = inset;
+    get [paddingRightProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.right,
+            unit: "px"
+        };
+    }
+    set [paddingRightProperty.native](value: Length) {
+        let inset = this.nativeView.textContainerInset;
+        let style = this.style;
+        let right = style.effectivePaddingRight + style.effectiveBorderRightWidth;
+        this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
+    }
+
+    get [paddingBottomProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.bottom,
+            unit: "px"
+        };
+    }
+    set [paddingBottomProperty.native](value: Length) {
+        let inset = this.nativeView.textContainerInset;
+        let style = this.style;
+        let bottom = style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
+        this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+    }
+    
+    get [paddingLeftProperty.native](): Length {
+        return {
+            value: this.nativeView.textContainerInset.left,
+            unit: "px"
+        };
+    }
+    set [paddingLeftProperty.native](value: Length) {
+        let inset = this.nativeView.textContainerInset;
+        let style = this.style;
+        let left = style.effectivePaddingLeft + style.effectiveBorderLeftWidth;
+        this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 }

@@ -5,7 +5,7 @@ declare module "ui/text-field" {
     import { Property } from "ui/core/properties";
     import { EditableTextBase } from "ui/editable-text-base";
 
-    export let secureProperty: Property<TextField, boolean>;
+    export const secureProperty: Property<TextField, boolean>;
 
     /**
      * Represents an editable text field.

@@ -1,10 +1,4 @@
-﻿import { View } from "ui/core/view";
-import { TextFieldBase, secureProperty } from "./text-field-common";
-import { hintProperty } from "ui/editable-text-base";
-
-import { textProperty } from "ui/text-base";
-import { UpdateTextTrigger } from "ui/enums";
-import { colorProperty, placeholderColorProperty } from "ui/styling/style";
+﻿import { TextFieldBase, secureProperty, textProperty, hintProperty,  colorProperty, placeholderColorProperty } from "./text-field-common";
 
 export * from "./text-field-common";
 
@@ -33,7 +27,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldDidEndEditing(textField: UITextField) {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === UpdateTextTrigger.focusLost) {
+            if (owner.updateTextTrigger === "focusLost") {
                 owner.nativePropertyChanged(textProperty, textField.text);
             }
 
@@ -68,7 +62,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
+            if (owner.updateTextTrigger === "textChanged") {
                 if (textField.secureTextEntry && this.firstEdit) {
                     owner.nativePropertyChanged(textProperty, replacementString);
                 }
@@ -108,9 +102,10 @@ class UITextFieldImpl extends UITextField {
         }
 
         let size = bounds.size;
-        return CGRectMake(owner.borderLeftWidth + owner.style.paddingLeft, owner.borderTopWidth + owner.style.paddingTop,
-            size.width - (owner.borderLeftWidth + owner.style.paddingLeft + owner.style.paddingRight + owner.borderRightWidth),
-            size.height - (owner.borderTopWidth + owner.style.paddingTop + owner.style.paddingBottom + owner.borderBottomWidth)
+        let style = owner.style;
+        return CGRectMake(style.effectiveBorderLeftWidth + style.effectivePaddingLeft, style.effectiveBorderTopWidth + style.effectivePaddingTop,
+            size.width - (style.effectiveBorderLeftWidth + style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderRightWidth),
+            size.height - (style.effectiveBorderTopWidth + style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderBottomWidth)
         );
     }
 

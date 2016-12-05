@@ -1,8 +1,10 @@
 ﻿import { TimePicker as TimePickerDefinition } from "ui/time-picker";
 import { View } from "ui/core/view";
 import { Property } from "ui/core/properties";
-import { isNumber, isDefined } from "utils/types";
 
+ADD parseFloat as converter to all <number> properties!!!!!!!!!
+
+export * from "ui/core/view";
 interface Time {
     hour: number;
     minute: number;
@@ -37,15 +39,15 @@ function isValidTime(picker: TimePickerDefinition): boolean {
 }
 
 function isHourValid(value: number): boolean {
-    return isNumber(value) && value >= 0 && value <= 23;
+    return typeof value === "number" && value >= 0 && value <= 23;
 }
 
 function isMinuteValid(value: number): boolean {
-    return isNumber(value) && value >= 0 && value <= 59;
+    return typeof value === "number" && value >= 0 && value <= 59;
 }
 
 function isMinuteIntervalValid(value: number): boolean {
-    return isNumber(value) && value >= 1 && value <= 30 && 60 % value === 0;
+    return typeof value === "number" && value >= 1 && value <= 30 && 60 % value === 0;
 }
 
 function getMinutes(hour: number): number {

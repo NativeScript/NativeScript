@@ -1,9 +1,10 @@
 ﻿import { TimePickerBase, timeProperty, minuteIntervalProperty, 
     minuteProperty, minMinuteProperty, maxMinuteProperty,
-    hourProperty, minHourProperty, maxHourProperty } from "./time-picker-common";
-import { colorProperty } from "ui/styling/style";
-import * as utils from "utils/utils";
-import getter = utils.ios.getter;
+    hourProperty, minHourProperty, maxHourProperty, colorProperty } from "./time-picker-common";
+
+import { ios } from "utils/utils";
+import getter = ios.getter;
+
 export * from "./time-picker-common";
 
 function getDate(hour: number, minute: number): Date {

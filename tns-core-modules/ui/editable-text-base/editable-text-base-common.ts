@@ -19,26 +19,26 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public abstract dismissSoftInput();
 }
 
-export let placeholderColorProperty = new CssProperty<Style, Color>({ name: "placeholderColor", cssName: "placeholder-color", equalityComparer: Color.equals, valueConverter: (v: string) => new Color(v) });
+export const placeholderColorProperty = new CssProperty<Style, Color>({ name: "placeholderColor", cssName: "placeholder-color", equalityComparer: Color.equals, valueConverter: (v: string) => new Color(v) });
 placeholderColorProperty.register(Style);
 
-export let keyboardTypeProperty = new Property<EditableTextBase, "datetime" | "phone" | "number" | "url" | "email">({ name: "keyboardType" });
+export const keyboardTypeProperty = new Property<EditableTextBase, "datetime" | "phone" | "number" | "url" | "email">({ name: "keyboardType" });
 keyboardTypeProperty.register(EditableTextBase);
 
-export let returnKeyTypeProperty = new Property<EditableTextBase, "done" | "next" |  "go" | "search" | "send">({ name: "returnKeyType" });
+export const returnKeyTypeProperty = new Property<EditableTextBase, "done" | "next" |  "go" | "search" | "send">({ name: "returnKeyType" });
 returnKeyTypeProperty.register(EditableTextBase);
 
-export let editableProperty = new Property<EditableTextBase, boolean>({ name: "editable", defaultValue: true });
+export const editableProperty = new Property<EditableTextBase, boolean>({ name: "editable", defaultValue: true });
 editableProperty.register(EditableTextBase);
 
-export let updateTextTriggerProperty = new Property<EditableTextBase, "focusLost" | "textChanged">({ name: "updateTextTrigger", defaultValue: "textChanged" });
+export const updateTextTriggerProperty = new Property<EditableTextBase, "focusLost" | "textChanged">({ name: "updateTextTrigger", defaultValue: "textChanged" });
 updateTextTriggerProperty.register(EditableTextBase);
 
-export let autocapitalizationTypeProperty = new Property<EditableTextBase, "none" | "words" | "sentences" | "allCharacters">({ name: "autocapitalizationType", defaultValue: "sentences" });
+export const autocapitalizationTypeProperty = new Property<EditableTextBase, "none" | "words" | "sentences" | "allCharacters">({ name: "autocapitalizationType", defaultValue: "sentences" });
 autocapitalizationTypeProperty.register(EditableTextBase);
 
-export let autocorrectProperty = new Property<EditableTextBase, boolean>({ name: "autocorrect" });
+export const autocorrectProperty = new Property<EditableTextBase, boolean>({ name: "autocorrect" });
 autocorrectProperty.register(EditableTextBase);
 
-export let hintProperty = new Property<EditableTextBase, string>({ name: "hint", defaultValue: "" });
+export const hintProperty = new Property<EditableTextBase, string>({ name: "hint", defaultValue: "" });
 hintProperty.register(EditableTextBase);
