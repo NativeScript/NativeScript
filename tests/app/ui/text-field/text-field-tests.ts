@@ -576,3 +576,13 @@ export function test_set_placeholder_color() {
         TKUnit.assertEqual(actualColorHex, expectedColorHex);
     });
 }
+
+export function test_set_placeholder_color_when_hint_is_not_set() {
+    let view = new textFieldModule.TextField();
+    let expectedColorHex = "#ffff0000";
+    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+        view.setInlineStyle("placeholder-color: " + expectedColorHex + ";");
+        let actualColorHex = textFieldTestsNative.getNativePlaceholderColor(view).hex;
+        TKUnit.assertEqual(actualColorHex, expectedColorHex);
+    });
+}
