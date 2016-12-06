@@ -2,10 +2,7 @@
  * Contains the SearchBar class, which represents a standard search bar component.
  */
 declare module "ui/search-bar" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-    import { EventData } from "data/observable";
-    import { Color } from "color";
+    import { View, Property, EventData, Color } from "ui/core/view";
 
     /**
      * Represents a search bar component.

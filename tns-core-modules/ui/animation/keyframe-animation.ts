@@ -4,10 +4,8 @@ import {
     KeyframeAnimationInfo as KeyframeAnimationInfoDefinition,
     KeyframeAnimation as KeyframeAnimationDefinition
 } from "ui/animation/keyframe-animation";
-import { Animation } from "ui/animation";
-import { View } from "ui/core/view";
-import { AnimationCurve } from "ui/enums";
-import { unsetValue } from "ui/core/dependency-observable";
+
+import { View, unsetValue, Animation } from "ui/core/view";
 
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;
@@ -25,7 +23,7 @@ export class KeyframeAnimationInfo implements KeyframeAnimationInfoDefinition {
     public duration: number = 0.3;
     public delay: number = 0;
     public iterations: number = 1;
-    public curve: any = AnimationCurve.ease;
+    public curve: any = "ease";
     public isForwards: boolean = false;
     public isReverse: boolean = false;
     public keyframes: Array<KeyframeInfo>;

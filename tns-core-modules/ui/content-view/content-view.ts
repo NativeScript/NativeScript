@@ -1,6 +1,7 @@
 ﻿import { ContentView as ContentViewDefinition } from "ui/content-view";
-import { View, CustomLayoutView, AddChildFromBuilder } from "ui/core/view";
-import * as utils from "utils/utils";
+import { View, CustomLayoutView, AddChildFromBuilder, layout } from "ui/core/view";
+
+export * from "ui/core/view";
 
 export class ContentView extends CustomLayoutView implements ContentViewDefinition, AddChildFromBuilder {
     private _content: View;
@@ -69,11 +70,11 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
 
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let style = this.style;
         let measureWidth = Math.max(result.measuredWidth, style.effectiveMinWidth);

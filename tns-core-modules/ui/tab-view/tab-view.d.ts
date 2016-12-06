@@ -2,12 +2,8 @@
  * Contains the TabView class, which represents a standard content component with tabs.
  */
 declare module "ui/tab-view" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-    import { EventData } from "data/observable";
-    import { Bindable } from "ui/core/bindable";
-    import { Color } from "color";
-
+    import { View, Bindable, Property, EventData, Color } from "ui/core/view";
+    
     /**
      * Represents a tab view entry.
      */

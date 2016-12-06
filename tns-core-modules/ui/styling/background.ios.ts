@@ -1,14 +1,11 @@
-import { Background as BackgroundDefinition } from "ui/styling/background";
-import { View, Point } from "ui/core/view";
-import { cssValueToDevicePixels } from "./background-common";
-import { Color } from "color";
+import { Background, View, Point, layout, Color } from "./background-common";
 import { ios as utilsIos } from "utils/utils";
 
-export * from "./background-common"
+export * from "./background-common";
 
 export module ios {
     export function createBackgroundUIColor(view: View, flip?: boolean): UIColor {
-        let background = view.style.backgroundInternal;
+        let background = <Background>view.style.backgroundInternal;
         if (background.isEmpty()) {
             return undefined;
         }
@@ -229,7 +226,22 @@ export module ios {
     }
 }
 
-function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {
+function cssValueToDevicePixels(source: string, total: number): number {
+    let result;
+    source = source.trim();
+
+    if (source.indexOf("px") !== -1) {
+        result = parseFloat(source.replace("px", ""));
+    }
+    else if (source.indexOf("%") !== -1 && total > 0) {
+        result = (parseFloat(source.replace("%", "")) / 100) * layout.toDeviceIndependentPixels(total);
+    } else {
+        result = parseFloat(source);
+    }
+    return layout.toDevicePixels(result);
+}
+
+function drawClipPath(nativeView: UIView, background: Background) {
     let path: any;
 
     let bounds = {

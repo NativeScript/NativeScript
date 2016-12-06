@@ -2,8 +2,7 @@
  * Contains the Placeholder class, which is used to add a native view to the visual tree.
  */
 declare module "ui/placeholder" {
-    import { View } from "ui/core/view";
-    import { EventData } from "data/observable";
+    import { View, EventData } from "ui/core/view";
 
     /**
      * Represents a Placeholder, which is used to add a native view to the visual tree.

@@ -1,10 +1,6 @@
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory } from "./tab-view-common"
-import { View, colorProperty, fontInternalProperty, layout } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { Bindable } from "ui/core/bindable";
-import { isIOS } from "platform";
-import { Color } from "color";
-import { Font } from "ui/styling/font";
+import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory,
+    View, colorProperty, fontInternalProperty, layout, Bindable, isIOS, Color, Font  } from "./tab-view-common"
+
 import { fromFileOrResource } from "image-source";
 import { enabled as traceEnabled, write as traceWrite } from "trace";
 import { RESOURCE_PREFIX, ad } from "utils/utils";
@@ -266,7 +262,11 @@ export class TabView extends TabViewBase {
             this._tabLayout.setItems(tabItems, this._viewPager);
         }
 
-        this._updateSelectedIndexOnItemsPropertyChanged(items);
+        let nativeSelectedIndex = this._viewPager.getCurrentItem();
+        let selectedIndex = this.selectedIndex; 
+        if (selectedIndex < 0) {
+            this.selectedIndex = nativeSelectedIndex;
+        }
     }
 
     public _updateTabForItem(item: TabViewItem) {

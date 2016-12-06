@@ -2,15 +2,14 @@
  * Contains the DatePicker class.
  */
 declare module "ui/date-picker" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
+    import { View, Property } from "ui/core/view";
 
-    export let yearProperty: Property<DatePicker, number>;
-    export let monthProperty: Property<DatePicker, number>;
-    export let dayProperty: Property<DatePicker, number>;
-    export let dateProperty: Property<DatePicker, Date>;
-    export let maxDate: Property<DatePicker, Date>;
-    export let minDate: Property<DatePicker, Date>;
+    export const yearProperty: Property<DatePicker, number>;
+    export const monthProperty: Property<DatePicker, number>;
+    export const dayProperty: Property<DatePicker, number>;
+    export const dateProperty: Property<DatePicker, Date>;
+    export const maxDate: Property<DatePicker, Date>;
+    export const minDate: Property<DatePicker, Date>;
 
     /**
      * Represents an date picker.
@@ -56,4 +55,4 @@ declare module "ui/date-picker" {
          */
         minDate: Date;
     }
-} 
+}

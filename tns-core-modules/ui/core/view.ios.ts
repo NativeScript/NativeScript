@@ -1,5 +1,5 @@
 ﻿import { Length, Point, CustomLayoutView as CustomLayoutViewDefinition, View as ViewDefinition } from "ui/core/view";
-import { Background, ios } from "ui/styling/background";
+import { ios } from "ui/styling/background";
 import {
     ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
     widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
@@ -7,9 +7,8 @@ import {
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    clipPathProperty, layout
+    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background
 } from "./view-common";
-import { write as traceWrite, enabled as traceEnabled, categories as traceCategories, notifyEvent as traceNotifyEvent } from "trace";
 
 export * from "./view-common";
 

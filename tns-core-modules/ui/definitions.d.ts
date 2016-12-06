@@ -1,7 +1,21 @@
 declare module "ui/core/view-base" {
-    import { Observable } from "data/observable";
-    import { BindingOptions } from "ui/core/bindable";
+    import { Observable, EventData } from "data/observable";
+    import {
+        Property, PropertyOptions, CoercibleProperty, CoerciblePropertyOptions,
+        InheritedProperty, CssProperty, CssPropertyOptions, InheritedCssProperty,
+        ShorthandProperty, ShorthandPropertyOptions
+    } from "ui/core/properties";
+    import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
     import { Style } from "ui/styling/style";
+    import { isIOS } from "platform";
+    import { fromString as gestureFromString } from "ui/gestures";
+
+    export {
+        Observable, EventData, 
+        Binding, BindingOptions, Bindable, Style, isIOS, gestureFromString
+    };
+
+    export * from "ui/core/properties";
 
     /**
      * Gets an ancestor from a given type.
@@ -52,32 +66,35 @@ declare module "ui/core/view-base" {
 declare module "ui/core/properties" {
     import { ViewBase } from "ui/core/view-base";
     import { Style } from "ui/styling/style";
+    import { unsetValue } from "ui/core/dependency-observable";
 
-    interface PropertyOptions<T, U> {
+    export { unsetValue };
+
+    export interface PropertyOptions<T, U> {
         readonly name: string,
         readonly defaultValue?: U,
         readonly affectsLayout?: boolean,
         readonly equalityComparer?: (x: U, y: U) => boolean,
         readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void,
-        readonly valueConverter?: (value: any) => U
+        readonly valueConverter?: (value: string) => U
     }
 
     export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
         coerceValue(T, U): U
     }
 
-    interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
+    export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
         readonly cssName: string;
     }
 
-    class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
+    export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
         constructor(options: PropertyOptions<T, U>);
 
         public readonly native: symbol;
         public register(cls: { prototype: T }): void;
     }
 
-    class CoercibleProperty<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
+    export class CoercibleProperty<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
         constructor(options: CoerciblePropertyOptions<T, U>);
 
         public readonly native: symbol;
@@ -85,11 +102,11 @@ declare module "ui/core/properties" {
         public register(cls: { prototype: T }): void;
     }
 
-    class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
+    export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
         constructor(options: PropertyOptions<T, U>);
     }
 
-    class CssProperty<T extends Style, U> {
+    export class CssProperty<T extends Style, U> {
         constructor(options: CssPropertyOptions<T, U>);
 
         public readonly native: symbol;
@@ -98,7 +115,7 @@ declare module "ui/core/properties" {
         public register(cls: { prototype: T }): void;
     }
 
-    class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> {
+    export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> {
         constructor(options: CssPropertyOptions<T, U>);
     }
 

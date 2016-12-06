@@ -1,25 +1,31 @@
 import { View as ViewDefinition, Point, Size } from "ui/core/view";
-import { Style } from "ui/styling/style";
 import { CssState, StyleScope, applyInlineSyle } from "ui/styling/style-scope";
 import { Color } from "color";
 import { Animation, AnimationPromise } from "ui/animation";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 import { Source } from "utils/debug";
-import { Observable, EventData } from "data/observable";
 import { Background } from "ui/styling/background";
-import { ViewBase, getEventOrGestureName } from "./view-base";
-import { propagateInheritedProperties, clearInheritedProperties, Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty } from "./properties";
-import { observe, fromString as gestureFromString, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
-import { isIOS } from "platform";
+import {
+    ViewBase, getEventOrGestureName, Observable, EventData, Style, propagateInheritedProperties, clearInheritedProperties,
+    Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty,
+    gestureFromString, isIOS
+} from "./view-base";
+import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont } from "ui/styling/font";
 import { fontSizeConverter } from "../styling/converters";
 
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
 
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent } from "trace";
 import { isDataURI, isFileOrResourcePath } from "utils/utils";
+
 export * from "./view-base";
+
+export {
+    Color, GestureTypes, GesturesObserver, GestureEventData, Animation, AnimationPromise, KeyframeAnimation,
+    Background, Font, traceEnabled, traceWrite, traceCategories, traceNotifyEvent
+}
 
 // registerSpecialProperty("class", (instance: ViewDefinition, propertyValue: string) => {
 //     instance.className = propertyValue;
@@ -216,7 +222,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             this._gestureObservers[type] = [];
         }
 
-        this._gestureObservers[type].push(observe(this, type, callback, thisArg));
+        this._gestureObservers[type].push(gestureObserve(this, type, callback, thisArg));
     }
 
     public getGestureObservers(type: GestureTypes): Array<GesturesObserver> {
@@ -225,25 +231,25 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public addEventListener(arg: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any) {
         if (typeof arg === "string") {
-            arg = getEventOrGestureName(<string>arg);
+            arg = getEventOrGestureName(arg);
 
-            let gesture = gestureFromString(<string>arg);
-            if (gesture && !this._isEvent(<string>arg)) {
+            let gesture = gestureFromString(arg);
+            if (gesture && !this._isEvent(arg)) {
                 this.observe(gesture, callback, thisArg);
             } else {
-                let events = (<string>arg).split(",");
+                let events = (arg).split(",");
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
                         let gst = gestureFromString(evt);
-                        if (gst && !this._isEvent(<string>arg)) {
+                        if (gst && !this._isEvent(arg)) {
                             this.observe(gst, callback, thisArg);
                         } else {
                             super.addEventListener(evt, callback, thisArg);
                         }
                     }
                 } else {
-                    super.addEventListener(<string>arg, callback, thisArg);
+                    super.addEventListener(arg, callback, thisArg);
                 }
             }
         } else if (typeof arg === "number") {
@@ -253,23 +259,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public removeEventListener(arg: string | GestureTypes, callback?: any, thisArg?: any) {
         if (typeof arg === "string") {
-            let gesture = gestureFromString(<string>arg);
-            if (gesture && !this._isEvent(<string>arg)) {
+            let gesture = gestureFromString(arg);
+            if (gesture && !this._isEvent(arg)) {
                 this._disconnectGestureObservers(gesture);
             } else {
-                let events = (<string>arg).split(",");
+                let events = arg.split(",");
                 if (events.length > 0) {
                     for (let i = 0; i < events.length; i++) {
                         let evt = events[i].trim();
                         let gst = gestureFromString(evt);
-                        if (gst && !this._isEvent(<string>arg)) {
+                        if (gst && !this._isEvent(arg)) {
                             this._disconnectGestureObservers(gst);
                         } else {
                             super.removeEventListener(evt, callback, thisArg);
                         }
                     }
                 } else {
-                    super.removeEventListener(<string>arg, callback, thisArg);
+                    super.removeEventListener(arg, callback, thisArg);
                 }
 
             }
@@ -982,7 +988,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         if (typeof inlineStyle === "string") {
             try {
                 // this.style._beginUpdate();
-                applyInlineSyle(this, <string>inlineStyle);
+                applyInlineSyle(this, inlineStyle);
             } finally {
                 // this.style._endUpdate();
             }
@@ -1526,36 +1532,53 @@ function resetStyles(view: ViewCommon): void {
         return true;
     });
 }
-// let idProperty = new Property("id", "View", new PropertyMetadata(undefined, PropertyMetadataSettings.AffectsStyle));
+
 export const idProperty = new Property<ViewCommon, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
 idProperty.register(ViewCommon);
 
 export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
 automationTextProperty.register(ViewCommon);
 
-export const originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5 });
+export const originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
 originXProperty.register(ViewCommon);
 
-export const originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5 });
+export const originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
 originYProperty.register(ViewCommon);
 
-export const isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true });
+export function booleanConverter(v: string): boolean {
+    let lowercase = (v + '').toLowerCase();
+    if (lowercase === "true") {
+        return true;
+    } else if (lowercase === "false") {
+        return false;
+    }
+
+    throw new Error(`Invalid boolean: ${v}`);
+}
+
+export const isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true, valueConverter: booleanConverter });
 isEnabledProperty.register(ViewCommon);
 
-export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true });
+export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true, valueConverter: booleanConverter });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
 const zeroLength: Length = { value: 0, unit: "px" };
 
+export function lengthComparer(x: Length, y: Length): boolean {
+    return x.unit === y.unit && x.value === y.value;
+}
+
 export const minWidthProperty = new CssProperty<Style, Length>({
-    name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         target.effectiveMinWidth = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
 
 export const minHeightProperty = new CssProperty<Style, Length>({
-    name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         target.effectiveMinHeight = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
@@ -1563,10 +1586,10 @@ minHeightProperty.register(Style);
 
 const matchParent: Length = { value: -1, unit: "px" };
 
-export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: PercentLength.parse });
+export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
 
-export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, valueConverter: PercentLength.parse });
+export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 heightProperty.register(Style);
 
 export const marginProperty = new ShorthandProperty<Style>({
@@ -1576,16 +1599,16 @@ export const marginProperty = new ShorthandProperty<Style>({
 });
 marginProperty.register(Style);
 
-export const marginLeftProperty = new CssProperty<Style, PercentLength>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
+export const marginLeftProperty = new CssProperty<Style, PercentLength>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 marginLeftProperty.register(Style);
 
-export const marginRightProperty = new CssProperty<Style, PercentLength>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
+export const marginRightProperty = new CssProperty<Style, PercentLength>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 marginRightProperty.register(Style);
 
-export const marginTopProperty = new CssProperty<Style, PercentLength>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
+export const marginTopProperty = new CssProperty<Style, PercentLength>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 marginTopProperty.register(Style);
 
-export const marginBottomProperty = new CssProperty<Style, PercentLength>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: PercentLength.parse });
+export const marginBottomProperty = new CssProperty<Style, PercentLength>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 marginBottomProperty.register(Style);
 
 export const paddingProperty = new ShorthandProperty<Style>({
@@ -1596,28 +1619,32 @@ export const paddingProperty = new ShorthandProperty<Style>({
 paddingProperty.register(Style);
 
 export const paddingLeftProperty = new CssProperty<Style, Length>({
-    name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         target.effectivePaddingLeft = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
 
 export const paddingRightProperty = new CssProperty<Style, Length>({
-    name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         target.effectivePaddingRight = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
 
 export const paddingTopProperty = new CssProperty<Style, Length>({
-    name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         target.effectivePaddingTop = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
 
 export const paddingBottomProperty = new CssProperty<Style, Length>({
-    name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         target.effectivePaddingBottom = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
     }, valueConverter: Length.parse
 });
@@ -1704,19 +1731,19 @@ function convertToPaddings(this: Style, value: string): [CssProperty<any, any>, 
     ];
 }
 
-export const rotateProperty = new CssProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0 });
+export const rotateProperty = new CssProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
 rotateProperty.register(Style);
 
-export const scaleXProperty = new CssProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1 });
+export const scaleXProperty = new CssProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1, valueConverter: (v) => parseFloat(v) });
 scaleXProperty.register(Style);
 
-export const scaleYProperty = new CssProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1 });
+export const scaleYProperty = new CssProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1, valueConverter: (v) => parseFloat(v) });
 scaleYProperty.register(Style);
 
-export const translateXProperty = new CssProperty<Style, number>({ name: "translateX", cssName: "translateX", defaultValue: 0 });
+export const translateXProperty = new CssProperty<Style, number>({ name: "translateX", cssName: "translateX", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
 translateXProperty.register(Style);
 
-export const translateYProperty = new CssProperty<Style, number>({ name: "translateY", cssName: "translateY", defaultValue: 0 });
+export const translateYProperty = new CssProperty<Style, number>({ name: "translateY", cssName: "translateY", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
 translateYProperty.register(Style);
 
 export const transformProperty = new ShorthandProperty<Style>({
@@ -2001,8 +2028,7 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
     name: "borderTopColor", cssName: "border-top-color", valueChanged: (target, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderTopColor(newValue);
-    },
-    equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
+    }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderTopColorProperty.register(Style);
 
@@ -2055,7 +2081,8 @@ export const borderWidthProperty = new ShorthandProperty<Style>({
 borderWidthProperty.register(Style);
 
 export const borderTopWidthProperty = new CssProperty<Style, Length>({
-    name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
@@ -2068,7 +2095,8 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
 borderTopWidthProperty.register(Style);
 
 export const borderRightWidthProperty = new CssProperty<Style, Length>({
-    name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
@@ -2081,7 +2109,8 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
 borderRightWidthProperty.register(Style);
 
 export const borderBottomWidthProperty = new CssProperty<Style, Length>({
-    name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
@@ -2094,7 +2123,8 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
 borderBottomWidthProperty.register(Style);
 
 export const borderLeftWidthProperty = new CssProperty<Style, Length>({
-    name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    valueChanged: (target, newValue) => {
         let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
@@ -2216,9 +2246,8 @@ function isOpacityValid(value: string): boolean {
 export const opacityProperty = new CssProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
 opacityProperty.register(Style);
 
-export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v: string) => new Color(v) });
+export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 colorProperty.register(Style);
-
 
 export let fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal", defaultValue: Font.default });
 
@@ -2287,7 +2316,7 @@ export let fontProperty = new ShorthandProperty<Style>({
     converter: function (value: string) {
         let font = parseFont(value);
         let fontSize = fontSizeConverter(font.fontSize);
-       
+
         return [
             [fontStyleProperty, font.fontStyle],
             [fontWeightProperty, font.fontWeight],

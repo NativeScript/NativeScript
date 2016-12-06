@@ -1,8 +1,6 @@
-﻿import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from "./page-common";
-import { View } from "ui/core/view";
+﻿import { View, PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty, Color } from "./page-common";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
-import { Color } from "color";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
 import * as trace from "trace";
 

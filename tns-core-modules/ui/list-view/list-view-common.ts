@@ -1,14 +1,11 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { EventData, Observable } from "data/observable";
-import { View, Template, KeyedTemplate, Length, layout } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { Color } from "color";
-
+import { Bindable, EventData, Observable, View, Template, KeyedTemplate, Length, layout, Property, Color, lengthComparer } from "ui/core/view";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
 import { ObservableArray, ChangedData } from "data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
-import { Bindable } from "ui/core/bindable";
+
+export * from "ui/core/view";
 
 // TODO: Think of a way to register these instead of relying on hardcoded values.
 export module knownTemplates {
@@ -181,25 +178,17 @@ itemTemplatesProperty.register(ListViewBase);
 /**
  * Represents the separator color backing property. 
  */
-export const separatorColor = new Property<ListViewBase, Color>({
-    name: "separatorColor", valueConverter: (value) => {
-        if (typeof value === "string") {
-            return new Color(value);
-        }
-
-        return value;
-    }
-})
+export const separatorColor = new Property<ListViewBase, Color>({ name: "separatorColor", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });
 separatorColor.register(ListViewBase);
 
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
 export const rowHeightProperty = new Property<ListViewBase, Length>({
-    name: "rowHeight", defaultValue: { value: -1, unit: "px" }, valueConverter: Length.parse,
+    name: "rowHeight", defaultValue: { value: -1, unit: "px" }, equalityComparer: lengthComparer,
     valueChanged: (target, oldValue, newValue) => {
         target._effectiveRowHeight = getLengthEffectiveValue(newValue);
         target._onRowHeightPropertyChanged(oldValue, newValue);
-    }
+    }, valueConverter: Length.parse
 });
 rowHeightProperty.register(ListViewBase);

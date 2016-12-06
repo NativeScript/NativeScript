@@ -1,15 +1,22 @@
 declare module "ui/core/view" {
-    import { Style } from "ui/styling/style";
-    import { Observable, EventData } from "data/observable";
     import { GestureTypes, GesturesObserver, GestureEventData } from "ui/gestures";
-    import { Color } from "color";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
-    import { Property, CssProperty, InheritedCssProperty, ShorthandProperty } from "ui/core/properties";
-    import { BindingOptions } from "ui/core/bindable";
-    import { ViewBase } from "ui/core/view-base";
+    import {
+        ViewBase, Property, CssProperty, InheritedCssProperty, ShorthandProperty, Style,
+        BindingOptions, Observable, EventData,
+    } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
     import { Font } from "ui/styling/font";
+    import { Color } from "color";
+
+    export {
+        GestureTypes, GesturesObserver, GestureEventData,
+        Animation, AnimationDefinition, AnimationPromise, KeyframeAnimation,
+        Background, Font, Color
+    }
+
+    export * from "ui/core/view-base";
 
     /**
      * Gets a child view by id.
@@ -18,6 +25,17 @@ declare module "ui/core/view" {
      * Returns an instance of a view (if found), otherwise undefined.
      */
     export function getViewById(view: View, id: string): View;
+
+    /**
+     * Converts string into boolean value.
+     * Throws error if value is not 'true' or 'false'.
+     */
+    export function booleanConverter(v: string): boolean;
+
+    /**
+     * Compares two Length objects.
+     */
+    export function lengthComparer(x: Length, y: Length): boolean;
 
     /**
      * Iterates through all child views (via visual tree) and executes a function.
@@ -210,12 +228,12 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the desired width of the view.
          */
-        width: Length;
+        width: PercentLength;
 
         /**
          * Gets or sets the desired height of the view.
          */
-        height: Length;
+        height: PercentLength;
 
         /**
          * Gets or sets margin style property.
@@ -225,22 +243,22 @@ declare module "ui/core/view" {
         /**
          * Specifies extra space on the left side of this view.
          */
-        marginLeft: Length;
+        marginLeft: PercentLength;
 
         /**
          * Specifies extra space on the top side of this view.
          */
-        marginTop: Length;
+        marginTop: PercentLength;
 
         /**
          * Specifies extra space on the right side of this view.
          */
-        marginRight: Length;
+        marginRight: PercentLength;
 
         /**
          * Specifies extra space on the bottom side of this view.
          */
-        marginBottom: Length;
+        marginBottom: PercentLength;
 
         /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
@@ -642,7 +660,7 @@ declare module "ui/core/view" {
      * Defines an interface for a View factory function.
      * Commonly used to specify the visualization of data objects.
      */
-    interface Template {
+    export interface Template {
         /**
          * Call signature of the factory function.
          * Returns a new View instance.
@@ -653,7 +671,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface for Template with a key.
      */
-    interface KeyedTemplate {
+    export interface KeyedTemplate {
         /**
          * The unique key of the template.
          */
@@ -668,7 +686,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface for adding arrays declared in xml.
      */
-    interface AddArrayFromBuilder {
+    export interface AddArrayFromBuilder {
         /**
          * A function that is called when an array declaration is found in xml.
          * @param name - Name of the array.
@@ -680,7 +698,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface for adding a child element declared in xml.
      */
-    interface AddChildFromBuilder {
+    export interface AddChildFromBuilder {
         /**
          * Called for every child element declared in xml.
          * This method will add a child element (value) to current element.

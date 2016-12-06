@@ -1,10 +1,9 @@
-﻿import { Color } from "color";
-import { topmost } from "ui/frame";
+﻿import { topmost } from "ui/frame";
 import { Page } from "ui/page";
 import { Button } from "ui/button";
 import { TextField } from "ui/text-field";
 import { Label } from "ui/label";
-import { View } from "ui/core/view";
+import { View, Color } from "ui/core/view";
 import * as types from "utils/types";
 
 export let STRING = "string",

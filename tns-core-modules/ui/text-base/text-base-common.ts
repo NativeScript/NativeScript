@@ -1,12 +1,10 @@
 ﻿import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View } from "ui/core/view";
-import { Observable, PropertyChangeData } from "data/observable";
+import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable } from "ui/core/view";
+import { PropertyChangeData } from "data/observable";
 import { FormattedString, FormattedStringView } from "text/formatted-string";
-import { isIOS } from "platform";
-import { Property, CssProperty, InheritedCssProperty } from "ui/core/properties";
-import { Style } from "ui/styling/style";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 
+export { FormattedString };
 export * from "ui/core/view";
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
@@ -128,7 +126,7 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, "left" | "c
             case "left":
             case "center":
             case "right":
-                return value;
+                return <"left" | "center" | "right">value;
 
             default:
                 throw new Error(`CSS text-align ${value} is not supported.`);
@@ -139,13 +137,17 @@ textAlignmentProperty.register(Style);
 
 export const textDecorationProperty = new CssProperty<Style, "none" | "underline" | "line-through">({
     name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: (value) => {
-        let values = (value + "").split(" ");
-
-        if (values.indexOf("none") !== -1 || values.indexOf("underline") !== -1 || values.indexOf("lineThrough") !== -1) {
-            return value;
-        } else {
-            throw new Error(`CSS text-decoration ${value} is not supported.`);
+        if (value === null || value === undefined || value === "") {
+            value = "none";
         }
+
+        (value + "").split(" ").forEach((v, i, arr) => {
+            if (v !== "none" && v !== "underline" && v !== "line-through") {
+                throw new Error(`CSS text-decoration ${value} is not supported.`);
+            }
+
+        });
+        return <any>value;
     }
 });
 textDecorationProperty.register(Style);
@@ -157,7 +159,7 @@ export const textTransformProperty = new CssProperty<Style, "none" | "capitalize
             case "uppercase":
             case "lowercase":
             case "capitalize":
-                return value;
+                return <"none" | "capitalize" | "uppercase" | "lowercase">value;
 
             default:
                 throw new Error(`CSS text-transform ${value} is not supported.`);

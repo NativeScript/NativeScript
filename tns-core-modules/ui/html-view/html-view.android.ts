@@ -1,6 +1,5 @@
 ﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
-import { Property } from "ui/core/properties";
-import { View } from "ui/core/view";
+import { View, Property } from "ui/core/view";
 
 export * from "ui/core/view";
 

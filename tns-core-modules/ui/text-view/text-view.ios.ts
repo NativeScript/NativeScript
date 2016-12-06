@@ -33,7 +33,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         let owner = this._owner.get();
         if (owner) {
             if (owner.updateTextTrigger === "focusLost") {
-                owner.nativePropertyChangeded(textProperty, textView.text);
+                owner.nativePropertyChanged(textProperty, textView.text);
             }
 
             owner.dismissSoftInput();
@@ -54,7 +54,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         let owner = this._owner.get();
         if (owner) {
             if (owner.updateTextTrigger === "textChanged") {
-                owner.nativePropertyChangeded(textProperty, textView.text);
+                owner.nativePropertyChanged(textProperty, textView.text);
             }
         }
     }

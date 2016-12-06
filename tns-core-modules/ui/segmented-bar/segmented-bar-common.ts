@@ -1,8 +1,10 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition } from "ui/segmented-bar";
-import { View, AddChildFromBuilder, AddArrayFromBuilder } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { Color } from "color";
-import { Bindable } from "ui/core/bindable";
+import {
+    View, AddChildFromBuilder, AddArrayFromBuilder,
+    Property, EventData, Color, Bindable
+} from "ui/core/view";
+
+export * from "ui/core/view";
 
 export module knownCollections {
     export var items = "items";
@@ -29,7 +31,7 @@ export abstract class SegmentedBarItemBase extends Bindable implements Segmented
 
 export abstract class SegmentedBarBase extends View implements SegmentedBarDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
-    
+
     protected previousSelectedIndex: number;
 
     public selectedIndex: number;
@@ -102,14 +104,14 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
  * Gets or sets the selected index dependency property of the SegmentedBar.
  */
 export const selectedIndexProperty = new Property<SegmentedBarBase, number>({
-    name: "selectedIndex",  defaultValue: -1, valueConverter: (v) => parseInt(v), valueChanged: (target, oldValue, newValue) => target.onSelectedIndexChanged(oldValue, newValue)
+    name: "selectedIndex", defaultValue: -1, valueConverter: (v) => parseInt(v), valueChanged: (target, oldValue, newValue) => target.onSelectedIndexChanged(oldValue, newValue)
 });
 selectedIndexProperty.register(SegmentedBarBase);
 
 /**
  * Gets or sets the selected background color property of the SegmentedBar.
  */
-export const selectedBackgroundColorProperty = new Property<SegmentedBarBase, Color>({ name: "selectedBackgroundColor", valueConverter: (v) => new Color(v) })
+export const selectedBackgroundColorProperty = new Property<SegmentedBarBase, Color>({ name: "selectedBackgroundColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) })
 selectedBackgroundColorProperty.register(SegmentedBarBase);
 
 /**

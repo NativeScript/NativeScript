@@ -1,8 +1,9 @@
 import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
-import { layout } from "ui/core/view";
+import { Color, layout } from "ui/core/view";
 import { ImageSource } from "image-source";
-import { Color } from "color";
 import cssValue = require("css-value");
+
+export * from "ui/core/view";
 
 interface CSSValue {
     type: string;
@@ -427,19 +428,4 @@ export class Background implements BackgroundDefinition {
     public toString(): string {
         return `isEmpty: ${this.isEmpty()}; color: ${this.color}; image: ${this.image}; repeat: ${this.repeat}; position: ${this.position}; size: ${this.size}; borderTopColor: ${this.borderTopColor}; borderRightColor: ${this.borderRightColor}; borderBottomColor: ${this.borderBottomColor}; borderLeftColor: ${this.borderLeftColor}; borderTopWidth: ${this.borderTopWidth}; borderRightWidth: ${this.borderRightWidth}; borderBottomWidth: ${this.borderBottomWidth}; borderLeftWidth: ${this.borderLeftWidth}; borderTopLeftRadius: ${this.borderTopLeftRadius}; borderTopRightRadius: ${this.borderTopRightRadius}; borderBottomRightRadius: ${this.borderBottomRightRadius}; borderBottomLeftRadius: ${this.borderBottomLeftRadius}; clipPath: ${this.clipPath};`;
     }
-}
-
-export function cssValueToDevicePixels(source: string, total: number): number {
-    let result;
-    source = source.trim();
-
-    if (source.indexOf("px") !== -1) {
-        result = parseFloat(source.replace("px", ""));
-    }
-    else if (source.indexOf("%") !== -1 && total > 0) {
-        result = (parseFloat(source.replace("%", "")) / 100) * layout.toDeviceIndependentPixels(total);
-    } else {
-        result = parseFloat(source);
-    }
-    return layout.toDevicePixels(result);
 }

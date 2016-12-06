@@ -1,9 +1,10 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, hintProperty
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty, 
+    textProperty
 } from "./editable-text-base-common";
-import { textProperty } from "ui/text-base";
+
 import { ad } from "utils/utils";
 
 export class EditableTextBase extends common.EditableTextBase {
@@ -421,4 +422,4 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     set [hintProperty.native](value: string) {
         this.nativeView.setHint(value + '');
     }
-}  
+}

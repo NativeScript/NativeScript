@@ -5,10 +5,12 @@
     AnimationDefinition,
     Pair
 } from "ui/animation";
-import { View } from "ui/core/view";
-import { Color } from "color";
-import { isDefined, isNumber, isString } from "utils/types";
+
+import { View, Color } from "ui/core/view";
 import * as trace from "trace";
+
+export * from "ui/core/view";
+export { trace };
 
 export module Properties {
     export var opacity = "opacity";
@@ -149,7 +151,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         }
 
         for (let item in animationDefinition) {
-            if (!isDefined(animationDefinition[item])) {
+            if (typeof animationDefinition[item] === "undefined") {
                 continue;
             }
 
@@ -157,19 +159,17 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
                 item === Properties.rotate ||
                 item === "duration" ||
                 item === "delay" ||
-                item === "iterations") && !isNumber(animationDefinition[item])) {
+                item === "iterations") && typeof animationDefinition[item] !== "number") {
                 throw new Error(`Property ${item} must be valid number. Value: ${animationDefinition[item]}`);
-            } else if ((item === Properties.scale ||
-                item === Properties.translate) &&
-                (!isNumber((<Pair>animationDefinition[item]).x) ||
-                    !isNumber((<Pair>animationDefinition[item]).y))) {
+            } else if ((item === Properties.scale || item === Properties.translate) &&
+                (typeof (<Pair>animationDefinition[item]).x !== "number" || typeof (<Pair>animationDefinition[item]).y !== "number")) {
                 throw new Error(`Property ${item} must be valid Pair. Value: ${animationDefinition[item]}`);
             } else if (item === Properties.backgroundColor && !Color.isValid(animationDefinition.backgroundColor)) {
                 throw new Error(`Property ${item} must be valid color. Value: ${animationDefinition[item]}`);
             }
         }
 
-        var propertyAnimations = new Array<PropertyAnimation>();
+        const propertyAnimations = new Array<PropertyAnimation>();
 
         // opacity
         if (animationDefinition.opacity !== undefined) {
@@ -189,7 +189,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             propertyAnimations.push({
                 target: animationDefinition.target,
                 property: Properties.backgroundColor,
-                value: isString(animationDefinition.backgroundColor) ?
+                value: typeof animationDefinition.backgroundColor === "string" ?
                     new Color(<any>animationDefinition.backgroundColor) : animationDefinition.backgroundColor,
                 duration: animationDefinition.duration,
                 delay: animationDefinition.delay,

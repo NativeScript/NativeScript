@@ -2,8 +2,7 @@
  * Contains the Switch class, which represents a standard switch component.
  */
 declare module "ui/switch" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
+    import { View, Property } from "ui/core/view";
 
     /**
      * Represents a switch component.

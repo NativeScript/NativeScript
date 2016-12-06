@@ -2,11 +2,8 @@
  * Contains the action bar related classes.
  */
 declare module "ui/action-bar" {
-    import { EventData } from "data/observable";
-    import { View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
-    import { Property } from "ui/core/properties";
+    import { EventData, ViewBase, View, AddArrayFromBuilder, AddChildFromBuilder, Property } from "ui/core/view";
     import { Page } from "ui/page";
-    import { ViewBase } from "ui/core/view-base";
 
     /**
      * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).

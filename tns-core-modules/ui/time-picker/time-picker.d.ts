@@ -2,8 +2,7 @@
  * Contains the TimePicker class.
  */
 declare module "ui/time-picker" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
+    import { View, Property } from "ui/core/view";
 
     /**
      * Represents an time picker.

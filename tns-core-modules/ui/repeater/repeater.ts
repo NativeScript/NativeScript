@@ -1,17 +1,12 @@
 ﻿import { Repeater as RepeaterDefinition, ItemsSource } from "ui/repeater";
-import { Property } from "ui/core/properties";
-import { CustomLayoutView, View, Template } from "ui/core/view";
 import { Label } from "ui/label";
-import { LayoutBase } from "ui/layouts/layout-base";
+import { LayoutBase, CustomLayoutView, View, Template, Property, Observable } from "ui/layouts/layout-base";
 import { StackLayout } from "ui/layouts/stack-layout";
-import { Observable } from "data/observable";
 import { ObservableArray, ChangedData } from "data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import { parse } from "ui/builder";
 
-import utils = require("utils/utils");
-import trace = require("trace");
-import * as types from "utils/types";
+export * from "ui/layouts/layout-base";
 
 export module knownTemplates {
     export const itemTemplate = "itemTemplate";
@@ -110,11 +105,11 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var result = View.measureChild(this, this.itemsLayout, widthMeasureSpec, heightMeasureSpec);
 
-        const width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        const widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        const height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        const heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         const widthAndState = View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
         const heightAndState = View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);

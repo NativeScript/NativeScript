@@ -1,6 +1,4 @@
-import {WebViewBase} from "./web-view-common";
-import * as trace from "trace";
-import * as fs from "file-system";
+import { WebViewBase, File, knownFolders, path, trace } from "./web-view-common";
 
 export * from "./web-view-common";
 
@@ -130,7 +128,7 @@ export class WebView extends WebViewBase {
             return;
         }
 
-        var baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1) }`;
+        const baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1)}`;
         this._android.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
     }
 
@@ -147,7 +145,7 @@ export class WebView extends WebViewBase {
             return;
         }
 
-        var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
+        const baseUrl = `file:///${knownFolders.currentApp().path}/`;
         this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);
     }
 

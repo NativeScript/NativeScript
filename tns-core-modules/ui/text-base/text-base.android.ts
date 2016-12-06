@@ -1,10 +1,7 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty
+    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty, Font, Color, FormattedString
 } from "./text-base-common";
-import { FormattedString } from "text/formatted-string";
-import { Font } from "ui/styling/font";
-import { Color } from "color";
 
 export * from "./text-base-common";
 

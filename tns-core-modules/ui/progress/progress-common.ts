@@ -1,7 +1,7 @@
 ﻿import { Progress as ProgressDefinition } from "ui/progress";
-import { View } from "ui/core/view";
-import { Property } from "ui/core/properties";
+import { View, Property } from "ui/core/view";
 
+export * from "ui/core/view";
 
 export class ProgressBase extends View implements ProgressDefinition {
     constructor() {

@@ -1,7 +1,6 @@
-﻿import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory } from "./tab-view-common"
-import { View, colorProperty, fontInternalProperty, layout } from "ui/core/view";
-import { Color } from "color";
-import { Font } from "ui/styling/font";
+﻿import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory, 
+    Font, View, colorProperty, fontInternalProperty, layout, Color } from "./tab-view-common"
+
 import { fromFileOrResource } from "image-source";
 import { Page } from "ui/page";
 import { ios } from "utils/utils";

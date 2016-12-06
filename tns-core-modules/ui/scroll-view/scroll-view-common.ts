@@ -1,7 +1,7 @@
 ﻿import { ScrollView as ScrollViewDefinition } from "ui/scroll-view";
-import { Property } from "ui/core/properties";
-import { ContentView } from "ui/content-view";
-import { EventData } from "data/observable";
+import { ContentView, EventData, Property } from "ui/content-view";
+
+export * from "ui/content-view";
 
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
     private _scrollChangeCount: number = 0;
@@ -82,11 +82,13 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 
 export const orientationProperty = new Property<ScrollViewBase, "horizontal" | "vertical">({
     name: "orientation", defaultValue: "vertical", affectsLayout: true, valueConverter: (value) => {
-        if (value !== "vertical" && value !== "horizontal") {
-            throw new Error(`Orientation should be 'horizontal' or 'vertical'. Value: ${value}`);
+        if (value === "vertical") {
+            return "vertical";
+        } else if (value === "horizontal") {
+            return "horizontal";
         }
 
-        return value;
+        throw new Error(`Orientation should be 'horizontal' or 'vertical'. Given: ${value}`);
     }
 });
 orientationProperty.register(ScrollViewBase);

@@ -2,8 +2,7 @@
  * Contains the TextField class, which represents an editable single-line box.
  */
 declare module "ui/text-field" {
-    import { Property } from "ui/core/properties";
-    import { EditableTextBase } from "ui/editable-text-base";
+    import { EditableTextBase, Property } from "ui/editable-text-base";
 
     export const secureProperty: Property<TextField, boolean>;
 

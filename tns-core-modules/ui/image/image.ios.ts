@@ -1,6 +1,4 @@
-import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, layout } from "./image-common";
-import { Color } from "color";
-import { ImageSource } from "image-source";
+import { ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, layout, Color } from "./image-common";
 import { enable as traceEnabled, write as traceWrite, categories as traceCategories} from "trace";
 
 export * from "./image-common";;

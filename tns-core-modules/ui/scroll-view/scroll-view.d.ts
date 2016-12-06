@@ -2,9 +2,7 @@
  * Contains the ScrollView class, which represents a scrollable area that can have content that is larger than its bounds.
  */
 declare module "ui/scroll-view" {
-    import { Property } from "ui/core/properties";
-    import { ContentView } from "ui/content-view";
-    import { EventData } from "data/observable";
+    import { ContentView, EventData, Property } from "ui/content-view";
 
     /**
      * Represents a scrollable area that can have content that is larger than its bounds.

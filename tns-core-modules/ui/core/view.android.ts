@@ -1,7 +1,5 @@
-import { Length, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
-import { applyNativeSetters, Property } from "./properties";
-import { GestureTypes, GestureEventData } from "ui/gestures";
-import { Background, ad } from "ui/styling/background";
+import { PercentLength, Length, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
+import { ad } from "ui/styling/background";
 import {
     ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
     widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
@@ -9,9 +7,9 @@ import {
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    layout
+    layout, Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-common";
-import { write as traceWrite, enabled as traceEnabled, categories as traceCategories, notifyEvent as traceNotifyEvent } from "trace";
 
 export * from "./view-common";
 let flexbox;
@@ -463,10 +461,10 @@ export class View extends ViewCommon {
         org.nativescript.widgets.ViewHelper.setMinHeight(this.nativeView, value.value * density);
     }
 
-    get [widthProperty.native](): Length {
+    get [widthProperty.native](): PercentLength {
         return { value: org.nativescript.widgets.ViewHelper.getWidth(this.nativeView), unit: "px" };
     }
-    set [widthProperty.native](value: Length) {
+    set [widthProperty.native](value: PercentLength) {
         let type = value.unit;
         if (type === "%") {
             org.nativescript.widgets.ViewHelper.setWidthPercent(this.nativeView, value.value);
@@ -477,10 +475,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [heightProperty.native](): Length {
+    get [heightProperty.native](): PercentLength {
         return { value: org.nativescript.widgets.ViewHelper.getHeight(this.nativeView), unit: "px" };
     }
-    set [heightProperty.native](value: Length) {
+    set [heightProperty.native](value: PercentLength) {
         let type = value.unit;
         if (type === "%") {
             org.nativescript.widgets.ViewHelper.setHeightPercent(this.nativeView, value.value);
@@ -491,10 +489,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [marginLeftProperty.native](): Length {
+    get [marginLeftProperty.native](): PercentLength {
         return { value: org.nativescript.widgets.ViewHelper.getMarginLeft(this.nativeView), unit: "px" };
     }
-    set [marginLeftProperty.native](value: Length) {
+    set [marginLeftProperty.native](value: PercentLength) {
         let type = value.unit;
         if (type === "%") {
             org.nativescript.widgets.ViewHelper.setMarginLeftPercent(this.nativeView, value.value);
@@ -505,10 +503,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [marginTopProperty.native](): Length {
+    get [marginTopProperty.native](): PercentLength {
         return { value: org.nativescript.widgets.ViewHelper.getMarginTop(this.nativeView), unit: "px" };
     }
-    set [marginTopProperty.native](value: Length) {
+    set [marginTopProperty.native](value: PercentLength) {
         let type = value.unit;
         if (type === "%") {
             org.nativescript.widgets.ViewHelper.setMarginTopPercent(this.nativeView, value.value);
@@ -519,10 +517,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [marginRightProperty.native](): Length {
+    get [marginRightProperty.native](): PercentLength {
         return { value: org.nativescript.widgets.ViewHelper.getMarginRight(this.nativeView), unit: "px" };
     }
-    set [marginRightProperty.native](value: Length) {
+    set [marginRightProperty.native](value: PercentLength) {
         let type = value.unit;
         if (type === "%") {
             org.nativescript.widgets.ViewHelper.setMarginRightPercent(this.nativeView, value.value);
@@ -533,10 +531,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [marginBottomProperty.native](): Length {
+    get [marginBottomProperty.native](): PercentLength {
         return { value: org.nativescript.widgets.ViewHelper.getMarginBottom(this.nativeView), unit: "px" };
     }
-    set [marginBottomProperty.native](value: Length) {
+    set [marginBottomProperty.native](value: PercentLength) {
         let type = value.unit;
         if (type === "%") {
             org.nativescript.widgets.ViewHelper.setMarginBottomPercent(this.nativeView, value.value);

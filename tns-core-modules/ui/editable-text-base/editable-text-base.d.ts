@@ -1,8 +1,5 @@
 ﻿declare module "ui/editable-text-base" {
-    import { Property, CssProperty } from "ui/core/properties";
-    import { TextBase } from "ui/text-base";
-    import { Style } from "ui/styling/style";
-    import { Color } from "color";
+    import { TextBase, Property, CssProperty, Style, Color } from "ui/text-base";
 
     export const keyboardTypeProperty: Property<EditableTextBase, string>;
     export const returnKeyTypeProperty: Property<EditableTextBase, string>;
@@ -12,6 +9,7 @@
     export const autocorrectProperty: Property<EditableTextBase, boolean>;
     export const hintProperty: Property<EditableTextBase, string>;
     export const placeholderColorProperty: CssProperty<Style, Color>;
+
     /**
      * Represents the base class for all editable text views.
      */

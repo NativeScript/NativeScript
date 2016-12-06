@@ -1,6 +1,7 @@
 ﻿import { ListPicker as ListPickerDefinition, ItemsSource } from "ui/list-picker";
-import { View } from "ui/core/view";
-import { Property } from "ui/core/properties";
+import { View, Property } from "ui/core/view";
+
+export * from "ui/core/view";
 
 export class ListPickerBase extends View implements ListPickerDefinition {
 
@@ -28,5 +29,8 @@ export class ListPickerBase extends View implements ListPickerDefinition {
     }
 }
 
-export const selectedIndexProperty = new Property<ListPickerBase, number>({ name: "selectedIndex", defaultValue: -1 });
+export const selectedIndexProperty = new Property<ListPickerBase, number>({ name: "selectedIndex", defaultValue: -1, valueConverter: (v) => parseInt(v) });
+selectedIndexProperty.register(ListPickerBase);
+
 export const itemsProperty = new Property<ListPickerBase, any[] | ItemsSource>({ name: "items" });
+itemsProperty.register(ListPickerBase);

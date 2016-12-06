@@ -2,9 +2,7 @@
  * Contains the Button class, which represents a standard button widget.
  */
 declare module "ui/button" {
-    import { EventData } from "data/observable";
-    import { Property } from "ui/core/properties";
-    import { TextBase } from "ui/text-base";
+    import { TextBase, Property, EventData } from "ui/text-base";
     import { FormattedString, FormattedStringView } from "text/formatted-string";
 
     /**

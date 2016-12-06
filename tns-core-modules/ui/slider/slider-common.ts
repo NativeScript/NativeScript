@@ -1,6 +1,7 @@
 ﻿import { Slider as SliderDefinition } from "ui/slider";
-import { View } from "ui/core/view";
-import { Property } from "ui/core/properties";
+import { View, Property } from "ui/core/view";
+
+export * from "ui/core/view";
 
 // TODO: Extract base Range class for slider and progress
 export class SliderBase extends View implements SliderDefinition {

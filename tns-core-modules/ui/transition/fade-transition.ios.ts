@@ -1,10 +1,10 @@
-﻿import transition = require("ui/transition");
+﻿import { Transition } from "ui/transition";
 
-export class FadeTransition extends transition.Transition {
+export class FadeTransition extends Transition {
     public animateIOSTransition(containerView: UIView, fromView: UIView, toView: UIView, operation: UINavigationControllerOperation, completion: (finished: boolean) => void): void {
-        let originalToViewAlpha = toView.alpha; 
-        let originalFromViewAlpha = fromView.alpha; 
-        
+        let originalToViewAlpha = toView.alpha;
+        let originalFromViewAlpha = fromView.alpha;
+
         toView.alpha = 0.0;
         fromView.alpha = 1.0;
 
@@ -24,9 +24,9 @@ export class FadeTransition extends transition.Transition {
             toView.alpha = 1.0;
             fromView.alpha = 0.0;
         }, (finished: boolean) => {
-            toView.alpha = originalToViewAlpha; 
-            fromView.alpha = originalFromViewAlpha; 
-            completion(finished);   
+            toView.alpha = originalToViewAlpha;
+            fromView.alpha = originalFromViewAlpha;
+            completion(finished);
         });
     }
 }

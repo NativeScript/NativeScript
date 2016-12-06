@@ -1,7 +1,5 @@
 ﻿import { Switch as SwitchDefinition } from "ui/switch";
-import { View, layout, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { Color } from "color";
+import { View, layout, Color, Property, colorProperty, backgroundColorProperty, backgroundInternalProperty, booleanConverter } from "ui/core/view";
 
 export * from "ui/core/view";
 
@@ -71,5 +69,5 @@ export class Switch extends View implements SwitchDefinition {
     }
 }
 
-export const checkedProperty = new Property<Switch, boolean>({ name: "checked", defaultValue: false, valueConverter: (v) => !!v });
+export const checkedProperty = new Property<Switch, boolean>({ name: "checked", defaultValue: false, valueConverter: booleanConverter });
 checkedProperty.register(Switch);

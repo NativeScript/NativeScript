@@ -1,10 +1,9 @@
 ﻿import { ControlStateChangeListener } from "ui/core/control-state-change";
-import { View, PseudoClassHandler, borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, paddingProperty } from "ui/core/view";
-
-import types = require("utils/types");
-
-import { ButtonBase } from "./button-common";
-import { textProperty, formattedTextProperty, whiteSpaceProperty } from "../text-base/text-base-common";
+import {
+    View, ButtonBase, PseudoClassHandler, textProperty, formattedTextProperty, whiteSpaceProperty,
+    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length
+} from "./button-common";
 
 export * from "./button-common";
 
@@ -58,58 +57,109 @@ export class Button extends ButtonBase {
         }
     }
 
-    get [borderTopWidthProperty.native](): number {
-        return 0;
+    get [borderTopWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.top,
+            unit: "px"
+        };
     }
-    set [borderTopWidthProperty.native](value: number) {
-        let nativeView = this.nativeView;
-        let insets = nativeView.contentEdgeInsets;
-        insets.top = this.style.effectivePaddingTop + value;
-        nativeView.contentEdgeInsets = insets;
-    }
-
-    get [borderRightWidthProperty.native](): number {
-        return 0;
-    }
-    set [borderRightWidthProperty.native](value: number) {
-        let nativeView = this.nativeView;
-        let insets = nativeView.contentEdgeInsets;
-        insets.right = this.style.effectivePaddingRight + value;
-        nativeView.contentEdgeInsets = insets;
+    set [borderTopWidthProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let top = style.effectivePaddingTop + style.effectiveBorderTopWidth;
+        this.nativeView.contentEdgeInsets = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [borderBottomWidthProperty.native](): number {
-        return 0;
+    get [borderRightWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.right,
+            unit: "px"
+        };
     }
-    set [borderBottomWidthProperty.native](value: number) {
-        let nativeView = this.nativeView;
-        let insets = nativeView.contentEdgeInsets;
-        insets.bottom = this.style.effectivePaddingBottom + value;
-        nativeView.contentEdgeInsets = insets;
-    }
-
-    get [borderLeftWidthProperty.native](): number {
-        return 0;
-    }
-    set [borderLeftWidthProperty.native](value: number) {
-        let nativeView = this.nativeView;
-        let insets = nativeView.contentEdgeInsets;
-        insets.left = this.style.effectivePaddingLeft + value;
-        nativeView.contentEdgeInsets = insets;
+    set [borderRightWidthProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let right = style.effectivePaddingRight + style.effectiveBorderRightWidth;
+        this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
-    // get [paddingProperty.native](): UIEdgeInsets {
-    //     return this.nativeView.contentEdgeInsets;
-    // }
-    // set [paddingProperty.native](value: UIEdgeInsets) {
-    //     const nativeView = this.nativeView;
-    //     const style = this.style;
-    //     const top = value.top + style.effectiveBorderTopWidth;
-    //     const left = value.left + style.effectiveBorderLeftWidth;
-    //     const bottom = value.bottom + style.effectiveBorderBottomWidth;
-    //     const right = value.right + style.effectiveBorderRightWidth;
-    //     this.nativeView.contentEdgeInsets = { left, top, right, bottom };
-    // }
+    get [borderBottomWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.bottom,
+            unit: "px"
+        };
+    }
+    set [borderBottomWidthProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let bottom = style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
+        this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+    }
+
+    get [borderLeftWidthProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.left,
+            unit: "px"
+        };
+    }
+    set [borderLeftWidthProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let left = style.effectivePaddingLeft + style.effectiveBorderLeftWidth;
+        this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+    }
+
+    get [paddingTopProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.top,
+            unit: "px"
+        };
+    }
+    set [paddingTopProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let top = style.effectivePaddingTop + style.effectiveBorderTopWidth;
+        this.nativeView.contentEdgeInsets = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
+    }
+
+    get [paddingRightProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.right,
+            unit: "px"
+        };
+    }
+    set [paddingRightProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let right = style.effectivePaddingRight + style.effectiveBorderRightWidth;
+        this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
+    }
+
+    get [paddingBottomProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.bottom,
+            unit: "px"
+        };
+    }
+    set [paddingBottomProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let bottom = style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
+        this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
+    }
+
+    get [paddingLeftProperty.native](): Length {
+        return {
+            value: this.nativeView.contentEdgeInsets.left,
+            unit: "px"
+        };
+    }
+    set [paddingLeftProperty.native](value: Length) {
+        let inset = this.nativeView.contentEdgeInsets;
+        let style = this.style;
+        let left = style.effectivePaddingLeft + style.effectiveBorderLeftWidth;
+        this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+    }
 }
 
 class TapHandlerImpl extends NSObject {

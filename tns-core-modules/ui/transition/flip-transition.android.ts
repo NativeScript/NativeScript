@@ -1,4 +1,4 @@
-﻿import {Transition, AndroidTransitionType} from "ui/transition";
+﻿import { Transition, AndroidTransitionType } from "ui/transition";
 
 //http://developer.android.com/training/animation/cardflip.html
 export class FlipTransition extends Transition {
@@ -110,7 +110,7 @@ export class FlipTransition extends Transition {
                 objectAnimators[1] = animator;
                 break;
         }
-        
+
         animatorSet.playTogether(objectAnimators);
         return animatorSet;
     }

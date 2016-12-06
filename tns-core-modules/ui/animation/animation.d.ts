@@ -1,6 +1,5 @@
 ﻿declare module "ui/animation" {
-    import { View } from "ui/core/view";
-    import { Color } from "color";
+    import { View, Color } from "ui/core/view";
 
     /**
      * Defines animation options for the View.animate method.

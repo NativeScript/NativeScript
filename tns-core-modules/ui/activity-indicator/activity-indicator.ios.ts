@@ -1,5 +1,4 @@
-import { ActivityIndicatorBase, busyProperty } from "./activity-indicator-common";
-import { colorProperty, visibilityProperty } from "ui/core/view";
+import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty } from "./activity-indicator-common";
 import { ios } from "utils/utils";
 
 export * from "./activity-indicator-common";

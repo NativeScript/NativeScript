@@ -1,10 +1,7 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from "ui/action-bar";
-import { ActionItemBase, ActionBarBase, isVisible } from "./action-bar-common";
-import { isDefined, isNullOrUndefined, isString } from "utils/types";
-import { View, colorProperty } from "ui/core/view";
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, Color } from "./action-bar-common";
 import { RESOURCE_PREFIX } from "utils/utils";
 import { fromFileOrResource } from "image-source";
-import { Color } from "color";
 import * as application from "application";
 import * as trace from "trace";
 
@@ -203,7 +200,7 @@ export class ActionBar extends ActionBarBase {
         let visibility = getIconVisibility(this.android.iconVisibility);
         if (visibility) {
             let icon = this.android.icon;
-            if (isDefined(icon)) {
+            if (icon !== undefined) {
                 let drawableOrId = getDrawableOrResourceId(icon, this._appResources);
                 if (drawableOrId) {
                     this.nativeView.setLogo(drawableOrId);
@@ -223,7 +220,7 @@ export class ActionBar extends ActionBarBase {
         if (!this.titleView) {
             // No title view - show the title
             let title = this.title;
-            if (isDefined(title)) {
+            if (title !== undefined) {
                 this.nativeView.setTitle(title);
             } else {
                 let appContext = application.android.context;
@@ -298,11 +295,11 @@ export class ActionBar extends ActionBarBase {
         this.nativeView = undefined;
     }
 
-    public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_VALUE): boolean {
         super._addViewToNativeVisualTree(child);
 
         if (this.nativeView && child._nativeView) {
-            if (isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
+            if (atIndex >= this._nativeView.getChildCount()) {
                 this.nativeView.addView(child._nativeView);
             }
             else {
@@ -340,7 +337,7 @@ export class ActionBar extends ActionBarBase {
 let defaultTitleTextColor: number;
 
 function getDrawableOrResourceId(icon: string, resources: android.content.res.Resources): any {
-    if (!isString(icon)) {
+    if (typeof icon !== "string") {
         return undefined;
     }
 

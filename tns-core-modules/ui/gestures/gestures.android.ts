@@ -1,9 +1,8 @@
 ﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
-import { View } from "ui/core/view";
+import { View, layout } from "ui/core/view";
 import { EventData } from "data/observable";
 import * as trace from "trace";
-import * as utils from "utils/utils";
 
 export * from "./gestures-common";
 
@@ -261,10 +260,10 @@ class PinchGestureEventData implements PinchGestureEventData {
     }
 
     getFocusX(): number {
-        return this.android.getFocusX() / utils.layout.getDisplayDensity();
+        return this.android.getFocusX() / layout.getDisplayDensity();
     }
     getFocusY(): number {
-        return this.android.getFocusY() / utils.layout.getDisplayDensity();
+        return this.android.getFocusY() / layout.getDisplayDensity();
     }
 }
 
@@ -285,7 +284,7 @@ function ensurePinchGestureListenerClass() {
 
             this._observer = observer;
             this._target = target;
-            this._density = utils.layout.getDisplayDensity();
+            this._density = layout.getDisplayDensity();
 
             return global.__native(this);
         }
@@ -436,7 +435,7 @@ class CustomPanGestureDetector {
         this.target = target;
         this.isTracking = false;
 
-        this.density = utils.layout.getDisplayDensity();
+        this.density = layout.getDisplayDensity();
     }
 
     public onTouchEvent(event: android.view.MotionEvent) {
@@ -652,11 +651,11 @@ class Pointer implements Pointer {
     }
 
     getX(): number {
-        return this.event.getX(this.android) / utils.layout.getDisplayDensity();
+        return this.event.getX(this.android) / layout.getDisplayDensity();
     }
 
     getY(): number {
-        return this.event.getY(this.android) / utils.layout.getDisplayDensity();
+        return this.event.getY(this.android) / layout.getDisplayDensity();
     }
 }
 

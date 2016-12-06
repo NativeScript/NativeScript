@@ -6,13 +6,9 @@
     NavigationButton
 } from "ui/action-bar";
 import { Page } from "ui/page";
-import { Bindable } from "ui/core/bindable";
-import { View, horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { unsetValue } from "ui/core/dependency-observable";
-import { ViewBase } from "ui/core/view-base";
+import { View, ViewBase, Bindable, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/core/view";
 
-let ACTION_ITEMS = "actionItems";
+export * from "ui/core/view";
 
 export module knownCollections {
     export var actionItems = "actionItems";
@@ -119,7 +115,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
     }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
-        if (name === ACTION_ITEMS) {
+        if (name === "actionItems") {
             this.actionItems.setItems(value);
         }
     }

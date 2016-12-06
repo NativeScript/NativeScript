@@ -1,11 +1,12 @@
 ﻿import { Label as LabelDefinition } from "ui/label";
-import { TextBase, whiteSpaceProperty } from "ui/text-base";
 import {
-    View, layout, backgroundInternalProperty,
+    Background, TextBase, View, layout, backgroundInternalProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty
-} from "ui/core/view";
-import { Background, ios } from "ui/styling/background";
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
+    Length
+} from "ui/text-base";
+
+import { ios } from "ui/styling/background";
 
 export * from "ui/text-base";
 
@@ -14,6 +15,11 @@ enum FixedSize {
     WIDTH = 1,
     HEIGHT = 2,
     BOTH = 3
+}
+
+const zeroLength: Length = {
+    value: 0,
+    unit: "px"
 }
 
 export class Label extends TextBase implements LabelDefinition {
@@ -132,115 +138,115 @@ export class Label extends TextBase implements LabelDefinition {
         nativeView.layer.backgroundColor = cgColor;
     }
 
-    get [borderTopWidthProperty.native](): number {
-        return 0;
+    get [borderTopWidthProperty.native](): Length {
+        return zeroLength;
     }
-    set [borderTopWidthProperty.native](value: number) {
+    set [borderTopWidthProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
-            top: value,
+            top: this.style.effectiveBorderTopWidth,
             right: border.right,
             bottom: border.bottom,
             left: border.left
         };
     }
 
-    get [borderRightWidthProperty.native](): number {
-        return 0;
+    get [borderRightWidthProperty.native](): Length {
+        return zeroLength;
     }
-    set [borderRightWidthProperty.native](value: number) {
+    set [borderRightWidthProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
-            right: value,
+            right: this.style.effectiveBorderRightWidth,
             bottom: border.bottom,
             left: border.left
         };
     }
 
-    get [borderBottomWidthProperty.native](): number {
-        return 0;
+    get [borderBottomWidthProperty.native](): Length {
+        return zeroLength;
     }
-    set [borderBottomWidthProperty.native](value: number) {
+    set [borderBottomWidthProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
-            bottom: value,
+            bottom: this.style.effectiveBorderBottomWidth,
             left: border.left
         };
     }
 
-    get [borderLeftWidthProperty.native](): number {
-        return 0;
+    get [borderLeftWidthProperty.native](): Length {
+        return zeroLength;
     }
-    set [borderLeftWidthProperty.native](value: number) {
+    set [borderLeftWidthProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
             bottom: border.bottom,
-            left: value
+            left: this.style.effectiveBorderLeftWidth
         };
     }
 
-    get [paddingTopProperty.native](): number {
-        return 0;
+    get [paddingTopProperty.native](): Length {
+        return zeroLength;
     }
-    set [paddingTopProperty.native](value: number) {
+    set [paddingTopProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
-            top: value,
+            top: this.style.effectivePaddingTop,
             right: padding.right,
             bottom: padding.bottom,
             left: padding.left
         };
     }
 
-    get [paddingRightProperty.native](): number {
-        return 0;
+    get [paddingRightProperty.native](): Length {
+        return zeroLength;
     }
-    set [paddingRightProperty.native](value: number) {
+    set [paddingRightProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
-            right: value,
+            right: this.style.effectivePaddingRight,
             bottom: padding.bottom,
             left: padding.left
         };
     }
 
-    get [paddingBottomProperty.native](): number {
-        return 0;
+    get [paddingBottomProperty.native](): Length {
+        return zeroLength;
     }
-    set [paddingBottomProperty.native](value: number) {
+    set [paddingBottomProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
-            bottom: value,
+            bottom: this.style.effectivePaddingBottom,
             left: padding.left
         };
     }
 
-    get [paddingLeftProperty.native](): number {
-        return 0;
+    get [paddingLeftProperty.native](): Length {
+        return zeroLength;
     }
-    set [paddingLeftProperty.native](value: number) {
+    set [paddingLeftProperty.native](value: Length) {
         let nativeView = this._nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
             bottom: padding.bottom,
-            left: value
+            left: this.style.effectivePaddingLeft
         };
     }
 }

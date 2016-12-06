@@ -1,10 +1,9 @@
 ﻿import { TextField as TextFieldDefinition } from "ui/text-field";
-import { Property } from "ui/core/properties";
-import { EditableTextBase } from "ui/editable-text-base";
+import { EditableTextBase, Property, booleanConverter } from "ui/editable-text-base";
 
 export * from "ui/editable-text-base";
 
-export let secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false });
+export let secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false, valueConverter: booleanConverter });
 secureProperty.register(TextFieldBase)
 
 export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {

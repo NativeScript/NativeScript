@@ -1,13 +1,10 @@
 import { Border as BorderDefinition } from "ui/border";
-import { View } from "ui/core/view";
-import { ContentView } from "ui/content-view";
-import { layout } from "utils/utils";
-import { isNumber } from "utils/types";
+import { ContentView, View, layout } from "ui/content-view";
 
 @Deprecated
 export class Border extends ContentView implements BorderDefinition {
     get cornerRadius(): number {
-        if (isNumber(this.borderRadius)) {
+        if (typeof this.borderRadius === "number") {
             return <number>this.borderRadius;
         }
         return 0;

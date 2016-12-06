@@ -1,7 +1,7 @@
-﻿import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from "./segmented-bar-common";
-import { colorProperty, fontInternalProperty } from "ui/core/view";
-import { Color } from "color";
-import { Font } from "ui/styling/font";
+﻿import {
+    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
+    colorProperty, fontInternalProperty, Color, Font
+} from "./segmented-bar-common";
 
 export * from "./segmented-bar-common";
 
@@ -218,7 +218,7 @@ export class SegmentedBar extends SegmentedBarBase {
             setValue = true;
             color = value.android;
         }
-        
+
         let tabHost = this._android;
         let apiLevel = this.apiLevel;
         for (let i = 0, count = tabHost.getTabWidget().getTabCount(); i < count; i++) {

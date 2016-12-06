@@ -3,7 +3,7 @@ import { WrappedValue } from "data/observable";
 import { ViewBase } from "./view-base";
 import { Style } from "ui/styling/style";
 
-export { unsetValue };
+export { unsetValue, Style };
 
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
@@ -23,7 +23,7 @@ export interface PropertyOptions<T, U> {
     affectsLayout?: boolean,
     equalityComparer?: (x: U, y: U) => boolean,
     valueChanged?: (target: T, oldValue: U, newValue: U) => void,
-    valueConverter?: (value: any) => U
+    valueConverter?: (value: string) => U
 }
 
 export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {

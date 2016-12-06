@@ -1,9 +1,7 @@
 ﻿declare module "ui/text-base" {
-    import { View, AddChildFromBuilder } from "ui/core/view";
+    import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style } from "ui/core/view";
     import { FormattedString, FormattedStringView } from "text/formatted-string";
-    import { Property, CssProperty, InheritedCssProperty } from "ui/core/properties";
-    import { Style } from "ui/styling/style";
-
+    
     /**
      * Represents the base class for all text views.
      */

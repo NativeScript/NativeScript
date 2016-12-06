@@ -1,10 +1,9 @@
-﻿import { ios as iosApp } from "application";
+﻿import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty,
+    View, layout, Color } from "./page-common";
+import { ios as iosApp } from "application";
 import { device } from "platform";
-import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty } from "./page-common";
-import { View, layout } from "ui/core/view";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
-import { Color } from "color";
 import * as uiUtils from "ui/utils";
 import * as trace from "trace";
 

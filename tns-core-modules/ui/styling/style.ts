@@ -1,12 +1,6 @@
 import { Style as StyleDefinition } from "ui/styling/style";
+import { Length, PercentLength, Color, Background, Font, ViewBase } from "ui/core/view";
 import { Observable } from "data/observable";
-import { ViewBase } from "ui/core/view-base";
-import { Color } from "color";
-import { Font } from "ui/styling/font";
-import { Background } from "ui/styling/background";
-import { isIOS } from "platform";
-import { Property, CssProperty, InheritedCssProperty, ShorthandProperty } from "ui/core/properties";
-import { Length, PercentLength } from "ui/core/view";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {
@@ -32,7 +26,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public backgroundColor: Color;
     public backgroundImage: string;
-    public backgroundRepeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";;
+    public backgroundRepeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
     public backgroundSize: string;
     public backgroundPosition: string;
 
@@ -68,7 +62,6 @@ export class Style extends Observable implements StyleDefinition {
     public textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
     public whiteSpace: "normal" | "nowrap";
 
-    // TODO: Change minWidth/Height to Length to support 'px'
     public minWidth: Length;
     public minHeight: Length;
     public width: PercentLength;

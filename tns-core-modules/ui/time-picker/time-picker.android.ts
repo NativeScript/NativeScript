@@ -1,4 +1,5 @@
 ﻿import { TimePickerBase, getValidTime, timeProperty, hourProperty, minuteProperty } from "./time-picker-common";
+
 export * from "./time-picker-common";
 
 @Interfaces([android.widget.TimePicker.OnTimeChangedListener])

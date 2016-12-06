@@ -2,9 +2,8 @@
  * Contains the Slider class, which represents a standard slider component.
  */
 declare module "ui/slider" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-
+    import { View, Property } from "ui/core/view";
+    
     /**
      * Represents a slider component.
      */

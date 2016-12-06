@@ -2,13 +2,9 @@
  * Contains the Page class, which represents a logical unit for navigation inside a Frame. 
  */
 declare module "ui/page" {
-    import { EventData } from "data/observable";
-    import { ContentView } from "ui/content-view";
+    import { ContentView, EventData, View, Template, KeyedTemplate, Length, Property, Color } from "ui/content-view";
     import { Frame } from "ui/frame";
     import { ActionBar } from "ui/action-bar";
-    import { View, Template, KeyedTemplate, Length } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-    import { Color } from "color";
     import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
 
     //@private

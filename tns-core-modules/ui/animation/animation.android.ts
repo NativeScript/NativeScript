@@ -1,16 +1,13 @@
 ﻿import { AnimationDefinition } from "ui/animation";
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise } from "./animation-common";
-import { Color } from "color";
-import { isNullOrUndefined } from "utils/types";
-import { AnimationCurve } from "ui/enums";
-import lazy from "utils/lazy";
-import { CacheLayerType, layout } from "utils/utils";
 import {
+    AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise,
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty
-} from "ui/core/view";
-import * as trace from "trace";
+    scaleXProperty, scaleYProperty, Color, layout, trace
+} from "./animation-common";
+
+import { CacheLayerType } from "utils/utils";
+import lazy from "utils/lazy";
 
 export * from "./animation-common";
 
@@ -41,32 +38,32 @@ propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
 
 export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
     switch (curve) {
-        case AnimationCurve.easeIn:
+        case "easeIn":
             if (trace.enabled) {
                 trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
             }
             return easeIn();
-        case AnimationCurve.easeOut:
+        case "easeOut":
             if (trace.enabled) {
                 trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
             }
             return easeOut();
-        case AnimationCurve.easeInOut:
+        case "easeInOut":
             if (trace.enabled) {
                 trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
             }
             return easeInOut();
-        case AnimationCurve.linear:
+        case "linear":
             if (trace.enabled) {
                 trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
             }
             return linear();
-        case AnimationCurve.spring:
+        case "spring":
             if (trace.enabled) {
                 trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
             }
             return bounce();
-        case AnimationCurve.ease:
+        case "ease":
             return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
         default:
             if (trace.enabled) {
@@ -172,7 +169,7 @@ export class Animation extends AnimationBase {
     }
 
     public _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
-       return _resolveAnimationCurve(curve);
+        return _resolveAnimationCurve(curve);
     }
 
     private _onAndroidAnimationEnd() {
@@ -209,15 +206,15 @@ export class Animation extends AnimationBase {
             trace.write("Creating ObjectAnimator(s) for animation: " + Animation._getAnimationInfo(propertyAnimation) + "...", trace.categories.Animation);
         }
 
-        if (isNullOrUndefined(propertyAnimation.target)) {
+        if (!propertyAnimation.target) {
             throw new Error("Animation target cannot be null or undefined!");
         }
 
-        if (isNullOrUndefined(propertyAnimation.property)) {
+        if (!propertyAnimation.property) {
             throw new Error("Animation property cannot be null or undefined!");
         }
 
-        if (isNullOrUndefined(propertyAnimation.value)) {
+        if (!propertyAnimation.value) {
             throw new Error("Animation value cannot be null or undefined!");
         }
 

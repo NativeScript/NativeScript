@@ -1,11 +1,7 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
-import { ActionItemBase, ActionBarBase, isVisible } from "./action-bar-common";
-import utils = require("utils/utils");
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, Color, Background, layout } from "./action-bar-common";
 import { Frame, topmost as topmostFrame } from "ui/frame";
-import { View, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
 import { ImageSource, fromFileOrResource } from "image-source";
-import { Color } from "color";
-import { Background } from "ui/styling/background";
 
 export * from "./action-bar-common";
 
@@ -221,11 +217,11 @@ export class ActionBar extends ActionBarBase {
 
     private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let navBarWidth = 0;
         let navBarHeight = 0;
@@ -235,8 +231,8 @@ export class ActionBar extends ActionBarBase {
             let navBar: UIView = frame.ios.controller.navigationBar;
             if (!navBar.hidden) {
                 let navBarSize = navBar.sizeThatFits(CGSizeMake(
-                    (widthMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
-                    (heightMode === utils.layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
+                    (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
+                    (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
                 navBarWidth = navBarSize.width;
                 navBarHeight = navBarSize.height;
             }
@@ -245,15 +241,15 @@ export class ActionBar extends ActionBarBase {
         this._navigationBarHeight = navBarHeight;
         if (this.titleView) {
             View.measureChild(this, this.titleView,
-                utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
-                utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
+                layout.makeMeasureSpec(width, layout.AT_MOST),
+                layout.makeMeasureSpec(navBarHeight, layout.AT_MOST));
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView) {
                 View.measureChild(this, actionItem.actionView,
-                    utils.layout.makeMeasureSpec(width, utils.layout.AT_MOST),
-                    utils.layout.makeMeasureSpec(navBarHeight, utils.layout.AT_MOST));
+                    layout.makeMeasureSpec(width, layout.AT_MOST),
+                    layout.makeMeasureSpec(navBarHeight, layout.AT_MOST));
             }
         });
 

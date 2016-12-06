@@ -1,6 +1,5 @@
 ﻿import { ProgressBase, valueProperty, maxValueProperty } from "./progress-common";
-import { View, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
-import { Color } from "color";
+import { View, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
 
 export * from "./progress-common";
 

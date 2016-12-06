@@ -1,17 +1,15 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
-import { EventData } from "data/observable";
-import { ContentView } from "ui/content-view";
+import {
+    ContentView, EventData, View, Template, KeyedTemplate, Length, backgroundColorProperty,
+    eachDescendant, Property, Color, isIOS, booleanConverter
+} from "ui/content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
 import { ActionBar } from "ui/action-bar";
-import { View, Template, KeyedTemplate, Length, backgroundColorProperty, eachDescendant } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { Color } from "color";
 import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
-import { isIOS } from "platform";
-
 import { StyleScope } from "../styling/style-scope";
-import * as style from "../styling/style";
-import * as fs from "file-system";
+import { File, path, knownFolders } from "file-system";
+
+export * from "ui/content-view";
 
 export class PageBase extends ContentView implements PageDefinition {
 
@@ -113,11 +111,11 @@ export class PageBase extends ContentView implements PageDefinition {
     private _cssFiles = {};
     public addCssFile(cssFileName: string) {
         if (cssFileName.indexOf("~/") === 0) {
-            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
+            cssFileName = path.join(knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
         if (!this._cssFiles[cssFileName]) {
-            if (fs.File.exists(cssFileName)) {
-                const file = fs.File.fromPath(cssFileName);
+            if (File.exists(cssFileName)) {
+                const file = File.fromPath(cssFileName);
                 const text = file.readTextSync();
                 if (text) {
                     this._addCssInternal(text, cssFileName);
@@ -294,18 +292,18 @@ export class PageBase extends ContentView implements PageDefinition {
 /**
  * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
  */
-export const actionBarHiddenProperty = new Property<PageBase, boolean>({ name: "actionBarHidden", affectsLayout: isIOS });
+export const actionBarHiddenProperty = new Property<PageBase, boolean>({ name: "actionBarHidden", affectsLayout: isIOS, valueConverter: booleanConverter });
 actionBarHiddenProperty.register(PageBase);
 
 /**
  * Dependency property that specify if page background should span under status bar.
  */
-export const backgroundSpanUnderStatusBarProperty = new Property<PageBase, boolean>({ name: "backgroundSpanUnderStatusBar", defaultValue: false, affectsLayout: isIOS });
+export const backgroundSpanUnderStatusBarProperty = new Property<PageBase, boolean>({ name: "backgroundSpanUnderStatusBar", defaultValue: false, affectsLayout: isIOS, valueConverter: booleanConverter });
 backgroundSpanUnderStatusBarProperty.register(PageBase);
 
 /**
  * Dependency property used to control if swipe back navigation in iOS is enabled.
  * This property is iOS sepecific. Default value: true
  */
-export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>({ name: "enableSwipeBackNavigation", defaultValue: true });
+export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>({ name: "enableSwipeBackNavigation", defaultValue: true, valueConverter: booleanConverter });
 enableSwipeBackNavigationProperty.register(PageBase);

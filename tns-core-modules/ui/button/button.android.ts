@@ -1,6 +1,5 @@
-﻿import { ButtonBase, textProperty, formattedTextProperty, FormattedString } from "./button-common";
-import { device } from "platform";
-
+﻿import { ButtonBase, textProperty, formattedTextProperty } from "./button-common";
+import { FormattedString } from "text/formatted-string";
 
 export * from "./button-common";
 

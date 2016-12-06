@@ -2,9 +2,7 @@
  * Contains the Repeater class, which represents a UI Repeater component.
  */
 declare module "ui/repeater" {
-    import { CustomLayoutView, Template } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-    import { LayoutBase } from "ui/layouts/layout-base";
+    import { LayoutBase, CustomLayoutView, Template, Property } from "ui/layouts/layout-base";
 
     /**
      * Represents a UI Repeater component.

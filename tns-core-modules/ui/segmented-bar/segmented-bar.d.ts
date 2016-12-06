@@ -2,11 +2,10 @@
  * Contains the SegmentedBar class, which represents a SegmentedBar component.
  */
 declare module "ui/segmented-bar" {
-    import { View, AddChildFromBuilder, AddArrayFromBuilder } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-    import { EventData } from "data/observable";
-    import { Color } from "color";
-    import { Bindable } from "ui/core/bindable";
+    import {
+        View, AddChildFromBuilder, AddArrayFromBuilder,
+        Property, EventData, Color, Bindable
+    } from "ui/core/view";
 
     /**
      * Represents a SegmentedBar item.
@@ -36,7 +35,7 @@ declare module "ui/segmented-bar" {
     /**
      * Represents a UI SegmentedBar component.
      */
-    export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayFromBuilder  {
+    export class SegmentedBar extends View implements AddChildFromBuilder, AddArrayFromBuilder {
         /**
          * Gets or sets the selected index of the SegmentedBar component.
          */

@@ -1,11 +1,6 @@
 declare module "ui/styling/style" {
-    import { Observable } from "data/observable";
-    import { ViewBase } from "ui/core/view-base";
-    import { Color } from "color";
-    import { Font } from "ui/styling/font";
-    import { Background } from "ui/styling/background";
-    import { Length, PercentLength } from "ui/core/view";
-    
+    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable } from "ui/core/view";
+
     export interface Thickness {
         left: number;
         top: number;
@@ -90,7 +85,7 @@ declare module "ui/styling/style" {
         public visibility: "visible" | "hidden" | "collapse" | "collapsed";
 
         public letterSpacing: number;
-        public textAlignment:  "left" | "center" | "right";
+        public textAlignment: "left" | "center" | "right";
         public textDecoration: "none" | "underline" | "lineThrough";
         public textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
         public whiteSpace: "normal" | "nowrap";

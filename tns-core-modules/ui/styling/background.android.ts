@@ -1,4 +1,4 @@
-import { View, layout } from "ui/core/view";
+import { View } from "./background-common";
 import { isNullOrUndefined, isFunction, getClass } from "utils/types";
 import { CacheLayerType } from "utils/utils";
 import { Button } from "ui/button";
@@ -37,7 +37,6 @@ export module ad {
 
         let background = style.backgroundInternal;
         let backgroundDrawable = nativeView.getBackground();
-        let density = layout.getDisplayDensity();
         let cache = <CacheLayerType>v._nativeView;
 
         if (isSetColorFilterOnlyWidget(nativeView) 

@@ -1,9 +1,8 @@
-﻿import { ImageBase, stretchProperty, imageSourceProperty, tintColorProperty } from "./image-common";
-import { unsetValue } from "ui/core/dependency-observable";
-import { Color } from "color";
-import { ImageSource } from "image-source";
+﻿import {
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, unsetValue, Color,
+    isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
+} from "./image-common";
 import { path, knownFolders } from "file-system";
-import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
 
 export * from "./image-common";
 

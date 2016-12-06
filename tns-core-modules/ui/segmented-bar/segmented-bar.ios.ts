@@ -1,7 +1,8 @@
-﻿import { SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty } from "./segmented-bar-common";
-import { colorProperty, fontInternalProperty } from "ui/core/view";
-import { Color } from "color";
-import { Font } from "ui/styling/font";
+﻿import {
+    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
+    colorProperty, fontInternalProperty, Color, Font
+} from "./segmented-bar-common";
+
 import { ios } from "utils/utils";
 
 export * from "./segmented-bar-common";

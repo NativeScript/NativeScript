@@ -1,7 +1,8 @@
-﻿import { SliderBase, valueProperty, minValueProperty, maxValueProperty } from "./slider-common";
-import { colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
-import { Color } from "color";
-import { Background } from "ui/styling/background";
+﻿import {
+    SliderBase, valueProperty, minValueProperty, maxValueProperty,
+    colorProperty, backgroundColorProperty, backgroundInternalProperty,
+    Color, Background
+} from "./slider-common";
 
 export * from "./slider-common";
 

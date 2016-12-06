@@ -1,7 +1,7 @@
-﻿import { SearchBarBase, textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty } from "./search-bar-common";
-import { Font } from "ui/styling/font";
-import { colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty } from "ui/core/view";
-import { Color } from "color";
+﻿import {
+    SearchBarBase, Font, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty
+} from "./search-bar-common";
 
 export * from "./search-bar-common";
 

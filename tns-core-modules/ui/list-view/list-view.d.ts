@@ -2,10 +2,7 @@
  * Contains the ListView class, which represents a standard list view widget.
  */
 declare module "ui/list-view" {
-    import { EventData } from "data/observable";
-    import { View, Template, KeyedTemplate, Length } from "ui/core/view";
-    import { Property } from "ui/core/properties";
-    import { Color } from "color";
+    import { EventData, View, Template, KeyedTemplate, Length, Property, Color } from "ui/core/view";
 
     /**
      * Known template names.

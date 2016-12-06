@@ -1,13 +1,11 @@
 import { WebView as WebViewDefinition, LoadEventData } from "ui/web-view";
-import { View } from "ui/core/view";
-import { Property } from "ui/core/properties";
-import { EventData } from "data/observable";
-import * as utils from "utils/utils";
+import { View, Property, EventData } from "ui/core/view";
+import { isFileOrResourcePath } from "utils/utils";
+import { File, knownFolders, path } from "file-system";
 import * as trace from "trace";
-import * as fs from "file-system";
 
-export let srcProperty = new Property<WebViewBase, string>({ name: "url" });
-srcProperty.register(WebViewBase);
+export { trace, File, knownFolders, path };
+export * from "ui/core/view";
 
 export abstract class WebViewBase extends View implements WebViewDefinition {
     public static loadStartedEvent = "loadStarted";
@@ -92,13 +90,13 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
             trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
         }
 
-        if (utils.isFileOrResourcePath(src)) {
+        if (isFileOrResourcePath(src)) {
             if (src.indexOf("~/") === 0) {
-                src = fs.path.join(fs.knownFolders.currentApp().path, src.replace("~/", ""));
+                src = path.join(knownFolders.currentApp().path, src.replace("~/", ""));
             }
 
-            if (fs.File.exists(src)) {
-                let file = fs.File.fromPath(src);
+            if (File.exists(src)) {
+                let file = File.fromPath(src);
                 let content = file.readTextSync();
                 this._loadFileOrResource(src, content);
             }
@@ -108,4 +106,7 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
             this._loadData(src);
         }
     }
-} 
+}
+
+export let srcProperty = new Property<WebViewBase, string>({ name: "url" });
+srcProperty.register(WebViewBase);

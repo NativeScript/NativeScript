@@ -1,9 +1,9 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, hintProperty
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
+    textProperty
 } from "./editable-text-base-common";
-import { textProperty } from "ui/text-base";
 
 export * from "./editable-text-base-common";
 

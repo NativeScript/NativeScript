@@ -1,14 +1,11 @@
 ﻿import { Image as ImageDefinition } from "ui/image";
-import { View } from "ui/core/view";
-import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "image-source";
+import { View, Property, CssProperty, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "ui/core/view";
 import { ImageAsset } from "image-asset";
-import { isIOS } from "platform";
+import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "image-source";
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
-import { Color } from "color";
-import { Property, CssProperty } from "../core/properties";
-import { Style } from "ui/styling/style";
 
 export * from "ui/core/view";
+export { ImageSource, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
 export abstract class ImageBase extends View implements ImageDefinition {
     public imageSource: ImageSource;
@@ -117,7 +114,7 @@ srcProperty.register(ImageBase);
 export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "async" });
 loadModeProperty.register(ImageBase);
 
-export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false });
+export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false, valueConverter: booleanConverter });
 isLoadingProperty.register(ImageBase);
 
 export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS })

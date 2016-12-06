@@ -1,10 +1,8 @@
 ﻿import { TimePicker as TimePickerDefinition } from "ui/time-picker";
-import { View } from "ui/core/view";
-import { Property } from "ui/core/properties";
-
-ADD parseFloat as converter to all <number> properties!!!!!!!!!
+import { View, Property } from "ui/core/view";
 
 export * from "ui/core/view";
+
 interface Time {
     hour: number;
     minute: number;
@@ -54,11 +52,16 @@ function getMinutes(hour: number): number {
     return hour * 60;
 }
 
+export function isDefined(value: any): boolean {
+    return typeof value !== "undefined";
+}
+
 function isGreaterThanMinTime(picker: TimePickerDefinition, hour?: number, minute?: number): boolean {
-    if (!isDefined(picker.minHour) || !isDefined(picker.minMinute)) {
+
+    if (typeof picker.minHour === undefined || typeof picker.minMinute === undefined) {
         return true;
     }
-    return getMinutes(isDefined(hour) ? hour : picker.hour) + (isDefined(minute) ? minute : picker.minute) >= getMinutes(picker.minHour) + picker.minMinute;
+    return getMinutes(typeof hour !== "undefined" ? hour : picker.hour) + (typeof minute !== "undefined" ? minute : picker.minute) >= getMinutes(picker.minHour) + picker.minMinute;
 }
 
 function isLessThanMaxTime(picker: TimePickerDefinition, hour?: number, minute?: number): boolean {
@@ -111,7 +114,7 @@ export var hourProperty = new Property<TimePickerBase, number>({
         } else {
             throw new Error(getErrorMessage(picker, "Hour", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 hourProperty.register(TimePickerBase);
 
@@ -125,7 +128,7 @@ export var minHourProperty = new Property<TimePickerBase, number>({
         } else {
             throw new Error(getErrorMessage(picker, "Hour", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 minHourProperty.register(TimePickerBase);
 
@@ -139,7 +142,7 @@ export var maxHourProperty = new Property<TimePickerBase, number>({
         } else {
             throw new Error(getErrorMessage(picker, "Hour", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 maxHourProperty.register(TimePickerBase);
 
@@ -160,7 +163,7 @@ export var minuteProperty = new Property<TimePickerBase, number>({
         } else {
             throw new Error(getErrorMessage(picker, "Minute", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 minuteProperty.register(TimePickerBase);
 
@@ -175,7 +178,7 @@ export var minMinuteProperty = new Property<TimePickerBase, number>({
         } else {
             throw new Error(getErrorMessage(picker, "Minute", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 minMinuteProperty.register(TimePickerBase);
 
@@ -190,7 +193,7 @@ export var maxMinuteProperty = new Property<TimePickerBase, number>({
         } else {
             throw new Error(getErrorMessage(picker, "Minute", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 maxMinuteProperty.register(TimePickerBase);
 
@@ -199,12 +202,16 @@ export var minuteIntervalProperty = new Property<TimePickerBase, number>({
         if (!isMinuteIntervalValid(newValue)) {
             throw new Error(getErrorMessage(picker, "minuteInterval", newValue));
         }
-    }
+    }, valueConverter: (v) => parseInt(v)
 });
 minuteIntervalProperty.register(TimePickerBase);
 
+function dateComparer(x: Date, y: Date): boolean {
+    return (x <= y && x >= y) ? true : false;
+}
+
 export var timeProperty = new Property<TimePickerBase, Date>({
-    name: "time", valueChanged: (picker, oldValue, newValue) => {
+    name: "time", equalityComparer: dateComparer, valueChanged: (picker, oldValue, newValue) => {
         if (!isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "time", newValue));
         }

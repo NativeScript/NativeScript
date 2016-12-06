@@ -1,6 +1,4 @@
-import {WebViewBase} from "./web-view-common";
-import * as trace from "trace";
-import * as fs from "file-system";
+import { WebViewBase, File, knownFolders, path, trace } from "./web-view-common";
 
 export * from "./web-view-common";
 
@@ -67,7 +65,7 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     public webViewDidFailLoadWithError(webView: UIWebView, error: NSError) {
         let owner = this._owner.get();
         if (owner) {
-            let src  = owner.src;
+            let src = owner.src;
             if (webView.request && webView.request.URL) {
                 src = webView.request.URL.absoluteString;
             }

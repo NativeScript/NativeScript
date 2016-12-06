@@ -1,11 +1,7 @@
 ﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from "ui/tab-view";
-import { Property, CoercibleProperty } from "ui/core/properties";
-import { View, AddArrayFromBuilder } from "ui/core/view";
-import { Bindable } from "ui/core/bindable";
-import { isIOS } from "platform";
-import { Color } from "color";
+import { View, Bindable, Property, CoercibleProperty, EventData, Color, isIOS, AddArrayFromBuilder } from "ui/core/view";
 
-import trace = require("trace");
+export *  from "ui/core/view";
 
 export const traceCategory = "TabView";
 
@@ -177,8 +173,8 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
 });
 selectedIndexProperty.register(TabViewBase);
 
-export const selectedColorProperty = new Property<TabViewBase, Color>({ name: "selectedColor" });
+export const selectedColorProperty = new Property<TabViewBase, Color>({ name: "selectedColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 selectedColorProperty.register(TabViewBase);
 
-export const tabsBackgroundColorProperty = new Property<TabViewBase, Color>({ name: "tabsBackgroundColor" });
+export const tabsBackgroundColorProperty = new Property<TabViewBase, Color>({ name: "tabsBackgroundColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 tabsBackgroundColorProperty.register(TabViewBase);

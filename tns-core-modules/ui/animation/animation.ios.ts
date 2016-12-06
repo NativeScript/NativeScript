@@ -1,18 +1,15 @@
 import { AnimationDefinition } from "ui/animation";
-import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise } from "./animation-common";
-import { View } from "ui/core/view";
-import { AnimationCurve } from "ui/enums";
-import * as utils from "utils/utils";
 import {
-    opacityProperty, backgroundColorProperty, rotateProperty,
+    AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, View, opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty
-} from "ui/core/view";
-import * as trace from "trace";
+    scaleXProperty, scaleYProperty, trace
+} from "./animation-common";
+
+import { ios } from "utils/utils";
 
 export * from "./animation-common";
 
-let getter = utils.ios.getter;
+let getter = ios.getter;
 
 let _transform = "_transform";
 let _skip = "_skip";
@@ -117,19 +114,19 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
     }
 }
 
-export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | CAMediaTimingFunction): CAMediaTimingFunction {
+export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | CAMediaTimingFunction): CAMediaTimingFunction | string {
     switch (curve) {
-        case AnimationCurve.easeIn:
+        case "easeIn":
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseIn);
-        case AnimationCurve.easeOut:
+        case "easeOut":
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseOut);
-        case AnimationCurve.easeInOut:
+        case "easeInOut":
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionEaseInEaseOut);
-        case AnimationCurve.linear:
+        case "linear":
             return CAMediaTimingFunction.functionWithName(kCAMediaTimingFunctionLinear);
-        case AnimationCurve.spring:
-            return <CAMediaTimingFunction>curve;
-        case AnimationCurve.ease:
+        case "spring":
+            return curve;
+        case "ease":
             return CAMediaTimingFunction.functionWithControlPoints(0.25, 0.1, 0.25, 1.0);
         default:
             if (curve instanceof CAMediaTimingFunction) {
@@ -230,7 +227,7 @@ export class Animation extends AnimationBase {
         }
     }
 
-    public _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | CAMediaTimingFunction): CAMediaTimingFunction {
+    public _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | CAMediaTimingFunction): CAMediaTimingFunction | string {
         return _resolveAnimationCurve(curve);
     }
 
@@ -248,7 +245,7 @@ export class Animation extends AnimationBase {
             let animation = propertyAnimations[index];
             let args = Animation._getNativeAnimationArguments(animation, valueSource);
 
-            if (animation.curve === AnimationCurve.spring) {
+            if (animation.curve === "spring") {
                 Animation._createNativeSpringAnimation(propertyAnimations, index, playSequentially, args, animation, valueSource, finishedCallback);
             }
             else {

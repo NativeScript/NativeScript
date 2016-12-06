@@ -1,10 +1,12 @@
-import { Observable, EventData } from "data/observable";
-import { propagateInheritedProperties, clearInheritedProperties, applyNativeSetters, Property, InheritedProperty, CssProperty } from "./properties";
-import { Binding, BindingOptions } from "ui/core/bindable";
-import { isIOS } from "platform";
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
-import { Style } from "ui/styling/style";
+import { Observable, EventData } from "data/observable";
+import { Property, InheritedProperty, CssProperty, Style } from "./properties";
+import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
+import { isIOS } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
+
+export { Observable, EventData, Binding, BindingOptions, Bindable, isIOS, gestureFromString };
+export * from "./properties";
 
 let defaultBindingSource = {};
 

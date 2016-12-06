@@ -2,8 +2,7 @@
  * Contains the HtmlView class, which represents a standard html view widget.
  */
 declare module "ui/html-view" {
-    import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
+    import { View, Property } from "ui/core/view";
 
     /**
      * Represents a view with html content. Use this component instead WebView when you want to show just static HTML content.

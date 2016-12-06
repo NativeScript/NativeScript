@@ -1,6 +1,5 @@
 ﻿import { GestureTypes as GestureTypesDefinition, GestureEventData, GesturesObserver as GesturesObserverDefinition } from "ui/gestures";
-import { View } from "ui/core/view";
-import { EventData } from "data/observable";
+import { View, EventData } from "ui/core/view";
 
 export enum GestureTypes {
     tap = 1 << 0,

@@ -1,8 +1,7 @@
 ﻿import types = require("utils/types");
-import { View } from "ui/core/view";
 import { ProxyViewContainer as ProxyViewContainerDefinition } from "ui/proxy-view-container";
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
-import { LayoutBase } from "ui/layouts/layout-base";
+import { LayoutBase, View } from "ui/layouts/layout-base";
 /**
  * Proxy view container that adds all its native children directly to the parent. 
  * To be used as a logical grouping container of views.

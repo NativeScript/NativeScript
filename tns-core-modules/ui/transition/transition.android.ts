@@ -3,7 +3,7 @@ import { NavigationTransition, BackstackEntry, topmost } from "ui/frame";
 import { Page } from "ui/page";
 import { getClass } from "utils/types";
 import { device } from "platform";
-import * as animationModule from "ui/animation";
+import { _resolveAnimationCurve } from "ui/animation";
 import * as trace from "trace";
 import lazy from "utils/lazy";
 
@@ -23,12 +23,6 @@ let flipTransition: any;
 function ensureFlipTransition() {
     if (!flipTransition) {
         flipTransition = require("ui/transition/flip-transition");
-    }
-}
-let animation: typeof animationModule;
-function ensureAnimationModule() {
-    if (!animation) {
-        animation = require("ui/animation");
     }
 }
 
@@ -293,8 +287,7 @@ function _setUpNativeTransition(navigationTransition: NavigationTransition, nati
     }
 
     if (navigationTransition.curve) {
-        ensureAnimationModule();
-        let interpolator = animation._resolveAnimationCurve(navigationTransition.curve);
+        let interpolator = _resolveAnimationCurve(navigationTransition.curve);
         nativeTransition.setInterpolator(interpolator);
     }
     else {
@@ -711,8 +704,7 @@ export class Transition implements TransitionDefinition {
     constructor(duration: number, curve: any) {
         this._duration = duration;
         if (curve) {
-            ensureAnimationModule();
-            this._interpolator = animation._resolveAnimationCurve(curve);
+            this._interpolator = _resolveAnimationCurve(curve);
         }
         else {
             this._interpolator = _defaultInterpolator();
