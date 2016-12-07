@@ -211,6 +211,13 @@ public class TabLayout extends HorizontalScrollView {
     }
 
     /**
+     * Gets the number of realized tabs.
+     */
+    public int getItemCount(){
+        return this.mTabStrip.getChildCount();
+    }
+
+    /**
      * Create a default view to be used for tabs.
      */
     protected View createDefaultTabView(Context context, TabItemSpec tabItem) {
