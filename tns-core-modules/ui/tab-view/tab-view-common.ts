@@ -154,10 +154,12 @@ export const itemsProperty = new Property<TabViewBase, TabViewItemBase[]>({
 itemsProperty.register(TabViewBase);
 
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
-    name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+    name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS, 
+    valueChanged: (target, oldValue, newValue) => {
         let args = { eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue };
         target.notify(args);
-    }, coerceValue: (target, value) => {
+    }, 
+    coerceValue: (target, value) => {
         let items = target.items;
         if (items) {
             let max = items.length - 1;
@@ -169,7 +171,8 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
         }
 
         return value;
-    }
+    },
+    valueConverter: (v) => parseInt(v)
 });
 selectedIndexProperty.register(TabViewBase);
 

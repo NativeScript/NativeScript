@@ -108,8 +108,7 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
                     });
                 }
 
-                let nativeObject = this.nativeView;
-                if (nativeObject) {
+                if (this.nativeView) {
                     this[native] = unboxedValue;
                 }
 
@@ -215,8 +214,7 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                     });
                 }
 
-                let nativeObject = this.nativeView;
-                if (nativeObject) {
+                if (this.nativeView) {
                     this[native] = unboxedValue;
                 }
 

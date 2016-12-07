@@ -7,7 +7,6 @@ export class ListPicker extends ListPickerBase {
     private _ios: UIPickerView;
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
-    private itemsSet: boolean;
 
     constructor() {
         super();
@@ -32,7 +31,7 @@ export class ListPicker extends ListPickerBase {
     }
 
     private updateSelectedValue(): void {
-        let selectedIndex = this.getSelectedIndex(this.items);
+        let selectedIndex = this.selectedIndex;
         if (selectedIndex >= 0) {
             this.ios.selectRowInComponentAnimated(selectedIndex, 0, false);
         }
