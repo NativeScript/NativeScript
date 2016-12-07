@@ -260,6 +260,14 @@ export class TabView extends TabViewBase {
         if (selectedIndex < 0) {
             this.selectedIndex = this._viewPager.getCurrentItem();
         }
+//<<<<<<< HEAD
+//=======
+
+//        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
+        
+        // Style properties such as fonts need to re-applied on the newwly created native TextViews
+//        this.style._syncNativeProperties();
+//>>>>>>> ae68368... Fixed: Setting `setTypeface()` to null object
     }
 
     public _updateTabForItem(item: TabViewItem) {

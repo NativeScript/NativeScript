@@ -361,11 +361,10 @@ export class TabView extends TabViewBase {
             return;
         }
 
-        const tabBar = this._ios.tabBar;
+        const tabBar = <UITabBar>this.ios.tabBar;
         const states = getTitleAttributesForStates(this);
-
-        for (let i = 0, count = tabBar.items.count; i < count; i++) {
-            const item = tabBar.items[i];
+        for (let i = 0; i < tabBar.items.count; i++) {
+            const item = <UITabBarItem>tabBar.items[i];
             item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
             item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
         }
@@ -403,6 +402,7 @@ export class TabView extends TabViewBase {
         this.setViewControllers(value);
     }
 
+    
     get [tabTextColorProperty.native](): UIColor {
         return null;
     }
@@ -432,6 +432,24 @@ export class TabView extends TabViewBase {
     set [textTransformProperty.native](value: TextTransform) {
         this._updateIOSTabBarTextTransform(value);
     }
+
+    // private static getNativeFontValue(v: view.View) {
+    //     var tabBar = <UITabBar>v.ios.tabBar;
+    //     let currentFont;
+
+    //     if (tabBar.items.count > 0) {
+    //         let currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
+    //         if (currentAttrs) {
+    //             currentFont = currentAttrs.objectForKey(NSFontAttributeName);
+    //         }
+    //     }
+
+    //     if (!currentFont) {
+    //         currentFont = UIFont.systemFontOfSize(getter(UIFont, UIFont.labelFontSize));
+    //     }
+
+    //     return currentFont;
+    // }
 
     // TODO: Move this to TabViewItem
     get [fontInternalProperty.native](): Font {

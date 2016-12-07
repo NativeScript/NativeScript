@@ -1,9 +1,11 @@
-﻿import * as testModule from "../../ui-test";
-import * as TKUnit from "../../TKUnit";
-import * as helper from "../helper";
-import * as labelModule from "ui/label";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as tabViewTestsNative from "./tab-view-tests-native";
+import testModule = require("../../ui-test");
+import TKUnit = require("../../TKUnit");
+import helper = require("../helper");
+import labelModule = require("ui/label");
+import stackLayoutModule = require("ui/layouts/stack-layout");
+import tabViewTestsNative = require("./tab-view-tests-native");
+import style = require("ui/styling/style");
+import { resetStyleProperties } from "ui/core/view";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
@@ -281,102 +283,58 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         TKUnit.assertEqual(actualNewIndex, expectedNewIndex, "expectedNewIndex");
     }
 
-//     public testAndroidOffscreenTabLimit_Default = function () {
-//         let tabView = this.testView;
-//         if (!tabView.android){
-//             return;
-//         }
+    public test_FontIsReappliedWhenTabItemsChange = function () {
+        // let fontToString = (font: any): string => {
+        //     if (this.testView.ios){
+        //         return font.toString();
+        //     }
+        //     else {
+        //          return `${font.typeface} ${font.size}`;
+        //     }
+        // }
         
-//         tabView.androidOffscreenTabLimit = 1;
-//         tabView.items = this._createItems(20);
-//         this.waitUntilTestElementIsLoaded();
-//         for (let index = 0, length = tabView.items.length; index < length; index++){
-//             tabViewTestsNative.selectNativeTab(tabView, index);
-//             TKUnit.waitUntilReady(function () {
-//                 return tabView.selectedIndex === index;
-//             }, helper.ASYNC);
-//         }
+        let assertFontsAreEqual = (actual: any, expected: any, message?: string) => {
+            if (this.testView.ios){
+                TKUnit.assertEqual(actual, expected, message);
+            }
+            else {
+                TKUnit.assertEqual(actual.typeface, expected.typeface, `${message} [typeface]`);
+                TKUnit.assertEqual(actual.size, expected.size, `${message} [size]`);
+            }
+        }
 
-//         let viewsWithParent = 0;
-//         let viewsWithoutParent = 0;
-//         for (let i = 0, length = tabView.items.length; i < length; i++){
-//             if (tabView.items[i].view.parent) {
-//                 viewsWithParent++;
-//             }
-//             else {
-//                 viewsWithoutParent++;
-//             }
-//         }
-
-//         TKUnit.assertTrue(viewsWithoutParent > viewsWithParent, `Most of the views should be recycled: viewsWithoutParent = ${viewsWithoutParent}; viewsWithParent = ${viewsWithParent};`);
-//     }
-
-    // public testAndroidOffscreenTabLimit_KeepAllAlive = function () {
-    //     let tabView = this.testView;
-    //     if (!tabView.android){
-    //         return;
-    //     }
+        //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
+        this.testView.items = this._createItems(1);
+        this.waitUntilTestElementIsLoaded();
         
-    //     tabView.androidOffscreenTabLimit = 20;
+        let originalFont = tabViewTestsNative.getNativeFont(this.testView);
+        //console.log(`>>>>>>>>>>>>> originalFont: ${fontToString(originalFont)}`);
+        let nativeFont: any;
+
+        //console.log(`>>>>>>>>>>>>> PACIFICO`);
+        this.testView.style.font = "20 Pacifico";
+        nativeFont = tabViewTestsNative.getNativeFont(this.testView);
+        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
         
-    //     tabView.items = this._createItems(20);
-    //     this.waitUntilTestElementIsLoaded();
-    //     for (let index = 0, length = tabView.items.length; index < length; index++){
-    //         tabViewTestsNative.selectNativeTab(tabView, index);
-    //         TKUnit.waitUntilReady(function () {
-    //             return tabView.selectedIndex === index;
-    //         }, helper.ASYNC);
-    //     }
+        //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
+        this.testView.items = this._createItems(2);
+        assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be 20 Pacifico after rebinding items.");
+        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
+        
+        //console.log(`>>>>>>>>>>>>> MONOSPACE;`);
+        this.testView.style.font = "bold 12 monospace";
+        nativeFont = tabViewTestsNative.getNativeFont(this.testView);
+        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
+        
+        //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
+        this.testView.items = this._createItems(3);
+        assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be bold 12 monospace after rebinding items.");
+        //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
-    //     for (let i = 0, length = tabView.items.length; i < length; i++){
-    //         TKUnit.assertNotNull(tabView.items[i].view.parent, `tabView.items[${i}].view should have a parent!`);
-    //     }
-    // }
-
-    /*
-    public testBindingIsRefreshedWhenTabViewItemIsUnselectedAndThenSelectedAgain() {
-
-        var viewModel = new observable.Observable();
-        viewModel.set("counter", 0);
-        this.testPage.bindingContext = viewModel;
-
-        var tabView = this.testView;
-        var items = this._createItems(10);
-
-        var StackLayout0 = new stackLayoutModule.StackLayout();
-        var label0 = new labelModule.Label();
-        label0.text = "Tab 0";
-        label0.id = "testLabel";
-        label0.bind({ sourceProperty: "counter", targetProperty: "text", twoWay: true });
-        StackLayout0.addChild(label0);
-        var tabEntry0 = new tabViewModule.TabViewItem({
-            title: "Tab 0",
-            view: StackLayout0
-        });
-        items.push(tabEntry0);
-
-        tabView.items = items;
-        tabView.selectedIndex = 10;
-        TKUnit.waitUntilReady(function () {
-            return tabViewTestsNative.getNativeSelectedIndex(tabView) === tabView.selectedIndex;
-        }, helper.ASYNC);
-
-        TKUnit.assertEqual(label0.text, 0, "binding is not working!");
-
-        tabView.selectedIndex = 0;
-        TKUnit.waitUntilReady(function () {
-            return tabViewTestsNative.getNativeSelectedIndex(tabView) === tabView.selectedIndex;
-        }, helper.ASYNC);
-
-        tabView.selectedIndex = 10;
-        TKUnit.waitUntilReady(function () {
-            return tabViewTestsNative.getNativeSelectedIndex(tabView) === tabView.selectedIndex;
-        }, helper.ASYNC);
-
-        var expectedValue = 5;
-        viewModel.set("counter", expectedValue);
-        TKUnit.assertEqual(label0.text, expectedValue, "binding is not working!");
-    }*/
+        //console.log(`>>>>>>>>>>>>> RESET`);
+        resetStyleProperties(this.testView.style);
+        assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), originalFont, "Font must be the original one after resetting the style.");
+    }
 }
 
 export function createTestCase(): TabViewTest {
