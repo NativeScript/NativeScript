@@ -87,7 +87,7 @@ class IOSApplication implements definition.iOSApplication {
 
     get window(): Window {
         return this._window;
-    }    
+    }
 
     get delegate(): typeof UIApplicationDelegate {
         return this._delegate;
@@ -225,7 +225,7 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
     if (types.isFunction(typedExports.onUncaughtError)) {
         typedExports.onUncaughtError(error);
     }
-    
+
     typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error });
 }
 
@@ -276,11 +276,11 @@ typedExports.start = function (entry?: NavigationEntry) {
     if (entry) {
         exports.mainEntry = entry;
     }
-
+    started = true;
     loadCss();
 
     if(!iosApp.nativeApp) {
-        // Normal NativeScript app will need UIApplicationMain. 
+        // Normal NativeScript app will need UIApplicationMain.
         UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
     } else {
         let rootView = createRootView();
