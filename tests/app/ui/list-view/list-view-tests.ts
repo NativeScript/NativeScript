@@ -363,6 +363,9 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_loadMoreItems_not_raised_when_showing_many_items() {
+        if (platform.isIOS) {
+            return;
+        }
         var listView = this.testView;
         listView.on(listViewModule.ListView.itemLoadingEvent, this.loadViewWithItemNumber);
 
