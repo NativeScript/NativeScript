@@ -87,7 +87,7 @@ declare module "ui/page" {
         /**
          * Gets or sets the style of the status bar.
          */
-        statusBarStyle: string;
+        statusBarStyle: "light" | "dark";
 
         /**
          * Gets or sets the color of the status bar in Android.
@@ -265,4 +265,14 @@ declare module "ui/page" {
      * This property is iOS sepecific. Default value: true
      */
     export const enableSwipeBackNavigationProperty: Property<Page, boolean>;
+
+    /**
+     * Property backing statusBarStyle.
+     */
+    export const statusBarStyleProperty: Property<Page, "light" | "dark">;
+
+    /**
+     * Property backing androidStatusBarBackground.
+     */
+    export const androidStatusBarBackgroundProperty: Property<Page, Color>;
 }

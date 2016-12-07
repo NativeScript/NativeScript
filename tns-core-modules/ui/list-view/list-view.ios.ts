@@ -370,10 +370,10 @@ export class ListView extends ListViewBase {
     }
 
     get [separatorColor.native](): UIColor {
-        return null;
+        return this._ios.separatorColor;
     }
-    set [separatorColor.native](value: Color) {
-        this._ios.separatorColor = value ? value.ios : null;
+    set [separatorColor.native](value: Color | UIColor) {
+        this._ios.separatorColor = value instanceof Color ? value.ios : value;
     }
 
     get [itemTemplatesProperty.native](): KeyedTemplate[] {
@@ -381,13 +381,13 @@ export class ListView extends ListViewBase {
     }
     set [itemTemplatesProperty.native](value: KeyedTemplate[]) {
         this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
-        this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
         if (value) {
             for (let i = 0, length = value.length; i < length; i++) {
                 this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), value[i].key);
             }
             this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);
         }
+
         this.refresh();
     }
 }

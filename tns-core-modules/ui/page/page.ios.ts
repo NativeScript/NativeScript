@@ -1,5 +1,6 @@
-﻿import { PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty,
-    View, layout, Color } from "./page-common";
+﻿import { PageBase, View, layout, Color, 
+    actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty
+ } from "./page-common";
 import { ios as iosApp } from "application";
 import { device } from "platform";
 import { ActionBar } from "ui/action-bar";
@@ -558,5 +559,20 @@ export class Page extends PageBase {
     }
     set [actionBarHiddenProperty.native](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
+    }
+
+    get [statusBarStyleProperty.native](): UIBarStyle {
+        return UIBarStyle.Default;
+    }
+    set [statusBarStyleProperty.native](value: string | UIBarStyle) {
+        let frame = this.frame;
+        if (frame) {
+            let navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
+            if (typeof value === "string") {
+                navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
+            } else {
+                navigationBar.barStyle = value;
+            }
+        }
     }
 }

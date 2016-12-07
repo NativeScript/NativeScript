@@ -1,4 +1,4 @@
-﻿import { ListPickerBase, selectedIndexProperty, itemsProperty } from "./list-picker-common";
+﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty } from "./list-picker-common";
 import { ItemsSource } from "ui/list-picker";
 
 export * from "./list-picker-common";
@@ -120,5 +120,9 @@ export class ListPicker extends ListPickerBase {
             // set this flag later so no native call happens
             this.itemsSet = true;
         }
+    }
+
+    get [colorProperty.native](): number {
+        return 
     }
 }

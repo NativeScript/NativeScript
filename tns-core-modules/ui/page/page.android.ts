@@ -1,17 +1,18 @@
-﻿import { View, PageBase, actionBarHiddenProperty, enableSwipeBackNavigationProperty, Color } from "./page-common";
+﻿import { View, PageBase, Color, actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
+import { device } from "platform";
 import * as trace from "trace";
 
 export * from "./page-common";
 
 const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
-const STATUS_BAR_LIGHT_BCKG = "#F5F5F5";
-const STATUS_BAR_DARK_BCKG = "#66000000";
+const STATUS_BAR_LIGHT_BCKG = -657931;
+const STATUS_BAR_DARK_BCKG = 1711276032;
 
 interface DialogFragmentClass {
-new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
+    new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
 }
 var DialogFragmentClass: DialogFragmentClass;
 
@@ -55,7 +56,7 @@ function ensureDialogFragmentClass() {
             super.onStart();
             if (!this._owner.isLoaded) {
                 this._owner.onLoaded();
-    }
+            }
             this._shownCallback();
         }
 
@@ -160,7 +161,7 @@ export class Page extends PageBase {
 
         super._raiseShowingModallyEvent();
 
-    this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
+        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
     }
 
     protected _hideNativeModalView(parent: Page) {
@@ -181,5 +182,53 @@ export class Page extends PageBase {
     }
     set [actionBarHiddenProperty.native](value: boolean) {
         this.updateActionBar(value);
+    }
+
+    get [statusBarStyleProperty.native](): { color: number, systemUiVisibility: number } {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            let decorView = window.getDecorView();
+
+            return {
+                color: (<any>window).getStatusBarColor(),
+                systemUiVisibility: decorView.getSystemUiVisibility()
+            }
+        }
+
+        return null;
+    }
+    set [statusBarStyleProperty.native](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            let decorView = window.getDecorView();
+
+            if (value === "light") {
+                (<any>window).setStatusBarColor(STATUS_BAR_LIGHT_BCKG);
+                decorView.setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+
+            } else if (value === "dark") {
+                (<any>window).setStatusBarColor(STATUS_BAR_DARK_BCKG);
+                decorView.setSystemUiVisibility(0);
+            } else {
+                (<any>window).setStatusBarColor(value.color);
+                decorView.setSystemUiVisibility(value.systemUiVisibility);
+            }
+        }
+    }
+
+    get [androidStatusBarBackgroundProperty.native](): number {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            return (<any>window).getStatusBarColor();
+        }
+
+        return null;
+    }
+    set [androidStatusBarBackgroundProperty.native](value: number | Color) {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            let color = value instanceof Color ? value.android : value;
+            (<any>window).setStatusBarColor(color);
+        }
     }
 }

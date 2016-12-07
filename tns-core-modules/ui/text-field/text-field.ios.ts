@@ -1,4 +1,4 @@
-﻿import { TextFieldBase, secureProperty, textProperty, hintProperty,  colorProperty, placeholderColorProperty } from "./text-field-common";
+﻿import { TextFieldBase, Color, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty } from "./text-field-common";
 
 export * from "./text-field-common";
 
@@ -175,12 +175,12 @@ export class TextField extends TextFieldBase {
     }
 
     get [placeholderColorProperty.native](): UIColor {
-        return <UIColor>this.nativeView.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null);
+        return null;
     }
-    set [placeholderColorProperty.native](value: UIColor) {
+    set [placeholderColorProperty.native](value: UIColor | Color) {
         let nativeView = this.nativeView;
-        let colorAttibutes = NSMutableDictionary.alloc().init();
-        colorAttibutes.setValueForKey(value, NSForegroundColorAttributeName);
-        nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(nativeView.placeholder, colorAttibutes.copy());
+        let colorAttibutes = NSMutableDictionary.new<string, any>();
+        colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
+        nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(nativeView.placeholder || "", colorAttibutes);
     }
 }

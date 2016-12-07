@@ -35,6 +35,8 @@ export class PageBase extends ContentView implements PageDefinition {
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;
     public backgroundSpanUnderStatusBar: boolean;
+    public statusBarStyle: "light" | "dark";
+    public androidStatusBarBackground: Color;
 
     constructor() {
         super();
@@ -307,3 +309,15 @@ backgroundSpanUnderStatusBarProperty.register(PageBase);
  */
 export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>({ name: "enableSwipeBackNavigation", defaultValue: true, valueConverter: booleanConverter });
 enableSwipeBackNavigationProperty.register(PageBase);
+
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new Property<PageBase, "light" | "dark">({ name: "statusBarStyle" });
+statusBarStyleProperty.register(PageBase);
+
+/**
+ * Property backing androidStatusBarBackground.
+ */
+export const androidStatusBarBackgroundProperty = new Property<PageBase, Color>({ name: "androidStatusBarBackground", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+androidStatusBarBackgroundProperty.register(PageBase);
