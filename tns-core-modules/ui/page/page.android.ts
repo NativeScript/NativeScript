@@ -3,6 +3,8 @@ import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
 import { device } from "platform";
+import { applyNativeSetters } from "ui/core/properties";
+
 import * as trace from "trace";
 
 export * from "./page-common";
@@ -14,7 +16,7 @@ const STATUS_BAR_DARK_BCKG = 1711276032;
 interface DialogFragmentClass {
     new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
 }
-var DialogFragmentClass: DialogFragmentClass;
+let DialogFragmentClass: DialogFragmentClass;
 
 function ensureDialogFragmentClass() {
     if (DialogFragmentClass) {
@@ -32,7 +34,7 @@ function ensureDialogFragmentClass() {
         }
 
         public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
-            var dialog = new android.app.Dialog(this._owner._context);
+            const dialog = new android.app.Dialog(this._owner._context);
             dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
 
             // Hide actionBar and adjust alignment based on _fullscreen value.
@@ -42,7 +44,7 @@ function ensureDialogFragmentClass() {
 
             dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());
 
-            var window = dialog.getWindow();
+            const window = dialog.getWindow();
             window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
 
             if (this._fullscreen) {
@@ -124,7 +126,7 @@ export class Page extends PageBase {
     }
 
     public _onDetached(force?: boolean) {
-        var skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
+        const skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
         if (skipDetached) {
             // Do not detach the context and android reference.
@@ -153,7 +155,7 @@ export class Page extends PageBase {
 
         this._onAttached(parent._context);
         this._isAddedToNativeVisualTree = true;
-        this._syncNativeProperties();
+        applyNativeSetters(this);
 
         ensureDialogFragmentClass();
 

@@ -11,6 +11,8 @@ declare module "ui/page" {
     import styleScope = require("ui/styling/style-scope");
     //@endprivate
 
+    export * from "ui/content-view";
+    
     /**
      * Defines the data for the page navigation events.
      */

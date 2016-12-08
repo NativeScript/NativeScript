@@ -9,9 +9,10 @@ declare module "ui/core/view-base" {
     import { Style } from "ui/styling/style";
     import { isIOS } from "platform";
     import { fromString as gestureFromString } from "ui/gestures";
+    import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
     export {
-        Observable, EventData, 
+        Observable, EventData, KeyframeAnimation,
         Binding, BindingOptions, Bindable, Style, isIOS, gestureFromString
     };
 
@@ -41,10 +42,17 @@ declare module "ui/core/view-base" {
         public android: any;
         public nativeView: any;
         public bindingContext: any;
+
         /**
          * Gets the parent view. This property is read-only.
          */
-        public parent: ViewBase;
+        public readonly parent: ViewBase;
+
+        /**
+         * Gets owner page. This is a read-only property.
+         */
+        public readonly page: ViewBase;
+
         /**
          * Gets the style object associated to this view.
          */
@@ -52,15 +60,50 @@ declare module "ui/core/view-base" {
 
         /**
          * Returns true if visibility is set to 'collapse'.
+         * Readonly property
          */
         public isCollapsed: boolean;
+        public readonly isLoaded: boolean;
+
+        // public onLoaded(): void;
+        // public onUnloaded(): void;
 
         public bind(options: BindingOptions, source: Object): void;
         public unbind(property: string): void;
 
         public requestLayout(): void;
         public eachChild(callback: (child: ViewBase) => boolean): void;
+
+        public _addView(view: ViewBase, atIndex?: number): void;
+        public _removeView(view: ViewBase): void;
+        public _parentChanged(oldParent: ViewBase): void;
+
+        _childrenCount: number;
+
+        _cssState: any /* "ui/styling/style-scope" */;
+        _setCssState(next: any /* "ui/styling/style-scope" */);
+        _registerAnimation(animation: KeyframeAnimation);
+        _unregisterAnimation(animation: KeyframeAnimation);
+        _cancelAllAnimations();
+
+        /**
+         * @protected
+         * @unstable
+         * A widget can call this method to add a matching css pseudo class.
+         */
+        public addPseudoClass(name: string): void;
+
+        /**
+         * @protected
+         * @unstable
+         * A widget can call this method to discard mathing css pseudo class.
+         */
+        public deletePseudoClass(name: string): void;
     }
+
+    export const idProperty: Property<ViewBase, string>;
+    export const classNameProperty: Property<ViewBase, string>;
+    export const bindingContextProperty: InheritedProperty<ViewBase, any>;
 }
 
 declare module "ui/core/properties" {
@@ -80,7 +123,7 @@ declare module "ui/core/properties" {
     }
 
     export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-        coerceValue(T, U): U
+        readonly coerceValue: (t: T, u: U) => U;
     }
 
     export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
@@ -134,4 +177,6 @@ declare module "ui/core/properties" {
         public readonly cssName: string;
         public register(cls: { prototype: T }): void;
     }
+
+    export function applyNativeSetters(view: ViewBase): void;
 }

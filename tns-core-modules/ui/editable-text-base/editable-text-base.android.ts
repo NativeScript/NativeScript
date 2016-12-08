@@ -1,20 +1,11 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, hintProperty, 
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
     textProperty
 } from "./editable-text-base-common";
 
 import { ad } from "utils/utils";
-
-export class EditableTextBase extends common.EditableTextBase {
-    private _android: android.widget.EditText;
-    private _textWatcher: android.text.TextWatcher;
-    private _keyListenerCache: android.text.method.IKeyListener;
-    /* tslint:disable */
-    private _dirtyTextAccumulator: string;
-    /* tslint:enable */
-
 
 @Interfaces([android.text.TextWatcher])
 class TextWatcher implements android.text.TextWatcher {
@@ -61,6 +52,9 @@ class TextWatcher implements android.text.TextWatcher {
     }
 }
 
+//https://github.com/NativeScript/NativeScript/issues/2942
+let dismissKeyboardTimeoutId: number;
+
 @Interfaces([android.view.View.OnFocusChangeListener])
 class FocusChangeListener implements android.view.View.OnFocusChangeListener {
     constructor(private owner: WeakRef<EditableTextBase>) {
@@ -73,13 +67,13 @@ class FocusChangeListener implements android.view.View.OnFocusChangeListener {
             return;
         }
 
-        if (!hasFocus) {
-             if (dismissKeyboardTimeoutId){
-                 // https://github.com/NativeScript/NativeScript/issues/2942
-                 // Don't hide the keyboard since another (or the same) EditText has gained focus.
-                 clearTimeout(dismissKeyboardTimeoutId);
-                 dismissKeyboardTimeoutId = undefined;
-             }
+        if (hasFocus) {
+            if (dismissKeyboardTimeoutId) {
+                // https://github.com/NativeScript/NativeScript/issues/2942
+                // Don't hide the keyboard since another (or the same) EditText has gained focus.
+                clearTimeout(dismissKeyboardTimeoutId);
+                dismissKeyboardTimeoutId = undefined;
+            }
         }
         else {
             if (owner._dirtyTextAccumulator) {
@@ -88,11 +82,11 @@ class FocusChangeListener implements android.view.View.OnFocusChangeListener {
             }
 
             dismissKeyboardTimeoutId = setTimeout(() => {
-                        // https://github.com/NativeScript/NativeScript/issues/2942
-                        // Dismiss the keyboard if focus goes to something different from EditText.
-                        owner.dismissSoftInput();
-                        dismissKeyboardTimeoutId = null;
-                    }, 1);
+                // https://github.com/NativeScript/NativeScript/issues/2942
+                // Dismiss the keyboard if focus goes to something different from EditText.
+                owner.dismissSoftInput();
+                dismissKeyboardTimeoutId = null;
+            }, 1);
         }
     }
 }
@@ -106,24 +100,26 @@ class EditorActionListener implements android.widget.TextView.OnEditorActionList
     public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
         let owner = this.owner.get();
         if (owner) {
-	    if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
-           	actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
-            	actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-            	actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
-            	(event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
-                 // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
-                 // https://github.com/NativeScript/NativeScript/issues/3111
-                 if (textView.getMaxLines() === 1){
-                     owner.dismissSoftInput();
-                 }
-                 owner._onReturnPress();
-             }
-             // If action is ACTION_NEXT then do not close keyboard
-             if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
-               owner._onReturnPress();
-             }
+            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEND ||
+                (event && event.getKeyCode() === android.view.KeyEvent.KEYCODE_ENTER)) {
+                // If it is TextField, close the keyboard. If it is TextView, do not close it since the TextView is multiline
+                // https://github.com/NativeScript/NativeScript/issues/3111
+                if (textView.getMaxLines() === 1) {
+                    owner.dismissSoftInput();
+                }
+                owner._onReturnPress();
+            }
 
-        return false;
+            // If action is ACTION_NEXT then do not close keyboard
+            if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_NEXT) {
+                owner._onReturnPress();
+            }
+
+            return false;
+        }
     }
 }
 

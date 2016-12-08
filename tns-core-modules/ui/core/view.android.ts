@@ -76,15 +76,18 @@ export class View extends ViewCommon {
         }
     }
 
-    public onLoaded() {
+    protected onLoaded() {
         super.onLoaded();
         this.setOnTouchListener();
     }
 
     public onUnloaded() {
-        this._nativeView.setOnTouchListener(null);
-        this.touchListenerIsSet = false;
-        this._unregisterAllAnimations();
+        if (this.touchListenerIsSet) {
+            this._nativeView.setOnTouchListener(null);
+            this.touchListenerIsSet = false;
+        }
+
+        this._cancelAllAnimations();
         super.onUnloaded();
     }
 
@@ -99,12 +102,12 @@ export class View extends ViewCommon {
                 this._nativeView.setClickable(true);
             }
 
-            let touchListener = this.touchListener || new TouchListener(new WeakRef(this));
-            this._nativeView.setOnTouchListener(touchListener);
+            this.touchListener = this.touchListener || new TouchListener(new WeakRef(this));
+            this._nativeView.setOnTouchListener(this.touchListener);
         }
     }
 
-    public _addViewCore(view: View, atIndex?: number) {
+    public _addViewCore(view: ViewCommon, atIndex?: number) {
         if (this._context) {
             view._onAttached(this._context);
         }
@@ -127,6 +130,7 @@ export class View extends ViewCommon {
         if (traceEnabled) {
             traceWrite(`${this}._onAttached(context)`, traceCategories.VisualTreeEvents);
         }
+
         if (this._context === context) {
             return;
         }
@@ -158,6 +162,9 @@ export class View extends ViewCommon {
                 return true;
             }
             this._eachChildView(eachChild);
+        } else if (this._nativeView) {
+            // copy all the locally cached values to the native android widget
+            applyNativeSetters(this);
         }
     }
 

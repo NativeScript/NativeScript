@@ -1,16 +1,12 @@
-﻿import { ProgressBase, valueProperty, maxValueProperty } from "./progress-common";
-import { View, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty } from "ui/core/view";
+﻿import {
+    ProgressBase, View, Color, valueProperty, maxValueProperty,
+    colorProperty, backgroundColorProperty, backgroundInternalProperty
+} from "./progress-common";
 
 export * from "./progress-common";
 
 export class Progress extends ProgressBase {
-    private _ios: UIProgressView;
-
-    constructor() {
-        super();
-
-        this._ios = UIProgressView.new();
-    }
+    private _ios = UIProgressView.new();
 
     get ios(): UIProgressView {
         return this._ios;
@@ -51,11 +47,11 @@ export class Progress extends ProgressBase {
             this._ios.trackTintColor = value;
         }
     }
-    
+
     get [backgroundInternalProperty.native](): UIColor {
         return null;
     }
     set [backgroundInternalProperty.native](value: Color) {
-       //
+        //
     }
 }

@@ -1,4 +1,4 @@
-import { View } from "ui/core/view";
+import { ViewBase } from "ui/core/view-base";
 import { SyntaxTree, Keyframes, parse as parseCss, Rule, Declaration, Node } from "css";
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
 import { KeyframeAnimationInfo, KeyframeAnimation } from "ui/animation/keyframe-animation";
@@ -15,10 +15,10 @@ const animationsSymbol: symbol = Symbol("animations");
 let pattern: RegExp = /('|")(.*?)\1/;
 
 export class CssState {
-    constructor(private view: View, private match: SelectorsMatch<View>) {
+    constructor(private view: ViewBase, private match: SelectorsMatch<ViewBase>) {
     }
 
-    public get changeMap(): ChangeMap<View> {
+    public get changeMap(): ChangeMap<ViewBase> {
         return this.match.changeMap;
     }
 
@@ -160,7 +160,7 @@ export class StyleScope {
         return true;
     }
 
-    public applySelectors(view: View): void {
+    public applySelectors(view: ViewBase): void {
         this.ensureSelectors();
 
         let state = this._selectors.query(view);
@@ -229,7 +229,7 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     return null;
 }
 
-export function applyInlineSyle(view: View, style: string) {
+export function applyInlineSyle(view: ViewBase, style: string) {
     try {
         let syntaxTree = parseCss("local { " + style + " }", undefined);
         let filteredDeclarations = <Declaration[]>(<Rule[]>syntaxTree.stylesheet.rules.filter(isRule))[0].declarations.filter(isDeclaration);
@@ -249,7 +249,7 @@ function isKeyframe(node: Node): node is Keyframes {
     return node.type === "keyframes";
 }
 
-function applyDescriptors(view: View, ruleset: RuleSet): void {
+function applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
     let style = view.style;
     ruleset.declarations.forEach(d => {
         let name = `css-${d.property}`;
@@ -301,7 +301,7 @@ function applyDescriptors(view: View, ruleset: RuleSet): void {
     }
 }
 
-function applyInlineStyle(view: View, declarations: Declaration[]): void {
+function applyInlineStyle(view: ViewBase, declarations: Declaration[]): void {
     let style = view.style;
     declarations.forEach(d => {
         let name = d.property;

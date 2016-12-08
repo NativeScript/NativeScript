@@ -2,8 +2,7 @@
  * Contains the Frame class, which represents the logical View unit that is responsible for navigation within an application.
  */
 declare module "ui/frame" {
-    import { View, Observable, EventData  } from "ui/core/view";
-    import { Page } from "ui/page";
+    import { Page, View, Observable, EventData } from "ui/page";
     import { Transition } from "ui/transition";
 
     /**

@@ -46,10 +46,10 @@ export class PageBase extends ContentView implements PageDefinition {
         this.style[backgroundColorProperty.cssName] = new Color("white");
     }
 
-    public onLoaded() {
-        this._applyCss();
-        super.onLoaded();
-    }
+    // public onLoaded() {
+    //     this._applyCss();
+    //     super.onLoaded();
+    // }
 
 
     get navigationContext(): any {

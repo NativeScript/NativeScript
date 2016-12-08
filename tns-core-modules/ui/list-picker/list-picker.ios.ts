@@ -1,4 +1,4 @@
-﻿import { ListPickerBase, selectedIndexProperty, itemsProperty } from "./list-picker-common";
+﻿import { ListPickerBase, Color, selectedIndexProperty, itemsProperty, backgroundColorProperty, colorProperty } from "./list-picker-common";
 import { ItemsSource } from "ui/list-picker";
 
 export * from "./list-picker-common";
@@ -30,24 +30,12 @@ export class ListPicker extends ListPickerBase {
         return this._ios;
     }
 
-    private updateSelectedValue(): void {
-        let selectedIndex = this.selectedIndex;
-        if (selectedIndex >= 0) {
-            this.ios.selectRowInComponentAnimated(selectedIndex, 0, false);
-        }
-    }
-
-    private onItemsPropertyChanged(items: any[] | ItemsSource) {
-        this.ios.reloadAllComponents();
-        this.updateSelectedValue();
-    }
-
     get [selectedIndexProperty.native](): number {
         return -1;
     }
     set [selectedIndexProperty.native](value: number) {
-        if (this.itemsSet) {
-            this.updateSelectedValue();
+        if (value >= 0) {
+            this.ios.selectRowInComponentAnimated(value, 0, false);
         }
     }
 
@@ -55,17 +43,21 @@ export class ListPicker extends ListPickerBase {
         return null;
     }
     set [itemsProperty.native](value: any[] | ItemsSource) {
-        this.onItemsPropertyChanged(value);
-        // items are cleared - set selectedIndex to -1
-        if (!value) {
-            this.itemsSet = false;
-            this.selectedIndex = -1;
-        } else if (this.selectedIndex < 0) {
-            // items are set and selectedIndex is set - update maxValue & value.
-            this.selectedIndex = 0;
-            // set this flag later so no native call happens
-            this.itemsSet = true;
-        }
+        this.ios.reloadAllComponents();
+    }
+
+    get [backgroundColorProperty.native](): UIColor {
+        return this._ios.backgroundColor;
+    }
+    set [backgroundColorProperty.native](value: UIColor | Color) {
+        this._ios.backgroundColor = value instanceof Color ? value.ios : value;
+    }
+
+    get [colorProperty.native](): UIColor {
+        return this._ios.tintColor;
+    }
+    set [colorProperty.native](value: UIColor | Color) {
+        this._ios.tintColor = value instanceof Color ? value.ios : value;
     }
 }
 
@@ -117,51 +109,3 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
         }
     }
 }
-
-export class ListPickerStyler implements Styler {
-    // background-color
-    private static setBackgroundColorProperty(view: View, newValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.backgroundColor = newValue;
-    }
-
-    private static resetBackgroundColorProperty(view: View, nativeValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.backgroundColor = nativeValue;
-    }
-
-    private static getBackgroundColorProperty(view: View): any {
-        var picker = <UIPickerView>view._nativeView;
-        return picker.backgroundColor;
-    }
-    
-    // color
-    private static setColorProperty(view: View, newValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.tintColor = newValue;
-    }
-
-    private static resetColorProperty(view: View, nativeValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.tintColor = nativeValue;
-    }
-
-    private static getColorProperty(view: View): any {
-        var picker = <UIPickerView>view._nativeView;
-        return picker.tintColor;
-    }
-
-    public static registerHandlers() {
-        registerHandler(backgroundColorProperty, new StylePropertyChangedHandler(
-            ListPickerStyler.setBackgroundColorProperty,
-            ListPickerStyler.resetBackgroundColorProperty,
-            ListPickerStyler.getBackgroundColorProperty), "ListPicker");
-
-        registerHandler(colorProperty, new StylePropertyChangedHandler(
-            ListPickerStyler.setColorProperty,
-            ListPickerStyler.resetColorProperty,
-            ListPickerStyler.getColorProperty), "ListPicker");
-    }
-}
-
-ListPickerStyler.registerHandlers();

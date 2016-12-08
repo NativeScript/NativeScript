@@ -1,11 +1,11 @@
 import { View } from "./background-common";
 import { isNullOrUndefined, isFunction, getClass } from "utils/types";
 import { CacheLayerType } from "utils/utils";
-import { Button } from "ui/button";
 import cssValue = require("css-value");
 
 export * from "./background-common"
 
+// TODO: Change this implementation to use 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
     let SDK: number;
@@ -40,25 +40,25 @@ export module ad {
         let cache = <CacheLayerType>v._nativeView;
 
         if (isSetColorFilterOnlyWidget(nativeView) 
-        && !types.isNullOrUndefined(backgroundDrawable) 
-        && types.isFunction(backgroundDrawable.setColorFilter) 
+        && !isNullOrUndefined(backgroundDrawable) 
+        && isFunction(backgroundDrawable.setColorFilter) 
         && !background.hasBorderWidth()
         && !background.hasBorderRadius()
         && !background.clipPath 
-        && types.isNullOrUndefined(background.image) 
-        && !types.isNullOrUndefined(background.color)) {
+        && isNullOrUndefined(background.image) 
+        && !isNullOrUndefined(background.color)) {
             let backgroundColor = (<any>backgroundDrawable).backgroundColor = background.color.android;
             backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
             (<any>backgroundDrawable).backgroundColor = backgroundColor;
         }
         else if (!background.isEmpty()) {
             if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
-                let viewClass = types.getClass(v);
+                let viewClass = getClass(v);
                 if (!isSetColorFilterOnlyWidget(nativeView) && !_defaultBackgrounds.has(viewClass)) {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
                 
-                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(1, v.toString());
+                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(v.toString());
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
 
                 if (getSDK() >= 16) {
@@ -80,7 +80,7 @@ export module ad {
         }
         else {
             // reset the value with the default native value
-            if (v instanceof Button) {
+            if (nativeView instanceof android.widget.Button) {
                 let nativeButton = new android.widget.Button(nativeView.getContext());
 
                 if (getSDK() >= 16) {

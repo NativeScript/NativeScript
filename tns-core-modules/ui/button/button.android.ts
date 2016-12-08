@@ -1,5 +1,7 @@
-﻿import { ButtonBase, textProperty, formattedTextProperty } from "./button-common";
-import { FormattedString } from "text/formatted-string";
+﻿import {
+    ButtonBase, textProperty, formattedTextProperty, TouchGestureEventData, FormattedString, GestureTypes, TouchAction,
+    PseudoClassHandler
+} from "./button-common";
 
 export * from "./button-common";
 
@@ -17,32 +19,11 @@ class ClickListener implements android.view.View.OnClickListener {
     }
 }
 
-@Interfaces([android.view.View.OnTouchListener])
-class TouchListener implements android.view.View.OnTouchListener {
-    constructor(public owner: WeakRef<Button>) { 
-        return global.__native(this);
-    }
-
-    public onTouch(v: android.view.View, event: android.view.MotionEvent): boolean {
-        let btn = this.owner.get();
-        if (!btn) {
-            return false;
-        }
-
-        if (event.getAction() === 0) { // down
-            btn._goToVisualState("highlighted");
-        }
-        else if (event.getAction() === 1) { // up
-            btn._goToVisualState("normal");
-        }
-        return false;
-    }
-}
-
 export class Button extends ButtonBase {
     nativeView: android.widget.Button;
-    private _isPressed: boolean = false;
+    private _isPressed: boolean;
     private _transformationMethod;
+    private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     get android(): android.widget.Button {
         return this.nativeView;
@@ -52,7 +33,6 @@ export class Button extends ButtonBase {
         let weakRef = new WeakRef(this);
         this.nativeView = new android.widget.Button(this._context);
         this.nativeView.setOnClickListener(new ClickListener(weakRef));
-        this.nativeView.setOnTouchListener(new TouchListener(weakRef));
     }
 
     public _setFormattedTextPropertyToNative(value: FormattedString) {
@@ -70,13 +50,12 @@ export class Button extends ButtonBase {
 
         this.nativeView.setText(newText);
     }
-}
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
     _updateHandler(subscribe: boolean) {
         if (subscribe) {
             this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
-                switch(args.action) {
+                switch (args.action) {
                     case TouchAction.up:
                         this._goToVisualState("normal");
                         break;
@@ -91,4 +70,3 @@ export class Button extends ButtonBase {
         }
     }
 }
-

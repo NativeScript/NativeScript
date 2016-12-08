@@ -1,7 +1,7 @@
 ﻿import types = require("utils/types");
 import { ProxyViewContainer as ProxyViewContainerDefinition } from "ui/proxy-view-container";
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
 import { LayoutBase, View } from "ui/layouts/layout-base";
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
 /**
  * Proxy view container that adds all its native children directly to the parent. 
  * To be used as a logical grouping container of views.
@@ -50,7 +50,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
     public _eachLayoutView(callback: (View) => void): void {
         this._eachChildView((cv) => {
-            if (cv._isVisible) {
+            if (!cv.isCollapsed) {
                 cv._eachLayoutView(callback);
             }
             return true;

@@ -133,10 +133,10 @@ export class Style extends Observable implements StyleDefinition {
     //     }
     // }
 
-    // public _resetCssValues() {
-    //     this.view._unregisterAllAnimations();
-    //     this._resetValues(ValueSource.Css);
-    // }
+    public _resetCssValues() {
+        this.view._cancelAllAnimations();
+        this._resetValues(ValueSource.Css);
+    }
 
     // public _resetLocalValues() {
     //     this._resetValues(ValueSource.Local);
@@ -230,11 +230,11 @@ export class Style extends Observable implements StyleDefinition {
     //             shouldReset = (newValue === property.defaultValue);
     //         }
 
-    public _updateTextDecoration() {
-        if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
-            this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
-        }
-    }
+    // public _updateTextDecoration() {
+    //     if (this._getValue(textDecorationProperty) !== enums.TextDecoration.none) {
+    //         this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
+    //     }
+    // }
 
     //         this._view._onStylePropertyChanged(property);
     //     }

@@ -1,14 +1,12 @@
 import { View as ViewDefinition, Point, Size } from "ui/core/view";
-import { CssState, StyleScope, applyInlineSyle } from "ui/styling/style-scope";
 import { Color } from "color";
 import { Animation, AnimationPromise } from "ui/animation";
-import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 import { Source } from "utils/debug";
 import { Background } from "ui/styling/background";
 import {
-    ViewBase, getEventOrGestureName, Observable, EventData, Style, propagateInheritedProperties, clearInheritedProperties,
+    ViewBase, getEventOrGestureName, Observable, EventData, Style,
     Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty,
-    gestureFromString, isIOS
+    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont } from "ui/styling/font";
@@ -16,15 +14,14 @@ import { fontSizeConverter } from "../styling/converters";
 
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
-
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent } from "trace";
 import { isDataURI, isFileOrResourcePath } from "utils/utils";
 
 export * from "./view-base";
 
 export {
-    Color, GestureTypes, GesturesObserver, GestureEventData, Animation, AnimationPromise, KeyframeAnimation,
-    Background, Font, traceEnabled, traceWrite, traceCategories, traceNotifyEvent
+    GestureTypes, GesturesObserver, GestureEventData,
+    Animation, AnimationPromise, 
+    Background, Font, Color
 }
 
 // registerSpecialProperty("class", (instance: ViewDefinition, propertyValue: string) => {
@@ -192,22 +189,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     private _parent: ViewCommon;
 
-    private _visualState: string;
-    private _isLoaded: boolean;
+    
     private _isLayoutValid: boolean;
     private _cssType: string;
 
     private _updatingInheritedProperties: boolean;
-    private _registeredAnimations: Array<KeyframeAnimation>;
+
 
     public _domId: number;
     public _isAddedToNativeVisualTree: boolean;
     public _gestureObservers = {};
 
-    public cssClasses: Set<string> = new Set();
-    public cssPseudoClasses: Set<string> = new Set();
-
-    public _cssState: CssState;
     public parent: ViewCommon;
 
     constructor() {
@@ -560,22 +552,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     //END Style property shortcuts
 
-
-    get page(): ViewDefinition {
-        if (this.parent) {
-            return this.parent.page;
-        }
-
-        return null;
-    }
-
-    public id: string;
     public automationText: string;
     public originX: number;
     public originY: number;
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
-    public className: string;
+
 
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
@@ -590,49 +572,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     get isLayoutRequired(): boolean {
         return true;
-    }
-
-    get isLoaded(): boolean {
-        return this._isLoaded;
-    }
-
-    public onLoaded() {
-        this._isLoaded = true;
-        this._loadEachChildView();
-        this._applyStyleFromScope();
-        this._emit("loaded");
-    }
-
-    public _loadEachChildView() {
-        if (this._childrenCount > 0) {
-            // iterate all children and call onLoaded on them first
-            let eachChild = function (child: ViewCommon): boolean {
-                child.onLoaded();
-                return true;
-            }
-            this._eachChildView(eachChild);
-        }
-    }
-
-    public onUnloaded() {
-        this._setCssState(null);
-
-        this._unloadEachChildView();
-
-        this._isLoaded = false;
-        this._emit("unloaded");
-    }
-
-    public _unloadEachChildView() {
-        if (this._childrenCount > 0) {
-            this._eachChildView((child: ViewCommon) => {
-                if (child.isLoaded) {
-                    child.onUnloaded();
-                }
-
-                return true;
-            });
-        }
     }
 
     // public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
@@ -720,44 +659,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public abstract onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void;
     public abstract onLayout(left: number, top: number, right: number, bottom: number): void;
     public abstract layoutNativeView(left: number, top: number, right: number, bottom: number): void;
-
-    private pseudoClassAliases = {
-        'highlighted': [
-            'active',
-            'pressed'
-        ]
-    };
-
-    private getAllAliasedStates(name: string): Array<string> {
-        let allStates = [];
-        allStates.push(name);
-        if (name in this.pseudoClassAliases) {
-            for (let i = 0; i < this.pseudoClassAliases[name].length; i++) {
-                allStates.push(this.pseudoClassAliases[name][i]);
-            }
-        }
-        return allStates;
-    }
-
-    public addPseudoClass(name: string): void {
-        let allStates = this.getAllAliasedStates(name);
-        for (let i = 0; i < allStates.length; i++) {
-            if (!this.cssPseudoClasses.has(allStates[i])) {
-                this.cssPseudoClasses.add(allStates[i]);
-                this.notifyPseudoClassChanged(allStates[i]);
-            }
-        }
-    }
-
-    public deletePseudoClass(name: string): void {
-        let allStates = this.getAllAliasedStates(name);
-        for (let i = 0; i < allStates.length; i++) {
-            if (this.cssPseudoClasses.has(allStates[i])) {
-                this.cssPseudoClasses.delete(allStates[i]);
-                this.notifyPseudoClassChanged(allStates[i]);
-            }
-        }
-    }
 
     public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number {
         let result = size;
@@ -975,26 +876,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return { boundsChanged, sizeChanged };
     }
 
-    private _applyStyleFromScope() {
-        let rootPage = this.page;
-        if (!rootPage || !rootPage.isLoaded) {
-            return;
-        }
-        let scope: StyleScope = (<any>rootPage)._getStyleScope();
-        scope.applySelectors(this);
-    }
-
-    private _applyInlineStyle(inlineStyle) {
-        if (typeof inlineStyle === "string") {
-            try {
-                // this.style._beginUpdate();
-                applyInlineSyle(this, inlineStyle);
-            } finally {
-                // this.style._endUpdate();
-            }
-        }
-    }
-
     // TODO: We need to implement some kind of build step that includes these members only when building for Android
     //@android
     public _context: android.content.Context;
@@ -1019,9 +900,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     // TODO: We need to implement some kind of build step that includes these members only when building for iOS
 
     //@endios
-    get _childrenCount(): number {
-        return 0;
-    }
+
 
     public _eachChildView(callback: (view: ViewCommon) => boolean) {
         //
@@ -1048,112 +927,38 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     /**
-     * Core logic for adding a child view to this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
-     * // TODO: Think whether we need the base Layout routine.
-     */
-    public _addView(view: ViewDefinition, atIndex?: number) {
-        if (traceEnabled) {
-            traceWrite(`${this}._addView(${view}, ${atIndex})`, traceCategories.ViewHierarchy);
-        }
-
-        if (!view) {
-            throw new Error("Expecting a valid View instance.");
-        }
-        if (!(view instanceof ViewBase)) {
-            throw new Error(view + " is not a valid View instance.");
-        }
-        if (view.parent) {
-            throw new Error("View already has a parent. View: " + view + " Parent: " + view.parent);
-        }
-
-        view.parent = this;
-        this._addViewCore(view, atIndex);
-        view._parentChanged(null);
-    }
-
-    /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _addViewCore(view: ViewDefinition, atIndex?: number) {
-        this._propagateInheritableProperties(view);
-
+    public _addViewCore(view: ViewCommon, atIndex?: number) {
         if (!view._isAddedToNativeVisualTree) {
             let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
             view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
         }
 
-        // TODO: Discuss this.
-        if (this._isLoaded) {
-            view.onLoaded();
-        }
-    }
-
-    public _propagateInheritableProperties(view: ViewDefinition) {
-        propagateInheritedProperties(this);
-        // view._inheritProperties(this);
-        // view.style._inheritStyleProperties(this);
-    }
-
-    // public _inheritProperties(parentView: ViewDefinition) {
-    //     parentView._eachSetProperty((property) => {
-    //         if (!(property instanceof styling.Property) && property.inheritable) {
-    //             let baseValue = parentView._getValue(property);
-    //             this._setValue(property, baseValue, ValueSource.Inherited);
-    //         }
-    //         return true;
-    //     });
-    // }
-
-    /**
-     * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
-     */
-    public _removeView(view: ViewDefinition) {
-        if (traceEnabled) {
-            traceWrite(`${this}._removeView(${view})`, traceCategories.ViewHierarchy);
-        }
-        if (view.parent !== this) {
-            throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
-        }
-
-        this._removeViewCore(view);
-        view.parent = undefined;
-        view._parentChanged(this);
+        super._addViewCore(view, atIndex);
     }
 
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _removeViewCore(view: ViewDefinition) {
+    public _removeViewCore(view: ViewCommon) {
         // TODO: Change type from ViewCommon to ViewBase. Probably this 
         // method will need to go to ViewBase class.
         // Remove the view from the native visual scene first
         this._removeViewFromNativeVisualTree(view);
 
-        // TODO: Discuss this.
-        if (view.isLoaded) {
-            view.onUnloaded();
-        }
-
-        // view.unsetInheritedProperties();
+        super._removeViewCore(view);
     }
 
-    public unsetInheritedProperties(): void {
-        // this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
-        // this._eachSetProperty((property) => {
-        //     if (!(property instanceof styling.Property) && property.inheritable) {
-        //         this._resetValue(property, ValueSource.Inherited);
-        //     }
-        //     return true;
-        // });
-    }
-
-    public _parentChanged(oldParent: ViewDefinition): void {
-        //Overridden
-        if (oldParent) {
-            // Move these method in property class.
-            clearInheritedProperties(this);
-        }
-    }
+    // public unsetInheritedProperties(): void {
+    //     // this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
+    //     // this._eachSetProperty((property) => {
+    //     //     if (!(property instanceof styling.Property) && property.inheritable) {
+    //     //         this._resetValue(property, ValueSource.Inherited);
+    //     //     }
+    //     //     return true;
+    //     // });
+    // }
 
     /**
      * Method is intended to be overridden by inheritors and used as "protected".
@@ -1171,36 +976,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
      */
     public _removeViewFromNativeVisualTree(view: ViewDefinition) {
         view._isAddedToNativeVisualTree = false;
-    }
-
-    public _goToVisualState(state: string) {
-        if (traceEnabled) {
-            traceWrite(this + " going to state: " + state, traceCategories.Style);
-        }
-        if (state === this._visualState) {
-            return;
-        }
-
-        this.deletePseudoClass(this._visualState);
-        this._visualState = state;
-        this.addPseudoClass(state);
-    }
-
-    public _applyXmlAttribute(attribute, value): boolean {
-        if (attribute === "style") {
-            this._applyInlineStyle(value);
-            return true;
-        }
-
-        return false;
-    }
-
-    public setInlineStyle(style: string): void {
-        if (typeof style !== "string") {
-            throw new Error("Parameter should be valid CSS string!");
-        }
-
-        this._applyInlineStyle(style);
     }
 
     public _updateLayout() {
@@ -1253,30 +1028,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return new Animation([animation]);
     }
 
-    public _registerAnimation(animation: KeyframeAnimation) {
-        if (this._registeredAnimations === undefined) {
-            this._registeredAnimations = new Array<KeyframeAnimation>();
-        }
-        this._registeredAnimations.push(animation);
-    }
-
-    public _unregisterAnimation(animation: KeyframeAnimation) {
-        if (this._registeredAnimations) {
-            let index = this._registeredAnimations.indexOf(animation);
-            if (index >= 0) {
-                this._registeredAnimations.splice(index, 1);
-            }
-        }
-    }
-
-    public _unregisterAllAnimations() {
-        if (this._registeredAnimations) {
-            for (let animation of this._registeredAnimations) {
-                animation.cancel();
-            }
-        }
-    }
-
     public toString(): string {
         let str = this.typeName;
         if (this.id) {
@@ -1304,88 +1055,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     //     // Check for a valid _nativeView instance
     //     return !!this._nativeView;
     // }
-
-    private notifyPseudoClassChanged(pseudoClass: string): void {
-        this.notify({ eventName: ":" + pseudoClass, object: this });
-    }
-
-    // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
-    _setCssState(next: CssState): void {
-        const previous = this._cssState;
-        this._cssState = next;
-
-        if (!this._invalidateCssHandler) {
-            this._invalidateCssHandler = () => {
-                if (this._invalidateCssHandlerSuspended) {
-                    return;
-                }
-                this.applyCssState();
-            };
-        }
-
-        try {
-            this._invalidateCssHandlerSuspended = true;
-
-            if (next) {
-                next.changeMap.forEach((changes, view) => {
-                    if (changes.attributes) {
-                        changes.attributes.forEach(attribute => {
-                            view.addEventListener(attribute + "Change", this._invalidateCssHandler)
-                        });
-                    }
-                    if (changes.pseudoClasses) {
-                        changes.pseudoClasses.forEach(pseudoClass => {
-                            let eventName = ":" + pseudoClass;
-                            view.addEventListener(":" + pseudoClass, this._invalidateCssHandler);
-                            if (view[eventName]) {
-                                view[eventName](+1);
-                            }
-                        });
-                    }
-                });
-            }
-
-            if (previous) {
-                previous.changeMap.forEach((changes, view) => {
-                    if (changes.attributes) {
-                        changes.attributes.forEach(attribute => {
-                            view.removeEventListener("onPropertyChanged:" + attribute, this._invalidateCssHandler)
-                        });
-                    }
-                    if (changes.pseudoClasses) {
-                        changes.pseudoClasses.forEach(pseudoClass => {
-                            let eventName = ":" + pseudoClass;
-                            view.removeEventListener(eventName, this._invalidateCssHandler)
-                            if (view[eventName]) {
-                                view[eventName](-1);
-                            }
-                        });
-                    }
-                });
-            }
-
-        } finally {
-            this._invalidateCssHandlerSuspended = false;
-        }
-
-        this.applyCssState();
-    }
-
-    /**
-     * Notify that some attributes or pseudo classes that may affect the current CssState had changed.
-     */
-    private _invalidateCssHandler;
-    private _invalidateCssHandlerSuspended: boolean;
-
-    private applyCssState(): void {
-        if (!this._cssState) {
-            return;
-        }
-
-        // this.style._beginUpdate();
-        this._cssState.apply();
-        // this.style._endUpdate();
-    }
 }
 
 function getLengthEffectiveValue(density: number, param: Length): number {
@@ -1512,39 +1181,6 @@ export namespace Length {
     }
 }
 
-function onCssClassPropertyChanged(view: ViewCommon, oldValue: string, newValue: string) {
-    let classes = view.cssClasses;
-    classes.clear();
-    if (typeof newValue === "string") {
-        newValue.split(" ").forEach(c => classes.add(c));
-    }
-}
-
-export const classNameProperty = new Property<ViewCommon, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
-classNameProperty.register(ViewCommon);
-
-function resetStyles(view: ViewCommon): void {
-    // view.style._resetCssValues();
-    // view._applyStyleFromScope();
-    view._eachChildView((child) => {
-        // TODO.. Check old implementation....
-        resetStyles(child);
-        return true;
-    });
-}
-
-export const idProperty = new Property<ViewCommon, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
-idProperty.register(ViewCommon);
-
-export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
-automationTextProperty.register(ViewCommon);
-
-export const originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
-originXProperty.register(ViewCommon);
-
-export const originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
-originYProperty.register(ViewCommon);
-
 export function booleanConverter(v: string): boolean {
     let lowercase = (v + '').toLowerCase();
     if (lowercase === "true") {
@@ -1555,6 +1191,15 @@ export function booleanConverter(v: string): boolean {
 
     throw new Error(`Invalid boolean: ${v}`);
 }
+
+export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });
+automationTextProperty.register(ViewCommon);
+
+export const originXProperty = new Property<ViewCommon, number>({ name: "originX", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
+originXProperty.register(ViewCommon);
+
+export const originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
+originYProperty.register(ViewCommon);
 
 export const isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true, valueConverter: booleanConverter });
 isEnabledProperty.register(ViewCommon);

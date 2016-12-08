@@ -3,14 +3,11 @@
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
 } from "ui/frame";
 import { FrameBase, NavigationContext, stack, goBack } from "./frame-common";
-import { Page } from "ui/page";
-import { View } from "ui/core/view";
-import { Observable } from "data/observable";
+import { Page, View, Observable } from "ui/page";
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
 import * as transitionModule from "ui/transition";
 import * as trace from "trace";
 import * as application from "application";
-import * as types from "utils/types";
 
 export * from "./frame-common";
 

@@ -1,18 +1,17 @@
 declare module "ui/core/view" {
-    import { GestureTypes, GesturesObserver, GestureEventData } from "ui/gestures";
+    import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
-    import { KeyframeAnimation } from "ui/animation/keyframe-animation";
     import {
-        ViewBase, Property, CssProperty, InheritedCssProperty, ShorthandProperty, Style,
-        BindingOptions, Observable, EventData,
+        ViewBase, Property, CssProperty, InheritedCssProperty, Style,
+        BindingOptions, Observable, EventData
     } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
     import { Font } from "ui/styling/font";
     import { Color } from "color";
 
     export {
-        GestureTypes, GesturesObserver, GestureEventData,
-        Animation, AnimationDefinition, AnimationPromise, KeyframeAnimation,
+        GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction,
+        Animation, AnimationDefinition, AnimationPromise,
         Background, Font, Color
     }
 
@@ -357,16 +356,6 @@ declare module "ui/core/view" {
         cssPseudoClasses: Set<string>;
 
         /**
-         * Gets the parent view. This property is read-only.
-         */
-        public parent: View;
-
-        /**
-         * Gets owner page. This is a read-only property.
-         */
-        page: View;
-
-        /**
          * This is called to find out how big a view should be. The parent supplies constraint information in the width and height parameters.
          * The actual measurement work of a view is performed in onMeasure(int, int), called by this method. Therefore, only onMeasure(int, int) can and must be overridden by subclasses.
          * @param widthMeasureSpec	Horizontal space requirements as imposed by the parent
@@ -550,29 +539,9 @@ declare module "ui/core/view" {
          */
         public getActualSize(): Size;
 
-        /**
-         * @protected
-         * @unstable
-         * A widget can call this method to add a matching css pseudo class.
-         */
-        public addPseudoClass(name: string): void;
-
-        /**
-         * @protected
-         * @unstable
-         * A widget can call this method to discard mathing css pseudo class.
-         */
-        public deletePseudoClass(name: string): void;
-
         // Lifecycle events
-        onLoaded(): void;
-        onUnloaded(): void;
-        isLoaded: boolean;
 
-        _addView(view: View, atIndex?: number);
-        _propagateInheritableProperties(view: View);
-        // _inheritProperties(parentView: View);
-        _removeView(view: View);
+       
         _context: any /* android.content.Context */;
 
         _childIndexToNativeChildIndex(index?: number): number;
@@ -595,17 +564,10 @@ declare module "ui/core/view" {
 
         isCollapsed: boolean;
         isLayoutRequired: boolean;
-        _parentChanged(oldParent: View): void;
+       
         _gestureObservers: any;
         // _isInheritedChange(): boolean;
         _domId: number;
-
-        _cssState: any /* "ui/styling/style-scope" */;
-        _setCssState(next: any /* "ui/styling/style-scope" */);
-
-        _registerAnimation(animation: KeyframeAnimation);
-        _unregisterAnimation(animation: KeyframeAnimation);
-        _unregisterAllAnimations();
 
         _isAddedToNativeVisualTree: boolean;
 
@@ -740,8 +702,6 @@ declare module "ui/core/view" {
         export function measureSpecToString(measureSpec: number): string;
     }
 
-    export const classNameProperty: Property<View, string>;
-    export const idProperty: Property<View, string>;
     export const automationTextProperty: Property<View, string>;
     export const originXProperty: Property<View, number>;
     export const originYProperty: Property<View, number>;

@@ -1,11 +1,8 @@
 ﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from "ui/gestures";
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
-import { View } from "ui/core/view";
-import { EventData } from "data/observable";
+import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection,  View, EventData } from "./gestures-common";
 import * as trace from "trace";
-import * as utils from "utils/utils";
-import types = require("utils/types");
-import getter = utils.ios.getter;
+import { ios } from "utils/utils";
+import getter = ios.getter;
 
 export * from "./gestures-common";
 
@@ -451,7 +448,7 @@ class TouchGestureEventData implements TouchGestureEventData {
     }
 
     private getMainPointer(): UITouch {
-        if (types.isUndefined(this._mainPointer)) {
+        if (this._mainPointer === undefined) {
             this._mainPointer = this.ios.touches.anyObject();
         }
         return this._mainPointer;

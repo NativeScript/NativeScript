@@ -24,7 +24,7 @@ export class TimePicker extends TimePickerBase {
 
     public _createUI() {
         this.nativeView = new android.widget.TimePicker(this._context);
-        this._listener = new TimeChangedListener(new WeakRef(this));
+        this._listener = this._listener || new TimeChangedListener(new WeakRef(this));
         this.nativeView.setOnTimeChangedListener(this._listener);
 
         let c = java.util.Calendar.getInstance();

@@ -89,7 +89,7 @@ export class Image extends ImageBase {
         let owner = new WeakRef<Image>(this);
         this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
         
-        this.imageSource = unsetValue;
+        this.imageSource = <any>unsetValue;
         if (typeof value === "string") {
             value = value.trim();
             this.isLoading = true;
@@ -98,8 +98,8 @@ export class Image extends ImageBase {
                 // TODO: Check with runtime what should we do in case of base64 string.
                 super._createImageSourceFromSrc();
             }
-            else if (imageSource.isFileOrResourcePath(value)) {
-                if (value.indexOf(utils.RESOURCE_PREFIX) === 0) {
+            else if (isFileOrResourcePath(value)) {
+                if (value.indexOf(RESOURCE_PREFIX) === 0) {
                     imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async, this._imageLoadedListener);
                 }
                 else {

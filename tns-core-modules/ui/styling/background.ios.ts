@@ -40,11 +40,6 @@ export module ios {
             (<CAShapeLayer>nativeView["leftBorderLayer"]).removeFromSuperlayer();
         }
 
-        let background = <common.Background>view.style._getValue(style.backgroundInternalProperty);
-        if (!background || background.isEmpty()) {
-            return undefined;
-        }
-
         // Clip-path
         if (background.clipPath) {
             drawClipPath(nativeView, background);
@@ -297,8 +292,8 @@ function drawClipPath(nativeView: UIView, background: Background) {
         }
 
         let top = cssValueToDevicePixels(topString, bounds.bottom);
-        let right = cssValueToDevicePixels("100%", bounds.right) - common.cssValueToDevicePixels(rightString, bounds.right);
-        let bottom = cssValueToDevicePixels("100%", bounds.bottom) - common.cssValueToDevicePixels(bottomString, bounds.bottom);
+        let right = cssValueToDevicePixels("100%", bounds.right) - cssValueToDevicePixels(rightString, bounds.right);
+        let bottom = cssValueToDevicePixels("100%", bounds.bottom) - cssValueToDevicePixels(bottomString, bounds.bottom);
         let left = cssValueToDevicePixels(leftString, bounds.right);
 
         path = UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;

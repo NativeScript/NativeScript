@@ -1,7 +1,6 @@
 ﻿import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from "ui/frame";
 import { FrameBase } from "./frame-common";
-import { Page } from "ui/page";
-import { View } from "ui/core/view";
+import { Page, View } from "ui/page";
 
 import * as transitionModule from "ui/transition";
 import * as trace from "trace";

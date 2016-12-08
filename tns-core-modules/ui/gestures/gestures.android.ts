@@ -1,7 +1,5 @@
 ﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
-import { View, layout } from "ui/core/view";
-import { EventData } from "data/observable";
+import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, View, layout, EventData } from "./gestures-common";
 import * as trace from "trace";
 
 export * from "./gestures-common";

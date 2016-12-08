@@ -4,15 +4,14 @@ import { Button } from "ui/button";
 import { TextField } from "ui/text-field";
 import { Label } from "ui/label";
 import { View, Color } from "ui/core/view";
-import * as types from "utils/types";
 
-export let STRING = "string",
-    PROMPT = "Prompt",
-    CONFIRM = "Confirm",
-    ALERT = "Alert",
-    LOGIN = "Login",
-    OK = "OK",
-    CANCEL = "Cancel";
+export const STRING = "string";
+export const PROMPT = "Prompt";
+export const CONFIRM = "Confirm";
+export const ALERT = "Alert";
+export const LOGIN = "Login";
+export const OK = "OK";
+export const CANCEL = "Cancel";
 
 /**
  * Defines the input type for prompt dialog.
@@ -65,7 +64,7 @@ let buttonBackgroundColor: Color;
 // NOTE: This will fail if app.css is changed.
 export function getButtonBackgroundColor(): Color {
     if (!buttonBackgroundColor) {
-        let btn = new button.Button();
+        let btn = new Button();
         applySelectors(btn);
         buttonBackgroundColor = btn.backgroundColor;
         btn.onUnloaded();
@@ -100,5 +99,5 @@ export function getLabelColor(): Color {
 }
 
 export function isDialogOptions(arg): boolean {
-    return !types.isNullOrUndefined(arg) && (arg.message || arg.title);
+    return arg && (arg.message || arg.title);
 }

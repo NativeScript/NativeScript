@@ -9,12 +9,14 @@ const FONTS_BASE_PATH = "/fonts/";
 const typefaceCache = new Map<string, android.graphics.Typeface>();
 let appAssets: android.content.res.AssetManager;
 
+type fontWeight = "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
+
 export class Font extends FontBase {
     public static default = new Font(undefined, undefined, "normal", "normal");
 
     private _typeface: android.graphics.Typeface;
 
-    constructor(family: string, size: number, style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
+    constructor(family: string, size: number, style: "normal" | "italic", weight: fontWeight) {
         super(family, size, style, weight);
     }
 
@@ -26,7 +28,7 @@ export class Font extends FontBase {
         return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
     }
 
-    public withFontWeight(weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900"): Font {
+    public withFontWeight(weight: fontWeight): Font {
         return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
     }
 

@@ -131,17 +131,21 @@ export class ListView extends ListViewBase {
         this._realizedTemplates.clear();
     }
 
-    get [separatorColor.native](): number {
-        return null;
-    }
-    set [separatorColor.native](value: Color) {
+    get [separatorColor.native](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
         let nativeView = this._android;
-        if (value) {
+        return {
+            dividerHeight: nativeView.getDividerHeight(),
+            divider: nativeView.getDivider()
+        };
+    }
+    set [separatorColor.native](value: Color | { dividerHeight: number, divider: android.graphics.drawable.Drawable }) {
+        let nativeView = this._android;
+        if (value instanceof Color) {
             nativeView.setDivider(new android.graphics.drawable.ColorDrawable(value.android));
             nativeView.setDividerHeight(1);
         } else {
-            nativeView.setDivider(null);
-            nativeView.setDividerHeight(0);
+            nativeView.setDivider(value.divider);
+            nativeView.setDividerHeight(value.dividerHeight);
         }
     }
 
@@ -283,26 +287,3 @@ function ensureListViewAdapterClass() {
 
     ListViewAdapterClass = ListViewAdapter;
 }
-
-export class ListViewStyler implements Styler {
-    // separator-color
-    private static setSeparatorColorProperty(view: viewModule.View, newValue: any) {
-        let listView = <android.widget.ListView>view._nativeView;
-        listView.setDivider(new android.graphics.drawable.ColorDrawable(newValue));
-        listView.setDividerHeight(1);
-    }
-
-    private static resetSeparatorColorProperty(view: viewModule.View, nativeValue: any) {
-        let listView = <android.widget.ListView>view._nativeView;
-        listView.setDivider(new android.graphics.drawable.ColorDrawable(nativeValue));
-        listView.setDividerHeight(1);
-    }
-
-    public static registerHandlers() {
-        registerHandler(separatorColorProperty, new StylePropertyChangedHandler(
-            ListViewStyler.setSeparatorColorProperty,
-            ListViewStyler.resetSeparatorColorProperty), "ListView");
-    }
-}
-
-ListViewStyler.registerHandlers();

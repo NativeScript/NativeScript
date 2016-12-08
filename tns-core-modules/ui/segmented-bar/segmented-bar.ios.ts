@@ -32,9 +32,9 @@ export class SegmentedBar extends SegmentedBarBase {
         return this._ios;
     }
 
-    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
+    public insertTab(tabItem: SegmentedBarItem, index: number): void {
         tabItem._parent = this;
-        this.ios.insertSegmentWithTitleAtIndexAnimated(tabItem.title, this.getValidIndex(index), false);
+        this.ios.insertSegmentWithTitleAtIndexAnimated(tabItem.title, index, false);
     }
 
     get [selectedIndexProperty.native](): number {

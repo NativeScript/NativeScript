@@ -3,14 +3,14 @@
  */
 declare module "ui/segmented-bar" {
     import {
-        View, AddChildFromBuilder, AddArrayFromBuilder,
-        Property, EventData, Color, Bindable
+        ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
+        Property, CoercibleProperty, EventData, Color
     } from "ui/core/view";
 
     /**
      * Represents a SegmentedBar item.
      */
-    class SegmentedBarItem extends Bindable {
+    class SegmentedBarItem extends ViewBase {
         /**
          * Gets or sets the title of the SegmentedBarItem.
          */
@@ -76,15 +76,12 @@ declare module "ui/segmented-bar" {
          */
         public _addChildFromBuilder(name: string, value: any): void;
         public _addArrayFromBuilder(name: string, value: Array<any>): void;
-        public insertTab(tabItem: SegmentedBarItem, index?: number): void;
-
-        public getValidIndex(index?: number): number;
     }
 
     /**
      * Gets or sets the selected index dependency property of the SegmentedBar.
      */
-    export const selectedIndexProperty: Property<SegmentedBar, number>;
+    export const selectedIndexProperty: CoercibleProperty<SegmentedBar, number>;
 
     /**
      * Gets or sets the selected background color property of the SegmentedBar.

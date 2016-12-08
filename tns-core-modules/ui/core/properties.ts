@@ -27,7 +27,7 @@ export interface PropertyOptions<T, U> {
 }
 
 export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-    coerceValue(T, U): U
+    readonly coerceValue: (T, U) => U;
 }
 
 export interface ShorthandPropertyOptions {
@@ -95,6 +95,10 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
                     this[key] = unboxedValue;
                 }
 
+                if (this.nativeView) {
+                    this[native] = unboxedValue;
+                }
+
                 if (valueChanged) {
                     valueChanged(this, currentValue, unboxedValue);
                 }
@@ -106,10 +110,6 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
                         object: this,
                         value: unboxedValue
                     });
-                }
-
-                if (this.nativeView) {
-                    this[native] = unboxedValue;
                 }
 
                 if (affectsLayout) {
@@ -201,6 +201,10 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                     this[key] = unboxedValue;
                 }
 
+                if (this.nativeView) {
+                    this[native] = unboxedValue;
+                }
+
                 if (valueChanged) {
                     valueChanged(this, currentValue, unboxedValue);
                 }
@@ -212,10 +216,6 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                         object: this,
                         value: unboxedValue
                     });
-                }
-
-                if (this.nativeView) {
-                    this[native] = unboxedValue;
                 }
 
                 if (affectsLayout) {
@@ -378,6 +378,15 @@ export class CssProperty<T extends Style, U> {
                     this[key] = value;
                 }
 
+                let view = this.view;
+                if (view.nativeView) {
+                    view[native] = value;
+                    if (dependentPropertyNativeKey) {
+                        // Call the native setter for dependent property. 
+                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                    }
+                }
+
                 if (valueChanged) {
                     valueChanged(this, currentValue, value);
                 }
@@ -389,15 +398,6 @@ export class CssProperty<T extends Style, U> {
                         object: this,
                         value: value
                     });
-                }
-
-                let view = this.view;
-                if (view.nativeView) {
-                    view[native] = value;
-                    if (dependentPropertyNativeKey) {
-                        // Call the native setter for dependent property. 
-                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
-                    }
                 }
 
                 if (affectsLayout) {
@@ -435,6 +435,15 @@ export class CssProperty<T extends Style, U> {
                     this[key] = value;
                 }
 
+                let view = this.view;
+                if (view.nativeView) {
+                    view[native] = value;
+                    if (dependentPropertyNativeKey) {
+                        // Call the native setter for dependent property. 
+                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                    }
+                }
+
                 if (valueChanged) {
                     valueChanged(this, currentValue, value);
                 }
@@ -446,15 +455,6 @@ export class CssProperty<T extends Style, U> {
                         object: this,
                         value: value
                     });
-                }
-
-                let view = this.view;
-                if (view.nativeView) {
-                    view[native] = value;
-                    if (dependentPropertyNativeKey) {
-                        // Call the native setter for dependent property. 
-                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
-                    }
                 }
 
                 if (affectsLayout) {
@@ -568,6 +568,15 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                     this[key] = newValue;
                 }
 
+                let nativeView = view.nativeView;
+                if (nativeView) {
+                    view[native] = value;
+                    if (dependentPropertyNativeKey) {
+                        // Call the native setter for dependent property. 
+                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                    }
+                }
+
                 if (valueChanged) {
                     valueChanged(this, currentValue, newValue);
                 }
@@ -579,15 +588,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                         object: this,
                         value: newValue
                     });
-                }
-
-                let nativeView = view.nativeView;
-                if (nativeView) {
-                    view[native] = value;
-                    if (dependentPropertyNativeKey) {
-                        // Call the native setter for dependent property. 
-                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
-                    }
                 }
 
                 if (affectsLayout) {
@@ -752,7 +752,7 @@ function inheritableCssPropertiesOn(style: Object): Array<InheritedCssProperty<a
 }
 
 export function applyNativeSetters(view: ViewBase): void {
-    let symbols = Object.getOwnPropertySymbols(view);
+    let symbols = (<any>Object).getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         let property: Property<any, any> = symbolPropertyMap[symbol];
         if (!property) {
@@ -767,7 +767,7 @@ export function applyNativeSetters(view: ViewBase): void {
     }
 
     let style = view.style;
-    symbols = Object.getOwnPropertySymbols(style);
+    symbols = (<any>Object).getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         let property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
         if (!property) {

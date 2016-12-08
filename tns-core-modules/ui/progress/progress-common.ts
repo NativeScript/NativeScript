@@ -1,17 +1,9 @@
 ﻿import { Progress as ProgressDefinition } from "ui/progress";
-import { View, Property } from "ui/core/view";
+import { View, Property, CoercibleProperty } from "ui/core/view";
 
 export * from "ui/core/view";
 
 export class ProgressBase extends View implements ProgressDefinition {
-    constructor() {
-        super();
-
-        // This calls make both platforms have default values from 0 to 100.
-        this.maxValue = 100;
-        this.value = 0;
-    }
-
     public value: number;
     public maxValue: number;
     // get maxValue(): number {
@@ -38,11 +30,11 @@ export class ProgressBase extends View implements ProgressDefinition {
 /**
  * Represents the observable property backing the value property of each Progress instance.
  */
-export const valueProperty = new Property<ProgressBase, number>({ name: "value", defaultValue: 0 });
+export const valueProperty = new CoercibleProperty<ProgressBase, number>({ name: "value", defaultValue: 0, coerceValue: (t, v) => v < 0 ? 0 : Math.min(v, t.maxValue) });
 valueProperty.register(ProgressBase);
 
 /**
  * Represents the observable property backing the maxValue property of each Progress instance.
  */
-export const maxValueProperty = new Property<ProgressBase, number>({ name: "maxValue", defaultValue: 100 });
+export const maxValueProperty = new Property<ProgressBase, number>({ name: "maxValue", defaultValue: 100, valueChanged: (target, oldValue, newValue) => valueProperty.coerce(target) });
 maxValueProperty.register(ProgressBase);

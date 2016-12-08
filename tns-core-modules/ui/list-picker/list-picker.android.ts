@@ -65,10 +65,10 @@ export class ListPicker extends ListPickerBase {
         return this._android;
     }
 
-
     public _createUI() {
         this._android = new android.widget.NumberPicker(this._context);
-        this._editText = getEditText(this._android);
+        let editText = getEditText(this._android);
+        this._editText = editText;
         this._selectorWheelPaint = getSelectorWheelPaint(this._android);
 
         this._android.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
@@ -77,34 +77,22 @@ export class ListPicker extends ListPickerBase {
         this._android.setMaxValue(0);
         this._android.setValue(0);
 
-        let formatter = this._formatter || new Formatter(new WeakRef(this));
+        this._formatter = this._formatter || new Formatter(new WeakRef(this));
         this._android.setFormatter(this._formatter);
 
         this._valueChangedListener = this._valueChangedListener || new ValueChangeListener(new WeakRef(this));
         this._android.setOnValueChangedListener(this._valueChangedListener);
 
-        //Fix the disappearing selected item.
-        //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
-        this._editText.setFilters([]);
+        if (editText) {
+            //Fix the disappearing selected item.
+            //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
+            editText.setFilters([]);
 
-        //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
-        this._editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
-
+            //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
+            editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
+        }
+        
         this._android.setWrapSelectorWheel(false);
-    }
-
-    private updateSelectedValue(): void {
-        let selectedIndex = this.selectedIndex;
-        this.android.setValue(selectedIndex);
-    }
-
-    private onItemsPropertyChanged(items: any[] | ItemsSource) {
-        let maxValue = items && items.length > 0 ? items.length - 1 : 0;
-
-        this.android.setMaxValue(maxValue);
-        this.updateSelectedValue();
-
-        this._fixNumberPickerRendering();
     }
 
     private _fixNumberPickerRendering() {
@@ -122,8 +110,8 @@ export class ListPicker extends ListPickerBase {
         return -1;
     }
     set [selectedIndexProperty.native](value: number) {
-        if (this.itemsSet) {
-            this.updateSelectedValue();
+        if (value >= 0) {
+            this.android.setValue(value);
         }
     }
 
@@ -131,23 +119,15 @@ export class ListPicker extends ListPickerBase {
         return null;
     }
     set [itemsProperty.native](value: any[] | ItemsSource) {
-        this.onItemsPropertyChanged(value);
-        // items are cleared - set selectedIndex to -1
-        if (!value) {
-            this.itemsSet = false;
-            this.selectedIndex = -1;
-        } else if (this.selectedIndex < 0) {
-            // items are set and selectedIndex is set - update maxValue & value.
-            this.selectedIndex = 0;
-            // set this flag later so no native call happens
-            this.itemsSet = true;
-        }
+        let maxValue = value && value.length > 0 ? value.length - 1 : 0;
+        this.android.setMaxValue(maxValue);
+        this._fixNumberPickerRendering();
     }
 
     get [colorProperty.native](): { wheelColor: number, textColor: number } {
         return {
             wheelColor: this._selectorWheelPaint.getColor(),
-            textColor: this._editText.getTextColors().getDefaultColor()
+            textColor: this._editText ? this._editText.getTextColors().getDefaultColor() : -1
         }
     }
 
@@ -162,6 +142,8 @@ export class ListPicker extends ListPickerBase {
         }
 
         this._selectorWheelPaint.setColor(wheelColor);
-        this._editText.setTextColor(color);
+        if (this._editText) {
+            this._editText.setTextColor(color);
+        }
     }
 }

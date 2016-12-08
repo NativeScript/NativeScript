@@ -1,7 +1,10 @@
 ﻿declare module "ui/text-base" {
     import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style } from "ui/core/view";
     import { FormattedString, FormattedStringView } from "text/formatted-string";
-    
+
+    export * from "ui/core/view";
+    export { FormattedString, FormattedStringView } from "text/formatted-string";
+
     /**
      * Represents the base class for all text views.
      */
@@ -73,6 +76,4 @@
     export const textTransformProperty: CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">;
     export const whiteSpaceProperty: CssProperty<Style, "normal" | "nowrap">;
     export const letterSpacingProperty: CssProperty<Style, number>;
-
-    export * from "ui/core/view";
 }
