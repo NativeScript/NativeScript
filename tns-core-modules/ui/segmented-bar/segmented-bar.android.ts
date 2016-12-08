@@ -211,7 +211,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
     private insertTab(tabItem: SegmentedBarItem, index: number): void {
         const tab = this.android.newTabSpec(index + "");
-        tab.setIndicator(tabItem.title);
+        tab.setIndicator(tabItem.title + "");
         tab.setContent(this.tabContentFactory);
 
         let tabHost = this.android;

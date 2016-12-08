@@ -17,8 +17,9 @@ export abstract class SegmentedBarItemBase extends ViewBase implements Segmented
         return this._title;
     }
     set title(value: string) {
-        if (this._title !== value) {
-            this._title = value;
+        let strValue = (value !== null && value !== undefined) ? value.toString() : "";
+        if (this._title !== strValue) {
+            this._title = strValue;
             this._update();
         }
     }
