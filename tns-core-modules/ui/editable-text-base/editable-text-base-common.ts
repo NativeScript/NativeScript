@@ -16,6 +16,9 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public abstract dismissSoftInput();
 }
 
+// TODO: Why not name it - hintColor property??
+// TODO: Or rename hintProperty to 'placeholder' and make it CSSProperty??
+// https://developer.mozilla.org/en-US/docs/Web/CSS/:-moz-placeholder
 export const placeholderColorProperty = new CssProperty<Style, Color>({ name: "placeholderColor", cssName: "placeholder-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 placeholderColorProperty.register(Style);
 

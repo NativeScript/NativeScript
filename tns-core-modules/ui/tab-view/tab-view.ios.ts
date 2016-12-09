@@ -423,9 +423,6 @@ export class TabView extends TabViewBase {
         if (value > -1) {
             this._ios.selectedIndex = value;
         }
-
-        // We will need to measure and arrange what became this._selectedView
-        this.requestLayout();
     }
 
     get [itemsProperty.native](): TabViewItemBase[] {

@@ -1,5 +1,5 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { Bindable, EventData, Observable, View, Template, KeyedTemplate, Length, layout, Property, Color, lengthComparer } from "ui/core/view";
+import { CoercibleProperty, CssProperty, Style, Bindable, EventData, Observable, View, Template, KeyedTemplate, Length, layout, Property, Color, lengthComparer } from "ui/core/view";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
 import { ObservableArray, ChangedData } from "data/observable-array";
@@ -47,7 +47,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     }
 
     public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
-    public _effectiveRowHeight: number;
+    public _effectiveRowHeight: number = -1;
     public rowHeight: Length;
     public separatorColor: Color;
     public items: any[] | ItemsSource;
@@ -129,7 +129,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     }
 
     protected updateEffectiveRowHeight(): void {
-        this._effectiveRowHeight = getLengthEffectiveValue(this.rowHeight);
+        rowHeightProperty.coerce(this);
     }
 }
 
@@ -175,20 +175,22 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 })
 itemTemplatesProperty.register(ListViewBase);
 
-/**
- * Represents the separator color backing property. 
- */
-export const separatorColor = new Property<ListViewBase, Color>({ name: "separatorColor", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });
-separatorColor.register(ListViewBase);
-
+const defaultRowHeight: Length = { value: -1, unit: "px" };
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
-export const rowHeightProperty = new Property<ListViewBase, Length>({
-    name: "rowHeight", defaultValue: { value: -1, unit: "px" }, equalityComparer: lengthComparer,
+export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
+    name: "rowHeight", defaultValue: defaultRowHeight, equalityComparer: lengthComparer,
+    coerceValue: (target, value) => {
+        // We coerce to default value if we don't have display density.
+        return target._nativeView ? value : defaultRowHeight;
+    },
     valueChanged: (target, oldValue, newValue) => {
         target._effectiveRowHeight = getLengthEffectiveValue(newValue);
         target._onRowHeightPropertyChanged(oldValue, newValue);
     }, valueConverter: Length.parse
 });
 rowHeightProperty.register(ListViewBase);
+
+export const separatorColorProperty = new CssProperty<Style, Color>({ name: "separatorColor", cssName: "separator-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+separatorColorProperty.register(Style);

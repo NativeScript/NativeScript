@@ -11,7 +11,9 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
     public _update() {
         if (this._parent) {
             let tabIndex = this._parent.items.indexOf(this);
-            this._parent.ios.setTitleForSegmentAtIndex(this.title || "", tabIndex);
+            let title = this.title;
+            title = (title === null || title === undefined) ? "" : title;
+            this._parent.ios.setTitleForSegmentAtIndex(title, tabIndex);
         }
     }
 }
@@ -32,50 +34,34 @@ export class SegmentedBar extends SegmentedBarBase {
         return this._ios;
     }
 
-    public insertTab(tabItem: SegmentedBarItem, index: number): void {
-        tabItem._parent = this;
-        this.ios.insertSegmentWithTitleAtIndexAnimated(tabItem.title, index, false);
+    private insertTab(tabItem: SegmentedBarItem, index: number): void {
+
     }
 
     get [selectedIndexProperty.native](): number {
         return -1;
     }
     set [selectedIndexProperty.native](value: number) {
-        let items = this.items;
-        if (!items) {
-            return;
-        }
-
-        if (value >= 0 && value <= (items.length - 1)) {
-            this._ios.selectedSegmentIndex = value;
-            this.notify({ eventName: SegmentedBar.selectedIndexChangedEvent, object: this, oldIndex: this.previousSelectedIndex, newIndex: value });
-        }
+        this._ios.selectedSegmentIndex = value;
     }
 
-    private previousItems: SegmentedBarItem[];
     get [itemsProperty.native](): SegmentedBarItem[] {
         return null;
     }
     set [itemsProperty.native](value: SegmentedBarItem[]) {
-        const oldItems = this.previousItems;
-        if (oldItems) {
-            for (let i = 0, length = oldItems.length; i < length; i++) {
-                oldItems[i]._parent = null;
-            }
-        }
-
-        let segmentedControl = this._ios;
+        const segmentedControl = this._ios;
         segmentedControl.removeAllSegments();
         const newItems = value;
-        this._adjustSelectedIndex(newItems);
 
         if (newItems && newItems.length) {
-            for (let i = 0; i < newItems.length; i++) {
-                this.insertTab(newItems[i], i);
-            }
+            newItems.forEach((item, index, arr) => {
+                let title = item.title;
+                title = (title === null || title === undefined) ? "" : title;
+                segmentedControl.insertSegmentWithTitleAtIndexAnimated(title, index, false);
+            })
 
-            if (segmentedControl.selectedSegmentIndex !== this.selectedIndex) {
-                segmentedControl.selectedSegmentIndex = this.selectedIndex;
+            if (this.selectedIndex < 0) {
+                this.selectedIndex = segmentedControl.selectedSegmentIndex;
             }
         }
     }

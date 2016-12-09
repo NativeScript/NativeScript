@@ -1,6 +1,7 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty, Font, Color, FormattedString
+    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty,
+    Font, Color, FormattedString
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -94,13 +95,15 @@ export class TextBase extends TextBaseCommon {
         this._setFormattedTextPropertyToNative(value);
     }
 
-    get [colorProperty.native](): number {
-        // .getTextColors().getDefaultColor();
-        return this.nativeView.getCurrentTextColor();
+    get [colorProperty.native](): android.content.res.ColorStateList {
+        return this.nativeView.getTextColors();
     }
-    set [colorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
-        this.nativeView.setTextColor(color);
+    set [colorProperty.native](value: Color | android.content.res.ColorStateList) {
+        if (value instanceof Color) {
+            this.nativeView.setTextColor(value.android);
+        } else {
+            this.nativeView.setTextColor(value);
+        }
     }
 
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {

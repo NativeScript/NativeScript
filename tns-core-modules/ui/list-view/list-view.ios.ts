@@ -71,7 +71,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
                 // Arrange cell views. We do it here instead of _layoutCell because _layoutCell is called 
                 // from 'tableViewHeightForRowAtIndexPath' method too (in iOS 7.1) and we don't want to arrange the fake cell.
                 let width = layout.getMeasureSpecSize(owner.widthMeasureSpec);
-                let rowHeight = owner._nativeView.rowHeight;
+                let rowHeight = owner._effectiveRowHeight;
                 let cellHeight = rowHeight > 0 ? rowHeight : owner.getHeight(indexPath.row);
                 View.layoutChild(owner, cellView, 0, 0, width, cellHeight);
             }
@@ -91,22 +91,22 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     private _measureCellMap: Map<string, ListViewCell>;
 
     public static initWithOwner(owner: WeakRef<ListView>): UITableViewDelegateImpl {
-        let delegate = <UITableViewDelegateImpl>UITableViewDelegateImpl.new();
+        const delegate = <UITableViewDelegateImpl>UITableViewDelegateImpl.new();
         delegate._owner = owner;
         delegate._measureCellMap = new Map<string, ListViewCell>();
         return delegate;
     }
 
     public tableViewWillDisplayCellForRowAtIndexPath(tableView: UITableView, cell: UITableViewCell, indexPath: NSIndexPath) {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner && (indexPath.row === owner.items.length - 1)) {
             owner.notify(<EventData>{ eventName: LOADMOREITEMS, object: owner });
         }
     }
 
     public tableViewWillSelectRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): NSIndexPath {
-        let cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
-        let owner = this._owner.get();
+        const cell = <ListViewCell>tableView.cellForRowAtIndexPath(indexPath);
+        const owner = this._owner.get();
         if (owner) {
             notifyForItemAtIndex(owner, cell, cell.view, ITEMTAP, indexPath);
         }
@@ -120,19 +120,19 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
     }
 
     public tableViewHeightForRowAtIndexPath(tableView: UITableView, indexPath: NSIndexPath): number {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (!owner) {
             return DEFAULT_HEIGHT;
         }
 
-        let height = undefined;
+        let height: number;
         if (ios.MajorVersion >= 8) {
             height = owner.getHeight(indexPath.row);
         }
 
         if (ios.MajorVersion < 8 || height === undefined) {
             // in iOS 7.1 (or iOS8+ after call to scrollToRowAtIndexPath:atScrollPosition:animated:) this method is called before tableViewCellForRowAtIndexPath so we need fake cell to measure its content.
-            let template = owner._getItemTemplate(indexPath.row);
+            const template = owner._getItemTemplate(indexPath.row);
             let cell = this._measureCellMap.get(template.key);
             if (!cell) {
                 cell = (<any>tableView.dequeueReusableCellWithIdentifier(template.key)) || ListViewCell.new();
@@ -184,7 +184,7 @@ class UITableViewRowHeightDelegateImpl extends NSObject implements UITableViewDe
 }
 
 export class ListView extends ListViewBase {
-    private _ios: UITableView;
+    public _ios: UITableView;
     private _dataSource;
     private _delegate;
     private _heights: Array<number>;
@@ -266,8 +266,8 @@ export class ListView extends ListViewBase {
     }
 
     public _onRowHeightPropertyChanged(oldValue: Length, newValue: Length) {
-        let value = this._effectiveRowHeight;
-        let nativeView = this._ios;
+        const value = this._effectiveRowHeight;
+        const nativeView = this._ios;
         if (value < 0) {
             nativeView.rowHeight = UITableViewAutomaticDimension;
             nativeView.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -304,9 +304,10 @@ export class ListView extends ListViewBase {
 
     private _layoutCell(cellView: View, indexPath: NSIndexPath): number {
         if (cellView) {
-            let rowHeight = this._effectiveRowHeight;
-            let measuredSize = View.measureChild(this, cellView, this.widthMeasureSpec, rowHeight >= 0 ? rowHeight : infinity);
-            let height = measuredSize.measuredHeight;
+            const rowHeight = this._effectiveRowHeight;
+            const heightMeasureSpec: number = rowHeight >= 0 ? layout.makeMeasureSpec(rowHeight, layout.EXACTLY) : infinity;
+            const measuredSize = View.measureChild(this, cellView, this.widthMeasureSpec, heightMeasureSpec);
+            const height = measuredSize.measuredHeight;
             this.setHeight(indexPath.row, height);
             return height;
         }

@@ -2,7 +2,7 @@
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty
+    textProperty, placeholderColorProperty
 } from "./editable-text-base-common";
 
 import { ad } from "utils/utils";
@@ -417,5 +417,16 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
     set [hintProperty.native](value: string) {
         this.nativeView.setHint(value + '');
+    }
+
+    get [placeholderColorProperty.native](): android.content.res.ColorStateList {
+        return this.nativeView.getHintTextColors();
+    }
+    set [placeholderColorProperty.native](value: Color | android.content.res.ColorStateList) {
+        if (value instanceof Color) {
+            this.nativeView.setHintTextColor(value.android);
+        } else {
+            this.nativeView.setHintTextColor(value);
+        }
     }
 }

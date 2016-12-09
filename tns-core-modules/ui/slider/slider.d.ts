@@ -2,7 +2,7 @@
  * Contains the Slider class, which represents a standard slider component.
  */
 declare module "ui/slider" {
-    import { View, Property } from "ui/core/view";
+    import { View, CoercibleProperty } from "ui/core/view";
     
     /**
      * Represents a slider component.
@@ -42,10 +42,10 @@ declare module "ui/slider" {
     /**
      * Represents the observable property backing the minValue property of each Slider instance.
      */
-    export const minValueProperty: Property<Slider, number>;
+    export const minValueProperty: CoercibleProperty<Slider, number>;
 
     /**
      * Represents the observable property backing the maxValue property of each Slider instance.
      */
-    export const maxValueProperty: Property<Slider, number>;
+    export const maxValueProperty: CoercibleProperty<Slider, number>;
 }

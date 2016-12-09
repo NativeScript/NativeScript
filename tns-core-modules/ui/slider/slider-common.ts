@@ -1,5 +1,5 @@
 ﻿import { Slider as SliderDefinition } from "ui/slider";
-import { View, Property } from "ui/core/view";
+import { View, Property, CoercibleProperty, isIOS } from "ui/core/view";
 
 export * from "ui/core/view";
 
@@ -13,13 +13,12 @@ export class SliderBase extends View implements SliderDefinition {
 /**
  * Represents the observable property backing the value property of each Slider instance.
  */
-export const valueProperty = new Property<SliderBase, number>({
-    name: "value", defaultValue: 0, valueChanged: (target, oldValue, newValue) => {
-        newValue = Math.max(newValue, this.minValue);
-        newValue = Math.min(newValue, this.maxValue);
-
-        target.value = newValue;
-    }
+export const valueProperty = new CoercibleProperty<SliderBase, number>({
+    name: "value", defaultValue: 0, coerceValue: (target, value) => {
+        value = Math.max(value, this.minValue);
+        value = Math.min(value, this.maxValue);
+        return value;
+    }, valueConverter: (v) => isIOS ? parseFloat(v) : parseInt(v)
 });
 valueProperty.register(SliderBase);
 
@@ -28,29 +27,25 @@ valueProperty.register(SliderBase);
  */
 export const minValueProperty = new Property<SliderBase, number>({
     name: "minValue", defaultValue: 0, valueChanged: (target, oldValue, newValue) => {
-        if (newValue > target.maxValue) {
-            target.maxValue = newValue;
-        }
-
-        if (newValue > target.value) {
-            target.value = newValue;
-        }
-    }
+         maxValueProperty.coerce(target);
+         valueProperty.coerce(target);
+    }, valueConverter: (v) => isIOS ? parseFloat(v) : parseInt(v)
 });
 minValueProperty.register(SliderBase);
 
 /**
  * Represents the observable property backing the maxValue property of each Slider instance.
  */
-export const maxValueProperty = new Property<SliderBase, number>({
-    name: "maxValue", defaultValue: 100, valueChanged: (target, oldValue, newValue) => {
-        if (newValue < target.minValue) {
-            target.minValue = newValue;
+export const maxValueProperty = new CoercibleProperty<SliderBase, number>({
+    name: "maxValue", defaultValue: 100, coerceValue: (target, value) => {
+        let minValue = target.minValue; 
+        if (value < minValue) {
+            value = minValue;
         }
 
-        if (newValue < target.value) {
-            target.value = newValue;
-        }
-    }
+        return value;
+    },
+    valueChanged: (target, oldValue, newValue) => valueProperty.coerce(target),
+    valueConverter: (v) => isIOS ? parseFloat(v) : parseInt(v)
 });
 maxValueProperty.register(SliderBase);

@@ -1,7 +1,10 @@
 ﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from "ui/tab-view";
-import { View, Bindable, Property, CoercibleProperty, EventData, Color, isIOS, AddArrayFromBuilder } from "ui/core/view";
+import {
+    View, Style, Bindable, Property, CssProperty, CoercibleProperty,
+    EventData, Color, isIOS, AddArrayFromBuilder
+} from "ui/core/view";
 
-export *  from "ui/core/view";
+export * from "ui/core/view";
 
 export const traceCategory = "TabView";
 
@@ -154,11 +157,11 @@ export const itemsProperty = new Property<TabViewBase, TabViewItemBase[]>({
 itemsProperty.register(TabViewBase);
 
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
-    name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS, 
+    name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
     valueChanged: (target, oldValue, newValue) => {
         let args = { eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue };
         target.notify(args);
-    }, 
+    },
     coerceValue: (target, value) => {
         let items = target.items;
         if (items) {
@@ -176,8 +179,14 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
 });
 selectedIndexProperty.register(TabViewBase);
 
-export const selectedColorProperty = new Property<TabViewBase, Color>({ name: "selectedColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-selectedColorProperty.register(TabViewBase);
+export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+tabTextColorProperty.register(Style);
 
-export const tabsBackgroundColorProperty = new Property<TabViewBase, Color>({ name: "tabsBackgroundColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-tabsBackgroundColorProperty.register(TabViewBase);
+export const tabBackgroundColorProperty = new CssProperty<Style, Color>({ name: "tabBackgroundColor", cssName: "tab-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+tabBackgroundColorProperty.register(Style);
+
+export const selectedTabTextColorProperty = new CssProperty<Style, Color>({ name: "selectedTabTextColor", cssName: "selected-tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+selectedTabTextColorProperty.register(Style);
+
+export const androidSelectedTabHighlightColorProperty = new CssProperty<Style, Color>({ name: "androidSelectedTabHighlightColor", cssName: "android-selected-tab-highlight-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+androidSelectedTabHighlightColorProperty.register(Style);

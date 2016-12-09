@@ -1,6 +1,5 @@
 import { Style as StyleDefinition } from "ui/styling/style";
-import { Length, PercentLength, Color, Background, Font, ViewBase } from "ui/core/view";
-import { Observable } from "data/observable";
+import { Length, PercentLength, Color, Background, Font, ViewBase, Observable } from "ui/core/view";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {

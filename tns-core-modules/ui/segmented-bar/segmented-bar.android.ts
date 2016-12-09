@@ -9,12 +9,6 @@ const R_ID_TABS = 0x01020013;
 const R_ID_TABCONTENT = 0x01020011;
 const R_ATTR_STATE_SELECTED = 0x010100a1;
 
-// TODO: Make SegmentedBarItem inherit from ViewBase and use ._addView.
-// TODO: Move colorProperty.native get/set from SegmentedBar to SegmentedBarItem.
-// TODO: Fix selectedIndex coerce implementation.
-// TODO: Use addView instead of _parent property. This way
-// bindingContext and style propagation will work out fo the box. 
-
 let apiLevel: number;
 // TODO: Move this into widgets.
 let SegmentedBarColorDrawableClass;
@@ -75,7 +69,9 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
         let tv = this._nativeView;
         if (tv) {
-            tv.setText(this.title || "");
+            let title = this.title;
+            title = (title === null || title === undefined) ? "" : title;
+            tv.setText(title);
             this.titleDirty = false;
         } else {
             this.titleDirty = true;
@@ -188,10 +184,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
         let weakRef = new WeakRef(this);
         this._android = new TabHostClass(this._context, null);
-        // We don't have native tabs here.
-        // if (typeof this.selectedIndex === "number" && this._android.getCurrentTab() !== this.selectedIndex) {
-        //     this._android.setCurrentTab(this.selectedIndex);
-        // }
+
         this.listener = this.listener || new TabChangeListener(weakRef);
         this.tabContentFactory = this.tabContentFactory || new TabContentFactory(weakRef);
 
@@ -215,7 +208,7 @@ export class SegmentedBar extends SegmentedBarBase {
         return this._android;
     }
 
-    public insertTab(tabItem: SegmentedBarItem, index: number): void {
+    private insertTab(tabItem: SegmentedBarItem, index: number): void {
         const tab = this.android.newTabSpec(index + "");
         tab.setIndicator(tabItem.title);
         tab.setContent(this.tabContentFactory);
@@ -224,7 +217,7 @@ export class SegmentedBar extends SegmentedBarBase {
         tabHost.addTab(tab);
 
         // TODO: Why do we need to call this for every added tab?
-        this.resetNativeListener();
+        // this.resetNativeListener();
     }
 
     private resetNativeListener() {
@@ -247,10 +240,8 @@ export class SegmentedBar extends SegmentedBarBase {
 
         const newItems = value;
         let tabHost = this._android;
-        if (newItems && newItems.length) {
-            for (let i = 0; i < newItems.length; i++) {
-                this.insertTab(newItems[i], i);
-            }
+        if (newItems) {
+            newItems.forEach((item, i,arr) => this.insertTab(item, i));
 
             if (this.selectedIndex < 0) {
                 this.selectedIndex = tabHost.getCurrentTab();

@@ -113,8 +113,15 @@ declare module "ui/styling/style" {
         public selectedTabTextColor: Color;
         public androidSelectedTabHighlightColor: Color;
 
+        // ListView-specific props 
+        public separatorColor: Color;
+
         //SegmentedBar-specific props
         public selectedBackgroundColor: Color;
+
+        // Page-specific props 
+        public statusBarStyle: string;
+        public androidStatusBarBackground: Color;
 
         constructor(ownerView: ViewBase);
         public view: ViewBase;

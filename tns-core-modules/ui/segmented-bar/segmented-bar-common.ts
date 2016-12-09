@@ -1,7 +1,7 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from "ui/segmented-bar";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, EventData, Color
+    Property, CoercibleProperty, CssProperty, EventData, Color, Style
 } from "ui/core/view";
 
 export * from "ui/core/view";
@@ -49,17 +49,6 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
         }
     }
 
-    // public _onBindingContextChanged(oldValue: any, newValue: any) {
-    //     super._onBindingContextChanged(oldValue, newValue);
-    //     if (this.items && this.items.length > 0) {
-    //         var i = 0;
-    //         var length = this.items.length;
-    //         for (; i < length; i++) {
-    //             this.items[i].bindingContext = newValue;
-    //         }
-    //     }
-    // }
-
     public onItemsChanged(oldItems: SegmentedBarItemDefinition[], newItems: SegmentedBarItemDefinition[]): void {
         if (oldItems) {
             for (let i = 0, count = oldItems.length; i < count; i++) {
@@ -72,6 +61,15 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
                 this._addView(newItems[i]);
             }
         }
+    }
+
+    // TODO: Make _addView to keep its children so this method is not needed!
+    public _eachChildView(callback: (child: ViewBase) => boolean): void {
+        let items = this.items;
+        if (items) {
+            items.forEach((item, i) => {
+            callback(item);
+        });
     }
 }
 
@@ -101,8 +99,8 @@ selectedIndexProperty.register(SegmentedBarBase);
 /**
  * Gets or sets the selected background color property of the SegmentedBar.
  */
-export const selectedBackgroundColorProperty = new Property<SegmentedBarBase, Color>({ name: "selectedBackgroundColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) })
-selectedBackgroundColorProperty.register(SegmentedBarBase);
+export const selectedBackgroundColorProperty = new CssProperty<Style, Color>({ name: "selectedBackgroundColor", cssName: "selected-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) })
+selectedBackgroundColorProperty.register(Style);
 
 /**
  * Gets or sets the items dependency property of the SegmentedBar.

@@ -34,12 +34,11 @@ export class ListView extends ListViewBase {
     private _itemClickListener: android.widget.AdapterView.OnItemClickListener;
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
-    public _effectiveRowHeight: number;
 
     public _createUI() {
-        this.updateEffectiveRowHeight();
         this._android = new android.widget.ListView(this._context);
         this._android.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
+        this.updateEffectiveRowHeight();
 
         // Fixes issue with black random black items when scrolling
         this._android.setCacheColorHint(android.graphics.Color.TRANSPARENT);
