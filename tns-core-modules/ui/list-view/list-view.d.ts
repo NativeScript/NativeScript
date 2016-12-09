@@ -2,7 +2,7 @@
  * Contains the ListView class, which represents a standard list view widget.
  */
 declare module "ui/list-view" {
-    import { EventData, View, Template, KeyedTemplate, Length, Property, Color } from "ui/core/view";
+    import { EventData, View, Template, KeyedTemplate, Length, Property, CssProperty, Color, Style } from "ui/core/view";
 
     /**
      * Known template names.
@@ -166,4 +166,9 @@ declare module "ui/list-view" {
      * Represents the observable property backing the rowHeight property of each ListView instance.
      */
     export const rowHeightProperty: Property<ListView, Length>;
+
+    /**
+     * Backing property for separator color property.
+     */
+    export const separatorColorProperty: CssProperty<Style, Color>;
 }

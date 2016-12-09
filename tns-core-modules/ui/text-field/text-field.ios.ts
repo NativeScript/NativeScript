@@ -130,12 +130,12 @@ export class TextField extends TextFieldBase {
         this._delegate = UITextFieldDelegateImpl.initWithOwner(weakRef);
     }
 
-    protected onLoaded() {
+    public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
     }
 
-    protected onUnloaded() {
+    public onUnloaded() {
         this._ios.delegate = null;
         super.onUnloaded();
     }

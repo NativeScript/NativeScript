@@ -2,7 +2,7 @@
  * Contains the Slider class, which represents a standard slider component.
  */
 declare module "ui/slider" {
-    import { View, CoercibleProperty } from "ui/core/view";
+    import { View, Property, CoercibleProperty } from "ui/core/view";
     
     /**
      * Represents a slider component.

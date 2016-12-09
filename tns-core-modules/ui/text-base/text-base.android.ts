@@ -17,8 +17,8 @@ function getCapitalizedString(str: string): string {
     return newWords.join(" ");
 }
 
-function formatString(text: string, textTransform: "none" | "capitalize" | "uppercase" | "lowercase"): string {
-    switch (textTransform) {
+export function getTransformedText(text: string, transform: "none" | "capitalize" | "uppercase" | "lowercase"): string {
+    switch (transform) {
         case "uppercase":
             return text.toUpperCase();
 
@@ -46,14 +46,15 @@ class TextTransformation extends android.text.method.ReplacementTransformationMe
 
     protected getReplacement(): native.Array<string> {
         let result: string = "";
+        let textTransform = this.textTransform
         if (this.formattedText) {
             for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
                 let span = this.formattedText.spans.getItem(i);
-                result += formatString(span.text, this.textTransform);
+                result += getTransformedText(span.text, textTransform);
                 // span.text = formatString(span.text, this.textTransform);
             }
         } else {
-            result = formatString(this.originalText, this.textTransform);
+            result = getTransformedText(this.originalText, textTransform);
         }
 
         return result;

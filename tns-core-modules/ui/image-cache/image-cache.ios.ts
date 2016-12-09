@@ -20,7 +20,7 @@ function ensureHttpRequest() {
 //    }
 
 //    public cacheWillEvictObject(cache: NSCache, obj: any): void {
-//        trace.write("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", trace.categories.Debug);
+//        traceWrite("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", traceCategories.Debug);
 //    }
 //}
 
@@ -35,8 +35,8 @@ class MemmoryWarningHandler extends NSObject {
         this._cache = cache;
 
         getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
-        if (trace.enabled) {
-            trace.write("[MemmoryWarningHandler] Added low memory observer.", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("[MemmoryWarningHandler] Added low memory observer.", traceCategories.Debug);
         }
 
         return this;
@@ -44,15 +44,15 @@ class MemmoryWarningHandler extends NSObject {
 
     public dealloc(): void {
         getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
-        if (trace.enabled) {
-            trace.write("[MemmoryWarningHandler] Removed low memory observer.", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("[MemmoryWarningHandler] Removed low memory observer.", traceCategories.Debug);
         }
         super.dealloc();
     }
 
     public clearCache(): void {
-        if (trace.enabled) {
-            trace.write("[MemmoryWarningHandler] Clearing Image Cache.", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("[MemmoryWarningHandler] Clearing Image Cache.", traceCategories.Debug);
         }
         this._cache.removeAllObjects();
         utils.GC();

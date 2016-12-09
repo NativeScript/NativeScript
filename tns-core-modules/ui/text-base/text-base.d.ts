@@ -68,12 +68,16 @@
         //@endprivate
     }
 
+    export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
+
+    export function getTransformedText(text: string, transform: TextTransform): string;
+
     export const textProperty: Property<TextBase, string>;
     export const formattedTextProperty: Property<TextBase, FormattedString>;
 
     export const textAlignmentProperty: InheritedCssProperty<Style, "left" | "center" | "right">;
     export const textDecorationProperty: CssProperty<Style, "none" | "underline" | "line-through">;
-    export const textTransformProperty: CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">;
+    export const textTransformProperty: CssProperty<Style, TextTransform>;
     export const whiteSpaceProperty: CssProperty<Style, "normal" | "nowrap">;
     export const letterSpacingProperty: CssProperty<Style, number>;
 }

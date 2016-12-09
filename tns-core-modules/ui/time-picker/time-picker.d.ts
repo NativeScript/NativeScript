@@ -59,14 +59,14 @@ declare module "ui/time-picker" {
         minuteInterval: number;
     }
 
-    export let hourProperty: Property<TimePicker, number>;
-    export let maxHourProperty: Property<TimePicker, number>;
-    export let minHourProperty: Property<TimePicker, number>;
+    export const hourProperty: Property<TimePicker, number>;
+    export const maxHourProperty: Property<TimePicker, number>;
+    export const minHourProperty: Property<TimePicker, number>;
 
-    export let minuteProperty: Property<TimePicker, number>;
-    export let maxMinuteProperty: Property<TimePicker, number>;
-    export let minMinuteProperty: Property<TimePicker, number>;
+    export const minuteProperty: Property<TimePicker, number>;
+    export const maxMinuteProperty: Property<TimePicker, number>;
+    export const minMinuteProperty: Property<TimePicker, number>;
 
-    export let timeProperty: Property<TimePicker, Date>;
-    export let minuteIntervalProperty: Property<TimePicker, number>;
+    export const timeProperty: Property<TimePicker, Date>;
+    export const minuteIntervalProperty: Property<TimePicker, number>;
 }

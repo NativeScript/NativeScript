@@ -76,7 +76,7 @@ export class View extends ViewCommon {
         }
     }
 
-    protected onLoaded() {
+    public onLoaded() {
         super.onLoaded();
         this.setOnTouchListener();
     }
@@ -343,7 +343,7 @@ export class View extends ViewCommon {
         }
     }
 
-    public getLocationRelativeTo(otherView: View): Point {
+    public getLocationRelativeTo(otherView: ViewCommon): Point {
         if (!this._nativeView || !this._nativeView.getWindowToken() ||
             !otherView._nativeView || !otherView._nativeView.getWindowToken() ||
             this._nativeView.getWindowToken() !== otherView._nativeView.getWindowToken()) {
@@ -1075,7 +1075,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
     }
 
-    public _addViewToNativeVisualTree(child: View, atIndex: number = -1): boolean {
+    public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {
         super._addViewToNativeVisualTree(child);
 
         if (this.nativeView && child.nativeView) {
@@ -1089,7 +1089,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         return false;
     }
 
-    public _removeViewFromNativeVisualTree(child: View): void {
+    public _removeViewFromNativeVisualTree(child: ViewCommon): void {
         super._removeViewFromNativeVisualTree(child);
 
         if (this._nativeView && child._nativeView) {

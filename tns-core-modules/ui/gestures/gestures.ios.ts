@@ -1,6 +1,5 @@
 ﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from "ui/gestures";
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection,  View, EventData } from "./gestures-common";
-import * as trace from "trace";
 import { ios } from "utils/utils";
 import getter = ios.getter;
 
@@ -87,15 +86,9 @@ export class GesturesObserver extends GesturesObserverBase {
         if (this.target) {
             this.type = type;
             this._onTargetLoaded = args => {
-                if (trace.enabled) {
-                    trace.write(this.target + ".target loaded. _nativeView:" + this.target._nativeView, "gestures");
-                }
                 this._attach(this.target, type);
             };
             this._onTargetUnloaded = args => {
-                if (trace.enabled) {
-                    trace.write(this.target + ".target unloaded. _nativeView:" + this.target._nativeView, "gestures");
-                }
                 this._detach();
             };
 
@@ -109,9 +102,6 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     private _attach(target: View, type: GestureTypes) {
-        if (trace.enabled) {
-            trace.write(target + "._attach() _nativeView:" + target._nativeView, "gestures");
-        }
         this._detach();
 
         if (target && target._nativeView && target._nativeView.addGestureRecognizer) {
@@ -175,9 +165,6 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     private _detach() {
-        if (trace.enabled) {
-            trace.write(this.target + "._detach() _nativeView:" + this.target._nativeView, "gestures");
-        }
         if (this.target && this.target._nativeView) {
             for (let name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {

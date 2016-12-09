@@ -327,6 +327,7 @@ export class CssProperty<T extends Style, U> {
     public key: symbol;
     public native: symbol;
     public sourceKey: symbol;
+    public defaultValueKey: symbol;
 
     constructor(options: CssPropertyOptions<T, U>) {
         let name = options.name;
@@ -344,16 +345,14 @@ export class CssProperty<T extends Style, U> {
         let native = Symbol(name + ":nativeKey");
         this.native = native;
 
+        let defaultValueKey = Symbol(name + ":nativeDefaultValue");
+        this.defaultValueKey = defaultValueKey;
         let eventName = name + "Change";
         let defaultValue: U = options.defaultValue;
         let affectsLayout: boolean = options.affectsLayout;
         let equalityComparer = options.equalityComparer;
         let valueChanged = options.valueChanged;
         let valueConverter = options.valueConverter;
-
-        let dependentProperty = options.dependentProperty;
-        let dependentPropertyKey = dependentProperty ? dependentProperty.key : undefined;
-        let dependentPropertyNativeKey = dependentProperty ? dependentProperty.native : undefined;
 
         function setLocalValue(this: T, value: U): void {
             let reset = value === unsetValue;
@@ -379,12 +378,12 @@ export class CssProperty<T extends Style, U> {
                 }
 
                 let view = this.view;
+                if (!(defaultValueKey in this)) {
+                    this[defaultValueKey] = view[native];
+                }
+
                 if (view.nativeView) {
                     view[native] = value;
-                    if (dependentPropertyNativeKey) {
-                        // Call the native setter for dependent property. 
-                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
-                    }
                 }
 
                 if (valueChanged) {
@@ -438,10 +437,6 @@ export class CssProperty<T extends Style, U> {
                 let view = this.view;
                 if (view.nativeView) {
                     view[native] = value;
-                    if (dependentPropertyNativeKey) {
-                        // Call the native setter for dependent property. 
-                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
-                    }
                 }
 
                 if (valueChanged) {
@@ -796,6 +791,26 @@ export function clearInheritedProperties(view: ViewBase): void {
         if (style[sourceKey] === ValueSource.Inherited) {
             prop.setInhertiedValue.call(style, unsetValue);
         }
+    }
+}
+
+export function resetStyleProperties(style: Style): void {
+    let symbols = (<any>Object).getOwnPropertySymbols(style);
+    let view = style.view;
+    for (let symbol of symbols) {
+        let property: CssProperty<any, any> = symbolPropertyMap[symbol];
+        if (!property) {
+            continue;
+        }
+
+        let native = property.native;
+        if (view[native]) {
+            view[native] = style[property.defaultValueKey];
+            delete style[property.defaultValueKey];
+        }
+
+        // This will not call propertyChange!!!
+        delete style[property.key];
     }
 }
 

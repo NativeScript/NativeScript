@@ -1,10 +1,7 @@
-﻿import definition = require("ui/layouts/layout");
-import view = require("ui/core/view");
-import layoutBase = require("ui/layouts/layout-base");
-import trace = require("trace");
-import * as utils from "utils/utils";
+﻿import { Layout as LayoutDefinition } from "ui/layouts/layout";
+import { LayoutBase, View, layout, traceEnabled, traceWrite, traceCategories } from "ui/layouts/layout-base";
 
-var OWNER = "_owner";
+const OWNER = Symbol("_owner");
 
 var NativeViewGroupClass;
 function ensureNativeViewGroupClass() {
@@ -14,18 +11,18 @@ function ensureNativeViewGroupClass() {
 
     NativeViewGroupClass = (<any>android.view.ViewGroup).extend({
         onMeasure: function (widthMeasureSpec, heightMeasureSpec) {
-            var owner: view.View = this[OWNER];
+            const owner: View = this[OWNER];
             owner.onMeasure(widthMeasureSpec, heightMeasureSpec);
             this.setMeasuredDimension(owner.getMeasuredWidth(), owner.getMeasuredHeight());
         },
         onLayout: function (changed: boolean, left: number, top: number, right: number, bottom: number): void {
-            var owner: view.View = this[OWNER];
+            const owner: View = this[OWNER];
             owner.onLayout(left, top, right, bottom);
         }
     });
 }
 
-export class Layout extends layoutBase.LayoutBase implements definition.Layout {
+export class Layout extends LayoutBase implements LayoutDefinition {
     private _viewGroup: android.view.ViewGroup;
 
     get android(): android.view.ViewGroup {
@@ -50,16 +47,10 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 
-        var view = this._nativeView;
+        const view = this._nativeView;
         if (view) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-
-            if (trace.enabled) {
-                trace.write(this + " :measure: " + utils.layout.getMode(widthMode) + " " + width + ", " + utils.layout.getMode(heightMode) + " " + height, trace.categories.Layout);
+            if (traceEnabled) {
+                traceWrite(`${this} :measure: ${layout.measureSpecToString(widthMeasureSpec)}, ${layout.measureSpecToString(heightMeasureSpec)}`, traceCategories.Layout);
             }
             view.measure(widthMeasureSpec, heightMeasureSpec);
         }
@@ -71,8 +62,8 @@ export class Layout extends layoutBase.LayoutBase implements definition.Layout {
         var view = this._nativeView;
         if (view) {
             this.layoutNativeView(left, top, right, bottom);
-            if (trace.enabled) {
-                trace.write(this + " :layout: " + left + ", " + top + ", " + (right - left) + ", " + (bottom - top), trace.categories.Layout);
+            if (traceEnabled) {
+                traceWrite(`${this} :layout: ${left}, ${top}, ${right - left}, ${bottom - top}`, traceCategories.Layout);
             }
         }
     }

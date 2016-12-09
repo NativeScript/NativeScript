@@ -1,9 +1,11 @@
-﻿import common = require("./layout-base-common");
+﻿import { LayoutBaseCommon, clipToBoundsProperty } from "./layout-base-common";
 
-export class LayoutBase extends common.LayoutBase {
-    public _onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
-        if (this._nativeView) {
-            this._nativeView.clipsToBounds = newValue;
-        }
+export class LayoutBase extends LayoutBaseCommon {
+
+    get [clipToBoundsProperty.native](): boolean {
+        return this._nativeView.clipsToBounds;
+    }
+    set [clipToBoundsProperty.native](value: boolean) {
+        this._nativeView.clipsToBounds = value;
     }
 }

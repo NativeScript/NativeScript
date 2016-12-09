@@ -2,14 +2,17 @@ import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData } from "data/observable";
 import { Property, InheritedProperty, CssProperty, Style, clearInheritedProperties, propagateInheritedProperties } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
-import { isIOS } from "platform";
+import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
 import { CssState, StyleScope, applyInlineSyle } from "ui/styling/style-scope";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent } from "trace";
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 
-export { KeyframeAnimation, Observable, EventData, Binding, BindingOptions, Bindable, isIOS, gestureFromString, traceEnabled, traceWrite, traceCategories, traceNotifyEvent };
+export {
+    KeyframeAnimation, Observable, EventData, Binding, BindingOptions, Bindable, isIOS, isAndroid,
+    gestureFromString, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, isCategorySet
+};
 export * from "./properties";
 
 let defaultBindingSource = {};
@@ -92,7 +95,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         return null;
     }
 
-    protected onLoaded() {
+    public onLoaded() {
         this._isLoaded = true;
         this._loadEachChildView();
         this._applyStyleFromScope();
@@ -112,7 +115,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    protected onUnloaded() {
+    public onUnloaded() {
         this._setCssState(null);
         this._unloadEachChildView();
         this._isLoaded = false;

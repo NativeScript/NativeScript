@@ -3,8 +3,6 @@ import definition = require("application");
 import frame = require("ui/frame");
 import observable = require("data/observable");
 import * as typesModule from "utils/types";
-import * as enumsModule from "ui/enums";
-let enums: typeof enumsModule;
 
 global.moduleMerge(appModule, exports);
 const typedExports: typeof definition = exports;
@@ -129,22 +127,18 @@ function initComponentCallbacks() {
                 return;
             }
 
-            if (!enums) {
-                enums = require("ui/enums");
-            }
-
             currentOrientation = newOrientation;
             let newValue;
 
             switch (newOrientation) {
                 case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    newValue = enums.DeviceOrientation.landscape;
+                    newValue = "landscape";
                     break;
                 case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                    newValue = enums.DeviceOrientation.portrait;
+                    newValue = "portrait";
                     break;
                 default:
-                    newValue = enums.DeviceOrientation.unknown;
+                    newValue = "unknown";
                     break;
             }
 

@@ -1,12 +1,11 @@
 ﻿import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from "ui/frame";
-import { View, CustomLayoutView } from "ui/core/view";
-import { Page } from "ui/page";
+import { Page, View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories } from "ui/page";
 import { isString, isFunction, isDefined } from "utils/types";
 import { resolveFileName } from "file-system/file-name-resolver";
-import { isIOS, isAndroid } from "platform";
-import * as trace from "trace";
 import * as fs from "file-system";
 import * as builder from "ui/builder";
+
+export * from "ui/page";
 
 let frameStack: Array<FrameBase> = [];
 
@@ -68,15 +67,15 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
 
         let moduleExports;
         if (global.moduleExists(entry.moduleName)) {
-            if (trace.enabled) {
-                trace.write("Loading pre-registered JS module: " + entry.moduleName, trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
             }
             moduleExports = global.loadModule(entry.moduleName);
         } else {
             let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
             if (moduleExportsResolvedPath) {
-                if (trace.enabled) {
-                    trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
+                if (traceEnabled) {
+                    traceWrite("Loading JS file: " + moduleExportsResolvedPath, traceCategories.Navigation);
                 }
 
                 // Exclude extension when doing require.
@@ -86,8 +85,8 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
         }
 
         if (moduleExports && moduleExports.createPage) {
-            if (trace.enabled) {
-                trace.write("Calling createPage()", trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite("Calling createPage()", traceCategories.Navigation);
             }
             page = moduleExports.createPage();
         }
@@ -116,8 +115,8 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     // Possible XML file path.
     let fileName = resolveFileName(moduleNamePath, "xml");
     if (fileName) {
-        if (trace.enabled) {
-            trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite("Loading XML file: " + fileName, traceCategories.Navigation);
         }
 
         // Or check if the file exists in the app modules and load the page from XML.
@@ -166,8 +165,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
      * @param to The backstack entry to navigate back to.
      */
     public goBack(backstackEntry?: BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`GO BACK`, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(`GO BACK`, traceCategories.Navigation);
         }
         if (!this.canGoBack()) {
             // TODO: Do we need to throw an error?
@@ -195,15 +194,15 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             this._processNavigationContext(navigationContext);
         }
         else {
-            if (trace.enabled) {
-                trace.write(`Going back scheduled`, trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite(`Going back scheduled`, traceCategories.Navigation);
             }
         }
     }
 
     public navigate(param: any) {
-        if (trace.enabled) {
-            trace.write(`NAVIGATE`, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(`NAVIGATE`, traceCategories.Navigation);
         }
 
         let entry = buildEntryFromArgs(param);
@@ -231,8 +230,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             this._processNavigationContext(navigationContext);
         }
         else {
-            if (trace.enabled) {
-                trace.write(`Navigation scheduled`, trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite(`Navigation scheduled`, traceCategories.Navigation);
             }
         }
     }
@@ -276,7 +275,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _updateActionBar(page?: Page) {
-        //trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
+        //traceWrite("calling _updateActionBar on Frame", traceCategories.Navigation);
     }
 
     protected _processNavigationContext(navigationContext: NavigationContext) {
@@ -311,14 +310,14 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
         }
     }
 
     public _navigateCore(backstackEntry: BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
         }
     }
 

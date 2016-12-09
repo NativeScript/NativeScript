@@ -112,7 +112,7 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
         } else {
             ensureTrace();
 
-            trace.write("CSS file found but no page specified. Please specify page in the options!", trace.categories.Error, trace.messageType.error);
+            traceWrite("CSS file found but no page specified. Please specify page in the options!", traceCategories.Error, trace.messageType.error);
         }
     }
 

@@ -1,5 +1,7 @@
 import { Style as StyleDefinition } from "ui/styling/style";
-import { Length, PercentLength, Color, Background, Font, ViewBase, Observable } from "ui/core/view";
+import { Length, PercentLength, Color, Background, Font, ViewBase } from "ui/core/view";
+import { Observable } from "data/observable";
+import { resetStyleProperties } from "ui/core/properties";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {
@@ -84,8 +86,15 @@ export class Style extends Observable implements StyleDefinition {
     public selectedTabTextColor: Color;
     public androidSelectedTabHighlightColor: Color;
 
+    // ListView-specific props 
+    public separatorColor: Color;
+
     //SegmentedBar-specific props
     public selectedBackgroundColor: Color;
+
+    // Page-specific props 
+    public statusBarStyle: string;
+    public androidStatusBarBackground: Color;
 
     effectiveMinWidth: number;
     effectiveMinHeight: number;
@@ -134,7 +143,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public _resetCssValues() {
         this.view._cancelAllAnimations();
-        this._resetValues(ValueSource.Css);
+        resetStyleProperties(this);
     }
 
     // public _resetLocalValues() {
@@ -153,12 +162,12 @@ export class Style extends Observable implements StyleDefinition {
     // }
 
     // public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-    //     if (trace.enabled) {
-    //         trace.write(
+    //     if (traceEnabled) {
+    //         traceWrite(
     //             "Style._onPropertyChanged view:" + this._view +
     //             ", property: " + property.name +
     //             ", oldValue: " + oldValue +
-    //             ", newValue: " + newValue, trace.categories.Style);
+    //             ", newValue: " + newValue, traceCategories.Style);
     //     }
 
     //     super._onPropertyChanged(property, oldValue, newValue);
@@ -212,13 +221,13 @@ export class Style extends Observable implements StyleDefinition {
 
     //     let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
     //     if (!handler) {
-    //         if (trace.enabled) {
-    //             trace.write("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, trace.categories.Style);
+    //         if (traceEnabled) {
+    //             traceWrite("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, traceCategories.Style);
     //         }
     //     }
     //     else {
-    //         if (trace.enabled) {
-    //             trace.write("Found handler for property: " + property.name + ", view:" + this._view, trace.categories.Style);
+    //         if (traceEnabled) {
+    //             traceWrite("Found handler for property: " + property.name + ", view:" + this._view, traceCategories.Style);
     //         }
 
     //         let shouldReset = false;

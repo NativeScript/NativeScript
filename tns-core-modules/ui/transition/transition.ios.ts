@@ -1,6 +1,6 @@
 ﻿import { Transition as TransitionDefinition } from "ui/transition";
 import { NavigationTransition } from "ui/frame";
-import * as trace from "trace";
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 import * as _slideTransitionModule from "./slide-transition";
 import * as _fadeTransitionModule from "./fade-transition";
 
@@ -46,8 +46,8 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
             case UINavigationControllerOperation.None: this._transitionType = "none"; break;
         }
 
-        if (trace.enabled) {
-            trace.write(`START ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+        if (traceEnabled) {
+            traceWrite(`START ${this._transition} ${this._transitionType}`, traceCategories.Transition);
         }
         this._transition.animateIOSTransition(containerView, this._fromVC.view, this._toVC.view, this._operation, completion);
     }
@@ -58,13 +58,13 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 
     public animationEnded(transitionCompleted: boolean): void {
         if (transitionCompleted) {
-            if (trace.enabled) {
-                trace.write(`END ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+            if (traceEnabled) {
+                traceWrite(`END ${this._transition} ${this._transitionType}`, traceCategories.Transition);
             }
         }
         else {
-            if (trace.enabled) {
-                trace.write(`CANCEL ${this._transition} ${this._transitionType}`, trace.categories.Transition);
+            if (traceEnabled) {
+                traceWrite(`CANCEL ${this._transition} ${this._transitionType}`, traceCategories.Transition);
             }
         }
     }

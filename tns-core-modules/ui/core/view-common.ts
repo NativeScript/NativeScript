@@ -1894,9 +1894,9 @@ opacityProperty.register(Style);
 export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 colorProperty.register(Style);
 
-export let fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal", defaultValue: Font.default });
+export const fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal", defaultValue: Font.default });
 
-export let fontFamilyProperty = new InheritedCssProperty<Style, string>({
+export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
     name: "fontFamily", cssName: "font-family", valueChanged: (target, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontFamily !== newValue) {
@@ -1906,7 +1906,7 @@ export let fontFamilyProperty = new InheritedCssProperty<Style, string>({
 });
 fontFamilyProperty.register(Style);
 
-export let fontSizeProperty = new InheritedCssProperty<Style, number>({
+export const fontSizeProperty = new InheritedCssProperty<Style, number>({
     name: "fontSize", cssName: "font-size", valueChanged: (target, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontSize !== newValue) {
@@ -1917,7 +1917,7 @@ export let fontSizeProperty = new InheritedCssProperty<Style, number>({
 });
 fontSizeProperty.register(Style);
 
-export let fontStyleProperty = new InheritedCssProperty<Style, "normal" | "italic">({
+export const fontStyleProperty = new InheritedCssProperty<Style, "normal" | "italic">({
     name: "fontStyle", cssName: "font-style", defaultValue: "normal", valueChanged: (target, newValue) => {
         if (!(newValue === "normal" || newValue === "italic")) {
             throw new Error(`font-style should be 'normal' or 'italic'. value: ${newValue}`)
@@ -1931,7 +1931,7 @@ export let fontStyleProperty = new InheritedCssProperty<Style, "normal" | "itali
 });
 fontStyleProperty.register(Style);
 
-export let fontWeightProperty = new InheritedCssProperty<Style, "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900">({
+export const fontWeightProperty = new InheritedCssProperty<Style, "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900">({
     name: "fontWeight", cssName: "font-weight", defaultValue: "normal", valueChanged: (target, newValue) => {
         if (!newValue) {
             console.trace();
@@ -1953,7 +1953,7 @@ export let fontWeightProperty = new InheritedCssProperty<Style, "100" | "200" | 
 });
 fontWeightProperty.register(Style);
 
-export let fontProperty = new ShorthandProperty<Style>({
+export const fontProperty = new ShorthandProperty<Style>({
     name: "font", cssName: "font",
     getter: function (this: Style) {
         return `${this.fontStyle} ${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;

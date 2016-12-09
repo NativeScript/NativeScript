@@ -3,7 +3,6 @@ import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, Color } 
 import { RESOURCE_PREFIX } from "utils/utils";
 import { fromFileOrResource } from "image-source";
 import * as application from "application";
-import * as trace from "trace";
 
 export * from "./action-bar-common";
 
@@ -316,7 +315,6 @@ export class ActionBar extends ActionBarBase {
 
         if (this.nativeView && child._nativeView) {
             this.nativeView.removeView(child._nativeView);
-            trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
         }
     }
 

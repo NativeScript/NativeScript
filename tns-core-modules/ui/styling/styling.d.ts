@@ -323,98 +323,98 @@
 //         export function numberConverter(cssValue: any): number;
 
         //@private
-        public _beginUpdate();
-        public _endUpdate();
-        public _resetCssValues(): void;
-        public _syncNativeProperties(): void;
-        // public _inheritStyleProperty(property: dependencyObservable.Property): void;
-        public _inheritStyleProperties(parent: view.View): void;
-        public _updateTextDecoration(): void;
-        public _updateTextTransform(): void;
+        // public _beginUpdate();
+        // public _endUpdate();
+        // public _resetCssValues(): void;
+        // public _syncNativeProperties(): void;
+        // // public _inheritStyleProperty(property: dependencyObservable.Property): void;
+        // public _inheritStyleProperties(parent: view.View): void;
+        // public _updateTextDecoration(): void;
+        // public _updateTextTransform(): void;
         //@endprivate
-    }
+    // }
 
-    /**
-     * Encapsulates the style properties definitions and utility methods.
-     */
-    module properties {
-        /**
-         * The font-size property definition.
-         */
-        export var fontSizeProperty: Property;
+//     /**
+//      * Encapsulates the style properties definitions and utility methods.
+//      */
+//     module properties {
+//         /**
+//          * The font-size property definition.
+//          */
+//         export var fontSizeProperty: Property;
 
-        /**
-         * The color property definition.
-         */
-        export var colorProperty: Property;
+//         /**
+//          * The color property definition.
+//          */
+//         export var colorProperty: Property;
 
-        /**
-         * The background-color property definition.
-         */
-        export var backgroundColorProperty: Property;
+//         /**
+//          * The background-color property definition.
+//          */
+//         export var backgroundColorProperty: Property;
 
-        /**
-         * The text-alignment property definition.
-         */
-        export var textAlignmentProperty: Property;
+//         /**
+//          * The text-alignment property definition.
+//          */
+//         export var textAlignmentProperty: Property;
 
-        /**
-         * Gets style Property by its name.
-         * @param The name.
-         */
-        export function getPropertyByName(name: string): Property;
+//         /**
+//          * Gets style Property by its name.
+//          * @param The name.
+//          */
+//         export function getPropertyByName(name: string): Property;
 
-        /**
-         * Gets style Property by its CSS name.
-         * @param The CSS name.
-         */
-        export function getPropertyByCssName(name: string): Property;
+//         /**
+//          * Gets style Property by its CSS name.
+//          * @param The CSS name.
+//          */
+//         export function getPropertyByCssName(name: string): Property;
 
-        /**
-         * Executes a callback for all defined style properties.
-         * @param The callback.
-         */
-        export function eachProperty(callback: (property: Property) => void);
+//         /**
+//          * Executes a callback for all defined style properties.
+//          * @param The callback.
+//          */
+//         export function eachProperty(callback: (property: Property) => void);
 
-        /**
-         * Executes a callback for all defined inheritable style properties.
-         * @param The callback.
-         */
-        export function eachInheritableProperty(callback: (property: Property) => void);
-    }
+//         /**
+//          * Executes a callback for all defined inheritable style properties.
+//          * @param The callback.
+//          */
+//         export function eachInheritableProperty(callback: (property: Property) => void);
+//     }
 
-    /**
-     * Encapsulates CSS converter methods.
-     */
-    module converters {
-        /**
-         * CSS color converter function.
-         * @param cssValue The css value.
-         */
-        export function colorConverter(cssValue: any): color.Color;
+//     /**
+//      * Encapsulates CSS converter methods.
+//      */
+//     module converters {
+//         /**
+//          * CSS color converter function.
+//          * @param cssValue The css value.
+//          */
+//         export function colorConverter(cssValue: any): color.Color;
 
-        /**
-         * CSS font-size converter function.
-         * @param cssValue The css value.
-         */
-        export function fontSizeConverter(cssValue: any): number;
+//         /**
+//          * CSS font-size converter function.
+//          * @param cssValue The css value.
+//          */
+//         export function fontSizeConverter(cssValue: any): number;
 
-        /**
-         * CSS text-align converter function.
-         * @param cssValue The css value.
-         */
-        export function textAlignConverter(cssValue: any): string;
+//         /**
+//          * CSS text-align converter function.
+//          * @param cssValue The css value.
+//          */
+//         export function textAlignConverter(cssValue: any): string;
 
-        /**
-         * CSS number converter function.
-         * @param cssValue The css value.
-         */
-        export function numberConverter(cssValue: any): number;
+//         /**
+//          * CSS number converter function.
+//          * @param cssValue The css value.
+//          */
+//         export function numberConverter(cssValue: any): number;
 
-        /**
-         * CSS visibility converter function.
-         * @param cssValue The css value.
-         */
-        export function visibilityConverter(cssValue: any): number;
-    }
-}
+//         /**
+//          * CSS visibility converter function.
+//          * @param cssValue The css value.
+//          */
+//         export function visibilityConverter(cssValue: any): number;
+//     }
+// }

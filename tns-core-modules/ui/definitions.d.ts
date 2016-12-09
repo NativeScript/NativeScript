@@ -7,13 +7,15 @@ declare module "ui/core/view-base" {
     } from "ui/core/properties";
     import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
     import { Style } from "ui/styling/style";
-    import { isIOS } from "platform";
+    import { isIOS, isAndroid } from "platform";
     import { fromString as gestureFromString } from "ui/gestures";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
+    import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 
     export {
         Observable, EventData, KeyframeAnimation,
-        Binding, BindingOptions, Bindable, Style, isIOS, gestureFromString
+        Binding, BindingOptions, Bindable, Style, isIOS, isAndroid, gestureFromString,
+        traceEnabled, traceWrite, traceCategories, traceNotifyEvent, isCategorySet
     };
 
     export * from "ui/core/properties";
@@ -65,8 +67,8 @@ declare module "ui/core/view-base" {
         public isCollapsed: boolean;
         public readonly isLoaded: boolean;
 
-        // public onLoaded(): void;
-        // public onUnloaded(): void;
+        public onLoaded(): void;
+        public onUnloaded(): void;
 
         public bind(options: BindingOptions, source: Object): void;
         public unbind(property: string): void;
@@ -179,4 +181,5 @@ declare module "ui/core/properties" {
     }
 
     export function applyNativeSetters(view: ViewBase): void;
+    export function resetStyleProperties(style: Style): void;
 }

@@ -68,8 +68,9 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
         let items = this.items;
         if (items) {
             items.forEach((item, i) => {
-            callback(item);
-        });
+                callback(item);
+            });
+        }
     }
 }
 
@@ -77,7 +78,9 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
  * Gets or sets the selected index dependency property of the SegmentedBar.
  */
 export const selectedIndexProperty = new CoercibleProperty<SegmentedBarBase, number>({
-    name: "selectedIndex", defaultValue: -1, valueConverter: (v) => parseInt(v), valueChanged: (target, oldValue, newValue) => {
+    name: "selectedIndex", defaultValue: -1,
+    valueConverter: (v) => parseInt(v),
+    valueChanged: (target, oldValue, newValue) => {
         target.notify(<SelectedIndexChangedEventData>{ eventName: SegmentedBarBase.selectedIndexChangedEvent, object: target, oldIndex: oldValue, newIndex: newValue });
     },
     coerceValue: (target, value) => {

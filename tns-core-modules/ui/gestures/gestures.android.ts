@@ -1,6 +1,6 @@
 ﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, View, layout, EventData } from "./gestures-common";
-import * as trace from "trace";
+import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, 
+    View, layout, EventData } from "./gestures-common";
 
 export * from "./gestures-common";
 
@@ -32,15 +32,9 @@ export class GesturesObserver extends GesturesObserverBase {
         if (this.target) {
             this.type = type;
             this._onTargetLoaded = args => {
-                if (trace.enabled) {
-                    trace.write(this.target + ".target loaded. android:" + this.target._nativeView, "gestures");
-                }
                 this._attach(this.target, type);
             };
             this._onTargetUnloaded = args => {
-                if (trace.enabled) {
-                    trace.write(this.target + ".target unloaded. android:" + this.target._nativeView, "gestures");
-                }
                 this._detach();
             };
 
@@ -68,10 +62,6 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     private _detach() {
-        if (trace.enabled) {
-            trace.write(this.target + "._detach() android:" + this.target._nativeView, "gestures");
-        }
-
         this._notifyTouch = false
         this._simpleGestureDetector = null;
         this._scaleGestureDetector = null;
@@ -82,9 +72,6 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     private _attach(target: View, type: GestureTypes) {
-        if (trace.enabled) {
-            trace.write(this.target + "._attach() android:" + this.target._nativeView, "gestures");
-        }
         this._detach();
 
         if (type & GestureTypes.tap || type & GestureTypes.doubleTap || type & GestureTypes.longPress) {

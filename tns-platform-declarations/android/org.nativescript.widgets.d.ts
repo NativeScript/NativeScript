@@ -350,10 +350,10 @@
 
                 setSelectedIndicatorColors(color: Array<number>): void;
                 getSelectedIndicatorColors(): Array<number>;
-                setTabTextColor(color: java.lang.Integer): void;
-                getTabTextColor(): java.lang.Integer;
-                setSelectedTabTextColor(color: java.lang.Integer): void;
-                getSelectedTabTextColor(): java.lang.Integer;
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
 
                 setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;

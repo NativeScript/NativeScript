@@ -9,7 +9,7 @@ function NSStringFromNSAttributedString(source: NSAttributedString | string): NS
     return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
 }
 
-function getTransformedText(text: string, transform: "none" | "capitalize" | "uppercase" | "lowercase"): string {
+export function getTransformedText(text: string, transform: "none" | "capitalize" | "uppercase" | "lowercase"): string {
     switch (transform) {
         case "uppercase":
             return NSStringFromNSAttributedString(text).uppercaseString;

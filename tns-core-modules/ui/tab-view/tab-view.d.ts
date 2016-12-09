@@ -2,8 +2,8 @@
  * Contains the TabView class, which represents a standard content component with tabs.
  */
 declare module "ui/tab-view" {
-    import { View, Bindable, Property, EventData, Color } from "ui/core/view";
-    
+    import { View, Bindable, Property, CssProperty, Style, EventData, Color } from "ui/core/view";
+
     /**
      * Represents a tab view entry.
      */
@@ -54,41 +54,6 @@ declare module "ui/tab-view" {
         selectedIndex: number;
 
         /**
-         * [Deprecated. Please use `selectedTabTextColor` to color the titles of the tabs on both platforms and `androidSelectedTabHighlightColor` to color the horizontal line at the bottom of the tab on Android.] Gets or sets the color used for selected item.
-         */
-        selectedColor: Color;
-
-        /**
-         * [Deprecated. Please use `tabBackgroundColor` instead] Gets or sets the color used for background of the tab items.
-         */
-        tabsBackgroundColor: Color;
-
-        /**
-         * Gets or sets the text color of the tabs titles.
-         */
-        tabTextColor: color.Color;
-        
-        /**
-         * Gets or sets the background color of the tabs.
-         */
-        tabBackgroundColor: color.Color;
-        
-        /**
-         * Gets or sets the text color of the selected tab title.
-         */
-        selectedTabTextColor: color.Color;
-       
-        /**
-         * Gets or sets the color of the horizontal line drawn below the currently selected tab on Android.
-         */
-        androidSelectedTabHighlightColor: color.Color;
-        
-        /**
-         * Gets or sets the text transform of the tab titles. 
-         */
-        textTransform: string;
-
-        /**
          * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
         android: any /* android.view.View */;//android.support.v4.view.ViewPager;
@@ -105,7 +70,7 @@ declare module "ui/tab-view" {
          *  - alwaysOriginal
          *  - alwaysTemplate  
          */
-        iosIconRenderingMode: string;
+        iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
         /**
          * Gets or sets the number of tabs that should be retained to either side of the current tab in the view hierarchy in an idle state. 
@@ -132,8 +97,13 @@ declare module "ui/tab-view" {
         on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
     }
 
-        export const itemsProperty: Property<TabView, TabViewItem[]>;
-        export const selectedIndexProperty: Property<TabView, number>;
-        export const selectedColorProperty: Property<TabView, Color>;
-        export const tabsBackgroundColorProperty: Property<TabView, Color>;
+    export const itemsProperty: Property<TabView, TabViewItem[]>;
+    export const selectedIndexProperty: Property<TabView, number>;
+
+    export const tabTextColorProperty: CssProperty<Style, Color>;
+    export const tabBackgroundColorProperty: CssProperty<Style, Color>;
+    export const selectedTabTextColorProperty: CssProperty<Style, Color>;
+    export const androidSelectedTabHighlightColorProperty: CssProperty<Style, Color>;
+    export const androidOffscreenTabLimitProperty: Property<TabView, number>
+    export const iosIconRenderingModeProperty: Property<TabView, "automatic" | "alwaysOriginal" | "alwaysTemplate">;
 }

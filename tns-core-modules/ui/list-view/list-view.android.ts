@@ -1,7 +1,7 @@
 ﻿import { ItemEventData, ItemsSource } from "ui/list-view";
 import {
     ListViewBase, View, KeyedTemplate, Length, Property, unsetValue, Observable, Color,
-    separatorColor, itemTemplatesProperty
+    separatorColorProperty, itemTemplatesProperty
 } from "./list-view-common";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { ProxyViewContainer } from "ui/proxy-view-container";
@@ -97,7 +97,7 @@ export class ListView extends ListViewBase {
             else {
                 // in some cases (like item is unloaded from another place (like angular) view.parent becomes undefined)
                 if (view.parent) {
-                    callback(view.parent);
+                    callback(<View>view.parent);
                 }
             }
         });
@@ -130,14 +130,14 @@ export class ListView extends ListViewBase {
         this._realizedTemplates.clear();
     }
 
-    get [separatorColor.native](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
+    get [separatorColorProperty.native](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
         let nativeView = this._android;
         return {
             dividerHeight: nativeView.getDividerHeight(),
             divider: nativeView.getDivider()
         };
     }
-    set [separatorColor.native](value: Color | { dividerHeight: number, divider: android.graphics.drawable.Drawable }) {
+    set [separatorColorProperty.native](value: Color | { dividerHeight: number, divider: android.graphics.drawable.Drawable }) {
         let nativeView = this._android;
         if (value instanceof Color) {
             nativeView.setDivider(new android.graphics.drawable.ColorDrawable(value.android));

@@ -3,7 +3,7 @@ import {
     AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise,
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, Color, layout, trace
+    scaleXProperty, scaleYProperty, Color, layout, traceWrite, traceEnabled, traceCategories
 } from "./animation-common";
 
 import { CacheLayerType } from "utils/utils";
@@ -39,35 +39,35 @@ propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
 export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
     switch (curve) {
         case "easeIn":
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animation curve resolved to android.view.animation.AccelerateInterpolator(1).", traceCategories.Animation);
             }
             return easeIn();
         case "easeOut":
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animation curve resolved to android.view.animation.DecelerateInterpolator(1).", traceCategories.Animation);
             }
             return easeOut();
         case "easeInOut":
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animation curve resolved to android.view.animation.AccelerateDecelerateInterpolator().", traceCategories.Animation);
             }
             return easeInOut();
         case "linear":
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.LinearInterpolator().", trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animation curve resolved to android.view.animation.LinearInterpolator().", traceCategories.Animation);
             }
             return linear();
         case "spring":
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to android.view.animation.BounceInterpolator().", trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animation curve resolved to android.view.animation.BounceInterpolator().", traceCategories.Animation);
             }
             return bounce();
         case "ease":
             return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(0.25, 0.1, 0.25, 1.0);
         default:
-            if (trace.enabled) {
-                trace.write("Animation curve resolved to original: " + curve, trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animation curve resolved to original: " + curve, traceCategories.Animation);
             }
             if (curve instanceof CubicBezierAnimationCurve) {
                 return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
@@ -99,24 +99,24 @@ export class Animation extends AnimationBase {
         let that = new WeakRef(this);
         this._animatorListener = new android.animation.Animator.AnimatorListener({
             onAnimationStart: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAndroidAnimationStart(" + animator + ")", trace.categories.Animation);
+                if (traceEnabled) {
+                    traceWrite("MainAnimatorListener.onAndroidAnimationStart(" + animator + ")", traceCategories.Animation);
                 }
             },
             onAnimationRepeat: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAnimationRepeat(" + animator + ")", trace.categories.Animation);
+                if (traceEnabled) {
+                    traceWrite("MainAnimatorListener.onAnimationRepeat(" + animator + ")", traceCategories.Animation);
                 }
             },
             onAnimationEnd: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAnimationEnd(" + animator + ")", trace.categories.Animation);
+                if (traceEnabled) {
+                    traceWrite("MainAnimatorListener.onAnimationEnd(" + animator + ")", traceCategories.Animation);
                 }
                 that.get()._onAndroidAnimationEnd();
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
-                if (trace.enabled) {
-                    trace.write("MainAnimatorListener.onAnimationCancel(" + animator + ")", trace.categories.Animation);
+                if (traceEnabled) {
+                    traceWrite("MainAnimatorListener.onAnimationCancel(" + animator + ")", traceCategories.Animation);
                 }
                 that.get()._onAndroidAnimationCancel();
             }
@@ -152,8 +152,8 @@ export class Animation extends AnimationBase {
 
         this._enableHardwareAcceleration();
 
-        if (trace.enabled) {
-            trace.write("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), trace.categories.Animation);
+        if (traceEnabled) {
+            traceWrite("Starting " + this._nativeAnimatorsArray.length + " animations " + (this._playSequentially ? "sequentially." : "together."), traceCategories.Animation);
         }
         this._animatorSet.setupStartValues();
         this._animatorSet.start();
@@ -162,8 +162,8 @@ export class Animation extends AnimationBase {
 
     public cancel(): void {
         super.cancel();
-        if (trace.enabled) {
-            trace.write("Cancelling AnimatorSet.", trace.categories.Animation);
+        if (traceEnabled) {
+            traceWrite("Cancelling AnimatorSet.", traceCategories.Animation);
         }
         this._animatorSet.cancel();
     }
@@ -202,8 +202,8 @@ export class Animation extends AnimationBase {
             return;
         }
 
-        if (trace.enabled) {
-            trace.write("Creating ObjectAnimator(s) for animation: " + Animation._getAnimationInfo(propertyAnimation) + "...", trace.categories.Animation);
+        if (traceEnabled) {
+            traceWrite("Creating ObjectAnimator(s) for animation: " + Animation._getAnimationInfo(propertyAnimation) + "...", traceCategories.Animation);
         }
 
         if (!propertyAnimation.target) {
@@ -384,8 +384,8 @@ export class Animation extends AnimationBase {
                 animators[i].setInterpolator(propertyAnimation.curve);
             }
 
-            if (trace.enabled) {
-                trace.write("Animator created: " + animators[i], trace.categories.Animation);
+            if (traceEnabled) {
+                traceWrite("Animator created: " + animators[i], traceCategories.Animation);
             }
         }
 

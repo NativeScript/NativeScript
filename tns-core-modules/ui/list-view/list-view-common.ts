@@ -9,11 +9,11 @@ export * from "ui/core/view";
 
 // TODO: Think of a way to register these instead of relying on hardcoded values.
 export module knownTemplates {
-    export let itemTemplate = "itemTemplate";
+    export const itemTemplate = "itemTemplate";
 }
 
 export module knownMultiTemplates {
-    export let itemTemplates = "itemTemplates";
+    export const itemTemplates = "itemTemplates";
 }
 
 function getLengthEffectiveValue(param: Length): number {

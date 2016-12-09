@@ -3,7 +3,7 @@ import { EditableTextBase, Property, booleanConverter } from "ui/editable-text-b
 
 export * from "ui/editable-text-base";
 
-export let secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false, valueConverter: booleanConverter });
+export const secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false, valueConverter: booleanConverter });
 secureProperty.register(TextFieldBase)
 
 export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {

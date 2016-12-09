@@ -5,6 +5,8 @@ declare module "ui/frame" {
     import { Page, View, Observable, EventData } from "ui/page";
     import { Transition } from "ui/transition";
 
+    export * from "ui/page";
+
     /**
      * Represents the logical View unit that is responsible for navigation withing an application.
      * Typically an application will have a Frame object at a root level.
@@ -357,8 +359,8 @@ declare module "ui/frame" {
 
     export function setActivityCallbacks(activity: any /*android.app.Activity*/): void;
     //@private
-    function reloadPage(): void;
-    function resolvePageFromEntry(entry: NavigationEntry): Page;
-    function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
+    export function reloadPage(): void;
+    export function resolvePageFromEntry(entry: NavigationEntry): Page;
+    export function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
     //@endprivate
 }

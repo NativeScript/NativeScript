@@ -6,11 +6,9 @@
     Pair
 } from "ui/animation";
 
-import { View, Color } from "ui/core/view";
-import * as trace from "trace";
+import { View, Color, traceEnabled, traceWrite, traceCategories } from "ui/core/view";
 
 export * from "ui/core/view";
-export { trace };
 
 export module Properties {
     export var opacity = "opacity";
@@ -65,8 +63,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             throw new Error("No animation definitions specified");
         }
 
-        if (trace.enabled) {
-            trace.write("Analyzing " + animationDefinitions.length + " animation definitions...", trace.categories.Animation);
+        if (traceEnabled) {
+            traceWrite("Analyzing " + animationDefinitions.length + " animation definitions...", traceCategories.Animation);
         }
 
         this._propertyAnimations = new Array<PropertyAnimation>();
@@ -78,8 +76,8 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         if (this._propertyAnimations.length === 0) {
             throw new Error("Nothing to animate.");
         }
-        if (trace.enabled) {
-            trace.write("Created " + this._propertyAnimations.length + " individual property animations.", trace.categories.Animation);
+        if (traceEnabled) {
+            traceWrite("Created " + this._propertyAnimations.length + " individual property animations.", traceCategories.Animation);
         }
 
         this._playSequentially = playSequentially;

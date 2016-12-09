@@ -1,8 +1,11 @@
-import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory,
-    View, colorProperty, fontInternalProperty, layout, Bindable, isIOS, Color, Font  } from "./tab-view-common"
-
+import {
+    TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
+    tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
+    androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
+    fontInternalProperty, traceCategory, View, colorProperty, layout, Bindable, isIOS, Color, Font, traceEnabled, traceWrite
+} from "./tab-view-common"
+import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
-import { enabled as traceEnabled, write as traceWrite } from "trace";
 import { RESOURCE_PREFIX, ad } from "utils/utils";
 
 export * from "./tab-view-common";
@@ -203,9 +206,6 @@ export class TabView extends TabViewBase {
         }
 
         this._viewPager = new android.support.v4.view.ViewPager(this._context);
-        if (this._androidOffscreenTabLimit !== 1) {
-            this._viewPager.setOffscreenPageLimit(this._androidOffscreenTabLimit);
-        }
         this._viewPager.setId(this._androidViewId);
         let lp = new org.nativescript.widgets.CommonLayoutParams();
         lp.row = 1;
@@ -263,7 +263,7 @@ export class TabView extends TabViewBase {
         }
 
         let nativeSelectedIndex = this._viewPager.getCurrentItem();
-        let selectedIndex = this.selectedIndex; 
+        let selectedIndex = this.selectedIndex;
         if (selectedIndex < 0) {
             this.selectedIndex = nativeSelectedIndex;
         }
@@ -298,6 +298,13 @@ export class TabView extends TabViewBase {
         return result;
     }
 
+    get [androidOffscreenTabLimitProperty.native](): number {
+        return this._viewPager.getOffscreenPageLimit();
+    }
+    set [androidOffscreenTabLimitProperty.native](value: number) {
+        this._viewPager.setOffscreenPageLimit(value);
+    }
+
     get [selectedIndexProperty.native](): number {
         return -1;
     }
@@ -315,20 +322,18 @@ export class TabView extends TabViewBase {
         this._onItemsPropertyChangedSetNativeValue();
     }
 
-    get [selectedColorProperty.native](): number {
-        //from https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-        return 0xFF33B5E5;
+    get [tabTextColorProperty.native](): number {
+        return this._tabLayout.getTabTextColor();
     }
-    set [selectedColorProperty.native](value: number | Color) {
-        let tabLayout = this._tabLayout;
+    set [colorProperty.native](value: number | Color) {
         let color = value instanceof Color ? value.android : value;
-        tabLayout.setSelectedIndicatorColors([color]);
+        this._tabLayout.setTabTextColor(color);
     }
 
-    get [tabsBackgroundColorProperty.native](): android.graphics.drawable.Drawable {
+    get [tabBackgroundColorProperty.native](): android.graphics.drawable.Drawable {
         return this._tabLayout.getBackground();
     }
-    set [tabsBackgroundColorProperty.native](value: android.graphics.drawable.Drawable | Color) {
+    set [tabBackgroundColorProperty.native](value: android.graphics.drawable.Drawable | Color) {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
@@ -336,30 +341,25 @@ export class TabView extends TabViewBase {
         }
     }
 
-    get [colorProperty.native](): number {
-        let items = this.items;
-        if (items && items.length > 0) {
-            let tv = this._tabLayout.getTextViewForItemAt(0);
-            if (tv) {
-                return tv.getTextColors().getDefaultColor();
-            }
-        }
-
-        return undefined;
+    get [selectedTabTextColorProperty.native](): number {
+        return this._tabLayout.getSelectedTabTextColor();
     }
-    set [colorProperty.native](value: number | Color) {
-        let items = this.items;
-        if (items && items.length > 0) {
-            let color = value instanceof Color ? value.android : value;
-            let tabLayout = this._tabLayout;
-
-            for (let i = 0, length = items.length; i < length; i++) {
-                let tv = tabLayout.getTextViewForItemAt(i);
-                tv.setTextColor(color);
-            }
-        }
+    set [selectedTabTextColorProperty.native](value: number | Color) {
+        let color = value instanceof Color ? value.android : value;
+        this._tabLayout.setTabTextColor(color);
     }
 
+    get [androidSelectedTabHighlightColorProperty.native](): number {
+        //from https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
+        return 0xFF33B5E5;
+    }
+    set [androidSelectedTabHighlightColorProperty.native](value: number | Color) {
+        let tabLayout = this._tabLayout;
+        let color = value instanceof Color ? value.android : value;
+        tabLayout.setSelectedIndicatorColors([color]);
+    }
+
+    // TODO: Move this to TabViewItem
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
         let items = this.items;
         if (items && items.length > 0) {
@@ -402,6 +402,24 @@ export class TabView extends TabViewBase {
                     tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, fontSize);
                 }
             }
+        }
+    }
+
+    // TODO: Move this to TabViewItem
+    get [textTransformProperty.native](): TextTransform {
+        return "none";
+    }
+    set [textTransformProperty.native](value: TextTransform) {
+        let tabLayout = this._tabLayout;
+        let items = this.items;
+        if (!items) {
+            return;
+        }
+
+        for (let i = 0, count = items.length; i < count; i++) {
+            const textView = tabLayout.getTextViewForItemAt(i);
+            const result = getTransformedText(items[i].title, value);
+            textView.setText(result);
         }
     }
 }

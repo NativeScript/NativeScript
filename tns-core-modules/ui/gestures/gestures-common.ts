@@ -29,10 +29,10 @@ export enum SwipeDirection {
 }
 
 export module TouchAction {
-    export let down = "down";
-    export let up = "up";
-    export let move = "move";
-    export let cancel = "cancel";
+    export const down = "down";
+    export const up = "up";
+    export const move = "move";
+    export const cancel = "cancel";
 }
 
 export function toString(type: GestureTypes, separator?: string): string {

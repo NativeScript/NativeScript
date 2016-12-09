@@ -53,7 +53,7 @@ export abstract class TabViewItemBase extends Bindable implements TabViewItemDef
 }
 
 export module knownCollections {
-    export let items = "items";
+    export const items = "items";
 }
 
 export class TabViewBase extends View implements TabViewDefinition, AddArrayFromBuilder {
@@ -61,8 +61,8 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
 
     public items: TabViewItemDefinition[];
     public selectedIndex: number;
-    public selectedColor: Color;
-    public tabsBackgroundColor: Color;
+    public androidOffscreenTabLimit: number;
+    public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
     protected previousItems: TabViewItemDefinition[];
 
@@ -133,15 +133,15 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         }
     }
 
-    public _onBindingContextChanged(oldValue: any, newValue: any) {
-        super._onBindingContextChanged(oldValue, newValue);
-        if (this.items && this.items.length > 0) {
+    // public _onBindingContextChanged(oldValue: any, newValue: any) {
+    //     super._onBindingContextChanged(oldValue, newValue);
+    //     if (this.items && this.items.length > 0) {
 
-            for (let i = 0, length = this.items.length; i < length; i++) {
-                this.items[i].bindingContext = newValue;
-            }
-        }
-    }
+    //         for (let i = 0, length = this.items.length; i < length; i++) {
+    //             this.items[i].bindingContext = newValue;
+    //         }
+    //     }
+    // }
 
     public onItemsPropertyChanged(oldValue: TabViewItemDefinition[], newValue: TabViewItemDefinition[]) {
         this.previousItems = oldValue;
@@ -178,6 +178,15 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
     valueConverter: (v) => parseInt(v)
 });
 selectedIndexProperty.register(TabViewBase);
+
+export const iosIconRenderingModeProperty = new Property<TabViewBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({name: "iosIconRenderingMode", defaultValue: "automatic" });
+iosIconRenderingModeProperty.register(TabViewBase);
+
+export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
+    name: "androidOffscreenTabLimit", defaultValue: 1, affectsLayout: isIOS,
+    valueConverter: (v) => parseInt(v)
+});
+androidOffscreenTabLimitProperty.register(TabViewBase);
 
 export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 tabTextColorProperty.register(Style);

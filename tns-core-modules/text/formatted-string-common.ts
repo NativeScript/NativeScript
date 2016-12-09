@@ -7,12 +7,12 @@ import { isString } from "utils/types";
 import { Color } from "color";
 
 export module knownCollections {
-    export let spans = "spans";
+    export const spans = "spans";
 }
 
-let CHILD_SPAN = "Span";
-let CHILD_FORMATTED_TEXT = "formattedText";
-let CHILD_FORMATTED_STRING = "FormattedString";
+const CHILD_SPAN = "Span";
+const CHILD_FORMATTED_TEXT = "formattedText";
+const CHILD_FORMATTED_STRING = "FormattedString";
 
 export abstract class FormattedStringBase extends Observable implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
     private _spans: ObservableArray<Span>;

@@ -1,7 +1,7 @@
 ﻿import { ItemEventData, ItemsSource } from "ui/list-view";
 import {
     ListViewBase, View, KeyedTemplate, Length, Property, unsetValue, Observable, Color,
-    separatorColor, itemTemplatesProperty, layout, EventData
+    separatorColorProperty, itemTemplatesProperty, layout, EventData
 } from "./list-view-common";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { ProxyViewContainer } from "ui/proxy-view-container";
@@ -370,10 +370,10 @@ export class ListView extends ListViewBase {
         this._map.delete(cell);
     }
 
-    get [separatorColor.native](): UIColor {
+    get [separatorColorProperty.native](): UIColor {
         return this._ios.separatorColor;
     }
-    set [separatorColor.native](value: Color | UIColor) {
+    set [separatorColorProperty.native](value: Color | UIColor) {
         this._ios.separatorColor = value instanceof Color ? value.ios : value;
     }
 

@@ -5,8 +5,6 @@ import { DIALOG_FRAGMENT_TAG } from "./constants";
 import { device } from "platform";
 import { applyNativeSetters } from "ui/core/properties";
 
-import * as trace from "trace";
-
 export * from "./page-common";
 
 const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
@@ -128,13 +126,7 @@ export class Page extends PageBase {
     public _onDetached(force?: boolean) {
         const skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
-        if (skipDetached) {
-            // Do not detach the context and android reference.
-            if (trace.enabled) {
-                trace.write(`Caching ${this}`, trace.categories.NativeLifecycle);
-            }
-        }
-        else {
+        if (!skipDetached) {
             super._onDetached();
         }
     }

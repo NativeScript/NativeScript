@@ -22,12 +22,12 @@ export class View extends ViewCommon {
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
 
-    public _addViewCore(view: ViewDefinition, atIndex?: number) {
+    public _addViewCore(view: ViewCommon, atIndex?: number) {
         super._addViewCore(view, atIndex);
         this.requestLayout();
     }
 
-    public _removeViewCore(view: ViewDefinition) {
+    public _removeViewCore(view: ViewCommon) {
         super._removeViewCore(view);
         // TODO: Detach from the context?
         view._onDetached();

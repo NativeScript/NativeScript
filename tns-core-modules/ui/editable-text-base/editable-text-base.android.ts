@@ -2,7 +2,7 @@
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty, placeholderColorProperty
+    textProperty, placeholderColorProperty, Color
 } from "./editable-text-base-common";
 
 import { ad } from "utils/utils";

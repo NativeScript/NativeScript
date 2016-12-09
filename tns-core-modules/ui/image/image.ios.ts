@@ -1,12 +1,14 @@
-import { ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, layout, Color } from "./image-common";
-import { enable as traceEnabled, write as traceWrite, categories as traceCategories} from "trace";
+import {
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, layout, Color,
+    traceEnabled, traceWrite, traceCategories
+} from "./image-common";
 
 export * from "./image-common";;
 
 export class Image extends ImageBase {
     private _ios: UIImageView;
     private _imageSourceAffectsLayout: boolean = true;
-    private _templateImageWasCreated: boolean = false;
+    private _templateImageWasCreated: boolean;
 
     constructor() {
         super();

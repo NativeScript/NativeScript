@@ -1,12 +1,13 @@
-﻿import { PageBase, View, layout, Color, 
-    actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty
- } from "./page-common";
+﻿import {
+    PageBase, View, layout, Color,
+    actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty,
+    traceEnabled, traceWrite, traceCategories
+} from "./page-common";
 import { ios as iosApp } from "application";
 import { device } from "platform";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import * as uiUtils from "ui/utils";
-import * as trace from "trace";
 
 export * from "./page-common";
 
@@ -76,8 +77,8 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        if (trace.enabled) {
-            trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+        if (traceEnabled) {
+            traceWrite(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, traceCategories.ViewHierarchy);
         }
 
         if (!owner.isLoaded) {
@@ -131,8 +132,8 @@ class UIViewControllerImpl extends UIViewController {
                 }
             }
 
-            if (trace.enabled) {
-                trace.write(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
+            if (traceEnabled) {
+                traceWrite(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), traceCategories.Layout);
             }
         }
         else {
@@ -147,9 +148,9 @@ class UIViewControllerImpl extends UIViewController {
         super.viewWillAppear(animated);
         this.shown = false;
         let page = this._owner.get();
-        if (trace.enabled) {
-            if (trace.enabled) {
-                trace.write(page + " viewWillAppear", trace.categories.Navigation);
+        if (traceEnabled) {
+            if (traceEnabled) {
+                traceWrite(page + " viewWillAppear", traceCategories.Navigation);
             }
         }
         if (!page) {
@@ -199,8 +200,8 @@ class UIViewControllerImpl extends UIViewController {
         super.viewDidAppear(animated);
         this.shown = true;
         let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewDidAppear", trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(page + " viewDidAppear", traceCategories.Navigation);
         }
         if (!page) {
             return;
@@ -250,8 +251,8 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillDisappear(animated: boolean): void {
         let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewWillDisappear", trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(page + " viewWillDisappear", traceCategories.Navigation);
         }
         if (!page) {
             return;
@@ -276,8 +277,8 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidDisappear(animated: boolean): void {
         let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewDidDisappear", trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(page + " viewDidDisappear", traceCategories.Navigation);
         }
         // Exit if no page or page is hiding because it shows another page modally.
         if (!page || page.modal || page._presentedViewController) {
@@ -367,8 +368,8 @@ export class Page extends PageBase {
 
     private _addNativeView(view: View) {
         if (view) {
-            if (trace.enabled) {
-                trace.write("Native: Adding " + view + " to " + this, trace.categories.ViewHierarchy);
+            if (traceEnabled) {
+                traceWrite("Native: Adding " + view + " to " + this, traceCategories.ViewHierarchy);
             }
             if (view.ios instanceof UIView) {
                 this._ios.view.addSubview(view.ios);
@@ -381,8 +382,8 @@ export class Page extends PageBase {
 
     private _removeNativeView(view: View) {
         if (view) {
-            if (trace.enabled) {
-                trace.write("Native: Removing " + view + " from " + this, trace.categories.ViewHierarchy);
+            if (traceEnabled) {
+                traceWrite("Native: Removing " + view + " from " + this, traceCategories.ViewHierarchy);
             }
             if (view.ios instanceof UIView) {
                 (<UIView>view.ios).removeFromSuperview();
@@ -455,7 +456,7 @@ export class Page extends PageBase {
         if (this.frame && value) {
             let navigationController = frame.ios.controller;
             let navigationBar = navigationController.navigationBar;
-            
+
             navigationBar.barStyle = value === "dark" ? 1 : 0;
         }
     }

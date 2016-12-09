@@ -2,9 +2,8 @@ import { WebView as WebViewDefinition, LoadEventData } from "ui/web-view";
 import { View, Property, EventData } from "ui/core/view";
 import { isFileOrResourcePath } from "utils/utils";
 import { File, knownFolders, path } from "file-system";
-import * as trace from "trace";
 
-export { trace, File, knownFolders, path };
+export { File, knownFolders, path };
 export * from "ui/core/view";
 
 export abstract class WebViewBase extends View implements WebViewDefinition {
@@ -86,10 +85,6 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
 
         this.stopLoading();
 
-        if (trace.enabled) {
-            trace.write("WebView._loadSrc(" + src + ")", trace.categories.Debug);
-        }
-
         if (isFileOrResourcePath(src)) {
             if (src.indexOf("~/") === 0) {
                 src = path.join(knownFolders.currentApp().path, src.replace("~/", ""));
@@ -108,5 +103,5 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
     }
 }
 
-export let srcProperty = new Property<WebViewBase, string>({ name: "url" });
+export const srcProperty = new Property<WebViewBase, string>({ name: "url" });
 srcProperty.register(WebViewBase);

@@ -1,15 +1,7 @@
-﻿import common = require("./utils-common");
-import * as traceModule from "trace";
-import enums = require("ui/enums");
+﻿import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, 
+    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 
-global.moduleMerge(common, exports);
-
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
+export * from "./utils-common";
 
 export module layout {
     var density = -1;
@@ -69,15 +61,15 @@ export module ad {
 
         var values = (value + "").split(" ");
 
-        if (values.indexOf(enums.TextDecoration.underline) !== -1) {
+        if (values.indexOf("underline") !== -1) {
             flags = flags | android.graphics.Paint.UNDERLINE_TEXT_FLAG;
         }
 
-        if (values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
+        if (values.indexOf("line-through") !== -1) {
             flags = flags | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
         }
 
-        if (values.indexOf(enums.TextDecoration.none) === -1) {
+        if (values.indexOf("none") === -1) {
             view.setPaintFlags(flags);
         } else {
             view.setPaintFlags(0);
@@ -103,24 +95,27 @@ export module ad {
         let result: string;
 
         switch (textTransform) {
-            case enums.TextTransform.none:
+            case "uppercase":
+                view.setTransformationMethod(null);
+                result = stringToTransform.toUpperCase();
+                break;
+
+            case "lowercase":
+                view.setTransformationMethod(null);
+                result = stringToTransform.toLowerCase();
+                break;
+
+            case "capitalize":
+                view.setTransformationMethod(null);
+                result = getCapitalizedString(stringToTransform);
+                break;
+
+            case "none":
             default:
                 result = view["originalString"] || stringToTransform;
                 if (view["transformationMethod"]) {
                     view.setTransformationMethod(view["transformationMethod"]);
                 }
-                break;
-            case enums.TextTransform.uppercase:
-                view.setTransformationMethod(null);
-                result = stringToTransform.toUpperCase();
-                break;
-            case enums.TextTransform.lowercase:
-                view.setTransformationMethod(null);
-                result = stringToTransform.toLowerCase();
-                break;
-            case enums.TextTransform.capitalize:
-                view.setTransformationMethod(null);
-                result = getCapitalizedString(stringToTransform);
                 break;
         }
 
@@ -144,46 +139,47 @@ export module ad {
     }
 
     export function setWhiteSpace(view: android.widget.TextView, value: string) {
-        view.setSingleLine(value === enums.WhiteSpace.nowrap);
-        view.setEllipsize(value === enums.WhiteSpace.nowrap ? android.text.TextUtils.TruncateAt.END : null);
+        let nowrap = value === "nowrap";
+        view.setSingleLine(nowrap);
+        view.setEllipsize(nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
-    
+
     let nativeApp: android.app.Application;
     declare var com;
     export function getApplication() {
-        if(!nativeApp) {
+        if (!nativeApp) {
             // check whether the com.tns.NativeScriptApplication type exists
-            if(com.tns.NativeScriptApplication) {
+            if (com.tns.NativeScriptApplication) {
                 nativeApp = com.tns.NativeScriptApplication.getInstance();
             }
-            
+
             // the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
-            if(!nativeApp) {
+            if (!nativeApp) {
                 // check whether application.android.init has been explicitly called
                 let application = require("application");
                 nativeApp = application.android.nativeApp;
-                
-                if(!nativeApp) {
+
+                if (!nativeApp) {
                     // TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module? 
                     let clazz = java.lang.Class.forName("android.app.ActivityThread");
-                    if(clazz) {
+                    if (clazz) {
                         let method = clazz.getMethod("currentApplication", null);
-                        if(method) {
+                        if (method) {
                             nativeApp = method.invoke(null, null);
                         }
                     }
                 }
             }
-            
+
             // we cannot work without having the app instance
-            if(!nativeApp) {
+            if (!nativeApp) {
                 throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
             }
         }
-        
+
         return nativeApp;
     }
-    export function getApplicationContext() { 
+    export function getApplicationContext() {
         let app = getApplication();
         return app.getApplicationContext();
     }
@@ -278,9 +274,7 @@ export module ad {
                 }
             }
             catch (ex) {
-                ensureTrace();
-
-                trace.write("Cannot get pallete color: " + name, trace.categories.Error, trace.messageType.error);
+                traceWrite("Cannot get pallete color: " + name, traceCategories.Error, traceMessageType.error);
             }
 
             attrCache.set(name, result);
@@ -301,9 +295,8 @@ export function openUrl(location: string): boolean {
 
         context.startActivity(intent);
     } catch (e) {
-        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
+        traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
         return false;
     }
     return true;

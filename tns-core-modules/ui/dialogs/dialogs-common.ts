@@ -20,12 +20,12 @@ export module inputType {
     /**
      * Plain text input type.
      */
-    export let text: string = "text";
+    export const text: string = "text";
 
     /**
      * Password input type.
      */
-    export let password: string = "password";
+    export const password: string = "password";
 }
 
 export function getCurrentPage(): Page {

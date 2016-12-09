@@ -1,4 +1,4 @@
-import { WebViewBase, File, knownFolders, path, trace } from "./web-view-common";
+import { WebViewBase, File, knownFolders, path, traceEnabled, traceWrite, traceCategories } from "./web-view-common";
 
 export * from "./web-view-common";
 
@@ -19,8 +19,8 @@ function ensureWebViewClientClass() {
         }
 
         public shouldOverrideUrlLoading(view: android.webkit.WebView, url: string) {
-            if (trace.enabled) {
-                trace.write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", trace.categories.Debug);
+            if (traceEnabled) {
+                traceWrite("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", traceCategories.Debug);
             }
             return false;
         }
@@ -29,8 +29,8 @@ function ensureWebViewClientClass() {
             super.onPageStarted(view, url, favicon);
 
             if (this._view) {
-                if (trace.enabled) {
-                    trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
+                if (traceEnabled) {
+                    traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
                 }
                 this._view._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
             }
@@ -40,8 +40,8 @@ function ensureWebViewClientClass() {
             super.onPageFinished(view, url);
 
             if (this._view) {
-                if (trace.enabled) {
-                    trace.write("WebViewClientClass.onPageFinished(" + url + ")", trace.categories.Debug);
+                if (traceEnabled) {
+                    traceWrite("WebViewClientClass.onPageFinished(" + url + ")", traceCategories.Debug);
                 }
                 this._view._onLoadFinished(url, undefined);
             }
@@ -58,8 +58,8 @@ function ensureWebViewClientClass() {
                 super.onReceivedError(view, errorCode, description, failingUrl);
 
                 if (this._view) {
-                    if (trace.enabled) {
-                        trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
+                    if (traceEnabled) {
+                        traceWrite("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", traceCategories.Debug);
                     }
                     this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
@@ -70,8 +70,8 @@ function ensureWebViewClientClass() {
                 super.onReceivedError(view, request, error);
 
                 if (this._view) {
-                    if (trace.enabled) {
-                        trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", trace.categories.Debug);
+                    if (traceEnabled) {
+                        traceWrite("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", traceCategories.Debug);
                     }
                     this._view._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
                 }
@@ -116,8 +116,8 @@ export class WebView extends WebViewBase {
             return;
         }
 
-        if (trace.enabled) {
-            trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
         }
         this._android.stopLoading();
         this._android.loadUrl(url);

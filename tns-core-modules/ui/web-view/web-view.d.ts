@@ -7,7 +7,7 @@ declare module "ui/web-view" {
     /**
      * Represents the observable property backing the Url property of each WebView instance.
      */
-    export let urlProperty: Property<WebView, string>;
+    export const urlProperty: Property<WebView, string>;
 
     /**
      * Represents a standard WebView widget.

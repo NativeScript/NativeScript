@@ -25,6 +25,7 @@ function dateComparer(x: Date, y: Date): boolean {
     return (x <= y && x >= y) ? true : false;
 }
 
+// TODO: Make CoercibleProperties
 export const maxDateProperty = new Property<DatePickerBase, Date>({ name: "maxDate", equalityComparer: dateComparer, valueConverter: (v) => new Date(v) });
 maxDateProperty.register(DatePickerBase);
 

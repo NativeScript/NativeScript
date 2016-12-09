@@ -280,8 +280,8 @@ function applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
     //         try {
     //             view.style._setValue(resolvedProperty, value, modifier);
     //         } catch (ex) {
-    //             if (trace.enabled) {
-    //                 trace.write("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, trace.categories.Style, trace.messageType.error);
+    //             if (traceEnabled) {
+    //                 traceWrite("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, traceCategories.Style, trace.messageType.error);
     //             }
     //         }
     //     }

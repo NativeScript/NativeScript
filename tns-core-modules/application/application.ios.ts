@@ -3,8 +3,6 @@ import {Frame, NavigationEntry} from "ui/frame";
 import definition = require("application");
 import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
-import * as enumsModule from "ui/enums";
-
 import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
@@ -188,20 +186,18 @@ class IOSApplication implements definition.iOSApplication {
         if (this._currentOrientation !== orientation) {
             this._currentOrientation = orientation;
 
-            var enums: typeof enumsModule = require("ui/enums");
-
-            var newValue;
+            let newValue: "portrait" | "landscape" | "unknown";
             switch (orientation) {
                 case UIDeviceOrientation.LandscapeRight:
                 case UIDeviceOrientation.LandscapeLeft:
-                    newValue = enums.DeviceOrientation.landscape;
+                    newValue = "landscape";
                     break;
                 case UIDeviceOrientation.Portrait:
                 case UIDeviceOrientation.PortraitUpsideDown:
-                    newValue = enums.DeviceOrientation.portrait;
+                    newValue = "portrait";
                     break;
                 default:
-                    newValue = enums.DeviceOrientation.unknown;
+                    newValue = "unknown";
                     break;
             }
 

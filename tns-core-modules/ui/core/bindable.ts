@@ -3,13 +3,14 @@ import { Observable, PropertyChangeData } from "data/observable";
 import { unsetValue, DependencyObservable, Property, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData as DependencyPropertyChangeData } from "ui/core/dependency-observable";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import types = require("utils/types");
-import trace = require("trace");
 import bindingBuilder = require("../builder/binding-builder");
 import { ViewBase, isEventOrGesture } from "ui/core/view-base";
 import * as application from "application";
 import * as polymerExpressions from "js-libs/polymer-expressions";
 import * as specialProperties from "ui/builder/special-properties";
 import * as utils from "utils/utils";
+
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType } from "trace";
 
 let bindingContextProperty = new Property(
     "bindingContext",
@@ -86,8 +87,8 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     }
 
     public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-        if (trace.enabled) {
-            trace.write(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, trace.categories.Binding);
+        if (traceEnabled) {
+            traceWrite(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, traceCategories.Binding);
         }
         super._onPropertyChanged(property, oldValue, newValue);
         // if (this instanceof viewModule.View) {
@@ -99,14 +100,14 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
         let binding = this.bindings.get(property.name);
         if (binding && !binding.updating) {
             if (binding.options.twoWay) {
-                if (trace.enabled) {
-                    trace.write(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, trace.categories.Binding);
+                if (traceEnabled) {
+                    traceWrite(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, traceCategories.Binding);
                 }
                 this._updateTwoWayBinding(property.name, newValue);
             }
             else {
-                if (trace.enabled) {
-                    trace.write(`${this}.unbind(${property.name});`, trace.categories.Binding);
+                if (traceEnabled) {
+                    traceWrite(`${this}.unbind(${property.name});`, traceCategories.Binding);
                 }
                 this.unbind(property.name);
             }
@@ -125,8 +126,8 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
 
         this.bindings.forEach((binding, index, bindings) => {
             if (!binding.updating && binding.sourceIsBindingContext && binding.options.targetProperty !== "bindingContext") {
-                if (trace.enabled) {
-                    trace.write(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${bindingContextSource}`, trace.categories.Binding);
+                if (traceEnabled) {
+                    traceWrite(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${bindingContextSource}`, traceCategories.Binding);
                 }
                 if (!types.isNullOrUndefined(bindingContextSource)) {
                     binding.bind(bindingContextSource);
@@ -362,7 +363,7 @@ export class Binding {
 
             let expressionValue = this._getExpressionValue(updateExpression, true, changedModel);
             if (expressionValue instanceof Error) {
-                trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
+                traceWrite((<Error>expressionValue).message, traceCategories.Binding, traceMessageType.error);
             }
 
             newValue = expressionValue;
@@ -421,7 +422,7 @@ export class Binding {
         if (this.options.expression) {
             let expressionValue = this._getExpressionValue(this.options.expression, false, undefined);
             if (expressionValue instanceof Error) {
-                trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
+                traceWrite((<Error>expressionValue).message, traceCategories.Binding, traceMessageType.error);
             } else {
                 this.updateTarget(expressionValue);
             }
@@ -507,7 +508,7 @@ export class Binding {
             changedModel[bc.bindingValueKey] = this.source ? this.source.get() : undefined;
             let expressionValue = this._getExpressionValue(this.options.expression, false, changedModel);
             if (expressionValue instanceof Error) {
-                trace.write((<Error>expressionValue).message, trace.categories.Binding, trace.messageType.error);
+                traceWrite((<Error>expressionValue).message, traceCategories.Binding, traceMessageType.error);
             }
             else {
                 return expressionValue;
@@ -524,7 +525,7 @@ export class Binding {
                 this.sourceOptions.property in sourceOptionsInstance) {
                 return sourceOptionsInstance[this.sourceOptions.property];
             } else {
-                trace.write("Property: '" + this.sourceOptions.property + "' is invalid or does not exist. SourceProperty: '" + this.options.sourceProperty + "'", trace.categories.Binding, trace.messageType.error);
+                traceWrite("Property: '" + this.sourceOptions.property + "' is invalid or does not exist. SourceProperty: '" + this.options.sourceProperty + "'", traceCategories.Binding, traceMessageType.error);
             }
         }
 
@@ -632,9 +633,9 @@ export class Binding {
             }
         }
         catch (ex) {
-            trace.write("Binding error while setting property " + options.property + " of " + optionsInstance + ": " + ex,
-                trace.categories.Binding,
-                trace.messageType.error);
+            traceWrite("Binding error while setting property " + options.property + " of " + optionsInstance + ": " + ex,
+                traceCategories.Binding,
+                traceMessageType.error);
         }
 
         this.updating = false;

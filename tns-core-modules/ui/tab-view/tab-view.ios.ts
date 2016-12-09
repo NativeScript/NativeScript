@@ -1,10 +1,13 @@
-﻿import { TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty, selectedColorProperty, tabsBackgroundColorProperty, traceCategory, 
-    Font, View, colorProperty, fontInternalProperty, layout, Color } from "./tab-view-common"
+﻿import {
+    TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
+    tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceCategory,
+    Font, View, colorProperty, fontInternalProperty, layout, Color, traceEnabled, traceWrite, traceCategories
+} from "./tab-view-common"
 
+import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
 import { Page } from "ui/page";
 import { ios } from "utils/utils";
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
 
 import getter = ios.getter;
 
@@ -286,26 +289,8 @@ export class TabView extends TabViewBase {
         }
     }
 
-    private _iconRenderingMode: string;
-    get iosIconRenderingMode(): string {
-        return this._iconRenderingMode;
-    }
-    set iosIconRenderingMode(value: string) {
-        if (this._iconRenderingMode !== value){
-            this._iconRenderingMode = value;
-            this._iconsCache = {};
-            if (this.items && this.items.length){
-                for (let i = 0, length = this.items.length; i < length; i++) {
-                    if (this.items[i].iconSource) {
-                        (<any>this.items[i])._update();
-                    }
-                }
-            }
-        }
-    }
-
     private _getIconRenderingMode(): UIImageRenderingMode {
-        switch(this._iconRenderingMode) {
+        switch (this.iosIconRenderingMode) {
             case "alwaysOriginal":
                 return UIImageRenderingMode.AlwaysOriginal;
             case "alwaysTemplate":
@@ -388,15 +373,29 @@ export class TabView extends TabViewBase {
     }
 
     private _updateIOSTabBarColorsAndFonts(): void {
-        const tabBar = this._ios.tabBar;
+        if (!this.items) {
+            return;
+        }
 
-        tabBar.tintColor = this.selectedColor ? this.selectedColor.ios : null;
+        const tabBar = this._ios.tabBar;
         const states = getTitleAttributesForStates(this);
 
         for (let i = 0, count = tabBar.items.count; i < count; i++) {
             const item = tabBar.items[i];
             item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
             item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
+        }
+    }
+
+    private _updateIOSTabBarTextTransform(newValue: TextTransform): void {
+        if (!this.items) {
+            return;
+        }
+
+        const tabBar = this.ios.tabBar;
+        for (let i = 0, count = tabBar.items.count; i < count; i++) {
+            const item = tabBar.items[i];
+            item.title = getTransformedText(item.title, newValue);
         }
     }
 
@@ -432,25 +431,59 @@ export class TabView extends TabViewBase {
         this._onItemsPropertyChangedSetNativeValue();
     }
 
-    get [colorProperty.native](): UIColor {
+    get [tabTextColorProperty.native](): UIColor {
         return null;
     }
-    set [colorProperty.native](value: UIColor) {
+    set [tabTextColorProperty.native](value: UIColor) {
         this._updateIOSTabBarColorsAndFonts();
     }
 
-    get [tabsBackgroundColorProperty.native](): UIColor {
+    get [tabBackgroundColorProperty.native](): UIColor {
         return this._ios.tabBar.barTintColor;
     }
-    set [tabsBackgroundColorProperty.native](value: UIColor | Color) {
+    set [tabBackgroundColorProperty.native](value: UIColor | Color) {
         this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
     }
 
+    get [selectedTabTextColorProperty.native](): UIColor {
+        return this._ios.tabBar.tintColor;
+    }
+    set [selectedTabTextColorProperty.native](value: UIColor) {
+        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
+        this._updateIOSTabBarColorsAndFonts();
+    }
+
+    // TODO: Move this to TabViewItem
+    get [textTransformProperty.native](): TextTransform {
+        return "none";
+    }
+    set [textTransformProperty.native](value: TextTransform) {
+        this._updateIOSTabBarTextTransform(value);
+    }
+
+    // TODO: Move this to TabViewItem
     get [fontInternalProperty.native](): Font {
         return null;
     }
     set [fontInternalProperty.native](value: Font) {
         this._updateIOSTabBarColorsAndFonts();
+    }
+
+    // TODO: Move this to TabViewItem
+    get [iosIconRenderingModeProperty.native](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
+        return "automatic";
+    }
+    set [iosIconRenderingModeProperty.native](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
+        this._iconsCache = {};
+        let items = this.items;
+        if (items && items.length) {
+            for (let i = 0, length = items.length; i < length; i++) {
+                const item = items[i]; 
+                if (items[i].iconSource) {
+                    (<TabViewItem>items[i])._update();
+                }
+            }
+        }
     }
 }
 
@@ -461,8 +494,9 @@ function getTitleAttributesForStates(tabView: TabView): { normalState: any, sele
     }
 
     const selectedState = {};
-    if (tabView.selectedColor instanceof Color) {
-        selectedState[UITextAttributeTextColor] = tabView.selectedColor.ios;
+    let tabItemTextColor = tabView.style.tabTextColor; 
+    if (tabItemTextColor instanceof Color) {
+        selectedState[UITextAttributeTextColor] = tabItemTextColor.ios;
     }
     else {
         selectedState[UITextAttributeTextColor] = tabView.ios.tabBar.tintColor;

@@ -1,4 +1,4 @@
-import { WebViewBase, File, knownFolders, path, trace } from "./web-view-common";
+import { WebViewBase, File, knownFolders, path, traceWrite, traceEnabled, traceCategories } from "./web-view-common";
 
 export * from "./web-view-common";
 
@@ -37,8 +37,8 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
                     break;
             }
 
-            if (trace.enabled) {
-                trace.write("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", trace.categories.Debug);
+            if (traceEnabled) {
+                traceWrite("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", traceCategories.Debug);
             }
             owner._onLoadStarted(request.URL.absoluteString, WebViewBase.navigationTypes[navTypeIndex]);
         }
@@ -47,14 +47,14 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     }
 
     public webViewDidStartLoad(webView: UIWebView) {
-        if (trace.enabled) {
-            trace.write("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", traceCategories.Debug);
         }
     }
 
     public webViewDidFinishLoad(webView: UIWebView) {
-        if (trace.enabled) {
-            trace.write("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", traceCategories.Debug);
         }
         let owner = this._owner.get();
         if (owner) {
@@ -70,8 +70,8 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
                 src = webView.request.URL.absoluteString;
             }
 
-            if (trace.enabled) {
-                trace.write("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", trace.categories.Debug);
+            if (traceEnabled) {
+                traceWrite("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", traceCategories.Debug);
             }
             if (owner) {
                 owner._onLoadFinished(src, error.localizedDescription);
@@ -110,8 +110,8 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(url: string) {
-        if (trace.enabled) {
-            trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
         }
 
         if (this._ios.loading) {
@@ -130,7 +130,7 @@ export class WebView extends WebViewBase {
     }
 
     public _loadData(content: string) {
-        this._ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${fs.knownFolders.currentApp().path}/`));
+        this._ios.loadHTMLStringBaseURL(content, NSURL.alloc().initWithString(`file:///${knownFolders.currentApp().path}/`));
     }
 
     get canGoBack(): boolean {

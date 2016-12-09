@@ -1,18 +1,12 @@
 ﻿import dts = require("utils/utils");
-import common = require("./utils-common");
 import { Color } from "color";
-import enums = require("ui/enums");
 import * as fsModule from "file-system";
-import * as traceModule from "trace";
+import {
+    enabled as traceEnabled, write as traceWrite, categories as traceCategories,
+    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet
+} from "trace";
 
-global.moduleMerge(common, exports);
-
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
+export * from "./utils-common";
 
 function isOrientationLandscape(orientation: number) {
     return orientation === UIDeviceOrientation.LandscapeLeft || orientation === UIDeviceOrientation.LandscapeRight;
@@ -42,13 +36,13 @@ export module layout {
 export module ios {
     export function setTextAlignment(view: dts.ios.TextUIView, value: string) {
         switch (value) {
-            case enums.TextAlignment.left:
+            case "left":
                 view.textAlignment = NSTextAlignment.Left;
                 break;
-            case enums.TextAlignment.center:
+            case "center":
                 view.textAlignment = NSTextAlignment.Center;
                 break;
-            case enums.TextAlignment.right:
+            case "right":
                 view.textAlignment = NSTextAlignment.Right;
                 break;
             default:
@@ -68,18 +62,21 @@ export module ios {
         let result = source;
 
         switch (transform) {
-            case enums.TextTransform.none:
-            default:
-                result = view.text;
-                break;
-            case enums.TextTransform.uppercase:
+            case "uppercase":
                 result = NSStringFromNSAttributedString(source).uppercaseString;
                 break;
-            case enums.TextTransform.lowercase:
+
+            case "lowercase":
                 result = NSStringFromNSAttributedString(source).lowercaseString;
                 break;
-            case enums.TextTransform.capitalize:
+
+            case "capitalize":
                 result = NSStringFromNSAttributedString(source).capitalizedString;
+                break;
+
+            case "none":
+            default:
+                result = view.text;
                 break;
         }
 
@@ -91,7 +88,7 @@ export module ios {
     }
 
     export function setWhiteSpace(view: dts.ios.TextUIView, value: string, parentView?: UIView) {
-        if (value === enums.WhiteSpace.normal) {
+        if (value === "normal") {
             view.lineBreakMode = NSLineBreakMode.ByWordWrapping;
             view.numberOfLines = 0;
         }
@@ -157,8 +154,7 @@ export module ios {
             return controller.presentPreviewAnimated(true);
         }
         catch (e) {
-            ensureTrace();
-            trace.write("Error in openFile", trace.categories.Error, trace.messageType.error);
+            traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
         }
         return false;
     }
@@ -176,9 +172,8 @@ export function openUrl(location: string): boolean {
         }
     }
     catch (e) {
-        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
+        traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
     }
     return false;
 }
