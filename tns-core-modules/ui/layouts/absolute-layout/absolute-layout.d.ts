@@ -29,10 +29,10 @@
     /**
      * Represents the observable property backing the left property.
      */
-    export const leftProperty: Property<AbsoluteLayout, number>;
+    export const leftProperty: Property<View, number>;
 
     /**
      * Represents the observable property backing the top property.
      */
-    export const topProperty: Property<AbsoluteLayout, number>;
+    export const topProperty: Property<View, number>;
 }

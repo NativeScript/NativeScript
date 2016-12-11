@@ -1,10 +1,6 @@
-﻿import utils = require("utils/utils");
-import common = require("./absolute-layout-common");
-import {View} from "ui/core/view";
-import {PropertyMetadata} from "ui/core/proxy";
-import {PropertyChangeData} from "ui/core/dependency-observable";
+﻿import { AbsoluteLayoutBase, leftProperty, topProperty, Length, zeroLength } from "./absolute-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./absolute-layout-common";
 
 function setNativeProperty(data: PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
     var view = data.object;
@@ -29,7 +25,7 @@ function setNativeTopProperty(data: PropertyChangeData) {
 (<PropertyMetadata>common.AbsoluteLayout.leftProperty.metadata).onSetNativeValue = setNativeLeftProperty;
 (<PropertyMetadata>common.AbsoluteLayout.topProperty.metadata).onSetNativeValue = setNativeTopProperty;
 
-export class AbsoluteLayout extends common.AbsoluteLayout {
+export class AbsoluteLayout extends AbsoluteLayoutBase {
 
     private _layout: org.nativescript.widgets.AbsoluteLayout;
 
@@ -43,5 +39,14 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
 
     public _createUI() {
         this._layout = new org.nativescript.widgets.AbsoluteLayout(this._context);
+    }
+
+    -------------------------
+    This should be defined with Object.DefineProperty on a View type........
+    get [leftProperty.native](): Length {
+        return zeroLength;
+    }
+    set [leftProperty.native](value: Length) {
+        return zeroLength;
     }
 }

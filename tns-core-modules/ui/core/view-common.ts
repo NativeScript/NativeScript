@@ -1057,7 +1057,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     // }
 }
 
-function getLengthEffectiveValue(density: number, param: Length): number {
+export function getLengthEffectiveValue(density: number, param: Length): number {
     switch (param.unit) {
         case "px":
             return Math.round(param.value);
