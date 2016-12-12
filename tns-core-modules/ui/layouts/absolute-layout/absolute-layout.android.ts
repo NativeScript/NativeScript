@@ -1,29 +1,45 @@
-﻿import { AbsoluteLayoutBase, leftProperty, topProperty, Length, zeroLength } from "./absolute-layout-common";
+﻿import { AbsoluteLayoutBase, View, leftProperty, topProperty, Length, zeroLength } from "./absolute-layout-common";
 
 export * from "./absolute-layout-common";
 
-function setNativeProperty(data: PropertyChangeData, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
-    var view = data.object;
+// define native getter and setter for leftProperty.
+let leftDescriptor: TypedPropertyDescriptor<Length> = {
+    enumerable: true,
+    configurable: true,
+    writable: true,
+    get: () => zeroLength,
+    set: function (this: View, value: Length) {
+        setNativeProperty(this, (lp) => lp.left = this.effectiveLeft);
+    }
+}
+
+// define native getter and setter for topProperty.
+let topDescriptor: TypedPropertyDescriptor<Length> = {
+    enumerable: true,
+    configurable: true,
+    writable: true,
+    get: () => zeroLength,
+    set: function (this: View, value: Length) {
+        setNativeProperty(this, (lp) => lp.top = this.effectiveTop);
+    }
+}
+
+// register native properties on View type.
+Object.defineProperties(View, {
+    [leftProperty.native]: leftDescriptor,
+    [topProperty.native]: topDescriptor
+});
+
+function setNativeProperty(view: View, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
     if (view instanceof View) {
-        var nativeView: android.view.View = view._nativeView;
-        var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        const nativeView: android.view.View = view._nativeView;
+        const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
             setter(lp);
             nativeView.setLayoutParams(lp);
         }
     }
 }
-
-function setNativeLeftProperty(data: PropertyChangeData) {
-    setNativeProperty(data, (lp) => { lp.left = data.newValue * utils.layout.getDisplayDensity(); });
-}
-
-function setNativeTopProperty(data: PropertyChangeData) {
-    setNativeProperty(data, (lp) => { lp.top = data.newValue * utils.layout.getDisplayDensity(); });
-}
-
-(<PropertyMetadata>common.AbsoluteLayout.leftProperty.metadata).onSetNativeValue = setNativeLeftProperty;
-(<PropertyMetadata>common.AbsoluteLayout.topProperty.metadata).onSetNativeValue = setNativeTopProperty;
 
 export class AbsoluteLayout extends AbsoluteLayoutBase {
 
@@ -39,14 +55,5 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
 
     public _createUI() {
         this._layout = new org.nativescript.widgets.AbsoluteLayout(this._context);
-    }
-
-    -------------------------
-    This should be defined with Object.DefineProperty on a View type........
-    get [leftProperty.native](): Length {
-        return zeroLength;
-    }
-    set [leftProperty.native](value: Length) {
-        return zeroLength;
     }
 }

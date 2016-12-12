@@ -1,23 +1,25 @@
 import { PercentLength, Length, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
-import { ad } from "ui/styling/background";
+import { ad as androidBackground } from "ui/styling/background";
 import {
-    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
     widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
     marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    layout, Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
+    Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-common";
 
+import {  } from "utils/utils";
+
 export * from "./view-common";
+
 let flexbox;
 
 const ANDROID = "_android";
 const NATIVE_VIEW = "_nativeView";
 const VIEW_GROUP = "_viewGroup";
-let density = -1;
 
 // TODO: Move this class into widgets.
 @Interfaces([android.view.View.OnTouchListener])
@@ -651,9 +653,8 @@ export class View extends ViewCommon {
         if (value instanceof android.graphics.drawable.Drawable) {
             this.nativeView.setBackground(value);
         } else {
-            ad.onBackgroundOrBorderPropertyChanged(this);
+            androidBackground.onBackgroundOrBorderPropertyChanged(this);
         }
-
     }
 }
 

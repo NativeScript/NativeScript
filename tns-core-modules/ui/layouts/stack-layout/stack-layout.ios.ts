@@ -1,134 +1,128 @@
-﻿import common = require("./stack-layout-common");
-import utils = require("utils/utils");
-import {View} from "ui/core/view";
-import {Orientation, VerticalAlignment, HorizontalAlignment} from "ui/enums";
-import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
+﻿import { StackLayoutBase, orientationProperty, View, layout } from "./stack-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./stack-layout-common";
 
-export class StackLayout extends common.StackLayout {
+export class StackLayout extends StackLayoutBase {
     private _totalLength = 0;
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        StackLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        var density = utils.layout.getDisplayDensity();
 
-        var measureWidth = 0;
-        var measureHeight = 0;
+        let measureWidth = 0;
+        let measureHeight = 0;
 
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var isVertical = this.orientation === Orientation.vertical;
-        var verticalPadding = (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
-        var horizontalPadding = (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
+        const isVertical = this.orientation === "vertical";
+        const style = this.style;
+        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
 
-        var measureSpec: number;
+        let measureSpec: number;
 
-        var mode = isVertical ? heightMode : widthMode;
-        var remainingLength: number;
+        let mode = isVertical ? heightMode : widthMode;
+        let remainingLength: number;
 
-        if (mode === utils.layout.UNSPECIFIED) {
-            measureSpec = utils.layout.UNSPECIFIED;
+        if (mode === layout.UNSPECIFIED) {
+            measureSpec = layout.UNSPECIFIED;
             remainingLength = 0;
         }
         else {
-            measureSpec = utils.layout.AT_MOST;
-            remainingLength = isVertical ? height - verticalPadding : width - horizontalPadding;
+            measureSpec = layout.AT_MOST;
+            remainingLength = isVertical ? height - verticalPaddingsAndMargins : width - horizontalPaddingsAndMargins;
         }
 
-        var childMeasureSpec: number;
+        let childMeasureSpec: number;
         if (isVertical) {
-            let childWidth = (widthMode === utils.layout.UNSPECIFIED) ? 0 : width - horizontalPadding;
+            let childWidth = (widthMode === layout.UNSPECIFIED) ? 0 : width - horizontalPaddingsAndMargins;
             childWidth = Math.max(0, childWidth);
-            childMeasureSpec = utils.layout.makeMeasureSpec(childWidth, widthMode)
+            childMeasureSpec = layout.makeMeasureSpec(childWidth, widthMode)
         }
         else {
-            let childHeight = (heightMode === utils.layout.UNSPECIFIED) ? 0 : height - verticalPadding;
+            let childHeight = (heightMode === layout.UNSPECIFIED) ? 0 : height - verticalPaddingsAndMargins;
             childHeight = Math.max(0, childHeight);
-            childMeasureSpec = utils.layout.makeMeasureSpec(childHeight, heightMode)
+            childMeasureSpec = layout.makeMeasureSpec(childHeight, heightMode)
         }
 
-        var childSize: { measuredWidth: number; measuredHeight: number };
+        let childSize: { measuredWidth: number; measuredHeight: number };
 
         this.eachLayoutChild((child, last) => {
             if (isVertical) {
-                childSize = View.measureChild(this, child, childMeasureSpec, utils.layout.makeMeasureSpec(remainingLength, measureSpec));
+                childSize = View.measureChild(this, child, childMeasureSpec, layout.makeMeasureSpec(remainingLength, measureSpec));
                 measureWidth = Math.max(measureWidth, childSize.measuredWidth);
-                var viewHeight = childSize.measuredHeight;
+                let viewHeight = childSize.measuredHeight;
                 measureHeight += viewHeight;
                 remainingLength = Math.max(0, remainingLength - viewHeight);
             }
             else {
-                childSize = View.measureChild(this, child, utils.layout.makeMeasureSpec(remainingLength, measureSpec), childMeasureSpec);
+                childSize = View.measureChild(this, child, layout.makeMeasureSpec(remainingLength, measureSpec), childMeasureSpec);
                 measureHeight = Math.max(measureHeight, childSize.measuredHeight);
-                var viewWidth = childSize.measuredWidth;
+                let viewWidth = childSize.measuredWidth;
                 measureWidth += viewWidth;
                 remainingLength = Math.max(0, remainingLength - viewWidth);
             }
         });
 
-        measureWidth += horizontalPadding;
-        measureHeight += verticalPadding;
+        measureWidth += horizontalPaddingsAndMargins;
+        measureHeight += verticalPaddingsAndMargins;
 
-        measureWidth = Math.max(measureWidth, this.minWidth * density);
-        measureHeight = Math.max(measureHeight, this.minHeight * density);
+        // Check against our minimum sizes
+        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
 
         this._totalLength = isVertical ? measureHeight : measureWidth;
 
-        var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
-        if (this.orientation === Orientation.vertical) {
+        if (this.orientation === "vertical") {
             this.layoutVertical(left, top, right, bottom);
         }
         else {
             this.layoutHorizontal(left, top, right, bottom);
         }
-
-        StackLayout.restoreOriginalParams(this);
     }
 
     private layoutVertical(left: number, top: number, right: number, bottom: number): void {
-        var density = utils.layout.getDisplayDensity();
-        var paddingLeft = (this.borderLeftWidth + this.paddingLeft) * density;
-        var paddingRight = (this.borderRightWidth + this.paddingRight) * density;
-        var paddingTop = (this.borderTopWidth + this.paddingTop) * density;
-        var paddingBottom = (this.borderBottomWidth + this.paddingBottom) * density;
+        const style = this.style;
+        const paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
+        const paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
+        const paddingRight = style.effectiveBorderRightWidth + style.effectivePaddingRight;
+        const paddingBottom = style.effectiveBorderBottomWidth + style.effectivePaddingBottom;
 
-        var childTop: number;
-        var childLeft: number = paddingLeft;
-        var childRight = right - left - paddingRight;
+        let childTop: number;
+        let childLeft: number = paddingLeft;
+        let childRight = right - left - paddingRight;
 
         switch (this.verticalAlignment) {
-            case VerticalAlignment.center:
-            case VerticalAlignment.middle:
+            case "center":
+            case "middle":
                 childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
                 break;
 
-            case VerticalAlignment.bottom:
+            case "bottom":
                 childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
                 break;
 
-            case VerticalAlignment.top:
-            case VerticalAlignment.stretch:
+            case "top":
+            case "stretch":
             default:
                 childTop = paddingTop;
                 break;
         }
 
         this.eachLayoutChild((child, last) => {
-            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
-            let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
+            const childStyle = child.style;
+            const childHeight = child.getMeasuredHeight() + childStyle.effectiveMarginTop + childStyle.effectiveMarginBottom;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childTop + childHeight);
             childTop += childHeight;
@@ -136,35 +130,35 @@ export class StackLayout extends common.StackLayout {
     }
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number): void {
-        var density = utils.layout.getDisplayDensity();
-        var paddingLeft = (this.borderLeftWidth + this.paddingLeft) * density;
-        var paddingRight = (this.borderRightWidth + this.paddingRight) * density;
-        var paddingTop = (this.borderTopWidth + this.paddingTop) * density;
-        var paddingBottom = (this.borderBottomWidth + this.paddingBottom) * density;
+        const style = this.style;
+        const paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
+        const paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
+        const paddingRight = style.effectiveBorderRightWidth + style.effectivePaddingRight;
+        const paddingBottom = style.effectiveBorderBottomWidth + style.effectivePaddingBottom;
 
-        var childTop: number = paddingTop;
-        var childLeft: number;
-        var childBottom = bottom - top - paddingBottom;
+        let childTop: number = paddingTop;
+        let childLeft: number;
+        let childBottom = bottom - top - paddingBottom;
 
         switch (this.horizontalAlignment) {
-            case HorizontalAlignment.center:
+            case "center":
                 childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
                 break;
 
-            case HorizontalAlignment.right:
+            case "right":
                 childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
                 break;
 
-            case HorizontalAlignment.left:
-            case HorizontalAlignment.stretch:
+            case "left":
+            case "stretch":
             default:
                 childLeft = paddingLeft;
                 break;
         }
 
         this.eachLayoutChild((child, last) => {
-            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
-            let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
+            const childStyle = child.style;
+            const childWidth = child.getMeasuredWidth() + childStyle.effectiveMarginLeft + childStyle.effectiveMarginRight;
 
             View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childBottom);
             childLeft += childWidth;

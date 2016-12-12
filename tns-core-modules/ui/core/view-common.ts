@@ -14,13 +14,14 @@ import { fontSizeConverter } from "../styling/converters";
 
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
-import { isDataURI, isFileOrResourcePath } from "utils/utils";
+import { isDataURI, isFileOrResourcePath, layout } from "utils/utils";
 
+export { layout };
 export * from "./view-base";
 
 export {
     GestureTypes, GesturesObserver, GestureEventData,
-    Animation, AnimationPromise, 
+    Animation, AnimationPromise,
     Background, Font, Color
 }
 
@@ -49,67 +50,6 @@ declare module "ui/styling/style" {
         effectiveBorderRightWidth: number;
         effectiveBorderBottomWidth: number;
         effectiveBorderLeftWidth: number;
-    }
-}
-
-export namespace layout {
-    const MODE_SHIFT = 30;
-    const MODE_MASK = 0x3 << MODE_SHIFT;
-
-    export const UNSPECIFIED = 0 << MODE_SHIFT;
-    export const EXACTLY = 1 << MODE_SHIFT;
-    export const AT_MOST = 2 << MODE_SHIFT;
-
-    export const MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
-    export const MEASURED_STATE_TOO_SMALL = 0x01000000;
-    export const MEASURED_STATE_MASK = 0xff000000;
-    export const MEASURED_SIZE_MASK = 0x00ffffff;
-
-    export function getMeasureSpecMode(spec: number): number {
-        return (spec & MODE_MASK);
-    }
-
-    export function getMeasureSpecSize(spec: number): number {
-        return (spec & ~MODE_MASK);
-    }
-
-    export function getDisplayDensity(): number {
-        return 1;
-    }
-
-    export function makeMeasureSpec(size: number, mode: number): number {
-        return (Math.round(size) & ~MODE_MASK) | (mode & MODE_MASK);
-    }
-
-    export function toDevicePixels(value: number): number {
-        return value * getDisplayDensity();
-    }
-
-    export function toDeviceIndependentPixels(value: number): number {
-        return value / getDisplayDensity();
-    }
-
-    export function measureSpecToString(measureSpec: number): string {
-        let mode = getMeasureSpecMode(measureSpec);
-        let size = getMeasureSpecSize(measureSpec);
-
-        let text = "MeasureSpec: ";
-
-        if (mode === UNSPECIFIED) {
-            text += "UNSPECIFIED ";
-        }
-        else if (mode === EXACTLY) {
-            text += "EXACTLY ";
-        }
-        else if (mode === AT_MOST) {
-            text += "AT_MOST ";
-        }
-        else {
-            text += mode + " ";
-        }
-
-        text += size;
-        return text;
     }
 }
 
@@ -174,6 +114,17 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
 let viewIdCounter = 0;
 
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
+    // Dynamic properties.
+    left: Length;
+    top: Length;
+    effectiveLeft: number;
+    effectiveTop: number;
+    dock: "left" | "top" | "right" | "bottom";
+    row: number;
+    col: number;
+    rowSpan: number;
+    colSpan: number;
+
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
@@ -187,9 +138,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _oldRight: number;
     private _oldBottom: number;
 
-    private _parent: ViewCommon;
-
-    
     private _isLayoutValid: boolean;
     private _cssType: string;
 
@@ -200,7 +148,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public _isAddedToNativeVisualTree: boolean;
     public _gestureObservers = {};
 
-    public parent: ViewCommon;
+    // public parent: ViewCommon;
 
     constructor() {
         super();
@@ -274,10 +222,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         } else if (typeof arg === "number") {
             this._disconnectGestureObservers(<GestureTypes>arg);
         }
-    }
-
-    public eachChild(callback: (child: ViewCommon) => boolean): void {
-        this._eachChildView(callback);
     }
 
     private _isEvent(name: string): boolean {
@@ -558,7 +502,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public isEnabled: boolean;
     public isUserInteractionEnabled: boolean;
 
-
     get isLayoutValid(): boolean {
         return this._isLayoutValid;
     }
@@ -814,8 +757,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     private static getMeasureSpec(parentLength: number, parentSpecMode: number, margins: number, childLength: number, stretched: boolean): number {
-        let resultSize = 0;
-        let resultMode = 0;
+        let resultSize: number;
+        let resultMode: number;
 
         // We want a specific size... let be it.
         if (childLength >= 0) {
@@ -901,8 +844,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     //@endios
 
+    public eachChild(callback: (child: ViewBase) => boolean): void {
+        this._eachChildView(<any>callback);
+    }
 
-    public _eachChildView(callback: (view: ViewCommon) => boolean) {
+    public _eachChildView(callback: (view: ViewDefinition) => boolean) {
         //
     }
 
@@ -929,10 +875,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _addViewCore(view: ViewCommon, atIndex?: number) {
-        if (!view._isAddedToNativeVisualTree) {
-            let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
-            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
+    public _addViewCore(view: ViewBase, atIndex?: number) {
+        if (view instanceof ViewCommon) {
+            if (!view._isAddedToNativeVisualTree) {
+                let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
+                view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
+            }
         }
 
         super._addViewCore(view, atIndex);
@@ -941,12 +889,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     /**
      * Method is intended to be overridden by inheritors and used as "protected"
      */
-    public _removeViewCore(view: ViewCommon) {
-        // TODO: Change type from ViewCommon to ViewBase. Probably this 
-        // method will need to go to ViewBase class.
-        // Remove the view from the native visual scene first
-        this._removeViewFromNativeVisualTree(view);
-
+    public _removeViewCore(view: ViewBase) {
+        if (view instanceof ViewCommon) {
+            // TODO: Change type from ViewCommon to ViewBase. Probably this 
+            // method will need to go to ViewBase class.
+            // Remove the view from the native visual scene first
+            this._removeViewFromNativeVisualTree(view);
+        }
         super._removeViewCore(view);
     }
 
@@ -1057,18 +1006,18 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     // }
 }
 
-export function getLengthEffectiveValue(density: number, param: Length): number {
+export function getLengthEffectiveValue(param: Length): number {
     switch (param.unit) {
         case "px":
             return Math.round(param.value);
 
         default:
         case "dip":
-            return Math.round(density * param.value);
+            return Math.round(layout.getDisplayDensity() * param.value);
     }
 }
 
-function getPercentLengthEffectiveValue(prentAvailableLength: number, density: number, param: PercentLength): number {
+function getPercentLengthEffectiveValue(prentAvailableLength: number, param: PercentLength): number {
     switch (param.unit) {
         case "%":
             return Math.round(prentAvailableLength * param.value);
@@ -1078,7 +1027,7 @@ function getPercentLengthEffectiveValue(prentAvailableLength: number, density: n
 
         default:
         case "dip":
-            return Math.round(density * param.value);
+            return Math.round(layout.getDisplayDensity() * param.value);
     }
 }
 
@@ -1089,17 +1038,17 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
     let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
     let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
     let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-    style.effectiveWidth = getPercentLengthEffectiveValue(parentAvailableWidth, density, style.width);
-    style.effectiveMarginLeft = getPercentLengthEffectiveValue(parentAvailableWidth, density, style.marginLeft);
-    style.effectiveMarginRight = getPercentLengthEffectiveValue(parentAvailableWidth, density, style.marginRight);
+    style.effectiveWidth = getPercentLengthEffectiveValue(parentAvailableWidth, style.width);
+    style.effectiveMarginLeft = getPercentLengthEffectiveValue(parentAvailableWidth, style.marginLeft);
+    style.effectiveMarginRight = getPercentLengthEffectiveValue(parentAvailableWidth, style.marginRight);
 
     let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
     let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
     let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
     let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-    style.effectiveHeight = getPercentLengthEffectiveValue(parentAvailableHeight, density, style.height);
-    style.effectiveMarginTop = getPercentLengthEffectiveValue(parentAvailableHeight, density, style.marginTop);
-    style.effectiveMarginBottom = getPercentLengthEffectiveValue(parentAvailableHeight, density, style.marginBottom);
+    style.effectiveHeight = getPercentLengthEffectiveValue(parentAvailableHeight, style.height);
+    style.effectiveMarginTop = getPercentLengthEffectiveValue(parentAvailableHeight, style.marginTop);
+    style.effectiveMarginBottom = getPercentLengthEffectiveValue(parentAvailableHeight, style.marginBottom);
 }
 
 interface Length {
@@ -1207,7 +1156,7 @@ isEnabledProperty.register(ViewCommon);
 export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true, valueConverter: booleanConverter });
 isUserInteractionEnabledProperty.register(ViewCommon);
 
-const zeroLength: Length = { value: 0, unit: "px" };
+export const zeroLength: Length = { value: 0, unit: "px" };
 
 export function lengthComparer(x: Length, y: Length): boolean {
     return x.unit === y.unit && x.value === y.value;
@@ -1216,7 +1165,7 @@ export function lengthComparer(x: Length, y: Length): boolean {
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        target.effectiveMinWidth = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        target.effectiveMinWidth = getLengthEffectiveValue(newValue);
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
@@ -1224,7 +1173,7 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        target.effectiveMinHeight = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        target.effectiveMinHeight = getLengthEffectiveValue(newValue);
     }, valueConverter: Length.parse
 });
 minHeightProperty.register(Style);
@@ -1266,7 +1215,7 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingLeft = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        target.effectivePaddingLeft = getLengthEffectiveValue(newValue);
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
@@ -1274,7 +1223,7 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingRight = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        target.effectivePaddingRight = getLengthEffectiveValue(newValue);
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
@@ -1282,7 +1231,7 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingTop = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        target.effectivePaddingTop = getLengthEffectiveValue(newValue);
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
@@ -1290,7 +1239,7 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingBottom = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        target.effectivePaddingBottom = getLengthEffectiveValue(newValue);
     }, valueConverter: Length.parse
 });
 paddingBottomProperty.register(Style);
@@ -1728,7 +1677,7 @@ borderWidthProperty.register(Style);
 export const borderTopWidthProperty = new CssProperty<Style, Length>({
     name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -1742,7 +1691,7 @@ borderTopWidthProperty.register(Style);
 export const borderRightWidthProperty = new CssProperty<Style, Length>({
     name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -1756,7 +1705,7 @@ borderRightWidthProperty.register(Style);
 export const borderBottomWidthProperty = new CssProperty<Style, Length>({
     name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -1770,7 +1719,7 @@ borderBottomWidthProperty.register(Style);
 export const borderLeftWidthProperty = new CssProperty<Style, Length>({
     name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(layout.getDisplayDensity(), newValue);
+        let value = getLengthEffectiveValue(newValue);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }

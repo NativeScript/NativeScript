@@ -1,63 +1,60 @@
-﻿import utils = require("utils/utils");
-import common = require("./wrap-layout-common");
-import {View} from "ui/core/view";
-import {Orientation} from "ui/enums";
-import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
+﻿import { WrapLayoutBase, View, orientationProperty, itemWidthProperty, itemHeightProperty, layout } from "./wrap-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./wrap-layout-common";
 
-export class WrapLayout extends common.WrapLayout {
+export class WrapLayout extends WrapLayoutBase {
     private _lengths: Array<number> = new Array<number>();
 
     private static getChildMeasureSpec(parentMode: number, parentLength: number, itemLength): number {
         if (itemLength > 0) {
-            return utils.layout.makeMeasureSpec(itemLength, utils.layout.EXACTLY);
+            return layout.makeMeasureSpec(itemLength, layout.EXACTLY);
         }
-        else if (parentMode === utils.layout.UNSPECIFIED) {
-            return utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
+        else if (parentMode === layout.UNSPECIFIED) {
+            return layout.makeMeasureSpec(0, layout.UNSPECIFIED);
         }
         else {
-            return utils.layout.makeMeasureSpec(parentLength, utils.layout.AT_MOST);
+            return layout.makeMeasureSpec(parentLength, layout.AT_MOST);
         }
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        WrapLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        var measureWidth = 0;
-        var measureHeight = 0;
+        let measureWidth = 0;
+        let measureHeight = 0;
 
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var density = utils.layout.getDisplayDensity();
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var horizontalPadding = (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
-        var verticalPadding = (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
+        const style = this.style;
+        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
 
-        var availableWidth = widthMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : utils.layout.getMeasureSpecSize(widthMeasureSpec) - horizontalPadding;
-        var availableHeight = heightMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : utils.layout.getMeasureSpecSize(heightMeasureSpec) - verticalPadding;
+        const availableWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
+        const availableHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
 
-        var childWidthMeasureSpec: number = WrapLayout.getChildMeasureSpec(widthMode, availableWidth, this.itemWidth * density);
-        var childHeightMeasureSpec: number = WrapLayout.getChildMeasureSpec(heightMode, availableHeight, this.itemHeight * density);
+        const childWidthMeasureSpec: number = WrapLayout.getChildMeasureSpec(widthMode, availableWidth, this.effectiveItemWidth);
+        const childHeightMeasureSpec: number = WrapLayout.getChildMeasureSpec(heightMode, availableHeight, this.effectiveItemHeight);
 
-        var remainingWidth = availableWidth;
-        var remainingHeight = availableHeight;
+        let remainingWidth = availableWidth;
+        let remainingHeight = availableHeight;
 
         this._lengths.length = 0;
         var rowOrColumn = 0;
         var maxLength = 0;
 
-        var isVertical = this.orientation === Orientation.vertical;
+        var isVertical = this.orientation === "vertical";
 
-        let useItemWidth: boolean = this.itemWidth > 0;
-        let useItemHeight: boolean = this.itemHeight > 0;
-        let itemWidth = this.itemWidth;
-        let itemHeight = this.itemHeight;
+        let useItemWidth: boolean = this.effectiveItemWidth > 0;
+        let useItemHeight: boolean = this.effectiveItemHeight > 0;
+        let itemWidth = this.effectiveItemWidth;
+        let itemHeight = this.effectiveItemHeight;
 
         this.eachLayoutChild((child, last) => {
-            var desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
+            const desiredSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
             let childMeasuredWidth = useItemWidth ? itemWidth : desiredSize.measuredWidth;
             let childMeasuredHeight = useItemHeight ? itemHeight : desiredSize.measuredHeight;
             let isFirst = this._lengths.length <= rowOrColumn;
@@ -110,14 +107,15 @@ export class WrapLayout extends common.WrapLayout {
             });
         }
 
-        measureWidth += horizontalPadding;
-        measureHeight += verticalPadding;
+        measureWidth += horizontalPaddingsAndMargins;
+        measureHeight += verticalPaddingsAndMargins;
 
-        measureWidth = Math.max(measureWidth, this.minWidth * density);
-        measureHeight = Math.max(measureHeight, this.minHeight * density);
+        // Check against our minimum sizes
+        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
 
-        var widthAndState = View.resolveSizeAndState(measureWidth, utils.layout.getMeasureSpecSize(widthMeasureSpec), widthMode, 0);
-        var heightAndState = View.resolveSizeAndState(measureHeight, utils.layout.getMeasureSpecSize(heightMeasureSpec), heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -125,45 +123,42 @@ export class WrapLayout extends common.WrapLayout {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        var isVertical = this.orientation === Orientation.vertical;
+        const isVertical = this.orientation === "vertical";
+        const style = this.style;
+        const paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
+        const paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
+        const paddingRight = style.effectiveBorderRightWidth + style.effectivePaddingRight;
+        const paddingBottom = style.effectiveBorderBottomWidth + style.effectivePaddingBottom;
 
-        var density = utils.layout.getDisplayDensity();
-
-        const topPadding = (this.borderTopWidth + this.paddingTop) * density;
-        const leftPadding = (this.borderLeftWidth + this.paddingLeft) * density; 
-        const bottomPadding = (this.paddingBottom + this.borderBottomWidth) * density;
-        const rightPadding = (this.paddingRight + this.borderRightWidth) * density;
-
-        var childLeft = leftPadding;
-        var childTop = topPadding;
-        var childrenLength: number;
+        let childLeft = paddingLeft;
+        let childTop = paddingTop;
+        let childrenLength: number;
         if (isVertical) {
-            childrenLength = bottom - top - bottomPadding;
+            childrenLength = bottom - top - paddingBottom;
         }
         else {
-            childrenLength = right - left - rightPadding;
+            childrenLength = right - left - paddingRight;
         }
 
         var rowOrColumn = 0;
         this.eachLayoutChild((child, last) => {
             // Add margins because layoutChild will sustract them.
             // * density converts them to device pixels.
-            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
-
-            let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
-            let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
-
+            const childStyle = child.style;
+            let childHeight = child.getMeasuredHeight() + childStyle.effectiveMarginTop + childStyle.effectiveMarginBottom;
+            let childWidth = child.getMeasuredWidth() + childStyle.effectiveMarginLeft + childStyle.effectiveMarginRight;
+            
             let length = this._lengths[rowOrColumn];
             if (isVertical) {
                 childWidth = length;
-                childHeight = this.itemHeight > 0 ? this.itemHeight * density : childHeight;
-                let isFirst = childTop === topPadding;
+                childHeight = this.effectiveItemHeight > 0 ? this.effectiveItemHeight : childHeight;
+                let isFirst = childTop === paddingTop;
                 if (childTop + childHeight > childrenLength) {
                     // Move to top.
-                    childTop = topPadding;
+                    childTop = paddingTop;
 
                     if (!isFirst) {
-                    // Move to right with current column width.
+                        // Move to right with current column width.
                         childLeft += length;
                     }
 
@@ -175,12 +170,12 @@ export class WrapLayout extends common.WrapLayout {
                 }
             }
             else {
-                childWidth = this.itemWidth > 0 ? this.itemWidth * density : childWidth;
+                childWidth = this.effectiveItemWidth > 0 ? this.effectiveItemWidth : childWidth;
                 childHeight = length;
-                let isFirst = childLeft === leftPadding;
+                let isFirst = childLeft === paddingLeft;
                 if (childLeft + childWidth > childrenLength) {
                     // Move to left.
-                    childLeft = leftPadding;
+                    childLeft = paddingLeft;
 
                     if (!isFirst) {
                         // Move to bottom with current row height.
@@ -206,7 +201,5 @@ export class WrapLayout extends common.WrapLayout {
                 childLeft += childWidth;
             }
         });
-
-        WrapLayout.restoreOriginalParams(this);
     }
 }

@@ -17,6 +17,9 @@ declare module "ui/core/view" {
 
     export * from "ui/core/view-base";
 
+    export const zeroLength: Length;
+    export function getLengthEffectiveValue(param: Length): number;
+
     /**
      * Gets a child view by id.
      * @param view - The parent (container) view of the view to look for.
