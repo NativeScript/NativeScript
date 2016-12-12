@@ -1,0 +1,6 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" xmlns:cC="ui-tests-app/issues/component">
+  <StackLayout>
+    <Label class="ui-tests-app-issue-1639-red" text="main-page red" textWrap="true" />
+   <cC:customView/>
+  </StackLayout>
+</Page>
