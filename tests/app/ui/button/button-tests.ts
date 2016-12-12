@@ -109,7 +109,7 @@ var _testOnClick = function (views: Array<viewModule.View>) {
     // << button-tap
 
     buttonTestsNative.performNativeClick(button);
-    TKUnit.assert(actualValue === true, "Actual: " + actualValue + "; Expected: " + true);
+    TKUnit.assertTrue(actualValue, "Actual: " + actualValue + "; Expected: " + true);
 }
 
 var _testBindTextDirectlyToModel = function (views: Array<viewModule.View>) {
