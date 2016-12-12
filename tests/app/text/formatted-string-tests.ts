@@ -36,7 +36,7 @@ export var test_FormattedTextProperty_IsChanged_When_SpanIsAdded = function () {
     firstSpan.text = "LoremIpsum";
     formattedString.spans.push(firstSpan);
 
-    TKUnit.assert(formattedTextChanged === true, "FormattedText property is not changed.");
+    TKUnit.assertTrue(formattedTextChanged, "FormattedText property is not changed.");
 }
 
 export var test_FormattedTextProperty_IsChanged_When_SpanIsChanged = function () {
@@ -57,7 +57,7 @@ export var test_FormattedTextProperty_IsChanged_When_SpanIsChanged = function ()
     firstSpan.fontSize = expectedValue;
     firstSpan.endEdit();
 
-    TKUnit.assert(formattedTextChanged === true, "FormattedText property is not changed.");
+    TKUnit.assertTrue(formattedTextChanged, "FormattedText property is not changed.");
     TKUnit.assert(formattedString.spans.getItem(0).fontSize === expectedValue, "FormattedString internal span is not changed as expected");
 }
 
