@@ -205,6 +205,7 @@ class IOSApplication implements definition.iOSApplication {
                     break;
             }
 
+            common._onOrientationChanged();
             typedExports.notify(<definition.OrientationChangedEventData>{
                 eventName: typedExports.orientationChangedEvent,
                 ios: this,

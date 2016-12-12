@@ -17,9 +17,4 @@ declare module "file-system/file-name-resolver" {
 
     export function resolveFileName(path: string, ext: string): string;
     export function clearCache(): void;
-
-    //@private
-    export function findFileMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string
-    //@endprivate
-
 }

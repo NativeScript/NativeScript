@@ -98,6 +98,11 @@ class Device implements definition.Device {
 
 class MainScreen implements definition.ScreenMetrics {
     private _screen: UIScreen;
+
+    _invalidate(){
+        //
+    }
+    
     private get screen(): UIScreen {
         if (!this._screen) {
             this._screen = utils.ios.getter(UIScreen, UIScreen.mainScreen);

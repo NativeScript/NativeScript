@@ -3,7 +3,11 @@ import fs = require("file-system");
 import types = require("utils/types");
 import trace = require("trace");
 import platform = require("platform");
-import * as appModule from "application";
+
+declare module "file-system/file-name-resolver" {
+    export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string
+    export function _invalidateResolverInstance(): void;
+}
 
 var MIN_WH: string = "minWH";
 var MIN_W: string = "minW";
@@ -75,7 +79,7 @@ var minHeightQualifier: QualifierSpec = {
     }
 }
 
-var paltformQualifier: QualifierSpec = {
+var platformQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value === "android" ||
             value === "ios";
@@ -104,7 +108,7 @@ var supportedQualifiers: Array<QualifierSpec> = [
     minWidthQualifier,
     minHeightQualifier,
     orientationQualifier,
-    paltformQualifier
+    platformQualifier
 ];
 
 export class FileNameResolver implements definition.FileNameResolver {
@@ -136,7 +140,7 @@ export class FileNameResolver implements definition.FileNameResolver {
         ext = "." + ext;
 
         var candidates = this.getFileCandidatesFromFolder(path, ext);
-        result = findFileMatch(path, ext, candidates, this._context);
+        result = _findFileMatch(path, ext, candidates, this._context);
 
         if (trace.enabled) {
             trace.write("Resolved file name for \"" + path + ext + "\" result: " + (result ? result : "no match found"), trace.categories.Navigation);
@@ -171,7 +175,7 @@ export class FileNameResolver implements definition.FileNameResolver {
     }
 }
 
-export function findFileMatch(path: string, ext: string, candidates: Array<string>, context: definition.PlatformContext): string {
+export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: definition.PlatformContext): string {
     var bestValue = -1
     var result: string = null;
 
@@ -226,18 +230,9 @@ function checkQualifier(value: string, context: definition.PlatformContext) {
     return -1;
 }
 
-var appEventAttached: boolean = false;
 var resolverInstance: FileNameResolver;
 
 export function resolveFileName(path: string, ext: string): string {
-    if (!appEventAttached) {
-        var app: typeof appModule = require("application");
-        app.on(app.orientationChangedEvent, (data) => {
-            resolverInstance = undefined;
-        });
-        appEventAttached = true;
-    }
-
     if (!resolverInstance) {
         resolverInstance = new FileNameResolver({
             width: platform.screen.mainScreen.widthDIPs,
@@ -254,4 +249,8 @@ export function clearCache(): void {
     if (resolverInstance) {
         resolverInstance.clearCache();
     }
+}
+
+export function _invalidateResolverInstance(): void {
+    resolverInstance = undefined;
 }

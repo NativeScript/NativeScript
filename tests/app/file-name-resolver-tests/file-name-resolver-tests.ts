@@ -208,7 +208,7 @@ export function test_findFileMatch_with_multiple_matches_loads_by_priority() {
 }
 
 function testTemplate(candidates: Array<string>, context: resolver.PlatformContext, expected: string) {
-    var result = resolver.findFileMatch("test", ".xml", candidates, context);
+    var result = resolver._findFileMatch("test", ".xml", candidates, context);
     TKUnit.assertEqual(result, expected, "File path");
 }
 
