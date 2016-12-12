@@ -8,12 +8,27 @@ import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
 import * as fileResolverModule from "file-system/file-name-resolver";
 import * as builderModule from "ui/builder";
+import * as platformModule from "platform";
 import "../bundle-entry-points";
 
 var builder: typeof builderModule;
 function ensureBuilder() {
     if (!builder) {
         builder = require("ui/builder");
+    }
+}
+
+var platform: typeof platformModule;
+function ensurePlatform() {
+    if (!platform) {
+        platform = require("platform");
+    }
+}
+
+var fileNameResolver: typeof fileResolverModule;
+function ensureFileNameResolver() {
+    if (!fileNameResolver) {
+        fileNameResolver = require("file-system/file-name-resolver");
     }
 }
 
@@ -113,10 +128,10 @@ export function __onLiveSync() {
     }
 
     try {
-        var fileResolver: typeof fileResolverModule = require("file-system/file-name-resolver");
+        ensureFileNameResolver();
 
         // Clear file resolver cache to respect newly added files.
-        fileResolver.clearCache();
+        fileNameResolver.clearCache();
 
         // Reload app.css in case it was changed.
         loadCss();
@@ -136,3 +151,11 @@ export function __onLiveSyncCore() {
     reloadPage();
 }
 global.__onLiveSyncCore = __onLiveSyncCore;
+
+export function _onOrientationChanged(){
+    ensurePlatform();
+    platform.screen.mainScreen._invalidate();
+
+    ensureFileNameResolver();
+    fileNameResolver._invalidateResolverInstance();
+}
