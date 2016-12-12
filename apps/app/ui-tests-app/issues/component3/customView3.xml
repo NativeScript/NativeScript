@@ -1,0 +1,3 @@
+<StackLayout>
+    <Label class="ui-tests-app-issue-1639-yellow" text="customView3 yellow" textWrap="true" />
+</StackLayout>

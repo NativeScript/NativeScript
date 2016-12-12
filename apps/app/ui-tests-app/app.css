@@ -1,3 +1,23 @@
 ﻿#app {
     background-color: lightblue;
 }
+
+.ui-tests-app-issue-1639-red {
+    color: red;
+    margin-left: 0;
+}
+
+.ui-tests-app-issue-1639-green {
+    color: green;
+    margin-left: 10;
+}
+
+.ui-tests-app-issue-1639-blue {
+    color: blue;
+    margin-left: 20;
+}
+
+.ui-tests-app-issue-1639-yellow {
+    color: yellow;
+    margin-left: 30;
+}

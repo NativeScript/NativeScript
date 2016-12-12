@@ -1,0 +1,4 @@
+<StackLayout xmlns:cC3="/ui-tests-app/issues/component3">
+    <Label class="ui-tests-app-issue-1639-blue" text="customView2 blue" textWrap="true" />
+    <cC3:customView3/>
+</StackLayout>
