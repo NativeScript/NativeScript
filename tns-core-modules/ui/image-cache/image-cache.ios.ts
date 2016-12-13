@@ -35,8 +35,8 @@ class MemmoryWarningHandler extends NSObject {
         this._cache = cache;
 
         getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(this, "clearCache", "UIApplicationDidReceiveMemoryWarningNotification", null);
-        if (traceEnabled) {
-            traceWrite("[MemmoryWarningHandler] Added low memory observer.", traceCategories.Debug);
+        if (trace.enabled) {
+            trace.write("[MemmoryWarningHandler] Added low memory observer.", trace.categories.Debug);
         }
 
         return this;
@@ -44,15 +44,15 @@ class MemmoryWarningHandler extends NSObject {
 
     public dealloc(): void {
         getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).removeObserverNameObject(this, "UIApplicationDidReceiveMemoryWarningNotification", null);
-        if (traceEnabled) {
-            traceWrite("[MemmoryWarningHandler] Removed low memory observer.", traceCategories.Debug);
+        if (trace.enabled) {
+            trace.write("[MemmoryWarningHandler] Removed low memory observer.", trace.categories.Debug);
         }
         super.dealloc();
     }
 
     public clearCache(): void {
-        if (traceEnabled) {
-            traceWrite("[MemmoryWarningHandler] Clearing Image Cache.", traceCategories.Debug);
+        if (trace.enabled) {
+            trace.write("[MemmoryWarningHandler] Clearing Image Cache.", trace.categories.Debug);
         }
         this._cache.removeAllObjects();
         utils.GC();

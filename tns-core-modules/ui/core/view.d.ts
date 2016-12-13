@@ -697,7 +697,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface used to create a member of a class from string representation (used in xml declaration).
      */
-    interface ApplyXmlAttributes {
+    export interface ApplyXmlAttributes {
         /**
          * Called for every attribute in xml declaration. <... fontAttributes="bold" ../>
          * @param attributeName - the name of the attribute (fontAttributes)

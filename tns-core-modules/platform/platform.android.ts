@@ -15,7 +15,7 @@ class Device implements definition.Device {
     private _model: string;
     private _osVersion: string;
     private _sdkVersion: string;
-    private _deviceType: string;
+    private _deviceType: "Phone" | "Tablet";
     private _uuid: string;
     private _language: string;
     private _region: string;
@@ -56,17 +56,15 @@ class Device implements definition.Device {
         return this._sdkVersion;
     }
 
-    get deviceType(): string {
+    get deviceType(): "Phone" | "Tablet" {
         if (!this._deviceType) {
-            var dips = Math.min(screen.mainScreen.widthPixels, screen.mainScreen.heightPixels) / screen.mainScreen.scale;
-            var enums: typeof enumsModule = require("ui/enums");
-
+            const dips = Math.min(screen.mainScreen.widthPixels, screen.mainScreen.heightPixels) / screen.mainScreen.scale;
             // If the device has more than 600 dips it is considered to be a tablet.
             if (dips >= MIN_TABLET_PIXELS) {
-                this._deviceType = enums.DeviceType.Tablet;
+                this._deviceType = "Tablet";
             }
             else {
-                this._deviceType = enums.DeviceType.Phone;
+                this._deviceType = "Phone";
             }
         }
 
