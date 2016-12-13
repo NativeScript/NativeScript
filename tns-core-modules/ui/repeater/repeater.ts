@@ -1,6 +1,6 @@
 ﻿import { Repeater as RepeaterDefinition, ItemsSource } from "ui/repeater";
 import { Label } from "ui/label";
-import { LayoutBase, CustomLayoutView, View, Template, Property, Observable } from "ui/layouts/layout-base";
+import { LayoutBase, CustomLayoutView, View, Template, Property, Observable ,layout } from "ui/layouts/layout-base";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { ObservableArray, ChangedData } from "data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
@@ -103,7 +103,7 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var result = View.measureChild(this, this.itemsLayout, widthMeasureSpec, heightMeasureSpec);
+        const result = View.measureChild(this, this.itemsLayout, widthMeasureSpec, heightMeasureSpec);
 
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
         const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);

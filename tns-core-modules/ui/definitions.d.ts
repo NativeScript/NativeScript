@@ -136,6 +136,7 @@ declare module "ui/core/properties" {
         constructor(options: PropertyOptions<T, U>);
 
         public readonly native: symbol;
+        public readonly defaultValue: U;
         public register(cls: { prototype: T }): void;
     }
 
@@ -143,6 +144,7 @@ declare module "ui/core/properties" {
         constructor(options: CoerciblePropertyOptions<T, U>);
 
         public readonly native: symbol;
+        public readonly defaultValue: U;
         public readonly coerce: (target: T) => void;
         public register(cls: { prototype: T }): void;
     }
@@ -157,6 +159,7 @@ declare module "ui/core/properties" {
         public readonly native: symbol;
         public readonly name: string;
         public readonly cssName: string;
+        public readonly defaultValue: U;
         public register(cls: { prototype: T }): void;
     }
 

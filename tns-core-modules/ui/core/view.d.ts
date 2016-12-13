@@ -1,3 +1,24 @@
+declare module "ui/styling/style" {
+    interface Style {
+        effectiveMinWidth: number;
+        effectiveMinHeight: number;
+        effectiveWidth: number;
+        effectiveHeight: number;
+        effectiveMarginTop: number;
+        effectiveMarginRight: number;
+        effectiveMarginBottom: number;
+        effectiveMarginLeft: number;
+        effectivePaddingTop: number;
+        effectivePaddingRight: number;
+        effectivePaddingBottom: number;
+        effectivePaddingLeft: number;
+        effectiveBorderTopWidth: number;
+        effectiveBorderRightWidth: number;
+        effectiveBorderBottomWidth: number;
+        effectiveBorderLeftWidth: number;
+    }
+}
+
 declare module "ui/core/view" {
     import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
@@ -544,7 +565,7 @@ declare module "ui/core/view" {
 
         // Lifecycle events
 
-       
+
         _context: any /* android.content.Context */;
 
         _childIndexToNativeChildIndex(index?: number): number;
@@ -567,7 +588,7 @@ declare module "ui/core/view" {
 
         isCollapsed: boolean;
         isLayoutRequired: boolean;
-       
+
         _gestureObservers: any;
         // _isInheritedChange(): boolean;
         _domId: number;

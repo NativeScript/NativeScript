@@ -32,26 +32,22 @@ export {
 //     instance.set("text", propertyValue);
 // });
 
-declare module "ui/styling/style" {
-    interface Style {
-        effectiveMinWidth: number;
-        effectiveMinHeight: number;
-        effectiveWidth: number;
-        effectiveHeight: number;
-        effectiveMarginTop: number;
-        effectiveMarginRight: number;
-        effectiveMarginBottom: number;
-        effectiveMarginLeft: number;
-        effectivePaddingTop: number;
-        effectivePaddingRight: number;
-        effectivePaddingBottom: number;
-        effectivePaddingLeft: number;
-        effectiveBorderTopWidth: number;
-        effectiveBorderRightWidth: number;
-        effectiveBorderBottomWidth: number;
-        effectiveBorderLeftWidth: number;
-    }
-}
+Style.prototype.effectiveMinWidth = 0;
+Style.prototype.effectiveMinHeight = 0;
+Style.prototype.effectiveWidth = 0;
+Style.prototype.effectiveHeight = 0;
+Style.prototype.effectiveMarginTop = 0;
+Style.prototype.effectiveMarginRight = 0;
+Style.prototype.effectiveMarginBottom = 0;
+Style.prototype.effectiveMarginLeft = 0;
+Style.prototype.effectivePaddingTop = 0;
+Style.prototype.effectivePaddingRight = 0;
+Style.prototype.effectivePaddingBottom = 0;
+Style.prototype.effectivePaddingLeft = 0;
+Style.prototype.effectiveBorderTopWidth = 0;
+Style.prototype.effectiveBorderRightWidth = 0;
+Style.prototype.effectiveBorderBottomWidth = 0;
+Style.prototype.effectiveBorderLeftWidth = 0;
 
 export function getViewById(view: ViewDefinition, id: string): ViewDefinition {
     if (!view) {
@@ -63,7 +59,7 @@ export function getViewById(view: ViewDefinition, id: string): ViewDefinition {
     }
 
     let retVal: ViewDefinition;
-    let descendantsCallback = function (child: ViewDefinition): boolean {
+    const descendantsCallback = function (child: ViewDefinition): boolean {
         if (child.id === id) {
             retVal = child;
             // break the iteration by returning false
@@ -1186,7 +1182,7 @@ widthProperty.register(Style);
 export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 heightProperty.register(Style);
 
-export const marginProperty = new ShorthandProperty<Style>({
+const marginProperty = new ShorthandProperty<Style>({
     name: "margin", cssName: "margin",
     getter: function (this: Style) { return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`; },
     converter: convertToMargins
@@ -1205,7 +1201,7 @@ marginTopProperty.register(Style);
 export const marginBottomProperty = new CssProperty<Style, PercentLength>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
 marginBottomProperty.register(Style);
 
-export const paddingProperty = new ShorthandProperty<Style>({
+const paddingProperty = new ShorthandProperty<Style>({
     name: "padding", cssName: "padding",
     getter: function (this: Style) { return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`; },
     converter: convertToPaddings
@@ -1340,7 +1336,7 @@ translateXProperty.register(Style);
 export const translateYProperty = new CssProperty<Style, number>({ name: "translateY", cssName: "translateY", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
 translateYProperty.register(Style);
 
-export const transformProperty = new ShorthandProperty<Style>({
+const transformProperty = new ShorthandProperty<Style>({
     name: "transform", cssName: "transform",
     getter: function (this: Style) {
         let scaleX = this.scaleX;
@@ -1595,7 +1591,7 @@ function parseBorderColor(value: string): { top: Color, right: Color, bottom: Co
 }
 
 // Border Color properties.
-export const borderColorProperty = new ShorthandProperty<Style>({
+const borderColorProperty = new ShorthandProperty<Style>({
     name: "borderColor", cssName: "border-color",
     getter: function (this: Style) {
         if (Color.equals(this.borderTopColor, this.borderRightColor) &&
@@ -1651,7 +1647,7 @@ export const borderLeftColorProperty = new CssProperty<Style, Color>({
 borderLeftColorProperty.register(Style);
 
 // Border Width properties.
-export const borderWidthProperty = new ShorthandProperty<Style>({
+const borderWidthProperty = new ShorthandProperty<Style>({
     name: "borderWidth", cssName: "border-width",
     getter: function (this: Style) {
         if (Color.equals(this.borderTopColor, this.borderRightColor) &&
@@ -1731,7 +1727,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 borderLeftWidthProperty.register(Style);
 
 // Border Radius properties.
-export const borderRadiusProperty = new ShorthandProperty<Style>({
+const borderRadiusProperty = new ShorthandProperty<Style>({
     name: "borderRadius", cssName: "border-radius",
     getter: function (this: Style) {
         if (this.borderTopLeftRadius === this.borderTopRightRadius &&
@@ -1902,7 +1898,7 @@ export const fontWeightProperty = new InheritedCssProperty<Style, "100" | "200" 
 });
 fontWeightProperty.register(Style);
 
-export const fontProperty = new ShorthandProperty<Style>({
+const fontProperty = new ShorthandProperty<Style>({
     name: "font", cssName: "font",
     getter: function (this: Style) {
         return `${this.fontStyle} ${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;

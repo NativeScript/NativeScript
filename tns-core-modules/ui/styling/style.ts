@@ -3,12 +3,17 @@ import { Length, PercentLength, Color, Background, Font, ViewBase } from "ui/cor
 import { Observable } from "data/observable";
 import { resetStyleProperties } from "ui/core/properties";
 
+import {
+    FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
+    Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
+} from "ui/layouts/flexbox-layout"
+
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {
         super();
     }
 
-    private _updateCounter = 0;
+    // private _updateCounter = 0;
     // private _nativeSetters = new Map<Property, any>();
 
     public fontInternal: Font;
@@ -113,6 +118,17 @@ export class Style extends Observable implements StyleDefinition {
     effectiveBorderBottomWidth: number;
     effectiveBorderLeftWidth: number;
 
+    flexDirection: FlexDirection;
+    flexWrap: FlexWrap;
+    justifyContent: JustifyContent;
+    alignItems: AlignItems;
+    alignContent: AlignContent;
+    order: Order;
+    flexGrow: FlexGrow;
+    flexShrink: FlexShrink;
+    flexWrapBefore: FlexWrapBefore;
+    alignSelf: AlignSelf;
+
     // public _updateTextDecoration() {
     //     if (this.textDecoration !== TextDecoration.none) {
     //         this._applyProperty(textDecorationProperty, this._getValue(textDecorationProperty));
@@ -141,10 +157,10 @@ export class Style extends Observable implements StyleDefinition {
     //     }
     // }
 
-    public _resetCssValues() {
-        this.view._cancelAllAnimations();
-        resetStyleProperties(this);
-    }
+    // public _resetCssValues() {
+    //     this.view._cancelAllAnimations();
+    //     resetStyleProperties(this);
+    // }
 
     // public _resetLocalValues() {
     //     this._resetValues(ValueSource.Local);

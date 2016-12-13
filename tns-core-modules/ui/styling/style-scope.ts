@@ -1,4 +1,4 @@
-import { ViewBase } from "ui/core/view-base";
+import { ViewBase, resetStyleProperties } from "ui/core/view-base";
 import { SyntaxTree, Keyframes, parse as parseCss, Rule, Declaration, Node } from "css";
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
 import { KeyframeAnimationInfo, KeyframeAnimation } from "ui/animation/keyframe-animation";
@@ -23,7 +23,9 @@ export class CssState {
     }
 
     public apply(): void {
-        this.view.style._resetCssValues();
+        this.view._cancelAllAnimations();
+        resetStyleProperties(this.view.style);
+
         let matchingSelectors = this.match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
         matchingSelectors.forEach(s => applyDescriptors(this.view, s.ruleset));
     }

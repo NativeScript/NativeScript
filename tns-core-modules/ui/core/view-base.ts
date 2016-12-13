@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData } from "data/observable";
-import { Property, InheritedProperty, CssProperty, Style, clearInheritedProperties, propagateInheritedProperties } from "./properties";
+import { Property, InheritedProperty, CssProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetStyleProperties } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -134,7 +134,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    private _applyStyleFromScope() {
+    public _applyStyleFromScope() {
         let rootPage = this.page;
         if (!rootPage || !rootPage.isLoaded) {
             return;
@@ -482,10 +482,10 @@ export const classNameProperty = new Property<ViewBase, string>({ name: "classNa
 classNameProperty.register(ViewBase);
 
 function resetStyles(view: ViewBase): void {
-    // view.style._resetCssValues();
-    // view._applyStyleFromScope();
     view.eachChild((child) => {
-        // TODO.. Check old implementation....
+        child._cancelAllAnimations();
+        resetStyleProperties(child.style);
+        child._applyStyleFromScope();
         resetStyles(child);
         return true;
     });

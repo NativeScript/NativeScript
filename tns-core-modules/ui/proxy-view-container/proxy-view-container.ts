@@ -62,7 +62,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         super._addViewToNativeVisualTree(child);
 
         const parent = this.parent;
-        if (parent) {
+        if (parent instanceof View) {
             let baseIndex = 0;
             let insideIndex = 0;
             if (parent instanceof LayoutBase) {
@@ -92,7 +92,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         super._removeViewFromNativeVisualTree(child);
 
         const parent = this.parent;
-        if (parent) {
+        if (parent instanceof View) {
             return parent._removeViewFromNativeVisualTree(child);
         }
     }
