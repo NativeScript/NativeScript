@@ -244,7 +244,6 @@ alignItemsProperty.register(Style);
 export const alignContentProperty = new CssProperty<Style, AlignContent>({ name: "alignContent", cssName: "align-content", defaultValue: AlignContent.STRETCH, affectsLayout: isIOS, valueConverter: AlignContent.parse });
 alignContentProperty.register(Style);
 
-
 export const orderProperty = new CssProperty<Style, Order>({ name: "order", cssName: "order", defaultValue: ORDER_DEFAULT, valueConverter: Order.parse });
 orderProperty.register(Style);
 

@@ -2,6 +2,7 @@
 import { LayoutBase, View, Bindable, Property } from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
+
 function validateArgs(element: View): View {
     if (!element) {
         throw new Error("element cannot be null or undefinied.");

@@ -32,7 +32,6 @@ function childHandler(view) {
 const orderDescriptor: TypedPropertyDescriptor<OrderBase> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => orderProperty.defaultValue,
     set: function (this: View, value: OrderBase) {
         childHandler(this);
@@ -42,7 +41,6 @@ const orderDescriptor: TypedPropertyDescriptor<OrderBase> = {
 const flexGrowDescriptor: TypedPropertyDescriptor<FlexGrow> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => flexGrowProperty.defaultValue,
     set: function (this: View, value: FlexGrow) {
         childHandler(this);
@@ -52,7 +50,6 @@ const flexGrowDescriptor: TypedPropertyDescriptor<FlexGrow> = {
 const flexShrinkDescriptor: TypedPropertyDescriptor<FlexShrink> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => flexShrinkProperty.defaultValue,
     set: function (this: View, value: FlexShrink) {
         childHandler(this);
@@ -62,7 +59,6 @@ const flexShrinkDescriptor: TypedPropertyDescriptor<FlexShrink> = {
 const flexWrapBeforeDescriptor: TypedPropertyDescriptor<FlexWrapBefore> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => false,
     set: function (this: View, value: FlexWrapBefore) {
         childHandler(this);
@@ -72,7 +68,6 @@ const flexWrapBeforeDescriptor: TypedPropertyDescriptor<FlexWrapBefore> = {
 const alignSelfDescriptor: TypedPropertyDescriptor<AlignSelf> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => AlignSelf.AUTO,
     set: function (this: View, value: AlignSelf) {
         childHandler(this);

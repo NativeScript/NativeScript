@@ -1,6 +1,7 @@
 ﻿import { Layout as LayoutDefinition } from "ui/layouts/layout";
 import { LayoutBase } from "ui/layouts/layout-base";
 
+export * from "ui/layouts/layout-base";
 export class Layout extends LayoutBase implements LayoutDefinition {
     private _view: UIView;
 

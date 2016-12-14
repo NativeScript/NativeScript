@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "noEmitOnError": true,
+        "noEmitOnError": false,
         "noEmitHelpers": true,
         "target": "es5",
         "module": "commonjs",

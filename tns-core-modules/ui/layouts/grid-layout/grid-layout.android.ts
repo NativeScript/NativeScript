@@ -18,7 +18,6 @@ function setNativeProperty(view: View, setter: (lp: org.nativescript.widgets.Com
 let rowDescriptor: TypedPropertyDescriptor<number> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => 0,
     set: function (this: View, value: number) {
         setNativeProperty(this, (lp) => lp.row = value);
@@ -29,7 +28,6 @@ let rowDescriptor: TypedPropertyDescriptor<number> = {
 let colDescriptor: TypedPropertyDescriptor<number> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => 0,
     set: function (this: View, value: number) {
         setNativeProperty(this, (lp) => lp.column = value);
@@ -40,7 +38,6 @@ let colDescriptor: TypedPropertyDescriptor<number> = {
 let rowSpanDescriptor: TypedPropertyDescriptor<number> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => 1,
     set: function (this: View, value: number) {
         setNativeProperty(this, (lp) => lp.rowSpan = value);
@@ -51,7 +48,6 @@ let rowSpanDescriptor: TypedPropertyDescriptor<number> = {
 let colSpanDescriptor: TypedPropertyDescriptor<number> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => 1,
     set: function (this: View, value: number) {
         setNativeProperty(this, (lp) => lp.columnSpan = value);

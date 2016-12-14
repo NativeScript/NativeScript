@@ -6,7 +6,6 @@ export * from "./absolute-layout-common";
 let leftDescriptor: TypedPropertyDescriptor<Length> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => zeroLength,
     set: function (this: View, value: Length) {
         setNativeProperty(this, (lp) => lp.left = this.effectiveLeft);
@@ -17,7 +16,6 @@ let leftDescriptor: TypedPropertyDescriptor<Length> = {
 let topDescriptor: TypedPropertyDescriptor<Length> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => zeroLength,
     set: function (this: View, value: Length) {
         setNativeProperty(this, (lp) => lp.top = this.effectiveTop);

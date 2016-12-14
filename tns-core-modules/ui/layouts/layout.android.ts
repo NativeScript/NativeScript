@@ -1,6 +1,8 @@
 ﻿import { Layout as LayoutDefinition } from "ui/layouts/layout";
 import { LayoutBase, View, layout, traceEnabled, traceWrite, traceCategories } from "ui/layouts/layout-base";
 
+export * from "ui/layouts/layout-base";
+
 const OWNER = Symbol("_owner");
 
 var NativeViewGroupClass;

@@ -6,7 +6,6 @@ export * from "./dock-layout-common";
 let dockDescriptor: TypedPropertyDescriptor<"left" | "top" | "right" | "bottom"> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => "left",
     set: function (this: View, value: "left" | "top" | "right" | "bottom") {
         const nativeView: android.view.View = this._nativeView;

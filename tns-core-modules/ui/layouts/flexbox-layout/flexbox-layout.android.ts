@@ -14,7 +14,6 @@ export * from "./flexbox-layout-common";
 const orderDescriptor: TypedPropertyDescriptor<Order> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => orderProperty.defaultValue,
     set: function (this: View, value: Order) {
         setLayoutParamsProperty(this, (lp) => lp.order = value);
@@ -24,7 +23,6 @@ const orderDescriptor: TypedPropertyDescriptor<Order> = {
 const flexGrowDescriptor: TypedPropertyDescriptor<FlexGrow> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => flexGrowProperty.defaultValue,
     set: function (this: View, value: FlexGrow) {
         setLayoutParamsProperty(this, (lp) => lp.flexGrow = value);
@@ -34,7 +32,6 @@ const flexGrowDescriptor: TypedPropertyDescriptor<FlexGrow> = {
 const flexShrinkDescriptor: TypedPropertyDescriptor<FlexShrink> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => flexShrinkProperty.defaultValue,
     set: function (this: View, value: FlexShrink) {
         setLayoutParamsProperty(this, (lp) => lp.flexShrink = value);
@@ -44,7 +41,6 @@ const flexShrinkDescriptor: TypedPropertyDescriptor<FlexShrink> = {
 const flexWrapBeforeDescriptor: TypedPropertyDescriptor<FlexWrapBefore> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => false,
     set: function (this: View, value: FlexWrapBefore) {
         setLayoutParamsProperty(this, (lp) => lp.wrapBefore = value);
@@ -54,7 +50,6 @@ const flexWrapBeforeDescriptor: TypedPropertyDescriptor<FlexWrapBefore> = {
 const alignSelfDescriptor: TypedPropertyDescriptor<AlignSelf> = {
     enumerable: true,
     configurable: true,
-    writable: true,
     get: () => AlignSelf.AUTO,
     set: function (this: View, value: AlignSelf) {
         setLayoutParamsProperty(this, (lp) => lp.alignSelf = alignSelfMap[value]);
