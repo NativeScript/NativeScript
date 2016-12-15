@@ -29,6 +29,14 @@ declare module "ui/core/view-base" {
     export function getAncestor(view: ViewBase, criterion: string | Function): ViewBase;
     export function isEventOrGesture(name: string, view: ViewBase): boolean;
 
+    /**
+     * Gets a child view by id.
+     * @param view - The parent (container) view of the view to look for.
+     * @param id - The id of the view to look for.
+     * Returns an instance of a view (if found), otherwise undefined.
+     */
+    export function getViewById(view: ViewBase, id: string): ViewBase;
+
     export class ViewBase extends Observable {
         /**
          * String value used when hooking to loaded event.
@@ -49,6 +57,21 @@ declare module "ui/core/view-base" {
          * Gets the parent view. This property is read-only.
          */
         public readonly parent: ViewBase;
+
+        /**
+         * Gets or sets the id for this view.
+         */
+        public id: string;
+
+        /**
+         * Returns the child view with the specified id.
+         */
+        public getViewById<T extends ViewBase>(id: string): T;
+
+        /**
+         * Gets or sets the CSS class name for this view.
+         */
+        public className: string;
 
         /**
          * Gets owner page. This is a read-only property.
@@ -106,6 +129,9 @@ declare module "ui/core/view-base" {
     export const idProperty: Property<ViewBase, string>;
     export const classNameProperty: Property<ViewBase, string>;
     export const bindingContextProperty: InheritedProperty<ViewBase, any>;
+
+    export function makeValidator<T>(...values: T[]): (value: any) => value is T;
+    export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T;
 }
 
 declare module "ui/core/properties" {

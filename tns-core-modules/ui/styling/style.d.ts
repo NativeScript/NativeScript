@@ -1,5 +1,6 @@
 declare module "ui/styling/style" {
     import { Length, PercentLength, Color, Background, Font, ViewBase, Observable } from "ui/core/view";
+    import { TextDecoration } from "ui/text-base";
 
     export interface Thickness {
         left: number;
@@ -86,7 +87,7 @@ declare module "ui/styling/style" {
 
         public letterSpacing: number;
         public textAlignment: "left" | "center" | "right";
-        public textDecoration: "none" | "underline" | "lineThrough";
+        public textDecoration: TextDecoration;
         public textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
         public whiteSpace: "normal" | "nowrap";
 

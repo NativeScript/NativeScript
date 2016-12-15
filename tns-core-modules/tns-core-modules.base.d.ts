@@ -30,6 +30,7 @@
 /// <reference path="text/text.d.ts" />
 /// <reference path="timer/timer.d.ts" />
 /// <reference path="trace/trace.d.ts" />
+/// <reference path="ui/definitions.d.ts" />
 /// <reference path="ui/action-bar/action-bar.d.ts" />
 /// <reference path="ui/activity-indicator/activity-indicator.d.ts" />
 /// <reference path="ui/animation/animation.d.ts" />

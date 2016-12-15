@@ -1,5 +1,5 @@
 import * as flexbox from "ui/layouts/flexbox-layout";
-import { LayoutBase, View, Style, Property, CssProperty, isIOS, ShorthandProperty } from "ui/layouts/layout-base";
+import { LayoutBase, View, Style, Property, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser} from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 
@@ -17,16 +17,16 @@ export const ORDER_DEFAULT = 1;
 export const FLEX_GROW_DEFAULT = 0.0;
 export const FLEX_SHRINK_DEFAULT = 1.0;
 
-function makeValidator<T>(...values: T[]): (value: any) => value is T {
-    const set = new Set(values);
-    return (value: any): value is T => set.has(value);
-}
-function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
-    return value => {
-        const lower = value && value.toLowerCase();
-        return isValid(lower) ? lower : def;
-    }
-}
+// function makeValidator<T>(...values: T[]): (value: any) => value is T {
+//     const set = new Set(values);
+//     return (value: any): value is T => set.has(value);
+// }
+// function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
+//     return value => {
+//         const lower = value && value.toLowerCase();
+//         return isValid(lower) ? lower : def;
+//     }
+// }
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export namespace FlexDirection {

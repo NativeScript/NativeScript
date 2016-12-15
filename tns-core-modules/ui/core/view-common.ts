@@ -49,47 +49,6 @@ Style.prototype.effectiveBorderRightWidth = 0;
 Style.prototype.effectiveBorderBottomWidth = 0;
 Style.prototype.effectiveBorderLeftWidth = 0;
 
-export function getViewById(view: ViewDefinition, id: string): ViewDefinition {
-    if (!view) {
-        return undefined;
-    }
-
-    if (view.id === id) {
-        return view;
-    }
-
-    let retVal: ViewDefinition;
-    const descendantsCallback = function (child: ViewDefinition): boolean {
-        if (child.id === id) {
-            retVal = child;
-            // break the iteration by returning false
-            return false;
-        }
-
-        return true;
-    }
-
-    eachDescendant(view, descendantsCallback);
-    return retVal;
-}
-
-export function eachDescendant(view: ViewDefinition, callback: (child: ViewDefinition) => boolean) {
-    if (!callback || !view) {
-        return;
-    }
-
-    let continueIteration: boolean;
-    let localCallback = function (child: ViewDefinition): boolean {
-        continueIteration = callback(child);
-        if (continueIteration) {
-            child._eachChildView(localCallback);
-        }
-        return continueIteration;
-    }
-
-    view._eachChildView(localCallback);
-}
-
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
     let stateEventNames = pseudoClasses.map(s => ":" + s);
     let listeners = Symbol("listeners");
@@ -231,10 +190,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 observers[i].disconnect();
             }
         }
-    }
-
-    getViewById<T extends ViewDefinition>(id: string): T {
-        return <T>getViewById(this, id);
     }
 
     // START Style property shortcuts

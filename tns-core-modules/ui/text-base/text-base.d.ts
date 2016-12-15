@@ -37,7 +37,7 @@
         /**
          * Gets or sets text decorations style property.
          */
-        textDecoration: "none" | "underline" | "lineThrough";
+        textDecoration: TextDecoration;
 
         /**
          * Gets or sets text transform style property.
@@ -68,6 +68,16 @@
         //@endprivate
     }
 
+    export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
+    export namespace TextDecoration {
+        export const NONE: "none";
+        export const UNDERLINE: "underline";
+        export const LINE_THROUGH: "line-through";
+        export const UNDERLINE_LINE_THROUGH: "underline line-through";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): TextDecoration;
+    }
+
     export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
 
     export function getTransformedText(text: string, transform: TextTransform): string;
@@ -76,7 +86,7 @@
     export const formattedTextProperty: Property<TextBase, FormattedString>;
 
     export const textAlignmentProperty: InheritedCssProperty<Style, "left" | "center" | "right">;
-    export const textDecorationProperty: CssProperty<Style, "none" | "underline" | "line-through">;
+    export const textDecorationProperty: CssProperty<Style, TextDecoration>;
     export const textTransformProperty: CssProperty<Style, TextTransform>;
     export const whiteSpaceProperty: CssProperty<Style, "normal" | "nowrap">;
     export const letterSpacingProperty: CssProperty<Style, number>;

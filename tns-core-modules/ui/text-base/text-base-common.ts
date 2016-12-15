@@ -1,5 +1,5 @@
 ﻿import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable } from "ui/core/view";
+import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser} from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
 import { FormattedString, FormattedStringView } from "text/formatted-string";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
@@ -78,10 +78,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
         this.style.textAlignment = value;
     }
 
-    get textDecoration(): "none" | "underline" | "lineThrough" {
+    get textDecoration(): TextDecoration {
         return this.style.textDecoration;
     }
-    set textDecoration(value: "none" | "underline" | "lineThrough") {
+    set textDecoration(value: TextDecoration) {
         this.style.textDecoration = value;
     }
 
@@ -135,21 +135,19 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, "left" | "c
 });
 textAlignmentProperty.register(Style);
 
-export const textDecorationProperty = new CssProperty<Style, "none" | "underline" | "line-through">({
-    name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: (value) => {
-        if (value === null || value === undefined || value === "") {
-            value = "none";
-        }
+// TextDecoration
+export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
+export namespace TextDecoration {
+    export const NONE: "none" = "none";
+    export const UNDERLINE: "underline" = "underline";
+    export const LINE_THROUGH: "line-through" = "line-through";
+    export const UNDERLINE_LINE_THROUGH: "underline line-through" = "underline line-through";
 
-        (value + "").split(" ").forEach((v, i, arr) => {
-            if (v !== "none" && v !== "underline" && v !== "line-through") {
-                throw new Error(`CSS text-decoration ${value} is not supported.`);
-            }
-
-        });
-        return <any>value;
-    }
-});
+    export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
+    export const parse = makeParser(isValid, NONE);
+}
+export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
+    name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse});
 textDecorationProperty.register(Style);
 
 export const textTransformProperty = new CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">({
