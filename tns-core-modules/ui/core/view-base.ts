@@ -50,6 +50,47 @@ export function isEventOrGesture(name: string, view: ViewBaseDefinition): boolea
     return false;
 }
 
+export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefinition {
+    if (!view) {
+        return undefined;
+    }
+
+    if (view.id === id) {
+        return view;
+    }
+
+    let retVal: ViewBaseDefinition;
+    const descendantsCallback = function (child: ViewBaseDefinition): boolean {
+        if (child.id === id) {
+            retVal = child;
+            // break the iteration by returning false
+            return false;
+        }
+
+        return true;
+    }
+
+    eachDescendant(view, descendantsCallback);
+    return retVal;
+}
+
+export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewBaseDefinition) => boolean) {
+    if (!callback || !view) {
+        return;
+    }
+
+    let continueIteration: boolean;
+    let localCallback = function (child: ViewBaseDefinition): boolean {
+        continueIteration = callback(child);
+        if (continueIteration) {
+            child.eachChild(localCallback);
+        }
+        return continueIteration;
+    }
+
+    view.eachChild(localCallback);
+}
+
 export class ViewBase extends Observable implements ViewBaseDefinition {
     private _updatingJSPropertiesDict = {};
     private _style: Style;
@@ -85,6 +126,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     get isLoaded(): boolean {
         return this._isLoaded;
+    }
+
+    getViewById<T extends ViewBaseDefinition>(id: string): T {
+        return <T>getViewById(this, id);
     }
 
     get page(): ViewBaseDefinition {
@@ -493,3 +538,14 @@ function resetStyles(view: ViewBase): void {
 
 export const idProperty = new Property<ViewBase, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
 idProperty.register(ViewBase);
+
+export function makeValidator<T>(...values: T[]): (value: any) => value is T {
+    const set = new Set(values);
+    return (value: any): value is T => set.has(value);
+}
+export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
+    return value => {
+        const lower = value && value.toLowerCase();
+        return isValid(lower) ? lower : def;
+    }
+}

@@ -6,7 +6,9 @@ import { resetStyleProperties } from "ui/core/properties";
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
-} from "ui/layouts/flexbox-layout"
+} from "ui/layouts/flexbox-layout";
+
+import { TextDecoration } from "ui/text-base";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {
@@ -64,7 +66,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public letterSpacing: number;
     public textAlignment: "left" | "center" | "right";
-    public textDecoration: "none" | "underline" | "lineThrough";
+    public textDecoration: TextDecoration;
     public textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
     public whiteSpace: "normal" | "nowrap";
 

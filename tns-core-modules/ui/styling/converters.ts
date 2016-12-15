@@ -29,7 +29,12 @@ export function textAlignConverter(value: string): string {
 export function textDecorationConverter(value: string): string {
     const values = (value + "").split(" ");
 
-    if (values.indexOf("none") !== -1 || values.indexOf("underline") !== -1 || values.indexOf("lineThrough") !== -1) {
+    if (values.indexOf("none") !== -1 
+     || values.indexOf("underline") !== -1 
+     || values.indexOf("line-through") !== -1
+     || values.indexOf("underline line-through") !== -1
+     || values.indexOf("line-through underline") !== -1
+    ) {
         return value;
     } else {
         throw new Error("CSS text-decoration \"" + value + "\" is not supported.");

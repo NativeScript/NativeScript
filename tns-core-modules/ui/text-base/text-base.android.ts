@@ -1,7 +1,7 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty,
-    Font, Color, FormattedString
+    Font, Color, FormattedString, TextDecoration
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -163,10 +163,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [textDecorationProperty.native](): "none" | "underline" | "line-through" {
+    get [textDecorationProperty.native](): TextDecoration {
         return "none";
     }
-    set [textDecorationProperty.native](value: "none" | "underline" | "line-through") {
+    set [textDecorationProperty.native](value: TextDecoration) {
         let flags = 0;
         let values = (value + "").split(" ");
 

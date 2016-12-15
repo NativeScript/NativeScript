@@ -42,14 +42,6 @@ declare module "ui/core/view" {
     export function getLengthEffectiveValue(param: Length): number;
 
     /**
-     * Gets a child view by id.
-     * @param view - The parent (container) view of the view to look for.
-     * @param id - The id of the view to look for.
-     * Returns an instance of a view (if found), otherwise undefined.
-     */
-    export function getViewById(view: View, id: string): View;
-
-    /**
      * Converts string into boolean value.
      * Throws error if value is not 'true' or 'false'.
      */
@@ -351,16 +343,6 @@ declare module "ui/core/view" {
         isUserInteractionEnabled: boolean;
 
         /**
-         * Gets or sets the id for this view.
-         */
-        id: string;
-
-        /**
-         * Gets or sets the CSS class name for this view.
-         */
-        className: string;
-
-        /**
          * Gets is layout is valid. This is a read-only property.
          */
         isLayoutValid: boolean;
@@ -474,11 +456,6 @@ declare module "ui/core/view" {
         public static resolveSizeAndState(size: number, specSize: number, specMode: number, childMeasuredState: number): number;
 
         public static combineMeasuredStates(curState: number, newState): number;
-
-        /**
-         * Returns the child view with the specified id.
-         */
-        public getViewById<T extends View>(id: string): T;
 
         /**
          * Tries to focus the view.

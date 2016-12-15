@@ -1,6 +1,7 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, Font, Color, FormattedString
+    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, Font, Color, FormattedString,
+    TextDecoration
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -244,10 +245,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [textDecorationProperty.native](): string {
+    get [textDecorationProperty.native](): TextDecoration {
         return "none";
     }
-    set [textDecorationProperty.native](value: string) {
+    set [textDecorationProperty.native](value: TextDecoration) {
         if (this.formattedText) {
             setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, value, this.style.textTransform, this.style.letterSpacing);
         } else {
