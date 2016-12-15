@@ -127,11 +127,6 @@ declare module "ui/core/view" {
      */
     export abstract class View extends ViewBase implements ApplyXmlAttributes {
         /**
-         * Get the nativeView created for this object.
-         */
-        public nativeView: any;
-
-        /**
          * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
          */
         public android: any;
@@ -608,9 +603,6 @@ declare module "ui/core/view" {
         _onContextChanged(): void;
         _onDetached(force?: boolean): void;
         _createUI(): void;
-
-        _shouldApplyStyleHandlers();
-        // _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata);
 
         _updateLayout(): void;
 

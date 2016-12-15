@@ -6,7 +6,7 @@ import { Background } from "ui/styling/background";
 import {
     ViewBase, getEventOrGestureName, Observable, EventData, Style,
     Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty,
-    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent
+    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, printUnregisteredProperties
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont } from "ui/styling/font";
@@ -931,11 +931,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return undefined;
     }
 
-    public _shouldApplyStyleHandlers() {
-        // If we have native view we are ready to apply style handelr;
-        return !!this._nativeView;
-    }
-
     public focus(): boolean {
         return undefined;
     }
@@ -1456,10 +1451,12 @@ function convertToTransform(value: string): [CssProperty<any, any>, any][] {
 
 // Background properties.
 export const backgroundInternalProperty = new CssProperty<Style, Background>({ name: "backgroundInternal", cssName: "_backgroundInternal", defaultValue: Background.default });
+backgroundInternalProperty.register(Style);
 
 let pattern: RegExp = /url\(('|")(.*?)\1\)/;
 export const backgroundImageProperty = new CssProperty<Style, string>({
     name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
+
         let style = target;
         let currentBackground = target.backgroundInternal;
         let url: string = newValue;
@@ -1505,6 +1502,7 @@ backgroundImageProperty.register(Style);
 
 export const backgroundColorProperty = new CssProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, newValue) => {
+        printUnregisteredProperties();
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withColor(newValue);
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)

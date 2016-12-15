@@ -14,8 +14,9 @@ const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
 
 @Interfaces([android.widget.AdapterView.OnItemClickListener])
-class ItemClickListener implements android.widget.AdapterView.OnItemClickListener {
+class ItemClickListener extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
     constructor(private owner: WeakRef<ListView>) {
+        super();
         return global.__native(this);
     }
 

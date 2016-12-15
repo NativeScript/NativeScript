@@ -4,8 +4,9 @@ import { ItemsSource } from "ui/list-picker";
 export * from "./list-picker-common";
 
 @Interfaces([android.widget.NumberPicker.Formatter])
-class Formatter implements android.widget.NumberPicker.Formatter {
+class Formatter extends java.lang.Object implements android.widget.NumberPicker.Formatter {
     constructor(private owner: WeakRef<ListPicker>) {
+        super();
         return global.__native(this);
     }
 
@@ -20,8 +21,9 @@ class Formatter implements android.widget.NumberPicker.Formatter {
 }
 
 @Interfaces([android.widget.NumberPicker.OnValueChangeListener])
-class ValueChangeListener implements android.widget.NumberPicker.OnValueChangeListener {
+class ValueChangeListener extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
     constructor(private owner: WeakRef<ListPicker>) {
+        super();
         return global.__native(this);
     }
 

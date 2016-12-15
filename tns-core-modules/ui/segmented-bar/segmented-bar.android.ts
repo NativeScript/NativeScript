@@ -46,10 +46,10 @@ function setBackground(view: android.view.View, background: android.graphics.dra
 }
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
-    private _nativeView: android.widget.TextView;
+    private _textView: android.widget.TextView;
 
     public setNativeView(textView: android.widget.TextView): void {
-        this._nativeView = textView;
+        this._textView = textView;
         applyNativeSetters(this);
         if (this.titleDirty) {
             this._update();
@@ -67,7 +67,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         //     titleTextView.setText(this.title || "");
         // }
 
-        let tv = this._nativeView;
+        let tv = this._textView;
         if (tv) {
             let title = this.title;
             title = (title === null || title === undefined) ? "" : title;
@@ -79,22 +79,22 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
     }
 
     get [colorProperty.native](): number {
-        return this._nativeView.getCurrentTextColor();
+        return this._textView.getCurrentTextColor();
     }
     set [colorProperty.native](value: Color | number) {
         let color = typeof value === "Color" ? value.android : value;
-        this._nativeView.setTextColor(color);
+        this._textView.setTextColor(color);
     }
 
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let textView = this._nativeView;
+        let textView = this._textView;
         return {
             typeface: textView.getTypeface(),
             fontSize: textView.getTextSize()
         };
     }
     set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let tv = this._nativeView;
+        let tv = this._textView;
         if (value instanceof Font) {
             tv.setTypeface(value.getAndroidTypeface());
             tv.setTextSize(value.fontSize);
@@ -105,11 +105,11 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
     }
 
     get [selectedBackgroundColorProperty.native](): android.graphics.drawable.Drawable {
-        let viewGroup = <android.view.ViewGroup>this._nativeView.getParent();
+        let viewGroup = <android.view.ViewGroup>this._textView.getParent();
         return viewGroup.getBackground();
     }
     set [selectedBackgroundColorProperty.native](value: Color | android.graphics.drawable.Drawable) {
-        let viewGroup = <android.view.ViewGroup>this._nativeView.getParent();
+        let viewGroup = <android.view.ViewGroup>this._textView.getParent();
         if (value instanceof Color) {
             let color = value.android;
             let backgroundDrawable = viewGroup.getBackground();
@@ -133,8 +133,9 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 }
 
 @Interfaces([android.widget.TabHost.OnTabChangeListener])
-class TabChangeListener implements android.widget.TabHost.OnTabChangeListener {
+class TabChangeListener extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
     constructor(private owner: WeakRef<SegmentedBar>) {
+        super();
         return global.__native(this);
     }
 
@@ -147,8 +148,9 @@ class TabChangeListener implements android.widget.TabHost.OnTabChangeListener {
 }
 
 @Interfaces([android.widget.TabHost.TabContentFactory])
-class TabContentFactory implements android.widget.TabHost.TabContentFactory {
+class TabContentFactory extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
     constructor(private owner: WeakRef<SegmentedBar>) {
+        super();
         return global.__native(this);
     }
 

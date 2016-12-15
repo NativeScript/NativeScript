@@ -10,6 +10,20 @@ let cssSymbolPropertyMap = {};
 let inheritableProperties = new Array<InheritedProperty<any, any>>();
 let inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
 
+function print(map) {
+    let symbols = (<any>Object).getOwnPropertySymbols(map);
+    for (let symbol of symbols) {
+        const prop = map[symbol];
+        if (!prop.registered) {
+            console.log(`Property ${prop.name} not Registered!!!!!`);
+        }
+    }
+}
+export function printUnregisteredProperties(): void {
+    print(symbolPropertyMap);
+    print(cssSymbolPropertyMap)
+}
+
 const enum ValueSource {
     Default = 0,
     Inherited = 1,
@@ -650,6 +664,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 }
 
 export class ShorthandProperty<T extends Style> {
+    private registered: boolean;
     private readonly setLocalValue: (value: string) => void;
     private readonly setCssValue: (value: string) => void;
 
@@ -721,6 +736,10 @@ export class ShorthandProperty<T extends Style> {
     }
 
     public register(cls: { prototype: T }): void {
+        if (this.registered) {
+            throw new Error(`Property ${this.name} already registered.`);
+        }
+        this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
         Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
     }

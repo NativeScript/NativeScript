@@ -3,31 +3,31 @@
 export * from "./activity-indicator-common";
 
 export class ActivityIndicator extends ActivityIndicatorBase {
-    nativeView: android.widget.ProgressBar;
+    _progressBar: android.widget.ProgressBar;
 
     public _createUI() {
-        this.nativeView = new android.widget.ProgressBar(this._context);
-        this.nativeView.setVisibility(android.view.View.INVISIBLE);
-        this.nativeView.setIndeterminate(true);
+        this._progressBar = new android.widget.ProgressBar(this._context);
+        this._progressBar.setVisibility(android.view.View.INVISIBLE);
+        this._progressBar.setIndeterminate(true);
     }
 
     get android(): android.widget.ProgressBar {
-        return this.nativeView;
+        return this._progressBar;
     }
 
     get [busyProperty.native](): boolean {
-        return this.nativeView.getVisibility() === android.view.View.VISIBLE;
+        return this._progressBar.getVisibility() === android.view.View.VISIBLE;
     }
     set [busyProperty.native](value: boolean) {
-        this.nativeView.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+        this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
     }
 
     get [visibilityProperty.native](): number {
-        return this.nativeView.getVisibility();
+        return this._progressBar.getVisibility();
     }
     set [visibilityProperty.native](value: number) {
         this.busy = value === android.view.View.VISIBLE;
-        this.nativeView.setVisibility(value);
+        this._progressBar.setVisibility(value);
     }
 
     get [colorProperty.native](): number {
@@ -35,10 +35,10 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
     set [colorProperty.native](value: number) {
         if (value < 0) {
-            this.nativeView.getIndeterminateDrawable().clearColorFilter();
+            this._progressBar.getIndeterminateDrawable().clearColorFilter();
         }
         else {
-            this.nativeView.getIndeterminateDrawable().setColorFilter(value, android.graphics.PorterDuff.Mode.SRC_IN);
+            this._progressBar.getIndeterminateDrawable().setColorFilter(value, android.graphics.PorterDuff.Mode.SRC_IN);
         }
     }
 }

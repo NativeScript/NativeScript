@@ -161,8 +161,9 @@ export class Image extends ImageBase {
 }
 
 @Interfaces([org.nativescript.widgets.image.Worker.OnImageLoadedListener])
-class ImageLoadedListener implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
+class ImageLoadedListener extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
     constructor(private owner: WeakRef<Image>) {
+        super();
         return global.__native(this);
     }
 

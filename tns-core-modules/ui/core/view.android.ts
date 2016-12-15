@@ -23,8 +23,9 @@ const VIEW_GROUP = "_viewGroup";
 
 // TODO: Move this class into widgets.
 @Interfaces([android.view.View.OnTouchListener])
-class DisableUserInteractionListener implements android.view.View.OnTouchListener {
+class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {
     constructor() {
+        super();
         return global.__native(this);
     }
 
@@ -34,8 +35,9 @@ class DisableUserInteractionListener implements android.view.View.OnTouchListene
 }
 
 @Interfaces([android.view.View.OnTouchListener])
-class TouchListener implements android.view.View.OnTouchListener {
+class TouchListener extends java.lang.Object implements android.view.View.OnTouchListener {
     constructor(private owner: WeakRef<View>) {
+        super();
         return global.__native(this);
     }
 
@@ -222,6 +224,8 @@ export class View extends ViewCommon {
         if (this._nativeView && !this._nativeView.getLayoutParams()) {
             this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
         }
+
+        this.nativeView = this._nativeView;
 
         if (traceEnabled) {
             traceNotifyEvent(this, "_onContextChanged");
@@ -1079,11 +1083,11 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {
         super._addViewToNativeVisualTree(child);
 
-        if (this.nativeView && child.nativeView) {
+        if (this._nativeView && child.nativeView) {
             if (traceEnabled) {
                 traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
             }
-            this._nativeView.addView(child._nativeView, atIndex);
+            this._nativeView.addView(child.nativeView, atIndex);
             return true;
         }
 

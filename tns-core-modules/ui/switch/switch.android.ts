@@ -4,8 +4,9 @@ import { View, layout, Color, Property, colorProperty, backgroundColorProperty, 
 export * from "ui/core/view";
 
 @Interfaces([android.widget.CompoundButton.OnCheckedChangeListener])
-class CheckedChangeListener implements android.widget.CompoundButton.OnCheckedChangeListener {
+class CheckedChangeListener extends java.lang.Object implements android.widget.CompoundButton.OnCheckedChangeListener {
     constructor(private owner: WeakRef<Switch>) {
+        super();
         return global.__native(this);
     }
 

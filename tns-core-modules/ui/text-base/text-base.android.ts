@@ -63,30 +63,30 @@ class TextTransformation extends android.text.method.ReplacementTransformationMe
 
 export class TextBase extends TextBaseCommon {
     _transformationMethod: any;
-    nativeView: android.widget.TextView;
+    _nativeView: android.widget.TextView;
 
     public _setFormattedTextPropertyToNative(value: FormattedString) {
         // TODO: Check if there is an option to force call the transformation method without
         // creating new native instance.
-        if (this.nativeView) {
-            this.nativeView.setTransformationMethod(new TextTransformation(this.text, value, this.style.textTransform));
+        if (this._nativeView) {
+            this._nativeView.setTransformationMethod(new TextTransformation(this.text, value, this.style.textTransform));
         }
 
         let newText = value ? value._formattedText : null;
-        if (this.nativeView) {
-            this.nativeView.setText(newText);
+        if (this._nativeView) {
+            this._nativeView.setText(newText);
         }
     }
 
     get [textProperty.native](): string {
-        return this.nativeView.getText();
+        return this._nativeView.getText();
     }
     set [textProperty.native](value: string) {
         if (value === null || value === undefined) {
             value = "";
         }
 
-        this.nativeView.setText(value);
+        this._nativeView.setText(value);
     }
 
     get [formattedTextProperty.native](): FormattedString {
@@ -97,25 +97,25 @@ export class TextBase extends TextBaseCommon {
     }
 
     get [colorProperty.native](): android.content.res.ColorStateList {
-        return this.nativeView.getTextColors();
+        return this._nativeView.getTextColors();
     }
     set [colorProperty.native](value: Color | android.content.res.ColorStateList) {
         if (value instanceof Color) {
-            this.nativeView.setTextColor(value.android);
+            this._nativeView.setTextColor(value.android);
         } else {
-            this.nativeView.setTextColor(value);
+            this._nativeView.setTextColor(value);
         }
     }
 
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let textView = this.nativeView;
+        let textView = this._nativeView;
         return {
             typeface: textView.getTypeface(),
             fontSize: textView.getTextSize()
         };
     }
     set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let textView = this.nativeView;
+        let textView = this._nativeView;
 
         let typeface: android.graphics.Typeface;
         let fontSize: number;
@@ -131,7 +131,7 @@ export class TextBase extends TextBaseCommon {
     }
 
     get [textAlignmentProperty.native](): string {
-        let textGravity = this.nativeView.getGravity() & android.view.View.TEXT_ALIGNMENT_GRAVITY;
+        let textGravity = this._nativeView.getGravity() & android.view.View.TEXT_ALIGNMENT_GRAVITY;
         switch (textGravity) {
             case android.view.Gravity.LEFT:
                 return "left";
@@ -147,16 +147,16 @@ export class TextBase extends TextBaseCommon {
         }
     }
     set [textAlignmentProperty.native](value: string) {
-        let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+        let verticalGravity = this._nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
         switch (value) {
             case "left":
-                this.nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
+                this._nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
                 break;
             case "center":
-                this.nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+                this._nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
                 break;
             case "right":
-                this.nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+                this._nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
                 break;
             default:
                 break;
@@ -179,9 +179,9 @@ export class TextBase extends TextBaseCommon {
         }
 
         if (values.indexOf("none") === -1) {
-            this.nativeView.setPaintFlags(flags);
+            this._nativeView.setPaintFlags(flags);
         } else {
-            this.nativeView.setPaintFlags(0);
+            this._nativeView.setPaintFlags(0);
         }
     }
 
@@ -196,16 +196,16 @@ export class TextBase extends TextBaseCommon {
         return "normal";
     }
     set [whiteSpaceProperty.native](value: "normal" | "nowrap") {
-        let nativeView = this.nativeView;
+        let nativeView = this._nativeView;
         let nowrap = value === "nowrap";
         nativeView.setSingleLine(nowrap);
         nativeView.setEllipsize(nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
 
     get [letterSpacingProperty.native](): number {
-        return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeView);
+        return org.nativescript.widgets.ViewHelper.getLetterspacing(this._nativeView);
     }
     set [letterSpacingProperty.native](value: number) {
-        org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeView, value);
+        org.nativescript.widgets.ViewHelper.setLetterspacing(this._nativeView, value);
     }
 }

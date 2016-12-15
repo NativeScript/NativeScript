@@ -6,8 +6,9 @@
 export * from "./button-common";
 
 @Interfaces([android.view.View.OnClickListener])
-class ClickListener implements android.view.View.OnClickListener {
+class ClickListener extends java.lang.Object implements android.view.View.OnClickListener {
     constructor(public owner: WeakRef<Button>) {
+        super();
         return global.__native(this);
     }
 
@@ -20,19 +21,19 @@ class ClickListener implements android.view.View.OnClickListener {
 }
 
 export class Button extends ButtonBase {
-    nativeView: android.widget.Button;
+    _button: android.widget.Button;
     private _isPressed: boolean;
     private _transformationMethod;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     get android(): android.widget.Button {
-        return this.nativeView;
+        return this._button;
     }
 
     public _createUI() {
         let weakRef = new WeakRef(this);
-        this.nativeView = new android.widget.Button(this._context);
-        this.nativeView.setOnClickListener(new ClickListener(weakRef));
+        this._button = new android.widget.Button(this._context);
+        this._button.setOnClickListener(new ClickListener(weakRef));
     }
 
     public _setFormattedTextPropertyToNative(value: FormattedString) {
@@ -48,7 +49,7 @@ export class Button extends ButtonBase {
             }
         }
 
-        this.nativeView.setText(newText);
+        this._button.setText(newText);
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")

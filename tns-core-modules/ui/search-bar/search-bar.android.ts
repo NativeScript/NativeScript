@@ -10,8 +10,9 @@ const SEARCHTEXT = Symbol("searchText");
 const QUERY = Symbol("query");
 
 @Interfaces([android.widget.SearchView.OnQueryTextListener])
-class QueryTextListener implements android.widget.SearchView.OnQueryTextListener {
+class QueryTextListener extends java.lang.Object implements android.widget.SearchView.OnQueryTextListener {
     constructor(private owner: WeakRef<SearchBar>) {
+        super();
         return global.__native(this);
     }
 
@@ -44,8 +45,9 @@ class QueryTextListener implements android.widget.SearchView.OnQueryTextListener
 }
 
 @Interfaces([android.widget.SearchView.OnCloseListener])
-class CloseListener implements android.widget.SearchView.OnCloseListener {
+class CloseListener extends java.lang.Object implements android.widget.SearchView.OnCloseListener {
     constructor(private owner: WeakRef<SearchBar>) {
+        super();
         return global.__native(this);
     }
 

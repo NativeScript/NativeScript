@@ -7,8 +7,9 @@
 export * from "./slider-common";
 
 @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
-class SeekBarChangeListener implements android.widget.SeekBar.OnSeekBarChangeListener {
+class SeekBarChangeListener extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
     constructor(private owner: WeakRef<Slider>) {
+        super();
         return global.__native(this);
     }
 
