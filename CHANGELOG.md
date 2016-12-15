@@ -1,6 +1,18 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.4.3 (2016, December 15)
+
+- [(#3170)](https://github.com/NativeScript/NativeScript/pull/3170) Export set function for cssFile and resources
+
+##2.4.2 (2016, December 7)
+
+- [(#3242)](https://github.com/NativeScript/NativeScript/issues/3242) Setting placeholder color on text field crashes is there is no hint
+
+##2.4.1 (2016, December 2)
+
+- [(#3217)](https://github.com/NativeScript/NativeScript/pull/3217) Properly extend Error so message and stack appear in error activity
+
 ##2.4.0 (2016, November 16)
 
 ### Fixed
