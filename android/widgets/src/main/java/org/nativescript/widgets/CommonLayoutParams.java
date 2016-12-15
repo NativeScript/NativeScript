@@ -26,7 +26,7 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     private static final StringBuilder sb = new StringBuilder();
 
     public CommonLayoutParams() {
-        super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.FILL);
     }
 
     public float widthPercent = 0;
