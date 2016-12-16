@@ -1,6 +1,7 @@
 declare module "ui/styling/style" {
     import { Length, PercentLength, Color, Background, Font, ViewBase, Observable } from "ui/core/view";
     import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
+    import { FontStyle, FontWeight } from "ui/styling/font";
 
     export interface Thickness {
         left: number;
@@ -77,8 +78,8 @@ declare module "ui/styling/style" {
 
         public fontSize: number;
         public fontFamily: string;
-        public fontStyle: "normal" | "italic";
-        public fontWeight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
+        public fontStyle: FontStyle;
+        public fontWeight: FontWeight;
         public font: string;
 
         public zIndex: number;

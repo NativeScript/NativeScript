@@ -9,7 +9,7 @@ import {
     gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, printUnregisteredProperties
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
-import { Font, parseFont } from "ui/styling/font";
+import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
 import { fontSizeConverter } from "../styling/converters";
 
 // TODO: Remove this and start using string as source (for android).
@@ -1815,12 +1815,8 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 });
 fontSizeProperty.register(Style);
 
-export const fontStyleProperty = new InheritedCssProperty<Style, "normal" | "italic">({
-    name: "fontStyle", cssName: "font-style", defaultValue: "normal", valueChanged: (target, newValue) => {
-        if (!(newValue === "normal" || newValue === "italic")) {
-            throw new Error(`font-style should be 'normal' or 'italic'. value: ${newValue}`)
-        }
-
+export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
+    name: "fontStyle", cssName: "font-style", defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontStyle !== newValue) {
             target.fontInternal = currentFont.withFontStyle(newValue);
@@ -1829,20 +1825,8 @@ export const fontStyleProperty = new InheritedCssProperty<Style, "normal" | "ita
 });
 fontStyleProperty.register(Style);
 
-export const fontWeightProperty = new InheritedCssProperty<Style, "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900">({
-    name: "fontWeight", cssName: "font-weight", defaultValue: "normal", valueChanged: (target, newValue) => {
-        if (!newValue) {
-            console.trace();
-        }
-
-        // TODO: Console.log errors or throw error?
-        if (!(newValue === "normal" || newValue === "bold"
-            || newValue === "100" || newValue === "200" || newValue === "300"
-            || newValue === "400" || newValue === "500" || newValue === "600"
-            || newValue === "700" || newValue === "800" || newValue === "900")) {
-            throw new Error(`Invalid font-weight value: ${newValue}`);
-        }
-
+export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
+    name: "fontWeight", cssName: "font-weight", defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontWeight !== newValue) {
             target.fontInternal = currentFont.withFontWeight(newValue);

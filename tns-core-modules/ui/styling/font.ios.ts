@@ -1,14 +1,14 @@
-﻿import { FontBase, parseFontFamily, genericFontFamilies, parseFont } from "./font-common";
+﻿import { FontBase, parseFontFamily, genericFontFamilies, parseFont, FontStyle, FontWeight } from "./font-common";
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 import fs = require("file-system");
 import * as utils from "utils/utils";
 
 export class Font extends FontBase {
-    public static default = new Font(undefined, undefined, "normal", "normal");
+    public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL);
 
     private _uiFont: UIFont;
 
-    constructor(family: string, size: number, style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
+    constructor(family: string, size: number, style: FontStyle, weight: FontWeight) {
         super(family, size, style, weight);
     }
 
@@ -16,11 +16,11 @@ export class Font extends FontBase {
         return new Font(family, this.fontSize, this.fontStyle, this.fontWeight);
     }
 
-    public withFontStyle(style: "normal" | "italic"): Font {
+    public withFontStyle(style: FontStyle): Font {
         return new Font(this.fontFamily, this.fontSize, style, this.fontWeight);
     }
 
-    public withFontWeight(weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900"): Font {
+    public withFontWeight(weight: FontWeight): Font {
         return new Font(this.fontFamily, this.fontSize, this.fontStyle, weight);
     }
 
@@ -187,33 +187,33 @@ declare const UIFontWeightBold: number;       //0.4
 declare const UIFontWeightHeavy: number;      //0.56
 declare const UIFontWeightBlack: number;      //0.62
 
-function getiOSFontWeight(fontWeight: string): number {
+function getiOSFontWeight(fontWeight: FontWeight): number {
     if (!(<any>UIFont).systemFontOfSizeWeight) {
         throw new Error("Font weight is available in iOS 8.2 and later.");
     }
 
     switch (fontWeight) {
-        case "100":
+        case FontWeight.THIN:
             return UIFontWeightThin;
-        case "200":
+        case FontWeight.EXTRA_LIGHT:
             return UIFontWeightUltraLight;
-        case "300":
+        case FontWeight.LIGHT:
             return UIFontWeightLight;
-        case "normal":
+        case FontWeight.NORMAL:
         case "400":
         case undefined:
         case null:
             return UIFontWeightRegular;
-        case "500":
+        case FontWeight.MEDIUM:
             return UIFontWeightMedium;
-        case "600":
+        case FontWeight.SEMI_BOLD:
             return UIFontWeightSemibold;
-        case "bold":
+        case FontWeight.BOLD:
         case "700":
             return UIFontWeightBold;
-        case "800":
+        case FontWeight.EXTRA_BOLD:
             return UIFontWeightHeavy;
-        case "900":
+        case FontWeight.BLACK:
             return UIFontWeightBlack;
         default:
             throw new Error(`Invalid font weight: "${fontWeight}"`);
@@ -248,39 +248,39 @@ function findCorrectWeightString(fontFamily: string, weightStringAlternatives: A
     return weightStringAlternatives[0];
 }
 
-function getiOSFontFace(fontFamily: string, fontWeight: string, isItalic: boolean): string {
+function getiOSFontFace(fontFamily: string, fontWeight: FontWeight, isItalic: boolean): string {
     // ... with a lot of fuzzy logic and artificial intelligence thanks to the lack of font naming standards.
     let weight: string;
     switch (fontWeight) {
-        case "100":
+        case FontWeight.THIN:
             weight = "Thin";
             break;
-        case "200":
+        case FontWeight.EXTRA_LIGHT:
             weight = findCorrectWeightString(fontFamily, ["Ultra Light", "UltraLight", "Extra Light", "ExtraLight", "Ultra light", "Ultralight", "Extra light", "Extralight"], isItalic);
             break;
-        case "300":
+        case FontWeight.LIGHT:
             weight = "Light";
             break;
-        case "normal":
+        case FontWeight.NORMAL:
         case "400":
         case undefined:
         case null:
             weight = ""; // We dont' need to write Regular
             break;
-        case "500":
+        case FontWeight.MEDIUM:
             weight = "Medium";
             break;
-        case "600":
+        case FontWeight.SEMI_BOLD:
             weight = findCorrectWeightString(fontFamily, ["Demi Bold", "DemiBold", "Semi Bold", "SemiBold", "Demi bold", "Demibold", "Semi bold", "Semibold"], isItalic);
             break;
-        case "bold":
+        case FontWeight.BOLD:
         case "700":
             weight = "Bold";
             break;
-        case "800":
+        case FontWeight.EXTRA_BOLD:
             weight = findCorrectWeightString(fontFamily, ["Heavy", "Extra Bold", "ExtraBold", "Extra bold", "Extrabold"], isItalic);
             break;
-        case "900":
+        case FontWeight.BLACK:
             weight = "Black";
             break;
         default:
