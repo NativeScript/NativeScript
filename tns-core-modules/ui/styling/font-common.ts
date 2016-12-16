@@ -1,22 +1,23 @@
 ﻿import { Font as FontDefinition, ParsedFont } from "ui/styling/font";
+import { makeValidator, makeParser} from "ui/core/view";
 
 export abstract class FontBase implements FontDefinition {
     public static default = undefined;
 
     private _fontFamily: string;
-    private _fontStyle: "normal" | "italic";
-    private _fontWeight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
+    private _fontStyle: FontStyle;
+    private _fontWeight: FontWeight;
     private _fontSize: number;
 
     get fontFamily(): string {
         return this._fontFamily;
     }
 
-    get fontStyle(): "normal" | "italic" {
+    get fontStyle(): FontStyle {
         return this._fontStyle;
     }
 
-    get fontWeight(): "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900" {
+    get fontWeight(): FontWeight {
         return this._fontWeight;
     }
 
@@ -24,16 +25,16 @@ export abstract class FontBase implements FontDefinition {
         return this._fontSize;
     }
 
-    get isBold(): boolean {
-        return this._fontWeight.toLowerCase() === "bold"
-            || this._fontWeight.toLowerCase() === "700";
-    }
-
     get isItalic(): boolean {
-        return this._fontStyle.toLowerCase() === "italic";
+        return this._fontStyle === FontStyle.ITALIC;
     }
 
-    protected constructor(family: string, size: number, style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
+    get isBold(): boolean {
+        return this._fontWeight === FontWeight.BOLD
+            || this._fontWeight === "700";
+    }
+
+    protected constructor(family: string, size: number, style: FontStyle, weight: FontWeight) {
         this._fontFamily = family;
         this._fontSize = size;
         this._fontStyle = style;
@@ -65,6 +66,29 @@ export abstract class FontBase implements FontDefinition {
     }
 }
 
+export type FontStyle = "normal" | "italic";
+export namespace FontStyle {
+    export const NORMAL: "normal" = "normal";
+    export const ITALIC: "italic" = "italic";
+    export const isValid = makeValidator<FontStyle>(NORMAL, ITALIC);
+    export const parse = makeParser(isValid, NORMAL);
+}
+
+export type FontWeight = "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
+export namespace FontWeight {
+    export const THIN: "100" = "100";
+    export const EXTRA_LIGHT: "200" = "200";
+    export const LIGHT: "300" = "300";
+    export const NORMAL: "normal" = "normal"; 
+    export const MEDIUM: "500" = "500";
+    export const SEMI_BOLD: "600" = "600";
+    export const BOLD: "bold" = "bold"; 
+    export const EXTRA_BOLD: "800" = "800";
+    export const BLACK: "900" = "900";
+    export const isValid = makeValidator<FontWeight>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, "400", MEDIUM, SEMI_BOLD, BOLD, "700", EXTRA_BOLD, BLACK);
+    export const parse = makeParser(isValid, NORMAL);
+}
+
 export function parseFontFamily(value: string): Array<string> {
     const result = new Array<string>();
     if (!value) {
@@ -89,7 +113,10 @@ export module genericFontFamilies {
 }
 
 const styles = new Set();
-["italic", "oblique"].forEach((val, i, a) => styles.add(val));
+[
+    FontStyle.NORMAL, 
+    FontStyle.ITALIC
+].forEach((val, i, a) => styles.add(val));
 
 // http://www.w3schools.com/cssref/pr_font_weight.asp
 //- normal(same as 400)
@@ -104,7 +131,19 @@ const styles = new Set();
 //- 800(Extra Bold / Ultra Bold) (API16 -bold)
 //- 900(Black / Heavy) (API21 -black)
 const weights = new Set();
-["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"].forEach((val, i, a) => weights.add(val));
+[
+    FontWeight.THIN, 
+    FontWeight.EXTRA_LIGHT, 
+    FontWeight.LIGHT, 
+    FontWeight.NORMAL, 
+    "400", 
+    FontWeight.MEDIUM, 
+    FontWeight.SEMI_BOLD, 
+    FontWeight.BOLD, 
+    "700", 
+    FontWeight.EXTRA_BOLD, 
+    FontWeight.BLACK
+].forEach((val, i, a) => weights.add(val));
 
 export function parseFont(fontValue: string): ParsedFont {
     let result: ParsedFont = {
