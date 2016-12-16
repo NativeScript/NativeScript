@@ -126,7 +126,7 @@ export function test_loadWithOptionsFromTNS() {
 
 export function test_loadWithOptionsFromTNSPath() {
     var v = builder.load({
-        path: "tns_modules/ui/label",
+        path: "tns_modules/tns-core-modules/ui/label",
         name: "Label"
     });
 
@@ -139,7 +139,7 @@ export function test_loadWithAttributes() {
     var lColor = "#FF0000"; // red
 
     var v = builder.load({
-        path: "tns_modules/ui/label",
+        path: "tns_modules/tns-core-modules/ui/label",
         name: "Label",
         attributes: {
             text: lText,
@@ -517,7 +517,7 @@ export function test_parse_ShouldParseCustomComponentWithoutXml() {
 };
 
 export function test_parse_ShouldParseCustomComponentWithoutXmlFromTNSModules() {
-    var p = <Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/ui/label"><customControls:Label /></Page>');
+    var p = <Page>builder.parse('<Page xmlns' + ':customControls="tns_modules/tns-core-modules/ui/label"><customControls:Label /></Page>');
     var ctrl = p.content;
 
     TKUnit.assert(ctrl instanceof Label, "Expected result: custom control is defined!; Actual result: " + ctrl);
