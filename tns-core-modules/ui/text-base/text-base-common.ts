@@ -7,30 +7,6 @@ import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-even
 export { FormattedString };
 export * from "ui/core/view";
 
-function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
-    if (oldValue) {
-        oldValue.parent = null;
-        removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
-    }
-
-    if (newValue) {
-        newValue.parent = textBase;
-        addWeakEventListener(newValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
-    }
-
-    // textBase._onFormattedTextPropertyChanged(newValue);
-}
-function onTextPropertyChanged(textBase: TextBaseCommon, oldValue: string, newValue: string) {
-    // textBase._onTextPropertyChanged(newValue);
-
-    // //RemoveThisDoubleCall
-    // textBase.style._updateTextTransform();
-    // textBase.style._updateTextDecoration();
-}
-
-// (<proxy.PropertyMetadata>textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
-// (<proxy.PropertyMetadata>formattedTextProperty.metadata).onSetNativeValue = onFormattedTextPropertyChanged;
-
 export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
 
     constructor() {
@@ -39,24 +15,11 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
         this.formattedText = new FormattedString();
     }
 
-    public abstract _setFormattedTextPropertyToNative(value): void;
-
-    // public _onBindingContextChanged(oldValue: any, newValue: any) {
-    //     super._onBindingContextChanged(oldValue, newValue);
-    //     if (this.formattedText) {
-    //         this.formattedText.updateSpansBindingContext(newValue);
-    //     }
-
-    //     //This is because of ListView virtualization
-    //     //RemoveThisDoubleCall        
-    //     this.style._updateTextTransform();
-    //     this.style._updateTextDecoration();
-    // }
+    public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
 
     public text: string;
     public formattedText: FormattedString;
 
-    // TODO: Do we need to export these properties here??
     get fontSize(): number {
         return this.style.fontSize;
     }
@@ -71,10 +34,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
         this.style.letterSpacing = value;
     }
 
-    get textAlignment(): "left" | "center" | "right" {
+    get textAlignment(): TextAlignment {
         return this.style.textAlignment;
     }
-    set textAlignment(value: "left" | "center" | "right") {
+    set textAlignment(value: TextAlignment) {
         this.style.textAlignment = value;
     }
 
@@ -85,17 +48,17 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
         this.style.textDecoration = value;
     }
 
-    get textTransform(): "none" | "capitalize" | "uppercase" | "lowercase" {
+    get textTransform(): TextTransform {
         return this.style.textTransform;
     }
-    set textTransform(value: "none" | "capitalize" | "uppercase" | "lowercase") {
+    set textTransform(value: TextTransform) {
         this.style.textTransform = value;
     }
 
-    get whiteSpace(): "normal" | "nowrap" {
+    get whiteSpace(): WhiteSpace {
         return this.style.whiteSpace;
     }
-    set whiteSpace(value: "normal" | "nowrap") {
+    set whiteSpace(value: WhiteSpace) {
         this.style.whiteSpace = value;
     }
 
@@ -114,28 +77,40 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     }
 }
 
+//Text
 export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
 textProperty.register(TextBaseCommon);
 
+//FormattedText
 export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
 formattedTextProperty.register(TextBaseCommon);
 
-export const textAlignmentProperty = new InheritedCssProperty<Style, "left" | "center" | "right">({
-    name: "textAlignment", cssName: "text-align", valueConverter: (value) => {
-        switch (value) {
-            case "left":
-            case "center":
-            case "right":
-                return <"left" | "center" | "right">value;
-
-            default:
-                throw new Error(`CSS text-align ${value} is not supported.`);
-        }
+function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
+    if (oldValue) {
+        oldValue.parent = null;
+        removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
     }
-});
+
+    if (newValue) {
+        newValue.parent = textBase;
+        addWeakEventListener(newValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
+    }
+}
+
+//TextAlignment
+export type TextAlignment = "left" | "center" | "right";
+export namespace TextAlignment {
+    export const LEFT: "left" = "left";
+    export const CENTER: "center" = "center";
+    export const RIGHT: "right" = "right";
+    export const isValid = makeValidator<TextAlignment>(LEFT, CENTER, RIGHT);
+    export const parse = makeParser(isValid, undefined);
+}
+
+export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({name: "textAlignment", cssName: "text-align", valueConverter: TextAlignment.parse});
 textAlignmentProperty.register(Style);
 
-// TextDecoration
+//TextDecoration
 export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
 export namespace TextDecoration {
     export const NONE: "none" = "none";
@@ -146,37 +121,32 @@ export namespace TextDecoration {
     export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
     export const parse = makeParser(isValid, NONE);
 }
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
-    name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse});
+export const textDecorationProperty = new CssProperty<Style, TextDecoration>({name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse});
 textDecorationProperty.register(Style);
 
-export const textTransformProperty = new CssProperty<Style, "none" | "capitalize" | "uppercase" | "lowercase">({
-    name: "textTransform", cssName: "text-transform", defaultValue: "none", valueConverter: (value) => {
-        switch (value) {
-            case "none":
-            case "uppercase":
-            case "lowercase":
-            case "capitalize":
-                return <"none" | "capitalize" | "uppercase" | "lowercase">value;
-
-            default:
-                throw new Error(`CSS text-transform ${value} is not supported.`);
-        }
-    }
-});
+//TextTransform
+export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
+export namespace TextTransform {
+    export const NONE: "none" = "none";
+    export const CAPITALIZE: "capitalize" = "capitalize";
+    export const UPPERCASE: "uppercase" = "uppercase";
+    export const LOWERCASE: "lowercase" ="lowercase";
+    export const isValid = makeValidator<TextTransform>(NONE, CAPITALIZE, UPPERCASE, LOWERCASE);
+    export const parse = makeParser(isValid, NONE);
+}
+export const textTransformProperty = new CssProperty<Style, TextTransform>({name: "textTransform", cssName: "text-transform", defaultValue: TextTransform.NONE, valueConverter: TextTransform.parse});
 textTransformProperty.register(Style);
 
-export const whiteSpaceProperty = new CssProperty<Style, "normal" | "nowrap">({
-    name: "whiteSpace", cssName: "white-space", valueConverter: (value: "normal" | "nowrap") => {
-        switch (value) {
-            case "normal":
-            case "nowrap":
-                return value;
-            default:
-                throw new Error(`CSS white-space ${value} is not supported.`);
-        }
-    }
-});
+//Whitespace
+export type WhiteSpace = "normal" | "nowrap";
+export namespace WhiteSpace {
+    export const NORMAL: "normal" = "normal";
+    export const NO_WRAP: "nowrap" = "nowrap";
+    export const isValid = makeValidator<WhiteSpace>(NORMAL, NO_WRAP);
+    export const parse = makeParser(isValid, NORMAL);
+}
+
+export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({name: "whiteSpace", cssName: "white-space", defaultValue: WhiteSpace.NORMAL, valueConverter: WhiteSpace.parse});
 whiteSpaceProperty.register(Style);
 
 export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: (v: string) => parseFloat(v) });

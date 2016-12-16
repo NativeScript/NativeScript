@@ -32,7 +32,7 @@
         /**
          * Gets or sets text-alignment style property.
          */
-        textAlignment: "left" | "center" | "right";
+        textAlignment: TextAlignment;
 
         /**
          * Gets or sets text decorations style property.
@@ -42,12 +42,12 @@
         /**
          * Gets or sets text transform style property.
          */
-        textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
+        textTransform: TextTransform;
 
         /**
          * Gets or sets white space style property.
          */
-        whiteSpace: "normal" | "nowrap";
+        whiteSpace: WhiteSpace;
 
         /**
          * Called for every child element declared in xml.
@@ -57,15 +57,24 @@
          */
         _addChildFromBuilder(name: string, value: any): void;
 
-        //@private
-        // _onTextPropertyChanged(value: string): void;
-        // _setFormattedTextPropertyToNative(value: any): void;
         /**
          * @private
          * Called when the text property is changed to request layout.
          */
         _requestLayoutOnTextChanged(): void;
         //@endprivate
+    }
+
+    export const textProperty: Property<TextBase, string>;
+    export const formattedTextProperty: Property<TextBase, FormattedString>;
+
+    export type TextAlignment = "left" | "center" | "right";
+    export namespace TextAlignment {
+        export const LEFT: "left";
+        export const CENTER: "center";
+        export const RIGHT: "right";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): TextAlignment;
     }
 
     export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
@@ -79,15 +88,29 @@
     }
 
     export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
+    export namespace TextTransform {
+        export const NONE: "none";
+        export const CAPITALIZE: "capitalize";
+        export const UPPERCASE: "uppercase";
+        export const LOWERCASE: "lowercase";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): TextTransform;
+    }
 
-    export function getTransformedText(text: string, transform: TextTransform): string;
+    export type WhiteSpace = "normal" | "nowrap";
+    export namespace WhiteSpace {
+        export const NORMAL: "normal";
+        export const NO_WRAP: "nowrap";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): WhiteSpace;
+    }
 
-    export const textProperty: Property<TextBase, string>;
-    export const formattedTextProperty: Property<TextBase, FormattedString>;
-
-    export const textAlignmentProperty: InheritedCssProperty<Style, "left" | "center" | "right">;
+    export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
     export const textDecorationProperty: CssProperty<Style, TextDecoration>;
     export const textTransformProperty: CssProperty<Style, TextTransform>;
-    export const whiteSpaceProperty: CssProperty<Style, "normal" | "nowrap">;
+    export const whiteSpaceProperty: CssProperty<Style, WhiteSpace>;
     export const letterSpacingProperty: CssProperty<Style, number>;
+
+    //Used by tab view
+    export function getTransformedText(text: string, textTransform: TextTransform): string;
 }

@@ -15,54 +15,6 @@ export function fontSizeConverter(value: string): number {
     return floatConverter(value);
 }
 
-export function textAlignConverter(value: string): string {
-    switch (value) {
-        case "left":
-        case "center":
-        case "right":
-            return value;
-        default:
-            throw new Error("CSS text-align \"" + value + "\" is not supported.");
-    }
-}
-
-export function textDecorationConverter(value: string): string {
-    const values = (value + "").split(" ");
-
-    if (values.indexOf("none") !== -1 
-     || values.indexOf("underline") !== -1 
-     || values.indexOf("line-through") !== -1
-     || values.indexOf("underline line-through") !== -1
-     || values.indexOf("line-through underline") !== -1
-    ) {
-        return value;
-    } else {
-        throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
-    }
-}
-
-export function whiteSpaceConverter(value: string): string {
-    switch (value) {
-        case "normal":
-        case "nowrap":
-            return value;
-        default:
-            throw new Error("CSS white-space \"" + value + "\" is not supported.");
-    }
-}
-
-export function textTransformConverter(value: string): string {
-    switch (value) {
-        case "none":
-        case "uppercase":
-        case "lowercase":
-        case "capitalize":
-            return value;
-        default:
-            throw new Error("CSS text-transform \"" + value + "\" is not supported.");
-    }
-}
-
 export const numberConverter = parseFloat;
 
 export function visibilityConverter(value: string): string {

@@ -2,7 +2,7 @@
 import {
     View, ButtonBase, PseudoClassHandler, textProperty, formattedTextProperty, whiteSpaceProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace
 } from "./button-common";
 
 export * from "./button-common";
@@ -42,18 +42,22 @@ export class Button extends ButtonBase {
         }
     }
 
-    get [whiteSpaceProperty.native](): "normal" | "nowrap" {
-        return "normal";
+    get [whiteSpaceProperty.native](): WhiteSpace {
+        return WhiteSpace.NORMAL;
     }
-    set [whiteSpaceProperty.native](value: "normal" | "nowrap") {
+    set [whiteSpaceProperty.native](value: WhiteSpace) {
         let nativeView = this.nativeView.titleLabel;
-        if (value === "normal") {
-            nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-            nativeView.numberOfLines = 0;
-        }
-        else {
-            nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-            nativeView.numberOfLines = 1;
+        switch(value){
+            case WhiteSpace.NORMAL:
+                nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+                nativeView.numberOfLines = 0;
+                break;
+            case WhiteSpace.NO_WRAP:
+                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+                nativeView.numberOfLines = 1;
+                break;
+            default: 
+                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
 

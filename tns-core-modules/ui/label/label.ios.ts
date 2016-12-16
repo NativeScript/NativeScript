@@ -3,7 +3,7 @@ import {
     Background, TextBase, View, layout, backgroundInternalProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
-    Length
+    Length, WhiteSpace
 } from "ui/text-base";
 
 import { ios } from "ui/styling/background";
@@ -42,10 +42,10 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     get textWrap(): boolean {
-        return this.style.whiteSpace === "normal";
+        return this.style.whiteSpace === WhiteSpace.NORMAL;
     }
     set textWrap(value: boolean) {
-        this.style.whiteSpace = value ? "normal" : "nowrap";
+        this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
     }
 
     public onLoaded() {
@@ -86,7 +86,7 @@ export class Label extends TextBase implements LabelDefinition {
             let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
             let labelWidth = nativeSize.width;
 
-            if (!this.textWrap && this.style.whiteSpace !== "nowrap") {
+            if (this.textWrap) {
                 labelWidth = Math.min(labelWidth, width);
             }
 
@@ -101,18 +101,22 @@ export class Label extends TextBase implements LabelDefinition {
         }
     }
 
-    get [whiteSpaceProperty.native](): "nowrap" | "normal" {
-        return "normal";
+    get [whiteSpaceProperty.native](): WhiteSpace {
+        return WhiteSpace.NORMAL;
     }
-    set [whiteSpaceProperty.native](value: string) {
+    set [whiteSpaceProperty.native](value: WhiteSpace) {
         let nativeView = this.nativeView;
-        if (value === "normal") {
-            nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-            nativeView.numberOfLines = 0;
-        }
-        else {
-            nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-            nativeView.numberOfLines = 1;
+        switch(value){
+            case WhiteSpace.NORMAL:
+                nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+                nativeView.numberOfLines = 0;
+                break;
+            case WhiteSpace.NO_WRAP:
+                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+                nativeView.numberOfLines = 1;
+                break;
+            default: 
+                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
 

@@ -8,7 +8,7 @@ import {
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
 } from "ui/layouts/flexbox-layout";
 
-import { TextDecoration } from "ui/text-base";
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {
@@ -65,10 +65,10 @@ export class Style extends Observable implements StyleDefinition {
     public visibility: "visible" | "hidden" | "collapse" | "collapsed";
 
     public letterSpacing: number;
-    public textAlignment: "left" | "center" | "right";
+    public textAlignment: TextAlignment;
     public textDecoration: TextDecoration;
-    public textTransform: "none" | "capitalize" | "uppercase" | "lowercase";
-    public whiteSpace: "normal" | "nowrap";
+    public textTransform: TextTransform;
+    public whiteSpace: WhiteSpace;
 
     public minWidth: Length;
     public minHeight: Length;

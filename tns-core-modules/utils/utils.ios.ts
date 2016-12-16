@@ -34,71 +34,11 @@ export module layout {
 }
 
 export module ios {
-    export function setTextAlignment(view: dts.ios.TextUIView, value: string) {
-        switch (value) {
-            case "left":
-                view.textAlignment = NSTextAlignment.Left;
-                break;
-            case "center":
-                view.textAlignment = NSTextAlignment.Center;
-                break;
-            case "right":
-                view.textAlignment = NSTextAlignment.Right;
-                break;
-            default:
-                break;
-        }
-    }
-
     export function getter<T>(_this: any, property: T | { (): T }): T {
         if (typeof property === "function") {
             return (<{ (): T }>property).call(_this);
         } else {
             return <T>property;
-        }
-    }
-
-    export function getTransformedText(view, source: string, transform: string): string {
-        let result = source;
-
-        switch (transform) {
-            case "uppercase":
-                result = NSStringFromNSAttributedString(source).uppercaseString;
-                break;
-
-            case "lowercase":
-                result = NSStringFromNSAttributedString(source).lowercaseString;
-                break;
-
-            case "capitalize":
-                result = NSStringFromNSAttributedString(source).capitalizedString;
-                break;
-
-            case "none":
-            default:
-                result = view.text;
-                break;
-        }
-
-        return result;
-    }
-
-    function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {
-        return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
-    }
-
-    export function setWhiteSpace(view: dts.ios.TextUIView, value: string, parentView?: UIView) {
-        if (value === "normal") {
-            view.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-            view.numberOfLines = 0;
-        }
-        else {
-            if (parentView) {
-                view.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
-            } else {
-                view.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-            }
-            view.numberOfLines = 1;
         }
     }
 
