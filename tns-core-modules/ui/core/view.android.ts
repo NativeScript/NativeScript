@@ -11,8 +11,6 @@ import {
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-common";
 
-import {  } from "utils/utils";
-
 export * from "./view-common";
 
 let flexbox;
@@ -166,7 +164,7 @@ export class View extends ViewCommon {
                 return true;
             }
             this._eachChildView(eachChild);
-        } else if (this._nativeView) {
+        } else if (this._nativeView && !this.parent) {
             // copy all the locally cached values to the native android widget
             applyNativeSetters(this);
         }

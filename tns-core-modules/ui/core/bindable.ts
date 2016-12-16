@@ -4,7 +4,7 @@ import { unsetValue, DependencyObservable, Property, PropertyMetadata, PropertyM
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import types = require("utils/types");
 import bindingBuilder = require("../builder/binding-builder");
-import { ViewBase, isEventOrGesture } from "ui/core/view-base";
+import { ViewBase, isEventOrGesture, bindingContextProperty } from "ui/core/view-base";
 import * as application from "application";
 import * as polymerExpressions from "js-libs/polymer-expressions";
 import * as specialProperties from "ui/builder/special-properties";
@@ -12,16 +12,16 @@ import * as utils from "utils/utils";
 
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType } from "trace";
 
-let bindingContextProperty = new Property(
-    "bindingContext",
-    "Bindable",
-    new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, onBindingContextChanged)
-);
+// let bindingContextProperty = new Property(
+//     "bindingContext",
+//     "Bindable",
+//     new PropertyMetadata(undefined, PropertyMetadataSettings.Inheritable, onBindingContextChanged)
+// );
 
-function onBindingContextChanged(data: DependencyPropertyChangeData) {
-    let bindable = <Bindable>data.object;
-    bindable._onBindingContextChanged(data.oldValue, data.newValue);
-}
+// function onBindingContextChanged(data: DependencyPropertyChangeData) {
+//     let bindable = <Bindable>data.object;
+//     bindable._onBindingContextChanged(data.oldValue, data.newValue);
+// }
 
 let contextKey = "context";
 // this regex is used to get parameters inside [] for example:
@@ -39,31 +39,33 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
 
     private bindings = new Map<string, Binding>();
 
+
     get bindingContext(): Object {
-        return this._getValue(Bindable.bindingContextProperty);
+        throw new Error("Not implemented");
     }
     set bindingContext(value: Object) {
-        this._setValue(Bindable.bindingContextProperty, value);
+        throw new Error("Not implemented");
     }
 
     public bind(options: definition.BindingOptions, source: Object = defaultBindingSource) {
-        let binding: Binding = this.bindings.get(options.targetProperty);
-        if (binding) {
-            binding.unbind();
-        }
-
-        binding = new Binding(this, options);
-        this.bindings.set(options.targetProperty, binding);
-
-        let bindingSource = source;
-        if (bindingSource === defaultBindingSource) {
-            bindingSource = this.bindingContext;
-            binding.sourceIsBindingContext = true;
-        }
-
-        // if (!types.isNullOrUndefined(bindingSource)) {
-        binding.bind(bindingSource);
+        throw new Error("Not implemented");
+        // let binding: Binding = this.bindings.get(options.targetProperty);
+        // if (binding) {
+        //     binding.unbind();
         // }
+
+        // binding = new Binding(this, options);
+        // this.bindings.set(options.targetProperty, binding);
+
+        // let bindingSource = source;
+        // if (bindingSource === defaultBindingSource) {
+        //     bindingSource = this.bindingContext;
+        //     binding.sourceIsBindingContext = true;
+        // }
+
+        // // if (!types.isNullOrUndefined(bindingSource)) {
+        // binding.bind(bindingSource);
+        // // }
     }
 
     public unbind(property: string) {
@@ -164,25 +166,29 @@ function getProperties(property: string): Array<string> {
 
 export class Binding {
     private source: WeakRef<Object>;
-    public target: WeakRef<Bindable>;
+    // TODO: target should be hard reference!
+    public target: WeakRef<ViewBase>;
 
     private sourceOptions: { instance: WeakRef<any>; property: string };
-    private targetOptions: { instance: WeakRef<any>; property: string };
+    private targetOptions: { instance: WeakRef<Object>; property: string };
 
     private sourcesAndProperties: Array<{ instance: Object; property: string }>;
 
-    private propertyChangeListeners: Map<string, Observable> = new Map<string, Observable>();
     private sourceProperties: Array<string>;
+    private propertyChangeListeners: Map<string, Observable> = new Map<string, Observable>();
 
     public updating: boolean;
-    public options: definition.BindingOptions;
     public sourceIsBindingContext: boolean;
+    public options: definition.BindingOptions;
 
-    constructor(target: Bindable, options: definition.BindingOptions) {
+    constructor(target: ViewBase, options: definition.BindingOptions) {
         this.target = new WeakRef(target);
         this.options = options;
         this.sourceProperties = getProperties(options.sourceProperty);
         this.targetOptions = this.resolveOptions(target, getProperties(options.targetProperty));
+        if (!this.targetOptions) {
+            throw new Error(`Invalid property: ${options.targetProperty} for target: ${target}`);
+        }
     }
 
     public loadedHandlerVisualTreeBinding(args) {
@@ -231,23 +237,41 @@ export class Binding {
         return source;
     }
 
+    private bindingContextChanged(data: PropertyChangeData): void {
+        let target = this.target.get();
+        if (!target) {
+            this.unbind();
+            return;
+        }
+
+        let source = target.bindingContext;
+        // We don't have source so this is first bindingContextChange.
+        // Bind to the new source.
+        if (!this.source) {
+            this.bind(source);
+        } else if (source == null || source === undefined) {
+            this.clearBinding();
+        }
+    }
+
     public bind(source: Object): void {
         this.clearSource();
 
         source = this.sourceAsObject(source);
 
-        let sourceValue;
-
         if (!types.isNullOrUndefined(source)) {
             this.source = new WeakRef(source);
             this.sourceOptions = this.resolveOptions(source, this.sourceProperties);
 
-            sourceValue = this.getSourcePropertyValue();
+            let sourceValue = this.getSourcePropertyValue();
             this.updateTarget(sourceValue);
             this.addPropertyChangeListeners(this.source, this.sourceProperties);
         } else if (!this.sourceIsBindingContext) {
-            sourceValue = this.getSourcePropertyValue();
+            let sourceValue = this.getSourcePropertyValue();
             this.updateTarget(sourceValue ? sourceValue : source);
+        } else if (this.sourceIsBindingContext && (source === undefined || source === null)) {
+            this.target.get().off("bindingContextChange", this.bindingContextChanged, this);
+            this.target.get().on("bindingContextChange", this.bindingContextChanged, this);
         }
     }
 
@@ -316,6 +340,11 @@ export class Binding {
         }
 
         this.clearSource();
+
+        let target = this.target.get();
+        if (target) {
+            target.off(`${bindingContextProperty}Change`, this.bindingContextChanged, this);
+        }
 
         if (this.targetOptions) {
             this.targetOptions = undefined;

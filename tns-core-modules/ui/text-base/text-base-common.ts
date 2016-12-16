@@ -1,5 +1,5 @@
-﻿import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser} from "ui/core/view";
+import { TextBase as TextBaseDefinition } from "ui/text-base";
+import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser } from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
 import { FormattedString, FormattedStringView } from "text/formatted-string";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
@@ -7,15 +7,11 @@ import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-even
 export { FormattedString };
 export * from "ui/core/view";
 
+const CHILD_SPAN = "Span";
+
 export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
 
-    constructor() {
-        super();
-        // NOTE: this was added so that FormattedString.addFormattedStringToView does not instantiate it.
-        this.formattedText = new FormattedString();
-    }
-
-    public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
+    public abstract _setFormattedTextPropertyToNative(value): void;
 
     public text: string;
     public formattedText: FormattedString;
@@ -69,6 +65,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
+        if (!this.formattedText) {
+            this.formattedText = new FormattedString();
+        }
+
         FormattedString.addFormattedStringToView(this, name, value);
     }
 
@@ -121,7 +121,9 @@ export namespace TextDecoration {
     export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
     export const parse = makeParser(isValid, NONE);
 }
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse});
+export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
+    name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse
+});
 textDecorationProperty.register(Style);
 
 //TextTransform
