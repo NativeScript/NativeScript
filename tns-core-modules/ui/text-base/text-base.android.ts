@@ -1,83 +1,15 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty,
-    Font, Color, FormattedString, TextDecoration
+    Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace
 } from "./text-base-common";
 
 export * from "./text-base-common";
-
-function getCapitalizedString(str: string): string {
-    let words = str.split(" ");
-    let newWords = [];
-    for (let i = 0, length = words.length; i < length; i++) {
-        let word = words[i].toLowerCase();
-        newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
-    }
-
-    return newWords.join(" ");
-}
-
-export function getTransformedText(text: string, transform: "none" | "capitalize" | "uppercase" | "lowercase"): string {
-    switch (transform) {
-        case "uppercase":
-            return text.toUpperCase();
-
-        case "lowercase":
-            return text.toLowerCase();
-
-        case "capitalize":
-            return getCapitalizedString(text);
-
-        default:
-            return text;
-    }
-}
-
-@Interfaces([android.text.method.TransformationMethod])
-class TextTransformation extends android.text.method.ReplacementTransformationMethod {
-    constructor(public originalText: string, public formattedText: FormattedString, public textTransform: "none" | "capitalize" | "uppercase" | "lowercase") {
-        super();
-        return global.__native(this);
-    }
-
-    protected getOriginal(): native.Array<string> {
-        return this.formattedText ? this.formattedText._formattedText : this.originalText;
-    }
-
-    protected getReplacement(): native.Array<string> {
-        let result: string = "";
-        let textTransform = this.textTransform
-        if (this.formattedText) {
-            for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
-                let span = this.formattedText.spans.getItem(i);
-                result += getTransformedText(span.text, textTransform);
-                // span.text = formatString(span.text, this.textTransform);
-            }
-        } else {
-            result = getTransformedText(this.originalText, textTransform);
-        }
-
-        return result;
-    }
-}
-
 export class TextBase extends TextBaseCommon {
     _transformationMethod: any;
     _nativeView: android.widget.TextView;
 
-    public _setFormattedTextPropertyToNative(value: FormattedString) {
-        // TODO: Check if there is an option to force call the transformation method without
-        // creating new native instance.
-        if (this._nativeView) {
-            this._nativeView.setTransformationMethod(new TextTransformation(this.text, value, this.style.textTransform));
-        }
-
-        let newText = value ? value._formattedText : null;
-        if (this._nativeView) {
-            this._nativeView.setText(newText);
-        }
-    }
-
+    //Text
     get [textProperty.native](): string {
         return this._nativeView.getText();
     }
@@ -89,6 +21,7 @@ export class TextBase extends TextBaseCommon {
         this._nativeView.setText(value);
     }
 
+    //FormattedText
     get [formattedTextProperty.native](): FormattedString {
         return null;
     }
@@ -96,6 +29,7 @@ export class TextBase extends TextBaseCommon {
         this._setFormattedTextPropertyToNative(value);
     }
 
+    //Color
     get [colorProperty.native](): android.content.res.ColorStateList {
         return this._nativeView.getTextColors();
     }
@@ -107,6 +41,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
+    //FontInternal
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
         let textView = this._nativeView;
         return {
@@ -130,74 +65,118 @@ export class TextBase extends TextBaseCommon {
         textView.setTypeface(typeface);
     }
 
-    get [textAlignmentProperty.native](): string {
-        let textGravity = this._nativeView.getGravity() & android.view.View.TEXT_ALIGNMENT_GRAVITY;
-        switch (textGravity) {
+    //TextAlignment
+    get [textAlignmentProperty.native](): TextAlignment {
+        let textAlignmentGravity = this._nativeView.getGravity() & android.view.View.TEXT_ALIGNMENT_GRAVITY;
+        switch (textAlignmentGravity) {
             case android.view.Gravity.LEFT:
-                return "left";
-
+                return TextAlignment.LEFT;
             case android.view.Gravity.CENTER_HORIZONTAL:
-                return "center";
-
+                return TextAlignment.CENTER;
             case android.view.Gravity.RIGHT:
-                return "right";
-
+                return TextAlignment.RIGHT;
             default:
-                throw new Error("Invalid textGravity: " + textGravity);
+                throw new Error(`Unsupported android.view.View.TEXT_ALIGNMENT_GRAVITY: ${textAlignmentGravity}. Currently supported values are android.view.Gravity.LEFT, android.view.Gravity.CENTER_HORIZONTAL, and android.view.Gravity.RIGHT.`);
         }
     }
-    set [textAlignmentProperty.native](value: string) {
+    set [textAlignmentProperty.native](value: TextAlignment) {
         let verticalGravity = this._nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
         switch (value) {
-            case "left":
+            case TextAlignment.LEFT:
                 this._nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
                 break;
-            case "center":
+            case TextAlignment.CENTER:
                 this._nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
                 break;
-            case "right":
+            case TextAlignment.RIGHT:
                 this._nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
                 break;
             default:
-                break;
+                throw new Error(`Invalid text alignment value: ${value}. Valid values are: "${TextAlignment.LEFT}", "${TextAlignment.CENTER}", "${TextAlignment.RIGHT}".`);                
         }
     }
 
+    //TextDecoration
     get [textDecorationProperty.native](): TextDecoration {
-        return "none";
+        return TextDecoration.NONE;
     }
     set [textDecorationProperty.native](value: TextDecoration) {
-        let flags = 0;
-        let values = (value + "").split(" ");
-
-        if (values.indexOf("underline") !== -1) {
-            flags = flags | android.graphics.Paint.UNDERLINE_TEXT_FLAG;
+        let flags: number;
+        
+        switch(value){
+            case TextDecoration.NONE:
+                flags = 0;
+                break;
+            case TextDecoration.UNDERLINE:
+                flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG;
+                break;
+            case TextDecoration.LINE_THROUGH:
+                flags = android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+                break;
+            case TextDecoration.UNDERLINE_LINE_THROUGH:
+                flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+                break;
+            default: 
+                throw new Error(`Invalid text decoration value: ${value}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
         }
-
-        if (values.indexOf("line-through") !== -1) {
-            flags = flags | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
-        }
-
-        if (values.indexOf("none") === -1) {
-            this._nativeView.setPaintFlags(flags);
-        } else {
-            this._nativeView.setPaintFlags(0);
-        }
+        
+        this._nativeView.setPaintFlags(flags);
     }
 
-    get [textTransformProperty.native](): "none" | "capitalize" | "uppercase" | "lowercase" {
-        return "none";
+    //TextTransform
+    get [textTransformProperty.native](): TextTransform {
+        return TextTransform.NONE;
     }
-    set [textTransformProperty.native](value: "none" | "capitalize" | "uppercase" | "lowercase") {
+    set [textTransformProperty.native](value: TextTransform) {
         this._setFormattedTextPropertyToNative(this.formattedText);
     }
 
-    get [whiteSpaceProperty.native](): "normal" | "nowrap" {
-        return "normal";
+    private _originalTransformationMethod: android.text.method.TransformationMethod;
+    public _setFormattedTextPropertyToNative(value: FormattedString) {
+        // TODO: Check if there is an option to force call the transformation method without
+        // creating new native instance.
+        if (!this._nativeView) {
+            return;
+        }
+        
+        if (!this._originalTransformationMethod) {
+            this._originalTransformationMethod = this.android.getTransformationMethod();
+        }
+
+        let newText = value ? value._formattedText : null;//newText is of type android.text.SpannableStringBuilder
+        if (newText) {
+            this._nativeView.setTransformationMethod(new TextTransformation(this.text, value, this.style.textTransform));
+        } 
+        else {
+            if (this._originalTransformationMethod) {
+                this.android.setTransformationMethod(this._originalTransformationMethod);
+                this._originalTransformationMethod = null;
+            }
+        }
+
+        this._nativeView.setText(newText);
     }
-    set [whiteSpaceProperty.native](value: "normal" | "nowrap") {
+
+    //WhiteSpace
+    get [whiteSpaceProperty.native](): WhiteSpace {
+        return WhiteSpace.NORMAL;
+    }
+    set [whiteSpaceProperty.native](value: WhiteSpace) {
         let nativeView = this._nativeView;
-        let nowrap = value === "nowrap";
+        switch(value){
+            case WhiteSpace.NORMAL:
+                nativeView.setSingleLine(false);
+                nativeView.setEllipsize(null);
+                break;
+            case WhiteSpace.NO_WRAP:
+                nativeView.setSingleLine(true);
+                nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                break;
+            default: 
+                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
+        }
+
+        let nowrap = value === WhiteSpace.NO_WRAP;
         nativeView.setSingleLine(nowrap);
         nativeView.setEllipsize(nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
@@ -207,5 +186,60 @@ export class TextBase extends TextBaseCommon {
     }
     set [letterSpacingProperty.native](value: number) {
         org.nativescript.widgets.ViewHelper.setLetterspacing(this._nativeView, value);
+    }
+}
+
+@Interfaces([android.text.method.TransformationMethod])
+class TextTransformation extends android.text.method.ReplacementTransformationMethod {
+    constructor(public originalText: string, public formattedText: FormattedString, public textTransform: TextTransform) {
+        super();
+        return global.__native(this);
+    }
+
+    protected getOriginal(): native.Array<string> {
+        return this.formattedText ? this.formattedText._formattedText : this.originalText;
+    }
+
+    protected getReplacement(): native.Array<string> {
+        let result: string = "";
+        let textTransform = this.textTransform
+        if (this.formattedText) {
+            for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
+                let span = this.formattedText.spans.getItem(i);
+                result += getTransformedText(span.text, textTransform);
+                // span.text = formatString(span.text, this.textTransform);
+            }
+        } 
+        else {
+            result = getTransformedText(this.originalText, textTransform);
+        }
+
+        return result;
+    }
+}
+
+function getCapitalizedString(str: string): string {
+    let words = str.split(" ");
+    let newWords = [];
+    for (let i = 0, length = words.length; i < length; i++) {
+        let word = words[i].toLowerCase();
+        newWords.push(word.substr(0, 1).toUpperCase() + word.substring(1));
+    }
+
+    return newWords.join(" ");
+}
+
+export function getTransformedText(text: string, textTransform: TextTransform): string {
+    switch (textTransform) {
+        case TextTransform.NONE:
+            return text;
+        case TextTransform.UPPERCASE:
+            return text.toUpperCase();
+        case TextTransform.LOWERCASE:
+            return text.toLowerCase();
+        case TextTransform.CAPITALIZE:
+            return getCapitalizedString(text);
+        default:
+            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}, "${TextTransform.LOWERCASE}".`);                
     }
 }

@@ -1,6 +1,6 @@
 ﻿import {
     ButtonBase, textProperty, formattedTextProperty, TouchGestureEventData, FormattedString, GestureTypes, TouchAction,
-    PseudoClassHandler
+    PseudoClassHandler, TextTransform
 } from "./button-common";
 
 export * from "./button-common";
@@ -23,7 +23,6 @@ class ClickListener extends java.lang.Object implements android.view.View.OnClic
 export class Button extends ButtonBase {
     _button: android.widget.Button;
     private _isPressed: boolean;
-    private _transformationMethod;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     get android(): android.widget.Button {
@@ -34,22 +33,6 @@ export class Button extends ButtonBase {
         let weakRef = new WeakRef(this);
         this._button = new android.widget.Button(this._context);
         this._button.setOnClickListener(new ClickListener(weakRef));
-    }
-
-    public _setFormattedTextPropertyToNative(value: FormattedString) {
-        let newText = value ? value._formattedText : null;
-        if (newText) {
-            if (!this._transformationMethod) {
-                this._transformationMethod = this.android.getTransformationMethod();
-            }
-            this.android.setTransformationMethod(null);
-        } else {
-            if (this._transformationMethod && !this.android.getTransformationMethod()) {
-                this.android.setTransformationMethod(this._transformationMethod);
-            }
-        }
-
-        this._button.setText(newText);
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
