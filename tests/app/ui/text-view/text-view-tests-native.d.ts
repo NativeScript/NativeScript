@@ -1,6 +1,6 @@
 ﻿//@private
-import textViewModule = require("ui/text-view");
-import colorModule = require("color");
+import * as textViewModule from "ui/text-view";
+import * as colorModule from "color";
 
 export declare function getNativeText(textView: textViewModule.TextView): string;
 export declare function getNativeHint(textView: textViewModule.TextView): string;

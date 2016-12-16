@@ -1,4 +1,4 @@
-﻿import common = require("./connectivity-common");
+﻿import * as common from "./connectivity-common";
 
 global.moduleMerge(common, exports);
 

@@ -7,7 +7,7 @@ import { Button } from "ui/button";
 import { StackLayout } from "ui/layouts/stack-layout";
 import * as platform from "platform";
 import "./ui-test";
-import fs = require("file-system");
+import * as fs from "file-system";
 
 Frame.defaultAnimatedNavigation = false;
 

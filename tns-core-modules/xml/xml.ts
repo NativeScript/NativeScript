@@ -1,5 +1,5 @@
-﻿import definition = require("xml");
-import easysax = require("js-libs/easysax");
+﻿import * as definition from "xml";
+import * as easysax from "js-libs/easysax";
 
 export class ParserEventType implements definition.ParserEventType {
     static StartElement = "StartElement";

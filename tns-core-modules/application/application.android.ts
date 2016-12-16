@@ -1,7 +1,7 @@
-﻿import appModule = require("./application-common");
-import definition = require("application");
-import frame = require("ui/frame");
-import observable = require("data/observable");
+﻿import * as appModule from "./application-common";
+import * as definition from "application";
+import * as frame from "ui/frame";
+import * as observable from "data/observable";
 import * as typesModule from "utils/types";
 
 global.moduleMerge(appModule, exports);
@@ -337,5 +337,5 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
         typedExports.onUncaughtError(error);
     }
 
-    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error });
+    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error, error });
 };

@@ -1,5 +1,5 @@
 ﻿import {topmost} from "ui/frame";
-import TKUnit = require("../../TKUnit");
+import * as TKUnit from "../../TKUnit";
 import {Page, ShownModallyData} from "ui/page";
 
 export var modalPage: Page;

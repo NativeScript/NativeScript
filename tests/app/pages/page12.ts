@@ -1,16 +1,16 @@
-﻿import pages = require("ui/page");
-import btns = require("ui/button");
-import tb = require("ui/text-field");
-import gridLayoutModule = require("ui/layouts/grid-layout");
+﻿import * as pages from "ui/page";
+import * as btns from "ui/button";
+import * as tb from "ui/text-field";
+import * as gridLayoutModule from "ui/layouts/grid-layout";
 
 export function createPage() {
     var page = new pages.Page();
     var gridLayout = new gridLayoutModule.GridLayout();
 
     var lengths = [
-        new gridLayoutModule.ItemSpec(140, gridLayoutModule.GridUnitType.pixel),
-        new gridLayoutModule.ItemSpec(1, gridLayoutModule.GridUnitType.star),
-        new gridLayoutModule.ItemSpec(140, gridLayoutModule.GridUnitType.pixel)
+        new gridLayoutModule.ItemSpec(140, "pixel"),
+        new gridLayoutModule.ItemSpec(1, "star"),
+        new gridLayoutModule.ItemSpec(140, "pixel")
     ];
 
     var rows = 2;
@@ -19,7 +19,7 @@ export function createPage() {
     var col;
 
     for (row = 0; row < rows; row++) {
-        var rowDef = new gridLayoutModule.ItemSpec(1, gridLayoutModule.GridUnitType.auto);
+        var rowDef = new gridLayoutModule.ItemSpec(1, "auto");
         gridLayout.addRow(rowDef);
     }
 
@@ -41,7 +41,7 @@ export function createPage() {
 
     var txt = new tb.TextField();
     txt.text = "Col: 1";
-    txt.width = 140;
+    txt.width = { value: 140, unit: "dip" };
     gridLayoutModule.GridLayout.setColumn(txt, 1);
     gridLayoutModule.GridLayout.setRow(txt, 0);
     gridLayout.addChild(txt);

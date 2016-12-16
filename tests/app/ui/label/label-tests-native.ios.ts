@@ -1,7 +1,7 @@
-﻿import labelModule = require("ui/label");
-import enums = require("ui/enums");
-import colorModule = require("color");
-import utilsModule = require("utils/utils");
+﻿import * as labelModule from "ui/label";
+import * as enums from "ui/enums";
+import * as colorModule from "color";
+import * as utilsModule from "utils/utils";
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
     switch (label.ios.textAlignment) {

@@ -1,8 +1,8 @@
-﻿import gridModule = require("ui/layouts/grid-layout");
-import pages = require("ui/page");
-import buttons = require("ui/button");
-import app = require("application");
-import platform = require("platform");
+﻿import * as gridModule from "ui/layouts/grid-layout";
+import * as pages from "ui/page";
+import * as buttons from "ui/button";
+import * as app from "application";
+import * as platform from "platform";
 
 import * as utils from "utils/utils";
 

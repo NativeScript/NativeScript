@@ -1,7 +1,7 @@
-﻿import buttonModule = require("ui/button");
-import colorModule = require("color");
-import utilsModule = require("utils/utils");
-import enums = require("ui/enums");
+﻿import * as buttonModule from "ui/button";
+import * as colorModule from "color";
+import * as utilsModule from "utils/utils";
+import * as enums from "ui/enums";
 
 export function getNativeText(button: buttonModule.Button): string {
     return button.ios.titleForState(UIControlState.Normal);

@@ -1,5 +1,5 @@
-﻿import observableModule = require("data/observable");
-import pageModule = require("ui/page");
+﻿import * as observableModule from "data/observable";
+import * as pageModule from "ui/page";
 
 class MainViewModel extends observableModule.Observable {
     private _item: any;

@@ -1,8 +1,8 @@
-import tests = require("../testRunner");
-import pages = require("ui/page");
-import bm = require("ui/button");
-import listViewDef = require("ui/list-view");
-import trace = require("trace");
+import * as tests from "../testRunner";
+import * as pages from "ui/page";
+import * as bm from "ui/button";
+import * as listViewDef from "ui/list-view";
+import * as trace from "trace";
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 

@@ -3,7 +3,7 @@
  */
 declare module "camera" {
 
-    import imageSource = require("image-source");
+    import * as imageSource from "image-source";
 
     /**
      * [Deprecated. Please use same functionality from `nativescript-camera` npm module]

@@ -2,8 +2,8 @@
  * Allows you to send web requests and receive the responses.
  */
 declare module "http" {
-  import image = require("image-source");
-  import fs = require("file-system");
+  import * as image from "image-source";
+  import * as fs from "file-system";
 
   /**
    * Downloads the content from the specified URL as a string.

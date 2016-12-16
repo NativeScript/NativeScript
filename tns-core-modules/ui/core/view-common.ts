@@ -950,6 +950,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     //     // Check for a valid _nativeView instance
     //     return !!this._nativeView;
     // }
+
+    public _getValue(): never {
+        throw new Error("The View._setValue is obsolete. There is a new property system.")
+    }
+
+    public _setValue(): never {
+        throw new Error("The View._setValue is obsolete. There is a new property system.")
+    }
 }
 
 export function getLengthEffectiveValue(param: Length): number {
@@ -1045,6 +1053,9 @@ export namespace PercentLength {
             return value;
         }
     }
+    export function equals(a: PercentLength, b: PercentLength): boolean {
+        return a.value == b.value && a.unit == b.unit;
+    }
 }
 
 export namespace Length {
@@ -1073,6 +1084,10 @@ export namespace Length {
         } else {
             return value;
         }
+    }
+
+    export function equals(a: Length, b: Length): boolean {
+        return a.value == b.value && a.unit == b.unit;
     }
 }
 

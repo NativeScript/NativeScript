@@ -1,6 +1,6 @@
-﻿import application = require("application");
+﻿import * as application from "application";
 
 // Needed only for build infrastructure
-application.cssFile = "gallery-app/app.css";
+application.setCssFileName("gallery-app/app.css");
 
 application.start({ moduleName: "gallery-app/main-page" });

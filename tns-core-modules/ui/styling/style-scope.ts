@@ -7,7 +7,7 @@ import { File, knownFolders, path } from "file-system";
 import { CssAnimationParser } from "./css-animation-parser";
 import { isFileOrResourcePath } from "utils/utils";
 
-import application = require("application");
+import * as application from "application";
 
 const animationsSymbol: symbol = Symbol("animations");
 

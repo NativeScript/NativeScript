@@ -1,4 +1,4 @@
-﻿import textModule = require("text");
+﻿import * as textModule from "text";
 import * as utilsModule from "utils/utils";
 
 import * as utils from "utils/utils";

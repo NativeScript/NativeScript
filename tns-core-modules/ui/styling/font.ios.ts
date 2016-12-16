@@ -1,6 +1,6 @@
 ﻿import { FontBase, parseFontFamily, genericFontFamilies, parseFont, FontStyle, FontWeight } from "./font-common";
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
-import fs = require("file-system");
+import * as fs from "file-system";
 import * as utils from "utils/utils";
 
 export class Font extends FontBase {

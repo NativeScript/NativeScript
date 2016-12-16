@@ -1,10 +1,10 @@
 ﻿// >> frame-require
-import frameModule = require("ui/frame");
+import * as frameModule from "ui/frame";
 var topmost = frameModule.topmost();
 // << frame-require
 
-import labelModule = require("ui/label");
-import pagesModule = require("ui/page");
+import * as labelModule from "ui/label";
+import * as pagesModule from "ui/page";
 
 export var ignore_test_DummyTestForSnippetOnly0 = function () {
     // >> frame-navigating

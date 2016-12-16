@@ -1,9 +1,9 @@
-﻿import TKUnit = require("./TKUnit");
-import app = require("application");
+﻿import * as TKUnit from "./TKUnit";
+import * as app from "application";
 import { isIOS, isAndroid } from "platform";
 
 // >> platform-require
-import platformModule = require("platform");
+import * as platformModule from "platform";
 // << platform-require
 
 export function test_setTimeout_isDefined() {

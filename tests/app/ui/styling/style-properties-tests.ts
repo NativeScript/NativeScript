@@ -1,17 +1,18 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import buttonModule = require("ui/button");
-import labelModule = require("ui/label");
-import textFieldModule = require("ui/text-field");
-import textViewModule = require("ui/text-view");
-import stackModule = require("ui/layouts/stack-layout");
-import page = require("ui/page");
-import color = require("color");
-import observable = require("data/observable");
-import enums = require("ui/enums");
-import fontModule = require("ui/styling/font");
-import platform = require("platform");
-import viewModule = require("ui/core/view");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as buttonModule from "ui/button";
+import * as labelModule from "ui/label";
+import * as textFieldModule from "ui/text-field";
+import * as textViewModule from "ui/text-view";
+import * as stackModule from "ui/layouts/stack-layout";
+import * as page from "ui/page";
+import * as color from "color";
+import * as observable from "data/observable";
+import * as enums from "ui/enums";
+import * as fontModule from "ui/styling/font";
+import * as platform from "platform";
+import * as viewModule from "ui/core/view";
+import { Length, PercentLength } from "ui/core/view";
 
 var testBtn: buttonModule.Button;
 var testPage: page.Page;
@@ -452,10 +453,10 @@ function test_border_width_shorthand_property(short: string, top: number, right:
     var testView = new buttonModule.Button();
     testView.style.borderWidth = short;
 
-    TKUnit.assertEqual(testView.style.borderTopWidth, top, "top");
-    TKUnit.assertEqual(testView.style.borderRightWidth, right, "right");
-    TKUnit.assertEqual(testView.style.borderBottomWidth, bottom, "bottom");
-    TKUnit.assertEqual(testView.style.borderLeftWidth, left, "left");
+    TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, { value: top, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, { value: right, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, { value: bottom, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderLeftWidth, { value: left, unit: "dip" }));
 }
 
 export function test_setting_border_radius_shorthand_property_sets_all_border_radii() {
@@ -486,10 +487,10 @@ function test_margin_shorthand_property(short: string, top: number, right: numbe
     var testView = new buttonModule.Button();
     testView.style.margin = short;
 
-    TKUnit.assertEqual(testView.style.marginTop, top, "top");
-    TKUnit.assertEqual(testView.style.marginRight, right, "right");
-    TKUnit.assertEqual(testView.style.marginBottom, bottom, "bottom");
-    TKUnit.assertEqual(testView.style.marginLeft, left, "left");
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginTop, { value: top, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginRight, { value: right, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginBottom, { value: bottom, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginLeft, { value: left, unit: "dip" }));
 }
 
 export function test_setting_padding_shorthand_property_sets_all_paddings() {
@@ -503,10 +504,10 @@ function test_padding_shorthand_property(short: string, top: number, right: numb
     var testView = new buttonModule.Button();
     testView.style.padding = short;
 
-    TKUnit.assertEqual(testView.style.paddingTop, top, "top");
-    TKUnit.assertEqual(testView.style.paddingRight, right, "right");
-    TKUnit.assertEqual(testView.style.paddingBottom, bottom, "bottom");
-    TKUnit.assertEqual(testView.style.paddingLeft, left, "left");
+    TKUnit.assertTrue(Length.equals(testView.style.paddingTop, { value: top, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingRight, { value: right, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingBottom, { value: bottom, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingLeft, { value: left, unit: "dip" }));
 }
 
 export function test_setting_font_shorthand_property() {
@@ -538,13 +539,13 @@ export function test_setting_font_properties_sets_native_font() {
         fontModule.ios.registerFont(basePath + "/Roboto-Italic.ttf");
     }
 
-    test_native_font(enums.FontStyle.normal, enums.FontWeight.normal);
-    test_native_font(enums.FontStyle.italic, enums.FontWeight.normal);
-    test_native_font(enums.FontStyle.normal, enums.FontWeight.bold);
-    test_native_font(enums.FontStyle.italic, enums.FontWeight.bold);
+    test_native_font("normal", "normal");
+    test_native_font("italic", "normal");
+    test_native_font("normal", "bold");
+    test_native_font("italic", "bold");
 }
 
-function test_native_font(style: string, weight: string) {
+function test_native_font(style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
     var testView = new buttonModule.Button();
     var fontName = "Roboto";
     var fontNameSuffix = "";
@@ -654,7 +655,7 @@ function executeTransformTest(testView: viewModule.View, androidTextFunc: (testV
             TKUnit.assertEqual(iOSTextFunc(testView), capitalized);
         }
 
-        testView.style.textTransform = enums.TextTransform.uppercase;
+        testView.style.textTransform = "uppercase";
 
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual(androidTextFunc(testView) + "", upper);
@@ -662,7 +663,7 @@ function executeTransformTest(testView: viewModule.View, androidTextFunc: (testV
             TKUnit.assertEqual(iOSTextFunc(testView), upper);
         }
 
-        testView.style.textTransform = enums.TextTransform.lowercase;
+        testView.style.textTransform = "lowercase";
 
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual(androidTextFunc(testView) + "", lower);
@@ -670,7 +671,7 @@ function executeTransformTest(testView: viewModule.View, androidTextFunc: (testV
             TKUnit.assertEqual(iOSTextFunc(testView), lower);
         }
 
-        testView.style.textTransform = enums.TextTransform.none;
+        testView.style.textTransform = "none";
 
         if (platform.device.os === platform.platformNames.android) {
             TKUnit.assertEqual(androidTextFunc(testView) + "", initial);
@@ -691,7 +692,7 @@ function iOSText(testView: viewModule.View) {
 export var test_setting_label_textTransform_sets_native = function () {
     var testView = new labelModule.Label();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textTransform = "capitalize";
 
     executeTransformTest(testView, androidText, iOSText);
 }
@@ -699,7 +700,7 @@ export var test_setting_label_textTransform_sets_native = function () {
 export var test_setting_textField_textTransform_sets_native = function () {
     var testView = new textFieldModule.TextField();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textTransform = "capitalize";
 
     executeTransformTest(testView, androidText, iOSText);
 }
@@ -707,7 +708,7 @@ export var test_setting_textField_textTransform_sets_native = function () {
 export var test_setting_textView_textTransform_sets_native = function () {
     var testView = new textViewModule.TextView();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textTransform = "capitalize";
 
     executeTransformTest(testView, androidText, iOSText);
 }
@@ -715,7 +716,7 @@ export var test_setting_textView_textTransform_sets_native = function () {
 export var test_setting_button_textTransform_sets_native = function () {
     var testView = new buttonModule.Button();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
+    testView.style.textTransform = "capitalize";
 
     executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).titleForState(UIControlState.Normal); });
 }
@@ -723,8 +724,8 @@ export var test_setting_button_textTransform_sets_native = function () {
 export var test_setting_label_textTransform_and_textDecoration_sets_native = function () {
     var testView = new labelModule.Label();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
-    testView.style.textDecoration = enums.TextDecoration.underline;
+    testView.style.textTransform = "capitalize";
+    testView.style.textDecoration = "underline";
 
     executeTransformTest(testView, androidText, iOSText);
 }
@@ -732,8 +733,8 @@ export var test_setting_label_textTransform_and_textDecoration_sets_native = fun
 export var test_setting_textField_textTransform_and_textDecoration_sets_native = function () {
     var testView = new textFieldModule.TextField();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
-    testView.style.textDecoration = enums.TextDecoration.underline;
+    testView.style.textTransform = "capitalize";
+    testView.style.textDecoration = "underline";
 
     executeTransformTest(testView, androidText, iOSText);
 }
@@ -741,8 +742,8 @@ export var test_setting_textField_textTransform_and_textDecoration_sets_native =
 export var test_setting_textView_textTransform_and_textDecoration_sets_native = function () {
     var testView = new textViewModule.TextView();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
-    testView.style.textDecoration = enums.TextDecoration.underline;
+    testView.style.textTransform = "capitalize";
+    testView.style.textDecoration = "underline";
 
     executeTransformTest(testView, androidText, iOSText);
 }
@@ -750,8 +751,8 @@ export var test_setting_textView_textTransform_and_textDecoration_sets_native = 
 export var test_setting_button_textTransform_and_textDecoration_sets_native = function () {
     var testView = new buttonModule.Button();
     testView.text = initial;
-    testView.style.textTransform = enums.TextTransform.capitalize;
-    testView.style.textDecoration = enums.TextDecoration.underline;
+    testView.style.textTransform = "capitalize";
+    testView.style.textDecoration = "underline";
 
     executeTransformTest(testView, androidText, function (v) { return (<UIButton>v.ios).attributedTitleForState(UIControlState.Normal).string; });
 }
@@ -782,17 +783,19 @@ export function test_border_width() {
     
     testView.style.borderWidth = 10;
     TKUnit.assertEqual(testView.style.borderWidth, 10, "all");
-    TKUnit.assertEqual(testView.style.borderTopWidth, 10, "top");
-    TKUnit.assertEqual(testView.style.borderRightWidth, 10, "right");
-    TKUnit.assertEqual(testView.style.borderBottomWidth, 10, "bottom");
-    TKUnit.assertEqual(testView.style.borderLeftWidth, 10, "left");
+
+    TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, { value: 10, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, { value: 10, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, { value: 10, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderLeftWidth, { value: 10, unit: "dip" }));
 
     testView.style.borderWidth = "20";
     TKUnit.assertEqual((<any>testView.style.borderWidth), 20, "all");
-    TKUnit.assertEqual(testView.style.borderTopWidth, 20, "top");
-    TKUnit.assertEqual(testView.style.borderRightWidth, 20, "right");
-    TKUnit.assertEqual(testView.style.borderBottomWidth, 20, "bottom");
-    TKUnit.assertEqual(testView.style.borderLeftWidth, 20, "left");
+
+    TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, { value: 20, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, { value: 20, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, { value: 20, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderLeftWidth, { value: 20, unit: "dip" }));
 }
 
 export function test_border_radius() {

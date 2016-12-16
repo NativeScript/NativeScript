@@ -1,6 +1,6 @@
 ﻿/* tslint:disable:class-name */
-import definition = require("platform");
-import utils = require("utils/utils");
+import * as definition from "platform";
+import * as utils from "utils/utils";
 import * as enumsModule from "ui/enums";
 
 const MIN_TABLET_PIXELS = 600;

@@ -1,4 +1,4 @@
-﻿import listPickerModule = require("ui/list-picker");
+﻿import * as listPickerModule from "ui/list-picker";
 
 export function getNativeItemsCount(listPicker: listPickerModule.ListPicker): number {
     return listPicker.ios.numberOfRowsInComponent(0);

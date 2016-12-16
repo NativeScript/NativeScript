@@ -1,8 +1,8 @@
-﻿import view = require("ui/core/view");
-import label = require("ui/label");
-import button = require("ui/button");
-import textField = require("ui/text-field");
-import textView = require("ui/text-view");
+﻿import * as view from "ui/core/view";
+import * as label from "ui/label";
+import * as button from "ui/button";
+import * as textField from "ui/text-field";
+import * as textView from "ui/text-view";
 
 export function changeTextButonTap(args) {
     var btnChange = <button.Button>args.object;

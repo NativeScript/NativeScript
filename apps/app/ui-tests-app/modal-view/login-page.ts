@@ -1,6 +1,6 @@
-﻿import pages = require("ui/page");
-import textField = require("ui/text-field");
-import observable = require("data/observable");
+﻿import * as pages from "ui/page";
+import * as textField from "ui/text-field";
+import * as observable from "data/observable";
 
 var context: any;
 var closeCallback: Function;

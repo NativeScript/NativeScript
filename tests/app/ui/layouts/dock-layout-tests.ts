@@ -1,25 +1,26 @@
-﻿import button = require("ui/button");
-import {DockLayout} from "ui/layouts/dock-layout";
-import TKUnit = require("../../TKUnit");
-import helper = require("./layout-helper");
-import testModule = require("../../ui-test");
-import layoutHelper = require("./layout-helper");
-import commonTests = require("./common-layout-tests");
+﻿import * as button from "ui/button";
+import { DockLayout } from "ui/layouts/dock-layout";
+import * as TKUnit from "../../TKUnit";
+import * as helper from "./layout-helper";
+import * as testModule from "../../ui-test";
+import * as layoutHelper from "./layout-helper";
+import * as commonTests from "./common-layout-tests";
+import { PercentLength } from "ui/core/view";
 
 // >> dock-layout-require
-import dockModule = require("ui/layouts/dock-layout");
+import * as dockModule from "ui/layouts/dock-layout";
 // << dock-layout-require
 
 // >> dock-layout-others
-import enums = require("ui/enums");
+import * as enums from "ui/enums";
 // << dock-layout-others
 
 export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public create(): DockLayout {
         let rootLayout = new DockLayout();
-        rootLayout.height = layoutHelper.dp(300);
-        rootLayout.width = layoutHelper.dp(300);
+        rootLayout.height = { value: 300, unit: "dip" };
+        rootLayout.width = { value: 300, unit: "dip" };
         return rootLayout;
     }
 
@@ -43,7 +44,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_left() {
         var testBtn = new helper.MyButton();
-        testBtn.width = layoutHelper.dp(20);
+        testBtn.width = { value: 20, unit: "dip" }
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
 
@@ -54,7 +55,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_right() {
         var testBtn = new helper.MyButton();
-        testBtn.width = layoutHelper.dp(20);
+        testBtn.width = { value: 20, unit: "dip" };
         dockModule.DockLayout.setDock(testBtn, enums.Dock.right);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
@@ -66,7 +67,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_top() {
         var testBtn = new helper.MyButton();
-        testBtn.height = layoutHelper.dp(20);
+        testBtn.height = { value: 20, unit: "dip" };
         dockModule.DockLayout.setDock(testBtn, enums.Dock.top);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
@@ -78,7 +79,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_button() {
         var testBtn = new helper.MyButton();
-        testBtn.height = layoutHelper.dp(20);
+        testBtn.height = { value: 20, unit: "dip" };
         dockModule.DockLayout.setDock(testBtn, enums.Dock.bottom);
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
@@ -99,21 +100,21 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
     public test_dock_left_top_righ_bottom_fill() {
         var testBtnLeft = new helper.MyButton();
-        testBtnLeft.width = layoutHelper.dp(20);
+        testBtnLeft.width = { value: 20, unit: "dip" };
         this.testView.addChild(testBtnLeft);
 
         var testBtnTop = new helper.MyButton();
-        testBtnTop.height = layoutHelper.dp(20);
+        testBtnTop.height = { value: 20, unit: "dip" };
         dockModule.DockLayout.setDock(testBtnTop, enums.Dock.top);
         this.testView.addChild(testBtnTop);
 
         var testBtnRight = new helper.MyButton();
-        testBtnRight.width = layoutHelper.dp(20);
+        testBtnRight.width = { value: 20, unit: "dip" }
         dockModule.DockLayout.setDock(testBtnRight, enums.Dock.right);
         this.testView.addChild(testBtnRight);
 
         var testBtnBottom = new helper.MyButton();
-        testBtnBottom.height = layoutHelper.dp(20);
+        testBtnBottom.height = { value: 20, unit: "dip" }
         dockModule.DockLayout.setDock(testBtnBottom, enums.Dock.bottom);
         this.testView.addChild(testBtnBottom);
 
@@ -133,10 +134,10 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     public test_padding() {
         var testBtn = new helper.MyButton();
         this.testView.addChild(testBtn);
-        this.testView.paddingLeft = layoutHelper.dp(10);
-        this.testView.paddingTop = layoutHelper.dp(20);
-        this.testView.paddingRight = layoutHelper.dp(30);
-        this.testView.paddingBottom = layoutHelper.dp(40);
+        this.testView.style.paddingLeft = { value: 10, unit: "dip" };
+        this.testView.style.paddingTop = { value: 20, unit: "dip" };
+        this.testView.style.paddingRight = { value: 30, unit: "dip" };
+        this.testView.style.paddingBottom = { value: 40, unit: "dip" };
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -148,7 +149,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         // >> dock-layout-create
         var dockLayout = new dockModule.DockLayout();
         //  << dock-layout-create
-        
+
         // >> dock-layout-addchild
         var btn = new button.Button();
         dockLayout.addChild(btn);

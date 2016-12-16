@@ -1,12 +1,12 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import observable = require("data/observable");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as observable from "data/observable";
+import * as color from "color";
+import * as platform from "platform";
 
 // >> article-require-progress-module
-import progressModule = require("ui/progress");
+import * as progressModule from "ui/progress";
 // << article-require-progress-module
 
 export function test_default_TNS_values() {

@@ -1,11 +1,11 @@
 /* tslint:disable:no-unused-variable */
 // >> file-system-require
-import fs = require("file-system");
+import * as fs from "file-system";
 // << file-system-require
 
-import TKUnit = require("./TKUnit");
-import appModule = require("application");
-import platform = require("platform");
+import * as TKUnit from "./TKUnit";
+import * as appModule from "application";
+import * as platform from "platform";
 
 export var testPathNormalize = function () {
     // >> file-system-normalize

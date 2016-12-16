@@ -1,8 +1,8 @@
 ﻿// >> camera-require
-import camera = require("camera");
+import * as camera from "camera";
 // << camera-require
 
-import TKUnit = require("./TKUnit");
+import * as TKUnit from "./TKUnit";
 
 export var test_takePicture = function () {
     // >> camera-take-picture

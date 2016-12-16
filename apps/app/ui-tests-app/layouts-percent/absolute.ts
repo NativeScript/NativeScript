@@ -1,6 +1,6 @@
-﻿import pageModule = require("ui/page");
-import absoluteLayout = require("ui/layouts/absolute-layout");
-import model = require("./myview");
+﻿import * as pageModule from "ui/page";
+import * as absoluteLayout from "ui/layouts/absolute-layout";
+import * as model from "./myview";
 
 var count = 0;
 

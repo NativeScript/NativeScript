@@ -202,7 +202,7 @@ export class View extends ViewCommon {
 
         // Widgets like buttons and such have reference to their native view in both properties.
         if (this[NATIVE_VIEW] === this[ANDROID]) {
-            this[NATIVE_VIEW] = undefined;
+            (<any>this)[NATIVE_VIEW] = undefined;
         }
 
         // Handle layout and content view

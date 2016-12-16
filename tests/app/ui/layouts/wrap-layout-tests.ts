@@ -1,15 +1,15 @@
-﻿import TKUnit = require("../../TKUnit");
+﻿import * as TKUnit from "../../TKUnit";
 import {Label} from "ui/label";
-import layoutHelper = require("./layout-helper");
-import testModule = require("../../ui-test");
-import commonTests = require("./common-layout-tests");
+import * as layoutHelper from "./layout-helper";
+import * as testModule from "../../ui-test";
+import * as commonTests from "./common-layout-tests";
 
 // >> wrap-layout-require
-import wrapLayoutModule = require("ui/layouts/wrap-layout");
+import * as wrapLayoutModule from "ui/layouts/wrap-layout";
 // << wrap-layout-require
 
 // >> wrap-layout-others
-import enums = require("ui/enums");
+import * as enums from "ui/enums";
 // << wrap-layout-others
 
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {
@@ -19,15 +19,15 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         var wrapLayout = new wrapLayoutModule.WrapLayout();
         // << wrap-layout-new
 
-        wrapLayout.width = layoutHelper.dp(200);
-        wrapLayout.height = layoutHelper.dp(200);
+        wrapLayout.width = { value: 200, unit: "dip" };
+        wrapLayout.height = { value: 200, unit: "dip" };
 
         for (let i = 0; i < 2; i++) {
             let label = new Label();
             label.text = "" + i;
 
-            label.width = layoutHelper.dp(100);
-            label.height = layoutHelper.dp(100);
+            label.width = { value: 100, unit: "dip" };
+            label.height = { value: 100, unit: "dip" };
             wrapLayout.addChild(label);
         }
 
@@ -38,8 +38,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         let wrap = this.testView;
         wrap.removeChildren();
 
-        wrap.itemWidth = layoutHelper.dp(40);
-        wrap.itemHeight = layoutHelper.dp(40);
+        wrap.itemWidth = { value: 40, unit: "dip" };
+        wrap.itemHeight = { value: 40, unit: "dip" };
 
         let lbl1 = new layoutHelper.MyButton();
         lbl1.text = "1";
@@ -47,8 +47,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
         let lbl2 = new layoutHelper.MyButton();
         lbl2.text = "2";
-        lbl2.width = layoutHelper.dp(80);
-        lbl2.height = layoutHelper.dp(80);
+        lbl2.width = { value: 80, unit: "dip" };
+        lbl2.height = { value: 80, unit: "dip" };
         wrap.addChild(lbl2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -67,12 +67,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public testPaddingReduceAvailableSize() {
         let wrap = this.testView;
         wrap.removeChildren();
-        wrap.paddingLeft = wrap.paddingTop = wrap.paddingRight = wrap.paddingBottom = layoutHelper.dp(10);
+        wrap.style.paddingLeft = wrap.style.paddingTop = wrap.style.paddingRight = wrap.style.paddingBottom = { value: 10, unit: "dip" };
 
         let lbl1 = new layoutHelper.MyButton();
         lbl1.text = "1";
-        lbl1.minWidth = layoutHelper.dp(200);
-        lbl1.minHeight = layoutHelper.dp(200);
+        lbl1.minWidth = { value: 200, unit: "dip" };
+        lbl1.minHeight = { value: 200, unit: "dip" };
         wrap.addChild(lbl1);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -85,7 +85,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testHorizontalOrientation() {
 
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(0)._getCurrentLayoutBounds();
@@ -104,7 +104,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public testVerticalOrientation() {
         var wrapLayout = this.testView;
         // >> wrap-layout-orientation
-        wrapLayout.orientation = enums.Orientation.vertical;
+        wrapLayout.orientation = "vertical";
         // << wrap-layout-orientation
         this.waitUntilTestElementLayoutIsValid();
 
@@ -122,9 +122,9 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testChangeOrientation() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.orientation = enums.Orientation.vertical;
+        this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(0)._getCurrentLayoutBounds();
@@ -141,7 +141,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemWidth() {
-        this.testView.itemWidth = layoutHelper.dp(50);
+        this.testView.itemWidth = { value: 50, unit: "dip" };
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
@@ -150,7 +150,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testChangeItemWidth() {
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemWidth = layoutHelper.dp(50);
+        this.testView.itemWidth = { value: 50, unit: "dip" };
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
@@ -158,7 +158,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemWidthLargerThanTheAvailableWidth() {
-        this.testView.itemWidth = layoutHelper.dp(1000);
+        this.testView.itemWidth = { value: 1000, unit: "dip" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.getChildAt(0)._getCurrentLayoutBounds().top, 0, "ActualTop on Index 0");
@@ -166,8 +166,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemHeight() {
-        this.testView.itemHeight = layoutHelper.dp(50);
-        this.testView.orientation = enums.Orientation.vertical;
+        this.testView.itemHeight = { value: 50, unit: "dip" };
+        this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
@@ -175,9 +175,9 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testChangeItemHeight() {
-        this.testView.orientation = enums.Orientation.vertical;
+        this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemHeight = layoutHelper.dp(50);
+        this.testView.itemHeight = { value: 50, unit: "dip" };
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
@@ -185,9 +185,9 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemHeightLargerThanTheAvailableHeight() {
-        this.testView.orientation = enums.Orientation.vertical;
+        this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemHeight = layoutHelper.dp(1000);
+        this.testView.itemHeight = { value: 1000, unit: "dip" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.getChildAt(0)._getCurrentLayoutBounds().left, 0, "ActualLeft on Index 0");
@@ -196,12 +196,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingLeftAndTop() {
         this.testView.removeChildren();
-        this.testView.paddingLeft = layoutHelper.dp(20);
-        this.testView.paddingTop = layoutHelper.dp(30);
+        this.testView.style.paddingLeft = { value: 20, unit: "dip" };
+        this.testView.style.paddingTop = { value: 30, unit: "dip" };
 
         var btn = new layoutHelper.MyButton();
-        btn.width = layoutHelper.dp(50);
-        btn.height = layoutHelper.dp(50);
+        btn.width = { value: 50, unit: "dip" };
+        btn.height = { value: 50, unit: "dip" };
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -211,17 +211,17 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingRight() {
         this.testView.removeChildren();
-        this.testView.paddingRight = layoutHelper.dp(30);
-        this.testView.width = layoutHelper.dp(200);
+        this.testView.style.paddingRight = { value: 30, unit: "dip" };
+        this.testView.width = { value: 200, unit: "dip" };
 
         var btn1 = new layoutHelper.MyButton();
         this.testView.addChild(btn1);
-        btn1.width = layoutHelper.dp(100);
-        btn1.height = layoutHelper.dp(50);
+        btn1.width = { value: 100, unit: "dip" };
+        btn1.height = { value: 50, unit: "dip" };
 
         var btn2 = new layoutHelper.MyButton();
-        btn2.width = layoutHelper.dp(80);
-        btn2.height = layoutHelper.dp(50);
+        btn2.width = { value: 80, unit: "dip" };
+        btn2.height = { value: 50, unit: "dip" };
         this.testView.addChild(btn2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -237,18 +237,18 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingBottom() {
         this.testView.removeChildren();
-        this.testView.paddingBottom = layoutHelper.dp(30);
-        this.testView.height = layoutHelper.dp(200);
-        this.testView.orientation = enums.Orientation.vertical;
+        this.testView.style.paddingBottom = { value: 30, unit: "dip" };
+        this.testView.height = { value: 200, unit: "dip" };
+        this.testView.orientation = "vertical";
 
         var btn1 = new layoutHelper.MyButton();
         this.testView.addChild(btn1);
-        btn1.width = layoutHelper.dp(50);
-        btn1.height = layoutHelper.dp(100);
+        btn1.width = { value: 50, unit: "dip" };
+        btn1.height = { value: 100, unit: "dip" };
 
         var btn2 = new layoutHelper.MyButton();
-        btn2.width = layoutHelper.dp(50);
-        btn2.height = layoutHelper.dp(80);
+        btn2.width = { value: 50, unit: "dip" };
+        btn2.height = { value: 80, unit: "dip" };
         this.testView.addChild(btn2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -265,12 +265,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public test_percent_children_support() {
         let layout = this.testView;
         layout.removeChildren();
-        layout.width = layoutHelper.dp(200);
-        layout.height = layoutHelper.dp(200);
+        layout.width = { value: 200, unit: "dip" };
+        layout.height = { value: 200, unit: "dip" };
 
         let btn = new layoutHelper.MyButton();
-        btn.horizontalAlignment = enums.HorizontalAlignment.left;
-        btn.verticalAlignment = enums.VerticalAlignment.top;
+        btn.horizontalAlignment = "left";
+        btn.verticalAlignment = "top";
         (<any>btn).width = "50%";
         (<any>btn).height = "50%";
         btn.margin = "10%";
@@ -288,8 +288,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         TKUnit.assertEqual(bounds.right, 120, "TopLeft layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.center;
-        btn.verticalAlignment = enums.VerticalAlignment.center;
+        btn.horizontalAlignment = "center";
+        btn.verticalAlignment = "center";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -298,8 +298,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         TKUnit.assertEqual(bounds.right, 120, "Center layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "Center layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
-        btn.verticalAlignment = enums.VerticalAlignment.stretch;
+        btn.horizontalAlignment = "stretch";
+        btn.verticalAlignment = "stretch";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -308,8 +308,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         TKUnit.assertEqual(bounds.right, 120, "Stretch layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "Stretch layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.right;
-        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        btn.horizontalAlignment = "right";
+        btn.verticalAlignment = "bottom";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();

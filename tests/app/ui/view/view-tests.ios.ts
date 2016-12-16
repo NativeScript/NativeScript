@@ -1,10 +1,10 @@
-import commonTests = require("./view-tests-common");
-import view = require("ui/core/view");
-import grid = require("ui/layouts/grid-layout");
-import color = require("color");
-import helper = require("../helper");
-import TKUnit = require("../../TKUnit");
-import button = require("ui/button");
+import * as commonTests from "./view-tests-common";
+import * as view from "ui/core/view";
+import * as grid from "ui/layouts/grid-layout";
+import * as color from "color";
+import * as helper from "../helper";
+import * as TKUnit from "../../TKUnit";
+import * as button from "ui/button";
 
 global.moduleMerge(commonTests, exports);
 

@@ -1,4 +1,4 @@
-import dialogs = require("ui/dialogs");
+import * as dialogs from "ui/dialogs";
 
 export function alertTapped(args) {
     dialogs.alert("Hi there!");

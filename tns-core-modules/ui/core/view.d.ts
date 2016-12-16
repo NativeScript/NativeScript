@@ -99,18 +99,18 @@ declare module "ui/core/view" {
         readonly unit: "dip" | "px";
         readonly value: number;
     }
+    export namespace Length {
+        export function parse(text: string): Length;
+        export function equals(a: Length, b: Length): boolean;
+    }
 
     export interface PercentLength {
         readonly unit: "%" | "dip" | "px";
         readonly value: number;
     }
-
-    export namespace Length {
-        function parse(text: string): Length;
-    }
-
     export namespace PercentLength {
-        function parse(text: string): PercentLength;
+        export function parse(text: string): PercentLength;
+        export function equals(a: PercentLength, b: PercentLength): boolean;
     }
 
     /**
@@ -555,7 +555,7 @@ declare module "ui/core/view" {
          * A property has changed on the native side directly - e.g. the user types in a TextField.
          */
         public nativePropertyChanged(property: Property<any, any>, newValue: any): void;
-        public bind(options: BindingOptions, source: any): void;
+        public bind(options: BindingOptions, source?: any): void;
         public unbind(property: string): void;
 
         isCollapsed: boolean;
@@ -603,6 +603,16 @@ declare module "ui/core/view" {
         _setNativeViewFrame(nativeView: any, frame: any): void;
         // _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
+
+        // /**
+        //  * __Obsolete:__ There is a new property system that does not rely on _getValue.
+        //  */
+        // public _getValue(property: any): never;
+
+        // /**
+        //  * __Obsolete:__ There is a new property system that does not rely on _setValue.
+        //  */
+        // public _setValue(property: any, value: any): never;
     }
 
     /**

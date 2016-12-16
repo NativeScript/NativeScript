@@ -1,6 +1,6 @@
-﻿// import definition = require("ui/text-view");
-// import textBase = require("ui/text-base");
-// import editableTextBase = require("ui/editable-text-base");
+﻿// import * as definition from "ui/text-view";
+// import * as textBase from "ui/text-base";
+// import * as editableTextBase from "ui/editable-text-base";
 
 // global.moduleMerge(textBase, exports);
 

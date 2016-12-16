@@ -1,7 +1,7 @@
-﻿import buttonModule = require("ui/button");
-import pageModule = require("ui/page");
-import gridLayoutModule = require("ui/layouts/grid-layout");
-import model = require("./myview");
+﻿import * as buttonModule from "ui/button";
+import * as pageModule from "ui/page";
+import * as gridLayoutModule from "ui/layouts/grid-layout";
+import * as model from "./myview";
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <pageModule.Page>args.object;

@@ -1,7 +1,7 @@
 ﻿declare module "text/span" {
-    import colorModule = require("color");
-    import bindable = require("ui/core/bindable");
-    import formattedString = require("text/formatted-string");
+    import * as colorModule from "color";
+    import * as bindable from "ui/core/bindable";
+    import * as formattedString from "text/formatted-string";
 
     /**
      * A class used to create a single part of formatted string with a common text properties.

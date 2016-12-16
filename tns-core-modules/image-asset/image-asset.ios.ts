@@ -1,4 +1,4 @@
-import common = require("./image-asset-common");
+import * as common from "./image-asset-common";
 
 global.moduleMerge(common, exports);
 

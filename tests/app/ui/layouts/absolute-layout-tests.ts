@@ -1,12 +1,12 @@
-﻿import testModule = require("../../ui-test");
-import TKUnit = require("../../TKUnit");
-import labelModule = require("ui/label");
-import colorModule = require("color");
-import layoutHelper = require("./layout-helper");
-import commonTests = require("./common-layout-tests");
+﻿import * as testModule from "../../ui-test";
+import * as TKUnit from "../../TKUnit";
+import * as labelModule from "ui/label";
+import * as colorModule from "color";
+import * as layoutHelper from "./layout-helper";
+import * as commonTests from "./common-layout-tests";
 
 // >> absolute-layout-require
-import absoluteLayoutModule = require("ui/layouts/absolute-layout");
+import * as absoluteLayoutModule from "ui/layouts/absolute-layout";
 // << absolute-layout-require
 
 export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.AbsoluteLayout> {
@@ -19,15 +19,15 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
 
         // >> absolute-layout-populating
         var absoluteLayout = new absoluteLayoutModule.AbsoluteLayout();
-        absoluteLayout.width = 230;
-        absoluteLayout.height = 230;
+        absoluteLayout.width = {value: 230, unit:"dip"};
+        absoluteLayout.height = {value: 230, unit:"dip"};
         absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
         var label = new labelModule.Label();
         // In absolute layout place of an UI element is determined by 4 parameters : left, top, width and height.
         absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
         absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
-        label.width = 100;
-        label.height = 100;
+        label.width = {value: 100, unit:"dip"};
+        label.height = {value: 100, unit:"dip"};
         label.text = "LT";
         label.id = "LT";
         label.style.backgroundColor = new colorModule.Color("Red");
@@ -38,15 +38,15 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
     public testAll() {
 
         let absoluteLayout = this.testView;
-        absoluteLayout.width = layoutHelper.dp(230);
-        absoluteLayout.height = layoutHelper.dp(230);
+        absoluteLayout.width = { value: 230, unit: "dip" };
+        absoluteLayout.height = { value: 230, unit: "dip" };
         absoluteLayout.style.backgroundColor = new colorModule.Color("LightGray");
         let label = new labelModule.Label();
         
         absoluteLayoutModule.AbsoluteLayout.setLeft(label, layoutHelper.dp(10));
         absoluteLayoutModule.AbsoluteLayout.setTop(label, layoutHelper.dp(10));
-        label.width = layoutHelper.dp(100);
-        label.height = layoutHelper.dp(100);
+        label.width = { value: 100, unit: "dip" };
+        label.height = { value: 100, unit: "dip" };
         label.text = "LT";
         label.style.backgroundColor = new colorModule.Color("Red");
         absoluteLayout.addChild(label);
@@ -64,15 +64,15 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
 
     public test_padding() {
         let absoluteLayout = this.testView;
-        absoluteLayout.width = layoutHelper.dp(200);
-        absoluteLayout.height = layoutHelper.dp(200);
-        absoluteLayout.paddingLeft = layoutHelper.dp(5);
-        absoluteLayout.paddingTop = layoutHelper.dp(15);
+        absoluteLayout.width = { value: 200, unit: "dip" };
+        absoluteLayout.height = { value: 200, unit: "dip" };
+        absoluteLayout.style.paddingLeft = { value: 5, unit: "dip" };
+        absoluteLayout.style.paddingTop = { value: 15, unit: "dip" };
 
         // Left Top
         let btn = new layoutHelper.MyButton();
-        btn.width = layoutHelper.dp(100);
-        btn.height = layoutHelper.dp(100);
+        btn.width = { value: 100, unit: "dip" };
+        btn.height = { value: 100, unit: "dip" };
         absoluteLayoutModule.AbsoluteLayout.setLeft(btn, layoutHelper.dp(20));
         absoluteLayoutModule.AbsoluteLayout.setTop(btn, layoutHelper.dp(20));
         absoluteLayout.addChild(btn);
@@ -84,8 +84,8 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
 
     public test_percent_children_support() {
         let layout = this.testView;
-        layout.width = layoutHelper.dp(200);
-        layout.height = layoutHelper.dp(200);
+        layout.width = { value: 200, unit: "dip" };
+        layout.height = { value: 200, unit: "dip" };
 
         let btn = new layoutHelper.MyButton();
         (<any>btn).width = "50%";

@@ -1,6 +1,6 @@
-import frameModule = require("ui/frame");
-import TKUnit = require("../../TKUnit");
-import { widthProperty, heightProperty } from "ui/styling/style";
+import * as frameModule from "ui/frame";
+import * as TKUnit from "../../TKUnit";
+import { unsetValue, PercentLength } from "ui/core/view";
 
 export function test_percent_width_and_height_set_to_page_support() {
     let topFrame = frameModule.topmost();
@@ -23,11 +23,11 @@ export function test_percent_width_and_height_set_to_page_support() {
     TKUnit.assertEqual(currentPageHeight, Math.floor(topFrameHeight / 2), "Current page measuredHeight incorrect");
 
     //reset values.
-    (<any>currentPage.style)._resetValue(heightProperty);
-    (<any>currentPage.style)._resetValue(widthProperty);
+    currentPage.height = unsetValue;
+    currentPage.width = unsetValue;
 
-    TKUnit.assert(isNaN(currentPage.width), "width");
-    TKUnit.assert(isNaN(currentPage.height), "height");
+    TKUnit.assertTrue(PercentLength.equals(currentPage.width, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(currentPage.width, { value: 0, unit: "dip" }));
 }
 
 export function test_percent_margin_set_to_page_support() {
@@ -57,8 +57,8 @@ export function test_percent_margin_set_to_page_support() {
     //reset values.
     currentPage.margin = "0";
 
-    TKUnit.assertEqual(currentPage.marginLeft, 0, "marginLeft");
-    TKUnit.assertEqual(currentPage.marginTop, 0, "marginTop");
-    TKUnit.assertEqual(currentPage.marginRight, 0, "marginRight");
-    TKUnit.assertEqual(currentPage.marginBottom, 0, "marginBottom");
+    TKUnit.assertTrue(PercentLength.equals(currentPage.marginLeft, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(currentPage.marginTop, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(currentPage.marginRight, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(currentPage.marginBottom, { value: 0, unit: "dip" }));
 }

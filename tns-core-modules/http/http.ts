@@ -1,6 +1,6 @@
-import image = require("image-source");
-import httpRequest = require("http/http-request");
-import dts = require("http");
+import * as image from "image-source";
+import * as httpRequest from "http/http-request";
+import * as dts from "http";
 
 global.moduleMerge(httpRequest, exports);
 

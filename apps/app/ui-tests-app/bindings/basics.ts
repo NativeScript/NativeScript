@@ -1,8 +1,8 @@
-﻿import buttonModule = require("ui/button");
-import pageModule = require("ui/page");
-import textFieldModule = require("ui/text-field");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import observableModule = require("data/observable");
+﻿import * as buttonModule from "ui/button";
+import * as pageModule from "ui/page";
+import * as textFieldModule from "ui/text-field";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as observableModule from "data/observable";
 
 export function createPage() {
 

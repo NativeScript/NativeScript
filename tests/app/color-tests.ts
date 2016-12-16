@@ -1,8 +1,8 @@
 ﻿// >> color-require
-import colorModule = require("color");
+import * as colorModule from "color";
 var Color = colorModule.Color;
 // << color-require
-import TKUnit = require("./TKUnit");
+import * as TKUnit from "./TKUnit";
 
 export var test_Hex_Color = function () {
     // >> color-hex

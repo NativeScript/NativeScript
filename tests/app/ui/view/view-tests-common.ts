@@ -1,20 +1,20 @@
-﻿import TKUnit = require("../../TKUnit");
-import viewModule = require("ui/core/view");
-import frame = require("ui/frame");
-import page = require("ui/page");
-import button = require("ui/button");
-import labelModule = require("ui/label");
-import types = require("utils/types");
-import helper = require("../../ui/helper");
-import color = require("color");
-import dependensyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import layoutModule = require("ui/layouts/layout");
-import observable = require("data/observable");
-import bindable = require("ui/core/bindable");
-import definition = require("./view-tests");
-import enums = require("ui/enums");
-import absoluteLayoutModule = require("ui/layouts/absolute-layout");
+﻿import * as TKUnit from "../../TKUnit";
+import * as viewModule from "ui/core/view";
+import * as frame from "ui/frame";
+import * as page from "ui/page";
+import * as button from "ui/button";
+import * as labelModule from "ui/label";
+import * as types from "utils/types";
+import * as helper from "../../ui/helper";
+import * as color from "color";
+import * as dependensyObservable from "ui/core/dependency-observable";
+import * as proxy from "ui/core/proxy";
+import * as layoutModule from "ui/layouts/layout";
+import * as observable from "data/observable";
+import * as bindable from "ui/core/bindable";
+import * as definition from "./view-tests";
+import * as enums from "ui/enums";
+import * as absoluteLayoutModule from "ui/layouts/absolute-layout";
 
 export var test_eachDescendant = function () {
     var test = function (views: Array<viewModule.View>) {
@@ -635,16 +635,16 @@ export var testIsVisible = function () {
     var lbl = new labelModule.Label();
 
     helper.buildUIAndRunTest(lbl, function (views: Array<viewModule.View>) {
-        TKUnit.assertEqual(lbl.visibility, enums.Visibility.visible);
-        TKUnit.assertEqual(lbl._isVisible, true);
+        TKUnit.assertEqual(lbl.visibility, "visible");
+        TKUnit.assertEqual(lbl.isCollapsed, false);
 
-        lbl.visibility = enums.Visibility.collapse;
-        TKUnit.assertEqual(lbl.visibility, enums.Visibility.collapse);
-        TKUnit.assertEqual(lbl._isVisible, false);
+        lbl.visibility = "collapse";
+        TKUnit.assertEqual(lbl.visibility, "collapse");
+        TKUnit.assertEqual(lbl.isCollapsed, true);
 
-        lbl.visibility = enums.Visibility.collapsed;
-        TKUnit.assertEqual(lbl.visibility, enums.Visibility.collapsed);
-        TKUnit.assertEqual(lbl._isVisible, false);
+        lbl.visibility = "collapsed";
+        TKUnit.assertEqual(lbl.visibility, "collapsed");
+        TKUnit.assertEqual(lbl.isCollapsed, true);
     });
 }
 
@@ -722,13 +722,13 @@ export var test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree = function
 var delta = 1;
 export var test_getLocationRelativeToOtherView = function () {
     var a1 = new absoluteLayoutModule.AbsoluteLayout();
-    a1.width = 200;
-    a1.height = 200;
+    a1.width = { value: 200, unit: "dip" };
+    a1.height = { value: 200, unit: "dip" };
     a1.backgroundColor = new color.Color("red");
 
     var a2 = new absoluteLayoutModule.AbsoluteLayout();
-    a2.width = 100;
-    a2.height = 100;
+    a2.width = { value: 100, unit: "dip" };
+    a2.height = { value: 100, unit: "dip" };
     absoluteLayoutModule.AbsoluteLayout.setLeft(a2, 10);
     absoluteLayoutModule.AbsoluteLayout.setTop(a2, 10);
     a2.backgroundColor = new color.Color("green");
@@ -736,8 +736,8 @@ export var test_getLocationRelativeToOtherView = function () {
     var label = new labelModule.Label();
     label.text = "label";
     label.id = "label";
-    label.width = 70;
-    label.height = 30;
+    label.width = { value: 70, unit: "dip" };
+    label.height = { value: 30, unit: "dip" };
     absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
     absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
     a2.backgroundColor = new color.Color("yellow");
@@ -765,8 +765,8 @@ export var test_getLocationRelativeToOtherView = function () {
 
 export var test_getActualSize = function () {
     var label = new labelModule.Label();
-    label.width = 100;
-    label.height = 200;
+    label.width = { value: 100, unit: "dip" };
+    label.height = { value: 200, unit: "dip" };
     helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => label.isLayoutValid);
         var actualSize = label.getActualSize();

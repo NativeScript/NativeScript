@@ -1,6 +1,6 @@
-import spanCommon = require("./span-common");
-import enums = require("ui/enums");
-import formattedString = require("text/formatted-string");
+import * as spanCommon from "./span-common";
+import * as enums from "ui/enums";
+import * as formattedString from "text/formatted-string";
 
 import * as utils from "utils/utils";
 

@@ -8,7 +8,7 @@ declare module "ui/page" {
     import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
 
     //@private
-    import styleScope = require("ui/styling/style-scope");
+    import * as styleScope from "ui/styling/style-scope";
     //@endprivate
 
     export * from "ui/content-view";

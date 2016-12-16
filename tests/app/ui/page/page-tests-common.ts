@@ -1,27 +1,28 @@
 ﻿// >> article-require-page-module
-import pageModule = require("ui/page");
+import * as pageModule from "ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
-import frameModule = require("ui/frame");
+import * as frameModule from "ui/frame";
 // << article-require-page-module
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
-  let page = args.object;
-  page.bindingContext = { name : "Some name" };
+    let page = args.object;
+    page.bindingContext = { name: "Some name" };
 }
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
-import TKUnit = require("../../TKUnit");
-import labelModule = require("ui/label");
-import {StackLayout} from "ui/layouts/stack-layout";
-import helper = require("../helper");
-import view = require("ui/core/view");
-import observable = require("data/observable");
-import {Page, ShownModallyData, NavigatedData} from "ui/page";
-import {Label} from "ui/label";
-import {EventData} from "data/observable";
-import {widthProperty, heightProperty} from "ui/styling/style"
-import platform = require("platform");
+import * as TKUnit from "../../TKUnit";
+import * as labelModule from "ui/label";
+import { StackLayout } from "ui/layouts/stack-layout";
+import * as helper from "../helper";
+import * as view from "ui/core/view";
+import * as observable from "data/observable";
+import { Page, ShownModallyData, NavigatedData } from "ui/page";
+import { Label } from "ui/label";
+import { EventData } from "data/observable";
+import { PercentLength } from "ui/core/view";
+import * as platform from "platform";
+import {unsetValue, Length} from "ui/core/view";
 
 export function addLabelToPage(page: Page, text?: string) {
     let label = new Label();
@@ -96,7 +97,7 @@ export function test_NavigateToNewPage() {
     let currentPage;
     let topFrame = frameModule.topmost();
     currentPage = topFrame.currentPage;
-    
+
     let testPage: Page;
     let pageFactory = function (): Page {
         testPage = new pageModule.Page();
@@ -239,7 +240,7 @@ export function test_NavigateTo_WithBindingContext() {
     let pageFactory = function (): Page {
         testPage = new Page();
         testPage.on(pageModule.Page.navigatingToEvent, function (args: NavigatedData) {
-            bindingContext = (<Page>args.object).bindingContext; 
+            bindingContext = (<Page>args.object).bindingContext;
         });
         return testPage;
     };
@@ -252,7 +253,7 @@ export function test_NavigateTo_WithBindingContext() {
     topFrame.navigate(navEntry);
     TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage !== currentPage && testPage.isLayoutValid);
     helper.goBack();
-    
+
     TKUnit.assertEqual(bindingContext, navEntry.bindingContext, "The Page's bindingContext should be equal to the NavigationEntry.bindingContext property when navigating to.");
 }
 
@@ -339,7 +340,7 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
     };
 
     helper.navigate(pageFactory);
-    
+
     TKUnit.assertEqual(label.style.backgroundColor.hex, "#ff00ff00");
     TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#ffff0000");
 }
@@ -537,7 +538,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
 }
 
-export function  test_percent_width_and_height_support() {
+export function test_percent_width_and_height_support() {
     let testPage = new Page();
     testPage.id = "test_percent_width_and_height_support";
 
@@ -545,7 +546,7 @@ export function  test_percent_width_and_height_support() {
     (<any>stackLayout).width = "50%";
     (<any>stackLayout).height = "50%";
 
-    testPage.content = stackLayout; 
+    testPage.content = stackLayout;
 
     let pageWidth = testPage.getMeasuredWidth();
     let pageHeight = testPage.getMeasuredHeight()
@@ -554,14 +555,14 @@ export function  test_percent_width_and_height_support() {
     TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");
 
     //reset values.
-    (<any>testPage.style)._resetValue(heightProperty);
-    (<any>testPage.style)._resetValue(widthProperty);
+    testPage.style.height = unsetValue;
+    testPage.style.width = unsetValue;
 
-    TKUnit.assert(isNaN(testPage.width), "width");
-    TKUnit.assert(isNaN(testPage.height), "height");
+    TKUnit.assertTrue(PercentLength.equals(testPage.width, {value: 0, unit:"dip"}));
+    TKUnit.assertTrue(PercentLength.equals(testPage.height, {value: 0, unit:"dip"}));
 }
 
-export function  test_percent_margin_support() {
+export function test_percent_margin_support() {
     let testPage = new Page();
     testPage.id = "ttest_percent_margin_support";
 
@@ -584,10 +585,10 @@ export function  test_percent_margin_support() {
     //reset values.
     testPage.margin = "0";
 
-    TKUnit.assertEqual(testPage.marginLeft, 0, "marginLeft");
-    TKUnit.assertEqual(testPage.marginTop, 0, "marginTop");
-    TKUnit.assertEqual(testPage.marginRight, 0, "marginRight");
-    TKUnit.assertEqual(testPage.marginBottom, 0, "marginBottom");
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginLeft, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginTop, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginRight, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginBottom, { value: 0, unit: "dip" }));
 }
 
 //export function test_ModalPage_Layout_is_Correct() {

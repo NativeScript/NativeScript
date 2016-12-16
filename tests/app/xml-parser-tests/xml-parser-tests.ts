@@ -2,9 +2,9 @@
 //var xmlModule = require("xml");
 // << xml-module-snippet
 
-import TKUnit = require("../TKUnit");
-import xmlModule = require("xml");
-import fs = require("file-system");
+import * as TKUnit from "../TKUnit";
+import * as xmlModule from "xml";
+import * as fs from "file-system";
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assert(typeof (xmlModule.XmlParser) !== "undefined", "Class XmlParser should be defined!");

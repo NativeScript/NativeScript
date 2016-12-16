@@ -1,8 +1,8 @@
 ﻿/* tslint:disable:no-unused-variable */
 // >> gestures-require
-import gestures = require("ui/gestures");
+import * as gestures from "ui/gestures";
 // << gestures-require
-import labelModule = require("ui/label");
+import * as labelModule from "ui/label";
 
 export var test_DummyTestForSnippetOnly0 = function () {
     // >> gestures-double-tap

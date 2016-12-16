@@ -1,6 +1,6 @@
 ﻿//@private
-import labelModule = require("ui/label");
-import colorModule = require("color");
+import * as labelModule from "ui/label";
+import * as colorModule from "color";
 
 export declare function getNativeTextAlignment(label: labelModule.Label): string;
 

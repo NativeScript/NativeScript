@@ -1,4 +1,4 @@
-﻿import dts = require("utils/utils");
+﻿import * as dts from "utils/utils";
 import { Color } from "color";
 import * as fsModule from "file-system";
 import {

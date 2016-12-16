@@ -1,9 +1,9 @@
-﻿import app = require("application");
-import pageModule = require("ui/page");
-import labelModule = require("ui/label");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import textViewModule = require("ui/text-view");
-import buttonModule = require("ui/button");
+﻿import * as app from "application";
+import * as pageModule from "ui/page";
+import * as labelModule from "ui/label";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as textViewModule from "ui/text-view";
+import * as buttonModule from "ui/button";
 
 export function createPage() {
 

@@ -1,20 +1,20 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import pagesModule = require("ui/page");
-import textViewTestsNative = require("./text-view-tests-native");
-import colorModule = require("color");
-import enums = require("ui/enums");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as pagesModule from "ui/page";
+import * as textViewTestsNative from "./text-view-tests-native";
+import * as colorModule from "color";
+import * as enums from "ui/enums";
+import * as platform from "platform";
 
 // >> require-textmodules
-import textViewModule = require("ui/text-view");
+import * as textViewModule from "ui/text-view";
 // << require-textmodules
 
 // Other frequently used modules when working with buttons include:
-import bindable = require("ui/core/bindable");
+import * as bindable from "ui/core/bindable";
 // >> require-observable-textview
-import observable = require("data/observable");
+import * as observable from "data/observable";
 // << require-observable-textview
 
 // >> text-view-xml
@@ -133,7 +133,7 @@ export var testBindTextToBindingContext = function () {
             targetProperty: "text"
         }
 
-        textView.bind(options);
+        textView.bind(options, model);
         TKUnit.assert(textView.text === "john", "Actual: " + textView.text + "; Expected: " + "john");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "john", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "john");
 
@@ -146,7 +146,7 @@ export var testBindTextToBindingContext = function () {
 export var testTextIsUpdatedWhenUserTypes = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
-        textView.updateTextTrigger = enums.UpdateTextTrigger.focusLost;
+        textView.updateTextTrigger = "focusLost";
 
         var expectedValue = "Hello, world!";
         textViewTestsNative.typeTextNatively(textView, expectedValue);
@@ -214,7 +214,7 @@ export var testBindHintToBindingConext = function () {
             targetProperty: "hint"
         }
 
-        textView.bind(options);
+        textView.bind(options, model);
         TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.hint + "; Expected: " + "type your username here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your username here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your username here");
 
@@ -334,7 +334,7 @@ export var testBindEditableToBindingConext = function () {
             targetProperty: "editable"
         }
 
-        textView.bind(options);
+        textView.bind(options, model);
         TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
         TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
 
@@ -443,7 +443,7 @@ export var testNativeBackgroundColorFromLocal = function () {
     });
 }
 
-var expectedTextAlignment = enums.TextAlignment.right;
+var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var view = <textViewModule.TextView>views[0];

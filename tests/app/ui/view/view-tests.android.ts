@@ -1,13 +1,13 @@
-﻿import TKUnit = require("../../TKUnit");
-import commonTests = require("./view-tests-common");
-import helper = require("../../ui/helper");
-import view = require("ui/core/view");
-import button = require("ui/button");
-import types = require("utils/types");
-import stack = require("ui/layouts/stack-layout");
-import labelModule = require("ui/label");
-import frame = require("ui/frame");
-import trace = require("trace");
+﻿import * as TKUnit from "../../TKUnit";
+import * as commonTests from "./view-tests-common";
+import * as helper from "../../ui/helper";
+import * as view from "ui/core/view";
+import * as button from "ui/button";
+import * as types from "utils/types";
+import * as stack from "ui/layouts/stack-layout";
+import * as labelModule from "ui/label";
+import * as frame from "ui/frame";
+import * as trace from "trace";
 import { Color } from "color";
 // enable the trace, it is disabled by default
 trace.enable();

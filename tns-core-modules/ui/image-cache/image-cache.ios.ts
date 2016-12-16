@@ -1,5 +1,5 @@
-﻿import common = require("./image-cache-common");
-import trace = require("trace");
+﻿import * as common from "./image-cache-common";
+import * as trace from "trace";
 import * as httpRequestModule from "http/http-request";
 
 import * as utils from "utils/utils";

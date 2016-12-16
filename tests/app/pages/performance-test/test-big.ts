@@ -1,4 +1,4 @@
-﻿import observable = require("data/observable");
+﻿import * as observable from "data/observable";
 
 declare function __stopCPUProfiler(name: string);
 

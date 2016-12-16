@@ -1,7 +1,7 @@
-﻿import pages = require("ui/page");
-import imageSource = require("image-source");
-import gridModule = require("ui/layouts/grid-layout");
-import enums = require("ui/enums");
+﻿import * as pages from "ui/page";
+import * as imageSource from "image-source";
+import * as gridModule from "ui/layouts/grid-layout";
+import * as enums from "ui/enums";
 
 export function createPage() {
     var StackLayout = require("ui/layouts/stack-layout").StackLayout;
@@ -12,10 +12,10 @@ export function createPage() {
     var grid = new gridModule.GridLayout();
     stack.addChild(grid);
 
-    grid.addColumn(new gridModule.ItemSpec(80, gridModule.GridUnitType.pixel));
-    grid.addColumn(new gridModule.ItemSpec(1, gridModule.GridUnitType.star));
-    grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
-    grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
+    grid.addColumn(new gridModule.ItemSpec(80, "pixel"));
+    grid.addColumn(new gridModule.ItemSpec(1, "star"));
+    grid.addRow(new gridModule.ItemSpec(1, "auto"));
+    grid.addRow(new gridModule.ItemSpec(1, "auto"));
 
     var defaultImageSource = imageSource.fromFile(__dirname + "/test.png");
 

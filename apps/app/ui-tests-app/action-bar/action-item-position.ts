@@ -1,6 +1,6 @@
 import { EventData } from "data/observable";
 import { Page } from "ui/page";
-import observable = require("data/observable");
+import * as observable from "data/observable";
 
 export function navigatingTo(args: EventData) {
     let page = <Page>args.object;

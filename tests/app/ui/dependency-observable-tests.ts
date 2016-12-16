@@ -5,13 +5,13 @@
 // This enables cascading values - e.g. default vs. inherited vs. local.
 // Load the module using the following code:
 // ``` JavaScript
-import dependencyObservableModule = require("ui/core/dependency-observable");
+import * as dependencyObservableModule from "ui/core/dependency-observable";
 // ```
 // </snippet>
 
-import TKUnit = require("../TKUnit");
-import types = require("utils/types");
-import observableModule = require("data/observable");
+import * as TKUnit from "../TKUnit";
+import * as types from "utils/types";
+import * as observableModule from "data/observable";
 
 var currentChangeData: dependencyObservableModule.PropertyChangeData;
 var propertyNameCount = 0;

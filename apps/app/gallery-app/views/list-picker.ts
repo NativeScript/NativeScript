@@ -1,5 +1,5 @@
-﻿import pages = require("ui/page");
-import observableModule = require("data/observable");
+﻿import * as pages from "ui/page";
+import * as observableModule from "data/observable";
 
 export function onPageLoaded(args: observableModule.EventData) {
     var page = <pages.Page>args.object;
