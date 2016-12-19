@@ -1,4 +1,4 @@
-import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty } from "./activity-indicator-common";
+import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility } from "./activity-indicator-common";
 import { ios } from "utils/utils";
 
 export * from "./activity-indicator-common";
@@ -33,11 +33,11 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         }
     }
 
-    get [visibilityProperty.native](): string {
-        return this.nativeView.hidden ? "collapse" : "visible";
+    get [visibilityProperty.native](): Visibility {
+        return this.nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
     }
-    set [visibilityProperty.native](value: string) {
-        this.nativeView.hidden = value !== "visible";
+    set [visibilityProperty.native](value: Visibility) {
+        this.nativeView.hidden = value !== Visibility.VISIBLE;
     }
 
     get [colorProperty.native](): UIColor {

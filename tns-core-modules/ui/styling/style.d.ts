@@ -1,5 +1,5 @@
 declare module "ui/styling/style" {
-    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat} from "ui/core/view";
+    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat, Visibility} from "ui/core/view";
     import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
     import { FontStyle, FontWeight } from "ui/styling/font";
 
@@ -84,7 +84,7 @@ declare module "ui/styling/style" {
 
         public zIndex: number;
         public opacity: number;
-        public visibility: "visible" | "hidden" | "collapse" | "collapsed";
+        public visibility: Visibility;
 
         public letterSpacing: number;
         public textAlignment: TextAlignment;

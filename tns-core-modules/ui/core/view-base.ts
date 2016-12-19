@@ -500,17 +500,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 }
 
-export const visibilityProperty = new CssProperty<Style, "visible" | "hidden" | "collapse" | "collapsed">({
-    name: "visibility", cssName: "visibility", defaultValue: "visible", affectsLayout: isIOS, valueChanged: (target, newValue) => {
-        if (newValue !== "visible" && newValue !== "collapse" && newValue !== "collapsed" && newValue !== "hidden") {
-            throw new Error(`Invalid visibility value: ${newValue}`);
-        }
-
-        target.view.isCollapsed = (newValue === "collapse" || newValue === "collapsed");
-    }
-});
-visibilityProperty.register(Style);
-
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
 

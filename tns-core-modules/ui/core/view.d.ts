@@ -283,7 +283,7 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the visibility of the view.
          */
-        visibility: "visible" | "hidden" | "collapse" | "collapsed";
+        visibility: Visibility;
 
         /**
          * Gets or sets the opacity style property.
@@ -773,5 +773,14 @@ declare module "ui/core/view" {
         export const NO_REPEAT: "no-repeat";
         export function isValid(value: any): boolean;
         export function parse(value: string): BackgroundRepeat;
+    }
+
+    export type Visibility = "visible" | "hidden" | "collapse";
+    export namespace Visibility {
+        export const VISIBLE: "visible";
+        export const HIDDEN: "hidden";
+        export const COLLAPSE: "collapse";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): Visibility;
     }
 }

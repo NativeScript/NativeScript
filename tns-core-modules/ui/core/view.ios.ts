@@ -7,7 +7,7 @@ import {
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background
+    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background, Visibility
 } from "./view-common";
 
 export * from "./view-common";
@@ -349,11 +349,21 @@ export class View extends ViewCommon {
         this._nativeView.userInteractionEnabled = value;
     }
 
-    get [visibilityProperty.native](): "visible" | "hidden" | "collapse" | "collapsed"{
-        return "visible"
+    get [visibilityProperty.native](): Visibility {
+        return this._nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
     }
-    set [visibilityProperty.native](value: "visible" | "hidden" | "collapse" | "collapsed") {
-        this._nativeView.hidden = (value !== "visible");
+    set [visibilityProperty.native](value: Visibility) {
+        switch (value) {
+            case Visibility.VISIBLE:
+                this._nativeView.hidden = false;
+                break;
+            case Visibility.HIDDEN:
+            case Visibility.COLLAPSE:
+                this._nativeView.hidden = true;
+                break;
+            default: 
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+        }
     }
 
     get [opacityProperty.native](): number {
