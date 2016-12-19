@@ -382,17 +382,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.marginBottom = value;
     }
 
-    get horizontalAlignment(): "left" | "center" | "middle" | "right" | "stretch" {
+    get horizontalAlignment(): HorizontalAlignment {
         return this.style.horizontalAlignment;
     }
-    set horizontalAlignment(value: "left" | "center" | "middle" | "right" | "stretch") {
+    set horizontalAlignment(value: HorizontalAlignment) {
         this.style.horizontalAlignment = value;
     }
 
-    get verticalAlignment(): "top" | "center" | "middle" | "bottom" | "stretch" {
+    get verticalAlignment(): VerticalAlignment {
         return this.style.verticalAlignment;
     }
-    set verticalAlignment(value: "top" | "center" | "middle" | "bottom" | "stretch") {
+    set verticalAlignment(value: VerticalAlignment) {
         this.style.verticalAlignment = value;
     }
 
@@ -595,9 +595,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let effectiveMarginTop = childStyle.effectiveMarginTop;
         let effectiveMarginBottom = childStyle.effectiveMarginBottom;
 
-        let vAlignment: string;
-        if (childStyle.effectiveHeight >= 0 && childStyle.verticalAlignment === "stretch") {
-            vAlignment = "center";
+        let vAlignment: VerticalAlignment;
+        if (childStyle.effectiveHeight >= 0 && childStyle.verticalAlignment === VerticalAlignment.STRETCH) {
+            vAlignment = VerticalAlignment.MIDDLE;
         }
         else {
             vAlignment = childStyle.verticalAlignment;
@@ -609,20 +609,19 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let marginRight = childStyle.marginRight;
 
         switch (vAlignment) {
-            case "top":
+            case VerticalAlignment.TOP:
                 childTop = top + effectiveMarginTop;
                 break;
 
-            case "center":
-            case "middle":
+            case VerticalAlignment.MIDDLE:
                 childTop = top + (bottom - top - childHeight + (effectiveMarginTop - effectiveMarginBottom)) / 2;
                 break;
 
-            case "bottom":
+            case VerticalAlignment.BOTTOM:
                 childTop = bottom - childHeight - effectiveMarginBottom;
                 break;
 
-            case "stretch":
+            case VerticalAlignment.STRETCH:
             default:
                 childTop = top + effectiveMarginTop;
                 childHeight = bottom - top - (effectiveMarginTop + effectiveMarginBottom);
@@ -632,29 +631,28 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let effectiveMarginLeft = childStyle.effectiveMarginLeft;
         let effectiveMarginRight = childStyle.effectiveMarginRight;
 
-        let hAlignment: string;
-        if (childStyle.effectiveWidth >= 0 && childStyle.horizontalAlignment === "stretch") {
-            hAlignment = "center";
+        let hAlignment: HorizontalAlignment;
+        if (childStyle.effectiveWidth >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.STRETCH) {
+            hAlignment = HorizontalAlignment.CENTER;
         }
         else {
             hAlignment = childStyle.horizontalAlignment;
         }
 
         switch (hAlignment) {
-            case "left":
+            case HorizontalAlignment.LEFT:
                 childLeft = left + effectiveMarginLeft;
                 break;
 
-            case "center":
-            case "middle":
+            case HorizontalAlignment.CENTER:
                 childLeft = left + (right - left - childWidth + (effectiveMarginLeft - effectiveMarginRight)) / 2;
                 break;
 
-            case "right":
+            case HorizontalAlignment.RIGHT:
                 childLeft = right - childWidth - effectiveMarginRight;
                 break;
 
-            case "stretch":
+            case HorizontalAlignment.STRETCH:
             default:
                 childLeft = left + effectiveMarginLeft;
                 childWidth = right - left - (effectiveMarginLeft + effectiveMarginRight);
@@ -692,8 +690,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             let horizontalMargins = style.effectiveMarginLeft + style.effectiveMarginRight;
             let verticalMargins = style.effectiveMarginTop + style.effectiveMarginRight;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, style.effectiveWidth, style.horizontalAlignment === "stretch");
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, style.effectiveHeight, style.verticalAlignment === "stretch");
+            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, style.effectiveWidth, style.horizontalAlignment === HorizontalAlignment.STRETCH);
+            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, style.effectiveHeight, style.verticalAlignment === VerticalAlignment.STRETCH);
 
             if (traceEnabled) {
                 traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
@@ -1229,11 +1227,31 @@ export const paddingBottomProperty = new CssProperty<Style, Length>({
 });
 paddingBottomProperty.register(Style);
 
-export const verticalAlignmentProperty = new CssProperty<Style, string>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: "stretch", affectsLayout: isIOS });
-verticalAlignmentProperty.register(Style);
+export type HorizontalAlignment = "left" | "center" | "right" | "stretch";
+export namespace HorizontalAlignment {
+    export const LEFT: "left" = "left";
+    export const CENTER: "center" = "center";
+    export const RIGHT: "right" = "right";
+    export const STRETCH: "stretch" = "stretch";
+    export const isValid = makeValidator<HorizontalAlignment>(LEFT, CENTER, RIGHT, STRETCH);
+    export const parse = makeParser(isValid, STRETCH);
+}
 
-export const horizontalAlignmentProperty = new CssProperty<Style, string>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: "stretch", affectsLayout: isIOS });
+export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignment>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: HorizontalAlignment.STRETCH, affectsLayout: isIOS, valueConverter: HorizontalAlignment.parse });
 horizontalAlignmentProperty.register(Style);
+
+export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch";
+export namespace VerticalAlignment {
+    export const TOP: "top" = "top";
+    export const MIDDLE: "middle" = "middle";
+    export const BOTTOM: "bottom" = "bottom";
+    export const STRETCH: "stretch" = "stretch";
+    export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH);
+    export const parse = makeParser(isValid, STRETCH);
+}
+
+export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignment>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: VerticalAlignment.STRETCH, affectsLayout: isIOS, valueConverter: VerticalAlignment.parse });
+verticalAlignmentProperty.register(Style);
 
 interface Thickness {
     top: string,

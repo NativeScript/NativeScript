@@ -6,7 +6,7 @@
     NavigationButton
 } from "ui/action-bar";
 import { Page } from "ui/page";
-import { View, ViewBase, Bindable, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/core/view";
+import { View, ViewBase, Bindable, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 
 export * from "ui/core/view";
 
@@ -62,8 +62,8 @@ export class ActionBarBase extends View implements ActionBarDefinition {
             this._titleView = value;
 
             if (this._titleView) {
-                this._titleView.style[horizontalAlignmentProperty.cssName] = "center";
-                this._titleView.style[verticalAlignmentProperty.cssName] = "center";
+                this._titleView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.CENTER;
+                this._titleView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.MIDDLE;
                 this._addView(this._titleView);
             }
 
@@ -304,8 +304,8 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
 
     private _addActionViewToActionBar() {
         if (this._actionView && !this._actionView._isAddedToNativeVisualTree && this._actionBar) {
-            this._actionView.style[horizontalAlignmentProperty.cssName] = "center";
-            this._actionView.style[verticalAlignmentProperty.cssName] = "center";
+            this._actionView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.CENTER;
+            this._actionView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.MIDDLE;
             this._actionBar._addView(this._actionView);
         }
     }

@@ -8,7 +8,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
     Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility, HorizontalAlignment, VerticalAlignment
 } from "./view-common";
 
 export * from "./view-common";
@@ -461,17 +461,117 @@ export class View extends ViewCommon {
         this.nativeView.setAlpha(value);
     }
 
-    get [horizontalAlignmentProperty.native](): string {
-        return org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
+    get [minWidthProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMinWidth(this.nativeView), unit: "px" };
     }
-    set [horizontalAlignmentProperty.native](value: string) {
+    set [minWidthProperty.native](value: Length) {
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
+        org.nativescript.widgets.ViewHelper.setMinWidth(this.nativeView, value.value * density);
+    }
+
+    get [minHeightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getMinHeight(this.nativeView), unit: "px" };
+    }
+    set [minHeightProperty.native](value: Length) {
+        let density = value.unit === "dip" ? layout.getDisplayDensity() : 1;
+        org.nativescript.widgets.ViewHelper.setMinHeight(this.nativeView, value.value * density);
+    }
+
+    get [widthProperty.native](): PercentLength {
+        return { value: org.nativescript.widgets.ViewHelper.getWidth(this.nativeView), unit: "px" };
+    }
+    set [widthProperty.native](value: PercentLength) {
+        let type = value.unit;
+        if (type === "%") {
+            org.nativescript.widgets.ViewHelper.setWidthPercent(this.nativeView, value.value);
+        } else if (type === "px") {
+            org.nativescript.widgets.ViewHelper.setWidth(this.nativeView, value.value);
+        } else {
+            org.nativescript.widgets.ViewHelper.setWidth(this.nativeView, value.value * layout.getDisplayDensity());
+        }
+    }
+
+    get [heightProperty.native](): PercentLength {
+        return { value: org.nativescript.widgets.ViewHelper.getHeight(this.nativeView), unit: "px" };
+    }
+    set [heightProperty.native](value: PercentLength) {
+        let type = value.unit;
+        if (type === "%") {
+            org.nativescript.widgets.ViewHelper.setHeightPercent(this.nativeView, value.value);
+        } else if (type === "px") {
+            org.nativescript.widgets.ViewHelper.setHeight(this.nativeView, value.value);
+        } else {
+            org.nativescript.widgets.ViewHelper.setHeight(this.nativeView, value.value * layout.getDisplayDensity());
+        }
+    }
+
+    get [marginLeftProperty.native](): PercentLength {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginLeft(this.nativeView), unit: "px" };
+    }
+    set [marginLeftProperty.native](value: PercentLength) {
+        let type = value.unit;
+        if (type === "%") {
+            org.nativescript.widgets.ViewHelper.setMarginLeftPercent(this.nativeView, value.value);
+        } else if (type === "px") {
+            org.nativescript.widgets.ViewHelper.setMarginLeft(this.nativeView, value.value);
+        } else {
+            org.nativescript.widgets.ViewHelper.setMarginLeft(this.nativeView, value.value * layout.getDisplayDensity());
+        }
+    }
+
+    get [marginTopProperty.native](): PercentLength {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginTop(this.nativeView), unit: "px" };
+    }
+    set [marginTopProperty.native](value: PercentLength) {
+        let type = value.unit;
+        if (type === "%") {
+            org.nativescript.widgets.ViewHelper.setMarginTopPercent(this.nativeView, value.value);
+        } else if (type === "px") {
+            org.nativescript.widgets.ViewHelper.setMarginTop(this.nativeView, value.value);
+        } else {
+            org.nativescript.widgets.ViewHelper.setMarginTop(this.nativeView, value.value * layout.getDisplayDensity());
+        }
+    }
+
+    get [marginRightProperty.native](): PercentLength {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginRight(this.nativeView), unit: "px" };
+    }
+    set [marginRightProperty.native](value: PercentLength) {
+        let type = value.unit;
+        if (type === "%") {
+            org.nativescript.widgets.ViewHelper.setMarginRightPercent(this.nativeView, value.value);
+        } else if (type === "px") {
+            org.nativescript.widgets.ViewHelper.setMarginRight(this.nativeView, value.value);
+        } else {
+            org.nativescript.widgets.ViewHelper.setMarginRight(this.nativeView, value.value * layout.getDisplayDensity());
+        }
+    }
+
+    get [marginBottomProperty.native](): PercentLength {
+        return { value: org.nativescript.widgets.ViewHelper.getMarginBottom(this.nativeView), unit: "px" };
+    }
+    set [marginBottomProperty.native](value: PercentLength) {
+        let type = value.unit;
+        if (type === "%") {
+            org.nativescript.widgets.ViewHelper.setMarginBottomPercent(this.nativeView, value.value);
+        } else if (type === "px") {
+            org.nativescript.widgets.ViewHelper.setMarginBottom(this.nativeView, value.value);
+        } else {
+            org.nativescript.widgets.ViewHelper.setMarginBottom(this.nativeView, value.value * layout.getDisplayDensity());
+        }
+    }
+
+    get [horizontalAlignmentProperty.native](): HorizontalAlignment {
+        return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
+    }
+    set [horizontalAlignmentProperty.native](value: HorizontalAlignment) {
         org.nativescript.widgets.ViewHelper.setHorizontalAlignment(this.nativeView, value);
     }
 
-    get [verticalAlignmentProperty.native](): string {
-        return org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
+    get [verticalAlignmentProperty.native](): VerticalAlignment {
+        return <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
     }
-    set [verticalAlignmentProperty.native](value: string) {
+    set [verticalAlignmentProperty.native](value: VerticalAlignment) {
         org.nativescript.widgets.ViewHelper.setVerticalAlignment(this.nativeView, value);
     }
 

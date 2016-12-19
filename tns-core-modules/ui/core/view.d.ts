@@ -273,12 +273,12 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
          */
-        horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
+        horizontalAlignment: HorizontalAlignment;
 
         /**
          * Gets or sets the alignment of this view within its parent along the Vertical axis.
          */
-        verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+        verticalAlignment: VerticalAlignment;
 
         /**
          * Gets or sets the visibility of the view.
@@ -764,8 +764,8 @@ declare module "ui/core/view" {
     export const paddingTopProperty: CssProperty<Style, Length>;
     export const paddingBottomProperty: CssProperty<Style, Length>;
 
-    export const verticalAlignmentProperty: CssProperty<Style, string>;
-    export const horizontalAlignmentProperty: CssProperty<Style, string>;
+    export const horizontalAlignmentProperty: CssProperty<Style, HorizontalAlignment>;
+    export const verticalAlignmentProperty: CssProperty<Style, VerticalAlignment>;
 
     export const fontSizeProperty: InheritedCssProperty<Style, number>;
     export const fontFamilyProperty: InheritedCssProperty<Style, string>;
@@ -792,5 +792,25 @@ declare module "ui/core/view" {
         export const COLLAPSE: "collapse";
         export function isValid(value: any): boolean;
         export function parse(value: string): Visibility;
+    }
+
+    export type HorizontalAlignment = "left" | "center" | "right" | "stretch";
+    export namespace HorizontalAlignment {
+        export const LEFT: "left";
+        export const CENTER: "center";
+        export const RIGHT: "right";
+        export const STRETCH: "stretch";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): HorizontalAlignment;
+    }
+
+    export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch";
+    export namespace VerticalAlignment {
+        export const TOP: "top";
+        export const MIDDLE: "middle";
+        export const BOTTOM: "bottom";
+        export const STRETCH: "stretch";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): VerticalAlignment;
     }
 }

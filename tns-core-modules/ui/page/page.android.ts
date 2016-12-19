@@ -1,4 +1,4 @@
-﻿import { View, PageBase, Color, actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
+﻿import { View, PageBase, Color, actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty, HorizontalAlignment, VerticalAlignment } from "./page-common";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
@@ -36,8 +36,8 @@ function ensureDialogFragmentClass() {
             dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
 
             // Hide actionBar and adjust alignment based on _fullscreen value.
-            this._owner.horizontalAlignment = this._fullscreen ? "stretch" : "center";
-            this._owner.verticalAlignment = this._fullscreen ? "stretch" : "center";
+            this._owner.horizontalAlignment = this._fullscreen ? HorizontalAlignment.STRETCH : HorizontalAlignment.CENTER;
+            this._owner.verticalAlignment = this._fullscreen ? VerticalAlignment.STRETCH : VerticalAlignment.MIDDLE;
             this._owner.actionBarHidden = true;
 
             dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());

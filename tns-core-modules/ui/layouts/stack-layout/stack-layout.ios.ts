@@ -1,4 +1,4 @@
-﻿import { StackLayoutBase, orientationProperty, View, layout } from "./stack-layout-common";
+﻿import { StackLayoutBase, orientationProperty, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
 
 export * from "./stack-layout-common";
 
@@ -104,17 +104,16 @@ export class StackLayout extends StackLayoutBase {
         let childRight = right - left - paddingRight;
 
         switch (this.verticalAlignment) {
-            case "center":
-            case "middle":
+            case VerticalAlignment.MIDDLE:
                 childTop = (bottom - top - this._totalLength) / 2 + paddingTop - paddingBottom;
                 break;
 
-            case "bottom":
+            case VerticalAlignment.BOTTOM:
                 childTop = bottom - top - this._totalLength + paddingTop - paddingBottom;
                 break;
 
-            case "top":
-            case "stretch":
+            case VerticalAlignment.TOP:
+            case VerticalAlignment.STRETCH:
             default:
                 childTop = paddingTop;
                 break;
@@ -141,16 +140,16 @@ export class StackLayout extends StackLayoutBase {
         let childBottom = bottom - top - paddingBottom;
 
         switch (this.horizontalAlignment) {
-            case "center":
+            case HorizontalAlignment.CENTER:
                 childLeft = (right - left - this._totalLength) / 2 + paddingLeft - paddingRight;
                 break;
 
-            case "right":
+            case HorizontalAlignment.RIGHT:
                 childLeft = right - left - this._totalLength + paddingLeft - paddingRight;
                 break;
 
-            case "left":
-            case "stretch":
+            case HorizontalAlignment.LEFT:
+            case HorizontalAlignment.STRETCH:
             default:
                 childLeft = paddingLeft;
                 break;
