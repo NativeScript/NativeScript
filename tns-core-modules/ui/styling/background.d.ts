@@ -1,6 +1,6 @@
 declare module "ui/styling/background" {
     import { ImageSource } from "image-source";
-    import { View, Color } from "ui/core/view";
+    import { View, Color, BackgroundRepeat } from "ui/core/view";
 
     export interface BackgroundDrawParams {
         repeatX: boolean;
@@ -15,7 +15,7 @@ declare module "ui/styling/background" {
         public static default: Background;
         public color: Color;
         public image: ImageSource;
-        public repeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+        public repeat: BackgroundRepeat;
         public position: string;
         public size: string;
         public borderTopColor: Color;
@@ -34,7 +34,7 @@ declare module "ui/styling/background" {
 
         public withColor(value: Color): Background;
         public withImage(value: ImageSource): Background;
-        public withRepeat(value: string): Background;
+        public withRepeat(value: BackgroundRepeat): Background;
         public withPosition(value: string): Background;
         public withSize(value: string): Background;
         public withBorderTopColor(value: Color): Background;
