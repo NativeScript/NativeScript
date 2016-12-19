@@ -1793,6 +1793,7 @@ export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "col
 colorProperty.register(Style);
 
 export const fontInternalProperty = new CssProperty<Style, Font>({ name: "fontInternal", cssName: "_fontInternal", defaultValue: Font.default });
+fontInternalProperty.register(Style);
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
     name: "fontFamily", cssName: "font-family", valueChanged: (target, newValue) => {

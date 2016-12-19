@@ -110,18 +110,22 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
+                const setNativeValue = this.nativeView && native in this;
                 if (reset) {
                     delete this[key];
-                } else {
-                    this[key] = unboxedValue;
-                }
-
-                if (this.nativeView) {
-                    if (!(defaultValueKey in this)) {
-                        this[defaultValueKey] = this[native];
+                    if (setNativeValue) {
+                        this[native] = this[defaultValueKey];
+                        delete this[defaultValueKey];
                     }
+                } else {
+                    this[key] = value;
+                    if (setNativeValue) {
+                        if (!(defaultValueKey in this)) {
+                            this[defaultValueKey] = this[native];
+                        }
 
-                    this[native] = unboxedValue;
+                        this[native] = value;
+                    }
                 }
 
                 if (valueChanged) {
@@ -227,18 +231,22 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
+                const setNativeValue = this.nativeView && native in this;
                 if (reset) {
                     delete this[key];
-                } else {
-                    this[key] = unboxedValue;
-                }
-
-                if (this.nativeView) {
-                    if (!(defaultValueKey in this)) {
-                        this[defaultValueKey] = this[native];
+                    if (setNativeValue) {
+                        this[native] = this[defaultValueKey];
+                        delete this[defaultValueKey];
                     }
+                } else {
+                    this[key] = value;
+                    if (setNativeValue) {
+                        if (!(defaultValueKey in this)) {
+                            this[defaultValueKey] = this[native];
+                        }
 
-                    this[native] = unboxedValue;
+                        this[native] = value;
+                    }
                 }
 
                 if (valueChanged) {
@@ -325,7 +333,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
             if (currentValue !== newValue) {
                 const reset = newValueSource === ValueSource.Default;
                 that.eachChild((child) => {
-                    const childValueSource = child[sourceKey];
+                    const childValueSource = child[sourceKey] || ValueSource.Default;
                     if (reset) {
                         if (childValueSource === ValueSource.Inherited) {
                             setFunc.call(child, unsetValue);
@@ -411,19 +419,23 @@ export class CssProperty<T extends Style, U> {
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
 
             if (changed) {
+                const view = this.view;
+                const setNativeValue = view.nativeView && native in view;
                 if (reset) {
                     delete this[key];
+                    if (setNativeValue) {
+                        view[native] = this[defaultValueKey];
+                        delete this[defaultValueKey];
+                    }
                 } else {
                     this[key] = value;
-                }
+                    if (setNativeValue) {
+                        if (!(defaultValueKey in this)) {
+                            this[defaultValueKey] = view[native];
+                        }
 
-                const view = this.view;
-                if (view.nativeView) {
-                    if (!(defaultValueKey in this)) {
-                        this[defaultValueKey] = view[native];
+                        view[native] = value;
                     }
-
-                    view[native] = value;
                 }
 
                 if (valueChanged) {
@@ -468,19 +480,23 @@ export class CssProperty<T extends Style, U> {
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
 
             if (changed) {
+                const view = this.view;
+                const setNativeValue = view.nativeView && native in view;
                 if (reset) {
                     delete this[key];
+                    if (setNativeValue) {
+                        view[native] = this[defaultValueKey];
+                        delete this[defaultValueKey];
+                    }
                 } else {
                     this[key] = value;
-                }
+                    if (setNativeValue) {
+                        if (!(defaultValueKey in this)) {
+                            this[defaultValueKey] = view[native];
+                        }
 
-                const view = this.view;
-                if (view.nativeView) {
-                    if (!(defaultValueKey in this)) {
-                        this[defaultValueKey] = view[native];
+                        view[native] = value;
                     }
-
-                    view[native] = value;
                 }
 
                 if (valueChanged) {
@@ -553,10 +569,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const valueChanged = options.valueChanged;
         const valueConverter = options.valueConverter;
 
-        const dependentProperty = options.dependentProperty;
-        const dependentPropertyKey = dependentProperty ? dependentProperty.key : undefined;
-        const dependentPropertyNativeKey = dependentProperty ? dependentProperty.native : undefined;
-
         const setFunc = (valueSource: ValueSource) => function (this: T, value: any): void {
             const reset = value === unsetValue;
             const currentValueSource: number = this[sourceKey] || ValueSource.Default;
@@ -599,22 +611,22 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, newValue) : currentValue !== newValue;
 
             if (changed) {
+                const view = this.view;
+                const setNativeValue = view.nativeView && native in view;
                 if (reset) {
                     delete this[key];
+                    if (setNativeValue) {
+                        view[native] = this[defaultValueKey];
+                        delete this[defaultValueKey];
+                    }
                 } else {
                     this[key] = newValue;
-                }
+                    if (setNativeValue) {
+                        if (!(defaultValueKey in this)) {
+                            this[defaultValueKey] = view[native];
+                        }
 
-                const nativeView = view.nativeView;
-                if (nativeView) {
-                    if (!(defaultValueKey in this)) {
-                        this[defaultValueKey] = view[native];
-                    }
-
-                    view[native] = value;
-                    if (dependentPropertyNativeKey) {
-                        // Call the native setter for dependent property. 
-                        view[dependentPropertyNativeKey] = this[dependentPropertyKey];
+                        view[native] = newValue;
                     }
                 }
 
@@ -806,7 +818,7 @@ export function applyNativeSetters(view: ViewBase): void {
         }
 
         const native = property.native;
-        if (view[native]) {
+        if (native in view) {
             const defaultValueKey = property.defaultValueKey;
             if (!(defaultValueKey in view)) {
                 view[defaultValueKey] = view[native];
@@ -826,7 +838,7 @@ export function applyNativeSetters(view: ViewBase): void {
         }
 
         const native = property.native;
-        if (view[native]) {
+        if (native in view) {
             const defaultValueKey = property.defaultValueKey;
             if (!(defaultValueKey in style)) {
                 style[defaultValueKey] = view[native];
@@ -865,7 +877,7 @@ export function resetStyleProperties(style: Style): void {
         }
 
         const native = property.native;
-        if (view[native]) {
+        if (native in view) {
             view[native] = style[property.defaultValueKey];
             delete style[property.defaultValueKey];
         }
@@ -878,6 +890,10 @@ export function resetStyleProperties(style: Style): void {
 export function propagateInheritedProperties(view: ViewBase): void {
     const inheritablePropertyValues = inheritablePropertyValuesOn(view);
     const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(view.style);
+    if (inheritablePropertyValues.length === 0 && inheritableCssPropertyValues.length === 0) {
+        return;
+    }
+
     view.eachChild((child) => {
         for (let pair of inheritablePropertyValues) {
             const prop = pair.property;
@@ -900,4 +916,15 @@ export function propagateInheritedProperties(view: ViewBase): void {
             return true;
         }
     });
+}
+
+export function makeValidator<T>(...values: T[]): (value: any) => value is T {
+    const set = new Set(values);
+    return (value: any): value is T => set.has(value);
+}
+export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
+    return value => {
+        const lower = value && value.toLowerCase();
+        return isValid(lower) ? lower : def;
+    }
 }

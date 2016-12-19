@@ -1,5 +1,5 @@
-﻿import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser} from "ui/core/view";
+import { TextBase as TextBaseDefinition } from "ui/text-base";
+import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser } from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
 import { FormattedString, FormattedStringView } from "text/formatted-string";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
@@ -7,13 +7,9 @@ import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-even
 export { FormattedString };
 export * from "ui/core/view";
 
-export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
+const CHILD_SPAN = "Span";
 
-    constructor() {
-        super();
-        // NOTE: this was added so that FormattedString.addFormattedStringToView does not instantiate it.
-        this.formattedText = new FormattedString();
-    }
+export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
 
     public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
 
@@ -69,6 +65,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
+        if (!this.formattedText) {
+            this.formattedText = new FormattedString();
+        }
+
         FormattedString.addFormattedStringToView(this, name, value);
     }
 
@@ -107,7 +107,7 @@ export namespace TextAlignment {
     export const parse = makeParser(isValid, undefined);
 }
 
-export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({name: "textAlignment", cssName: "text-align", valueConverter: TextAlignment.parse});
+export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({ name: "textAlignment", cssName: "text-align", valueConverter: TextAlignment.parse });
 textAlignmentProperty.register(Style);
 
 //TextDecoration
@@ -121,7 +121,9 @@ export namespace TextDecoration {
     export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
     export const parse = makeParser(isValid, NONE);
 }
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse});
+export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
+    name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse
+});
 textDecorationProperty.register(Style);
 
 //TextTransform
@@ -130,11 +132,11 @@ export namespace TextTransform {
     export const NONE: "none" = "none";
     export const CAPITALIZE: "capitalize" = "capitalize";
     export const UPPERCASE: "uppercase" = "uppercase";
-    export const LOWERCASE: "lowercase" ="lowercase";
+    export const LOWERCASE: "lowercase" = "lowercase";
     export const isValid = makeValidator<TextTransform>(NONE, CAPITALIZE, UPPERCASE, LOWERCASE);
     export const parse = makeParser(isValid, NONE);
 }
-export const textTransformProperty = new CssProperty<Style, TextTransform>({name: "textTransform", cssName: "text-transform", defaultValue: TextTransform.NONE, valueConverter: TextTransform.parse});
+export const textTransformProperty = new CssProperty<Style, TextTransform>({ name: "textTransform", cssName: "text-transform", defaultValue: TextTransform.NONE, valueConverter: TextTransform.parse });
 textTransformProperty.register(Style);
 
 //Whitespace
@@ -146,7 +148,7 @@ export namespace WhiteSpace {
     export const parse = makeParser(isValid, NORMAL);
 }
 
-export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({name: "whiteSpace", cssName: "white-space", defaultValue: WhiteSpace.NORMAL, valueConverter: WhiteSpace.parse});
+export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({ name: "whiteSpace", cssName: "white-space", defaultValue: WhiteSpace.NORMAL, valueConverter: WhiteSpace.parse });
 whiteSpaceProperty.register(Style);
 
 export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: (v: string) => parseFloat(v) });

@@ -1,5 +1,5 @@
 ﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from "ui/layouts/grid-layout";
-import { LayoutBase, View, Bindable, Property } from "ui/layouts/layout-base";
+import { LayoutBase, View, Observable, Property } from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 
@@ -68,7 +68,7 @@ function parseAndAddItemSpecs(value: string, func: (itemSpec: ItemSpec) => void)
     }
 }
 
-export class ItemSpec extends Bindable implements ItemSpecDefinition {
+export class ItemSpec extends Observable implements ItemSpecDefinition {
     private _value: number;
     private _unitType: "pixel" | "star" | "auto";
 

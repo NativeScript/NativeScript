@@ -129,9 +129,6 @@ declare module "ui/core/view-base" {
     export const idProperty: Property<ViewBase, string>;
     export const classNameProperty: Property<ViewBase, string>;
     export const bindingContextProperty: InheritedProperty<ViewBase, any>;
-
-    export function makeValidator<T>(...values: T[]): (value: any) => value is T;
-    export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T;
 }
 
 declare module "ui/core/properties" {
@@ -211,4 +208,7 @@ declare module "ui/core/properties" {
 
     export function applyNativeSetters(view: ViewBase): void;
     export function resetStyleProperties(style: Style): void;
+
+    export function makeValidator<T>(...values: T[]): (value: any) => value is T;
+    export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T;
 }

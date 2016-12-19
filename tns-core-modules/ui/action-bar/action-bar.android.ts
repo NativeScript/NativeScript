@@ -73,11 +73,29 @@ export class NavigationButton extends ActionItemBase {
 
 }
 
+@Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
+class MenuItemClickListener extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
+    constructor(public owner: WeakRef<ActionBar>) {
+        super();
+        return global.__native(this);
+    }
+
+    onMenuItemClick(item: android.view.IMenuItem): boolean {
+        let owner = this.owner.get();
+        if (!owner) {
+            return false;
+        }
+
+        let itemId = item.getItemId();
+        return owner._onAndroidItemSelected(itemId);
+    }
+}
+
 export class ActionBar extends ActionBarBase {
     private _appResources: android.content.res.Resources;
     private _android: AndroidActionBarSettings;
-
-    nativeView: android.support.v7.widget.Toolbar;
+    private _toolbar: android.support.v7.widget.Toolbar;
+    private _menuItemClickListener: android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 
     constructor() {
         super();
@@ -93,19 +111,14 @@ export class ActionBar extends ActionBarBase {
         throw new Error("ActionBar.android is read-only");
     }
 
+    get _nativeView(): android.support.v7.widget.Toolbar {
+        return this._toolbar;
+    }
+
     public _createUI() {
-        this.nativeView = new android.support.v7.widget.Toolbar(this._context);
-        let ownerRef = new WeakRef(this);
-        this.nativeView.setOnMenuItemClickListener(new android.support.v7.widget.Toolbar.OnMenuItemClickListener({
-            onMenuItemClick: function (item: android.view.IMenuItem): boolean {
-                let ownerValue = ownerRef.get();
-                if (!ownerValue) {
-                    return false;
-                }
-                let itemId = item.getItemId();
-                return ownerValue._onAndroidItemSelected(itemId);
-            }
-        }));
+        this._toolbar = new android.support.v7.widget.Toolbar(this._context);
+        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(new WeakRef(this));
+        this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
     }
 
     public onLoaded() {
