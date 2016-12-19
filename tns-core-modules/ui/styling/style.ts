@@ -1,5 +1,5 @@
 import { Style as StyleDefinition } from "ui/styling/style";
-import { Length, PercentLength, Color, Background, Font, ViewBase } from "ui/core/view";
+import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat } from "ui/core/view";
 import { Observable } from "data/observable";
 import { resetStyleProperties } from "ui/core/properties";
 
@@ -35,7 +35,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public backgroundColor: Color;
     public backgroundImage: string;
-    public backgroundRepeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+    public backgroundRepeat: BackgroundRepeat;
     public backgroundSize: string;
     public backgroundPosition: string;
 

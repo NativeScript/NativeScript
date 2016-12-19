@@ -712,7 +712,7 @@ declare module "ui/core/view" {
 
     export const backgroundColorProperty: CssProperty<Style, Color>;
     export const backgroundImageProperty: CssProperty<Style, string>;
-    export const backgroundRepeatProperty: CssProperty<Style, string>;
+    export const backgroundRepeatProperty: CssProperty<Style, BackgroundRepeat>;
     export const backgroundSizeProperty: CssProperty<Style, string>;
     export const backgroundPositionProperty: CssProperty<Style, string>;
 
@@ -764,4 +764,14 @@ declare module "ui/core/view" {
 
     export const backgroundInternalProperty: CssProperty<Style, Background>;
     export const fontInternalProperty: InheritedCssProperty<Style, Font>;
+
+    export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+    export namespace BackgroundRepeat {
+        export const REPEAT: "repeat";
+        export const REPEAT_X: "repeat-x";
+        export const REPEAT_Y: "repeat-y";
+        export const NO_REPEAT: "no-repeat";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): BackgroundRepeat;
+    }
 }

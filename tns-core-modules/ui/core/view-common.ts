@@ -6,7 +6,7 @@ import { Background } from "ui/styling/background";
 import {
     ViewBase, getEventOrGestureName, Observable, EventData, Style,
     Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty,
-    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, printUnregisteredProperties
+    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, printUnregisteredProperties, makeParser, makeValidator
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
@@ -1464,8 +1464,18 @@ export const backgroundColorProperty = new CssProperty<Style, Color>({
 });
 backgroundColorProperty.register(Style);
 
-export const backgroundRepeatProperty = new CssProperty<Style, string>({
-    name: "backgroundRepeat", cssName: "background-repeat", valueChanged: (target, newValue) => {
+export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+export namespace BackgroundRepeat {
+    export const REPEAT: "repeat" = "repeat";
+    export const REPEAT_X: "repeat-x" = "repeat-x";
+    export const REPEAT_Y: "repeat-y" = "repeat-y";
+    export const NO_REPEAT: "no-repeat" = "no-repeat";
+    export const isValid = makeValidator<BackgroundRepeat>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
+    export const parse = makeParser(isValid, undefined);
+}
+
+export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
+    name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse, valueChanged: (target, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withRepeat(newValue);
     }

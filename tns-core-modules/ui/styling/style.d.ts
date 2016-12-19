@@ -1,5 +1,5 @@
 declare module "ui/styling/style" {
-    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable } from "ui/core/view";
+    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat} from "ui/core/view";
     import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
     import { FontStyle, FontWeight } from "ui/styling/font";
 
@@ -56,7 +56,7 @@ declare module "ui/styling/style" {
 
         public backgroundColor: Color;
         public backgroundImage: string;
-        public backgroundRepeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";;
+        public backgroundRepeat: BackgroundRepeat;
         public backgroundSize: string;
         public backgroundPosition: string;
 

@@ -1,5 +1,5 @@
 import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
-import { Color, layout } from "ui/core/view";
+import { Color, layout, BackgroundRepeat } from "ui/core/view";
 import { ImageSource } from "image-source";
 import cssValue = require("css-value");
 
@@ -17,7 +17,7 @@ export class Background implements BackgroundDefinition {
 
     public color: Color;
     public image: ImageSource;
-    public repeat: "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
+    public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
     public borderTopColor: Color;
@@ -71,7 +71,7 @@ export class Background implements BackgroundDefinition {
         return clone;
     }
 
-    public withRepeat(value: "repeat" | "repeat-x" | "repeat-y" | "no-repeat"): Background {
+    public withRepeat(value: BackgroundRepeat): Background {
         let clone = this.clone();
         clone.repeat = value;
         return clone;
