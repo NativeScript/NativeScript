@@ -1,10 +1,10 @@
-﻿import PageModule = require("ui/page");
-import TKUnit = require("../../TKUnit");
-import LabelModule = require("ui/label");
-import PageTestCommon = require("./page-tests-common");
-import helper = require("../helper");
-import frame = require("ui/frame");
-import types = require("utils/types");
+﻿import * as PageModule from "ui/page";
+import * as TKUnit from "../../TKUnit";
+import * as LabelModule from "ui/label";
+import * as PageTestCommon from "./page-tests-common";
+import * as helper from "../helper";
+import * as frame from "ui/frame";
+import * as types from "utils/types";
 
 global.moduleMerge(PageTestCommon, exports);
 

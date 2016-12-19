@@ -1,5 +1,5 @@
-import http = require("http");
-import types = require("utils/types");
+import * as http from "http";
+import * as types from "utils/types";
 
 module XMLHttpRequestResponseType {
     export var empty = "";

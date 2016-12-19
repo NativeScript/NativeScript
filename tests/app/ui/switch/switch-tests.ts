@@ -1,12 +1,12 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import bindable = require("ui/core/bindable");
-import observable = require("data/observable");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as bindable from "ui/core/bindable";
+import * as observable from "data/observable";
+import * as color from "color";
+import * as platform from "platform";
 // >> article-require-switch
-import switchModule = require("ui/switch");
+import * as switchModule from "ui/switch";
 // << article-require-switch
 
 // ### Binding the Switch checked property and Button isEanbled property to a observable view-model property.

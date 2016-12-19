@@ -1,6 +1,6 @@
-﻿import pages = require("ui/page");
-import button = require("ui/button");
-import panelModule = require("ui/layouts/stack-layout");
+﻿import * as pages from "ui/page";
+import * as button from "ui/button";
+import * as panelModule from "ui/layouts/stack-layout";
 
 export function createPage() {
 

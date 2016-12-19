@@ -1,14 +1,14 @@
-import btns = require("ui/button");
-import pages = require("ui/page");
-import stacks = require("ui/layouts/stack-layout");
-import scroll = require("ui/scroll-view");
-import textView = require("ui/text-view");
-import labels = require("ui/label");
-import trace = require("trace");
-import gridModule = require("ui/layouts/grid-layout");
-import sliders = require("ui/slider");
-import switches = require("ui/switch");
-import bindable = require("ui/core/bindable");
+import * as btns from "ui/button";
+import * as pages from "ui/page";
+import * as stacks from "ui/layouts/stack-layout";
+import * as scroll from "ui/scroll-view";
+import * as textView from "ui/text-view";
+import * as labels from "ui/label";
+import * as trace from "trace";
+import * as gridModule from "ui/layouts/grid-layout";
+import * as sliders from "ui/slider";
+import * as switches from "ui/switch";
+import * as bindable from "ui/core/bindable";
 
 trace.enable();
 //trace.setCategories(trace.categories.Style + " ," + trace.categories.Binding);

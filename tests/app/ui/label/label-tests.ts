@@ -1,20 +1,19 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import testModule = require("../../ui-test");
-import styling = require("ui/styling");
+import * as testModule from "../../ui-test";
 
 //>> label-require
-import LabelModule = require("ui/label");
+import * as LabelModule from "ui/label";
 // << label-require
 
-import types = require("utils/types");
-import colorModule = require("color");
-import utils = require("utils/utils");
-import observableModule = require("data/observable");
-import bindable = require("ui/core/bindable");
-import textBase = require("ui/text-base");
-import enums = require("ui/enums");
-import labelTestsNative = require("./label-tests-native");
-import fs = require("file-system");
+import * as types from "utils/types";
+import * as colorModule from "color";
+import * as utils from "utils/utils";
+import * as observableModule from "data/observable";
+import * as bindable from "ui/core/bindable";
+import * as textBase from "ui/text-base";
+import * as enums from "ui/enums";
+import * as labelTestsNative from "./label-tests-native";
+import * as fs from "file-system";
 
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
@@ -22,7 +21,7 @@ import {isIOS} from "platform";
 import {Label} from "ui/label";
 import {LayoutBase} from  "ui/layouts/layout-base";
 import * as helper from "../helper";
-import viewModule = require("ui/core/view");
+import * as viewModule from "ui/core/view";
 import {Page} from "ui/page";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
@@ -58,9 +57,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         var label = this.testView;
         var expectedValue = "Expected Value";
         label.text = expectedValue;
-
-        var actual = label._getValue(textBase.TextBase.textProperty);
-        TKUnit.assertEqual(actual, expectedValue, "Text not equal");
+        TKUnit.assertEqual(label.text, expectedValue, "Text not equal");
     }
 
     public test_Set_Text_Native() {
@@ -119,7 +116,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         var expectedValue = new colorModule.Color("Red");
         label.backgroundColor = expectedValue;
 
-        var actual = label.style._getValue(styling.properties.backgroundColorProperty);
+        var actual = label.style.backgroundColor;
         TKUnit.assertEqual(actual, expectedValue, "BackgroundColor not equal");
     }
 
@@ -435,7 +432,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         TKUnit.assertEqual(label.text, secondExpValue);
     }
 
-    private expectedTextAlignment = enums.TextAlignment.right;
+    private expectedTextAlignment: "right" = "right";
     public testLocalTextAlignmentFromCss() {
         var label = this.testView;
         this.testPage.css = "label { text-align: " + this.expectedTextAlignment + "; }";

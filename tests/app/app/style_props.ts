@@ -1,10 +1,10 @@
-﻿import style = require("ui/styling/style");
+﻿import * as style from "ui/styling/style";
 import {PropertyMetadata, PropertyMetadataSettings} from "ui/core/dependency-observable";
-import styleProperty = require("ui/styling/style-property");
-import view = require("ui/core/view");
-import buttonModule = require("ui/button");
-import pages = require("ui/page");
-import stackLayoutDef = require("ui/layouts/stack-layout");
+import * as styleProperty from "ui/styling/style-property";
+import * as view from "ui/core/view";
+import * as buttonModule from "ui/button";
+import * as pages from "ui/page";
+import * as stackLayoutDef from "ui/layouts/stack-layout";
 import {isAndroid} from "platform";
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).

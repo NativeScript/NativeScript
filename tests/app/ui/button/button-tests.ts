@@ -1,20 +1,20 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import pagesModule = require("ui/page");
-import buttonTestsNative = require("./button-tests-native");
-import colorModule = require("color");
-import enums = require("ui/enums");
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as pagesModule from "ui/page";
+import * as buttonTestsNative from "./button-tests-native";
+import * as colorModule from "color";
+import * as enums from "ui/enums";
+import * as formattedStringModule from "text/formatted-string";
+import * as spanModule from "text/span";
 
 // >> button-require
-import buttonModule = require("ui/button");
+import * as buttonModule from "ui/button";
 // << button-require
 
 // >> button-require-others
-import bindable = require("ui/core/bindable");
-import observable = require("data/observable");
+import * as bindable from "ui/core/bindable";
+import * as observable from "data/observable";
 // << button-require-others
 
 export var testSetText = function () {

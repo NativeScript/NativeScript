@@ -1,5 +1,5 @@
 ﻿declare module "utils/utils" {
-    import colorModule = require("color");
+    import * as colorModule from "color";
 
     export var RESOURCE_PREFIX: string;
 

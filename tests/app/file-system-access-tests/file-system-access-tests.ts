@@ -1,5 +1,5 @@
-﻿import TKUnit = require("../TKUnit");
-import fs = require("file-system");
+﻿import * as TKUnit from "../TKUnit";
+import * as fs from "file-system";
 
 export var test_UTF8_BOM_is_not_returned = function () {
     var actualResult: string;

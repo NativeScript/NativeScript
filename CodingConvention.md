@@ -696,7 +696,7 @@ Sometimes we need to explicitly check for a type. In such cases use the built-in
 
 *Right:*
 ~~~ {.javascript}
-import types = require("utils/types");
+import * as types from "utils/types";
 var myVar;
 
 if(types.isString(myVar)) {

@@ -1,6 +1,6 @@
-import definition = require("console");
-import trace = require("trace");
-import platform = require("platform");
+import * as definition from "console";
+import * as trace from "trace";
+import * as platform from "platform";
 
 export class Console implements definition.Console {
     private TAG: string = "JS";

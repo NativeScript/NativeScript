@@ -1,8 +1,8 @@
-﻿import TKUnit = require("../../TKUnit");
-import view = require("ui/core/view");
-import page = require("ui/page");
-import types = require("utils/types");
-import helper = require("../helper");
+﻿import * as TKUnit from "../../TKUnit";
+import * as view from "ui/core/view";
+import * as page from "ui/page";
+import * as types from "utils/types";
+import * as helper from "../helper";
 
 function assertInState(view: view.View, state: string, knownStates: string[]): void {
     let pseudo = view.cssPseudoClasses;

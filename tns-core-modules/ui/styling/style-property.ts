@@ -1,6 +1,6 @@
-﻿// import definition = require("ui/styling/style-property");
-// import types = require("utils/types");
-// import observable = require("ui/core/dependency-observable");
+﻿// import * as definition from "ui/styling/style-property";
+// import * as types from "utils/types";
+// import * as observable from "ui/core/dependency-observable";
 
 // var propertiesByName = {};
 // var propertiesByCssName = {};

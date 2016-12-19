@@ -1,6 +1,6 @@
 ﻿declare module "ui/enums" {
 
-    import animationModule = require("ui/animation");
+    import * as animationModule from "ui/animation";
 
     /**
      * Represents a soft keyboard flavor.

@@ -1,11 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
-import testModule = require("../../ui-test");
-import timePickerTestsNative = require("./time-picker-tests-native");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as testModule from "../../ui-test";
+import * as timePickerTestsNative from "./time-picker-tests-native";
+import * as color from "color";
+import * as platform from "platform";
 
 // >> require-time-picker
-import timePickerModule = require("ui/time-picker");
+import * as timePickerModule from "ui/time-picker";
 // << require-time-picker
 
 function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: number, expectedMinute) {

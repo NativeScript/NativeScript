@@ -1,5 +1,5 @@
-﻿import TKUnit = require("./TKUnit");
-import timer = require("timer");
+﻿import * as TKUnit from "./TKUnit";
+import * as timer from "timer";
 
 // >> timer-require
 // require("globals");

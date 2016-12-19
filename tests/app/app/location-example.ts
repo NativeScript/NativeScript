@@ -1,10 +1,10 @@
-﻿import pages = require("ui/page");
-import locationModule = require("location");
-import dialogsModule = require("ui/dialogs");
-import platformModule = require("platform");
-import textViewModule = require("ui/text-view");
-import observable = require("data/observable");
-import appModule = require("application");
+﻿import * as pages from "ui/page";
+import * as locationModule from "location";
+import * as dialogsModule from "ui/dialogs";
+import * as platformModule from "platform";
+import * as textViewModule from "ui/text-view";
+import * as observable from "data/observable";
+import * as appModule from "application";
 
 var locationManager = new locationModule.LocationManager();
 

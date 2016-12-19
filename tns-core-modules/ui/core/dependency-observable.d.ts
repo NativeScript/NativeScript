@@ -7,7 +7,8 @@ declare module "ui/core/dependency-observable" {
     /**
      * Value specifing that Property value should be reset. Used when bindingContext on bound property is creared/null.
      */
-    export const unsetValue: Object;
+    export const unsetValue: any;
+
     /**
      * Interface used by Propery 'defaultValueGetter' function to specify if the default value returned by the native instance can be cached or not.
      * One example is - android.widget.Button background. It is state drawable so it cannot be reused/cached.

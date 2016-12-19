@@ -1,7 +1,7 @@
-import color = require("color");
-import page = require("ui/page");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+import * as color from "color";
+import * as page from "ui/page";
+import * as style from "ui/styling/style";
+import * as view from "ui/core/view";
 
 export function applyTap(args) {
     let page = <page.Page>(<view.View>args.object).page;
@@ -68,5 +68,5 @@ function reset(page: page.Page) {
     page.css = "";
     page.actionBarHidden = false;
     page.backgroundSpanUnderStatusBar = false;
-    page.actionBar.style._resetValue(style.backgroundColorProperty);
+    page.actionBar.style.backgroundColor = unsetValue;
 } 

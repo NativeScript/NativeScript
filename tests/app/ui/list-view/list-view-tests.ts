@@ -1,22 +1,22 @@
-﻿import testModule = require("../../ui-test");
-import TKUnit = require("../../TKUnit");
-import app = require("application");
-import observable = require("data/observable");
-import types = require("utils/types");
-import platform = require("platform");
-import utils = require("utils/utils");
+﻿import * as testModule from "../../ui-test";
+import * as TKUnit from "../../TKUnit";
+import * as app from "application";
+import * as observable from "data/observable";
+import * as types from "utils/types";
+import * as platform from "platform";
+import * as utils from "utils/utils";
 import { Label } from "ui/label";
-import helper = require("../helper");
+import * as helper from "../helper";
 import { Page } from "ui/page";
 import { View, KeyedTemplate } from "ui/core/view";
 
 // >> article-require-listview-module
-import listViewModule = require("ui/list-view");
+import * as listViewModule from "ui/list-view";
 // << article-require-listview-module
 
 // >> article-require-modules-listview
-import observableArray = require("data/observable-array");
-import labelModule = require("ui/label");
+import * as observableArray from "data/observable-array";
+import * as labelModule from "ui/label";
 // << article-require-modules-listview
 
 // >> article-item-tap

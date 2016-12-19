@@ -1,6 +1,6 @@
-﻿import observable = require("data/observable");
-import types = require("utils/types");
-import virtualArrayDef = require("data/virtual-array");
+﻿import * as observable from "data/observable";
+import * as types from "utils/types";
+import * as virtualArrayDef from "data/virtual-array";
 
 var CHANGE = "change", UPDATE = "update", DELETE = "delete", ADD = "add";
 

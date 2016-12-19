@@ -1,7 +1,7 @@
-﻿import textViewModule = require("ui/text-view");
-import colorModule = require("color");
-import utilsModule = require("utils/utils");
-import enums = require("ui/enums");
+﻿import * as textViewModule from "ui/text-view";
+import * as colorModule from "color";
+import * as utilsModule from "utils/utils";
+import * as enums from "ui/enums";
 
 export function getNativeText(textView: textViewModule.TextView): string {
     return textView.ios.text;

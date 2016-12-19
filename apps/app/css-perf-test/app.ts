@@ -1,4 +1,4 @@
-﻿import application = require("application");
+﻿import * as application from "application";
 declare var CACurrentMediaTime;
 
 global.time = function(): number {

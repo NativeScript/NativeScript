@@ -1,5 +1,5 @@
-﻿import observable = require("data/observable");
-import pageModule = require("ui/page");
+﻿import * as observable from "data/observable";
+import * as pageModule from "ui/page";
 
 function loadViewModel() {
     viewModel.set("testProperty", "Alabala");

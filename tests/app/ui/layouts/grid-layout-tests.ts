@@ -1,14 +1,15 @@
-﻿import {Page} from "ui/page";
-import {GridLayout, ItemSpec, GridUnitType} from "ui/layouts/grid-layout";
-import {Button} from "ui/button";
-import TKUnit = require("../../TKUnit");
-import view = require("ui/core/view");
-import builder = require("ui/builder");
-import enums = require("ui/enums");
-import testModule = require("../../ui-test");
-import layoutHelper = require("./layout-helper");
-import platform = require("platform");
-import commonTests = require("./common-layout-tests");
+﻿import { Page } from "ui/page";
+import { GridLayout, ItemSpec } from "ui/layouts/grid-layout";
+import { Button } from "ui/button";
+import * as TKUnit from "../../TKUnit";
+import * as view from "ui/core/view";
+import { unsetValue } from "ui/core/view";
+import * as builder from "ui/builder";
+import * as enums from "ui/enums";
+import * as testModule from "../../ui-test";
+import * as layoutHelper from "./layout-helper";
+import * as platform from "platform";
+import * as commonTests from "./common-layout-tests";
 
 var DELTA = 1;
 
@@ -51,15 +52,15 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     private prepareGridLayout(wait?: boolean) {
 
-        this.testView.addRow(new ItemSpec(1, GridUnitType.star));
-        this.testView.addRow(new ItemSpec(2, GridUnitType.star));
-        this.testView.addRow(new ItemSpec(layoutHelper.dp(50), GridUnitType.pixel));
-        this.testView.addRow(new ItemSpec(50, GridUnitType.auto));
+        this.testView.addRow(new ItemSpec(1, "star"));
+        this.testView.addRow(new ItemSpec(2, "star"));
+        this.testView.addRow(new ItemSpec(layoutHelper.dp(50), "pixel"));
+        this.testView.addRow(new ItemSpec(50, "auto"));
 
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
-        this.testView.addColumn(new ItemSpec(2, GridUnitType.star));
-        this.testView.addColumn(new ItemSpec(layoutHelper.dp(50), GridUnitType.pixel));
-        this.testView.addColumn(new ItemSpec(50, GridUnitType.auto));
+        this.testView.addColumn(new ItemSpec(1, "star"));
+        this.testView.addColumn(new ItemSpec(2, "star"));
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(50), "pixel"));
+        this.testView.addColumn(new ItemSpec(50, "auto"));
 
         for (var r = 0; r < 4; r++) {
             for (var c = 0; c < 4; c++) {
@@ -68,19 +69,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
                 GridLayout.setColumn(btn, c);
                 GridLayout.setRow(btn, r);
                 if (c === 3) {
-                    btn.width = layoutHelper.dp(100); // Auto column should take 100px for this test.
+                    btn.width = { value: 100, unit: "dip" }; // Auto column should take 100px for this test.
                 }
 
                 if (r === 3) {
-                    btn.height = layoutHelper.dp(100); // Auto row should take 100px for this test.
+                    btn.height = { value: 100, unit: "dip" }; // Auto row should take 100px for this test.
                 }
 
                 this.testView.addChild(btn);
             }
         }
 
-        this.testView.width = layoutHelper.dp(300);
-        this.testView.height = layoutHelper.dp(300);
+        this.testView.width = { value: 300, unit: "dip" };
+        this.testView.height = { value: 300, unit: "dip" };
 
         if (wait) {
             this.waitUntilTestElementLayoutIsValid();
@@ -233,7 +234,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_measuredWidth_when_not_stretched_single_column() {
-        this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
+        this.testView.horizontalAlignment = "center";
         let btn = new Button();
         btn.text = "A";
         this.testView.addChild(btn);
@@ -245,13 +246,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_measuredWidth_when_not_stretched_two_columns() {
-        this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
-        this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), GridUnitType.pixel));
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.horizontalAlignment = "center";
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), "pixel"));
+        this.testView.addColumn(new ItemSpec(1, "star"));
 
         let btn = new Button();
         btn.text = "A";
-        btn.width = layoutHelper.dp(100);
+        btn.width = { value: 100, unit: "dip" };
         GridLayout.setColumnSpan(btn, 2);
         this.testView.addChild(btn);
 
@@ -264,22 +265,22 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_measuredWidth_when_not_stretched_three_columns() {
-        this.testView.horizontalAlignment = enums.HorizontalAlignment.center;
-        this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), GridUnitType.pixel));
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.auto));
+        this.testView.horizontalAlignment = "center";
+        this.testView.addColumn(new ItemSpec(layoutHelper.dp(80), "pixel"));
+        this.testView.addColumn(new ItemSpec(1, "star"));
+        this.testView.addColumn(new ItemSpec(1, "auto"));
 
         for (let i = 1; i < 4; i++) {
             let btn = new Button();
             btn.text = "A";
-            btn.width = layoutHelper.dp(i * 20);
+            btn.width = { value: 20, unit: "dip" };
             GridLayout.setColumn(btn, i - 1);
             this.testView.addChild(btn);
         }
 
         let btn = new Button();
         btn.text = "B";
-        btn.width = layoutHelper.dp(100);
+        btn.width = { value: 100, unit: "dip" };
         GridLayout.setColumnSpan(btn, 3);
         this.testView.addChild(btn);
 
@@ -303,21 +304,21 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_ItemSpec_actualLength_defaultValue() {
-        var def = new ItemSpec(1, GridUnitType.auto);
+        var def = new ItemSpec(1, "auto");
         TKUnit.assertEqual(def.actualLength, 0, "'actualLength' property default value should be 0.");
     }
 
     public test_ItemSpec_constructor_throws_onNegativeValue() {
         TKUnit.assertThrows(() => {
-            return new ItemSpec(-1, GridUnitType.auto);
+            return new ItemSpec(-1, "auto");
         }, "'value' should be positive number.");
     }
 
     public test_ItemSpec_constructor_doesnt_throw_onCorrectType() {
         try {
-            var dummy = new ItemSpec(1, GridUnitType.auto);
-            dummy = new ItemSpec(1, GridUnitType.star);
-            dummy = new ItemSpec(1, GridUnitType.pixel);
+            var dummy = new ItemSpec(1, "auto");
+            dummy = new ItemSpec(1, "star");
+            dummy = new ItemSpec(1, "pixel");
         }
         catch (ex) {
             TKUnit.assert(false, "ItemSpec type should support auto, star and pixel.");
@@ -326,13 +327,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_ItemSpec_constructor_throws_onWrongType() {
         TKUnit.assertThrows(() => {
-            return new ItemSpec(1, "unsupported");
+            return new ItemSpec(1, <any>"unsupported");
         }, "'ItemSpec type' incorrect value.");
     }
 
     public test_ItemSpec_auto() {
-        var w = new ItemSpec(1, GridUnitType.auto);
-        TKUnit.assertEqual(w.gridUnitType, GridUnitType.auto, "'gridUnitType' property default value should be 'auto'");
+        var w = new ItemSpec(1, "auto");
+        TKUnit.assertEqual(w.gridUnitType, "auto", "'gridUnitType' property default value should be 'auto'");
         TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
         TKUnit.assertEqual(w.isAuto, true, "'isAuto' property default value should be 'false'");
         TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
@@ -340,8 +341,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_ItemSpec_unitType_pixel() {
-        var w = new ItemSpec(6, GridUnitType.pixel);
-        TKUnit.assertEqual(w.gridUnitType, GridUnitType.pixel, "'gridUnitType' property default value should be 'pixel'");
+        var w = new ItemSpec(6, "pixel");
+        TKUnit.assertEqual(w.gridUnitType, "pixel", "'gridUnitType' property default value should be 'pixel'");
         TKUnit.assertEqual(w.isAbsolute, true, "'isAbsolute' property default value should be 'false'");
         TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
         TKUnit.assertEqual(w.isStar, false, "'isAuto' property default value should be 'true'");
@@ -349,8 +350,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_ItemSpec_unitType() {
-        var w = new ItemSpec(2, GridUnitType.star);
-        TKUnit.assertEqual(w.gridUnitType, GridUnitType.star, "'gridUnitType' property default value should be 'star'");
+        var w = new ItemSpec(2, "star");
+        TKUnit.assertEqual(w.gridUnitType, "star", "'gridUnitType' property default value should be 'star'");
         TKUnit.assertEqual(w.isAbsolute, false, "'isAbsolute' property default value should be 'false'");
         TKUnit.assertEqual(w.isAuto, false, "'isAuto' property default value should be 'false'");
         TKUnit.assertEqual(w.isStar, true, "'isAuto' property default value should be 'true'");
@@ -360,8 +361,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     public test_desiredSize_isCorrect() {
         this.prepareGridLayout(false);
 
-        this.testView.width = Number.NaN;
-        this.testView.height = Number.NaN;
+        this.testView.width = unsetValue;
+        this.testView.height = unsetValue;
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -471,17 +472,17 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_ColumnWidth_when_4stars_and_width_110() {
 
-        this.testView.width = layoutHelper.dp(110);
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
-        this.testView.addColumn(new ItemSpec(1, GridUnitType.star));
+        this.testView.width = { value: 110, unit: "dip" };
+        this.testView.addColumn(new ItemSpec(1, "star"));
+        this.testView.addColumn(new ItemSpec(1, "star"));
+        this.testView.addColumn(new ItemSpec(1, "star"));
+        this.testView.addColumn(new ItemSpec(1, "star"));
 
         this.waitUntilTestElementLayoutIsValid();
 
         var cols = this.testView.getColumns();
 
-        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(28)), DELTA, "Column[0] actual length should be 28");
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(20)), DELTA, "Column[0] actual length should be 28");
         TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(27)), DELTA, "Column[1] actual length should be 27");
         TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(28)), DELTA, "Column[2] actual length should be 28");
         TKUnit.assertAreClose(cols[3].actualLength, Math.round(layoutHelper.dp(27)), DELTA, "Column[3] actual length should be 27");
@@ -489,14 +490,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_margins_and_verticalAlignment_center() {
 
-        this.testView.height = layoutHelper.dp(200);
-        this.testView.width = layoutHelper.dp(200);
+        this.testView.height = { value: 200, unit: "dip" };
+        this.testView.width = { value: 200, unit: "dip" };
         var btn = new layoutHelper.MyButton();
         btn.text = "btn";
-        btn.height = layoutHelper.dp(100);
-        btn.width = layoutHelper.dp(100);
-        btn.marginBottom = layoutHelper.dp(50);
-        btn.marginRight = layoutHelper.dp(50);
+        btn.height = { value: 100, unit: "dip" };
+        btn.width = { value: 100, unit: "dip" };
+        btn.marginBottom = { value: 50, unit: "dip" };
+        btn.marginRight = { value: 50, unit: "dip" };
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -562,13 +563,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_padding() {
-        this.testView.paddingLeft = layoutHelper.dp(10);
-        this.testView.paddingTop = layoutHelper.dp(20);
-        this.testView.paddingRight = layoutHelper.dp(30);
-        this.testView.paddingBottom = layoutHelper.dp(40);
+        this.testView.style.paddingLeft = { value: 10, unit: "dip" };
+        this.testView.style.paddingTop = { value: 20, unit: "dip" };
+        this.testView.style.paddingRight = { value: 30, unit: "dip" };
+        this.testView.style.paddingBottom = { value: 40, unit: "dip" };
 
-        this.testView.width = layoutHelper.dp(300);
-        this.testView.height = layoutHelper.dp(300);
+        this.testView.width = { value: 300, unit: "dip" };
+        this.testView.height = { value: 300, unit: "dip" };
 
         var btn = new layoutHelper.MyButton();
         this.testView.addChild(btn);
@@ -595,13 +596,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         gridLayout.addChild(btn3);
         gridLayout.addChild(btn4);
         //  << grid-layout-addviews
-        
+
         // >> grid-layout-setcolumn
         GridLayout.setColumn(btn1, 0);
         GridLayout.setColumn(btn2, 1);
         GridLayout.setColumn(btn3, 2);
         // << grid-layout-setcolumn
-        
+
         // >> grid-layout-setrow
         GridLayout.setRow(btn4, 1);
         // << grid-layout-setrow
@@ -613,17 +614,17 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         // >> grid-layout-itemspec
         // ItemSpec modes of the column refers to its width.
         // Absolute size of the column
-        var firstColumn = new ItemSpec(80, GridUnitType.pixel);
+        var firstColumn = new ItemSpec(80, "pixel");
         // Star width means that this column will expand to fill the gap left from other columns
-        var secondColumn = new ItemSpec(1, GridUnitType.star);
+        var secondColumn = new ItemSpec(1, "star");
         // Auto size means that column will expand or shrink in order to give enough place for all child UI elements.
-        var thirdColumn = new ItemSpec(1, GridUnitType.auto);
+        var thirdColumn = new ItemSpec(1, "auto");
 
         // Star and Auto modes for rows behave like corresponding setting for columns but refer to row height.
-        var firstRow = new ItemSpec(1, GridUnitType.auto);
-        var secondRow = new ItemSpec(1, GridUnitType.star);
+        var firstRow = new ItemSpec(1, "auto");
+        var secondRow = new ItemSpec(1, "star");
         // << grid-layout-itemspec
-        
+
         // >> grid-layout-add-rowscols
         gridLayout.addColumn(firstColumn);
         gridLayout.addColumn(secondColumn);
@@ -638,22 +639,22 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_layout_correctnes() {
-        this.testView.width = layoutHelper.dp(300);
-        this.testView.height = layoutHelper.dp(300);
+        this.testView.width = { value: 300, unit: "dip" };
+        this.testView.height = { value: 300, unit: "dip" };
 
         let grid = new layoutHelper.MyGridLayout();
-        grid.width = layoutHelper.dp(150);
-        grid.height = layoutHelper.dp(150);
-        grid.horizontalAlignment = enums.HorizontalAlignment.right;
-        grid.verticalAlignment = enums.VerticalAlignment.bottom;
+        grid.width = { value: 150, unit: "dip" };
+        grid.height = { value: 150, unit: "dip" };
+        grid.horizontalAlignment = "right";
+        grid.verticalAlignment = "bottom";
 
         this.testView.addChild(grid);
 
         let btn = new layoutHelper.MyButton();
-        btn.width = layoutHelper.dp(75);
-        btn.height = layoutHelper.dp(75);
-        btn.horizontalAlignment = enums.HorizontalAlignment.left;
-        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        btn.width = { value: 75, unit: "dip" };
+        btn.height = { value: 75, unit: "dip" };
+        btn.horizontalAlignment = "left";
+        btn.verticalAlignment = "bottom";
         grid.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -680,25 +681,25 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_columns_widths() {
-        this.testView.width = layoutHelper.dp(400);
-        this.testView.height = layoutHelper.dp(600);
+        this.testView.width = { value: 400, unit: "dip" };
+        this.testView.height = { value: 600, unit: "dip" };
 
         let grid = new GridLayout();
         this.testView.addChild(grid);
-        grid.horizontalAlignment = enums.HorizontalAlignment.left;
-        grid.verticalAlignment = enums.VerticalAlignment.top;
-        
-        grid.addColumn(new ItemSpec(1, GridUnitType.star));
-        grid.addColumn(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
-        grid.addColumn(new ItemSpec(2, GridUnitType.star));
-        
-        grid.addRow(new ItemSpec(1, GridUnitType.star));
-        grid.addRow(new ItemSpec(layoutHelper.dp(100), GridUnitType.pixel));
-        grid.addRow(new ItemSpec(2, GridUnitType.star));
+        grid.horizontalAlignment = "left";
+        grid.verticalAlignment = "top";
+
+        grid.addColumn(new ItemSpec(1, "star"));
+        grid.addColumn(new ItemSpec(layoutHelper.dp(100), "pixel"));
+        grid.addColumn(new ItemSpec(2, "star"));
+
+        grid.addRow(new ItemSpec(1, "star"));
+        grid.addRow(new ItemSpec(layoutHelper.dp(100), "pixel"));
+        grid.addRow(new ItemSpec(2, "star"));
 
         let btn = new Button();
-        btn.width = layoutHelper.dp(300);
-        btn.height = layoutHelper.dp(500);
+        btn.width = { value: 300, unit: "dip" };
+        btn.height = { value: 500, unit: "dip" };
         grid.addChild(btn);
         GridLayout.setColumnSpan(btn, 3);
         GridLayout.setRowSpan(btn, 3);

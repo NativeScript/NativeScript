@@ -1,9 +1,9 @@
-import TKUnit = require("../TKUnit");
-import bindableModule = require("ui/core/bindable");
+import * as TKUnit from "../TKUnit";
+import * as bindableModule from "ui/core/bindable";
 require("globals");
 
 // >> observable-array-require
-import observableArrayModule = require("data/observable-array");
+import * as observableArrayModule from "data/observable-array";
 // << observable-array-require
 
 require("globals");

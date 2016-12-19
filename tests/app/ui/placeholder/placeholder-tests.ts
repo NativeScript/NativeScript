@@ -1,13 +1,13 @@
-﻿import TKUnit = require("../../TKUnit");
+﻿import * as TKUnit from "../../TKUnit";
 // >> article-creating-view
-import platform = require("platform");
+import * as platform from "platform";
 //var utils = require("utils/utils");
-import utils = require("utils/utils");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
+import * as utils from "utils/utils";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
 
 // >> article-require-placeholder-module
-import placeholderModule = require("ui/placeholder");
+import * as placeholderModule from "ui/placeholder";
 // << article-require-placeholder-module
 
 function creatingView(args) {

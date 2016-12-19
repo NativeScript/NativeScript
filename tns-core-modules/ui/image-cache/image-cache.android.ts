@@ -1,4 +1,4 @@
-﻿import common = require("./image-cache-common");
+﻿import * as common from "./image-cache-common";
 
 var LruBitmapCacheClass;
 function ensureLruBitmapCacheClass() {

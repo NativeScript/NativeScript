@@ -1,6 +1,6 @@
-﻿import observable = require("data/observable");
-import observableArrayDef = require("data/observable-array");
-import types = require("utils/types");
+﻿import * as observable from "data/observable";
+import * as observableArrayDef from "data/observable-array";
+import * as types from "utils/types";
 
 export class ChangeType implements observableArrayDef.ChangeType {
     static Add = "add";

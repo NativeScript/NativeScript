@@ -1,17 +1,17 @@
-﻿import view = require("ui/core/view");
-import frame = require("ui/frame");
-import page = require("ui/page");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import button = require("ui/button");
-import TKUnit = require("../TKUnit");
-import utils = require("utils/utils");
-import types = require("utils/types");
-import styling = require("ui/styling");
-import platform = require("platform");
-import colorModule = require("color");
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
-import enums = require("ui/enums");
+﻿import * as view from "ui/core/view";
+import * as frame from "ui/frame";
+import * as page from "ui/page";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as button from "ui/button";
+import * as TKUnit from "../TKUnit";
+import * as utils from "utils/utils";
+import * as types from "utils/types";
+import * as platform from "platform";
+import * as colorModule from "color";
+import * as formattedStringModule from "text/formatted-string";
+import * as spanModule from "text/span";
+import * as enums from "ui/enums";
+import { unsetValue } from "ui/core/view";
 
 var DELTA = 0.1;
 
@@ -29,11 +29,11 @@ function clearPage(): void {
         throw new Error("NO CURRENT PAGE!!!!");
     }
 
-    newPage.style._resetValue(styling.properties.backgroundColorProperty);
-    newPage.style._resetValue(styling.properties.colorProperty);
-    newPage._resetValue(button.Button.bindingContextProperty);
-    newPage._resetValue(button.Button.cssClassProperty);
-    newPage._resetValue(button.Button.idProperty);
+    newPage.style.backgroundColor = unsetValue;
+    newPage.style.color = unsetValue;
+    newPage.bindingContext = unsetValue;
+    newPage.className = unsetValue;
+    newPage.id = unsetValue;
 }
 
 export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
@@ -146,11 +146,11 @@ export function getCurrentPage(): page.Page {
 
 export function getClearCurrentPage(): page.Page {
     let page = frame.topmost().currentPage;
-    page.style._resetValue(styling.properties.backgroundColorProperty);
-    page.style._resetValue(styling.properties.colorProperty);
-    page._resetValue(button.Button.bindingContextProperty);
-    page._resetValue(button.Button.cssClassProperty);
-    page._resetValue(button.Button.idProperty);
+    page.style.backgroundColor = unsetValue;
+    page.style.color = unsetValue;
+    page.bindingContext = unsetValue;
+    page.className = unsetValue;
+    page.id = unsetValue;
     return page;
 }
 
@@ -184,16 +184,12 @@ export function assertAreClose(actual: number, expected: number, message: string
     TKUnit.assertAreClose(actual, expected, delta, message);
 }
 
-export function assertViewColor(testView: view.View, hexColor: string, valueSource?: number) {
+export function assertViewColor(testView: view.View, hexColor: string) {
     TKUnit.assert(testView.style.color, "Color property not applied correctly. Style value is not defined.");
     TKUnit.assertEqual(testView.style.color.hex, hexColor, "color property");
-
-    if (types.isDefined(valueSource)) {
-        TKUnit.assertEqual(testView.style._getValueSource(styling.properties.colorProperty), valueSource, "valueSource");
-    }
 }
 
-export function assertViewBackgroundColor(testView: view.View, hexColor: string) {
+export function assertViewBackgroundColor(testView: view.ViewBase, hexColor: string) {
     TKUnit.assert(testView.style.backgroundColor, "Background color property not applied correctly. Style value is not defined.");
     TKUnit.assertEqual(testView.style.backgroundColor.hex, hexColor, "backgroundColor property");
 }

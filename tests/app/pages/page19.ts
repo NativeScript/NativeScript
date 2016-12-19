@@ -1,5 +1,5 @@
-﻿import observable = require("data/observable");
-import trace = require("trace");
+﻿import * as observable from "data/observable";
+import * as trace from "trace";
 trace.addCategories(trace.categories.Layout);
 trace.enable();
 

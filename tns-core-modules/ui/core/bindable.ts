@@ -1,4 +1,4 @@
-﻿import definition = require("ui/core/bindable");
+﻿import * as definition from "ui/core/bindable";
 import { Observable, PropertyChangeData } from "data/observable";
 import { unsetValue, DependencyObservable, Property, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData as DependencyPropertyChangeData } from "ui/core/dependency-observable";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";

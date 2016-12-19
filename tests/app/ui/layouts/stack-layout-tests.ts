@@ -1,12 +1,12 @@
 ﻿import {StackLayout} from "ui/layouts/stack-layout";
 import {Button} from "ui/button";
-import TKUnit = require("../../TKUnit");
-import helper = require("./layout-helper");
-import enums = require("ui/enums");
-import utils = require("utils/utils");
-import testModule = require("../../ui-test");
-import layoutHelper = require("./layout-helper");
-import commonTests = require("./common-layout-tests");
+import * as TKUnit from "../../TKUnit";
+import * as helper from "./layout-helper";
+import * as enums from "ui/enums";
+import * as utils from "utils/utils";
+import * as testModule from "../../ui-test";
+import * as layoutHelper from "./layout-helper";
+import * as commonTests from "./common-layout-tests";
 
 export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
@@ -30,7 +30,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_SetWrongOrientation_ShouldThrowError() {
-        TKUnit.assertThrows(() => { this.rootLayout.orientation = "not_valid"; },
+        TKUnit.assertThrows(() => { (<any>this.rootLayout).orientation = "not_valid"; },
             "Setting invalid value for orientation should throw exception.");
     }
 
@@ -39,7 +39,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
         TKUnit.assertEqual(this.rootLayout.orientation, enums.Orientation.vertical, "Default orientation should be Vertical.");
 
-        this.rootLayout.orientation = enums.Orientation.horizontal;
+        this.rootLayout.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.rootLayout.measureCount, 2, "Orientation change should invalidate measure.");
@@ -58,7 +58,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
     public test_ShouldMeasureWith_AtMost_OnHorizontal() {
 
-        this.rootLayout.orientation = enums.Orientation.horizontal;
+        this.rootLayout.orientation = "horizontal";
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -70,8 +70,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
     public test_DesiredSize_Vertical() {
 
-        this.rootLayout.verticalAlignment = enums.VerticalAlignment.top;
-        this.rootLayout.horizontalAlignment = enums.HorizontalAlignment.left;
+        this.rootLayout.verticalAlignment = "top";
+        this.rootLayout.horizontalAlignment = "left";
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -81,9 +81,9 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
     public test_DesiredSize_Horizontal() {
 
-        this.rootLayout.horizontalAlignment = enums.HorizontalAlignment.left;
-        this.rootLayout.verticalAlignment = enums.VerticalAlignment.top;
-        this.rootLayout.orientation = enums.Orientation.horizontal;
+        this.rootLayout.horizontalAlignment = "left";
+        this.rootLayout.verticalAlignment = "top";
+        this.rootLayout.orientation = "horizontal";
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -92,16 +92,16 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_Padding_Vertical() {
-        this.rootLayout.width = layoutHelper.dp(300);
-        this.rootLayout.height = layoutHelper.dp(300);
+        this.rootLayout.width = { value: 300, unit: "px" };
+        this.rootLayout.height = { value: 300, unit: "px" };
 
-        this.rootLayout.paddingLeft = layoutHelper.dp(10);
-        this.rootLayout.paddingTop = layoutHelper.dp(20);
-        this.rootLayout.paddingRight = layoutHelper.dp(30);
-        this.rootLayout.paddingBottom = layoutHelper.dp(40);
+        this.rootLayout.style.paddingLeft = { value: 10, unit: "px" };
+        this.rootLayout.style.paddingTop = { value: 20, unit: "px" };
+        this.rootLayout.style.paddingRight = { value: 30, unit: "px" };
+        this.rootLayout.style.paddingBottom = { value: 40, unit: "px" };
 
-        this.btn1.height = layoutHelper.dp(50);
-        this.btn2.height = layoutHelper.dp(50);
+        this.btn1.height = { value: 50, unit: "px" };
+        this.btn2.height = { value: 50, unit: "px" };
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -113,17 +113,17 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_Padding_Horizontal() {
-        this.rootLayout.width = layoutHelper.dp(300);
-        this.rootLayout.height = layoutHelper.dp(300);
-        this.rootLayout.orientation = enums.Orientation.horizontal;
+        this.rootLayout.width = { value: 300, unit: "px" };
+        this.rootLayout.height = { value: 300, unit: "px" };
+        this.rootLayout.orientation = "horizontal";
 
-        this.rootLayout.paddingLeft = layoutHelper.dp(10);
-        this.rootLayout.paddingTop = layoutHelper.dp(20);
-        this.rootLayout.paddingRight = layoutHelper.dp(30);
-        this.rootLayout.paddingBottom = layoutHelper.dp(40);
+        this.rootLayout.style.paddingLeft = { value: 10, unit: "px" };
+        this.rootLayout.style.paddingTop = { value: 20, unit: "px" };
+        this.rootLayout.style.paddingRight = { value: 30, unit: "px" };
+        this.rootLayout.style.paddingBottom = { value: 40, unit: "px" };
 
-        this.btn1.width = layoutHelper.dp(50);
-        this.btn2.width = layoutHelper.dp(50);
+        this.btn1.width = { value: 50, unit: "px" };
+        this.btn2.width = { value: 50, unit: "px" };
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -182,7 +182,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         // << stack-layout-remove
 
         // >> stack-layout-horizontal
-        stackLayout.orientation = enums.Orientation.horizontal;
+        stackLayout.orientation = "horizontal";
         // << stack-layout-horizontal
 
     }
@@ -190,12 +190,12 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     private setup_percent(): layoutHelper.MyButton {
         let layout = this.testView;
         layout.removeChildren();
-        layout.width = layoutHelper.dp(200);
-        layout.height = layoutHelper.dp(200);
+        layout.width = { value: 200, unit: "px" };
+        layout.height = { value: 200, unit: "px" };
 
         let btn = new layoutHelper.MyButton();
-        btn.horizontalAlignment = enums.HorizontalAlignment.left;
-        btn.verticalAlignment = enums.VerticalAlignment.top;
+        btn.horizontalAlignment = "left";
+        btn.verticalAlignment = "top";
         (<any>btn).width = "50%";
         (<any>btn).height = "50%";
         btn.margin = "10%";
@@ -218,8 +218,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 120, "TopLeft layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.center;
-        btn.verticalAlignment = enums.VerticalAlignment.center;
+        btn.horizontalAlignment = "center";
+        btn.verticalAlignment = "center";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -228,8 +228,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 150, "Center layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "Center layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
-        btn.verticalAlignment = enums.VerticalAlignment.stretch;
+        btn.horizontalAlignment = "stretch";
+        btn.verticalAlignment = "stretch";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -238,8 +238,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 150, "Stretch layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "Stretch layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.right;
-        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        btn.horizontalAlignment = "right";
+        btn.verticalAlignment = "bottom";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -251,7 +251,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
     public test_percent_support_horizontal() {
         let btn = this.setup_percent();
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(btn.getMeasuredWidth(), 100, "Button MeasuredWidth incorrect");
@@ -263,8 +263,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 120, "TopLeft layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.center;
-        btn.verticalAlignment = enums.VerticalAlignment.center;
+        btn.horizontalAlignment = "center";
+        btn.verticalAlignment = "center";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -273,8 +273,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 120, "Center layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 150, "Center layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
-        btn.verticalAlignment = enums.VerticalAlignment.stretch;
+        btn.horizontalAlignment = "stretch";
+        btn.verticalAlignment = "stretch";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -283,8 +283,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.right, 120, "Stretch layout RIGHT incorrect");
         TKUnit.assertEqual(bounds.bottom, 150, "Stretch layout BOTTOM incorrect");
 
-        btn.horizontalAlignment = enums.HorizontalAlignment.right;
-        btn.verticalAlignment = enums.VerticalAlignment.bottom;
+        btn.horizontalAlignment = "right";
+        btn.verticalAlignment = "bottom";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();

@@ -1,4 +1,4 @@
-﻿import datePickerModule = require("ui/date-picker");
+﻿import * as datePickerModule from "ui/date-picker";
 
 export function getNativeYear(datePicker: datePickerModule.DatePicker): number {
     return datePicker.android.getYear();

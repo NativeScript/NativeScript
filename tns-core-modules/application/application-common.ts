@@ -1,6 +1,6 @@
 ﻿require("globals");
-import definition = require("application");
-import observable = require("data/observable");
+import * as definition from "application";
+import * as observable from "data/observable";
 // TODO: Raise event on("livesync") and attach this handler in the ui/frame module. 
 import { NavigationEntry, reloadPage } from "ui/frame";
 import { RuleSet } from "ui/styling/css-selector";

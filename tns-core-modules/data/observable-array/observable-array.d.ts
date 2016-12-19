@@ -4,7 +4,7 @@
  * Contains the ObservableArray class, which is capable of detecting and responding to changes of a collection of objects.
  */
 declare module "data/observable-array" {
-    import observable = require("data/observable");
+    import * as observable from "data/observable";
 
     /**
      * Event args for "changed" event.

@@ -1,20 +1,20 @@
-﻿import observable = require("data/observable");
-import bindable = require("ui/core/bindable");
-import dependencyObservableModule = require("ui/core/dependency-observable");
-import TKUnit = require("../TKUnit");
-import types = require("utils/types");
-import helper = require("../ui/helper");
-import viewModule = require("ui/core/view");
-import buttonModule = require("ui/button");
-import utils = require("utils/utils");
-import pageModule = require("ui/page");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import bindingBuilder = require("ui/builder/binding-builder");
-import labelModule = require("ui/label");
-import textFieldModule = require("ui/text-field");
-import fs = require("file-system");
-import appModule = require("application");
-import trace = require("trace");
+﻿import * as observable from "data/observable";
+import * as bindable from "ui/core/bindable";
+import * as dependencyObservableModule from "ui/core/dependency-observable";
+import * as TKUnit from "../TKUnit";
+import * as types from "utils/types";
+import * as helper from "../ui/helper";
+import * as viewModule from "ui/core/view";
+import * as buttonModule from "ui/button";
+import * as utils from "utils/utils";
+import * as pageModule from "ui/page";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as bindingBuilder from "ui/builder/binding-builder";
+import * as labelModule from "ui/label";
+import * as textFieldModule from "ui/text-field";
+import * as fs from "file-system";
+import * as appModule from "application";
+import * as trace from "trace";
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 

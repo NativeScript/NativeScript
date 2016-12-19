@@ -1,11 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import listPickerTestsNative = require("./list-picker-tests-native");
-import application = require("application");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as listPickerTestsNative from "./list-picker-tests-native";
+import * as application from "application";
 
 // >> article-require-listpicker-module
-import listPickerModule = require("ui/list-picker");
+import * as listPickerModule from "ui/list-picker";
 // << article-require-listpicker-module
 
 function _createListPicker(): listPickerModule.ListPicker {

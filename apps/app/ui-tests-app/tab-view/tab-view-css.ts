@@ -1,5 +1,5 @@
-import view = require("ui/core/view");
-import pages = require("ui/page");
+import * as view from "ui/core/view";
+import * as pages from "ui/page";
 
 export function applyTap(args) {
     var page = <pages.Page>(<view.View>args.object).page;

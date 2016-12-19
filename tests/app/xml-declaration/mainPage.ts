@@ -1,12 +1,12 @@
-import observable = require("data/observable");
-import view = require("ui/core/view");
-import label = require("ui/label");
-import button = require("ui/button");
-import image = require("ui/image");
-import pages = require("ui/page");
-import http = require("http");
-import camera = require("camera");
-import dialogs = require("ui/dialogs");
+import * as observable from "data/observable";
+import * as view from "ui/core/view";
+import * as label from "ui/label";
+import * as button from "ui/button";
+import * as image from "ui/image";
+import * as pages from "ui/page";
+import * as http from "http";
+import * as camera from "camera";
+import * as dialogs from "ui/dialogs";
 
 var obj = new observable.Observable();
 obj.set("id", 0);

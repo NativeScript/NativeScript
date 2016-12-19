@@ -1,7 +1,7 @@
-﻿import buttonModule = require("ui/button");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import textFieldModule = require("ui/text-field");
-import observable = require("data/observable");
+﻿import * as buttonModule from "ui/button";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as textFieldModule from "ui/text-field";
+import * as observable from "data/observable";
 
 export function stack0Loaded(args: observable.EventData) {
     var source = new observable.Observable();

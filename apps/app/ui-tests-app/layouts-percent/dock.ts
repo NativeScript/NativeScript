@@ -1,5 +1,5 @@
-﻿import pageModule = require("ui/page");
-import model = require("./myview");
+﻿import * as pageModule from "ui/page";
+import * as model from "./myview";
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <pageModule.Page>args.object;

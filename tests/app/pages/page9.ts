@@ -1,22 +1,22 @@
-﻿import pages = require("ui/page");
-import imageSource = require("image-source");
-import gridModule = require("ui/layouts/grid-layout");
-import enums = require("ui/enums");
-import img = require("ui/image");
+﻿import * as pages from "ui/page";
+import * as imageSource from "image-source";
+import * as gridModule from "ui/layouts/grid-layout";
+import * as enums from "ui/enums";
+import * as img from "ui/image";
 
 export function createPage() {
     var grid = new gridModule.GridLayout();
 
-    grid.addColumn(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
-    grid.addColumn(new gridModule.ItemSpec(1, gridModule.GridUnitType.star));
+    grid.addColumn(new gridModule.ItemSpec(1, "auto"));
+    grid.addColumn(new gridModule.ItemSpec(1, "star"));
 
-    grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.auto));
-    grid.addRow(new gridModule.ItemSpec(1, gridModule.GridUnitType.star));
+    grid.addRow(new gridModule.ItemSpec(1, "auto"));
+    grid.addRow(new gridModule.ItemSpec(1, "star"));
 
     var image = new img.Image();
-    image.stretch = enums.Stretch.fill;
-    image.verticalAlignment = enums.VerticalAlignment.bottom;
-    image.horizontalAlignment = enums.HorizontalAlignment.center;
+    image.stretch = "fill";
+    image.verticalAlignment = "bottom";
+    image.horizontalAlignment = "center";
 
     image.imageSource = imageSource.fromFile(__dirname + "/test.png");
     grid.addChild(image);

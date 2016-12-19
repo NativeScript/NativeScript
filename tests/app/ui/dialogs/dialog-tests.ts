@@ -1,5 +1,5 @@
 ﻿// >> dialog-require
-import dialogs = require("ui/dialogs");
+import * as dialogs from "ui/dialogs";
 // << dialog-require
 
 export function test_DummyTestForSnippetOnly0() {

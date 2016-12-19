@@ -1,13 +1,13 @@
-﻿import testModule = require("../../ui-test");
-import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import labelModule = require("ui/label");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import tabViewTestsNative = require("./tab-view-tests-native");
+﻿import * as testModule from "../../ui-test";
+import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as labelModule from "ui/label";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as tabViewTestsNative from "./tab-view-tests-native";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
-import tabViewModule = require("ui/tab-view");
+import * as tabViewModule from "ui/tab-view";
 // << article-require-tabview-module
 
 export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {

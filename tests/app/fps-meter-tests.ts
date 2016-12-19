@@ -1,5 +1,5 @@
 ﻿// >> fps-meter-require
-import fpsMeter = require("fps-meter");
+import * as fpsMeter from "fps-meter";
 // << fps-meter-require
 
 export var test_DummyTestForSnippetOnly0 = function () {

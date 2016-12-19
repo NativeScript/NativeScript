@@ -1,7 +1,7 @@
 import { View } from "./background-common";
 import { isNullOrUndefined, isFunction, getClass } from "utils/types";
 import { CacheLayerType } from "utils/utils";
-import cssValue = require("css-value");
+import { parse } from "css-value";
 
 export * from "./background-common"
 
@@ -171,7 +171,7 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
         return null;
     }
 
-    let cssValues = cssValue(css);
+    let cssValues = parse(css);
     let nativeArray = Array.create(org.nativescript.widgets.CSSValue, cssValues.length);
     for (let i = 0, length = cssValues.length; i < length; i++) {
         nativeArray[i] = new org.nativescript.widgets.CSSValue(

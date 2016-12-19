@@ -1,7 +1,7 @@
-﻿import observable = require("data/observable");
-import enums = require("ui/enums");
-import view = require("ui/core/view");
-import layouts = require("ui/layouts/layout-base");
+﻿import * as observable from "data/observable";
+import * as enums from "ui/enums";
+import * as view from "ui/core/view";
+import * as layouts from "ui/layouts/layout-base";
 
 export class ViewModel extends observable.Observable {
 

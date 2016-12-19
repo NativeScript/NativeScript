@@ -1,7 +1,7 @@
-﻿import frame = require("ui/frame");
-import observable = require("data/observable");
+﻿import * as frame from "ui/frame";
+import * as observable from "data/observable";
 
-import trace = require("trace");
+import * as trace from "trace";
 trace.setCategories("gestures");
 trace.enable();
 

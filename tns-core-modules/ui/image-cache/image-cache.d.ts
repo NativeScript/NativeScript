@@ -2,8 +2,8 @@
  * Contains the Cache class, which handles image download requests and caches the already downloaded images.
  */
 declare module "ui/image-cache" {
-    import observable = require("data/observable");
-    import imageSource = require("image-source");
+    import * as observable from "data/observable";
+    import * as imageSource from "image-source";
 
     /**
      * Represents a single download request.

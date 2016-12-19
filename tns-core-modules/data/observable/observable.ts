@@ -1,5 +1,5 @@
-﻿import types = require("utils/types");
-import definition = require("data/observable");
+﻿import * as types from "utils/types";
+import * as definition from "data/observable";
 
 interface ListenerEntry {
     callback: (data: definition.EventData) => void;

@@ -1,7 +1,7 @@
 ﻿// >> image-cache-require
-import imageCacheModule = require("ui/image-cache");
-import imageSource = require("image-source");
-import fs = require("file-system");
+import * as imageCacheModule from "ui/image-cache";
+import * as imageSource from "image-source";
+import * as fs from "file-system";
 // << image-cache-require
 
 export function test_DummyTestForSnippetOnly() {

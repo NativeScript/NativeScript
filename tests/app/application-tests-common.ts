@@ -1,6 +1,6 @@
 ﻿// >> application-require
-import app = require("application");
-import platform = require("platform");
+import * as app from "application";
+import * as platform from "platform";
 // << application-require
 
 // >> application-app-check
@@ -11,7 +11,7 @@ if (app.android) {
 }
 // << application-app-check
 
-import TKUnit = require("./TKUnit");
+import * as TKUnit from "./TKUnit";
 
 export var testInitialized = function () {
     if (platform.device.os === platform.platformNames.android) {

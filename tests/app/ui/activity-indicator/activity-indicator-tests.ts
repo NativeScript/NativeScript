@@ -1,12 +1,12 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import imageModule = require("ui/image");
-import platform = require("platform");
-import color = require("color");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as imageModule from "ui/image";
+import * as platform from "platform";
+import * as color from "color";
 
 // >> activity-indicator-require
-import activityIndicatorModule = require("ui/activity-indicator");
+import * as activityIndicatorModule from "ui/activity-indicator";
 // << activity-indicator-require
 
 export function test_default_TNS_values() {
@@ -19,6 +19,7 @@ export function test_default_TNS_values() {
 
 export function test_default_native_values() {
     var indicator = new activityIndicatorModule.ActivityIndicator();
+
     indicator.width = 50;
     indicator.height = 50;
 

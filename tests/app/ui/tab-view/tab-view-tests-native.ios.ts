@@ -1,4 +1,4 @@
-﻿import tabViewModule = require("ui/tab-view");
+﻿import * as tabViewModule from "ui/tab-view";
 
 export function getNativeTabCount(tabView: tabViewModule.TabView): number {
     if (!tabView.ios.viewControllers) {

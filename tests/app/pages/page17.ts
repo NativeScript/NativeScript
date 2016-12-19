@@ -1,7 +1,7 @@
-﻿import observable = require("data/observable");
-import action = require("ui/action-bar");
+﻿import * as observable from "data/observable";
+import * as action from "ui/action-bar";
 
-import pages = require("ui/page");
+import * as pages from "ui/page";
 
 var currentPage:pages.Page;
 // Event handler for Page "loaded" event attached in main-page.xml

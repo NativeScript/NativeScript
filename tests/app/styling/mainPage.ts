@@ -1,11 +1,11 @@
-import pagesModule = require("ui/page");
-import enums = require("ui/enums");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import buttonModule = require("ui/button");
-import labelModule = require("ui/label");
-import textFieldModule = require("ui/text-field");
-import textViewModule = require("ui/text-view");
-import colorModule = require("color");
+import * as pagesModule from "ui/page";
+import * as enums from "ui/enums";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as buttonModule from "ui/button";
+import * as labelModule from "ui/label";
+import * as textFieldModule from "ui/text-field";
+import * as textViewModule from "ui/text-view";
+import * as colorModule from "color";
 
 export function createPage() {
     var width = 200;

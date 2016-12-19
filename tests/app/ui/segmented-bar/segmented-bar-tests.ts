@@ -7,7 +7,7 @@ import {Observable} from "data/observable";
 import {Color} from "color";
 
 // >> article-require-segmentedbar-module
-import segmentedBarModule = require("ui/segmented-bar");
+import * as segmentedBarModule from "ui/segmented-bar";
 // << article-require-segmentedbar-module
 
 function _createSegmentedBar(): segmentedBarModule.SegmentedBar {

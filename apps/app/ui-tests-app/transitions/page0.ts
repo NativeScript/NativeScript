@@ -1,4 +1,4 @@
-import frame = require("ui/frame");
+import * as frame from "ui/frame";
 
 export function onTap(args) {
     var navigationEntry = {

@@ -1,7 +1,7 @@
-﻿import TKUnit = require("./TKUnit");
-import observable = require("data/observable");
-import weakEvents = require("ui/core/weak-event-listener");
-import helper = require("./ui/helper");
+﻿import * as TKUnit from "./TKUnit";
+import * as observable from "data/observable";
+import * as weakEvents from "ui/core/weak-event-listener";
+import * as helper from "./ui/helper";
 
 class Target {
     public counter: number = 0;

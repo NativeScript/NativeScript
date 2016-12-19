@@ -1,16 +1,8 @@
 import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
 import { Color, layout, BackgroundRepeat } from "ui/core/view";
 import { ImageSource } from "image-source";
-import cssValue = require("css-value");
-
+import { CSSValue, parse as cssParse } from "css-value";
 export * from "ui/core/view";
-
-interface CSSValue {
-    type: string;
-    string: string;
-    unit?: string;
-    value?: number;
-}
 
 export class Background implements BackgroundDefinition {
     public static default = new Background();
@@ -202,7 +194,7 @@ export class Background implements BackgroundDefinition {
 
         // size
         if (this.size) {
-            let values = cssValue(this.size);
+            let values = cssParse(this.size);
 
             if (values.length === 2) {
                 let vx = values[0];
@@ -281,7 +273,7 @@ export class Background implements BackgroundDefinition {
     }
 
     private static parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
-        let values = cssValue(pos);
+        let values = cssParse(pos);
 
         if (values.length === 2) {
             return {
