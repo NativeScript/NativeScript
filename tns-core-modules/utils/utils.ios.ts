@@ -1,18 +1,12 @@
 ﻿import dts = require("utils/utils");
-import common = require("./utils-common");
-import {Color} from "color";
-import enums = require("ui/enums");
+import { Color } from "color";
 import * as fsModule from "file-system";
-import * as traceModule from "trace";
+import {
+    enabled as traceEnabled, write as traceWrite, categories as traceCategories,
+    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet
+} from "trace";
 
-global.moduleMerge(common, exports);
-
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
+export * from "./utils-common";
 
 function isOrientationLandscape(orientation: number) {
     return orientation === UIDeviceOrientation.LandscapeLeft || orientation === UIDeviceOrientation.LandscapeRight;
@@ -40,68 +34,11 @@ export module layout {
 }
 
 export module ios {
-    export function setTextAlignment(view: dts.ios.TextUIView, value: string) {
-        switch (value) {
-            case enums.TextAlignment.left:
-                view.textAlignment = NSTextAlignment.Left;
-                break;
-            case enums.TextAlignment.center:
-                view.textAlignment = NSTextAlignment.Center;
-                break;
-            case enums.TextAlignment.right:
-                view.textAlignment = NSTextAlignment.Right;
-                break;
-            default:
-                break;
-        }
-    }
-
-    export function getter<T>(_this: any, property: T | {(): T}): T {
+    export function getter<T>(_this: any, property: T | { (): T }): T {
         if (typeof property === "function") {
-            return (<{(): T}>property).call(_this);
+            return (<{ (): T }>property).call(_this);
         } else {
             return <T>property;
-        }
-    }
-
-    export function getTransformedText(view, source: string, transform: string): string {
-        let result = source;
-
-        switch (transform) {
-            case enums.TextTransform.none:
-            default:
-                result = view.text;
-                break;
-            case enums.TextTransform.uppercase:
-                result = NSStringFromNSAttributedString(source).uppercaseString;
-                break;
-            case enums.TextTransform.lowercase:
-                result = NSStringFromNSAttributedString(source).lowercaseString;
-                break;
-            case enums.TextTransform.capitalize:
-                result = NSStringFromNSAttributedString(source).capitalizedString;
-                break;
-        }
-
-        return result;
-    }
-
-    function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {
-        return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
-    }
-
-    export function setWhiteSpace(view: dts.ios.TextUIView, value: string, parentView?: UIView) {
-        if (value === enums.WhiteSpace.normal) {
-            view.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-            view.numberOfLines = 0;
-        }
-        else {
-            if (parentView) {
-                view.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
-            } else {
-                view.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
-            }
-            view.numberOfLines = 1;
         }
     }
 
@@ -157,8 +94,7 @@ export module ios {
             return controller.presentPreviewAnimated(true);
         }
         catch (e) {
-            ensureTrace();
-            trace.write("Error in openFile", trace.categories.Error, trace.messageType.error);
+            traceWrite("Error in openFile", traceCategories.Error, traceMessageType.error);
         }
         return false;
     }
@@ -176,9 +112,8 @@ export function openUrl(location: string): boolean {
         }
     }
     catch (e) {
-        ensureTrace();
         // We Don't do anything with an error.  We just output it
-        trace.write("Error in OpenURL", trace.categories.Error, trace.messageType.error);
+        traceWrite("Error in OpenURL", traceCategories.Error, traceMessageType.error);
     }
     return false;
 }

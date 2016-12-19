@@ -1,23 +1,10 @@
 ﻿declare module "ui/layouts/absolute-layout" {
-    import {LayoutBase} from "ui/layouts/layout-base";
-    import {View} from "ui/core/view";
-    import {Property} from "ui/core/dependency-observable";
+    import { LayoutBase, View, Property } from "ui/layouts/layout-base";
 
     /**
      *  A layout that lets you specify exact locations (left/top coordinates) of its children.
      */
     class AbsoluteLayout extends LayoutBase {
-        
-        /**
-         * Represents the observable property backing the left property.
-         */
-        public static leftProperty: Property;
-
-        /**
-         * Represents the observable property backing the top property.
-         */
-        public static topProperty: Property;
-
         /**
          * Gets the value of the Left property from a given View.
          */
@@ -38,4 +25,14 @@
          */
         static setTop(view: View, value: number): void;
     }
+
+    /**
+     * Represents the observable property backing the left property.
+     */
+    export const leftProperty: Property<View, number>;
+
+    /**
+     * Represents the observable property backing the top property.
+     */
+    export const topProperty: Property<View, number>;
 }

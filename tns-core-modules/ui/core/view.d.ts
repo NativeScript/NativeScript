@@ -1,20 +1,56 @@
+declare module "ui/styling/style" {
+    interface Style {
+        effectiveMinWidth: number;
+        effectiveMinHeight: number;
+        effectiveWidth: number;
+        effectiveHeight: number;
+        effectiveMarginTop: number;
+        effectiveMarginRight: number;
+        effectiveMarginBottom: number;
+        effectiveMarginLeft: number;
+        effectivePaddingTop: number;
+        effectivePaddingRight: number;
+        effectivePaddingBottom: number;
+        effectivePaddingLeft: number;
+        effectiveBorderTopWidth: number;
+        effectiveBorderRightWidth: number;
+        effectiveBorderBottomWidth: number;
+        effectiveBorderLeftWidth: number;
+    }
+}
+
 declare module "ui/core/view" {
-    import style = require("ui/styling");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import proxy = require("ui/core/proxy");
-    import gestures = require("ui/gestures");
-    import color = require("color");
-    import observable = require("data/observable");
-    import animation = require("ui/animation");
-    import keyframeAnimationModule = require("ui/animation/keyframe-animation");
+    import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
+    import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
+    import {
+        ViewBase, Property, CssProperty, InheritedCssProperty, Style,
+        BindingOptions, Observable, EventData
+    } from "ui/core/view-base";
+    import { Background } from "ui/styling/background";
+    import { Font } from "ui/styling/font";
+    import { Color } from "color";
+
+    export {
+        GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction,
+        Animation, AnimationDefinition, AnimationPromise,
+        Background, Font, Color
+    }
+
+    export * from "ui/core/view-base";
+
+    export const zeroLength: Length;
+    export function getLengthEffectiveValue(param: Length): number;
 
     /**
-     * Gets a child view by id.
-     * @param view - The parent (container) view of the view to look for.
-     * @param id - The id of the view to look for.
-     * Returns an instance of a view (if found), otherwise undefined.
+     * Converts string into boolean value.
+     * Throws error if value is not 'true' or 'false'.
      */
-    export function getViewById(view: View, id: string): View;
+    export function booleanConverter(v: string): boolean;
+
+    /**
+     * Compares two Length objects.
+     */
+    export function lengthComparer(x: Length, y: Length): boolean;
 
     /**
      * Iterates through all child views (via visual tree) and executes a function.
@@ -23,17 +59,9 @@ declare module "ui/core/view" {
      */
     export function eachDescendant(view: View, callback: (child: View) => boolean);
 
-    /**
-     * Gets an ancestor from a given type.
-     * @param view - Starting view (child view).
-     * @param criterion - The type of ancestor view we are looking for. Could be a string containing a class name or an actual type.
-     * Returns an instance of a view (if found), otherwise undefined.
-     */
-    export function getAncestor(view: View, criterion: string | Function): View;
-
     export function isEventOrGesture(name: string, view: View): boolean;
 
-    export function PseudoClassHandler(... pseudoClasses: string[]): MethodDecorator;
+    export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
     /**
      * The Point interface describes a two dimensional location. 
@@ -44,7 +72,7 @@ declare module "ui/core/view" {
          * Represents the x coordinate of the location.
          */
         x: number;
-        
+
         /**
          * Represents the y coordinate of the location.
          */
@@ -60,42 +88,77 @@ declare module "ui/core/view" {
          * Represents the width of the size.
          */
         width: number;
-        
+
         /**
          * Represents the height of the size.
          */
         height: number;
     }
 
+    export interface Length {
+        readonly unit: "dip" | "px";
+        readonly value: number;
+    }
+
+    export interface PercentLength {
+        readonly unit: "%" | "dip" | "px";
+        readonly value: number;
+    }
+
+    export namespace Length {
+        function parse(text: string): Length;
+    }
+
+    export namespace PercentLength {
+        function parse(text: string): PercentLength;
+    }
+
     /**
      * This class is the base class for all UI components. 
      * A View occupies a rectangular area on the screen and is responsible for drawing and layouting of all UI components within. 
      */
-    export class View extends proxy.ProxyObject implements ApplyXmlAttributes {
+    export abstract class View extends ViewBase implements ApplyXmlAttributes {
+        /**
+         * Gets the android-specific native instance that lies behind this proxy. Will be available if running on an Android platform.
+         */
+        public android: any;
+
+        /**
+         * Gets the ios-specific native instance that lies behind this proxy. Will be available if running on an iOS platform.
+         */
+        public ios: any;
+
+        /**
+         * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
+         */
+        bindingContext: any;
+
+        //----------Style property shortcuts----------
+
         /**
          * Gets or sets the border color of the view.
          */
-        borderColor: string | color.Color;
-        
+        borderColor: string | Color;
+
         /**
          * Gets or sets the top border color of the view.
          */
-        borderTopColor: color.Color;
-        
+        borderTopColor: Color;
+
         /**
          * Gets or sets the right border color of the view.
          */
-        borderRightColor: color.Color;
-        
+        borderRightColor: Color;
+
         /**
          * Gets or sets the bottom border color of the view.
          */
-        borderBottomColor: color.Color;
-        
+        borderBottomColor: Color;
+
         /**
          * Gets or sets the left border color of the view.
          */
-        borderLeftColor: color.Color;
+        borderLeftColor: Color;
 
         /**
          * Gets or sets the border width of the view.
@@ -105,22 +168,22 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the top border width of the view.
          */
-        borderTopWidth: number;
+        borderTopWidth: Length;
 
         /**
          * Gets or sets the right border width of the view.
          */
-        borderRightWidth: number;
+        borderRightWidth: Length;
 
         /**
          * Gets or sets the bottom border width of the view.
          */
-        borderBottomWidth: number;
+        borderBottomWidth: Length;
 
         /**
          * Gets or sets the left border width of the view.
          */
-        borderLeftWidth: number;
+        borderLeftWidth: Length;
 
         /**
          * Gets or sets the border radius of the view.
@@ -148,86 +211,39 @@ declare module "ui/core/view" {
         borderBottomLeftRadius: number;
 
         /**
-         * Gets or sets the automation text of the view.
-         */
-        automationText: string;
-
-        /**
-         * String value used when hooking to loaded event.
-         */
-        public static loadedEvent: string;
-
-        /**
-         * String value used when hooking to unloaded event.
-         */
-        public static unloadedEvent: string;
-
-        /**
-         * Represents the observable property backing the automationText property of each View.
-         */
-        public static automationTextProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the id property of each View.
-         */
-        public static idProperty: dependencyObservable.Property;
-
-        /**
-         * [Deprecated. Please use className instead.] Represents the observable property backing the cssClass property of each View.
-         */
-        public static cssClassProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the className property of each View.
-         */
-        public static classNameProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the isEnabled property of each View.
-         */
-        public static isEnabledProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the isUserInteractionEnabled property of each View.
-         */
-        public static isUserInteractionEnabledProperty: dependencyObservable.Property;
-
-        //----------Style property shortcuts----------
-
-        /**
          * Gets or sets the color of the view.
          */
-        color: color.Color;
-        
+        color: Color;
+
         /**
          * Gets or sets the background color of the view.
          */
-        backgroundColor: color.Color;
+        backgroundColor: Color;
 
         /**
          * Gets or sets the background image of the view.
          */
         backgroundImage: string;
-                
+
         /**
          * Gets or sets the minimum width the view may grow to.
          */
-        minWidth: number;
+        minWidth: Length;
 
         /**
          * Gets or sets the minimum height the view may grow to.
          */
-        minHeight: number;
+        minHeight: Length;
 
         /**
          * Gets or sets the desired width of the view.
          */
-        width: number;
+        width: PercentLength;
 
         /**
          * Gets or sets the desired height of the view.
          */
-        height: number;
+        height: PercentLength;
 
         /**
          * Gets or sets margin style property.
@@ -237,44 +253,47 @@ declare module "ui/core/view" {
         /**
          * Specifies extra space on the left side of this view.
          */
-        marginLeft: number;
+        marginLeft: PercentLength;
 
         /**
          * Specifies extra space on the top side of this view.
          */
-        marginTop: number;
+        marginTop: PercentLength;
 
         /**
          * Specifies extra space on the right side of this view.
          */
-        marginRight: number;
+        marginRight: PercentLength;
 
         /**
          * Specifies extra space on the bottom side of this view.
          */
-        marginBottom: number;
+        marginBottom: PercentLength;
 
         /**
          * Gets or sets the alignment of this view within its parent along the Horizontal axis.
          */
-        horizontalAlignment: string;
+        horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
 
         /**
          * Gets or sets the alignment of this view within its parent along the Vertical axis.
          */
-        verticalAlignment: string;
+        verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
 
         /**
          * Gets or sets the visibility of the view.
          */
-        visibility: string;
+        visibility: "visible" | "hidden" | "collapse" | "collapsed";
 
         /**
          * Gets or sets the opacity style property.
          */
         opacity: number;
-        
-        //----------Style property shortcuts----------
+
+        /**
+         * Gets or sets the rotate affine transform of the view.
+         */
+        rotate: number;
 
         /**
          * Gets or sets the translateX affine transform of the view.
@@ -296,6 +315,13 @@ declare module "ui/core/view" {
          */
         scaleY: number;
 
+        //END Style property shortcuts
+
+        /**
+         * Gets or sets the automation text of the view.
+         */
+        automationText: string;
+
         /**
          * Gets or sets the X component of the origin point around which the view will be transformed. The deafault value is 0.5 representing the center of the view.
          */
@@ -307,11 +333,6 @@ declare module "ui/core/view" {
         originY: number;
 
         /**
-         * Gets or sets the rotate affine transform of the view.
-         */
-        rotate: number;
-
-        /**
          * Gets or sets a value indicating whether the the view is enabled. This affects the appearance of the view.
          */
         isEnabled: boolean;
@@ -320,31 +341,6 @@ declare module "ui/core/view" {
          * Gets or sets a value indicating whether the user can interact with the view. This does not affect the appearance of the view.
          */
         isUserInteractionEnabled: boolean;
-
-        /**
-         * Gets or sets the id for this view.
-         */
-        id: string;
-
-        /**
-         * [Deprecated. Please use className instead.] Gets or sets the CSS class for this view.
-         */
-        cssClass: string;
-
-        /**
-         * Gets or sets the CSS class name for this view.
-         */
-        className: string;
-
-        /**
-         * Gets the style object associated to this view.
-         */
-        style: style.Style;
-
-        /**
-         * Gets the View instance that parents this view. This property is read-only.
-         */
-        parent: View;
 
         /**
          * Gets is layout is valid. This is a read-only property.
@@ -359,11 +355,6 @@ declare module "ui/core/view" {
 
         cssClasses: Set<string>;
         cssPseudoClasses: Set<string>;
-
-        /**
-         * Gets owner page. This is a read-only property.
-         */
-        page: View;
 
         /**
          * This is called to find out how big a view should be. The parent supplies constraint information in the width and height parameters.
@@ -443,7 +434,7 @@ declare module "ui/core/view" {
          * @param measuredHeight	The measured height that the parent layout specifies for this view.
          */
         public static measureChild(parent: View, child: View, widthMeasureSpec: number, heightMeasureSpec: number): { measuredWidth: number; measuredHeight: number };
-        
+
         /**
          * Layout a child by taking into account its margins, horizontal and vertical alignments and a given bounds.
          * @param parent    This parameter is not used. You can pass null.
@@ -453,19 +444,6 @@ declare module "ui/core/view" {
          * @param bottom	Bottom position, relative to parent
          */
         public static layoutChild(parent: View, child: View, left: number, top: number, right: number, bottom: number): void;
-
-        /**
-         * Changes the width, height and margins of the child to one calculated from percentage values.
-         *
-         * @param widthMeasureSpec  Width MeasureSpec of the parent layout.
-         * @param heightMeasureSpec Height MeasureSpec of the parent layout.
-         */
-        protected static adjustChildLayoutParams(view: View, widthMeasureSpec: number, heightMeasureSpec: number): void;
-
-        /**
-         * Restores the original dimensions of the child that were changed for percentage values.
-         */
-        protected static restoreChildOriginalParams(view: View): void;
 
         /**
          * Utility to reconcile a desired size and state, with constraints imposed
@@ -480,11 +458,6 @@ declare module "ui/core/view" {
         public static combineMeasuredStates(curState: number, newState): number;
 
         /**
-         * Returns the child view with the specified id.
-         */
-        public getViewById<T extends View>(id: string): T;
-
-        /**
          * Tries to focus the view.
          * Returns a value indicating whether this view or one of its descendants actually took focus.
          */
@@ -496,7 +469,7 @@ declare module "ui/core/view" {
          */
         public setInlineStyle(style: string): void;
 
-        public getGestureObservers(type: gestures.GestureTypes): Array<gestures.GesturesObserver>;
+        public getGestureObservers(type: GestureTypes): Array<GesturesObserver>;
 
         /**
          * [Deprecated. Please use the on() instead.] Adds a gesture observer.
@@ -504,7 +477,7 @@ declare module "ui/core/view" {
          * @param callback - A function that will be executed when gesture is received.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution. 
          */
-        observe(type: gestures.GestureTypes, callback: (args: gestures.GestureEventData) => void, thisArg?: any);
+        observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any);
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -512,35 +485,35 @@ declare module "ui/core/view" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string | gestures.GestureTypes, callback: (data: observable.EventData) => void, thisArg?: any);
-        
+        on(eventNames: string | GestureTypes, callback: (data: EventData) => void, thisArg?: any);
+
         /**
          * Removes listener(s) for the specified event name.
          * @param eventNames Comma delimited names of the events or gesture types the specified listener is associated with.
          * @param callback An optional parameter pointing to a specific listener. If not defined, all listeners for the event names will be removed.
          * @param thisArg An optional parameter which when set will be used to refine search of the correct callback which will be removed as event listener.
          */
-        off(eventNames: string | gestures.GestureTypes, callback?: (data: observable.EventData) => void, thisArg?: any);
+        off(eventNames: string | GestureTypes, callback?: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a loaded event occurs.
          */
-        on(event: "loaded", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "loaded", callback: (args: EventData) => void, thisArg?: any);
 
         /**
          * Raised when an unloaded event occurs.
          */
-        on(event: "unloaded", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "unloaded", callback: (args: EventData) => void, thisArg?: any);
 
         /**
          * Animates one or more properties of the view based on the supplied options. 
          */
-        public animate(options: animation.AnimationDefinition): animation.AnimationPromise;
-        
+        public animate(options: AnimationDefinition): AnimationPromise;
+
         /**
          * Creates an Animation object based on the supplied options. 
          */
-        public createAnimation(options: animation.AnimationDefinition): animation.Animation;
+        public createAnimation(options: AnimationDefinition): Animation;
 
         /**
          * Returns the location of this view in the window coordinate system.
@@ -562,29 +535,9 @@ declare module "ui/core/view" {
          */
         public getActualSize(): Size;
 
-        /**
-         * @protected
-         * @unstable
-         * A widget can call this method to add a matching css pseudo class.
-         */
-        public addPseudoClass(name: string): void;
-
-        /**
-         * @protected
-         * @unstable
-         * A widget can call this method to discard mathing css pseudo class.
-         */
-        public deletePseudoClass(name: string): void;
-        
         // Lifecycle events
-        onLoaded(): void;
-        onUnloaded(): void;
-        isLoaded: boolean;
 
-        _addView(view: View, atIndex?: number);
-        _propagateInheritableProperties(view: View);
-        _inheritProperties(parentView: View);
-        _removeView(view: View);
+
         _context: any /* android.content.Context */;
 
         _childIndexToNativeChildIndex(index?: number): number;
@@ -598,18 +551,19 @@ declare module "ui/core/view" {
         public _applyXmlAttribute(attribute: string, value: any): boolean;
 
         //@private
+        /**
+         * A property has changed on the native side directly - e.g. the user types in a TextField.
+         */
+        public nativePropertyChanged(property: Property<any, any>, newValue: any): void;
+        public bind(options: BindingOptions, source: any): void;
+        public unbind(property: string): void;
+
+        isCollapsed: boolean;
         isLayoutRequired: boolean;
-        _parentChanged(oldParent: View): void;
+
         _gestureObservers: any;
-        _isInheritedChange(): boolean;
+        // _isInheritedChange(): boolean;
         _domId: number;
-
-        _cssState: any /* "ui/styling/style-scope" */;
-        _setCssState(next: any /* "ui/styling/style-scope" */);
-
-        _registerAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
-        _unregisterAnimation(animation: keyframeAnimationModule.KeyframeAnimation);
-        _unregisterAllAnimations();
 
         _isAddedToNativeVisualTree: boolean;
 
@@ -626,9 +580,6 @@ declare module "ui/core/view" {
         _onContextChanged(): void;
         _onDetached(force?: boolean): void;
         _createUI(): void;
-
-        _shouldApplyStyleHandlers();
-        _checkMetadataOnPropertyChanged(metadata: dependencyObservable.PropertyMetadata);
 
         _updateLayout(): void;
 
@@ -649,9 +600,8 @@ declare module "ui/core/view" {
 
         _goToVisualState(state: string);
         _nativeView: any;
-        _isVisible: boolean;
         _setNativeViewFrame(nativeView: any, frame: any): void;
-        _onStylePropertyChanged(property: dependencyObservable.Property): void;
+        // _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
     }
 
@@ -665,7 +615,7 @@ declare module "ui/core/view" {
      * Defines an interface for a View factory function.
      * Commonly used to specify the visualization of data objects.
      */
-    interface Template {
+    export interface Template {
         /**
          * Call signature of the factory function.
          * Returns a new View instance.
@@ -676,7 +626,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface for Template with a key.
      */
-    interface KeyedTemplate {
+    export interface KeyedTemplate {
         /**
          * The unique key of the template.
          */
@@ -691,7 +641,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface for adding arrays declared in xml.
      */
-    interface AddArrayFromBuilder {
+    export interface AddArrayFromBuilder {
         /**
          * A function that is called when an array declaration is found in xml.
          * @param name - Name of the array.
@@ -703,7 +653,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface for adding a child element declared in xml.
      */
-    interface AddChildFromBuilder {
+    export interface AddChildFromBuilder {
         /**
          * Called for every child element declared in xml.
          * This method will add a child element (value) to current element.
@@ -716,7 +666,7 @@ declare module "ui/core/view" {
     /**
      * Defines an interface used to create a member of a class from string representation (used in xml declaration).
      */
-    interface ApplyXmlAttributes {
+    export interface ApplyXmlAttributes {
         /**
          * Called for every attribute in xml declaration. <... fontAttributes="bold" ../>
          * @param attributeName - the name of the attribute (fontAttributes)
@@ -725,4 +675,93 @@ declare module "ui/core/view" {
          */
         _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
     }
+
+    export namespace layout {
+        export const UNSPECIFIED: number;
+        export const EXACTLY: number;
+        export const AT_MOST: number;
+
+        export const MEASURED_HEIGHT_STATE_SHIFT: number;
+        export const MEASURED_STATE_TOO_SMALL: number;
+        export const MEASURED_STATE_MASK: number;
+        export const MEASURED_SIZE_MASK: number;
+
+        export function getMeasureSpecMode(spec: number): number;
+        export function getMeasureSpecSize(spec: number): number;
+        export function getDisplayDensity(): number;
+        export function makeMeasureSpec(size: number, mode: number): number;
+        export function toDevicePixels(value: number): number;
+        export function toDeviceIndependentPixels(value: number): number;
+        export function measureSpecToString(measureSpec: number): string;
+    }
+
+    export const automationTextProperty: Property<View, string>;
+    export const originXProperty: Property<View, number>;
+    export const originYProperty: Property<View, number>;
+    export const isEnabledProperty: Property<View, boolean>;
+    export const isUserInteractionEnabledProperty: Property<View, boolean>;
+
+    export const rotateProperty: CssProperty<Style, number>;
+    export const scaleXProperty: CssProperty<Style, number>;
+    export const scaleYProperty: CssProperty<Style, number>;
+    export const translateXProperty: CssProperty<Style, number>;
+    export const translateYProperty: CssProperty<Style, number>;
+
+    export const clipPathProperty: CssProperty<Style, string>;
+    export const colorProperty: InheritedCssProperty<Style, Color>;
+
+    export const backgroundColorProperty: CssProperty<Style, Color>;
+    export const backgroundImageProperty: CssProperty<Style, string>;
+    export const backgroundRepeatProperty: CssProperty<Style, string>;
+    export const backgroundSizeProperty: CssProperty<Style, string>;
+    export const backgroundPositionProperty: CssProperty<Style, string>;
+
+    export const borderColorProperty: CssProperty<Style, Color>;
+    export const borderTopColorProperty: CssProperty<Style, Color>;
+    export const borderRightColorProperty: CssProperty<Style, Color>;
+    export const borderBottomColorProperty: CssProperty<Style, Color>;
+    export const borderLeftColorProperty: CssProperty<Style, Color>;
+
+    export const borderWidthProperty: CssProperty<Style, number>;
+    export const borderTopWidthProperty: CssProperty<Style, Length>;
+    export const borderRightWidthProperty: CssProperty<Style, Length>;
+    export const borderBottomWidthProperty: CssProperty<Style, Length>;
+    export const borderLeftWidthProperty: CssProperty<Style, Length>;
+
+    export const borderRadiusProperty: CssProperty<Style, number>;
+    export const borderTopLeftRadiusProperty: CssProperty<Style, number>;
+    export const borderTopRightRadiusProperty: CssProperty<Style, number>;
+    export const borderBottomRightRadiusProperty: CssProperty<Style, number>;
+    export const borderBottomLeftRadiusProperty: CssProperty<Style, number>;
+
+    export const zIndexProperty: CssProperty<Style, number>;
+    export const visibilityProperty: CssProperty<Style, string>;
+    export const opacityProperty: CssProperty<Style, number>;
+
+    export const minWidthProperty: CssProperty<Style, Length>;
+    export const minHeightProperty: CssProperty<Style, Length>;
+    export const widthProperty: CssProperty<Style, Length>;
+    export const heightProperty: CssProperty<Style, Length>;
+    export const marginProperty: CssProperty<Style, string>;
+    export const marginLeftProperty: CssProperty<Style, Length>;
+    export const marginRightProperty: CssProperty<Style, Length>;
+    export const marginTopProperty: CssProperty<Style, Length>;
+    export const marginBottomProperty: CssProperty<Style, Length>;
+
+    export const paddingProperty: CssProperty<Style, string>;
+    export const paddingLeftProperty: CssProperty<Style, Length>;
+    export const paddingRightProperty: CssProperty<Style, Length>;
+    export const paddingTopProperty: CssProperty<Style, Length>;
+    export const paddingBottomProperty: CssProperty<Style, Length>;
+
+    export const verticalAlignmentProperty: CssProperty<Style, string>;
+    export const horizontalAlignmentProperty: CssProperty<Style, string>;
+
+    export const fontSizeProperty: InheritedCssProperty<Style, number>;
+    export const fontFamilyProperty: InheritedCssProperty<Style, string>;
+    export const fontStyleProperty: InheritedCssProperty<Style, string>;
+    export const fontWeightProperty: InheritedCssProperty<Style, string>;
+
+    export const backgroundInternalProperty: CssProperty<Style, Background>;
+    export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 }

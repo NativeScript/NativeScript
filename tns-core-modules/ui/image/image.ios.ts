@@ -1,47 +1,14 @@
-import imageCommon = require("./image-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import enums = require("ui/enums");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
-import * as trace from "trace";
-import * as utils from "utils/utils";
+import {
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, layout, Color,
+    traceEnabled, traceWrite, traceCategories
+} from "./image-common";
 
-global.moduleMerge(imageCommon, exports);
+export * from "./image-common";;
 
-function onStretchPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var image = <Image>data.object;
-
-    switch (data.newValue) {
-        case enums.Stretch.aspectFit:
-            image.ios.contentMode = UIViewContentMode.ScaleAspectFit;
-            break;
-        case enums.Stretch.aspectFill:
-            image.ios.contentMode = UIViewContentMode.ScaleAspectFill;
-            break;
-        case enums.Stretch.fill:
-            image.ios.contentMode = UIViewContentMode.ScaleToFill;
-            break;
-        case enums.Stretch.none:
-        default:
-            image.ios.contentMode = UIViewContentMode.TopLeft;
-            break;
-    }
-}
-
-function onImageSourcePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var image = <Image>data.object;
-    image._setNativeImage(data.newValue ? data.newValue.ios : null);
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>imageCommon.Image.imageSourceProperty.metadata).onSetNativeValue = onImageSourcePropertyChanged;
-(<proxy.PropertyMetadata>imageCommon.Image.stretchProperty.metadata).onSetNativeValue = onStretchPropertyChanged;
-
-export class Image extends imageCommon.Image {
+export class Image extends ImageBase {
     private _ios: UIImageView;
     private _imageSourceAffectsLayout: boolean = true;
-    private _templateImageWasCreated: boolean = false;
+    private _templateImageWasCreated: boolean;
 
     constructor() {
         super();
@@ -57,22 +24,18 @@ export class Image extends imageCommon.Image {
         return this._ios;
     }
 
-    public _setTintColor(value: any) {
+    private setTintColor(value: Color) {
         if (value !== null && this._ios.image && !this._templateImageWasCreated) {
             this._ios.image = this._ios.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
             this._templateImageWasCreated = true;
         }
-        this._ios.tintColor = value;
+        this._ios.tintColor = value ? value.ios : null;
     }
 
-    public _setNativeImage(nativeImage: any) {
-        if (this.style.tintColor && nativeImage) {
-            nativeImage = nativeImage.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-            this._templateImageWasCreated = true;
-        } else {
-            this._templateImageWasCreated = false;
-        }
+    public _setNativeImage(nativeImage: UIImage) {
         this.ios.image = nativeImage;
+        this._templateImageWasCreated = false;
+        this.setTintColor(this.style.tintColor);
 
         if (this._imageSourceAffectsLayout) {
             this.requestLayout();
@@ -81,49 +44,50 @@ export class Image extends imageCommon.Image {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // We don't call super because we measure native view with specific size.     
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var nativeWidth = this.imageSource ? this.imageSource.width : 0;
-        var nativeHeight = this.imageSource ? this.imageSource.height : 0;
+        let nativeWidth = this.imageSource ? this.imageSource.width : 0;
+        let nativeHeight = this.imageSource ? this.imageSource.height : 0;
 
-        var measureWidth = Math.max(nativeWidth, this.minWidth);
-        var measureHeight = Math.max(nativeHeight, this.minHeight);
+        let style = this.style;
+        let measureWidth = Math.max(nativeWidth, style.effectiveMinWidth);
+        let measureHeight = Math.max(nativeHeight, style.effectiveMinHeight);
 
-        var finiteWidth: boolean = widthMode !== utils.layout.UNSPECIFIED;
-        var finiteHeight: boolean = heightMode !== utils.layout.UNSPECIFIED;
-        
-        this._imageSourceAffectsLayout = widthMode !== utils.layout.EXACTLY || heightMode !== utils.layout.EXACTLY;
-        
+        let finiteWidth: boolean = widthMode !== layout.UNSPECIFIED;
+        let finiteHeight: boolean = heightMode !== layout.UNSPECIFIED;
+
+        this._imageSourceAffectsLayout = widthMode !== layout.EXACTLY || heightMode !== layout.EXACTLY;
+
         if (nativeWidth !== 0 && nativeHeight !== 0 && (finiteWidth || finiteHeight)) {
-            var scale = Image.computeScaleFactor(width, height, finiteWidth, finiteHeight, nativeWidth, nativeHeight, this.stretch);
-            var resultW = Math.round(nativeWidth * scale.width);
-            var resultH = Math.round(nativeHeight * scale.height);
+            let scale = Image.computeScaleFactor(width, height, finiteWidth, finiteHeight, nativeWidth, nativeHeight, this.stretch);
+            let resultW = Math.round(nativeWidth * scale.width);
+            let resultH = Math.round(nativeHeight * scale.height);
 
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;
 
-            if (trace.enabled) {
-                trace.write("Image stretch: " + this.stretch +
+            if (traceEnabled) {
+                traceWrite("Image stretch: " + this.stretch +
                     ", nativeWidth: " + nativeWidth +
-                    ", nativeHeight: " + nativeHeight, trace.categories.Layout);
+                    ", nativeHeight: " + nativeHeight, traceCategories.Layout);
             }
         }
 
-        var widthAndState = Image.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        var heightAndState = Image.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        let widthAndState = Image.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        let heightAndState = Image.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     private static computeScaleFactor(measureWidth: number, measureHeight: number, widthIsFinite: boolean, heightIsFinite: boolean, nativeWidth: number, nativeHeight: number, imageStretch: string): { width: number; height: number } {
-        var scaleW = 1;
-        var scaleH = 1;
+        let scaleW = 1;
+        let scaleH = 1;
 
-        if ((imageStretch === enums.Stretch.aspectFill || imageStretch === enums.Stretch.aspectFit || imageStretch === enums.Stretch.fill) &&
+        if ((imageStretch === "aspectFill" || imageStretch === "aspectFit" || imageStretch === "fill") &&
             (widthIsFinite || heightIsFinite)) {
 
             scaleW = (nativeWidth > 0) ? measureWidth / nativeWidth : 0;
@@ -138,11 +102,11 @@ export class Image extends imageCommon.Image {
             else {
                 // No infinite dimensions.
                 switch (imageStretch) {
-                    case enums.Stretch.aspectFit:
+                    case "aspectFit":
                         scaleH = scaleW < scaleH ? scaleW : scaleH;
                         scaleW = scaleH;
                         break;
-                    case enums.Stretch.aspectFill:
+                    case "aspectFill":
                         scaleH = scaleW > scaleH ? scaleW : scaleH;
                         scaleW = scaleH;
                         break;
@@ -151,24 +115,39 @@ export class Image extends imageCommon.Image {
         }
         return { width: scaleW, height: scaleH };
     }
-} 
 
-export class ImageStyler implements style.Styler {
-    //Text color methods
-    private static setTintColorProperty(view: view.View, newValue: any) {
-        let image = <Image>view;
-        image._setTintColor(newValue);
-    } 
-
-    private static resetTintColorProperty(view: view.View, nativeValue: any) {
-        view.ios.tintColor = null; 
+    get [stretchProperty.native](): "aspectFit" {
+        return "aspectFit";
+    }
+    set [stretchProperty.native](value: "none" | "aspectFill" | "aspectFit" | "fill") {
+        switch (value) {
+            case "aspectFit":
+                this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
+                break;
+            case "aspectFill":
+                this._ios.contentMode = UIViewContentMode.ScaleAspectFill;
+                break;
+            case "fill":
+                this._ios.contentMode = UIViewContentMode.ScaleToFill;
+                break;
+            case "none":
+            default:
+                this._ios.contentMode = UIViewContentMode.TopLeft;
+                break;
+        }
     }
 
-    public static registerHandlers() {
-        style.registerHandler(style.tintColorProperty, new style.StylePropertyChangedHandler(
-            ImageStyler.setTintColorProperty,
-            ImageStyler.resetTintColorProperty), "Image");
+    get [tintColorProperty.native](): Color {
+        return undefined;
+    }
+    set [tintColorProperty.native](value: Color) {
+        this.setTintColor(value);
+    }
+
+    get [imageSourceProperty.native](): ImageSource {
+        return undefined;
+    }
+    set [imageSourceProperty.native](value: ImageSource) {
+        this._setNativeImage(value ? value.ios : null);
     }
 }
-
-ImageStyler.registerHandlers();

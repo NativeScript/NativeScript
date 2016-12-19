@@ -2,20 +2,19 @@
  * Contains the DatePicker class.
  */
 declare module "ui/date-picker" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import { View, Property } from "ui/core/view";
+
+    export const yearProperty: Property<DatePicker, number>;
+    export const monthProperty: Property<DatePicker, number>;
+    export const dayProperty: Property<DatePicker, number>;
+    export const dateProperty: Property<DatePicker, Date>;
+    export const maxDate: Property<DatePicker, Date>;
+    export const minDate: Property<DatePicker, Date>;
 
     /**
      * Represents an date picker.
      */
-    export class DatePicker extends view.View {
-        public static yearProperty: dependencyObservable.Property;
-        public static monthProperty: dependencyObservable.Property;
-        public static dayProperty: dependencyObservable.Property;
-        public static dateProperty: dependencyObservable.Property;
-
-        constructor();
-
+    export class DatePicker extends View {
         /**
          * Gets the native [android.widget.DatePicker](http://developer.android.com/reference/android/widget/DatePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -56,4 +55,4 @@ declare module "ui/date-picker" {
          */
         minDate: Date;
     }
-} 
+}

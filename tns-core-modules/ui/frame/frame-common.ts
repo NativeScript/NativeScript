@@ -1,24 +1,16 @@
-﻿import * as definition from "ui/frame";
-import {View, CustomLayoutView} from "ui/core/view";
-import {Page} from "ui/page";
-import {isString, isFunction, isDefined} from "utils/types";
-import * as trace from "trace";
-import {resolveFileName} from "file-system/file-name-resolver";
+﻿import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from "ui/frame";
+import { Page, View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories } from "ui/page";
+import { isString, isFunction, isDefined } from "utils/types";
+import { resolveFileName } from "file-system/file-name-resolver";
 import * as fs from "file-system";
-import * as builderModule from "ui/builder";
-import * as platform from "platform";
+import * as builder from "ui/builder";
 
-var builder: typeof builderModule;
-function ensureBuilder() {
-    if (!builder) {
-        builder = require("ui/builder");
-    }
-}
+export * from "ui/page";
 
-var frameStack: Array<Frame> = [];
+let frameStack: Array<FrameBase> = [];
 
-function buildEntryFromArgs(arg: any): definition.NavigationEntry {
-    var entry: definition.NavigationEntry;
+function buildEntryFromArgs(arg: any): NavigationEntry {
+    let entry: NavigationEntry;
     if (arg instanceof Page) {
         throw new Error("Navigating to a Page instance is no longer supported. Please navigate by using either a module name or a page factory function.");
     } else if (isString(arg)) {
@@ -44,7 +36,7 @@ export function reloadPage(): void {
         }
 
         let currentEntry = frame._currentEntry.entry;
-        let newEntry: definition.NavigationEntry = {
+        let newEntry: NavigationEntry = {
             animated: false,
             clearHistory: true,
             context: currentEntry.context,
@@ -57,8 +49,8 @@ export function reloadPage(): void {
     }
 }
 
-export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
-    var page: Page;
+export function resolvePageFromEntry(entry: NavigationEntry): Page {
+    let page: Page;
 
     if (entry.create) {
         page = entry.create();
@@ -69,21 +61,21 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
     }
     else if (entry.moduleName) {
         // Current app full path.
-        var currentAppPath = fs.knownFolders.currentApp().path;
+        let currentAppPath = fs.knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
-        var moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
+        let moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
 
-        var moduleExports;
+        let moduleExports;
         if (global.moduleExists(entry.moduleName)) {
-            if (trace.enabled) {
-                trace.write("Loading pre-registered JS module: " + entry.moduleName, trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
             }
             moduleExports = global.loadModule(entry.moduleName);
         } else {
-            var moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
+            let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
             if (moduleExportsResolvedPath) {
-                if (trace.enabled) {
-                    trace.write("Loading JS file: " + moduleExportsResolvedPath, trace.categories.Navigation);
+                if (traceEnabled) {
+                    traceWrite("Loading JS file: " + moduleExportsResolvedPath, traceCategories.Navigation);
                 }
 
                 // Exclude extension when doing require.
@@ -93,8 +85,8 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
         }
 
         if (moduleExports && moduleExports.createPage) {
-            if (trace.enabled) {
-                trace.write("Calling createPage()", trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite("Calling createPage()", traceCategories.Navigation);
             }
             page = moduleExports.createPage();
         }
@@ -107,7 +99,7 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
         }
 
         // Possible CSS file path. Add it only if CSS not already specified and loaded from cssFile Page attribute in XML.
-        var cssFileName = resolveFileName(moduleNamePath, "css");
+        let cssFileName = resolveFileName(moduleNamePath, "css");
         if (cssFileName && !page["cssFile"]) {
             page.addCssFile(cssFileName);
         }
@@ -117,17 +109,15 @@ export function resolvePageFromEntry(entry: definition.NavigationEntry): Page {
 }
 
 function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
-    var page: Page;
-    var element: View;
+    let page: Page;
+    let element: View;
 
     // Possible XML file path.
-    var fileName = resolveFileName(moduleNamePath, "xml");
+    let fileName = resolveFileName(moduleNamePath, "xml");
     if (fileName) {
-        if (trace.enabled) {
-            trace.write("Loading XML file: " + fileName, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite("Loading XML file: " + fileName, traceCategories.Navigation);
         }
-
-        ensureBuilder();
 
         // Or check if the file exists in the app modules and load the page from XML.
         element = builder.load(fileName, moduleExports);
@@ -140,29 +130,29 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
 }
 
 export interface NavigationContext {
-    entry: definition.BackstackEntry;
+    entry: BackstackEntry;
     isBackNavigation: boolean;
 }
 
-export class Frame extends CustomLayoutView implements definition.Frame {
+export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public static androidOptionSelectedEvent = "optionSelected";
 
-    private _navigationQueue: Array<NavigationContext>;
-    private _backStack: Array<definition.BackstackEntry>;
-    public _currentEntry: definition.BackstackEntry;
     private _animated: boolean;
-    private _transition: definition.NavigationTransition;
+    public _currentEntry: BackstackEntry;
+    private _backStack: Array<BackstackEntry>;
+    private _transition: NavigationTransition;
+    private _navigationQueue: Array<NavigationContext>;
 
     public _isInFrameStack = false;
     public static defaultAnimatedNavigation = true;
-    public static defaultTransition: definition.NavigationTransition;
+    public static defaultTransition: NavigationTransition;
 
     // TODO: Currently our navigation will not be synchronized in case users directly call native navigation methods like Activity.startActivity.
 
     constructor() {
         super();
 
-        this._backStack = new Array<definition.BackstackEntry>();
+        this._backStack = new Array<BackstackEntry>();
         this._navigationQueue = new Array<NavigationContext>();
     }
 
@@ -174,9 +164,9 @@ export class Frame extends CustomLayoutView implements definition.Frame {
      * Navigates to the previous entry (if any) in the back stack.
      * @param to The backstack entry to navigate back to.
      */
-    public goBack(backstackEntry?: definition.BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`GO BACK`, trace.categories.Navigation);
+    public goBack(backstackEntry?: BackstackEntry) {
+        if (traceEnabled) {
+            traceWrite(`GO BACK`, traceCategories.Navigation);
         }
         if (!this.canGoBack()) {
             // TODO: Do we need to throw an error?
@@ -193,7 +183,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._backStack.splice(backIndex);
         }
 
-        var navigationContext: NavigationContext = {
+        let navigationContext: NavigationContext = {
             entry: backstackEntry,
             isBackNavigation: true
         }
@@ -204,23 +194,23 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            if (trace.enabled) {
-                trace.write(`Going back scheduled`, trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite(`Going back scheduled`, traceCategories.Navigation);
             }
         }
     }
 
     public navigate(param: any) {
-        if (trace.enabled) {
-            trace.write(`NAVIGATE`, trace.categories.Navigation);
+        if (traceEnabled) {
+            traceWrite(`NAVIGATE`, traceCategories.Navigation);
         }
 
-        var entry = buildEntryFromArgs(param);
-        var page = resolvePageFromEntry(entry);
+        let entry = buildEntryFromArgs(param);
+        let page = resolvePageFromEntry(entry);
 
         this._pushInFrameStack();
 
-        var backstackEntry: definition.BackstackEntry = {
+        let backstackEntry: BackstackEntry = {
             entry: entry,
             resolvedPage: page,
             navDepth: undefined,
@@ -229,7 +219,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             isNavigation: true
         };
 
-        var navigationContext: NavigationContext = {
+        let navigationContext: NavigationContext = {
             entry: backstackEntry,
             isBackNavigation: false
         }
@@ -240,8 +230,8 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             this._processNavigationContext(navigationContext);
         }
         else {
-            if (trace.enabled) {
-                trace.write(`Navigation scheduled`, trace.categories.Navigation);
+            if (traceEnabled) {
+                traceWrite(`Navigation scheduled`, traceCategories.Navigation);
             }
         }
     }
@@ -252,8 +242,8 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             return;
         }
 
-        var entry = this._navigationQueue[0].entry;
-        var currentNavigationPage = entry.resolvedPage;
+        let entry = this._navigationQueue[0].entry;
+        let currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
             throw new Error(`Corrupted navigation stack; page: ${page}; currentNavigationPage: ${currentNavigationPage}`);
         }
@@ -262,7 +252,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         this._navigationQueue.shift();
 
         if (this._navigationQueue.length > 0) {
-            var navigationContext = this._navigationQueue[0];
+            let navigationContext = this._navigationQueue[0];
             this._processNavigationContext(navigationContext);
         }
 
@@ -273,19 +263,19 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return this._navigationQueue.length === 0;
     }
 
-    public static _isEntryBackstackVisible(entry: definition.BackstackEntry): boolean {
+    public static _isEntryBackstackVisible(entry: BackstackEntry): boolean {
         if (!entry) {
             return false;
         }
 
-        var backstackVisibleValue = entry.entry.backstackVisible;
-        var backstackHidden = isDefined(backstackVisibleValue) && !backstackVisibleValue;
+        let backstackVisibleValue = entry.entry.backstackVisible;
+        let backstackHidden = isDefined(backstackVisibleValue) && !backstackVisibleValue;
 
         return !backstackHidden;
     }
 
     public _updateActionBar(page?: Page) {
-        //trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
+        //traceWrite("calling _updateActionBar on Frame", traceCategories.Navigation);
     }
 
     protected _processNavigationContext(navigationContext: NavigationContext) {
@@ -298,13 +288,13 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     private performNavigation(navigationContext: NavigationContext) {
-        var navContext = navigationContext.entry;
+        let navContext = navigationContext.entry;
 
         // TODO: This should happen once navigation is completed.
         if (navigationContext.entry.entry.clearHistory) {
             this._backStack.length = 0;
         }
-        else if (Frame._isEntryBackstackVisible(this._currentEntry)) {
+        else if (FrameBase._isEntryBackstackVisible(this._currentEntry)) {
             this._backStack.push(this._currentEntry);
         }
 
@@ -314,24 +304,24 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     private performGoBack(navigationContext: NavigationContext) {
-        var navContext = navigationContext.entry;
+        let navContext = navigationContext.entry;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
         this._goBackCore(navContext);
     }
 
-    public _goBackCore(backstackEntry: definition.BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, trace.categories.Navigation);
+    public _goBackCore(backstackEntry: BackstackEntry) {
+        if (traceEnabled) {
+            traceWrite(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
         }
     }
 
-    public _navigateCore(backstackEntry: definition.BackstackEntry) {
-        if (trace.enabled) {
-            trace.write(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, trace.categories.Navigation);
+    public _navigateCore(backstackEntry: BackstackEntry) {
+        if (traceEnabled) {
+            traceWrite(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
         }
     }
 
-    public _onNavigatingTo(backstackEntry: definition.BackstackEntry, isBack: boolean) {
+    public _onNavigatingTo(backstackEntry: BackstackEntry, isBack: boolean) {
         if (this.currentPage) {
             this.currentPage.onNavigatingFrom(isBack);
         }
@@ -347,15 +337,15 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         this._animated = value;
     }
 
-    public get transition(): definition.NavigationTransition {
+    public get transition(): NavigationTransition {
         return this._transition;
     }
 
-    public set transition(value: definition.NavigationTransition) {
+    public set transition(value: NavigationTransition) {
         this._transition = value;
     }
 
-    get backStack(): Array<definition.BackstackEntry> {
+    get backStack(): Array<BackstackEntry> {
         return this._backStack.slice();
     }
 
@@ -367,11 +357,11 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return null;
     }
 
-    get currentEntry(): definition.NavigationEntry {
+    get currentEntry(): NavigationEntry {
         if (this._currentEntry) {
             return this._currentEntry.entry;
         }
-        
+
         return null;
     }
 
@@ -389,7 +379,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             return;
         }
 
-        var top = _topmost();
+        let top = topmost();
         if (top !== this) {
             throw new Error("Cannot pop a Frame which is not at the top of the navigation stack.");
         }
@@ -412,7 +402,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         }
     }
 
-    public _getIsAnimatedNavigation(entry: definition.NavigationEntry): boolean {
+    public _getIsAnimatedNavigation(entry: NavigationEntry): boolean {
         if (entry && isDefined(entry.animated)) {
             return entry.animated;
         }
@@ -421,16 +411,16 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             return this.animated;
         }
 
-        return Frame.defaultAnimatedNavigation;
+        return FrameBase.defaultAnimatedNavigation;
     }
+    public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 
-    public _getNavigationTransition(entry: definition.NavigationEntry): definition.NavigationTransition {
         if (entry) {
-            if (platform.device.os === platform.platformNames.ios && isDefined(entry.transitioniOS)) {
+            if (isIOS && isDefined(entry.transitioniOS)) {
                 return entry.transitioniOS;
             }
 
-            if (platform.device.os === platform.platformNames.android && isDefined(entry.transitionAndroid)) {
+            if (isAndroid && isDefined(entry.transitionAndroid)) {
                 return entry.transitionAndroid;
             }
 
@@ -443,7 +433,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
             return this.transition;
         }
 
-        return Frame.defaultTransition;
+        return FrameBase.defaultTransition;
     }
 
     public get navigationBarHeight(): number {
@@ -465,19 +455,19 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 
     public _printFrameBackStack() {
-        var length = this.backStack.length;
-        var i = length - 1;
+        let length = this.backStack.length;
+        let i = length - 1;
         console.log(`Frame Back Stack: `);
         while (i >= 0) {
-            var backstackEntry = <definition.BackstackEntry>this.backStack[i--];
+            let backstackEntry = <BackstackEntry>this.backStack[i--];
             console.log(`\t${backstackEntry.resolvedPage}`);
         }
     }
 
-    public _backstackEntryTrace(b: definition.BackstackEntry): string {
+    public _backstackEntryTrace(b: BackstackEntry): string {
         let result = `${b.resolvedPage}`;
 
-        let backstackVisible = Frame._isEntryBackstackVisible(b);
+        let backstackVisible = FrameBase._isEntryBackstackVisible(b);
         if (!backstackVisible) {
             result += ` | INVISIBLE`;
         }
@@ -500,7 +490,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     }
 }
 
-var _topmost = function (): Frame {
+export function topmost(): FrameBase {
     if (frameStack.length > 0) {
         return frameStack[frameStack.length - 1];
     }
@@ -508,10 +498,8 @@ var _topmost = function (): Frame {
     return undefined;
 }
 
-export var topmost = _topmost;
-
 export function goBack(): boolean {
-    var top = _topmost();
+    let top = topmost();
     if (top.canGoBack()) {
         top.goBack();
         return true;
@@ -524,6 +512,6 @@ export function goBack(): boolean {
     return false;
 }
 
-export function stack(): Array<definition.Frame> {
+export function stack(): Array<FrameBase> {
     return frameStack;
 }

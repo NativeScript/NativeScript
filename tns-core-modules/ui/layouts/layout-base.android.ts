@@ -1,7 +1,15 @@
-﻿import common = require("./layout-base-common");
+﻿import { LayoutBaseCommon, clipToBoundsProperty } from "./layout-base-common";
 
-export class LayoutBase extends common.LayoutBase {
-    public _onClipToBoundsChanged(oldValue: boolean, newValue: boolean) {
+export * from "./layout-base-common";
+
+export class LayoutBase extends LayoutBaseCommon {
+
+    get [clipToBoundsProperty.native](): boolean {
+        return true;
+    }
+    set [clipToBoundsProperty.native](value: boolean) {
+        // TODO: Use ClipRectangle if API > 16! 
+
         // We can't implement this without calling setClipChildren(false) on every ancestor up in the visual tree, 
         // which will kill performance. It will also lead to unwanted side effects such as other totally unrelated 
         // views being affected by setting the parents' setClipChildren to false. 

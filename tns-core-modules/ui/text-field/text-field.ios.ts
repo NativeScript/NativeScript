@@ -1,19 +1,6 @@
-﻿import common = require("./text-field-common");
-import {PropertyChangeData} from "ui/core/dependency-observable";
-import {PropertyMetadata} from "ui/core/proxy";
-import {TextBase} from "ui/text-base";
-import {UpdateTextTrigger} from "ui/enums";
-import * as style from "ui/styling/style";
-import {View} from "ui/core/view";
+﻿import { TextFieldBase, Color, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty } from "./text-field-common";
 
-function onSecurePropertyChanged(data: PropertyChangeData) {
-    const textField = <TextField>data.object;
-    textField.ios.secureTextEntry = data.newValue;
-}
-
-(<PropertyMetadata>common.secureProperty.metadata).onSetNativeValue = onSecurePropertyChanged;
-
-global.moduleMerge(common, exports);
+export * from "./text-field-common";
 
 class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public static ObjCProtocols = [UITextFieldDelegate];
@@ -40,8 +27,8 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldDidEndEditing(textField: UITextField) {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === UpdateTextTrigger.focusLost) {
-                owner._onPropertyChangedFromNative(TextBase.textProperty, textField.text);
+            if (owner.updateTextTrigger === "focusLost") {
+                owner.nativePropertyChanged(textProperty, textField.text);
             }
 
             owner.dismissSoftInput();
@@ -56,7 +43,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         this.firstEdit = false;
         let owner = this._owner.get();
         if (owner) {
-            owner._onPropertyChangedFromNative(TextBase.textProperty, "");
+            owner.nativePropertyChanged(textProperty, "");
         }
 
         return true;
@@ -75,14 +62,14 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         let owner = this._owner.get();
         if (owner) {
-            if (owner.updateTextTrigger === UpdateTextTrigger.textChanged) {
+            if (owner.updateTextTrigger === "textChanged") {
                 if (textField.secureTextEntry && this.firstEdit) {
-                    owner._onPropertyChangedFromNative(TextBase.textProperty, replacementString);
+                    owner.nativePropertyChanged(textProperty, replacementString);
                 }
                 else {
                     if (range.location <= textField.text.length) {
                         let newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-                        owner._onPropertyChangedFromNative(TextBase.textProperty, newText);
+                        owner.nativePropertyChanged(textProperty, newText);
                     }
                 }
             }
@@ -115,9 +102,10 @@ class UITextFieldImpl extends UITextField {
         }
 
         let size = bounds.size;
-        return CGRectMake(owner.borderLeftWidth + owner.style.paddingLeft, owner.borderTopWidth + owner.style.paddingTop,
-            size.width - (owner.borderLeftWidth + owner.style.paddingLeft + owner.style.paddingRight + owner.borderRightWidth),
-            size.height - (owner.borderTopWidth + owner.style.paddingTop + owner.style.paddingBottom + owner.borderBottomWidth)
+        let style = owner.style;
+        return CGRectMake(style.effectiveBorderLeftWidth + style.effectivePaddingLeft, style.effectiveBorderTopWidth + style.effectivePaddingTop,
+            size.width - (style.effectiveBorderLeftWidth + style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderRightWidth),
+            size.height - (style.effectiveBorderTopWidth + style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderBottomWidth)
         );
     }
 
@@ -130,15 +118,16 @@ class UITextFieldImpl extends UITextField {
     }
 }
 
-export class TextField extends common.TextField {
+export class TextField extends TextFieldBase {
     private _ios: UITextField;
     private _delegate: UITextFieldDelegateImpl;
+    nativeView: UITextField;
 
     constructor() {
         super();
-
-        this._ios = UITextFieldImpl.initWithOwner(new WeakRef(this));
-        this._delegate = UITextFieldDelegateImpl.initWithOwner(new WeakRef(this));
+        let weakRef = new WeakRef(this);
+        this._ios = UITextFieldImpl.initWithOwner(weakRef);
+        this._delegate = UITextFieldDelegateImpl.initWithOwner(weakRef);
     }
 
     public onLoaded() {
@@ -155,75 +144,43 @@ export class TextField extends common.TextField {
         return this._ios;
     }
 
-    public _onHintPropertyChanged(data: PropertyChangeData) {
-        const textField = <TextField>data.object;
-        textField.ios.placeholder = data.newValue + "";
+    get [hintProperty.native](): string {
+        return this.nativeView.placeholder;
     }
-};
-
-export class TextFieldStyler implements style.Styler {
-    private static setColorProperty(view: View, newValue: any) {
-        const  tf: UITextField = <UITextField>view._nativeView;
-        TextFieldStyler._setTextFieldColor(tf, newValue);
+    set [hintProperty.native](value: string) {
+        this.nativeView.placeholder = value + '';
     }
 
-    private static resetColorProperty(view: View, nativeValue: any) {
-        const  tf: UITextField = <UITextField>view._nativeView;
-        TextFieldStyler._setTextFieldColor(tf, nativeValue);
+    get [secureProperty.native](): boolean {
+        return this.nativeView.secureTextEntry;
+    }
+    set [secureProperty.native](value: boolean) {
+        this.nativeView.secureTextEntry = value;
     }
 
-    private static _setTextFieldColor(tf: UITextField, newValue: any) {
-        const  color: UIColor = <UIColor>newValue;
-        if ((<any>tf).isShowingHint && color) {
-            tf.textColor = (<UIColor>color).colorWithAlphaComponent(0.22);
-        }
-        else {
-            tf.textColor = color;
-            tf.tintColor = color;
-        }
+    get [colorProperty.native](): UIColor {
+        // return this.nativeView.tintColor;
+        return this.nativeView.textColor;
+    }
+    set [colorProperty.native](value: UIColor) {
+        // NOTE: Do we need this code? We have placeholderColor.
+        // let nativeValue = this.nativeView;
+        // if (this.isShowingHint && value) {
+        //     nativeValue.textColor = value.colorWithAlphaComponent(0.22);
+        // } else {
+        //     nativeValue.textColor = value;
+        //     nativeValue.tintColor = value;
+        // }
+        this.nativeView.textColor = value;
     }
 
-    private static getNativeColorValue(view: View): any {
-        const  tf: UITextField = <UITextField>view._nativeView;
-        return tf.tintColor;
+    get [placeholderColorProperty.native](): UIColor {
+        return null;
     }
-
-    // placeholder-color
-    private static setPlaceholderColorProperty(textBase: View, newValue: any) {
-        const ios = <UITextField>textBase._nativeView;
-        const text = ios.placeholder + "";
-        const colorAttributes = NSMutableDictionary.alloc().init();
-        colorAttributes.setValueForKey(newValue, NSForegroundColorAttributeName);
-        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(text, colorAttributes.copy());
-    }
-
-    private static resetPlaceholderColorProperty(textBase: View, nativeValue: any) {
-        const ios = <UITextField>textBase._nativeView;
-        const text = ios.placeholder + "";
-        const colorAttributes = NSMutableDictionary.alloc().init();
-        colorAttributes.setValueForKey(nativeValue, NSForegroundColorAttributeName);
-        ios.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(text, colorAttributes.copy());
-    }
-
-    private static getNativePlaceholderColorValue(textBase: View): any {
-        const  ios = <UITextField>textBase._nativeView;
-        if (!ios.attributedPlaceholder) {
-            return null;
-        }
-        return ios.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null);
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TextFieldStyler.setColorProperty,
-            TextFieldStyler.resetColorProperty,
-            TextFieldStyler.getNativeColorValue), "TextField");
-
-        style.registerHandler(style.placeholderColorProperty, new style.StylePropertyChangedHandler(
-            TextFieldStyler.setPlaceholderColorProperty,
-            TextFieldStyler.resetPlaceholderColorProperty,
-            TextFieldStyler.getNativePlaceholderColorValue), "TextField");
+    set [placeholderColorProperty.native](value: UIColor | Color) {
+        let nativeView = this.nativeView;
+        let colorAttibutes = NSMutableDictionary.new<string, any>();
+        colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
+        nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(nativeView.placeholder || "", colorAttibutes);
     }
 }
-
-TextFieldStyler.registerHandlers();

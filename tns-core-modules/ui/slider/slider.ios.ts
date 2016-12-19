@@ -1,30 +1,10 @@
-﻿import common = require("./slider-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
-import proxy = require("ui/core/proxy");
-import style = require("ui/styling/style");
+﻿import {
+    SliderBase, valueProperty, minValueProperty, maxValueProperty,
+    colorProperty, backgroundColorProperty, backgroundInternalProperty,
+    Color, Background
+} from "./slider-common";
 
-function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var slider = <Slider>data.object;
-    slider.ios.value = data.newValue;
-}
-
-function onMinValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var slider = <Slider>data.object;
-    slider.ios.minimumValue = data.newValue;
-}
-
-function onMaxValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var slider = <Slider>data.object;
-    slider.ios.maximumValue = data.newValue;
-}
-
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.Slider.valueProperty.metadata).onSetNativeValue = onValuePropertyChanged;
-(<proxy.PropertyMetadata>common.Slider.minValueProperty.metadata).onSetNativeValue = onMinValuePropertyChanged;
-(<proxy.PropertyMetadata>common.Slider.maxValueProperty.metadata).onSetNativeValue = onMaxValuePropertyChanged;
-
-global.moduleMerge(common, exports);
+export * from "./slider-common";
 
 class SliderChangeHandlerImpl extends NSObject {
 
@@ -39,7 +19,7 @@ class SliderChangeHandlerImpl extends NSObject {
     public sliderValueChanged(sender: UISlider) {
         let owner = this._owner.get();
         if (owner) {
-            owner._onPropertyChangedFromNative(common.Slider.valueProperty, sender.value);
+            owner.nativePropertyChanged(valueProperty, sender.value);
         }
     }
 
@@ -48,7 +28,7 @@ class SliderChangeHandlerImpl extends NSObject {
     };
 }
 
-export class Slider extends common.Slider {
+export class Slider extends SliderBase {
     private _ios: UISlider;
     private _changeHandler: NSObject;
 
@@ -67,52 +47,46 @@ export class Slider extends common.Slider {
     get ios(): UISlider {
         return this._ios;
     }
-} 
 
-export class SliderStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <UISlider>view.ios;
-        bar.thumbTintColor = newValue;
+    get [valueProperty.native](): number {
+        return 0;
+    }
+    set [valueProperty.native](value: number) {
+        this._ios.value = value;
+    }
+    get [minValueProperty.native](): number {
+        return 0;
+    }
+    set [minValueProperty.native](value: number) {
+        this._ios.minimumValue = value;
+    }
+    get [maxValueProperty.native](): number {
+        return 100;
+    }
+    set [maxValueProperty.native](value: number) {
+        this._ios.maximumValue = value;
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UISlider>view.ios;
-        bar.thumbTintColor = nativeValue;
+    get [colorProperty.native](): UIColor {
+        return this._ios.thumbTintColor;
+    }
+    set [colorProperty.native](value: UIColor | Color) {
+        let color = value instanceof Color ? value.ios : value;
+        this._ios.thumbTintColor = color;
     }
 
-    private static getNativeColorValue(view: view.View): any {
-        var bar = <UISlider>view.ios;
-        return bar.thumbTintColor;
+    get [backgroundColorProperty.native](): UIColor {
+        return this._ios.minimumTrackTintColor;
+    }
+    set [backgroundColorProperty.native](value: UIColor | Color) {
+        let color = value instanceof Color ? value.ios : value;
+        this._ios.minimumTrackTintColor = color;
     }
 
-    private static setBackgroundColorProperty(view: view.View, newValue: any) {
-        var bar = <UISlider>view.ios;
-        bar.minimumTrackTintColor = newValue;
+    get [backgroundInternalProperty.native](): Background {
+        return null;
     }
-
-    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UISlider>view.ios;
-        bar.minimumTrackTintColor = nativeValue;
-    }
-
-    private static getBackgroundColorProperty(view: view.View): any {
-        var bar = <UISlider>view.ios;
-        return bar.minimumTrackTintColor;
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SliderStyler.setColorProperty,
-            SliderStyler.resetColorProperty,
-            SliderStyler.getNativeColorValue), "Slider");
-
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            SliderStyler.setBackgroundColorProperty,
-            SliderStyler.resetBackgroundColorProperty,
-            SliderStyler.getBackgroundColorProperty), "Slider");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Slider");
+    set [backgroundInternalProperty.native](value: Background) {
+        //
     }
 }
-
-SliderStyler.registerHandlers();

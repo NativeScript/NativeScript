@@ -2,17 +2,17 @@
  * Contains the Frame class, which represents the logical View unit that is responsible for navigation within an application.
  */
 declare module "ui/frame" {
-    import view = require("ui/core/view");
-    import observable = require("data/observable");
-    import pages = require("ui/page");
-    import transition = require("ui/transition");
+    import { Page, View, Observable, EventData } from "ui/page";
+    import { Transition } from "ui/transition";
+
+    export * from "ui/page";
 
     /**
      * Represents the logical View unit that is responsible for navigation withing an application.
      * Typically an application will have a Frame object at a root level.
      * Nested frames are supported, enabling hierarchical navigation scenarios.
      */
-    export class Frame extends view.View {
+    export class Frame extends View {
         /**
          * Deprecated.
          * String value used when hooking to androidOptionSelected event (prefix `android` states that this event is available only in Android).
@@ -44,7 +44,7 @@ declare module "ui/frame" {
          * Creates a new Page instance using the provided callback and navigates to that Page.
          * @param create The function to be used to create the new Page instance.
          */
-        navigate(create: () => pages.Page);
+        navigate(create: () => Page);
 
         /**
          * Navigates to a Page resolved by the provided NavigationEntry object.
@@ -63,7 +63,7 @@ declare module "ui/frame" {
         /**
          * Gets the Page instance the Frame is currently navigated to.
          */
-        currentPage: pages.Page;
+        currentPage: Page;
 
         /**
          * Gets the NavigationEntry instance the Frame is currently navigated to.
@@ -103,9 +103,9 @@ declare module "ui/frame" {
         //@private
         navigationQueueIsEmpty(): boolean;
         navigationBarHeight: number;
-        _processNavigationQueue(page: pages.Page);
-        _updateActionBar(page?: pages.Page);
-        _getNavBarVisible(page: pages.Page): boolean;
+        _processNavigationQueue(page: Page);
+        _updateActionBar(page?: Page);
+        _getNavBarVisible(page: Page): boolean;
         //@endprivate
 
         /**
@@ -114,12 +114,12 @@ declare module "ui/frame" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (args: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (args: EventData) => void, thisArg?: any);
 
         /**
          * Raised when native android [onOptionsItemSelected method](http://developer.android.com/reference/android/app/Activity.html#onOptionsItemSelected(android.view.MenuItem)) is called.
          */
-        on(event: "optionSelected", callback: (args: observable.EventData) => void, thisArg?: any);
+        on(event: "optionSelected", callback: (args: EventData) => void, thisArg?: any);
     }
 
     /**
@@ -155,7 +155,7 @@ declare module "ui/frame" {
         /**
          * A function used to create the Page instance. Optional.
          */
-        create?: () => pages.Page;
+        create?: () => Page;
 
         /**
          * An object passed to the onNavigatedTo callback of the Page. Typically this is used to pass some data among pages. Optional.
@@ -224,7 +224,7 @@ declare module "ui/frame" {
         /**
          * An user-defined instance of the "ui/transition".Transition class.
          */
-        instance?: transition.Transition;
+        instance?: Transition;
 
         /**
          * The length of the transition in milliseconds. If you do not specify this, the default platform transition duration will be used.
@@ -243,7 +243,7 @@ declare module "ui/frame" {
      */
     export interface BackstackEntry {
         entry: NavigationEntry;
-        resolvedPage: pages.Page;
+        resolvedPage: Page;
 
         //@private
         navDepth: number;
@@ -257,7 +257,7 @@ declare module "ui/frame" {
      * Represents the data passed to the androidOptionSelected event. 
      * This event is raised by the Android OS when an option in the Activity's action bar has been selected.
      */
-    export interface AndroidOptionEventData extends observable.EventData {
+    export interface AndroidOptionEventData extends EventData {
         /**
          * Gets the Android-specific menu item that has been selected.
          */
@@ -274,7 +274,7 @@ declare module "ui/frame" {
      * In Android there are two types of navigation - using new Activity instances or using Fragments within the main Activity.
      * To start a new Activity, a new Frame instance should be created and navigated to the desired Page.
      */
-    export interface AndroidFrame extends observable.Observable {
+    export interface AndroidFrame extends Observable {
         /**
          * Gets the native [android ViewGroup](http://developer.android.com/reference/android/view/ViewGroup.html) instance that represents the root layout part of the Frame.
          */
@@ -304,12 +304,12 @@ declare module "ui/frame" {
          * Gets or sets whether the page UI will be cached when navigating away from the page.
          */
         cachePagesOnNavigate: boolean;
-        
+
         /**
          * Finds the native android.app.Fragment instance created for the specified Page.
          * @param page The Page instance to search for.
          */
-        fragmentForPage(page: pages.Page): any;
+        fragmentForPage(page: Page): any;
     }
 
     export interface AndroidActivityCallbacks {
@@ -350,8 +350,8 @@ declare module "ui/frame" {
          * Gets or sets the visibility of navigationBar.
          * Use NavBarVisibility enumeration - auto, never, always
          */
-        navBarVisibility: string;
-        
+        navBarVisibility: "auto" | "never" | "always";
+
         //@private
         _disableNavBarAnimation: boolean;
         //@endprivate
@@ -359,8 +359,8 @@ declare module "ui/frame" {
 
     export function setActivityCallbacks(activity: any /*android.app.Activity*/): void;
     //@private
-    function reloadPage(): void;
-    function resolvePageFromEntry(entry: NavigationEntry): pages.Page;
-    function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
+    export function reloadPage(): void;
+    export function resolvePageFromEntry(entry: NavigationEntry): Page;
+    export function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
     //@endprivate
 }

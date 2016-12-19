@@ -1,30 +1,29 @@
-﻿import formattedStringCommon = require("./formatted-string-common");
-import spanModule = require("text/span");
-import types = require("utils/types");
+﻿import { FormattedStringBase } from "./formatted-string-common";
+import { toUIString } from "utils/types";
 
-global.moduleMerge(formattedStringCommon, exports);
+export * from "./formatted-string-common";
 
-export class FormattedString extends formattedStringCommon.FormattedString {
+export class FormattedString extends FormattedStringBase {
     public createFormattedStringCore() {
-        var ssb = new android.text.SpannableStringBuilder();
-        var i;
-        var spanStart = 0;
-        var spanLength = 0;
-        var spanText = "";
-        for (i = 0; i < this.spans.length; i++) {
-            var span = <spanModule.Span>this.spans.getItem(i);
-            spanText = types.toUIString(span.text);
+        let ssb = new android.text.SpannableStringBuilder();
+
+        for (let i = 0, spanStart = 0, spanLength = 0, spanText = "", length = this.spans.length; i < length; i++) {
+            let span = this.spans.getItem(i);
+            spanText = toUIString(span.text);
             spanLength = spanText.length;
             if (spanLength !== 0) {
                 ssb.insert(spanStart, spanText);
                 span.updateSpanModifiers(this);
-                var p;
-                for (p = 0; p < span.spanModifiers.length; p++) {
+                for (let p = 0, spanLength = span.spanModifiers.length; p < length; p++) {
                     ssb.setSpan(span.spanModifiers[p], spanStart, spanStart + spanLength, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
                 spanStart += spanLength;
             }
         }
         this._formattedText = ssb;
+    }
+
+    public _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void {
+        //
     }
 }

@@ -1,84 +1,57 @@
-﻿import common = require("./progress-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+﻿import {
+    ProgressBase, View, Color, valueProperty, maxValueProperty,
+    colorProperty, backgroundColorProperty, backgroundInternalProperty
+} from "./progress-common";
 
-function onValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var progress = <Progress>data.object;
-    progress.ios.progress = data.newValue / progress.maxValue;
-}
+export * from "./progress-common";
 
-function onMaxValuePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var progress = <Progress>data.object;
-    progress.ios.progress = progress.value / data.newValue;
-}
-
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.Progress.valueProperty.metadata).onSetNativeValue = onValuePropertyChanged;
-(<proxy.PropertyMetadata>common.Progress.maxValueProperty.metadata).onSetNativeValue = onMaxValuePropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class Progress extends common.Progress {
-    private _ios: UIProgressView;
-
-    constructor() {
-        super();
-
-        this._ios = UIProgressView.new();
-    }
+export class Progress extends ProgressBase {
+    private _ios = UIProgressView.new();
 
     get ios(): UIProgressView {
         return this._ios;
     }
-} 
 
-export class ProgressStyler implements style.Styler {
-    //Text color methods
-    private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <UIProgressView>view.ios;
-        bar.progressTintColor = newValue;
+    get [valueProperty.native](): number {
+        return 0;
+    }
+    set [valueProperty.native](value: number) {
+        this._ios.progress = value / this.maxValue;
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UIProgressView>view.ios;
-        bar.progressTintColor = nativeValue;
+    get [maxValueProperty.native](): number {
+        return 100;
+    }
+    set [maxValueProperty.native](value: number) {
+        this._ios.progress = this.value / value;
     }
 
-    private static getNativeColorValue(view: view.View): any {
-        var bar = <UIProgressView>view.ios;
-        return bar.progressTintColor;
+    get [colorProperty.native](): UIColor {
+        return this._ios.progressTintColor;
+    }
+    set [colorProperty.native](value: Color) {
+        if (value instanceof Color) {
+            this._ios.progressTintColor = value.ios;
+        } else {
+            this._ios.progressTintColor = value;
+        }
     }
 
-    private static setBackgroundColorProperty(view: view.View, newValue: any) {
-        var bar = <UIProgressView>view.ios;
-        bar.trackTintColor = newValue;
+    get [backgroundColorProperty.native](): UIColor {
+        return this._ios.trackTintColor;
+    }
+    set [backgroundColorProperty.native](value: Color) {
+        if (value instanceof Color) {
+            this._ios.trackTintColor = value.ios;
+        } else {
+            this._ios.trackTintColor = value;
+        }
     }
 
-    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UIProgressView>view.ios;
-        bar.trackTintColor = nativeValue;
+    get [backgroundInternalProperty.native](): UIColor {
+        return null;
     }
-
-    private static getBackgroundColorProperty(view: view.View): any {
-        var bar = <UIProgressView>view.ios;
-        return bar.trackTintColor;
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            ProgressStyler.setColorProperty,
-            ProgressStyler.resetColorProperty,
-            ProgressStyler.getNativeColorValue), "Progress");
-
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            ProgressStyler.setBackgroundColorProperty,
-            ProgressStyler.resetBackgroundColorProperty,
-            ProgressStyler.getBackgroundColorProperty), "Progress");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Progress");
+    set [backgroundInternalProperty.native](value: Color) {
+        //
     }
 }
-
-ProgressStyler.registerHandlers();

@@ -1,19 +1,7 @@
-﻿import definition = require("ui/layouts/grid-layout");
-import {LayoutBase} from "ui/layouts/layout-base";
-import {View, ApplyXmlAttributes} from "ui/core/view";
-import {Bindable} from "ui/core/bindable";
-import {PropertyMetadata} from "ui/core/proxy";
-import {Property, PropertyMetadataSettings, PropertyChangeData} from "ui/core/dependency-observable";
-import {registerSpecialProperty} from "ui/builder/special-properties";
-import numberUtils = require("../../../utils/number-utils");
-import * as typesModule from "utils/types";
+﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from "ui/layouts/grid-layout";
+import { LayoutBase, View, Observable, Property } from "ui/layouts/layout-base";
 
-var types: typeof typesModule;
-function ensureTypes() {
-    if (!types) {
-        types = require("utils/types");
-    }
-}
+export * from "ui/layouts/layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
@@ -22,49 +10,89 @@ function validateArgs(element: View): View {
     return element;
 }
 
-export module GridUnitType {
-    export var auto: string = "auto";
-    export var pixel: string = "pixel";
-    export var star: string = "star";
+declare module "ui/core/view" {
+    interface View {
+        row: number;
+        col: number;
+        rowSpan: number;
+        colSpan: number;
+    }
 }
 
-registerSpecialProperty("row", (instance, propertyValue) => {
-    GridLayout.setRow(instance, !isNaN(+propertyValue) && +propertyValue);
-});
-registerSpecialProperty("col", (instance, propertyValue) => {
-    GridLayout.setColumn(instance, !isNaN(+propertyValue) && +propertyValue);
-});
-registerSpecialProperty("colSpan", (instance, propertyValue) => {
-    GridLayout.setColumnSpan(instance, !isNaN(+propertyValue) && +propertyValue);
-});
-registerSpecialProperty("rowSpan", (instance, propertyValue) => {
-    GridLayout.setRowSpan(instance, !isNaN(+propertyValue) && +propertyValue);
-});
+View.prototype.row = 0;
+View.prototype.col = 0;
+View.prototype.rowSpan = 1;
+View.prototype.colSpan = 1;
 
-export class ItemSpec extends Bindable implements definition.ItemSpec {
+function convertUnitType(value: string): "pixel" | "star" | "auto" {
+    if (value === "pixel" || value === "star" || value === "auto") {
+        return <"pixel" | "star" | "auto">value;
+    }
+
+    throw new Error(`Invalid value for unitType: ${value}`);
+}
+
+function validateItemSpec(itemSpec: ItemSpec): void {
+    if (!itemSpec) {
+        throw new Error("Value cannot be undefined.");
+    }
+
+    if (itemSpec.owner) {
+        throw new Error("itemSpec is already added to GridLayout.");
+    }
+}
+
+function convertGridLength(value: string): ItemSpec {
+    if (value === "auto") {
+        return ItemSpec.create(1, "auto");
+    }
+    else if (value.indexOf("*") !== -1) {
+        const starCount = parseInt(value.replace("*", "") || "1");
+        return ItemSpec.create(starCount, "star");
+    }
+    else if (!isNaN(parseInt(value))) {
+        return ItemSpec.create(parseInt(value), "pixel");
+    }
+    else {
+        throw new Error(`Cannot parse item spec from string: ${value}`);
+    }
+}
+
+function parseAndAddItemSpecs(value: string, func: (itemSpec: ItemSpec) => void): void {
+    const arr = value.split(/[\s,]+/);
+    for (let i = 0, length = arr.length; i < length; i++) {
+        const str = arr[i].trim();
+        if (str.length > 0) {
+            func(convertGridLength(arr[i].trim()));
+        }
+    }
+}
+
+export class ItemSpec extends Observable implements ItemSpecDefinition {
     private _value: number;
-    private _unitType: string;
+    private _unitType: "pixel" | "star" | "auto";
 
     constructor() {
         super();
 
         if (arguments.length === 0) {
             this._value = 1;
-            this._unitType = GridUnitType.star;
+            this._unitType = "star";
 
         }
         else if (arguments.length === 2) {
-            ensureTypes();
-
-            if (types.isNumber(arguments[0]) && types.isString(arguments[1])) {
-                if (arguments[0] < 0 || (arguments[1] !== GridUnitType.auto && arguments[1] !== GridUnitType.star && arguments[1] !== GridUnitType.pixel)) {
-                    throw new Error("Invalid values.");
+            const value = arguments[0];
+            const type = arguments[1];
+            if (typeof value === "number" && typeof type === "string") {
+                if (value < 0 || isNaN(value) || !isFinite(value)) {
+                    throw new Error(`Value should not be negative, NaN or Infinity: ${value}`);
                 }
-                this._value = arguments[0];
-                this._unitType = arguments[1];
+
+                this._value = value;
+                this._unitType = convertUnitType(type);
             }
             else {
-                throw new Error("Arguments must be number and string.");
+                throw new Error("First argument should be number, second argument should be string.");
             }
         }
         else {
@@ -74,11 +102,11 @@ export class ItemSpec extends Bindable implements definition.ItemSpec {
         this.index = -1;
     }
 
-    public owner: GridLayout;
+    public owner: GridLayoutBase;
     public index: number;
     public _actualLength: number = 0;
 
-    public static create(value: number, type: string): ItemSpec {
+    public static create(value: number, type: "pixel" | "star" | "auto"): ItemSpec {
         let spec = new ItemSpec();
         spec._value = value;
         spec._unitType = type;
@@ -88,28 +116,25 @@ export class ItemSpec extends Bindable implements definition.ItemSpec {
     public get actualLength(): number {
         return this._actualLength;
     }
-    public set actualLength(value: number) {
-        throw new Error("actualLength is read-only property");
-    }
 
     public static equals(value1: ItemSpec, value2: ItemSpec): boolean {
         return (value1.gridUnitType === value2.gridUnitType) && (value1.value === value2.value) && (value1.owner === value2.owner) && (value1.index === value2.index);
     }
 
-    get gridUnitType(): string {
+    get gridUnitType(): "pixel" | "star" | "auto" {
         return this._unitType;
     }
 
     get isAbsolute(): boolean {
-        return this._unitType === GridUnitType.pixel;
+        return this._unitType === "pixel";
     }
 
     get isAuto(): boolean {
-        return this._unitType === GridUnitType.auto;
+        return this._unitType === "auto";
     }
 
     get isStar(): boolean {
-        return this._unitType === GridUnitType.star;
+        return this._unitType === "star";
     }
 
     get value(): number {
@@ -117,56 +142,44 @@ export class ItemSpec extends Bindable implements definition.ItemSpec {
     }
 }
 
-export class GridLayout extends LayoutBase implements definition.GridLayout, ApplyXmlAttributes {
+export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     private _rows: Array<ItemSpec> = new Array<ItemSpec>();
     private _cols: Array<ItemSpec> = new Array<ItemSpec>();
 
-    public static columnProperty = new Property("Column", "GridLayout",
-        new PropertyMetadata(0, PropertyMetadataSettings.None, GridLayout.onColumnPropertyChanged, numberUtils.notNegative));
-
-    public static columnSpanProperty = new Property("ColumnSpan", "GridLayout",
-        new PropertyMetadata(1, PropertyMetadataSettings.None, GridLayout.onColumnSpanPropertyChanged, numberUtils.greaterThanZero));
-
-    public static rowProperty = new Property("Row", "GridLayout",
-        new PropertyMetadata(0, PropertyMetadataSettings.None, GridLayout.onRowPropertyChanged, numberUtils.notNegative));
-
-    public static rowSpanProperty = new Property("RowSpan", "GridLayout",
-        new PropertyMetadata(1, PropertyMetadataSettings.None, GridLayout.onRowSpanPropertyChanged, numberUtils.greaterThanZero));
-
     public static getColumn(element: View): number {
-        return validateArgs(element)._getValue(GridLayout.columnProperty);
+        return validateArgs(element).col;
     }
 
     public static setColumn(element: View, value: number): void {
-        validateArgs(element)._setValue(GridLayout.columnProperty, value);
+        validateArgs(element).col = value;
     }
 
     public static getColumnSpan(element: View): number {
-        return validateArgs(element)._getValue(GridLayout.columnSpanProperty);
+        return validateArgs(element).colSpan;
     }
 
     public static setColumnSpan(element: View, value: number): void {
-        validateArgs(element)._setValue(GridLayout.columnSpanProperty, value);
+        validateArgs(element).colSpan = value;
     }
 
     public static getRow(element: View): number {
-        return validateArgs(element)._getValue(GridLayout.rowProperty);
+        return validateArgs(element).row;
     }
 
     public static setRow(element: View, value: number): void {
-        validateArgs(element)._setValue(GridLayout.rowProperty, value);
+        validateArgs(element).row = value;
     }
 
     public static getRowSpan(element: View): number {
-        return validateArgs(element)._getValue(GridLayout.rowSpanProperty);
+        return validateArgs(element).rowSpan;
     }
 
     public static setRowSpan(element: View, value: number): void {
-        validateArgs(element)._setValue(GridLayout.rowSpanProperty, value);
+        validateArgs(element).rowSpan = value;
     }
 
     public addRow(itemSpec: ItemSpec) {
-        GridLayout.validateItemSpec(itemSpec);
+        validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._rows.push(itemSpec);
         this._onRowAdded(itemSpec);
@@ -174,7 +187,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
     }
 
     public addColumn(itemSpec: ItemSpec) {
-        GridLayout.validateItemSpec(itemSpec);
+        validateItemSpec(itemSpec);
         itemSpec.owner = this;
         this._cols.push(itemSpec);
         this._onColumnAdded(itemSpec);
@@ -233,19 +246,19 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
         this.invalidate();
     }
 
-    protected onRowChanged(element: View, oldValue: number, newValue: number) {
+    public onRowChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
-    protected onRowSpanChanged(element: View, oldValue: number, newValue: number) {
+    public onRowSpanChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
-    protected onColumnChanged(element: View, oldValue: number, newValue: number) {
+    public onColumnChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
-    protected onColumnSpanChanged(element: View, oldValue: number, newValue: number) {
+    public onColumnSpanChanged(element: View, oldValue: number, newValue: number) {
         this.invalidate();
     }
 
@@ -280,7 +293,7 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
     protected get rowsInternal(): Array<ItemSpec> {
         return this._rows;
     }
-    
+
     protected invalidate(): void {
         this.requestLayout();
     }
@@ -298,98 +311,61 @@ export class GridLayout extends LayoutBase implements definition.GridLayout, App
         return super._applyXmlAttribute(attributeName, attributeValue);
     }
 
-    private static parseItemSpecs(value: string): Array<ItemSpec> {
-        var result = new Array<ItemSpec>();
-        var arr = value.split(/[\s,]+/);
-        for (var i = 0; i < arr.length; i++) {
-            let str = arr[i].trim();
-            if (str.length > 0) {
-                result.push(GridLayout.convertGridLength(arr[i].trim()));
-            }
-        }
-
-        return result;
-    }
-
-    private static convertGridLength(value: string): ItemSpec {
-        if (value === "auto") {
-            return ItemSpec.create(1, GridUnitType.auto);
-        }
-        else if (value.indexOf("*") !== -1) {
-            var starCount = parseInt(value.replace("*", "") || "1");
-            return ItemSpec.create(starCount, GridUnitType.star);
-        }
-        else if (!isNaN(parseInt(value))) {
-            return ItemSpec.create(parseInt(value), GridUnitType.pixel);
-        }
-        else {
-            throw new Error("Cannot parse item spec from string: " + value);
-        }
-    }
-
-    private static onRowPropertyChanged(data: PropertyChangeData): void {
-        var element = GridLayout.getView(data.object);
-        var grid = element.parent;
-        if (grid instanceof GridLayout) {
-            grid.onRowChanged(element, data.oldValue, data.newValue);
-        }
-    }
-
-    private static onColumnPropertyChanged(data: PropertyChangeData): void {
-        var element = GridLayout.getView(data.object);
-        var grid = element.parent;
-        if (grid instanceof GridLayout) {
-            grid.onColumnChanged(element, data.oldValue, data.newValue);
-        }
-    }
-
-    private static onRowSpanPropertyChanged(data: PropertyChangeData): void {
-        var element = GridLayout.getView(data.object);
-        var grid = element.parent;
-        if (grid instanceof GridLayout) {
-            grid.onRowSpanChanged(element, data.oldValue, data.newValue);
-        }
-    }
-
-    private static onColumnSpanPropertyChanged(data: PropertyChangeData): void {
-        var element = GridLayout.getView(data.object);
-        var grid = element.parent;
-        if (grid instanceof GridLayout) {
-            grid.onColumnSpanChanged(element, data.oldValue, data.newValue);
-        }
-    }
-
-    private static validateItemSpec(itemSpec: ItemSpec): void {
-        if (!itemSpec) {
-            throw new Error("Value cannot be undefined.");
-        }
-
-        if (itemSpec.owner) {
-            throw new Error("itemSpec is already added to GridLayout.");
-        }
-    }
-
-    private static getView(object: Object): View {
-        if (object instanceof View) {
-            return object;
-        }
-
-        throw new Error("Element is not View or its descendant.");
-    }
-
     private _setColumns(value: string) {
         this.removeColumns();
-        let columns = GridLayout.parseItemSpecs(value);
-        for (let i = 0, count = columns.length; i < count; i++) {
-            this.addColumn(columns[i]);
-        }
+        parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addColumn(spec));
     }
 
     private _setRows(value: string) {
         this.removeRows();
-        let rows = GridLayout.parseItemSpecs(value);
-        for (let i = 0, count = rows.length; i < count; i++) {
-            this.addRow(rows[i]);
-        }
+        parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addRow(spec));
     }
 }
+
+export const columnProperty = new Property<View, number>({
+    name: "col", defaultValue: 0,
+    valueChanged: (target, oldValue, newValue) => {
+        const grid = target.parent;
+        if (grid instanceof GridLayoutBase) {
+            grid.onColumnChanged(target, oldValue, newValue);
+        }
+    },
+    valueConverter: (v) => Math.max(0, parseInt(v))
+});
+columnProperty.register(GridLayoutBase);
+
+export const columnSpanProperty = new Property<View, number>({
+    name: "colSpan", defaultValue: 1,
+    valueChanged: (target, oldValue, newValue) => {
+        const grid = target.parent;
+        if (grid instanceof GridLayoutBase) {
+            grid.onColumnSpanChanged(target, oldValue, newValue);
+        }
+    },
+    valueConverter: (v) => Math.max(1, parseInt(v))
+});
+columnSpanProperty.register(GridLayoutBase);
+
+export const rowProperty = new Property<View, number>({
+    name: "row", defaultValue: 0,
+    valueChanged: (target, oldValue, newValue) => {
+        const grid = target.parent;
+        if (grid instanceof GridLayoutBase) {
+            grid.onRowChanged(target, oldValue, newValue);
+        }
+    },
+    valueConverter: (v) => Math.max(0, parseInt(v))
+});
+rowProperty.register(GridLayoutBase);
+
+export const rowSpanProperty = new Property<View, number>({
+    name: "rowSpan", defaultValue: 1,
+    valueChanged: (target, oldValue, newValue) => {
+        const grid = target.parent;
+        if (grid instanceof GridLayoutBase) {
+            grid.onRowSpanChanged(target, oldValue, newValue);
+        }
+    },
+    valueConverter: (v) => Math.max(1, parseInt(v))
+});
+rowSpanProperty.register(GridLayoutBase);

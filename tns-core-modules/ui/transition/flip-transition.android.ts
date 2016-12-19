@@ -1,4 +1,4 @@
-﻿import {Transition, AndroidTransitionType} from "ui/transition";
+﻿import { Transition, AndroidTransitionType } from "ui/transition";
 
 //http://developer.android.com/training/animation/cardflip.html
 export class FlipTransition extends Transition {
@@ -10,13 +10,13 @@ export class FlipTransition extends Transition {
     }
 
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        var objectAnimators;
-        var values;
-        var animator: android.animation.ObjectAnimator;
-        var animatorSet = new android.animation.AnimatorSet();
-        var fullDuration = this.getDuration() || 300;
-        var interpolator = this.getCurve();
-        var rotationY = this._direction === "right" ? 180 : -180;
+        let objectAnimators;
+        let values;
+        let animator: android.animation.ObjectAnimator;
+        let animatorSet = new android.animation.AnimatorSet();
+        let fullDuration = this.getDuration() || 300;
+        let interpolator = this.getCurve();
+        let rotationY = this._direction === "right" ? 180 : -180;
 
         switch (transitionType) {
             case AndroidTransitionType.enter: // card_flip_right_in
@@ -110,7 +110,7 @@ export class FlipTransition extends Transition {
                 objectAnimators[1] = animator;
                 break;
         }
-        
+
         animatorSet.playTogether(objectAnimators);
         return animatorSet;
     }

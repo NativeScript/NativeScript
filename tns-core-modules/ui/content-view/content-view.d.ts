@@ -1,18 +1,20 @@
 ﻿/**
- * 
+ * View that can host another view.
  */
 declare module "ui/content-view" {
-    import view = require("ui/core/view");
-
+    import { View, AddChildFromBuilder } from "ui/core/view";
+    
+    export * from "ui/core/view";
+    
     /**
      * Represents a View that has a single child - content.
      * The View itself does not have visual representation and serves as a placeholder for its content in the logical tree.
      */
-    class ContentView extends view.View implements view.AddChildFromBuilder  {
+    export class ContentView extends View implements AddChildFromBuilder {
         /**
          * Gets or sets the single child of the view.
          */
-        content: view.View;
+        content: View;
 
         //@private
         /**
@@ -20,11 +22,11 @@ declare module "ui/content-view" {
          * @param oldView The previous content.
          * @param newView The new content.
          */
-        _onContentChanged(oldView: view.View, newView: view.View);
+        _onContentChanged(oldView: View, newView: View);
         //@endprivate
 
         _addChildFromBuilder(name: string, value: any): void;
 
-        layoutView: view.View;
+        layoutView: View;
     }
 } 

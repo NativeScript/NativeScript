@@ -1,13 +1,10 @@
-﻿import definition = require("ui/border");
-import contentView = require("ui/content-view");
-import viewModule = require("ui/core/view");
-import utils = require("utils/utils");
-import types = require("utils/types");
+import { Border as BorderDefinition } from "ui/border";
+import { ContentView, View, layout } from "ui/content-view";
 
 @Deprecated
-export class Border extends contentView.ContentView implements definition.Border {
+export class Border extends ContentView implements BorderDefinition {
     get cornerRadius(): number {
-        if (types.isNumber(this.borderRadius)){
+        if (typeof this.borderRadius === "number") {
             return <number>this.borderRadius;
         }
         return 0;
@@ -17,36 +14,32 @@ export class Border extends contentView.ContentView implements definition.Border
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var density = utils.layout.getDisplayDensity();
-        let borderWidth = 0;
-        if (types.isNumber(this.borderWidth)){
-            borderWidth = <number>this.borderWidth;
-        }
-        var borderSize = (2 * borderWidth) * density;
+        let style = this.style;
+        let horizontalBorderLength = style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
+        let verticalBorderLength = style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
 
-        var result = viewModule.View.measureChild(this, this.layoutView,
-            utils.layout.makeMeasureSpec(width - borderSize, widthMode),
-            utils.layout.makeMeasureSpec(height - borderSize, heightMode));
+        let result = View.measureChild(this, this.layoutView,
+            layout.makeMeasureSpec(width - horizontalBorderLength, widthMode),
+            layout.makeMeasureSpec(height - verticalBorderLength, heightMode));
 
-        var widthAndState = viewModule.View.resolveSizeAndState(result.measuredWidth + borderSize, width, widthMode, 0);
-        var heightAndState = viewModule.View.resolveSizeAndState(result.measuredHeight + borderSize, height, heightMode, 0);
+        let widthAndState = View.resolveSizeAndState(result.measuredWidth + horizontalBorderLength, width, widthMode, 0);
+        let heightAndState = View.resolveSizeAndState(result.measuredHeight + verticalBorderLength, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        var density = utils.layout.getDisplayDensity();
-        let borderWidth = 0;
-        if (types.isNumber(this.borderWidth)){
-            borderWidth = <number>this.borderWidth;
-        }
-        var borderSize = borderWidth * density;
-        viewModule.View.layoutChild(this, this.layoutView, borderSize, borderSize, right - left - borderSize, bottom - top - borderSize);
+        let density = layout.getDisplayDensity();
+        let style = this.style;
+        let horizontalBorderLength = style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
+        let verticalBorderLength = style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+
+        View.layoutChild(this, this.layoutView, style.effectiveBorderLeftWidth, style.effectiveBorderTopWidth, right - left - horizontalBorderLength, bottom - top - verticalBorderLength);
     }
 }

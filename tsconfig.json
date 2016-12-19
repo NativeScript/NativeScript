@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "noEmitOnError": true,
+        "noEmitOnError": false,
         "noEmitHelpers": true,
         "target": "es5",
         "module": "commonjs",
@@ -17,6 +17,8 @@
         ]
     },
     "exclude": [
+        "apps",
+        "tests",
         "tns-platform-declarations/node_modules/",
         "tns-platform-declarations/package/",
         "tns-core-modules/node_modules/",

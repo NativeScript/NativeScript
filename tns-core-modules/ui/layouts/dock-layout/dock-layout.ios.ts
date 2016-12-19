@@ -1,65 +1,61 @@
-﻿import utils = require("utils/utils");
-import common = require("./dock-layout-common");
-import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
-import {Dock} from "ui/enums";
-import {View} from "ui/core/view";
+﻿import { DockLayoutBase, View, dockProperty, stretchLastChildProperty, layout } from "./dock-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./dock-layout-common";
 
-export class DockLayout extends common.DockLayout {
+export class DockLayout extends DockLayoutBase {
 
-    protected onDockChanged(view: View, oldValue: number, newValue: number) {
+    public onDockChanged(view: View, oldValue: "left" | "top" | "right" | "bottom", newValue: "left" | "top" | "right" | "bottom") {
         this.requestLayout();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        DockLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
-        var measureWidth = 0;
-        var measureHeight = 0;
+        let measureWidth = 0;
+        let measureHeight = 0;
 
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var density = utils.layout.getDisplayDensity();
+        const style = this.style;
+        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        
+        let remainingWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
+        let remainingHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
 
-        var remainingWidth = widthMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : width - ((this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density);
-        var remainingHeight = heightMode === utils.layout.UNSPECIFIED ? Number.MAX_VALUE : height - ((this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density);
-
-        var tempHeight: number = 0;
-        var tempWidth: number = 0;
-        var childWidthMeasureSpec: number;
-        var childHeightMeasureSpec: number;
+        let tempHeight: number = 0;
+        let tempWidth: number = 0;
+        let childWidthMeasureSpec: number;
+        let childHeightMeasureSpec: number;
 
         this.eachLayoutChild((child, last) => {
             if (this.stretchLastChild && last) {
-                childWidthMeasureSpec = utils.layout.makeMeasureSpec(remainingWidth, widthMode);
-                childHeightMeasureSpec = utils.layout.makeMeasureSpec(remainingHeight, heightMode);
+                childWidthMeasureSpec = layout.makeMeasureSpec(remainingWidth, widthMode);
+                childHeightMeasureSpec = layout.makeMeasureSpec(remainingHeight, heightMode);
             }
             else {
                 // Measure children with AT_MOST even if our mode is EXACT
-                childWidthMeasureSpec = utils.layout.makeMeasureSpec(remainingWidth, widthMode === utils.layout.EXACTLY ? utils.layout.AT_MOST : widthMode);
-                childHeightMeasureSpec = utils.layout.makeMeasureSpec(remainingHeight, heightMode === utils.layout.EXACTLY ? utils.layout.AT_MOST : heightMode);
+                childWidthMeasureSpec = layout.makeMeasureSpec(remainingWidth, widthMode === layout.EXACTLY ? layout.AT_MOST : widthMode);
+                childHeightMeasureSpec = layout.makeMeasureSpec(remainingHeight, heightMode === layout.EXACTLY ? layout.AT_MOST : heightMode);
             }
 
             let childSize = View.measureChild(this, child, childWidthMeasureSpec, childHeightMeasureSpec);
-            let dock = DockLayout.getDock(child);
 
-            switch (dock) {
-                case Dock.top:
-                case Dock.bottom:
+            switch (child.dock) {
+                case "top":
+                case "bottom":
                     remainingHeight = Math.max(0, remainingHeight - childSize.measuredHeight);
                     tempHeight += childSize.measuredHeight;
                     measureWidth = Math.max(measureWidth, tempWidth + childSize.measuredWidth);
                     measureHeight = Math.max(measureHeight, tempHeight);
                     break;
 
-                case Dock.left:
-                case Dock.right:
+                case "left":
+                case "right":
                 default:
                     remainingWidth = Math.max(0, remainingWidth - childSize.measuredWidth);
                     tempWidth += childSize.measuredWidth;
@@ -69,14 +65,14 @@ export class DockLayout extends common.DockLayout {
             }
         });
 
-        measureWidth += (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
-        measureHeight += (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
+        measureWidth += horizontalPaddingsAndMargins;
+        measureHeight += verticalPaddingsAndMargins;
 
-        measureWidth = Math.max(measureWidth, this.minWidth * density);
-        measureHeight = Math.max(measureHeight, this.minHeight * density);
+        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
 
-        var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -84,32 +80,34 @@ export class DockLayout extends common.DockLayout {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        var density = utils.layout.getDisplayDensity();
+        const style = this.style;
+        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
 
-        var childLeft = (this.borderLeftWidth + this.paddingLeft) * density;
-        var childTop = (this.borderTopWidth + this.paddingTop) * density;
+        let childLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
+        let childTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
 
-        var x = childLeft;
-        var y = childTop;
+        let x = childLeft;
+        let y = childTop;
 
-        var remainingWidth = Math.max(0, right - left - ((this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density));
-        var remainingHeight = Math.max(0, bottom - top - ((this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density));
+        let remainingWidth = Math.max(0, right - left - horizontalPaddingsAndMargins);
+        let remainingHeight = Math.max(0, bottom - top - verticalPaddingsAndMargins);
 
         this.eachLayoutChild((child, last) => {
-            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
+            let childStlye = child.style;
 
-            let childWidth = child.getMeasuredWidth() + (lp.leftMargin + lp.rightMargin) * density;
-            let childHeight = child.getMeasuredHeight() + (lp.topMargin + lp.bottomMargin) * density;
-            
+            let childWidth = child.getMeasuredWidth() + childStlye.effectiveMarginLeft + childStlye.effectiveMarginRight;
+            let childHeight = child.getMeasuredHeight() + childStlye.effectiveMarginTop + childStlye.effectiveMarginBottom;
+
             if (last && this.stretchLastChild) {
                 // Last child with stretch - give it all the space and return;
                 View.layoutChild(this, child, x, y, x + remainingWidth, y + remainingHeight);
                 return;
             }
-            
+
             let dock = DockLayout.getDock(child);
             switch (dock) {
-                case Dock.top:
+                case "top":
                     childLeft = x;
                     childTop = y;
                     childWidth = remainingWidth;
@@ -117,21 +115,21 @@ export class DockLayout extends common.DockLayout {
                     remainingHeight = Math.max(0, remainingHeight - childHeight);
                     break;
 
-                case Dock.bottom:
+                case "bottom":
                     childLeft = x;
                     childTop = y + remainingHeight - childHeight;
                     childWidth = remainingWidth;
                     remainingHeight = Math.max(0, remainingHeight - childHeight);
                     break;
 
-                case Dock.right:
+                case "right":
                     childLeft = x + remainingWidth - childWidth;
                     childTop = y;
                     childHeight = remainingHeight;
                     remainingWidth = Math.max(0, remainingWidth - childWidth);
                     break;
 
-                case Dock.left:
+                case "left":
                 default:
                     childLeft = x;
                     childTop = y;
@@ -143,7 +141,5 @@ export class DockLayout extends common.DockLayout {
 
             View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childTop + childHeight);
         });
-
-        DockLayout.restoreOriginalParams(this);
     }
 }

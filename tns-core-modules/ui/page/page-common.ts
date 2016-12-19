@@ -1,75 +1,18 @@
-﻿import { ContentView } from "ui/content-view";
-import view = require("ui/core/view");
-import dts = require("ui/page");
-import styleScope = require("../styling/style-scope");
+﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
+import {
+    ContentView, EventData, View, Template, KeyedTemplate, Length, backgroundColorProperty,
+    eachDescendant, Property, Color, isIOS, booleanConverter, resetStyleProperties
+} from "ui/content-view";
+import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
 import { ActionBar } from "ui/action-bar";
-import { PropertyMetadataSettings, PropertyChangeData, Property, ValueSource } from "ui/core/dependency-observable";
-import * as style from "../styling/style";
-import * as fileSystemModule from "file-system";
-import * as frameModule from "ui/frame";
-import proxy = require("ui/core/proxy");
-import keyframeAnimation = require("ui/animation/keyframe-animation");
-import types = require("utils/types");
-import {Color} from "color";
+import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
+import { StyleScope } from "../styling/style-scope";
+import { File, path, knownFolders } from "file-system";
 
-let fs: typeof fileSystemModule;
-function ensureFS() {
-    if (!fs) {
-        fs = require("file-system");
-    }
-}
+export * from "ui/content-view";
 
-let frame: typeof frameModule;
-function ensureFrame() {
-    if (!frame) {
-        frame = require("ui/frame");
-    }
-}
+export class PageBase extends ContentView implements PageDefinition {
 
-// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-const AffectsLayout = global.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
-
-const backgroundSpanUnderStatusBarProperty = new Property("backgroundSpanUnderStatusBar", "Page", new proxy.PropertyMetadata(false, AffectsLayout));
-const statusBarStyleProperty = new Property("statusBarStyle", "Page", new proxy.PropertyMetadata(undefined));
-
-function onStatusBarStylePropertyChanged(data: PropertyChangeData) {
-    const page = <Page>data.object;
-    if (page.isLoaded) {
-        page._updateStatusBar();
-    }
-}
-
-(<proxy.PropertyMetadata>statusBarStyleProperty.metadata).onSetNativeValue = onStatusBarStylePropertyChanged;
-
-const androidStatusBarBackgroundProperty = new Property("androidStatusBarBackground", "Page", new proxy.PropertyMetadata(undefined));
-const actionBarHiddenProperty = new Property("actionBarHidden", "Page", new proxy.PropertyMetadata(undefined, AffectsLayout));
-
-function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
-    const page = <Page>data.object;
-    if (page.isLoaded) {
-        page._updateActionBar(data.newValue);
-    }
-}
-
-(<proxy.PropertyMetadata>actionBarHiddenProperty.metadata).onSetNativeValue = onActionBarHiddenPropertyChanged;
-
-const enableSwipeBackNavigationProperty = new Property("isoSwipeBackNavigationEnabled", "Page", new proxy.PropertyMetadata(true));
-
-function enableSwipeBackNavigationPropertyChanged(data: PropertyChangeData) {
-    const page = <Page>data.object;
-    if (page.isLoaded) {
-        page._updateEnableSwipeBackNavigation(data.newValue);
-    }
-}
-
-(<proxy.PropertyMetadata>enableSwipeBackNavigationProperty.metadata).onSetNativeValue = enableSwipeBackNavigationPropertyChanged;
-
-export class Page extends ContentView implements dts.Page {
-    public static backgroundSpanUnderStatusBarProperty = backgroundSpanUnderStatusBarProperty;
-    public static statusBarStyleProperty = statusBarStyleProperty;
-    public static androidStatusBarBackgroundProperty = androidStatusBarBackgroundProperty;
-    public static actionBarHiddenProperty = actionBarHiddenProperty;
-    public static iosSwipeBackNavigationEnabledProperty = enableSwipeBackNavigationProperty;
     public static navigatingToEvent = "navigatingTo";
     public static navigatedToEvent = "navigatedTo";
     public static navigatingFromEvent = "navigatingFrom";
@@ -83,82 +26,31 @@ export class Page extends ContentView implements dts.Page {
     private _navigationContext: any;
 
     private _cssApplied: boolean;
-    private _styleScope: styleScope.StyleScope = new styleScope.StyleScope();
+    private _styleScope = new StyleScope();
     private _actionBar: ActionBar;
 
-    public _modal: Page;
+    public _modal: PageBase;
     public _fragmentTag: string;
+
+    public actionBarHidden: boolean;
+    public enableSwipeBackNavigation: boolean;
+    public backgroundSpanUnderStatusBar: boolean;
+    public statusBarStyle: "light" | "dark";
+    public androidStatusBarBackground: Color;
 
     constructor() {
         super();
         this.actionBar = new ActionBar();
-    }
 
-    public onLoaded() {
         // The default style of the page should be white background
-        this.style._setValue(style.backgroundColorProperty, "white", ValueSource.Inherited);
-
-        this._applyCss();
-
-        if (this.actionBarHidden !== undefined) {
-            this._updateActionBar(this.actionBarHidden);
-        }
-
-        this._updateStatusBar();
-
-        super.onLoaded();
+        this.style[backgroundColorProperty.cssName] = new Color("white");
     }
 
-    get backgroundSpanUnderStatusBar(): boolean {
-        return this._getValue(Page.backgroundSpanUnderStatusBarProperty);
-    }
+    // public onLoaded() {
+    //     this._applyCss();
+    //     super.onLoaded();
+    // }
 
-    set backgroundSpanUnderStatusBar(value: boolean) {
-        this._setValue(Page.backgroundSpanUnderStatusBarProperty, value);
-    }
-
-    get statusBarStyle(): string {
-        return this.style._getValue(Page.statusBarStyleProperty);
-    }
-
-    set statusBarStyle(value: string) {
-        this.style._setValue(Page.statusBarStyleProperty, value);
-    }
-
-    get androidStatusBarBackground(): Color {
-        return this.style.androidStatusBarBackground;
-    }
-    set androidStatusBarBackground(value: Color) {
-        this.style.androidStatusBarBackground = value;
-    }
-
-    get actionBarHidden(): boolean {
-        return this._getValue(Page.actionBarHiddenProperty);
-    }
-
-    set actionBarHidden(value: boolean) {
-        this._setValue(Page.actionBarHiddenProperty, value);
-    }
-
-    get enableSwipeBackNavigation(): boolean {
-        return this._getValue(Page.iosSwipeBackNavigationEnabledProperty);
-    }
-
-    set enableSwipeBackNavigation(value: boolean) {
-        this._setValue(Page.iosSwipeBackNavigationEnabledProperty, value);
-    }
-
-    public _updateActionBar(hidden: boolean) {
-        //
-    }
-
-    public _updateStatusBar() {
-        //
-    }
-
-    public _updateEnableSwipeBackNavigation(hidden: boolean) {
-        //
-    }
 
     get navigationContext(): any {
         return this._navigationContext;
@@ -194,7 +86,7 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    get page(): view.View {
+    get page(): View {
         return this;
     }
 
@@ -220,14 +112,12 @@ export class Page extends ContentView implements dts.Page {
 
     private _cssFiles = {};
     public addCssFile(cssFileName: string) {
-        ensureFS();
-
         if (cssFileName.indexOf("~/") === 0) {
-            cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFileName.replace("~/", ""));
+            cssFileName = path.join(knownFolders.currentApp().path, cssFileName.replace("~/", ""));
         }
         if (!this._cssFiles[cssFileName]) {
-            if (fs.File.exists(cssFileName)) {
-                const file = fs.File.fromPath(cssFileName);
+            if (File.exists(cssFileName)) {
+                const file = File.fromPath(cssFileName);
                 const text = file.readTextSync();
                 if (text) {
                     this._addCssInternal(text, cssFileName);
@@ -237,15 +127,15 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    public getKeyframeAnimationWithName(animationName: string): keyframeAnimation.KeyframeAnimationInfo {
+    public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
         return this._styleScope.getKeyframeAnimationWithName(animationName);
     }
 
-    get frame(): frameModule.Frame {
-        return <frameModule.Frame>this.parent;
+    get frame(): Frame {
+        return <Frame>this.parent;
     }
 
-    private createNavigatedData(eventName: string, isBackNavigation: boolean): dts.NavigatedData {
+    private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
         return {
             eventName: eventName,
             object: this,
@@ -258,41 +148,40 @@ export class Page extends ContentView implements dts.Page {
         this._navigationContext = context;
 
         //https://github.com/NativeScript/NativeScript/issues/731
-        if (!isBackNavigation && !types.isNullOrUndefined(bindingContext)) {
+        if (!isBackNavigation && bindingContext !== undefined && bindingContext !== null) {
             this.bindingContext = bindingContext;
         }
-        this.notify(this.createNavigatedData(Page.navigatingToEvent, isBackNavigation));
+        this.notify(this.createNavigatedData(PageBase.navigatingToEvent, isBackNavigation));
     }
 
     public onNavigatedTo(isBackNavigation: boolean) {
-        this.notify(this.createNavigatedData(Page.navigatedToEvent, isBackNavigation));
+        this.notify(this.createNavigatedData(PageBase.navigatedToEvent, isBackNavigation));
     }
 
     public onNavigatingFrom(isBackNavigation: boolean) {
-        this.notify(this.createNavigatedData(Page.navigatingFromEvent, isBackNavigation));
+        this.notify(this.createNavigatedData(PageBase.navigatingFromEvent, isBackNavigation));
     }
 
     public onNavigatedFrom(isBackNavigation: boolean) {
-        this.notify(this.createNavigatedData(Page.navigatedFromEvent, isBackNavigation));
+        this.notify(this.createNavigatedData(PageBase.navigatedFromEvent, isBackNavigation));
 
         this._navigationContext = undefined;
     }
 
-    public showModal(): Page {
-        ensureFrame();
+    public showModal(): PageBase {
         if (arguments.length === 0) {
-            this._showNativeModalView(<any>frame.topmost().currentPage, undefined, undefined, true);
+            this._showNativeModalView(<any>topmostFrame().currentPage, undefined, undefined, true);
             return this;
         } else {
             const context: any = arguments[1];
             const closeCallback: Function = arguments[2];
             const fullscreen: boolean = arguments[3];
 
-            let page: Page;
-            if (arguments[0] instanceof Page) {
-                page = <Page>arguments[0];
+            let page: PageBase;
+            if (arguments[0] instanceof PageBase) {
+                page = arguments[0];
             } else {
-                page = <Page>frame.resolvePageFromEntry({ moduleName: arguments[0] });
+                page = <PageBase>resolvePageFromEntry({ moduleName: arguments[0] });
             }
 
             page._showNativeModalView(this, context, closeCallback, fullscreen);
@@ -306,7 +195,7 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    public get modal(): Page {
+    public get modal(): PageBase {
         return this._modal;
     }
 
@@ -319,7 +208,7 @@ export class Page extends ContentView implements dts.Page {
         }
     }
 
-    protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
+    protected _showNativeModalView(parent: PageBase, context: any, closeCallback: Function, fullscreen?: boolean) {
         parent._modal = this;
         const that = this;
         this._modalContext = context;
@@ -335,13 +224,13 @@ export class Page extends ContentView implements dts.Page {
         };
     }
 
-    protected _hideNativeModalView(parent: Page) {
+    protected _hideNativeModalView(parent: PageBase) {
         //
     }
 
     public _raiseShownModallyEvent() {
-        let args: dts.ShownModallyData = {
-            eventName: Page.shownModallyEvent,
+        let args: ShownModallyData = {
+            eventName: PageBase.shownModallyEvent,
             object: this,
             context: this._modalContext,
             closeCallback: this._closeModalCallback
@@ -350,8 +239,8 @@ export class Page extends ContentView implements dts.Page {
     }
 
     protected _raiseShowingModallyEvent() {
-        let args: dts.ShownModallyData = {
-            eventName: Page.showingModallyEvent,
+        let args: ShownModallyData = {
+            eventName: PageBase.showingModallyEvent,
             object: this,
             context: this._modalContext,
             closeCallback: this._closeModalCallback
@@ -359,11 +248,11 @@ export class Page extends ContentView implements dts.Page {
         this.notify(args);
     }
 
-    public _getStyleScope(): styleScope.StyleScope {
+    public _getStyleScope(): StyleScope {
         return this._styleScope;
     }
 
-    public _eachChildView(callback: (child: view.View) => boolean) {
+    public _eachChildView(callback: (child: View) => boolean) {
         super._eachChildView(callback);
         callback(this.actionBar);
     }
@@ -380,24 +269,56 @@ export class Page extends ContentView implements dts.Page {
         this._styleScope.ensureSelectors();
 
         const scope = this._styleScope;
-        const checkSelectors = (view: view.View): boolean => {
+        const checkSelectors = (view: View): boolean => {
             scope.applySelectors(view);
             return true;
         };
 
         checkSelectors(this);
-        view.eachDescendant(this, checkSelectors);
+        eachDescendant(this, checkSelectors);
 
         this._cssApplied = true;
     }
 
     private _resetCssValues() {
-        const resetCssValuesFunc = (view: view.View): boolean => {
-            view.style._resetCssValues();
+        const resetCssValuesFunc = (view: View): boolean => {
+            view._cancelAllAnimations();
+            resetStyleProperties(view.style);
             return true;
         };
 
         resetCssValuesFunc(this);
-        view.eachDescendant(this, resetCssValuesFunc);
+        eachDescendant(this, resetCssValuesFunc);
     }
 }
+
+/**
+ * Dependency property used to hide the Navigation Bar in iOS and the Action Bar in Android.
+ */
+export const actionBarHiddenProperty = new Property<PageBase, boolean>({ name: "actionBarHidden", affectsLayout: isIOS, valueConverter: booleanConverter });
+actionBarHiddenProperty.register(PageBase);
+
+/**
+ * Dependency property that specify if page background should span under status bar.
+ */
+export const backgroundSpanUnderStatusBarProperty = new Property<PageBase, boolean>({ name: "backgroundSpanUnderStatusBar", defaultValue: false, affectsLayout: isIOS, valueConverter: booleanConverter });
+backgroundSpanUnderStatusBarProperty.register(PageBase);
+
+/**
+ * Dependency property used to control if swipe back navigation in iOS is enabled.
+ * This property is iOS sepecific. Default value: true
+ */
+export const enableSwipeBackNavigationProperty = new Property<PageBase, boolean>({ name: "enableSwipeBackNavigation", defaultValue: true, valueConverter: booleanConverter });
+enableSwipeBackNavigationProperty.register(PageBase);
+
+/**
+ * Property backing statusBarStyle.
+ */
+export const statusBarStyleProperty = new Property<PageBase, "light" | "dark">({ name: "statusBarStyle" });
+statusBarStyleProperty.register(PageBase);
+
+/**
+ * Property backing androidStatusBarBackground.
+ */
+export const androidStatusBarBackgroundProperty = new Property<PageBase, Color>({ name: "androidStatusBarBackground", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+androidStatusBarBackgroundProperty.register(PageBase);

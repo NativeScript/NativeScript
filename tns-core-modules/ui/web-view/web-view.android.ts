@@ -1,26 +1,17 @@
-import common = require("./web-view-common");
-import trace = require("trace");
-import * as fileSystemModule from "file-system";
+import { WebViewBase, File, knownFolders, path, traceEnabled, traceWrite, traceCategories } from "./web-view-common";
 
-global.moduleMerge(common, exports);
+export * from "./web-view-common";
 
-var fs: typeof fileSystemModule;
-function ensureFS() {
-    if (!fs) {
-        fs = require("file-system");
-    }
-}
-
-var WebViewClientClass;
+let WebViewClientClass;
 function ensureWebViewClientClass() {
     if (WebViewClientClass) {
         return;
     }
 
     class WebViewClientClassInner extends android.webkit.WebViewClient {
-        private _view: common.WebView;
+        private _view: WebViewBase;
 
-        constructor(view: common.WebView) {
+        constructor(view: WebViewBase) {
             super();
 
             this._view = view;
@@ -28,8 +19,8 @@ function ensureWebViewClientClass() {
         }
 
         public shouldOverrideUrlLoading(view: android.webkit.WebView, url: string) {
-            if (trace.enabled) {
-                trace.write("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", trace.categories.Debug);
+            if (traceEnabled) {
+                traceWrite("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", traceCategories.Debug);
             }
             return false;
         }
@@ -38,10 +29,10 @@ function ensureWebViewClientClass() {
             super.onPageStarted(view, url, favicon);
 
             if (this._view) {
-                if (trace.enabled) {
-                    trace.write("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", trace.categories.Debug);
+                if (traceEnabled) {
+                    traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
                 }
-                this._view._onLoadStarted(url, common.WebView.navigationTypes[common.WebView.navigationTypes.indexOf("linkClicked")]);
+                this._view._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
             }
         }
 
@@ -49,40 +40,38 @@ function ensureWebViewClientClass() {
             super.onPageFinished(view, url);
 
             if (this._view) {
-                if (trace.enabled) {
-                    trace.write("WebViewClientClass.onPageFinished(" + url + ")", trace.categories.Debug);
+                if (traceEnabled) {
+                    traceWrite("WebViewClientClass.onPageFinished(" + url + ")", traceCategories.Debug);
                 }
                 this._view._onLoadFinished(url, undefined);
             }
         }
 
         public onReceivedError() {
-            var view: android.webkit.WebView = arguments[0];
+            let view: android.webkit.WebView = arguments[0];
 
             if (arguments.length === 4) {
-
-                var errorCode: number = arguments[1];
-                var description: string = arguments[2];
-                var failingUrl: string = arguments[3];
+                let errorCode: number = arguments[1];
+                let description: string = arguments[2];
+                let failingUrl: string = arguments[3];
 
                 super.onReceivedError(view, errorCode, description, failingUrl);
 
                 if (this._view) {
-                    if (trace.enabled) {
-                        trace.write("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", trace.categories.Debug);
+                    if (traceEnabled) {
+                        traceWrite("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", traceCategories.Debug);
                     }
                     this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
             } else {
-
-                var request: any = arguments[1];
-                var error: any = arguments[2];
+                let request: any = arguments[1];
+                let error: any = arguments[2];
 
                 super.onReceivedError(view, request, error);
 
                 if (this._view) {
-                    if (trace.enabled) {
-                        trace.write("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", trace.categories.Debug);
+                    if (traceEnabled) {
+                        traceWrite("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", traceCategories.Debug);
                     }
                     this._view._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
                 }
@@ -93,7 +82,7 @@ function ensureWebViewClientClass() {
     WebViewClientClass = WebViewClientClassInner;
 }
 
-export class WebView extends common.WebView {
+export class WebView extends WebViewBase {
     private _android: android.webkit.WebView;
     private _webViewClient: android.webkit.WebViewClient;
 
@@ -127,8 +116,8 @@ export class WebView extends common.WebView {
             return;
         }
 
-        if (trace.enabled) {
-            trace.write("WebView._loadUrl(" + url + ")", trace.categories.Debug);
+        if (traceEnabled) {
+            traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
         }
         this._android.stopLoading();
         this._android.loadUrl(url);
@@ -139,7 +128,7 @@ export class WebView extends common.WebView {
             return;
         }
 
-        var baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1) }`;
+        const baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1)}`;
         this._android.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
     }
 
@@ -156,9 +145,7 @@ export class WebView extends common.WebView {
             return;
         }
 
-        ensureFS();
-
-        var baseUrl = `file:///${fs.knownFolders.currentApp().path}/`;
+        const baseUrl = `file:///${knownFolders.currentApp().path}/`;
         this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);
     }
 

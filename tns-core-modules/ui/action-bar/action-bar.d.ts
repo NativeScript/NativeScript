@@ -2,17 +2,14 @@
  * Contains the action bar related classes.
  */
 declare module "ui/action-bar" {
-    import observable = require("data/observable");
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import bindable = require("ui/core/bindable");
-    import pages = require("ui/page");
+    import { EventData, ViewBase, View, AddArrayFromBuilder, AddChildFromBuilder, Property } from "ui/core/view";
+    import { Page } from "ui/page";
 
     /**
      * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).
      */
-    export class ActionBar extends view.View implements view.AddArrayFromBuilder, view.AddChildFromBuilder {
-        
+    export class ActionBar extends View implements AddArrayFromBuilder, AddChildFromBuilder {
+
         /**
          * Gets or sets the action bar title.
          */
@@ -21,18 +18,18 @@ declare module "ui/action-bar" {
         /**
          * Gets or sets the title view. When set - replaces the title with a custom view.
          */
-        titleView: view.View;
-        
+        titleView: View;
+
         /**
          * Gets or sets the navigation button (a.k.a. the back button).
          */
         navigationButton: NavigationButton;
-        
+
         /**
          * Gets the collection of action items.
          */
         actionItems: ActionItems;
-        
+
         /**
          * Gets the android specific options of the action bar.
          */
@@ -41,7 +38,7 @@ declare module "ui/action-bar" {
         /**
          * Gets the page that contains the action bar.
          */
-        page: pages.Page;
+        page: Page;
 
         /**
          * Updates the action bar.
@@ -65,18 +62,18 @@ declare module "ui/action-bar" {
          * @param item - the item to be added
          */
         addItem(item: ActionItem): void;
-        
+
         /**
          * Removes an item to the collection.
          * @param item - The item to be removed.
          */
         removeItem(item: ActionItem): void;
-        
+
         /**
          * Gets an array of the current action items in the collection.
          */
         getItems(): Array<ActionItem>;
-        
+
         /**
          * Gets an item at a specified index.
          * @param index - The index.
@@ -87,47 +84,27 @@ declare module "ui/action-bar" {
     /**
      * Represents an action item in the action bar.
      */
-    export class ActionItem extends bindable.Bindable {
-        /**
-         * String value used when hooking to tap event.
-         */
-        public static tapEvent: string;
-
-        /**
-         * Represents the observable property backing the text property.
-         */
-        public static textProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the icon property.
-         */
-        public static iconProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the visibility property.
-         */
-        public static visibilityProperty: dependencyObservable.Property;
-
+    export class ActionItem extends ViewBase {
         /**
          * Gets or sets the text of the action item.
          */
         text: string;
-        
+
         /**
          * Gets or sets the icon of the action item.
          */
         icon: string;
-        
+
         /**
          * Gets or sets the custom action view of the action item.
          */
-        actionView: view.View;
+        actionView: View;
 
         /**
          * Gets or sets the visibility of the action item.
          */
         visibility: string;
-        
+
         /**
          * Gets the action bar that contains the action item.
          */
@@ -136,7 +113,7 @@ declare module "ui/action-bar" {
         /**
          * Gets the page that contains the action item.
          */
-        page: pages.Page;
+        page: Page;
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -144,12 +121,12 @@ declare module "ui/action-bar" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void);
+        on(eventNames: string, callback: (data: EventData) => void);
 
         /**
          * Raised when a tap event occurs.
          */
-        on(event: "tap", callback: (args: observable.EventData) => void);
+        on(event: "tap", callback: (args: EventData) => void);
 
         //@private
         _raiseTap(): void;
@@ -159,13 +136,13 @@ declare module "ui/action-bar" {
          * Gets the iOS specific options of the action item.
          */
         ios: IOSActionItemSettings;
-        
+
         /**
          * Gets the Android specific options of the action item.
          */
         android: AndroidActionItemSettings;
     }
-    
+
     /**
      * Represents Android specific options of the action item.
      */
@@ -177,8 +154,8 @@ declare module "ui/action-bar" {
          *  3. popup - item is shown in the popup menu.
          * Note: Property not applicable to NavigationButton
          */
-        position: string;
-        
+        position: "actionBar" | "actionBarIfRoom" | "popup";
+
         /**
          * Gets or sets the name of the system drawable resource to be displayed.
          * Use this property instead of ActionItem.icon if you want to diplsay a built-in Android system icon.
@@ -187,7 +164,7 @@ declare module "ui/action-bar" {
          */
         systemIcon: string;
     }
-    
+
     /**
      * Represents iOS specific options of the action item.
      */
@@ -198,7 +175,7 @@ declare module "ui/action-bar" {
          *  2. right - items is shown at the right part of the navigation bar.
          * Note: Property not applicable to NavigationButton
          */
-        position: string;
+        position: "left" | "right";
 
         /**
          * Gets or sets a number representing the iOS system item to be displayed.
@@ -238,12 +215,12 @@ declare module "ui/action-bar" {
      * Represents Android specific options of the action bar.
      */
     export interface AndroidActionBarSettings {
-        
+
         /**
          * Gets or sets the action bar icon.
          */
         icon: string;
-        
+
         /**
          * Gets or sets the visibility of the action bar icon.
          * The icon is visible by default in pre-lollipop (API level < 20) versions of android and is hidden in lollipop (API level >= 20)
@@ -262,8 +239,28 @@ declare module "ui/action-bar" {
 
     }
 
-    //@private
+    /**
+     * String value used when hooking to tap event.
+     */
+    let tapEvent: string;
+
+    /**
+     * Represents the observable property backing the text property.
+     */
+    let textProperty: Property<ActionItem, string>;
+
+    /**
+     * Represents the observable property backing the icon property.
+     */
+    let iconProperty: Property<ActionItem, string>;
+
+    /**
+     * Represents the observable property backing the visibility property.
+     */
+    let visibilityProperty: Property<ActionItem, string>;
+
+    /** @internal */
     export function _setNavBarColor(navBar: any /* UINavigationBar */, color: any /* UIColor */);
+    /** @internal */
     export function _setNavBarBackgroundColor(navBar: any /* UINavigationBar */, color: any /* UIColor */);
-    //@endprivate
 }

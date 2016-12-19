@@ -12,7 +12,7 @@ class Device implements definition.Device {
     private _model: string;
     private _osVersion: string;
     private _sdkVersion: string;
-    private _deviceType: string;
+    private _deviceType: "Phone" | "Tablet";
     private _language: string;
     private _region: string;
 
@@ -48,15 +48,13 @@ class Device implements definition.Device {
         return this._sdkVersion;
     }
 
-    get deviceType(): string {
+    get deviceType(): "Phone" | "Tablet" {
         if (!this._deviceType) {
-            var enums = require("ui/enums");
-
             if (utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone) {
-                this._deviceType = enums.DeviceType.Phone;
+                this._deviceType = "Phone";
             }
             else {
-                this._deviceType = enums.DeviceType.Tablet;
+                this._deviceType = "Tablet";
             }
         }
 

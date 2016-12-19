@@ -1,25 +1,27 @@
-﻿import common = require("./time-picker-common");
-import style = require("ui/styling/style");
-import {View} from "ui/core/view";
+﻿import { TimePickerBase, timeProperty, minuteIntervalProperty, 
+    minuteProperty, minMinuteProperty, maxMinuteProperty,
+    hourProperty, minHourProperty, maxHourProperty, colorProperty } from "./time-picker-common";
 
-import * as utils from "utils/utils";
+import { ios } from "utils/utils";
+import getter = ios.getter;
+
+export * from "./time-picker-common";
 
 function getDate(hour: number, minute: number): Date {
-    var comps = NSDateComponents.alloc().init();
-    comps.hour = hour;
-    comps.minute = minute;
-    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>comps);
+    let components = NSDateComponents.alloc().init();
+    components.hour = hour;
+    components.minute = minute;
+    return getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(<any>components);
 }
 
 function getComponents(date: Date | NSDate): NSDateComponents {
-    return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
+    return getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, <any>date);
 }
 
-global.moduleMerge(common, exports);
-
-export class TimePicker extends common.TimePicker {
+export class TimePicker extends TimePickerBase {
     private _ios: UIDatePicker;
     private _changeHandler: NSObject;
+    public nativeView: UIDatePicker;
 
     constructor() {
         super();
@@ -30,37 +32,76 @@ export class TimePicker extends common.TimePicker {
         this._changeHandler = UITimePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
 
-        var comps = getComponents(NSDate.date());
-        this.hour = comps.hour;
-        this.minute = comps.minute;
+        let components = getComponents(NSDate.date());
+        this.hour = components.hour;
+        this.minute = components.minute;
     }
 
     get ios(): UIDatePicker {
         return this._ios;
     }
 
-    public _setNativeTime() {
-        if (this.ios) {
-            this.ios.date = <any>getDate(this.hour, this.minute);
-        }
+    get [timeProperty.native](): Date {
+        return this.nativeView.date;
+    }
+    set [timeProperty.native](value: Date) {
+        this.nativeView.date = getDate(this.hour, this.minute);
     }
 
-    public _setNativeMinTime() {
-        if (this.ios) {
-            this.ios.minimumDate = <any>getDate(this.minHour, this.minMinute);
-        }
+    get [minuteProperty.native](): number {
+        return this.nativeView.date.getMinutes();
+    }
+    set [minuteProperty.native](value: number) {
+        this.nativeView.date = getDate(this.hour, value);
     }
 
-    public _setNativeMaxTime() {
-        if (this.ios) {
-            this.ios.maximumDate = <any>getDate(this.maxHour, this.maxMinute);
-        }
+    get [hourProperty.native](): number {
+        return this.nativeView.date.getHours();
+    }
+    set [hourProperty.native](value: number) {
+        this.nativeView.date = getDate(value, this.minute);
     }
 
-    public _setNativeMinuteIntervalTime() {
-        if (this.ios) {
-            this.ios.minuteInterval = this.minuteInterval;
-        }
+    get [minHourProperty.native](): number {
+        return this.nativeView.minimumDate.getHours();
+    }
+    set [minHourProperty.native](value: number) {
+        this.nativeView.minimumDate = getDate(value, this.minute);
+    }
+
+    get [maxHourProperty.native](): number {
+        return this.nativeView.maximumDate.getHours();
+    }
+    set [maxHourProperty.native](value: number) {
+        this.nativeView.maximumDate = getDate(value, this.minute);
+    }
+
+    get [minMinuteProperty.native](): number {
+        return this.nativeView.minimumDate.getMinutes();
+    }
+    set [minMinuteProperty.native](value: number) {
+        this.nativeView.minimumDate = getDate(this.hour, value);
+    }
+
+    get [maxMinuteProperty.native](): number {
+        return this.nativeView.maximumDate.getMinutes();
+    }
+    set [maxMinuteProperty.native](value: number) {
+        this.nativeView.maximumDate = getDate(this.hour, value);
+    }
+
+    get [timeProperty.native](): number {
+        return this.nativeView.minuteInterval;
+    }
+    set [timeProperty.native](value: number) {
+        this.nativeView.minuteInterval = value;
+    }
+
+    get [colorProperty.native](): UIColor {
+        return this.nativeView.valueForKey("textColor");
+    }
+    set [colorProperty.native](value: UIColor) {
+        this.nativeView.setValueForKey(value, "textColor");
     }
 }
 
@@ -80,21 +121,21 @@ class UITimePickerChangeHandlerImpl extends NSObject {
             return;
         }
 
-        var comps = getComponents(sender.date);
-        
+        let components = getComponents(sender.date);
+
         let timeChanged = false;
-        if (comps.hour !== owner.hour) {
-            owner._onPropertyChangedFromNative(common.TimePicker.hourProperty, comps.hour);
+        if (components.hour !== owner.hour) {
+            owner.nativePropertyChanged(hourProperty, components.hour);
             timeChanged = true;
         }
 
-        if (comps.minute !== owner.minute) {
-            owner._onPropertyChangedFromNative(common.TimePicker.minuteProperty, comps.minute);
+        if (components.minute !== owner.minute) {
+            owner.nativePropertyChanged(minuteProperty, components.minute);
             timeChanged = true;
         }
-        
+
         if (timeChanged) {
-            owner._onPropertyChangedFromNative(common.TimePicker.timeProperty, new Date(0, 0, 0, comps.hour, comps.minute));
+            owner.nativePropertyChanged(timeProperty, new Date(0, 0, 0, components.hour, components.minute));
         }
     }
 
@@ -102,30 +143,3 @@ class UITimePickerChangeHandlerImpl extends NSObject {
         'valueChanged': { returns: interop.types.void, params: [UIDatePicker] }
     }
 }
-
-export class TimePickerStyler implements style.Styler {
-    // color
-    private static setColorProperty(view: View, newValue: any) {
-        var picker = <UIDatePicker>view._nativeView;
-        picker.setValueForKey(newValue, "textColor");
-    }
-
-    private static resetColorProperty(view: View, nativeValue: any) {
-        var picker = <UIDatePicker>view._nativeView;
-        picker.setValueForKey(nativeValue, "textColor");
-    }
-
-    private static getColorProperty(view: View): any {
-        var picker = <UIDatePicker>view._nativeView;
-        return picker.valueForKey("textColor");
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TimePickerStyler.setColorProperty,
-            TimePickerStyler.resetColorProperty,
-            TimePickerStyler.getColorProperty), "TimePicker");
-    }
-}
-
-TimePickerStyler.registerHandlers();

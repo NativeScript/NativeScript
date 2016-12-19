@@ -2,7 +2,7 @@
  * Contains the TextView class, which represents an editable multi-line line box.
  */
 declare module "ui/text-view" {
-    import {EditableTextBase} from "ui/editable-text-base";
+    import { EditableTextBase } from "ui/editable-text-base";
 
     /**
      * Represents an editable multiline text view.

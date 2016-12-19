@@ -13,26 +13,26 @@ How to specify category(s):
 ```js
 import trace = require("trace");
 // only the Layout messages are traced
-trace.setCategories(trace.categories.Layout);
+trace.setCategories(traceCategories.Layout);
 ``` 
 
 ```js
 import trace = require("trace");
 // set Layout + VisualTreeEvents categories
-trace.setCategories(trace.categories.concat(trace.categories.Layout, trace.categories.VisualTreeEvents));
+trace.setCategories(traceCategories.concat(traceCategories.Layout, traceCategories.VisualTreeEvents));
 ```
 
 ```js
 import trace = require("trace");
 // trace everything
-trace.setCategories(trace.categories.All);
+trace.setCategories(traceCategories.All);
 ```
 
 How to trace:
 
 ```js
 import trace = require("trace");
-trace.write("tracing message", trace.categories.Layout);
+traceWrite("tracing message", traceCategories.Layout);
 ```
 
 The module also supports events notifications through the EventListener interface. You may call the `trace.notifyEvent` method and all registered listeners will receive a notification for the event.

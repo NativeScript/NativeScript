@@ -1,7 +1,6 @@
 ﻿declare module "ui/animation" {
-    import viewModule = require("ui/core/view");
-    import colorModule = require("color");
-    
+    import { View, Color } from "ui/core/view";
+
     /**
      * Defines animation options for the View.animate method.
      */
@@ -9,7 +8,7 @@
         /**
          * The view whose property is to be animated.
          */
-        target?: viewModule.View;
+        target?: View;
 
         /**
          * Animates the opacity of the view. Value should be a number between 0.0 and 1.0
@@ -19,7 +18,7 @@
         /**
          * Animates the backgroundColor of the view.
          */
-        backgroundColor?: colorModule.Color;
+        backgroundColor?: Color;
 
         /**
          * Animates the translate affine transform of the view.
@@ -65,7 +64,6 @@
      * Possible values are numeric values from 0 to 1
      */
     export class CubicBezierAnimationCurve {
-
         public x1: number;
         public y1: number;
         public x2: number;
@@ -101,9 +99,8 @@
         public play: () => AnimationPromise;
         public cancel: () => void;
         public isPlaying: boolean;
+        public _resolveAnimationCurve(curve: any): any;
     }
 
-    //@private
-    export function _resolveAnimationCurve(curve: any): any;
-    //@endprivate
+    function _resolveAnimationCurve(curve: any): any;
 }

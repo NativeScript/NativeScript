@@ -1,77 +1,158 @@
-﻿import common = require("./editable-text-base-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import enums = require("ui/enums");
+﻿import {
+    EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
+    returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
+    autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
+    textProperty
+} from "./editable-text-base-common";
 
-export class EditableTextBase extends common.EditableTextBase {
+export * from "./editable-text-base-common";
+
+export abstract class EditableTextBase extends EditableTextBaseCommon {
+    public nativeView: UITextField | UITextView;
     public dismissSoftInput() {
-        (<UIResponder>this.ios).resignFirstResponder();
+        this.nativeView.resignFirstResponder();
     }
 
-    public _onKeyboardTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newKeyboardType: UIKeyboardType;
-        switch (data.newValue) {
-            case enums.KeyboardType.datetime:
+    get [keyboardTypeProperty.native](): "datetime"| "phone" | "number" | "url" | "email" | string {
+        let keyboardType = this.nativeView.keyboardType;
+        switch (keyboardType) {
+            case UIKeyboardType.NumbersAndPunctuation:
+                return "number";
+
+            case UIKeyboardType.PhonePad:
+                return "phone";
+
+            case UIKeyboardType.URL:
+                return "url";
+
+            case UIKeyboardType.EmailAddress:
+                return "email";
+
+            default:
+                return keyboardType.toString();
+        }
+    }
+    set [keyboardTypeProperty.native](value: "datetime"| "phone" | "number" | "url" | "email" | string) {
+        let newKeyboardType: UIKeyboardType;
+        switch (value) {
+            case "datetime":
                 newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
                 break;
-            case enums.KeyboardType.phone:
+
+            case "phone":
                 newKeyboardType = UIKeyboardType.PhonePad;
                 break;
-            case enums.KeyboardType.number:
+
+            case "number":
                 newKeyboardType = UIKeyboardType.NumbersAndPunctuation;
                 break;
-            case enums.KeyboardType.url:
+
+            case "url":
                 newKeyboardType = UIKeyboardType.URL;
-                break;
-            case enums.KeyboardType.email:
+                break
+                ;
+            case "email":
                 newKeyboardType = UIKeyboardType.EmailAddress;
                 break;
+
             default:
-                newKeyboardType = UIKeyboardType.Default;
+                let kt = +value;
+                if (!isNaN(kt)) {
+                    newKeyboardType = <UIKeyboardType>kt;
+                } else {
+                    newKeyboardType = UIKeyboardType.Default;
+                }
                 break;
         }
 
-        (<UITextInputTraits>this.ios).keyboardType = newKeyboardType;
+        this.nativeView.keyboardType = newKeyboardType;
     }
 
-    public _onReturnKeyTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue;
-        switch (data.newValue) {
-            case enums.ReturnKeyType.done:
+    get [returnKeyTypeProperty.native](): "done" | "next" | "go" | "search" | "send" | string {
+        let returnKeyType = this.nativeView.returnKeyType;
+        switch (returnKeyType) {
+            case UIReturnKeyType.Done:
+                return "done";
+
+            case UIReturnKeyType.Go:
+                return "go";
+
+            case UIReturnKeyType.Next:
+                return "next";
+
+            case UIReturnKeyType.Search:
+                return "search";
+
+            case UIReturnKeyType.Send:
+                return "send";
+
+            default:
+                return returnKeyType.toString();
+        }
+    }
+    set [returnKeyTypeProperty.native](value: "done" | "next" | "go" | "search" | "send" | string) {
+        let newValue;
+        switch (value) {
+            case "done":
                 newValue = UIReturnKeyType.Done;
                 break;
-            case enums.ReturnKeyType.go:
+            case "go":
                 newValue = UIReturnKeyType.Go;
                 break;
-            case enums.ReturnKeyType.next:
+            case "next":
                 newValue = UIReturnKeyType.Next;
                 break;
-            case enums.ReturnKeyType.search:
+            case "search":
                 newValue = UIReturnKeyType.Search;
                 break;
-            case enums.ReturnKeyType.send:
+            case "send":
                 newValue = UIReturnKeyType.Send;
                 break;
             default:
-                newValue = UIReturnKeyType.Default;
+                let rkt = +value;
+                if (!isNaN(rkt)) {
+                    newValue = <UIKeyboardType>rkt;
+                } else {
+                    newValue = UIKeyboardType.Default;
+                }
                 break;
         }
 
-        (<UITextInputTraits>this.ios).returnKeyType = newValue;
+        this.nativeView.returnKeyType = newValue;
     }
 
-    public _onAutocapitalizationTypePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue: UITextAutocapitalizationType;
-        switch (data.newValue) {
-            case enums.AutocapitalizationType.none:
+    get [autocapitalizationTypeProperty.native](): "none" | "words" | "sentences" | "allCharacters" {
+        let autocapitalizationType = this.nativeView.autocapitalizationType;
+        switch (autocapitalizationType) {
+            case UITextAutocapitalizationType.None:
+                return "none";
+
+            case UITextAutocapitalizationType.Words:
+                return "words";
+
+            case UITextAutocapitalizationType.Sentences:
+                return "sentences";
+
+            case UITextAutocapitalizationType.AllCharacters:
+                return "allCharacters";
+
+            default:
+                throw new Error("Invalid autocapitalizationType value:" + autocapitalizationType);
+        }
+    }
+    set [autocapitalizationTypeProperty.native](value: "none" | "words" | "sentences" | "allCharacters") {
+        let newValue: UITextAutocapitalizationType;
+        switch (value) {
+            case "none":
                 newValue = UITextAutocapitalizationType.None;
                 break;
-            case enums.AutocapitalizationType.words:
+            case "words":
                 newValue = UITextAutocapitalizationType.Words;
                 break;
-            case enums.AutocapitalizationType.sentences:
+            case "sentences":
                 newValue = UITextAutocapitalizationType.Sentences;
                 break;
-            case enums.AutocapitalizationType.allCharacters:
+            case "allCharacters":
                 newValue = UITextAutocapitalizationType.AllCharacters;
                 break;
             default:
@@ -79,23 +160,30 @@ export class EditableTextBase extends common.EditableTextBase {
                 break;
         }
 
-        (<UITextInputTraits>this.ios).autocapitalizationType = newValue;
+        this.nativeView.autocapitalizationType = newValue;
     }
 
-    public _onAutocorrectPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var newValue: UITextAutocorrectionType;
-        switch (data.newValue) {
-            case true:
-                newValue = UITextAutocorrectionType.Yes;
-                break;
-            case false:
-                newValue = UITextAutocorrectionType.No;
-                break;
-            default:
-                newValue = UITextAutocorrectionType.Default;
-                break;
+    get [autocorrectProperty.native](): boolean | number {
+        let autocorrectionType = this.nativeView.autocorrectionType;
+        switch (autocorrectionType) {
+            case UITextAutocorrectionType.Yes:
+                return true;
+            case UITextAutocorrectionType.No:
+                return false;
+            case UITextAutocorrectionType.Default:
+                return autocorrectionType;
+        }
+    }
+    set [autocorrectProperty.native](value: boolean | number) {
+        let newValue: UITextAutocorrectionType;
+        if (typeof value === "number") {
+            newValue = UITextAutocorrectionType.Default;
+        } else if (value) {
+             newValue = UITextAutocorrectionType.Yes;
+        } else {
+            newValue = UITextAutocorrectionType.No;
         }
 
-        (<UITextInputTraits>this.ios).autocorrectionType = newValue;
+        this.nativeView.autocorrectionType = newValue;
     }
-}   
+}

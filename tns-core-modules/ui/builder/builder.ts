@@ -1,13 +1,13 @@
-﻿import {debug, ScopeError, SourceError, Source} from "utils/debug";
+﻿import { debug, ScopeError, SourceError, Source } from "utils/debug";
 import * as xml from "xml";
-import {View, Template, KeyedTemplate} from "ui/core/view";
-import {File, path, knownFolders} from "file-system";
-import {isString, isFunction, isDefined} from "utils/types";
-import {ComponentModule, setPropertyValue, getComponentModule} from "ui/builder/component-builder";
-import {platformNames, device} from "platform";
-import {LoadOptions} from "ui/builder";
-import {Page} from "ui/page";
-import {resolveFileName} from "file-system/file-name-resolver";
+import { View, Template, KeyedTemplate } from "ui/core/view";
+import { File, path, knownFolders } from "file-system";
+import { isString, isFunction, isDefined } from "utils/types";
+import { ComponentModule, setPropertyValue, getComponentModule } from "ui/builder/component-builder";
+import { platformNames, device } from "platform";
+import { LoadOptions } from "ui/builder";
+import { Page } from "ui/page";
+import { resolveFileName } from "file-system/file-name-resolver";
 import * as traceModule from "trace";
 
 const defaultNameSpaceMatcher = /tns\.xsd$/i;
@@ -34,7 +34,7 @@ export function parse(value: string | Template, context: any): View {
         }
 
         return viewToReturn;
-    } else if ( isFunction(value)) {
+    } else if (isFunction(value)) {
         return (<Template>value)();
     }
 }
@@ -402,8 +402,8 @@ namespace xml2ui {
 
             if (this._nestingLevel === 0) {
                 this._state = TemplateParser.State.FINISHED;
-                
-                if (this._setTemplateProperty && this._templateProperty.name in this._templateProperty.parent.component){
+
+                if (this._setTemplateProperty && this._templateProperty.name in this._templateProperty.parent.component) {
                     let template = this._build();
                     this._templateProperty.parent.component[this._templateProperty.name] = template;
                 }
@@ -435,20 +435,20 @@ namespace xml2ui {
 
         constructor(private parent: XmlStateConsumer, private templateProperty: TemplateProperty) {
         }
-        
+
         public parse(args: xml.ParserEvent): XmlStateConsumer {
-            if (args.eventType === xml.ParserEventType.StartElement && args.elementName === "template"){
+            if (args.eventType === xml.ParserEventType.StartElement && args.elementName === "template") {
                 let childParser = new TemplateParser(this, this.templateProperty, false);
-                childParser["key"] = args.attributes["key"]; 
+                childParser["key"] = args.attributes["key"];
                 this._childParsers.push(childParser);
-                return childParser;    
+                return childParser;
             }
 
-            if (args.eventType === xml.ParserEventType.EndElement){
+            if (args.eventType === xml.ParserEventType.EndElement) {
                 let name = ComponentParser.getComplexPropertyName(args.elementName);
-                if (name === this.templateProperty.name){
-                    let templates = new Array<KeyedTemplate>();        
-                    for (let i = 0; i < this._childParsers.length; i++){
+                if (name === this.templateProperty.name) {
+                    let templates = new Array<KeyedTemplate>();
+                    for (let i = 0; i < this._childParsers.length; i++) {
                         templates.push({
                             key: this._childParsers[i]["key"],
                             createView: this._childParsers[i]._build()
@@ -458,7 +458,7 @@ namespace xml2ui {
                     return this.parent;
                 }
             }
-            
+
             return this;
         }
     }
@@ -523,7 +523,7 @@ namespace xml2ui {
                             sourceTracker: this.sourceTracker
                         });
                     }
-                    
+
                     if (ComponentParser.isKnownMultiTemplate(name, parent.exports)) {
                         return new MultiTemplateParser(this, {
                             context: (parent ? getExports(parent.component) : null) || this.context, // Passing 'context' won't work if you set "codeFile" on the page
@@ -535,6 +535,7 @@ namespace xml2ui {
                             sourceTracker: this.sourceTracker
                         });
                     }
+
 
                 } else {
 
@@ -568,8 +569,8 @@ namespace xml2ui {
 
                             if (this.rootComponentModule && this.rootComponentModule.component instanceof Page) {
                                 this.currentPage = <Page>this.rootComponentModule.component;
-                                
-                                if((<any>this.currentPage).exports){
+
+                                if ((<any>this.currentPage).exports) {
                                     this.context = (<any>this.currentPage).exports;
                                 }
                             }

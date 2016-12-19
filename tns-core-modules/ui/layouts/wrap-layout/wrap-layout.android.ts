@@ -1,34 +1,8 @@
-﻿import utils = require("utils/utils");
-import common = require("./wrap-layout-common");
-import {Orientation} from "ui/enums";
-import {PropertyMetadata} from "ui/core/proxy";
-import {PropertyChangeData} from "ui/core/dependency-observable";
+﻿import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty } from "./wrap-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./wrap-layout-common";
 
-function setNativeOrientationProperty(data: PropertyChangeData): void {
-    var wrapLayout = <WrapLayout>data.object;
-    var nativeView = wrapLayout._nativeView;
-    nativeView.setOrientation(data.newValue === Orientation.vertical ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal);
-}
-
-function setNativeItemWidthProperty(data: PropertyChangeData): void {
-    var wrapLayout = <WrapLayout>data.object;
-    var nativeView = wrapLayout._nativeView;
-    nativeView.setItemWidth(data.newValue * utils.layout.getDisplayDensity());
-}
-
-function setNativeItemHeightProperty(data: PropertyChangeData): void {
-    var wrapLayout = <WrapLayout>data.object;
-    var nativeView = wrapLayout._nativeView;
-    nativeView.setItemHeight(data.newValue * utils.layout.getDisplayDensity());
-}
-
-(<PropertyMetadata>common.WrapLayout.orientationProperty.metadata).onSetNativeValue = setNativeOrientationProperty;
-(<PropertyMetadata>common.WrapLayout.itemWidthProperty.metadata).onSetNativeValue = setNativeItemWidthProperty;
-(<PropertyMetadata>common.WrapLayout.itemHeightProperty.metadata).onSetNativeValue = setNativeItemHeightProperty;
-
-export class WrapLayout extends common.WrapLayout {
+export class WrapLayout extends WrapLayoutBase {
     private _layout: org.nativescript.widgets.WrapLayout;
 
     get android(): org.nativescript.widgets.WrapLayout {
@@ -41,5 +15,26 @@ export class WrapLayout extends common.WrapLayout {
 
     public _createUI() {
         this._layout = new org.nativescript.widgets.WrapLayout(this._context);
+    }
+
+    get [orientationProperty.native](): "horizontal" | "vertical" {
+        return "vertical";
+    }
+    set [orientationProperty.native](value: "horizontal" | "vertical") {
+        this._layout.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
+    }
+
+    get [itemWidthProperty.native](): number {
+        return 0;
+    }
+    set [itemWidthProperty.native](value: number) {
+        this._layout.setItemWidth(this.effectiveItemWidth);
+    }
+
+    get [itemHeightProperty.native](): number {
+        return 0;
+    }
+    set [itemHeightProperty.native](value: number) {
+        this._layout.setItemHeight(this.effectiveItemHeight);
     }
 }

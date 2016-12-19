@@ -2,18 +2,12 @@
  * Contains the ListPicker class.
  */
 declare module "ui/list-picker" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import { View, Property } from "ui/core/view";
 
     /**
      * Represents an list picker.
      */
-    export class ListPicker extends view.View {
-        public static selectedIndexProperty: dependencyObservable.Property;
-        public static itemsProperty: dependencyObservable.Property;
-
-        constructor();
-
+    export class ListPicker extends View {
         /**
          * Gets the native [android.widget.NumberPicker](http://developer.android.com/reference/android/widget/NumberPicker.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -35,4 +29,12 @@ declare module "ui/list-picker" {
          */
         items: any;
     }
-} 
+
+    export interface ItemsSource { 
+        length: number;
+        getItem(index: number): any;
+    }
+
+    export const selectedIndexProperty: Property<ListPicker, number>;
+    export const itemsProperty: Property<ListPicker, any[] | ItemsSource>;
+}

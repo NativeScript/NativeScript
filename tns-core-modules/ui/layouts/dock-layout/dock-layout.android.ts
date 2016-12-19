@@ -1,32 +1,35 @@
-﻿import common = require("./dock-layout-common");
-import {Dock} from "ui/enums";
-import {View} from "ui/core/view";
-import {PropertyMetadata} from "ui/core/proxy";
-import {PropertyChangeData} from "ui/core/dependency-observable";
+﻿import { DockLayoutBase, View, dockProperty, stretchLastChildProperty } from "./dock-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./dock-layout-common";
 
-function setNativeDockProperty(data: PropertyChangeData) {
-    var view = data.object;
-    if (view instanceof View) {
-        var nativeView: android.view.View = view._nativeView;
-        var lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+// define native getter and setter for topProperty.
+let dockDescriptor: TypedPropertyDescriptor<"left" | "top" | "right" | "bottom"> = {
+    enumerable: true,
+    configurable: true,
+    get: () => "left",
+    set: function (this: View, value: "left" | "top" | "right" | "bottom") {
+        const nativeView: android.view.View = this._nativeView;
+        const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
-            switch (data.newValue) {
-                case Dock.left:
+            switch (value) {
+                case "left":
                     lp.dock = org.nativescript.widgets.Dock.left;
                     break;
-                case Dock.top:
+
+                case "top":
                     lp.dock = org.nativescript.widgets.Dock.top;
                     break;
-                case Dock.right:
+
+                case "right":
                     lp.dock = org.nativescript.widgets.Dock.right;
                     break;
-                case Dock.bottom:
+
+                case "bottom":
                     lp.dock = org.nativescript.widgets.Dock.bottom;
                     break;
+
                 default:
-                    throw new Error("Invalid dock value: " + data.newValue + " on element: " + view);
+                    throw new Error(`Invalid value for dock property: ${value}`);
             }
 
             nativeView.setLayoutParams(lp);
@@ -34,17 +37,12 @@ function setNativeDockProperty(data: PropertyChangeData) {
     }
 }
 
-(<PropertyMetadata>common.DockLayout.dockProperty.metadata).onSetNativeValue = setNativeDockProperty;
+// register native properties on View type.
+Object.defineProperties(View, {
+    [dockProperty.native]: dockDescriptor
+});
 
-function setNativeStretchLastChildProperty(data: PropertyChangeData) {
-    let dockLayout = <DockLayout>data.object;
-    let nativeView = dockLayout._nativeView;
-    nativeView.setStretchLastChild(data.newValue);
-}
-
-(<PropertyMetadata>common.DockLayout.stretchLastChildProperty.metadata).onSetNativeValue = setNativeStretchLastChildProperty;
-
-export class DockLayout extends common.DockLayout {
+export class DockLayout extends DockLayoutBase {
 
     private _layout: org.nativescript.widgets.DockLayout;
 
@@ -58,5 +56,12 @@ export class DockLayout extends common.DockLayout {
 
     public _createUI() {
         this._layout = new org.nativescript.widgets.DockLayout(this._context);
+    }
+
+    get [stretchLastChildProperty.native](): boolean {
+        return false;
+    }
+    set [stretchLastChildProperty.native](value: boolean) {
+        this._layout.setStretchLastChild(value);
     }
 }

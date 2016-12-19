@@ -16,3 +16,4 @@ declare module "ui/builder/binding-builder" {
 
     export var parentsRegex: RegExp;
 }
+//@endprivate

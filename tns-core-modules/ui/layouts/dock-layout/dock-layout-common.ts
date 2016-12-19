@@ -1,18 +1,5 @@
-﻿import definition = require("ui/layouts/dock-layout");
-import platform = require("platform");
-import {Dock} from "ui/enums";
-import {LayoutBase} from "ui/layouts/layout-base";
-import {View} from "ui/core/view";
-import {PropertyMetadata} from "ui/core/proxy";
-import {Property, PropertyChangeData, PropertyMetadataSettings} from "ui/core/dependency-observable";
-import {registerSpecialProperty} from "ui/builder/special-properties";
-
-// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
-
-function isDockValid(value: any): boolean {
-    return value === Dock.left || value === Dock.top || value === Dock.right || value === Dock.bottom;
-}
+﻿import { DockLayout as DockLayoutDefinition } from "ui/layouts/dock-layout";
+import { LayoutBase, View, Property, isIOS, booleanConverter } from "ui/layouts/layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
@@ -21,44 +8,52 @@ function validateArgs(element: View): View {
     return element;
 }
 
-registerSpecialProperty("dock", (instance, propertyValue) => {
-    DockLayout.setDock(instance, propertyValue);
-});
+export * from "ui/layouts/layout-base";
 
-export class DockLayout extends LayoutBase implements definition.DockLayout {
+declare module "ui/core/view" {
+    interface View {
+        dock: "left" | "top" | "right" | "bottom";
+    }
+}
 
-    private static onDockPropertyChanged(data: PropertyChangeData) {
-        var view = data.object;
-        if (view instanceof View) {
-            var layout = view.parent;
-            if (layout instanceof DockLayout) {
-                layout.onDockChanged(view, data.oldValue, data.newValue);
-            }
-        }
+View.prototype.dock = "left";
+
+export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
+
+    public static getDock(element: View): "left" | "top" | "right" | "bottom" {
+        return validateArgs(element).dock;
     }
 
-    public static dockProperty = new Property(
-        "dock", "DockLayout", new PropertyMetadata(Dock.left, undefined, DockLayout.onDockPropertyChanged, isDockValid));
-
-    public static stretchLastChildProperty = new Property(
-        "stretchLastChild", "DockLayout", new PropertyMetadata(true, AffectsLayout));
-
-    public static getDock(element: View): string {
-        return validateArgs(element)._getValue(DockLayout.dockProperty);
+    public static setDock(element: View, value: "left" | "top" | "right" | "bottom"): void {
+        validateArgs(element).dock = value;
     }
 
-    public static setDock(element: View, value: string): void {
-        validateArgs(element)._setValue(DockLayout.dockProperty, value);
-    }
+    public stretchLastChild: boolean;
 
-    get stretchLastChild(): boolean {
-        return this._getValue(DockLayout.stretchLastChildProperty);
-    }
-    set stretchLastChild(value: boolean) {
-        this._setValue(DockLayout.stretchLastChildProperty, value);
-    }
-
-    protected onDockChanged(view: View, oldValue: number, newValue: number) {
+    public onDockChanged(view: View, oldValue: "left" | "top" | "right" | "bottom", newValue: "left" | "top" | "right" | "bottom") {
         //
     }
 }
+
+export const dockProperty = new Property<View, "left" | "top" | "right" | "bottom">({
+    name: "dock", defaultValue: "left", valueChanged: (target, oldValue, newValue) => {
+        if (target instanceof View) {
+            const layout = target.parent;
+            if (layout instanceof DockLayoutBase) {
+                layout.onDockChanged(target, oldValue, newValue);
+            }
+        }
+    }, valueConverter: (v) => {
+        if (v === "left" || v === "top" || v === "right" || v === "bottom") {
+            return <"left" | "top" | "right" | "bottom">v;
+        }
+
+        throw new Error(`Invalid value for dock property: ${v}`);
+    }
+});
+dockProperty.register(DockLayoutBase);
+
+export const stretchLastChildProperty = new Property<DockLayoutBase, boolean>({
+    name: "stretchLastChild", defaultValue: true, affectsLayout: isIOS, valueConverter: booleanConverter
+});
+stretchLastChildProperty.register(DockLayoutBase);

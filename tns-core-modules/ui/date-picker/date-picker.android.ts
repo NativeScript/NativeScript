@@ -1,130 +1,130 @@
-﻿import common = require("./date-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import utils = require("utils/utils")
-import * as types from "utils/types";
+﻿import {
+    DatePickerBase, yearProperty, monthProperty, dayProperty,
+    dateProperty, maxDateProperty, minDateProperty
+} from "./date-picker-common";
 
-function onYearPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
+export * from "./date-picker-common";
 
-    if (picker.android && picker.android.getYear() !== data.newValue) {
-        updateNativeDate(picker);
+@Interfaces([android.widget.DatePicker.OnDateChangedListener])
+class DateChangedListener extends java.lang.Object implements android.widget.DatePicker.OnDateChangedListener {
+    constructor(public owner: WeakRef<DatePicker>) {
+        super()
+        return global.__native(this);
+    }
+
+    onDateChanged(picker: android.widget.DatePicker, year: number, month: number, day: number) {
+        let owner = this.owner.get();
+        if (!owner) {
+            return;
+        }
+
+        let dateIsChanged = false;
+        if (year !== owner.year) {
+            owner.nativePropertyChanged(yearProperty, year);
+            dateIsChanged = true;
+        }
+
+        if ((month + 1) !== owner.month) {
+            owner.nativePropertyChanged(monthProperty, month + 1);
+            dateIsChanged = true;
+        }
+
+        if (day !== owner.day) {
+            owner.nativePropertyChanged(dayProperty, day);
+            dateIsChanged = true;
+        }
+
+        if (dateIsChanged) {
+            owner.nativePropertyChanged(dateProperty, new Date(year, month, day));
+        }
     }
 }
 
-(<proxy.PropertyMetadata>common.DatePicker.yearProperty.metadata).onSetNativeValue = onYearPropertyChanged;
-
-function onMonthPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.android && picker.android.getMonth() !== (data.newValue - 1)) {
-        updateNativeDate(picker);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.monthProperty.metadata).onSetNativeValue = onMonthPropertyChanged;
-
-function onDayPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    if (picker.android && picker.android.getDayOfMonth() !== data.newValue) {
-        updateNativeDate(picker);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.dayProperty.metadata).onSetNativeValue = onDayPropertyChanged;
-
-function updateNativeDate(picker: DatePicker) {
-    var year = types.isNumber(picker.year) ? picker.year : picker.android.getYear();
-    var month = types.isNumber(picker.month) ? (picker.month - 1) : Math.max(0, picker.android.getMonth() - 1);
-    var day = types.isNumber(picker.day) ? picker.day : picker.android.getDayOfMonth();
-
-    picker.date = new Date(year, month, day);
-}
-
-function onMaxDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    var newValue = (<Date>data.newValue).getTime();
-    if (picker.android && picker.android.getMaxDate() !== newValue) {
-        picker.android.setMaxDate(newValue);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.maxDateProperty.metadata).onSetNativeValue = onMaxDatePropertyChanged;
-
-function onMinDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    var newValue = (<Date>data.newValue).getTime();
-    if (picker.android && picker.android.getMinDate() !== newValue) {
-        picker.android.setMinDate(newValue);
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.minDateProperty.metadata).onSetNativeValue = onMinDatePropertyChanged;
-
-function onDatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var picker = <DatePicker>data.object;
-
-    var newValue = <Date>data.newValue;
-    if (picker.android && (picker.android.getDayOfMonth() !== newValue.getDate()
-                            || picker.android.getMonth() !== newValue.getMonth() 
-                            || picker.android.getYear() !== newValue.getFullYear())) {
-        picker.android.updateDate(newValue.getFullYear(), newValue.getMonth(), newValue.getDate());
-    }
-}
-
-(<proxy.PropertyMetadata>common.DatePicker.dateProperty.metadata).onSetNativeValue = onDatePropertyChanged;
-
-global.moduleMerge(common, exports);
-
-export class DatePicker extends common.DatePicker {
+export class DatePicker extends DatePickerBase {
     private _android: android.widget.DatePicker;
     public _listener: android.widget.DatePicker.OnDateChangedListener;
+    public _datePicker: android.widget.DatePicker;
 
     get android(): android.widget.DatePicker {
         return this._android;
     }
 
-    constructor() {
-        super();
-
-        var that = new WeakRef(this);
-
-        this._listener = new android.widget.DatePicker.OnDateChangedListener(
-            <utils.Owned & android.widget.DatePicker.IOnDateChangedListener>{
-            get owner() {
-                return that.get();
-            },
-
-            onDateChanged: function (picker: android.widget.DatePicker, year: number, month: number, day: number) {
-                if (this.owner) {
-                    let dateIsChanged = false;
-                    if (year !== this.owner.year) {
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.yearProperty, year);
-                        dateIsChanged = true;
-                    }
-                    if ((month + 1) !== this.owner.month) {
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.monthProperty, month + 1);
-                        dateIsChanged = true;
-                    }
-                    if (day !== this.owner.day) {
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.dayProperty, day);
-                        dateIsChanged = true;
-                    }
-                    
-                    if (dateIsChanged) {
-                        this.owner._onPropertyChangedFromNative(common.DatePicker.dateProperty, new Date(year, month, day));
-                    }
-                }
-            }
-        });
-    }
-
-    public _createUI() {
+    public _createUI() {        
         this._android = new android.widget.DatePicker(this._context);
         this._android.setCalendarViewShown(false);
+        this._listener = this._listener = new DateChangedListener(new WeakRef(this));
         this._android.init(0, 0, 0, this._listener);
     }
-} 
+
+    private updateNativeDate(): void {
+        let year = typeof this.year === "number" ? this.year : this._datePicker.getYear();
+        let month = typeof this.month === "number" ? (this.month - 1) : this._datePicker.getMonth();
+        let day = typeof this.day === "number" ? this.day : this._datePicker.getDayOfMonth();
+        this.date = new Date(year, month, day);
+    }
+
+    get [yearProperty.native](): number {
+        return this._datePicker.getYear();
+    }
+    set [yearProperty.native](value: number) {
+        let picker = this._datePicker;
+        if (picker.getYear() !== value) {
+            this.updateNativeDate();
+        }
+    }
+
+    get [monthProperty.native](): number {
+        return this._datePicker.getMonth();
+    }
+    set [monthProperty.native](value: number) {
+        let picker = this._datePicker;
+        if (picker.getMonth() !== (value - 1)) {
+            this.updateNativeDate();
+        }
+    }
+
+    get [dayProperty.native](): number {
+        return this._datePicker.getDayOfMonth();
+    }
+    set [dayProperty.native](value: number) {
+        let picker = this._datePicker;
+        if (picker.getDayOfMonth() !== value) {
+            this.updateNativeDate();
+        }
+    }
+
+    get [dateProperty.native](): Date {
+        let picker = this._datePicker;
+        return new Date(picker.getYear(), picker.getMonth(), picker.getDayOfMonth());
+    }
+    set [dateProperty.native](value: Date) {
+        let picker = this._datePicker;
+        if (picker.getDayOfMonth() !== value.getDay()
+            || picker.getMonth() !== value.getMonth()
+            || picker.getYear() !== value.getFullYear()) {
+            picker.updateDate(value.getFullYear(), value.getMonth(), value.getDate());
+        }
+    }
+
+    get [maxDateProperty.native](): Date {
+        return this._datePicker.getMaxDate();
+    }
+    set [maxDateProperty.native](value: Date) {
+        let picker = this._datePicker;
+        let newValue = value.getTime();
+        if (picker.getMaxDate() !== newValue) {
+            picker.setMaxDate(newValue);
+        }
+    }
+
+    get [minDateProperty.native](): Date {
+        return this._datePicker.getMinDate();
+    }
+    set [minDateProperty.native](value: Date) {
+        let picker = this._datePicker;
+        let newValue = value.getTime();
+        if (picker.getMinDate() !== newValue) {
+            picker.setMinDate(newValue);
+        }
+    }
+}

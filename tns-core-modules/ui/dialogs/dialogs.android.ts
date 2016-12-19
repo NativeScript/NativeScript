@@ -1,17 +1,17 @@
 ﻿/**
  * Android specific dialogs functions implementation.
  */
-import dialogs = require("ui/dialogs");
-import dialogsCommon = require("./dialogs-common");
-import appmodule = require("application");
-import types = require("utils/types");
+import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from "ui/dialogs";
+import { getLabelColor, getButtonColor, getButtonBackgroundColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { isString, isDefined } from "utils/types";
+import { android as androidApp } from "application";
 
-global.moduleMerge(dialogsCommon, exports);
+export * from "./dialogs-common";
 
-function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDialog.Builder {
-    const alert = new android.app.AlertDialog.Builder(appmodule.android.foregroundActivity);
-    alert.setTitle(options && types.isString(options.title) ? options.title : "");
-    alert.setMessage(options && types.isString(options.message) ? options.message : "");
+function createAlertDialog(options?: DialogOptions): android.app.AlertDialog.Builder {
+    const alert = new android.app.AlertDialog.Builder(androidApp.foregroundActivity);
+    alert.setTitle(options && isString(options.title) ? options.title : "");
+    alert.setMessage(options && isString(options.message) ? options.message : "");
     if (options && options.cancelable === false) {
         alert.setCancelable(false);
     }
@@ -21,7 +21,7 @@ function createAlertDialog(options?: dialogs.DialogOptions): android.app.AlertDi
 function showDialog(builder: android.app.AlertDialog.Builder) {
     const dlg = builder.show();
 
-    const labelColor = dialogsCommon.getLabelColor();
+    const labelColor = getLabelColor();
     if (labelColor) {
         const textViewId = dlg.getContext().getResources().getIdentifier("android:id/alertTitle", null, null);
         if (textViewId) {
@@ -40,10 +40,10 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
         }
     }
 
-    let buttonColor = dialogsCommon.getButtonColor();
-    let buttonBackgroundColor = dialogsCommon.getButtonBackgroundColor();
-    if (buttonColor || buttonBackgroundColor) {
-        let buttons : android.widget.Button[] = [];
+    let buttonColor = getButtonColor();
+    let buttonBackgroundColor = getButtonBackgroundColor();
+    if (buttonColor) {
+        let buttons: android.widget.Button[] = [];
         for (let i = 0; i < 3; i++) {
             let id = dlg.getContext().getResources().getIdentifier("android:id/button" + i, null, null);
             buttons[i] = <android.widget.Button>dlg.findViewById(id);
@@ -62,7 +62,7 @@ function showDialog(builder: android.app.AlertDialog.Builder) {
     }
 }
 
-function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: dialogs.ConfirmOptions,
+function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options: ConfirmOptions,
     callback: Function): void {
 
     if (!options) {
@@ -105,7 +105,7 @@ function addButtonsToAlertDialog(alert: android.app.AlertDialog.Builder, options
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
-            const options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg + "" } : arg;
+            const options = !isDialogOptions(arg) ? { title: ALERT, okButtonText: OK, message: arg + "" } : arg;
 
             const alert = createAlertDialog(options);
 
@@ -132,7 +132,7 @@ export function alert(arg: any): Promise<void> {
 export function confirm(arg: any): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
         try {
-            const options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg + "" } : arg;
+            const options = !isDialogOptions(arg) ? { title: CONFIRM, okButtonText: OK, cancelButtonText: CANCEL, message: arg + "" } : arg;
             const alert = createAlertDialog(options);
 
             addButtonsToAlertDialog(alert, options, function (result) { resolve(result); });
@@ -145,38 +145,38 @@ export function confirm(arg: any): Promise<boolean> {
     });
 }
 
-export function prompt(arg: any): Promise<dialogs.PromptResult> {
-    let options: dialogs.PromptOptions;
+export function prompt(arg: any): Promise<PromptResult> {
+    let options: PromptOptions;
 
     const defaultOptions = {
-        title: dialogsCommon.PROMPT,
-        okButtonText: dialogsCommon.OK,
-        cancelButtonText: dialogsCommon.CANCEL,
-        inputType: dialogsCommon.inputType.text,
+        title: PROMPT,
+        okButtonText: OK,
+        cancelButtonText: CANCEL,
+        inputType: inputType.text,
     };
 
     if (arguments.length === 1) {
-        if (types.isString(arg)) {
+        if (isString(arg)) {
             options = defaultOptions;
             options.message = arg;
         } else {
             options = arg;
         }
     } else if (arguments.length === 2) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.defaultText = arguments[1];
         }
     }
 
-    return new Promise<dialogs.PromptResult>((resolve, reject) => {
+    return new Promise<PromptResult>((resolve, reject) => {
         try {
             const alert = createAlertDialog(options);
 
-            const input = new android.widget.EditText(appmodule.android.foregroundActivity);
+            const input = new android.widget.EditText(androidApp.foregroundActivity);
 
-            if (options && options.inputType === dialogsCommon.inputType.password) {
+            if (options && options.inputType === inputType.password) {
                 input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
             }
 
@@ -197,26 +197,25 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
     });
 }
 
-export function login(arg: any): Promise<dialogs.LoginResult> {
-    let options: dialogs.LoginOptions;
-
-    const defaultOptions = { title: dialogsCommon.LOGIN, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL };
+export function login(arg: any): Promise<LoginResult> {
+    let options: LoginOptions;
+    const defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
 
     if (arguments.length === 1) {
-        if (types.isString(arguments[0])) {
+        if (isString(arguments[0])) {
             options = defaultOptions;
             options.message = arguments[0];
         } else {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userName = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1]) && types.isString(arguments[2])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userName = arguments[1];
@@ -224,9 +223,9 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
         }
     }
 
-    return new Promise<dialogs.LoginResult>((resolve, reject) => {
+    return new Promise<LoginResult>((resolve, reject) => {
         try {
-            const context = appmodule.android.foregroundActivity;
+            const context = androidApp.foregroundActivity;
 
             const alert = createAlertDialog(options);
 
@@ -262,25 +261,25 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 }
 
 export function action(arg: any): Promise<string> {
-    let options: dialogs.ActionOptions;
+    let options: ActionOptions;
 
-    const defaultOptions = { title: null, cancelButtonText: dialogsCommon.CANCEL };
+    const defaultOptions = { title: null, cancelButtonText: CANCEL };
 
     if (arguments.length === 1) {
-        if (types.isString(arguments[0])) {
+        if (isString(arguments[0])) {
             options = defaultOptions;
             options.message = arguments[0];
         } else {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.cancelButtonText = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1]) && types.isDefined(arguments[2])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isDefined(arguments[2])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.cancelButtonText = arguments[1];
@@ -290,10 +289,10 @@ export function action(arg: any): Promise<string> {
 
     return new Promise<string>((resolve, reject) => {
         try {
-            const activity = appmodule.android.foregroundActivity || appmodule.android.startActivity;
+            const activity = androidApp.foregroundActivity || androidApp.startActivity;
             const alert = new android.app.AlertDialog.Builder(activity);
-            const message = options && types.isString(options.message) ? options.message : "";
-            const title = options && types.isString(options.title) ? options.title : "";
+            const message = options && isString(options.message) ? options.message : "";
+            const title = options && isString(options.title) ? options.title : "";
             if (options && options.cancelable === false) {
                 alert.setCancelable(false);
             }
@@ -316,7 +315,7 @@ export function action(arg: any): Promise<string> {
                 }));
             }
 
-            if (types.isString(options.cancelButtonText)) {
+            if (isString(options.cancelButtonText)) {
                 alert.setNegativeButton(options.cancelButtonText, new android.content.DialogInterface.OnClickListener({
                     onClick: function (dialog: android.content.DialogInterface, id: number) {
                         dialog.cancel();
@@ -327,7 +326,7 @@ export function action(arg: any): Promise<string> {
 
             alert.setOnDismissListener(new android.content.DialogInterface.OnDismissListener({
                 onDismiss: function () {
-                    if (types.isString(options.cancelButtonText)) {
+                    if (isString(options.cancelButtonText)) {
                         resolve(options.cancelButtonText);
                     } else {
                         resolve("");

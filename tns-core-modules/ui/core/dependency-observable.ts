@@ -1,11 +1,15 @@
-﻿import definition = require("ui/core/dependency-observable");
-import {Observable, WrappedValue} from "data/observable";
-import types = require("utils/types");
+﻿import {
+    PropertyMetadata as PropertyMetadataDefinition, Property as PropertyDefinition, PropertyEntry as PropertyEntryDefinition,
+    DependencyObservable as DependencyObservableDefinition, NativeValueResult,
+    PropertyChangedCallback, PropertyValidationCallback, PropertyEqualityComparer
+} from "ui/core/dependency-observable";
+import { Observable, WrappedValue } from "data/observable";
+import { getClassInfo, isString } from "utils/types";
 
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
 var propertyFromKey = {};
 var propertyIdCounter = 0;
-export let unsetValue = new Object();
+export const unsetValue = new Object();
 
 function generatePropertyKey(name: string, ownerType: string, validate?: boolean) {
     if (validate) {
@@ -27,7 +31,7 @@ function validateRegisterParameters(name: string, ownerType: string) {
 function getPropertyByNameAndType(name: string, owner: any): Property {
     var result;
     var key;
-    var classInfo = types.getClassInfo(owner);
+    var classInfo = getClassInfo(owner);
     while (classInfo) {
         key = generatePropertyKey(name, classInfo.name);
         result = propertyFromKey[key];
@@ -54,20 +58,20 @@ export module ValueSource {
     export var VisualState = 4;
 }
 
-export class PropertyMetadata implements definition.PropertyMetadata {
+export class PropertyMetadata implements PropertyMetadataDefinition {
     public inheritable: boolean;
     public affectsStyle: boolean;
     public affectsLayout: boolean;
-    public onValueChanged: definition.PropertyChangedCallback;
-    public onValidateValue: definition.PropertyValidationCallback;
-    public equalityComparer: definition.PropertyEqualityComparer;
+    public onValueChanged: PropertyChangedCallback;
+    public onValidateValue: PropertyValidationCallback;
+    public equalityComparer: PropertyEqualityComparer;
 
     constructor(
         public defaultValue: any,
         public options: number = PropertyMetadataSettings.None,
-        onChanged?: definition.PropertyChangedCallback,
-        onValidateValue?: definition.PropertyValidationCallback,
-        equalityComparer?: definition.PropertyEqualityComparer) {
+        onChanged?: PropertyChangedCallback,
+        onValidateValue?: PropertyValidationCallback,
+        equalityComparer?: PropertyEqualityComparer) {
 
         this.defaultValue = defaultValue;
         this.options = options;
@@ -80,7 +84,7 @@ export class PropertyMetadata implements definition.PropertyMetadata {
     }
 }
 
-export class Property implements definition.Property {
+export class Property implements PropertyDefinition {
     public key: string;
 
     public id: number;
@@ -92,7 +96,7 @@ export class Property implements definition.Property {
     public nameEvent: string;
 
     public onValidateValue;
-    public onValueChanged: definition.PropertyChangedCallback;
+    public onValueChanged: PropertyChangedCallback;
 
     public valueConverter: (value: string) => any
 
@@ -126,10 +130,10 @@ export class Property implements definition.Property {
         this.affectsLayout = metadata.affectsLayout;
     }
 
-    public defaultValueGetter: (instance: definition.DependencyObservable) => definition.NativeValueResult;
+    public defaultValueGetter: (instance: DependencyObservable) => NativeValueResult;
 }
 
-export class PropertyEntry implements definition.PropertyEntry {
+export class PropertyEntry implements PropertyEntryDefinition {
     public valueSource: number = ValueSource.Default;
     public defaultValue: any;
     public inheritedValue: any;
@@ -147,7 +151,7 @@ export class PropertyEntry implements definition.PropertyEntry {
     }
 }
 
-export class DependencyObservable extends Observable implements definition.DependencyObservable {
+export class DependencyObservable extends Observable implements DependencyObservableDefinition {
     private _propertyEntries = {};
 
     public set(name: string, value: any) {
@@ -340,7 +344,7 @@ export class DependencyObservable extends Observable implements definition.Depen
 
         // Convert the value to the real property type in case it is coming as a string from CSS or XML.
         let converter = property.valueConverter;
-        if (converter && types.isString(realValue)) {
+        if (converter && isString(realValue)) {
             realValue = converter(realValue);
         }
 

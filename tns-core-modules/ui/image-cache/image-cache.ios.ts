@@ -20,7 +20,7 @@ function ensureHttpRequest() {
 //    }
 
 //    public cacheWillEvictObject(cache: NSCache, obj: any): void {
-//        trace.write("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", trace.categories.Debug);
+//        traceWrite("NSCacheDelegateImpl.cacheWillEvictObject(" + obj + ");", traceCategories.Debug);
 //    }
 //}
 

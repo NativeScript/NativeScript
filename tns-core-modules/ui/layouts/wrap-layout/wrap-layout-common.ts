@@ -1,44 +1,36 @@
-﻿import definition = require("ui/layouts/wrap-layout");
-import platform = require("platform");
-import {LayoutBase} from "ui/layouts/layout-base";
-import {Orientation} from "ui/enums";
-import {PropertyMetadata} from "ui/core/proxy";
-import {Property, PropertyMetadataSettings} from "ui/core/dependency-observable";
+﻿import { WrapLayout as WrapLayoutDefinition } from "ui/layouts/wrap-layout";
+import { LayoutBase, Property, isIOS, Length, zeroLength, getLengthEffectiveValue } from "ui/layouts/layout-base";
 
-// on Android we explicitly set propertySettings to None because android will invalidate its layout (so we skip unnecessary native call).
-var AffectsLayout = platform.device.os === platform.platformNames.android ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+export * from "ui/layouts/layout-base";
 
-function isWidthHeightValid(value: any): boolean {
-    return (value >= 0.0 && value !== Number.POSITIVE_INFINITY);
+export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
+    public orientation: "horizontal" | "vertical";
+    public itemWidth: Length;
+    public itemHeight: Length;
+    public effectiveItemWidth: number;
+    public effectiveItemHeight: number;
 }
 
-function isValidOrientation(value: any): boolean {
-    return value === Orientation.vertical || value === Orientation.horizontal;
-}
+export const itemWidthProperty = new Property<WrapLayoutBase, Length>({
+    name: "itemWidth", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),
+    valueChanged: (target, oldValue, newValue) => target.effectiveItemWidth = getLengthEffectiveValue(newValue)
+});
+itemWidthProperty.register(WrapLayoutBase);
 
-export class WrapLayout extends LayoutBase implements definition.WrapLayout {
-    public static orientationProperty = new Property("orientation", "WrapLayout", new PropertyMetadata(Orientation.horizontal, AffectsLayout, undefined, isValidOrientation));
-    public static itemWidthProperty = new Property("itemWidth", "WrapLayout", new PropertyMetadata(0, AffectsLayout, undefined, isWidthHeightValid));
-    public static itemHeightProperty = new Property("itemHeight", "WrapLayout", new PropertyMetadata(0, AffectsLayout, undefined, isWidthHeightValid));
+export const itemHeightProperty = new Property<WrapLayoutBase, Length>({
+    name: "itemHeight", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),
+    valueChanged: (target, oldValue, newValue) => target.effectiveItemHeight = getLengthEffectiveValue(newValue)
+});
+itemHeightProperty.register(WrapLayoutBase);
 
-    get orientation(): string {
-        return this._getValue(WrapLayout.orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(WrapLayout.orientationProperty, value);
-    }
+export const orientationProperty = new Property<WrapLayoutBase, "horizontal" | "vertical">({
+    name: "orientation", defaultValue: "horizontal", affectsLayout: isIOS,
+    valueConverter: (v) => {
+        if (v === "horizontal" || v === "vertical") {
+            return <"horizontal" | "vertical">v;
+        }
 
-    get itemWidth(): number {
-        return this._getValue(WrapLayout.itemWidthProperty);
+        throw new Error(`Invalid orientation value: ${v}`);
     }
-    set itemWidth(value: number) {
-        this._setValue(WrapLayout.itemWidthProperty, value);
-    }
-
-    get itemHeight(): number {
-        return this._getValue(WrapLayout.itemHeightProperty);
-    }
-    set itemHeight(value: number) {
-        this._setValue(WrapLayout.itemHeightProperty, value);
-    }
-}
+});
+orientationProperty.register(WrapLayoutBase);

@@ -1,67 +1,49 @@
-﻿import aiCommon = require("./activity-indicator-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty } from "./activity-indicator-common";
+import { ios } from "utils/utils";
 
-function onBusyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var indicator = <ActivityIndicator>data.object;
-    if (!indicator.ios) {
-        return;
-    }
- 
- let activityIndicator = indicator.ios;
-    if (data.newValue) {
-        activityIndicator.startAnimating();
-    } else {
-        activityIndicator.stopAnimating();
-    }
+export * from "./activity-indicator-common";
 
-    if (activityIndicator.hidesWhenStopped) {
-        indicator.requestLayout();
-    }
-}
-
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>aiCommon.ActivityIndicator.busyProperty.metadata).onSetNativeValue = onBusyPropertyChanged;
-
-global.moduleMerge(aiCommon, exports);
-
-export class ActivityIndicator extends aiCommon.ActivityIndicator  {
-    private _ios: UIActivityIndicatorView;
+export class ActivityIndicator extends ActivityIndicatorBase {
+    nativeView: UIActivityIndicatorView;
 
     constructor() {
         super();
-        this._ios = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
+        this.nativeView = UIActivityIndicatorView.alloc().initWithActivityIndicatorStyle(UIActivityIndicatorViewStyle.Gray);
+        this.nativeView.hidesWhenStopped = true;
     }
 
-    get ios(): UIActivityIndicatorView {
-        return this._ios;
+    get [busyProperty.native](): boolean {
+        if (ios.MajorVersion > 9) {
+            return this.nativeView.animating;
+        }
+        else {
+            return (<any>this.nativeView).isAnimating();
+        }
     }
-} 
+    set [busyProperty.native](value: boolean) {
+        let nativeView = this.nativeView;
+        if (value) {
+            nativeView.startAnimating();
+        } else {
+            nativeView.stopAnimating();
+        }
 
-export class ActivityIndicatorStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <UIActivityIndicatorView>view.ios;
-        bar.color = newValue;
+        if (nativeView.hidesWhenStopped) {
+            this.requestLayout();
+        }
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var bar = <UIActivityIndicatorView>view.ios;
-        bar.color = nativeValue;
+    get [visibilityProperty.native](): string {
+        return this.nativeView.hidden ? "collapse" : "visible";
+    }
+    set [visibilityProperty.native](value: string) {
+        this.nativeView.hidden = value !== "visible";
     }
 
-    private static getNativeColorValue(view: view.View): any {
-        var bar = <UIActivityIndicatorView>view.ios;
-        return bar.color;
+    get [colorProperty.native](): UIColor {
+        return this.nativeView.color;
     }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            ActivityIndicatorStyler.setColorProperty,
-            ActivityIndicatorStyler.resetColorProperty,
-            ActivityIndicatorStyler.getNativeColorValue), "ActivityIndicator");
+    set [colorProperty.native](value: UIColor) {
+        this.nativeView.color = value;
     }
 }
-
-ActivityIndicatorStyler.registerHandlers();

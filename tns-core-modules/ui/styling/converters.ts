@@ -1,14 +1,13 @@
-﻿import enums = require("ui/enums");
-import color = require("color");
-import types = require("utils/types");
+﻿import { Color } from "color";
+import { CubicBezierAnimationCurve } from "ui/animation";
 
-export function colorConverter(value: string): color.Color {
-    return new color.Color(value);
+export function colorConverter(value: string): Color {
+    return new Color(value);
 }
 
 export function floatConverter(value: string): number {
     // TODO: parse different unit types
-    var result: number = parseFloat(value);
+    const result: number = parseFloat(value);
     return result;
 }
 
@@ -16,106 +15,61 @@ export function fontSizeConverter(value: string): number {
     return floatConverter(value);
 }
 
-export function textAlignConverter(value: string): string {
-    switch (value) {
-        case enums.TextAlignment.left:
-        case enums.TextAlignment.center:
-        case enums.TextAlignment.right:
-            return value;
-        default:
-            throw new Error("CSS text-align \"" + value + "\" is not supported.");
-    }
-}
-
-export function textDecorationConverter(value: string): string {
-    var values = (value + "").split(" ");
-
-    if (values.indexOf(enums.TextDecoration.none) !== -1 || values.indexOf(enums.TextDecoration.underline) !== -1 || values.indexOf(enums.TextDecoration.lineThrough) !== -1) {
-        return value;
-    } else {
-        throw new Error("CSS text-decoration \"" + value + "\" is not supported.");
-    }
-}
-
-export function whiteSpaceConverter(value: string): string {
-    switch (value) {
-        case enums.WhiteSpace.normal:
-        case enums.WhiteSpace.nowrap:
-            return value;
-        default:
-            throw new Error("CSS white-space \"" + value + "\" is not supported.");
-    }
-}
-
-export function textTransformConverter(value: string): string {
-    switch (value) {
-        case enums.TextTransform.none:
-        case enums.TextTransform.uppercase:
-        case enums.TextTransform.lowercase:
-        case enums.TextTransform.capitalize:
-            return value;
-        default:
-            throw new Error("CSS text-transform \"" + value + "\" is not supported.");
-    }
-}
-
-export var numberConverter = parseFloat;
+export const numberConverter = parseFloat;
 
 export function visibilityConverter(value: string): string {
-    if (value.toLowerCase() === enums.Visibility.collapsed) {
-        return enums.Visibility.collapsed;
-    } else if (value.toLowerCase() === enums.Visibility.collapse) {
-        return enums.Visibility.collapse;
+    value = value.toLowerCase();
+    if (value === "collapsed" || value === "collapse") {
+        return "collapse";
+    } else if (value === "hidden") {
+        return "hidden";
     }
-    return enums.Visibility.visible;
+    return "visible";
 }
 
 export function opacityConverter(value: string): number {
-    var result = parseFloat(value);
+    let result = parseFloat(value);
     result = Math.max(0.0, result);
     result = Math.min(1.0, result);
-
     return result;
 }
 
 export function timeConverter(value: string): number {
-    var result = parseFloat(value);
+    let result = parseFloat(value);
     if (value.indexOf("ms") === -1) {
-        result = result*1000;
+        result = result * 1000;
     }
-    result = Math.max(0.0, result);
 
-    return result;
+    return Math.max(0.0, result);
 }
 
 export function bezieArgumentConverter(value: string): number {
-    var result = parseFloat(value);
+    let result = parseFloat(value);
     result = Math.max(0.0, result);
     result = Math.min(1.0, result);
-
     return result;
 }
 
 export function animationTimingFunctionConverter(value: string): Object {
-    let result: Object = enums.AnimationCurve.ease;
+    let result: Object = "ease";
     switch (value) {
         case "ease":
-            result = enums.AnimationCurve.ease;
+            result = "ease";
             break;
         case "linear":
-            result = enums.AnimationCurve.linear;
+            result = "linear";
             break;
         case "ease-in":
-            result = enums.AnimationCurve.easeIn;
+            result = "easeIn";
             break;
         case "ease-out":
-            result = enums.AnimationCurve.easeOut;
+            result = "easeOut";
             break;
         case "ease-in-out":
-            result = enums.AnimationCurve.easeInOut;
+            result = "easeInOut";
             break;
         case "spring":
-            result = enums.AnimationCurve.spring;
+            result = "spring";
             break;
         default:
             if (value.indexOf("cubic-bezier(") === 0) {
@@ -123,7 +77,8 @@ export function animationTimingFunctionConverter(value: string): Object {
                 if (bezierArr.length !== 4) {
                     throw new Error("Invalid value for animation: " + value);
                 }
-                result = enums.AnimationCurve.cubicBezier(bezieArgumentConverter(bezierArr[0]),
+
+                result = new CubicBezierAnimationCurve(bezieArgumentConverter(bezierArr[0]),
                     bezieArgumentConverter(bezierArr[1]),
                     bezieArgumentConverter(bezierArr[2]),
                     bezieArgumentConverter(bezierArr[3]));
@@ -143,26 +98,26 @@ export function transformConverter(value: any): Object {
         operations[value] = value;
         return operations;
     }
-    else if (types.isString(value)) {
+    else if (typeof value === "string") {
         let operations = {};
         let operator = "";
         let pos = 0;
         while (pos < value.length) {
             if (value[pos] === " " || value[pos] === ",") {
-                pos ++;
+                pos++;
             }
             else if (value[pos] === "(") {
                 let start = pos + 1;
                 while (pos < value.length && value[pos] !== ")") {
-                    pos ++;
+                    pos++;
                 }
                 let operand = value.substring(start, pos);
                 operations[operator] = operand.trim();
                 operator = "";
-                pos ++;
+                pos++;
             }
             else {
-                operator += value[pos ++];
+                operator += value[pos++];
             }
         }
         return operations;

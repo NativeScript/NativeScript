@@ -1,8 +1,26 @@
+declare module "ui/styling/style" {
+    import {
+        FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
+        Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
+    } from "ui/layouts/flexbox-layout"
+    
+    interface Style {
+        flexDirection: FlexDirection;
+        flexWrap: FlexWrap;
+        justifyContent: JustifyContent;
+        alignItems: AlignItems;
+        alignContent: AlignContent;
+        order: Order;
+        flexGrow: FlexGrow;
+        flexShrink: FlexShrink;
+        flexWrapBefore: FlexWrapBefore;
+        alignSelf: AlignSelf;
+    }
+}
+
 declare module "ui/layouts/flexbox-layout" {
 
-    import {View} from "ui/core/view";
-    import {LayoutBase} from "ui/layouts/layout-base";
-    import {PropertyMetadata} from "ui/core/proxy";
+    import { LayoutBase, View, Style, CssProperty } from "ui/layouts/layout-base";
 
     export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
     export namespace FlexDirection {
@@ -106,11 +124,6 @@ declare module "ui/layouts/flexbox-layout" {
     }
 
     export class FlexboxLayout extends LayoutBase {
-        public static flexDirectionProperty: PropertyMetadata;
-        public static flexWrapProperty: PropertyMetadata;
-        public static justifyContentProperty: PropertyMetadata;
-        public static alignItemsProperty: PropertyMetadata;
-
         public flexDirection: FlexDirection;
         public flexWrap: FlexWrap;
         public justifyContent: JustifyContent;
@@ -132,4 +145,15 @@ declare module "ui/layouts/flexbox-layout" {
         public static setFlexWrapBefore(view: View, wrap: boolean);
         public static getFlexWrapBefore(view: View): boolean;
     }
+
+    export const flexDirectionProperty: CssProperty<Style, FlexDirection>;
+    export const flexWrapProperty: CssProperty<Style, FlexWrap>;
+    export const justifyContentProperty: CssProperty<Style, JustifyContent>;
+    export const alignItemsProperty: CssProperty<Style, AlignItems>;
+
+    export const orderProperty: CssProperty<Style, Order>;
+    export const flexGrowProperty: CssProperty<Style, FlexGrow>;
+    export const flexShrinkProperty: CssProperty<Style, FlexShrink>;
+    export const flexWrapBeforeProperty: CssProperty<Style, FlexWrapBefore>;
+    export const alignSelfProperty: CssProperty<Style, AlignSelf>;
 }

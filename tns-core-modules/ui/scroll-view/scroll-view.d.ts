@@ -2,18 +2,12 @@
  * Contains the ScrollView class, which represents a scrollable area that can have content that is larger than its bounds.
  */
 declare module "ui/scroll-view" {
-    import contentView = require("ui/content-view");
-    import observable = require("data/observable");
-    import dependencyObservable = require("ui/core/dependency-observable");
-
-    export var orientationProperty: dependencyObservable.Property;
+    import { ContentView, EventData, Property } from "ui/content-view";
 
     /**
      * Represents a scrollable area that can have content that is larger than its bounds.
      */
-    class ScrollView extends contentView.ContentView {
-        public static orientationProperty: dependencyObservable.Property;
-
+    class ScrollView extends ContentView {
         /**
          * String value used when hooking to scroll event.
          */
@@ -33,10 +27,10 @@ declare module "ui/scroll-view" {
          * Gets the maximum value for the verticalOffset.
          */
         scrollableHeight: number;
-        
+
         /**
          * Gets the maximum value for the horizontalOffset.
-         */        
+         */
         scrollableWidth: number;
 
         /**
@@ -45,7 +39,7 @@ declare module "ui/scroll-view" {
          * @param animated true for animated scroll, false for immediate scroll.
          */
         scrollToVerticalOffset(value: number, animated: boolean);
-        
+
         /**
          * Scrolls the content the specified horizontal offset position.
          * @param value The offset value
@@ -64,7 +58,7 @@ declare module "ui/scroll-view" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a scroll event occurs.
@@ -72,8 +66,10 @@ declare module "ui/scroll-view" {
         on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
     }
 
-    interface ScrollEventData extends observable.EventData {
+    interface ScrollEventData extends EventData {
         scrollX: number;
         scrollY: number;
     }
+
+    export const orientationProperty: Property<ScrollView, "horizontal" | "vertical">;
 }
