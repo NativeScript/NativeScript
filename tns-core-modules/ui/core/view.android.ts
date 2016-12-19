@@ -735,19 +735,15 @@ createNativePercentLengthProperty({
 });
 
 createNativePercentLengthProperty({
-    key: widthProperty.native,
-    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: ViewHelper.getWidth,
-    setPixels: ViewHelper.setWidth,
-    setPercent: ViewHelper.setWidthPercent
+    key: minWidthProperty.native,
+    getPixels: ViewHelper.getMinWidth,
+    setPixels: ViewHelper.setMinWidth
 });
 
 createNativePercentLengthProperty({
-    key: heightProperty.native,
-    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: ViewHelper.getHeight,
-    setPixels: ViewHelper.setHeight,
-    setPercent: ViewHelper.setHeightPercent
+    key: minHeightProperty.native,
+    getPixels: ViewHelper.getMinHeight,
+    setPixels: ViewHelper.setMinHeight
 });
 
 export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
