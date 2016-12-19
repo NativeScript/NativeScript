@@ -27,7 +27,7 @@ declare module "ui/core/view" {
         BindingOptions, Observable, EventData
     } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
-    import { Font } from "ui/styling/font";
+    import { Font, FontWeight, FontStyle } from "ui/styling/font";
     import { Color } from "color";
 
     export {
@@ -735,7 +735,7 @@ declare module "ui/core/view" {
     export const borderBottomLeftRadiusProperty: CssProperty<Style, number>;
 
     export const zIndexProperty: CssProperty<Style, number>;
-    export const visibilityProperty: CssProperty<Style, string>;
+    export const visibilityProperty: CssProperty<Style, Visibility>;
     export const opacityProperty: CssProperty<Style, number>;
 
     export const minWidthProperty: CssProperty<Style, Length>;
@@ -759,8 +759,8 @@ declare module "ui/core/view" {
 
     export const fontSizeProperty: InheritedCssProperty<Style, number>;
     export const fontFamilyProperty: InheritedCssProperty<Style, string>;
-    export const fontStyleProperty: InheritedCssProperty<Style, string>;
-    export const fontWeightProperty: InheritedCssProperty<Style, string>;
+    export const fontStyleProperty: InheritedCssProperty<Style, FontStyle>;
+    export const fontWeightProperty: InheritedCssProperty<Style, FontWeight>;
 
     export const backgroundInternalProperty: CssProperty<Style, Background>;
     export const fontInternalProperty: InheritedCssProperty<Style, Font>;
