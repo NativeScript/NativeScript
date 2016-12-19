@@ -133,7 +133,7 @@ export var testBindTextToBindingContext = function () {
             targetProperty: "text"
         }
 
-        textView.bind(options, model);
+        textView.bind(options);
         TKUnit.assert(textView.text === "john", "Actual: " + textView.text + "; Expected: " + "john");
         TKUnit.assert(textViewTestsNative.getNativeText(textView) === "john", "Actual: " + textViewTestsNative.getNativeText(textView) + "; Expected: " + "john");
 
@@ -214,7 +214,7 @@ export var testBindHintToBindingConext = function () {
             targetProperty: "hint"
         }
 
-        textView.bind(options, model);
+        textView.bind(options);
         TKUnit.assert(textView.hint === "type your username here", "Actual: " + textView.hint + "; Expected: " + "type your username here");
         TKUnit.assert(textViewTestsNative.getNativeHint(textView) === "type your username here", "Actual: " + textViewTestsNative.getNativeHint(textView) + "; Expected: " + "type your username here");
 
@@ -334,7 +334,7 @@ export var testBindEditableToBindingConext = function () {
             targetProperty: "editable"
         }
 
-        textView.bind(options, model);
+        textView.bind(options);
         TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
         TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
 

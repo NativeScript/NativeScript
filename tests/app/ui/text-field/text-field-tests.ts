@@ -211,7 +211,7 @@ export var testBindTextToBindingContext = function () {
             targetProperty: "text"
         }
 
-        textField.bind(options, model);
+        textField.bind(options);
         TKUnit.assert(textField.text === "john", "Actual: " + textField.text + "; Expected: " + "john");
         TKUnit.assert(textFieldTestsNative.getNativeText(textField) === "john", "Actual: " + textFieldTestsNative.getNativeText(textField) + "; Expected: " + "john");
 
@@ -289,7 +289,7 @@ export var testBindHintToBindingConext = function () {
             targetProperty: "hint"
         }
 
-        textField.bind(options, model);
+        textField.bind(options);
         TKUnit.assert(textField.hint === "type your username here", "Actual: " + textField.hint + "; Expected: " + "type your username here");
         TKUnit.assert(textFieldTestsNative.getNativeHint(textField) === "type your username here", "Actual: " + textFieldTestsNative.getNativeHint(textField) + "; Expected: " + "type your username here");
 
@@ -354,7 +354,7 @@ export var testBindSecureToBindingConext = function () {
             targetProperty: "secure"
         }
 
-        textField.bind(options, model);
+        textField.bind(options);
         TKUnit.assert(textField.secure === true, "Actual: " + textField.secure + "; Expected: " + true);
         TKUnit.assert(textFieldTestsNative.getNativeSecure(textField) === true, "Actual: " + textFieldTestsNative.getNativeSecure(textField) + "; Expected: " + true);
 

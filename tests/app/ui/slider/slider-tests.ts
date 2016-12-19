@@ -354,7 +354,7 @@ export function test_binding_value_to_bindingContext() {
             sourceProperty: "age",
             targetProperty: "value"
         };
-        slider.bind(options, model);
+        slider.bind(options);
 
         TKUnit.assertEqual(slider.value, 21, "slider.value");
         model.set("age", 22);
