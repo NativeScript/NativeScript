@@ -16,16 +16,7 @@ export module knownMultiTemplates {
     export const itemTemplates = "itemTemplates";
 }
 
-function getLengthEffectiveValue(param: Length): number {
-    switch (param.unit) {
-        case "px":
-            return Math.round(param.value);
-
-        default:
-        case "dip":
-            return Math.round(layout.getDisplayDensity() * param.value);
-    }
-}
+const autoEffectiveRowHeight = -1;
 
 export abstract class ListViewBase extends View implements ListViewDefinition {
     public static itemLoadingEvent = "itemLoading";
@@ -33,6 +24,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     public static loadMoreItemsEvent = "loadMoreItems";
     // TODO: get rid of such hacks.
     public static knownFunctions = ["itemTemplateSelector"]; //See component-builder.ts isKnownFunction
+
 
     private _itemTemplateSelector: (item: any, index: number, items: any) => string;
     private _itemTemplateSelectorBindable = new Bindable();
@@ -47,7 +39,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     }
 
     public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
-    public _effectiveRowHeight: number = -1;
+    public _effectiveRowHeight: number = autoEffectiveRowHeight;
     public rowHeight: Length;
     public separatorColor: Color;
     public items: any[] | ItemsSource;
@@ -175,7 +167,7 @@ export const itemTemplatesProperty = new Property<ListViewBase, string | Array<K
 })
 itemTemplatesProperty.register(ListViewBase);
 
-const defaultRowHeight: Length = { value: -1, unit: "px" };
+const defaultRowHeight: Length = "auto";
 /**
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
@@ -186,7 +178,7 @@ export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
         return target._nativeView ? value : defaultRowHeight;
     },
     valueChanged: (target, oldValue, newValue) => {
-        target._effectiveRowHeight = getLengthEffectiveValue(newValue);
+        target._effectiveRowHeight = Length.toDevicePixels(newValue, autoEffectiveRowHeight);
         target._onRowHeightPropertyChanged(oldValue, newValue);
     }, valueConverter: Length.parse
 });

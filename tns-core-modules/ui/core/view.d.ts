@@ -95,7 +95,7 @@ declare module "ui/core/view" {
         height: number;
     }
 
-    export interface Length {
+    export type Length = "auto" | number | {
         readonly unit: "dip" | "px";
         readonly value: number;
     }
@@ -104,7 +104,7 @@ declare module "ui/core/view" {
         export function equals(a: Length, b: Length): boolean;
     }
 
-    export interface PercentLength {
+    export type PercentLength = "auto" | number | {
         readonly unit: "%" | "dip" | "px";
         readonly value: number;
     }
