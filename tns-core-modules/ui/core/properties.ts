@@ -917,3 +917,14 @@ export function propagateInheritedProperties(view: ViewBase): void {
         }
     });
 }
+
+export function makeValidator<T>(...values: T[]): (value: any) => value is T {
+    const set = new Set(values);
+    return (value: any): value is T => set.has(value);
+}
+export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
+    return value => {
+        const lower = value && value.toLowerCase();
+        return isValid(lower) ? lower : def;
+    }
+}
