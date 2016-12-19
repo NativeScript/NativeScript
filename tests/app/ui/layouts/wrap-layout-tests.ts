@@ -19,15 +19,15 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         var wrapLayout = new wrapLayoutModule.WrapLayout();
         // << wrap-layout-new
 
-        wrapLayout.width = { value: 200, unit: "dip" };
-        wrapLayout.height = { value: 200, unit: "dip" };
+        wrapLayout.width = { value: 200, unit: "px" };
+        wrapLayout.height = { value: 200, unit: "px" };
 
         for (let i = 0; i < 2; i++) {
             let label = new Label();
             label.text = "" + i;
 
-            label.width = { value: 100, unit: "dip" };
-            label.height = { value: 100, unit: "dip" };
+            label.width = { value: 100, unit: "px" };
+            label.height = { value: 100, unit: "px" };
             wrapLayout.addChild(label);
         }
 
@@ -38,8 +38,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         let wrap = this.testView;
         wrap.removeChildren();
 
-        wrap.itemWidth = { value: 40, unit: "dip" };
-        wrap.itemHeight = { value: 40, unit: "dip" };
+        wrap.itemWidth = { value: 40, unit: "px" };
+        wrap.itemHeight = { value: 40, unit: "px" };
 
         let lbl1 = new layoutHelper.MyButton();
         lbl1.text = "1";
@@ -47,8 +47,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
         let lbl2 = new layoutHelper.MyButton();
         lbl2.text = "2";
-        lbl2.width = { value: 80, unit: "dip" };
-        lbl2.height = { value: 80, unit: "dip" };
+        lbl2.width = { value: 80, unit: "px" };
+        lbl2.height = { value: 80, unit: "px" };
         wrap.addChild(lbl2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -67,12 +67,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public testPaddingReduceAvailableSize() {
         let wrap = this.testView;
         wrap.removeChildren();
-        wrap.style.paddingLeft = wrap.style.paddingTop = wrap.style.paddingRight = wrap.style.paddingBottom = { value: 10, unit: "dip" };
+        wrap.style.paddingLeft = wrap.style.paddingTop = wrap.style.paddingRight = wrap.style.paddingBottom = { value: 10, unit: "px" };
 
         let lbl1 = new layoutHelper.MyButton();
         lbl1.text = "1";
-        lbl1.minWidth = { value: 200, unit: "dip" };
-        lbl1.minHeight = { value: 200, unit: "dip" };
+        lbl1.minWidth = { value: 200, unit: "px" };
+        lbl1.minHeight = { value: 200, unit: "px" };
         wrap.addChild(lbl1);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -141,7 +141,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemWidth() {
-        this.testView.itemWidth = { value: 50, unit: "dip" };
+        this.testView.itemWidth = { value: 50, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
@@ -150,7 +150,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testChangeItemWidth() {
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemWidth = { value: 50, unit: "dip" };
+        this.testView.itemWidth = { value: 50, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().left;
@@ -158,7 +158,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemWidthLargerThanTheAvailableWidth() {
-        this.testView.itemWidth = { value: 1000, unit: "dip" };
+        this.testView.itemWidth = { value: 1000, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.getChildAt(0)._getCurrentLayoutBounds().top, 0, "ActualTop on Index 0");
@@ -166,7 +166,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     }
 
     public testItemHeight() {
-        this.testView.itemHeight = { value: 50, unit: "dip" };
+        this.testView.itemHeight = { value: 50, unit: "px" };
         this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
 
@@ -177,7 +177,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public testChangeItemHeight() {
         this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemHeight = { value: 50, unit: "dip" };
+        this.testView.itemHeight = { value: 50, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         let actualValue = this.testView.getChildAt(1)._getCurrentLayoutBounds().top;
@@ -187,7 +187,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public testItemHeightLargerThanTheAvailableHeight() {
         this.testView.orientation = "vertical";
         this.waitUntilTestElementLayoutIsValid();
-        this.testView.itemHeight = { value: 1000, unit: "dip" };
+        this.testView.itemHeight = { value: 1000, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.getChildAt(0)._getCurrentLayoutBounds().left, 0, "ActualLeft on Index 0");
@@ -196,12 +196,12 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingLeftAndTop() {
         this.testView.removeChildren();
-        this.testView.style.paddingLeft = { value: 20, unit: "dip" };
-        this.testView.style.paddingTop = { value: 30, unit: "dip" };
+        this.testView.style.paddingLeft = { value: 20, unit: "px" };
+        this.testView.style.paddingTop = { value: 30, unit: "px" };
 
         var btn = new layoutHelper.MyButton();
-        btn.width = { value: 50, unit: "dip" };
-        btn.height = { value: 50, unit: "dip" };
+        btn.width = { value: 50, unit: "px" };
+        btn.height = { value: 50, unit: "px" };
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -211,17 +211,17 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingRight() {
         this.testView.removeChildren();
-        this.testView.style.paddingRight = { value: 30, unit: "dip" };
-        this.testView.width = { value: 200, unit: "dip" };
+        this.testView.style.paddingRight = { value: 30, unit: "px" };
+        this.testView.width = { value: 200, unit: "px" };
 
         var btn1 = new layoutHelper.MyButton();
         this.testView.addChild(btn1);
-        btn1.width = { value: 100, unit: "dip" };
-        btn1.height = { value: 50, unit: "dip" };
+        btn1.width = { value: 100, unit: "px" };
+        btn1.height = { value: 50, unit: "px" };
 
         var btn2 = new layoutHelper.MyButton();
-        btn2.width = { value: 80, unit: "dip" };
-        btn2.height = { value: 50, unit: "dip" };
+        btn2.width = { value: 80, unit: "px" };
+        btn2.height = { value: 50, unit: "px" };
         this.testView.addChild(btn2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -237,18 +237,18 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
 
     public testPaddingBottom() {
         this.testView.removeChildren();
-        this.testView.style.paddingBottom = { value: 30, unit: "dip" };
-        this.testView.height = { value: 200, unit: "dip" };
+        this.testView.style.paddingBottom = { value: 30, unit: "px" };
+        this.testView.height = { value: 200, unit: "px" };
         this.testView.orientation = "vertical";
 
         var btn1 = new layoutHelper.MyButton();
         this.testView.addChild(btn1);
-        btn1.width = { value: 50, unit: "dip" };
-        btn1.height = { value: 100, unit: "dip" };
+        btn1.width = { value: 50, unit: "px" };
+        btn1.height = { value: 100, unit: "px" };
 
         var btn2 = new layoutHelper.MyButton();
-        btn2.width = { value: 50, unit: "dip" };
-        btn2.height = { value: 80, unit: "dip" };
+        btn2.width = { value: 50, unit: "px" };
+        btn2.height = { value: 80, unit: "px" };
         this.testView.addChild(btn2);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -265,8 +265,8 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
     public test_percent_children_support() {
         let layout = this.testView;
         layout.removeChildren();
-        layout.width = { value: 200, unit: "dip" };
-        layout.height = { value: 200, unit: "dip" };
+        layout.width = { value: 200, unit: "px" };
+        layout.height = { value: 200, unit: "px" };
 
         let btn = new layoutHelper.MyButton();
         btn.horizontalAlignment = "left";

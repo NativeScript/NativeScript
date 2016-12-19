@@ -26,7 +26,7 @@ export function createPage() {
 
     var sp1 = new sp.StackLayout();
     sp1.orientation = "horizontal";
-    sp1.height = { value: 200, unit: "dip" };
+    sp1.height = 200;
 
     var b1 = new button.Button();
     b1.text = "nested Btn1";

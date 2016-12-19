@@ -552,8 +552,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public test_SettingTextWhenInFixedSizeGridShouldNotRequestLayout() {
         this.requestLayoutFixture(false, "", () => {
             let host = new GridLayout();
-            host.width = { value: 100, unit: "dip" };
-            host.height = { value: 100, unit: "dip" };
+            host.width = 100;
+            host.height = 100;
             return host;
         });
     }
@@ -561,8 +561,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public test_ChangingTextWhenInFixedSizeGridShouldNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", () => {
             let host = new GridLayout();
-            host.width = { value: 100, unit: "dip" };
-            host.height = { value: 100, unit: "dip" };
+            host.width = 100;
+            host.height = 100;
             return host;
         });
     }
@@ -570,8 +570,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public test_SettingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
         this.requestLayoutFixture(false, "", label => {
             let host = new StackLayout();
-            label.width = { value: 100, unit: "dip" };
-            label.height = { value: 100, unit: "dip" };
+            label.width = 100;
+            label.height = 100;
             return host;
         });
     };
@@ -579,8 +579,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public test_ChangingTextWhenFixedWidthAndHeightDoesNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", label => {
             let host = new StackLayout();
-            label.width = { value: 100, unit: "dip" };
-            label.height = { value: 100, unit: "dip" };
+            label.width = 100;
+            label.height = 100;
             return host;
         });
     };
@@ -604,7 +604,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public test_SettingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldRequestLayout() {
         this.requestLayoutFixture(true, "", () => {
             let host = new StackLayout();
-            host.width = { value: 100, unit: "dip" };
+            host.width = 100;
             return host;
         });
     }
@@ -612,7 +612,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
     public test_ChangingTextOnSingleLineTextWhenWidthIsSizedToParentAndHeightIsSizedToContentShouldNotRequestLayout() {
         this.requestLayoutFixture(false, "Hello World", () => {
             let host = new StackLayout();
-            host.width = { value: 100, unit: "dip" };
+            host.width = 100;
             return host;
         });
     }
@@ -621,7 +621,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.requestLayoutFixture(true, "", label => {
             label.textWrap = true;
             let host = new StackLayout();
-            host.width = { value: 100, unit: "dip" };
+            host.width = 100;
             return host;
         });
     }
@@ -630,7 +630,7 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         this.requestLayoutFixture(true, "Hello World", label => {
             label.textWrap = true;
             let host = new StackLayout();
-            host.width = { value: 100, unit: "dip" };
+            host.width = 100;
             return host;
         });
     }

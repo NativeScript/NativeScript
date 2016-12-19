@@ -41,7 +41,7 @@ export function createPage() {
 
     var txt = new tb.TextField();
     txt.text = "Col: 1";
-    txt.width = { value: 140, unit: "dip" };
+    txt.width = 140;
     gridLayoutModule.GridLayout.setColumn(txt, 1);
     gridLayoutModule.GridLayout.setRow(txt, 0);
     gridLayout.addChild(txt);

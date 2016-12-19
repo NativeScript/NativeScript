@@ -776,7 +776,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     // Multiple item templates tests
     public test_ItemTemplateSelector_WhenWrongTemplateKeyIsSpecified_TheDefaultTemplateIsUsed() {
         let listView = this.testView;
-        listView.height = { value: 200, unit: "dip" };
+        listView.height = 200;
 
         listView.itemTemplate = "<Label text='default' minHeight='100' maxHeight='100'/>";
         listView.itemTemplates = this._itemTemplatesString;
@@ -840,7 +840,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_ItemTemplateSelector_CorrectTemplateIsUsed() {
         let listView = this.testView;
-        listView.height = { value: 200, unit: "dip" };
+        listView.height = 200;
 
         listView.itemTemplates = this._itemTemplatesString;
         listView.itemTemplateSelector = "age % 2 === 0 ? 'red' : 'green'";
@@ -856,7 +856,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
     public test_ItemTemplateSelector_TestVirtualization() {
         let listView = this.testView;
-        listView.height = { value: 300, unit: "dip" };
+        listView.height = 300;
 
         listView.itemTemplates = this._itemTemplatesString;
         listView.itemTemplateSelector = "age % 2 === 0 ? 'red' : (age % 3 === 0 ? 'blue' : 'green')";

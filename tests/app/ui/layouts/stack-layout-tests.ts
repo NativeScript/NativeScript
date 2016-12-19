@@ -92,16 +92,16 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_Padding_Vertical() {
-        this.rootLayout.width = { value: 300, unit: "dip" };
-        this.rootLayout.height = { value: 300, unit: "dip" };
+        this.rootLayout.width = { value: 300, unit: "px" };
+        this.rootLayout.height = { value: 300, unit: "px" };
 
-        this.rootLayout.style.paddingLeft = { value: 10, unit: "dip" };
-        this.rootLayout.style.paddingTop = { value: 20, unit: "dip" };
-        this.rootLayout.style.paddingRight = { value: 30, unit: "dip" };
-        this.rootLayout.style.paddingBottom = { value: 40, unit: "dip" };
+        this.rootLayout.style.paddingLeft = { value: 10, unit: "px" };
+        this.rootLayout.style.paddingTop = { value: 20, unit: "px" };
+        this.rootLayout.style.paddingRight = { value: 30, unit: "px" };
+        this.rootLayout.style.paddingBottom = { value: 40, unit: "px" };
 
-        this.btn1.height = { value: 50, unit: "dip" };
-        this.btn2.height = { value: 50, unit: "dip" };
+        this.btn1.height = { value: 50, unit: "px" };
+        this.btn2.height = { value: 50, unit: "px" };
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -113,17 +113,17 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     }
 
     public test_Padding_Horizontal() {
-        this.rootLayout.width = { value: 300, unit: "dip" };
-        this.rootLayout.height = { value: 300, unit: "dip" };
+        this.rootLayout.width = { value: 300, unit: "px" };
+        this.rootLayout.height = { value: 300, unit: "px" };
         this.rootLayout.orientation = "horizontal";
 
-        this.rootLayout.style.paddingLeft = { value: 10, unit: "dip" };
-        this.rootLayout.style.paddingTop = { value: 20, unit: "dip" };
-        this.rootLayout.style.paddingRight = { value: 30, unit: "dip" };
-        this.rootLayout.style.paddingBottom = { value: 40, unit: "dip" };
+        this.rootLayout.style.paddingLeft = { value: 10, unit: "px" };
+        this.rootLayout.style.paddingTop = { value: 20, unit: "px" };
+        this.rootLayout.style.paddingRight = { value: 30, unit: "px" };
+        this.rootLayout.style.paddingBottom = { value: 40, unit: "px" };
 
-        this.btn1.width = { value: 50, unit: "dip" };
-        this.btn2.width = { value: 50, unit: "dip" };
+        this.btn1.width = { value: 50, unit: "px" };
+        this.btn2.width = { value: 50, unit: "px" };
 
         this.waitUntilTestElementLayoutIsValid();
 
@@ -190,8 +190,8 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
     private setup_percent(): layoutHelper.MyButton {
         let layout = this.testView;
         layout.removeChildren();
-        layout.width = { value: 200, unit: "dip" };
-        layout.height = { value: 200, unit: "dip" };
+        layout.width = { value: 200, unit: "px" };
+        layout.height = { value: 200, unit: "px" };
 
         let btn = new layoutHelper.MyButton();
         btn.horizontalAlignment = "left";

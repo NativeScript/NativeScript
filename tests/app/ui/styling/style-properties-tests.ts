@@ -453,10 +453,10 @@ function test_border_width_shorthand_property(short: string, top: number, right:
     var testView = new buttonModule.Button();
     testView.style.borderWidth = short;
 
-    TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, { value: top, unit: "dip" }));
-    TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, { value: right, unit: "dip" }));
-    TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, { value: bottom, unit: "dip" }));
-    TKUnit.assertTrue(Length.equals(testView.style.borderLeftWidth, { value: left, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.borderTopWidth, top));
+    TKUnit.assertTrue(Length.equals(testView.style.borderRightWidth, right));
+    TKUnit.assertTrue(Length.equals(testView.style.borderBottomWidth, bottom));
+    TKUnit.assertTrue(Length.equals(testView.style.borderLeftWidth, left));
 }
 
 export function test_setting_border_radius_shorthand_property_sets_all_border_radii() {
@@ -487,10 +487,10 @@ function test_margin_shorthand_property(short: string, top: number, right: numbe
     var testView = new buttonModule.Button();
     testView.style.margin = short;
 
-    TKUnit.assertTrue(PercentLength.equals(testView.style.marginTop, { value: top, unit: "dip" }));
-    TKUnit.assertTrue(PercentLength.equals(testView.style.marginRight, { value: right, unit: "dip" }));
-    TKUnit.assertTrue(PercentLength.equals(testView.style.marginBottom, { value: bottom, unit: "dip" }));
-    TKUnit.assertTrue(PercentLength.equals(testView.style.marginLeft, { value: left, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginTop, top));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginRight, right));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginBottom, bottom));
+    TKUnit.assertTrue(PercentLength.equals(testView.style.marginLeft, left));
 }
 
 export function test_setting_padding_shorthand_property_sets_all_paddings() {
@@ -504,10 +504,10 @@ function test_padding_shorthand_property(short: string, top: number, right: numb
     var testView = new buttonModule.Button();
     testView.style.padding = short;
 
-    TKUnit.assertTrue(Length.equals(testView.style.paddingTop, { value: top, unit: "dip" }));
-    TKUnit.assertTrue(Length.equals(testView.style.paddingRight, { value: right, unit: "dip" }));
-    TKUnit.assertTrue(Length.equals(testView.style.paddingBottom, { value: bottom, unit: "dip" }));
-    TKUnit.assertTrue(Length.equals(testView.style.paddingLeft, { value: left, unit: "dip" }));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingTop, top));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingRight, right));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingBottom, bottom));
+    TKUnit.assertTrue(Length.equals(testView.style.paddingLeft, left));
 }
 
 export function test_setting_font_shorthand_property() {

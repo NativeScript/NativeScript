@@ -20,12 +20,12 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
     }
 
     let layout = test.testView;
-    layout.width = { value: 200, unit: "dip" };
-    layout.height = { value: 200, unit: "dip" };
+    layout.width = { value: 200, unit: "px" };
+    layout.height = { value: 200, unit: "px" };
 
     let btn = new layoutHelper.MyButton();
-    btn.width = { value: 100, unit: "dip" };
-    btn.height = { value: 100, unit: "dip" };
+    btn.width = { value: 100, unit: "px" };
+    btn.height = { value: 100, unit: "px" };
     btn.margin = "10%";
     layout.addChild(btn);
 
@@ -77,8 +77,8 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
 export function percent_support_children_test(test: testModule.UITest<LayoutBase>) {
     let layout: LayoutBase = test.testView;
     layout.removeChildren();
-    layout.width = { value: 200, unit: "dip" };
-    layout.height = { value: 200, unit: "dip" };
+    layout.width = { value: 200, unit: "px" };
+    layout.height = { value: 200, unit: "px" };
 
     let btn = new layoutHelper.MyButton();
     btn.horizontalAlignment = "left";
@@ -139,13 +139,13 @@ export function percent_support_children_test(test: testModule.UITest<LayoutBase
     btn.verticalAlignment = "stretch";
     btn.height = unsetValue;
 
-    TKUnit.assertTrue(PercentLength.equals(btn.marginLeft, {value: 0, unit: "dip"}));
-    TKUnit.assertTrue(PercentLength.equals(btn.marginTop, {value: 0, unit: "dip"}));
-    TKUnit.assertTrue(PercentLength.equals(btn.marginRight, {value: 0, unit: "dip"}));
-    TKUnit.assertTrue(PercentLength.equals(btn.marginBottom, {value: 0, unit: "dip"}));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginLeft, 0));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginTop, 0));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginRight, 0));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginBottom, 0));
 
-    TKUnit.assertTrue(PercentLength.equals(btn.width, {value: 0, unit: "dip"}));
-    TKUnit.assertTrue(PercentLength.equals(btn.height, {value: 0, unit: "dip"}));
+    TKUnit.assertTrue(PercentLength.equals(btn.width, "auto"));
+    TKUnit.assertTrue(PercentLength.equals(btn.height, "auto"));
 
     test.waitUntilTestElementLayoutIsValid();
 

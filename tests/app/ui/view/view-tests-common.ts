@@ -722,13 +722,13 @@ export var test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree = function
 var delta = 1;
 export var test_getLocationRelativeToOtherView = function () {
     var a1 = new absoluteLayoutModule.AbsoluteLayout();
-    a1.width = { value: 200, unit: "dip" };
-    a1.height = { value: 200, unit: "dip" };
+    a1.width = 200;
+    a1.height = 200;
     a1.backgroundColor = new color.Color("red");
 
     var a2 = new absoluteLayoutModule.AbsoluteLayout();
-    a2.width = { value: 100, unit: "dip" };
-    a2.height = { value: 100, unit: "dip" };
+    a2.width = 100;
+    a2.height = 100;
     absoluteLayoutModule.AbsoluteLayout.setLeft(a2, 10);
     absoluteLayoutModule.AbsoluteLayout.setTop(a2, 10);
     a2.backgroundColor = new color.Color("green");
@@ -736,8 +736,8 @@ export var test_getLocationRelativeToOtherView = function () {
     var label = new labelModule.Label();
     label.text = "label";
     label.id = "label";
-    label.width = { value: 70, unit: "dip" };
-    label.height = { value: 30, unit: "dip" };
+    label.width = 70;
+    label.height = 30;
     absoluteLayoutModule.AbsoluteLayout.setLeft(label, 10);
     absoluteLayoutModule.AbsoluteLayout.setTop(label, 10);
     a2.backgroundColor = new color.Color("yellow");
@@ -765,8 +765,8 @@ export var test_getLocationRelativeToOtherView = function () {
 
 export var test_getActualSize = function () {
     var label = new labelModule.Label();
-    label.width = { value: 100, unit: "dip" };
-    label.height = { value: 200, unit: "dip" };
+    label.width = 100;
+    label.height = 200;
     helper.buildUIAndRunTest(label, function (views: Array<viewModule.View>) {
         TKUnit.waitUntilReady(() => label.isLayoutValid);
         var actualSize = label.getActualSize();

@@ -17,13 +17,13 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         let scrollView = new scrollViewModule.ScrollView();
         scrollView.orientation = enums.Orientation.vertical;
 
-        scrollView.width = { value: 200, unit: "dip" };
-        scrollView.height = { value: 300, unit: "dip" };
+        scrollView.width = { value: 200, unit: "px" };
+        scrollView.height = { value: 300, unit: "px" };
 
         let btn = new button.Button();
         btn.text = "test";
-        btn.width = { value: 500, unit: "dip" };
-        btn.height = { value: 500, unit: "dip" };
+        btn.width = { value: 500, unit: "px" };
+        btn.height = { value: 500, unit: "px" };
         scrollView.content = btn;
 
         return scrollView;
@@ -66,8 +66,8 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollableHeight_vertical_orientation_when_content_is_small() {
-        this.testView.content.width = { value: 100, unit: "dip" };
-        this.testView.content.height = { value: 100, unit: "dip" };
+        this.testView.content.width = { value: 100, unit: "px" };
+        this.testView.content.height = { value: 100, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
@@ -75,7 +75,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollableHeight_vertical_orientation_when_content_is_big() {
-        this.testView.content.width = { value: 100, unit: "dip" };
+        this.testView.content.width = { value: 100, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertAreClose(layoutHelper.dip(this.testView.scrollableHeight), 200, 0.4, "this.testView.scrollableHeight");
@@ -84,8 +84,8 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollableWidth_horizontal_orientation_when_content_is_small() {
         this.testView.orientation = enums.Orientation.horizontal;
-        this.testView.content.width = { value: 100, unit: "dip" };
-        this.testView.content.height = { value: 100, unit: "dip" };
+        this.testView.content.width = { value: 100, unit: "px" };
+        this.testView.content.height = { value: 100, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");
@@ -94,7 +94,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_scrollableWidth_horizontal_orientation_when_content_is_big() {
         this.testView.orientation = enums.Orientation.horizontal;
-        this.testView.content.height = { value: 100, unit: "dip" };
+        this.testView.content.height = { value: 100, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.scrollableHeight, 0, "this.testView.scrollableHeight");

@@ -9,10 +9,10 @@ export function createPage() {
     var btn1 = new buttonModule.Button();
     btn1.horizontalAlignment = "left";
     btn1.verticalAlignment = "top";
-    btn1.marginTop = { value: 10, unit: "dip" };
-    btn1.marginRight = { value: 0, unit: "dip" };
-    btn1.marginBottom = { value: 10, unit: "dip" };
-    btn1.marginLeft = { value: 20, unit: "dip" };
+    btn1.marginTop = 10;
+    btn1.marginRight = 0;
+    btn1.marginBottom = 10;
+    btn1.marginLeft = 20;
     btn1.text = "top, left";
 
     var btn2 = new buttonModule.Button();

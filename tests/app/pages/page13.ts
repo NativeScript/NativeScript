@@ -7,17 +7,17 @@ export function createPage() {
     var linearLayout = new layout.StackLayout();
 
     var btn = addButton(linearLayout, "left");
-    btn.marginLeft = { value: 100, unit: "dip" };
+    btn.marginLeft = 100;
     btn = addButton(linearLayout, "center");
-    btn.marginTop = { value: 100, unit: "dip" };
+    btn.marginTop = 100;
     btn = addButton(linearLayout, "right");
-    btn.marginRight = { value: 100, unit: "dip" };
+    btn.marginRight = 100;
 
     btn = addButton(linearLayout, "stretch");
-    btn.marginLeft = { value: 100, unit: "dip" };
-    btn.marginRight = { value: 100, unit: "dip" };
-    btn.marginTop = { value: 100, unit: "dip" };
-    btn.marginBottom = { value: 100, unit: "dip" };
+    btn.marginLeft = 100;
+    btn.marginRight = 100;
+    btn.marginTop = 100;
+    btn.marginBottom = 100;
 
     page.content = linearLayout;
     return page;
@@ -28,6 +28,6 @@ function addButton(layout: layout.StackLayout, text: "left" | "center" | "middle
     btn.text = text;
     btn.horizontalAlignment = text;
     layout.addChild(btn);
-    layout.style.paddingLeft = { value: 5, unit: "dip" };
+    layout.style.paddingLeft = 5;
     return btn;
 }

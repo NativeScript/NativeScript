@@ -558,8 +558,8 @@ export function test_percent_width_and_height_support() {
     testPage.style.height = unsetValue;
     testPage.style.width = unsetValue;
 
-    TKUnit.assertTrue(PercentLength.equals(testPage.width, {value: 0, unit:"dip"}));
-    TKUnit.assertTrue(PercentLength.equals(testPage.height, {value: 0, unit:"dip"}));
+    TKUnit.assertTrue(PercentLength.equals(testPage.width, "auto"));
+    TKUnit.assertTrue(PercentLength.equals(testPage.height, "auto"));
 }
 
 export function test_percent_margin_support() {
@@ -585,10 +585,10 @@ export function test_percent_margin_support() {
     //reset values.
     testPage.margin = "0";
 
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginLeft, { value: 0, unit: "dip" }));
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginTop, { value: 0, unit: "dip" }));
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginRight, { value: 0, unit: "dip" }));
-    TKUnit.assertTrue(PercentLength.equals(testPage.marginBottom, { value: 0, unit: "dip" }));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginLeft, 0));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginTop, 0));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginRight, 0));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginBottom, 0));
 }
 
 //export function test_ModalPage_Layout_is_Correct() {
