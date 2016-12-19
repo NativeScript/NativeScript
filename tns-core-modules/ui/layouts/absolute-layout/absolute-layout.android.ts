@@ -23,7 +23,7 @@ let topDescriptor: TypedPropertyDescriptor<Length> = {
 }
 
 // register native properties on View type.
-Object.defineProperties(View, {
+Object.defineProperties(View.prototype, {
     [leftProperty.native]: leftDescriptor,
     [topProperty.native]: topDescriptor
 });

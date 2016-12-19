@@ -41,7 +41,7 @@ export interface PropertyOptions<T, U> {
 }
 
 export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-    readonly coerceValue: (T, U) => U;
+    readonly coerceValue: (t: T, u: U) => U;
 }
 
 export interface ShorthandPropertyOptions {
@@ -53,7 +53,6 @@ export interface ShorthandPropertyOptions {
 
 export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
     cssName: string;
-    dependentProperty?: CssProperty<T, any>;
 }
 
 export class Property<T extends ViewBase, U> implements PropertyDescriptor {

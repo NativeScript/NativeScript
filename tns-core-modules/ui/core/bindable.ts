@@ -642,7 +642,7 @@ export class Binding {
         this.updating = true;
 
         try {
-            if (optionsInstance instanceof Bindable &&
+            if (optionsInstance instanceof ViewBase &&
                 isEventOrGesture(options.property, <any>optionsInstance) &&
                 types.isFunction(value)) {
                 // calling off method with null as handler will remove all handlers for options.property event

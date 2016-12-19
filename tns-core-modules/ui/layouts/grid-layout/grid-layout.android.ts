@@ -6,7 +6,7 @@
 export * from "./grid-layout-common";
 
 function setNativeProperty(view: View, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
-    let nativeView: android.view.View = view._nativeView;
+    const nativeView: android.view.View = view._nativeView;
     const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
     if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
         setter(lp);
@@ -55,7 +55,7 @@ let colSpanDescriptor: TypedPropertyDescriptor<number> = {
 }
 
 // register native properties on View type.
-Object.defineProperties(View, {
+Object.defineProperties(View.prototype, {
     [rowProperty.native]: rowDescriptor,
     [columnProperty.native]: colDescriptor,
     [rowSpanProperty.native]: rowSpanDescriptor,

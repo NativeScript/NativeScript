@@ -38,7 +38,7 @@ let dockDescriptor: TypedPropertyDescriptor<"left" | "top" | "right" | "bottom">
 }
 
 // register native properties on View type.
-Object.defineProperties(View, {
+Object.defineProperties(View.prototype, {
     [dockProperty.native]: dockDescriptor
 });
 

@@ -332,7 +332,7 @@ export const columnProperty = new Property<View, number>({
     },
     valueConverter: (v) => Math.max(0, parseInt(v))
 });
-columnProperty.register(GridLayoutBase);
+columnProperty.register(View);
 
 export const columnSpanProperty = new Property<View, number>({
     name: "colSpan", defaultValue: 1,
@@ -344,7 +344,7 @@ export const columnSpanProperty = new Property<View, number>({
     },
     valueConverter: (v) => Math.max(1, parseInt(v))
 });
-columnSpanProperty.register(GridLayoutBase);
+columnSpanProperty.register(View);
 
 export const rowProperty = new Property<View, number>({
     name: "row", defaultValue: 0,
@@ -356,7 +356,7 @@ export const rowProperty = new Property<View, number>({
     },
     valueConverter: (v) => Math.max(0, parseInt(v))
 });
-rowProperty.register(GridLayoutBase);
+rowProperty.register(View);
 
 export const rowSpanProperty = new Property<View, number>({
     name: "rowSpan", defaultValue: 1,
@@ -368,4 +368,4 @@ export const rowSpanProperty = new Property<View, number>({
     },
     valueConverter: (v) => Math.max(1, parseInt(v))
 });
-rowSpanProperty.register(GridLayoutBase);
+rowSpanProperty.register(View);
