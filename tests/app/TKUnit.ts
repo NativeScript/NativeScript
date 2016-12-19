@@ -10,11 +10,11 @@
  
 */
 
-import Application = require("application");
-import timer = require("timer");
-import trace = require("trace");
-import types = require("utils/types");
-import platform = require("platform");
+import * as Application from "application";
+import * as timer from "timer";
+import * as trace from "trace";
+import * as types from "utils/types";
+import * as platform from "platform";
 
 import * as utils from "utils/utils";
 

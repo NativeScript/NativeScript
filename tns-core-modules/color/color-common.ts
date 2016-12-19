@@ -1,6 +1,6 @@
-﻿import definition = require("color");
-import types = require("utils/types");
-import knownColors = require("color/known-colors");
+﻿import * as definition from "color";
+import * as types from "utils/types";
+import * as knownColors from "color/known-colors";
 
 var AMP = "#";
 var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;

@@ -1,4 +1,4 @@
-﻿import timePickerModule = require("ui/time-picker");
+﻿import * as timePickerModule from "ui/time-picker";
 
 import * as utils from "utils/utils";
 

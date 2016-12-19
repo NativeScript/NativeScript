@@ -95,6 +95,15 @@ declare module "application" {
          */
         newValue: "portrait" | "landscape" | "unknown";
     }
+    
+    /**
+     * Event data containing information about unhandled application errors.
+     */
+    export interface UnhandledErrorEventData extends ApplicationEventData {
+        ios?: NativeScriptError;
+        android?: NativeScriptError;
+        error: NativeScriptError;
+    }
 
     /**
      * The main page path (without the file extension) for the application starting from the application root. 

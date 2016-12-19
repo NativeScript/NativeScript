@@ -1,8 +1,8 @@
-﻿import definition = require("file-system/file-name-resolver");
-import fs = require("file-system");
-import types = require("utils/types");
-import trace = require("trace");
-import platform = require("platform");
+﻿import * as definition from "file-system/file-name-resolver";
+import * as fs from "file-system";
+import * as types from "utils/types";
+import * as trace from "trace";
+import * as platform from "platform";
 import * as appModule from "application";
 
 var MIN_WH: string = "minWH";

@@ -1,11 +1,11 @@
-import btns = require("ui/button");
-import pages = require("ui/page");
-import stacks = require("ui/layouts/stack-layout");
-import scroll = require("ui/scroll-view");
-import textView = require("ui/text-view");
-import timer = require("timer");
-import http = require("http");
-import trace = require("trace");
+import * as btns from "ui/button";
+import * as pages from "ui/page";
+import * as stacks from "ui/layouts/stack-layout";
+import * as scroll from "ui/scroll-view";
+import * as textView from "ui/text-view";
+import * as timer from "timer";
+import * as http from "http";
+import * as trace from "trace";
 trace.enable();
 trace.setCategories(trace.categories.Style);
 

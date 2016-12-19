@@ -1,5 +1,5 @@
-﻿import dialogs = require("ui/dialogs");
-import observable = require("data/observable");
+﻿import * as dialogs from "ui/dialogs";
+import * as observable from "data/observable";
 
 var name = "Harold Finch";
 

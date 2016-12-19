@@ -1,8 +1,8 @@
-import spanCommon = require("./span-common");
-import enums = require("ui/enums");
-import formattedString = require("text/formatted-string");
-import utils = require("utils/utils");
-import fontModule = require("ui/styling/font");
+import * as spanCommon from "./span-common";
+import * as enums from "ui/enums";
+import * as formattedString from "text/formatted-string";
+import * as utils from "utils/utils";
+import * as fontModule from "ui/styling/font";
 
 global.moduleMerge(spanCommon, exports);
 

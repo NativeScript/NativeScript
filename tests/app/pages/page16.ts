@@ -1,7 +1,7 @@
-﻿import pageModule = require("ui/page");
-import buttonModule = require("ui/button");
-import stackModule = require("ui/layouts/stack-layout");
-import frame = require("ui/frame");
+﻿import * as pageModule from "ui/page";
+import * as buttonModule from "ui/button";
+import * as stackModule from "ui/layouts/stack-layout";
+import * as frame from "ui/frame";
 
 export function createPage() {
     var page = new pageModule.Page();

@@ -1,4 +1,4 @@
-﻿import file_access_module = require("file-system/file-system-access");
+﻿import * as file_access_module from "file-system/file-system-access";
 import * as platformModule from "platform";
 
 // The FileSystemAccess implementation, used through all the APIs.

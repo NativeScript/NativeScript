@@ -1,8 +1,8 @@
-import TKUnit = require("../../TKUnit");
-import testModule = require("../../ui-test");
+import * as TKUnit from "../../TKUnit";
+import * as testModule from "../../ui-test";
 
 // >> webview-require
-import webViewModule = require("ui/web-view");
+import * as webViewModule from "ui/web-view";
 // << webview-require
 
 // >> declare-webview-xml
@@ -45,7 +45,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
             // << (hide)
         });
-        webView.url = "https://github.com/";
+        webView.src = "https://github.com/";
         // << webview-url
     }
 
@@ -145,7 +145,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
                 done(e);
             }
         });
-        webView.url = "kofti://mnogokofti";
+        webView.src = "kofti://mnogokofti";
     }
 
     public testLoadUpperCaseSrc(done) {

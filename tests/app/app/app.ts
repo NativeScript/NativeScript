@@ -6,7 +6,7 @@ else {
     start = java.lang.System.currentTimeMillis();
 }
 
-import application = require("application");
+import * as application from "application";
 
 // Specify custom UIApplicationDelegate.
 /*

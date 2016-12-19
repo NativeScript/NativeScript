@@ -1,8 +1,8 @@
-﻿import pageModule = require("ui/page");
-import gridLayoutModule = require("ui/layouts/grid-layout");
-import listViewModule = require("ui/list-view");
-import observable = require("data/observable");
-import observableArr = require("data/observable-array");
+﻿import * as pageModule from "ui/page";
+import * as gridLayoutModule from "ui/layouts/grid-layout";
+import * as listViewModule from "ui/list-view";
+import * as observable from "data/observable";
+import * as observableArr from "data/observable-array";
 
 var arr = new observableArr.ObservableArray();
 for (var i = 0; i < 100; i++) {

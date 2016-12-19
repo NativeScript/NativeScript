@@ -1,11 +1,11 @@
 ﻿// >> observable-require
-import observable = require("data/observable");
+import * as observable from "data/observable";
 // << observable-require
 
-import dependencyObservable = require("ui/core/dependency-observable");
-import TKUnit = require("../TKUnit");
-import types = require("utils/types");
-import proxy = require("ui/core/proxy");
+import * as dependencyObservable from "ui/core/dependency-observable";
+import * as TKUnit from "../TKUnit";
+import * as types from "utils/types";
+import * as proxy from "ui/core/proxy";
 import {ObservableArray} from "data/observable-array";
 
 var TESTED_NAME = "tested";

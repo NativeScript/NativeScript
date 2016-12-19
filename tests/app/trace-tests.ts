@@ -1,5 +1,5 @@
 ﻿// >> trace-require
-import trace = require("trace");
+import * as trace from "trace";
 // << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {

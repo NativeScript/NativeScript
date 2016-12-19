@@ -1,6 +1,6 @@
-﻿import pages = require("ui/page");
-import btns = require("ui/button");
-import layout = require("ui/layouts/stack-layout");
+﻿import * as pages from "ui/page";
+import * as btns from "ui/button";
+import * as layout from "ui/layouts/stack-layout";
 
 export function createPage() {
     var page = new pages.Page();
@@ -23,11 +23,11 @@ export function createPage() {
     return page;
 }
 
-function addButton(layout: layout.StackLayout, text: string) {
+function addButton(layout: layout.StackLayout, text: "left" | "center" | "middle" | "right" | "stretch") {
     var btn = new btns.Button();
     btn.text = text;
     btn.horizontalAlignment = text;
     layout.addChild(btn);
-    layout.paddingLeft = 5;
+    layout.style.paddingLeft = 5;
     return btn;
 }

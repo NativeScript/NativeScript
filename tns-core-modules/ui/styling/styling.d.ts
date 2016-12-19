@@ -1,8 +1,8 @@
 ﻿// declare module "ui/styling" {
-//     import observable = require("ui/core/dependency-observable");
+//     import * as observable from "ui/core/dependency-observable";
 //     import {Observable} from "data/observable";
-//     import color = require("color");
-//     import view = require("ui/core/view");
+//     import * as color from "color";
+//     import * as view from "ui/core/view";
 
 //     /**
 //      * Represents an observable property which can have its value set form CSS style.

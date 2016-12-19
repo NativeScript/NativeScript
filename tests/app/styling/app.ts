@@ -1,6 +1,6 @@
-﻿import application = require("application");
+﻿import * as application from "application";
 
-import trace = require("trace");
+import * as trace from "trace";
 trace.enable();
 trace.setCategories(trace.categories.concat(
     trace.categories.Layout

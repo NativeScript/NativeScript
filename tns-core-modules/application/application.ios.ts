@@ -1,6 +1,6 @@
-﻿import common = require("./application-common");
+﻿import * as common from "./application-common";
 import {Frame, NavigationEntry} from "ui/frame";
-import definition = require("application");
+import * as definition from "application";
 import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
 import * as utils from "utils/utils";
@@ -222,7 +222,7 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
         typedExports.onUncaughtError(error);
     }
     
-    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error });
+    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error, error });
 }
 
 function loadCss() {

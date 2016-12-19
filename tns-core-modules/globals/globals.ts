@@ -121,8 +121,8 @@ if (global.__snapshot) {
     registerOnGlobalContext("fetch", "fetch");
 }
 
-import platform = require("platform");
-import consoleModule = require("console");
+import * as platform from "platform";
+import * as consoleModule from "console";
 
 var c = new consoleModule.Console();
 

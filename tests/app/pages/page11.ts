@@ -1,13 +1,13 @@
-﻿import p = require("ui/page");
-import gridModule = require("ui/layouts/grid-layout");
-import sp = require("ui/layouts/stack-layout");
-import button = require("ui/button");
-import enums = require("ui/enums");
+﻿import * as p from "ui/page";
+import * as gridModule from "ui/layouts/grid-layout";
+import * as sp from "ui/layouts/stack-layout";
+import * as button from "ui/button";
+import * as enums from "ui/enums";
 
 export function createPage() {
     var StackLayout = new sp.StackLayout();
     var grid = new gridModule.GridLayout();
-    grid.horizontalAlignment = enums.HorizontalAlignment.left;
+    grid.horizontalAlignment = "left";
 
     StackLayout.addChild(grid);
 
@@ -25,7 +25,7 @@ export function createPage() {
     grid.addChild(btn4);
 
     var sp1 = new sp.StackLayout();
-    sp1.orientation = enums.Orientation.horizontal;
+    sp1.orientation = "horizontal";
     sp1.height = 200;
 
     var b1 = new button.Button();

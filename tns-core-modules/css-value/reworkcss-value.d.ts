@@ -6,6 +6,5 @@ declare module "css-value" {
         value?: number;
     }
 
-    function parse(cssValue: string): Array<CSSValue>;
-    export = parse;
+    export function parse(cssValue: string): Array<CSSValue>;
 }

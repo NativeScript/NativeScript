@@ -1,13 +1,13 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
 import {Label} from "ui/label";
 import {StackLayout} from "ui/layouts/stack-layout";
-import colorModule = require("color");
-import enums = require("ui/enums");
+import * as colorModule from "color";
+import * as enums from "ui/enums";
 
 // >> animation-require
-import animation = require("ui/animation");
+import * as animation from "ui/animation";
 // << animation-require
 
 function prepareTest(): Label {

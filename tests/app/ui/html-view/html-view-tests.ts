@@ -1,9 +1,9 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import types = require("utils/types");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as types from "utils/types";
 
 // >> htmlview-require
-import htmlViewModule = require("ui/html-view");
+import * as htmlViewModule from "ui/html-view";
 // << htmlview-require
 
 var _createHtmlViewFunc = function (): htmlViewModule.HtmlView {

@@ -1,4 +1,4 @@
-﻿import fpsNative = require("fps-meter/fps-native");
+﻿import * as fpsNative from "fps-meter/fps-native";
 
 const callbacks = {};
 let idCounter = 0;

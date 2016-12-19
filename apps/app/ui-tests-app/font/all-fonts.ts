@@ -4,7 +4,7 @@ import { StackLayout } from "ui/layouts/stack-layout";
 import { ScrollView } from "ui/scroll-view";
 import { Label } from "ui/label";
 import { FontStyle, FontWeight } from "ui/enums";
-import typeUtils = require("utils/types");
+import * as typeUtils from "utils/types";
 import { Color } from "color";
 import * as font from "ui/styling/font";
 

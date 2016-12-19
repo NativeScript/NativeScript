@@ -1,12 +1,12 @@
 ﻿import { EventData } from "data/observable";
 import { Page } from "ui/page";
-import buttonModule = require("ui/button");
-import colorModule = require("color");
+import * as buttonModule from "ui/button";
+import * as colorModule from "color";
 import * as platform from "platform";
-import frame = require("ui/frame");
-import trace = require("trace");
-import observable = require("data/observable");
-import dialogs = require("ui/dialogs");
+import * as frame from "ui/frame";
+import * as trace from "trace";
+import * as observable from "data/observable";
+import * as dialogs from "ui/dialogs";
 import { WrapLayout } from "ui/layouts/wrap-layout";
 
 var examples: Map<string, string> = new Map<string, string>();

@@ -1,9 +1,9 @@
-﻿import labelModule = require("ui/label");
-import gestures = require("ui/gestures");
-import button = require("ui/button");
-import pages = require("ui/page");
-import deviceProperties = require("platform");
-import stackLayoutModule = require("ui/layouts/stack-layout");
+﻿import * as labelModule from "ui/label";
+import * as gestures from "ui/gestures";
+import * as button from "ui/button";
+import * as pages from "ui/page";
+import * as deviceProperties from "platform";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
 
 export function createPage() {
 

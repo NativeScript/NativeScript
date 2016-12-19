@@ -1,5 +1,5 @@
 ﻿//@private
-import datePickerModule = require("ui/date-picker");
+import * as datePickerModule from "ui/date-picker";
 
 export declare function getNativeYear(datePicker: datePickerModule.DatePicker): number;
 export declare function getNativeMonth(datePicker: datePickerModule.DatePicker): number;

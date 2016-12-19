@@ -1,5 +1,5 @@
 ﻿/* tslint:disable:class-name */
-import definition = require("platform");
+import * as definition from "platform";
 
 import * as utils from "utils/utils";
 

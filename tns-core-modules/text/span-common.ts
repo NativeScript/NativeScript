@@ -1,10 +1,10 @@
-﻿import colorModule = require("color");
-import definition = require("text/span");
-import bindable = require("ui/core/bindable");
-import types = require("utils/types");
-import view = require("ui/core/view");
-import enums = require("ui/enums");
-import formattedString = require("text/formatted-string");
+﻿import * as colorModule from "color";
+import * as definition from "text/span";
+import * as bindable from "ui/core/bindable";
+import * as types from "utils/types";
+import * as view from "ui/core/view";
+import * as enums from "ui/enums";
+import * as formattedString from "text/formatted-string";
 
 export class Span extends bindable.Bindable implements definition.Span, view.ApplyXmlAttributes {
     private _fontFamily: string;

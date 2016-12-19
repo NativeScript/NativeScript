@@ -1,14 +1,14 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import pagesModule = require("ui/page");
-import bindable = require("ui/core/bindable");
-import observable = require("data/observable");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as pagesModule from "ui/page";
+import * as bindable from "ui/core/bindable";
+import * as observable from "data/observable";
+import * as color from "color";
+import * as platform from "platform";
 
 // >> article-require-slider
-import sliderModule = require("ui/slider");
+import * as sliderModule from "ui/slider";
 // << article-require-slider
 
 // ### Binding the Progress and Slider value properties to a observable view-model property.

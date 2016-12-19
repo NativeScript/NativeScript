@@ -1,6 +1,6 @@
 ﻿// declare module "ui/styling/style-property" {
-//     import definition = require("ui/styling");
-//     import observable = require("ui/core/dependency-observable");
+//     import * as definition from "ui/styling";
+//     import * as observable from "ui/core/dependency-observable";
 
 //     export type StyleProperty = Property;
 //     export type ResolvedStylePropertyHandler = (property: Property | string, value: any) => void;

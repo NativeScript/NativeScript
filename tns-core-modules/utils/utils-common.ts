@@ -1,4 +1,4 @@
-﻿import types = require("utils/types");
+﻿import * as types from "utils/types";
 
 export var RESOURCE_PREFIX = "res://";
 

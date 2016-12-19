@@ -166,7 +166,7 @@ interface ObjectConstructor {
       * @param p The property name.
       * @param attributes Descriptor for the property. It can be for a data property or an accessor property.
       */
-    defineProperty(o: any, p: string, attributes: PropertyDescriptor): any;
+    defineProperty(o: any, p: string | symbol, attributes: PropertyDescriptor): any;
 
     /**
       * Adds one or more properties to an object, and/or modifies attributes of existing properties. 

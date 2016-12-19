@@ -1,5 +1,5 @@
-﻿import PageModule = require("ui/page");
-import LabelModule = require("ui/label");
+﻿import * as PageModule from "ui/page";
+import * as LabelModule from "ui/label";
 
 export class TestPageModule extends PageModule.Page {
     constructor() {

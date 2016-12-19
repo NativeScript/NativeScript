@@ -24,7 +24,7 @@ declare module "foo"{
 **Implementation file (foo.ts):**
 
 ```javascript
-import definition = require("foo");
+import * as definition from "foo";
 
 export function a(){
     // do somethign here
@@ -53,7 +53,7 @@ declare module "foo"{
 **Android implementation file (foo.android.ts):**
 
 ```javascript
-import definition = require("foo");
+import * as definition from "foo";
 
 // require the definition and put implements clause to ensure API consistency between the declaration and implementation
 export class Foo implements definition.Foo {
@@ -72,7 +72,7 @@ export class Foo implements definition.Foo {
 **iOS implementation file (foo.ios.ts):**
 
 ```javascript
-import definition = require("foo");
+import * as definition from "foo";
 
 // require the definition and put implements clause to ensure API consistency between the declaration and implementation
 export class Foo implements definition.Foo {
@@ -109,7 +109,7 @@ declare module "foo"{
 **Common implementation file (foo-common.ts):**
 
 ```javascript
-import definition = require("foo");
+import * as definition from "foo";
 
 // require the definition and put implements clause to ensure API consistency between the declaration and implementation
 export class Foo implements definition.Foo {
@@ -128,7 +128,7 @@ export class Foo implements definition.Foo {
 **Android implementation file (foo.android.ts):**
 
 ```javascript
-import common = require("foo-common");
+import * as common from "foo-common";
 
 // require the common file and extend the base common implementation
 export class Foo extends common.Foo {
@@ -148,7 +148,7 @@ export class Foo extends common.Foo {
 **iOS implementation file (foo.ios.ts):**
 
 ```javascript
-import common = require("foo-common");
+import * as common from "foo-common";
 
 // require the common file and extend the base common implementation
 export class Foo extends common.Foo {
@@ -215,8 +215,8 @@ export function stopNative(){
 **Common implementation file (foo.ts):**
 
 ```javascript
-import definition = require("foo");
-import fooNative = require("foo-native");
+import * as definition from "foo";
+import * as fooNative from "foo-native";
 
 // require the definition and put implements clause to ensure API consistency between the declaration and implementation
 export class Foo implements definition.Foo {

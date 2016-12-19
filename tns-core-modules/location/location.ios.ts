@@ -1,5 +1,5 @@
-﻿import locationModule = require("location");
-import common = require("./location-common");
+﻿import * as locationModule from "location";
+import * as common from "./location-common";
 
 global.moduleMerge(common, exports);
 

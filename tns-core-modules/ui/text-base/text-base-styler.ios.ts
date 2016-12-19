@@ -1,9 +1,9 @@
-﻿// import view = require("ui/core/view");
-// import utils = require("utils/utils");
-// import style = require("ui/styling/style");
-// import font = require("ui/styling/font");
-// import enums = require("ui/enums");
-// import types = require("utils/types");
+﻿// import * as view from "ui/core/view";
+// import * as utils from "utils/utils";
+// import * as style from "ui/styling/style";
+// import * as font from "ui/styling/font";
+// import * as enums from "ui/enums";
+// import * as types from "utils/types";
 // import { TextBase } from "ui/text-base";
 
 // export class TextBaseStyler implements style.Styler {

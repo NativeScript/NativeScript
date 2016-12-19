@@ -1,5 +1,5 @@
-﻿import actionTestsCommon = require("./action-bar-tests-common");
-import TKUnit = require("../../TKUnit");
+﻿import * as actionTestsCommon from "./action-bar-tests-common";
+import * as TKUnit from "../../TKUnit";
 import { ActionItem } from "ui/action-bar";
 import { Visibility } from "ui/enums";
 

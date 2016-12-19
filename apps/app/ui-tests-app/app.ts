@@ -1,5 +1,5 @@
-﻿import application = require("application");
-import trace = require("trace");
+﻿import * as application from "application";
+import * as trace from "trace";
 trace.enable();
 trace.setCategories(trace.categories.concat(
     trace.categories.NativeLifecycle,
@@ -11,12 +11,13 @@ trace.setCategories(trace.categories.concat(
 var countResume = 0;
 var countSuspend = 0;
 
-application.onUncaughtError = function (error: application.NativeScriptError) {
+application.on("uncaughtError", args => {
+    const error = args.error;
     console.warn(error.message);
     if (error.nativeError) {
         console.warn("native error: " + error.nativeError);
     }
-}
+});
 
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
     if (args.android) {

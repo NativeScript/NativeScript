@@ -1,8 +1,8 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
 import {Label} from "ui/label";
 import {StackLayout} from "ui/layouts/stack-layout";
-import frameModule = require("ui/frame");
+import * as frameModule from "ui/frame";
 import {Page} from "ui/page";
 import {ListView, ItemEventData} from "ui/list-view";
 import {TabView, TabViewItem} from "ui/tab-view";

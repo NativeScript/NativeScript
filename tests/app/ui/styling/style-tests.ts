@@ -1,18 +1,18 @@
-import TKUnit = require("../../TKUnit");
-import application = require("application");
-import buttonModule = require("ui/button");
-import labelModule = require("ui/label");
-import pageModule = require("ui/page");
-import stackModule = require("ui/layouts/stack-layout");
-import wrapModule = require("ui/layouts/wrap-layout");
-import tabViewModule = require("ui/tab-view");
-import helper = require("../../ui/helper");
-import styling = require("ui/styling");
-import types = require("utils/types");
-import viewModule = require("ui/core/view");
-import styleModule = require("ui/styling/style");
-import dependencyObservableModule = require("ui/core/dependency-observable");
+import * as TKUnit from "../../TKUnit";
+import * as application from "application";
+import * as buttonModule from "ui/button";
+import * as labelModule from "ui/label";
+import * as pageModule from "ui/page";
+import * as stackModule from "ui/layouts/stack-layout";
+import * as wrapModule from "ui/layouts/wrap-layout";
+import * as tabViewModule from "ui/tab-view";
+import * as helper from "../../ui/helper";
+import * as types from "utils/types";
+import * as viewModule from "ui/core/view";
+import * as styleModule from "ui/styling/style";
+import * as dependencyObservableModule from "ui/core/dependency-observable";
 import { resolveFileNameFromUrl } from "ui/styling/style-scope";
+import { unsetValue } from "ui/core/view";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     var stack = new stackModule.StackLayout();
@@ -21,7 +21,7 @@ export function test_css_dataURI_is_applied_to_backgroundImageSource() {
         var page = <pageModule.Page>views[1];
         page.css = "StackLayout { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC;') }";
 
-        var value = stack.style._getValue(styleModule.backgroundInternalProperty);
+        var value = stack.style.backgroundInternal;
 
         TKUnit.assert(types.isDefined(value), "Style background-image not loaded correctly from data URI.");
         TKUnit.assert(types.isDefined(value.image), "Style background-image not loaded correctly from data URI.");
@@ -144,7 +144,8 @@ export function test_setting_css() {
 // Basic selector tests
 export function test_type_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+
+    page.style.color = unsetValue;
 
     let btn: buttonModule.Button;
     let label: labelModule.Label;
@@ -214,7 +215,7 @@ export function test_multiple_class_selector() {
 
 export function test_id_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     let btnWithId: buttonModule.Button;
     let btnWithNoId: buttonModule.Button;
 
@@ -241,7 +242,7 @@ export function test_id_selector() {
 // State selector tests
 export function test_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     let btn: buttonModule.Button;
     var testStack = new stackModule.StackLayout();
     page.content = testStack;
@@ -256,7 +257,7 @@ export function test_state_selector() {
 
 export function test_type_and_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     var btn: buttonModule.Button;
 
     // >>article-using-state-selector
@@ -274,7 +275,7 @@ export function test_type_and_state_selector() {
 
 export function test_class_and_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     btn.className = "test"
@@ -289,7 +290,7 @@ export function test_class_and_state_selector() {
 
 export function test_class_and_state_selector_with_multiple_classes() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -305,7 +306,7 @@ export function test_class_and_state_selector_with_multiple_classes() {
 
 export function test_id_and_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -321,7 +322,7 @@ export function test_id_and_state_selector() {
 
 export function test_restore_original_values_when_state_is_changed() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -568,7 +569,7 @@ export function test_selector_priorities_6() {
 
 function testSelectorsPrioritiesTemplate(css: string) {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     let btn: buttonModule.Button;
     let btnWithClass: buttonModule.Button;
     let btnWithId: buttonModule.Button;
@@ -1423,7 +1424,7 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     const stack = new stackModule.StackLayout();
     const label = new labelModule.Label();
     label.text = "Some text";
-    label.cssClass = 'lab1';
+    label.className = 'lab1';
     stack.addChild(label);
 
     application.addCss(".added { background-color: red; } .added .lab1 { background-color: blue; } .lab1 { color: red}");

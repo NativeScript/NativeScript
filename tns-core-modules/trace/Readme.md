@@ -2,7 +2,7 @@ The trace module is used to track code execution and to receive notifications fo
 It is disabled by default and to enable it you will need to call its enable() method.
 
 ```js
-import trace = require("trace");
+import * as trace from "trace";
 trace.enable();
 ```
 
@@ -11,19 +11,19 @@ The module writes its output through a collection of TraceWriter objects. By def
 How to specify category(s):
 
 ```js
-import trace = require("trace");
+import * as trace from "trace";
 // only the Layout messages are traced
 trace.setCategories(traceCategories.Layout);
 ``` 
 
 ```js
-import trace = require("trace");
+import * as trace from "trace";
 // set Layout + VisualTreeEvents categories
 trace.setCategories(traceCategories.concat(traceCategories.Layout, traceCategories.VisualTreeEvents));
 ```
 
 ```js
-import trace = require("trace");
+import * as trace from "trace";
 // trace everything
 trace.setCategories(traceCategories.All);
 ```
@@ -31,7 +31,7 @@ trace.setCategories(traceCategories.All);
 How to trace:
 
 ```js
-import trace = require("trace");
+import * as trace from "trace";
 traceWrite("tracing message", traceCategories.Layout);
 ```
 
@@ -40,7 +40,7 @@ The module also supports events notifications through the EventListener interfac
 How to create and register a listener:
 
 ```js
-import trace = require("trace");
+import * as trace from "trace";
 
 class Listener implements trace.EventListener {
     public filter: string;
@@ -69,8 +69,8 @@ trace.addEventListener(listener);
 How to raise events:
 
 ```js
-import trace = require("trace");
-import view = require("ui/core/view");
+import * as trace from "trace";
+import * as view from "ui/core/view";
 
 var newView = new view.View();
 trace.notifyEvent(newView, "_viewCreated");

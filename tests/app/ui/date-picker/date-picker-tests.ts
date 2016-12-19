@@ -1,11 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
-import testModule = require("../../ui-test");
-import datePickerTestsNative = require("./date-picker-tests-native");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as testModule from "../../ui-test";
+import * as datePickerTestsNative from "./date-picker-tests-native";
+import * as color from "color";
+import * as platform from "platform";
 
 // >> date-picker-require
-import datePickerModule = require("ui/date-picker");
+import * as datePickerModule from "ui/date-picker";
 // << date-picker-require
 
 function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {

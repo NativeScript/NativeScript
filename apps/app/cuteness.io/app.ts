@@ -1,5 +1,5 @@
-﻿import application = require("application");
-import fps = require("fps-meter");
+﻿import * as application from "application";
+import * as fps from "fps-meter";
 fps.addCallback(function (fps, minFps) {
     console.info("fps=" + fps + " minFps=" + minFps);
 });

@@ -1,11 +1,11 @@
 ﻿// >> formatted-string-require
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
+import * as formattedStringModule from "text/formatted-string";
+import * as spanModule from "text/span";
 // << formatted-string-require
 
-import observable = require("data/observable");
-import TKUnit = require("../TKUnit");
-import LabelModule = require("ui/label");
+import * as observable from "data/observable";
+import * as TKUnit from "../TKUnit";
+import * as LabelModule from "ui/label";
 
 export var test_FormattedString_RemovesEventListeners_for_spans = function () {
     // >> formatted-string-set

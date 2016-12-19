@@ -1,8 +1,8 @@
 ﻿import {Page} from "ui/page";
 import {View} from "ui/core/view";
-import trace = require("trace");
-import navHelper = require("./ui/helper");
-import TKUnit = require("./TKUnit");
+import * as trace from "trace";
+import * as navHelper from "./ui/helper";
+import * as TKUnit from "./TKUnit";
 
 export class UITest<T extends View> implements trace.TraceWriter {
     

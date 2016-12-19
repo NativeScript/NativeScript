@@ -1,6 +1,6 @@
-﻿import labelModule = require("ui/label");
-import enums = require("ui/enums");
-import colorModule = require("color");
+﻿import * as labelModule from "ui/label";
+import * as enums from "ui/enums";
+import * as colorModule from "color";
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
     var gravity = label.android.getGravity();

@@ -1,7 +1,7 @@
-﻿import TKUnit = require("../TKUnit");
-import fs = require("file-system");
-import enums = require("ui/enums");
-import resolver = require("file-system/file-name-resolver");
+﻿import * as TKUnit from "../TKUnit";
+import * as fs from "file-system";
+import * as enums from "ui/enums";
+import * as resolver from "file-system/file-name-resolver";
 
 var androidPhonePortraitContext: resolver.PlatformContext = {
     width: 360,

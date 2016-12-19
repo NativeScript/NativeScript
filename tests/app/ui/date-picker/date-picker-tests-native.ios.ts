@@ -1,4 +1,4 @@
-﻿import datePickerModule = require("ui/date-picker");
+﻿import * as datePickerModule from "ui/date-picker";
 
 import * as utils from "utils/utils";
 

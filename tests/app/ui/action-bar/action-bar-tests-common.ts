@@ -1,15 +1,15 @@
-﻿import TKUnit = require("../../TKUnit");
-import LabelModule = require("ui/label");
-import helper = require("../helper");
-import builder = require("ui/builder");
-import button = require("ui/button");
-import PageModule = require("ui/page");
-import viewModule = require("ui/core/view");
-import fs = require("file-system");
+﻿import * as TKUnit from "../../TKUnit";
+import * as LabelModule from "ui/label";
+import * as helper from "../helper";
+import * as builder from "ui/builder";
+import * as button from "ui/button";
+import * as PageModule from "ui/page";
+import * as viewModule from "ui/core/view";
+import * as fs from "file-system";
 import { Observable } from "data/observable";
 
 // >> actionbar-common-require
-import actionBarModule = require("ui/action-bar");
+import * as actionBarModule from "ui/action-bar";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {

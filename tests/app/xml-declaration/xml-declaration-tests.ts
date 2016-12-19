@@ -1,29 +1,29 @@
-﻿import TKUnit = require("../TKUnit");
-import view = require("ui/core/view");
-import builder = require("ui/builder");
-import buttonModule = require("ui/button");
-import switchModule = require("ui/switch");
-import searchBarModule = require("ui/search-bar");
-import textFieldModule = require("ui/text-field");
-import gridLayoutModule = require("ui/layouts/grid-layout");
-import absoluteLayoutModule = require("ui/layouts/absolute-layout");
-import types = require("utils/types");
-import fs = require("file-system");
-import observable = require("data/observable");
-import stackLayoutModule = require("ui/layouts/stack-layout");
+﻿import * as TKUnit from "../TKUnit";
+import * as view from "ui/core/view";
+import * as builder from "ui/builder";
+import * as buttonModule from "ui/button";
+import * as switchModule from "ui/switch";
+import * as searchBarModule from "ui/search-bar";
+import * as textFieldModule from "ui/text-field";
+import * as gridLayoutModule from "ui/layouts/grid-layout";
+import * as absoluteLayoutModule from "ui/layouts/absolute-layout";
+import * as types from "utils/types";
+import * as fs from "file-system";
+import * as observable from "data/observable";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
 import {Label} from "ui/label";
 import {Page} from "ui/page";
 import {Button} from "ui/button";
 import {TabView} from "ui/tab-view";
 import {Observable} from "data/observable";
 import {TemplateView} from "./template-builder-tests/template-view";
-import myCustomControlWithoutXml = require("./mymodule/MyControl");
-import listViewModule = require("ui/list-view");
-import helper = require("../ui/helper");
-import viewModule = require("ui/core/view");
-import platform = require("platform");
-import gesturesModule = require("ui/gestures");
-import segmentedBar = require("ui/segmented-bar");
+import * as myCustomControlWithoutXml from "./mymodule/MyControl";
+import * as listViewModule from "ui/list-view";
+import * as helper from "../ui/helper";
+import * as viewModule from "ui/core/view";
+import * as platform from "platform";
+import * as gesturesModule from "ui/gestures";
+import * as segmentedBar from "ui/segmented-bar";
 import { Source } from "utils/debug";
 
 export function test_load_IsDefined() {
@@ -307,8 +307,8 @@ export function test_parse_ShouldSetCanvasAttachedProperties() {
 
 export function test_parse_ShouldParseNumberProperties() {
     var p = <Page>builder.parse("<Page width='100' />");
-
-    TKUnit.assertEqual(p.width, 100, "Expected result: 100; Actual result: " + p.width + "; type: " + typeof (p.width));
+    TKUnit.assertEqual(p.width.value, 100);
+    TKUnit.assertEqual(p.width.unit, "dip");
 };
 
 export function test_parse_ShouldParseBooleanProperties() {

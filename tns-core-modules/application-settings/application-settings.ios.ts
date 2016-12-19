@@ -1,4 +1,4 @@
-﻿import Common = require("./application-settings-common");
+﻿import * as Common from "./application-settings-common";
 
 import * as utils from "utils/utils";
 

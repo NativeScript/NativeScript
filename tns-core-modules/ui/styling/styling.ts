@@ -1,6 +1,6 @@
-// import styleModule = require("./style");
-// import stylePropertyModule = require("./style-property");
-// import convertersModule = require("./converters");
+// import * as styleModule from "./style";
+// import * as stylePropertyModule from "./style-property";
+// import * as convertersModule from "./converters";
 
 // // Exports form style-property module.
 // export var Property = stylePropertyModule.Property;

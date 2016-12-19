@@ -2,8 +2,8 @@
  * Contains the VirtualArray class, which is an advanced array like class that helps loading items on demand.
  */
 declare module "data/virtual-array" {
-    import observable = require("data/observable");
-    import observableArray = require("data/observable-array");
+    import * as observable from "data/observable";
+    import * as observableArray from "data/observable-array";
 
     /**
      * Provides event args for "changed" event.

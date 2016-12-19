@@ -1,7 +1,7 @@
-﻿import observable = require("data/observable");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import label = require("ui/label");
-import button = require("ui/button");
+﻿import * as observable from "data/observable";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as label from "ui/label";
+import * as button from "ui/button";
 
 export class MyControl extends stackLayoutModule.StackLayout {
     constructor() {

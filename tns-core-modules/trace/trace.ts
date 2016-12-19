@@ -1,4 +1,4 @@
-﻿import definition = require("trace");
+﻿import * as definition from "trace";
 import * as types from "utils/types";
 
 export var enabled = false;

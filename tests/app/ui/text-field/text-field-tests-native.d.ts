@@ -1,6 +1,6 @@
 ﻿//@private
-import textFieldModule = require("ui/text-field");
-import colorModule = require("color");
+import * as textFieldModule from "ui/text-field";
+import * as colorModule from "color";
 
 export declare function getNativeText(textField: textFieldModule.TextField): string;
 export declare function getNativeHint(textField: textFieldModule.TextField): string;

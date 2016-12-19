@@ -950,30 +950,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     //     // Check for a valid _nativeView instance
     //     return !!this._nativeView;
     // }
-}
 
-export function getLengthEffectiveValue(param: Length): number {
-    switch (param.unit) {
-        case "px":
-            return Math.round(param.value);
-
-        default:
-        case "dip":
-            return Math.round(layout.getDisplayDensity() * param.value);
+    public _getValue(): never {
+        throw new Error("The View._setValue is obsolete. There is a new property system.")
     }
-}
 
-function getPercentLengthEffectiveValue(prentAvailableLength: number, param: PercentLength): number {
-    switch (param.unit) {
-        case "%":
-            return Math.round(prentAvailableLength * param.value);
-
-        case "px":
-            return Math.round(param.value);
-
-        default:
-        case "dip":
-            return Math.round(layout.getDisplayDensity() * param.value);
+    public _setValue(): never {
+        throw new Error("The View._setValue is obsolete. There is a new property system.")
     }
 }
 
@@ -984,25 +967,64 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
     let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
     let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
     let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-    style.effectiveWidth = getPercentLengthEffectiveValue(parentAvailableWidth, style.width);
-    style.effectiveMarginLeft = getPercentLengthEffectiveValue(parentAvailableWidth, style.marginLeft);
-    style.effectiveMarginRight = getPercentLengthEffectiveValue(parentAvailableWidth, style.marginRight);
+    style.effectiveWidth = PercentLength.toDevicePixels(style.width, parentAvailableWidth)
+    style.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, parentAvailableWidth);
+    style.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, parentAvailableWidth);
 
     let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
     let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
     let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
     let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-    style.effectiveHeight = getPercentLengthEffectiveValue(parentAvailableHeight, style.height);
-    style.effectiveMarginTop = getPercentLengthEffectiveValue(parentAvailableHeight, style.marginTop);
-    style.effectiveMarginBottom = getPercentLengthEffectiveValue(parentAvailableHeight, style.marginBottom);
+    style.effectiveHeight = PercentLength.toDevicePixels(style.height, parentAvailableHeight);
+    style.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, parentAvailableHeight);
+    style.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, parentAvailableHeight);
 }
 
-interface Length {
-    readonly unit: "dip" | "px";
-    readonly value: number;
+function equalsCommon(a: Length, b: Length): boolean;
+function equalsCommon(a: PercentLength, b: PercentLength): boolean;
+function equalsCommon(a: PercentLength, b: PercentLength): boolean {
+    if (a == "auto") {
+        return b == "auto";
+    }
+    if (typeof a === "number") {
+        if (b == "auto") {
+            return false;
+        }
+        if (typeof b === "number") {
+            return a == b;
+        }
+        return b.unit == "dip" && a == b.value;
+    }
+    if (b == "auto") {
+        return false;
+    }
+    if (typeof b === "number") {
+        return a.unit == "dip" && a.value == b;
+    }
+    return a.value == b.value && a.unit == b.unit;
 }
 
-interface PercentLength {
+function toDevicePixelsCommon(length: Length, auto: number): number;
+function toDevicePixelsCommon(length: PercentLength, auto: number, parentSize: number): number;
+function toDevicePixelsCommon(length: PercentLength, auto: number, parentAvailableWidth?: number): number {
+    if (length == "auto") {
+        return auto;
+    }
+    if (typeof length === "number") {
+        return Math.round(layout.getDisplayDensity() * length);
+    }
+    switch (length.unit) {
+        case "px":
+            return Math.round(length.value);
+        default:
+        case "dip":
+            return Math.round(layout.getDisplayDensity() * length.value);
+        case "%":
+            return Math.round(parentAvailableWidth * length.value);
+    }
+}
+
+export type PercentLength = "auto" | number | {
     readonly unit: "%" | "dip" | "px";
     readonly value: number;
 }
@@ -1045,11 +1067,20 @@ export namespace PercentLength {
             return value;
         }
     }
+    export const equals: { (a: PercentLength, b: PercentLength): boolean } = equalsCommon;
+    export const toDevicePixels: { (length: PercentLength, parentAvailableWidth: number): number } = toDevicePixelsCommon;
 }
+
+export type Length = "auto" | number | {
+    readonly unit: "dip" | "px";
+    readonly value: number;
+};
 
 export namespace Length {
     export function parse(value: string | Length): Length {
-        if (typeof value === "string") {
+        if (value == "auto") {
+            return "auto";
+        } else if (typeof value === "string") {
             let type: "dip" | "px";
             let numberValue = 0;
             let stringValue = value.trim();
@@ -1073,6 +1104,18 @@ export namespace Length {
         } else {
             return value;
         }
+    }
+    export const equals: { (a: Length, b: Length): boolean } = equalsCommon;
+    export const toDevicePixels: { (length: Length, auto: number): number } = toDevicePixelsCommon;
+}
+
+declare module "ui/core/view" {
+    export namespace Length {
+        export function toDevicePixels(length: Length, auto: number): number;
+    }
+
+    export namespace PercentLength {
+        export function toDevicePixels(length: PercentLength, auto: number, availableParentSize: number): number;
     }
 }
 
@@ -1104,32 +1147,28 @@ isUserInteractionEnabledProperty.register(ViewCommon);
 
 export const zeroLength: Length = { value: 0, unit: "px" };
 
-export function lengthComparer(x: Length, y: Length): boolean {
-    return x.unit === y.unit && x.value === y.value;
-}
-
 export const minWidthProperty = new CssProperty<Style, Length>({
-    name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        target.effectiveMinWidth = getLengthEffectiveValue(newValue);
+        target.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
 
 export const minHeightProperty = new CssProperty<Style, Length>({
-    name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        target.effectiveMinHeight = getLengthEffectiveValue(newValue);
+        target.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 minHeightProperty.register(Style);
 
 const matchParent: Length = { value: -1, unit: "px" };
 
-export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
+export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
 
-export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
+export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 heightProperty.register(Style);
 
 const marginProperty = new ShorthandProperty<Style>({
@@ -1139,16 +1178,16 @@ const marginProperty = new ShorthandProperty<Style>({
 });
 marginProperty.register(Style);
 
-export const marginLeftProperty = new CssProperty<Style, PercentLength>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
+export const marginLeftProperty = new CssProperty<Style, PercentLength>({ name: "marginLeft", cssName: "margin-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 marginLeftProperty.register(Style);
 
-export const marginRightProperty = new CssProperty<Style, PercentLength>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
+export const marginRightProperty = new CssProperty<Style, PercentLength>({ name: "marginRight", cssName: "margin-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 marginRightProperty.register(Style);
 
-export const marginTopProperty = new CssProperty<Style, PercentLength>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
+export const marginTopProperty = new CssProperty<Style, PercentLength>({ name: "marginTop", cssName: "margin-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 marginTopProperty.register(Style);
 
-export const marginBottomProperty = new CssProperty<Style, PercentLength>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer, valueConverter: PercentLength.parse });
+export const marginBottomProperty = new CssProperty<Style, PercentLength>({ name: "marginBottom", cssName: "margin-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 marginBottomProperty.register(Style);
 
 const paddingProperty = new ShorthandProperty<Style>({
@@ -1159,33 +1198,33 @@ const paddingProperty = new ShorthandProperty<Style>({
 paddingProperty.register(Style);
 
 export const paddingLeftProperty = new CssProperty<Style, Length>({
-    name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingLeft = getLengthEffectiveValue(newValue);
+        target.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
 
 export const paddingRightProperty = new CssProperty<Style, Length>({
-    name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingRight = getLengthEffectiveValue(newValue);
+        target.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
 
 export const paddingTopProperty = new CssProperty<Style, Length>({
-    name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingTop = getLengthEffectiveValue(newValue);
+        target.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
 
 export const paddingBottomProperty = new CssProperty<Style, Length>({
-    name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        target.effectivePaddingBottom = getLengthEffectiveValue(newValue);
+        target.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
 paddingBottomProperty.register(Style);
@@ -1634,9 +1673,9 @@ const borderWidthProperty = new ShorthandProperty<Style>({
 borderWidthProperty.register(Style);
 
 export const borderTopWidthProperty = new CssProperty<Style, Length>({
-    name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(newValue);
+        let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -1648,9 +1687,9 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
 borderTopWidthProperty.register(Style);
 
 export const borderRightWidthProperty = new CssProperty<Style, Length>({
-    name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(newValue);
+        let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -1662,9 +1701,9 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
 borderRightWidthProperty.register(Style);
 
 export const borderBottomWidthProperty = new CssProperty<Style, Length>({
-    name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(newValue);
+        let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
@@ -1676,9 +1715,9 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
 borderBottomWidthProperty.register(Style);
 
 export const borderLeftWidthProperty = new CssProperty<Style, Length>({
-    name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: lengthComparer,
+    name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, newValue) => {
-        let value = getLengthEffectiveValue(newValue);
+        let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }

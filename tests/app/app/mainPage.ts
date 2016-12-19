@@ -1,6 +1,6 @@
 ﻿import {Page} from "ui/page";
 import * as trace from "trace";
-import tests = require("../testRunner");
+import * as tests from "../testRunner";
 import {Label} from "ui/label";
 import * as application from "application";
 import * as platform from "platform";

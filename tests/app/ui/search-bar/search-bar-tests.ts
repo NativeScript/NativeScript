@@ -1,11 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import searchBarTestsNative = require("./search-bar-tests-native");
-import colorModule = require("color");
-import observable = require("data/observable");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as searchBarTestsNative from "./search-bar-tests-native";
+import * as colorModule from "color";
+import * as observable from "data/observable";
 // >> article-require-searchbar-module
-import searchBarModule = require("ui/search-bar");
+import * as searchBarModule from "ui/search-bar";
 // << article-require-searchbar-module
 
 // ### Declaring a SearchBar.

@@ -1,6 +1,6 @@
 //@private
-import buttonModule = require("ui/button");
-import colorModule = require("color");
+import * as buttonModule from "ui/button";
+import * as colorModule from "color";
 
 export declare function getNativeText(button: buttonModule.Button): string;
 export declare function getNativeTextWrap(button: buttonModule.Button): boolean;

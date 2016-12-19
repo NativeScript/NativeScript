@@ -1,5 +1,5 @@
-﻿import pages = require("ui/page");
-import buttons = require("ui/button");
+﻿import * as pages from "ui/page";
+import * as buttons from "ui/button";
 
 export function createPage() {
     var page = new pages.Page();

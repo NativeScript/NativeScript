@@ -3,24 +3,24 @@ import { StackLayout } from "ui/layouts/stack-layout";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { isIOS, isAndroid } from "platform";
 import { PropertyChangeData } from "data/observable";
-import utils = require("utils/utils");
+import * as utils from "utils/utils";
 
 // import {target} from "../../TKUnit";
 
-import TKUnit = require("../../TKUnit");
+import * as TKUnit from "../../TKUnit";
 
 // >> img-require
-import ImageModule = require("ui/image");
+import * as ImageModule from "ui/image";
 // << img-require
 
-import types = require("utils/types");
-import ImageSourceModule = require("image-source");
-import ViewModule = require("ui/core/view");
-import helper = require("../helper");
-import ObservableModule = require("data/observable");
-import enumsModule = require("ui/enums");
-import fs = require("file-system");
-import color = require("color");
+import * as types from "utils/types";
+import * as ImageSourceModule from "image-source";
+import * as ViewModule from "ui/core/view";
+import * as helper from "../helper";
+import * as ObservableModule from "data/observable";
+import * as enumsModule from "ui/enums";
+import * as fs from "file-system";
+import * as color from "color";
 
 var imagePath = fs.path.join(__dirname, "../../logo.png");
 
@@ -185,7 +185,7 @@ export var test_SettingStretch_AspectFit = function () {
     // There are 4 modes of stretching none, fill, aspectFill, aspectFit
     // The default value is aspectFit.
     // Image stretch can be set by using ImageModule.stretch enum.
-    image.stretch = enumsModule.Stretch.aspectFit;
+    image.stretch = "aspectFit";
     // << img-set-stretch
 
     var testFunc = function (views: Array<ViewModule.View>) {
@@ -231,7 +231,7 @@ export var test_SettingStretch_Default = function () {
 export var test_SettingStretch_AspectFill = function () {
     var image = new ImageModule.Image();
     image.imageSource = ImageSourceModule.fromFile(imagePath);
-    image.stretch = enumsModule.Stretch.aspectFill;
+    image.stretch = "aspectFill";
 
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image>views[0];
@@ -254,7 +254,7 @@ export var test_SettingStretch_AspectFill = function () {
 export var test_SettingStretch_Fill = function () {
     var image = new ImageModule.Image();
     image.imageSource = ImageSourceModule.fromFile(imagePath);
-    image.stretch = enumsModule.Stretch.fill;
+    image.stretch = "fill";
 
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image>views[0];
@@ -277,7 +277,7 @@ export var test_SettingStretch_Fill = function () {
 export var test_SettingStretch_none = function () {
     var image = new ImageModule.Image();
     image.imageSource = ImageSourceModule.fromFile(imagePath);
-    image.stretch = enumsModule.Stretch.none;
+    image.stretch = "none";
 
     var testFunc = function (views: Array<ViewModule.View>) {
         var testImage = <ImageModule.Image>views[0];
@@ -306,8 +306,8 @@ export var test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(()
 
     let image = new Image();
 
-    host.width = 300;
-    host.height = 300;
+    host.width = {value: 300, unit:"dip"};
+    host.height = {value: 300, unit:"dip"};
     host.addChild(image);
 
     let mainPage = helper.getCurrentPage();
@@ -324,8 +324,8 @@ export var test_SettingImageSourceWhenSizedToParentDoesNotRequestLayout = ios(()
 export var test_SettingImageSourceWhenFixedWidthAndHeightDoesNotRequestLayout = ios(() => {
     let host = new StackLayout();
     let image = new Image();
-    image.width = 100;
-    image.height = 100;
+    image.width = {value: 100, unit:"dip"};
+    image.height = {value: 100, unit:"dip"};
     host.addChild(image);
 
     let mainPage = helper.getCurrentPage();
@@ -365,8 +365,8 @@ export var test_DimensionsAreRoundedAfterScale = function () {
 
     let density = utils.layout.getDisplayDensity();
     let hostWidth = 320;
-    host.width = hostWidth / density;
-    host.height = hostWidth / density;
+    host.width = {value: hostWidth / density, unit:"dip"};
+    host.height = {value: hostWidth / density, unit:"dip"};
     host.addChild(image);
     let mainPage = helper.getCurrentPage();
     mainPage.content = host;

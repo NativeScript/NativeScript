@@ -1,4 +1,4 @@
-﻿import observable = require("data/observable");
+﻿import * as observable from "data/observable";
 
 export function pageLoaded(args) {
     var page = args.object;
