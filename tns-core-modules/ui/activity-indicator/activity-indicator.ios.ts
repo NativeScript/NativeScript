@@ -33,13 +33,6 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         }
     }
 
-    get [visibilityProperty.native](): Visibility {
-        return this.nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
-    }
-    set [visibilityProperty.native](value: Visibility) {
-        this.nativeView.hidden = value !== Visibility.VISIBLE;
-    }
-
     get [colorProperty.native](): UIColor {
         return this.nativeView.color;
     }

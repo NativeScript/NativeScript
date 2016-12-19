@@ -16,29 +16,21 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     get [busyProperty.native](): boolean {
-        return this._progressBar.getVisibility() === android.view.View.VISIBLE;
+        return false;
     }
     set [busyProperty.native](value: boolean) {
-        this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+        if (this.visibility === Visibility.VISIBLE) {
+            this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+        }
     }
 
     get [visibilityProperty.native](): Visibility {
-        let nativeVisibility = this._progressBar.getVisibility();
-        switch (nativeVisibility) {
-            case android.view.View.VISIBLE:
-                return Visibility.VISIBLE;
-            case android.view.View.INVISIBLE:
-                return Visibility.HIDDEN;
-            case android.view.View.GONE:
-                return Visibility.COLLAPSE;
-            default: 
-                throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
-        }
+        return Visibility.HIDDEN;       
     }
     set [visibilityProperty.native](value: Visibility) {
         switch (value) {
             case Visibility.VISIBLE:
-                this._progressBar.setVisibility(android.view.View.VISIBLE);
+                this._progressBar.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
                 break;
             case Visibility.HIDDEN:
                 this._progressBar.setVisibility(android.view.View.INVISIBLE);
