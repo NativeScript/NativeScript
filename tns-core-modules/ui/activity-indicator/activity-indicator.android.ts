@@ -1,4 +1,4 @@
-﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty } from "./activity-indicator-common";
+﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility } from "./activity-indicator-common";
 
 export * from "./activity-indicator-common";
 
@@ -16,18 +16,31 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     }
 
     get [busyProperty.native](): boolean {
-        return this._progressBar.getVisibility() === android.view.View.VISIBLE;
+        return false;
     }
     set [busyProperty.native](value: boolean) {
-        this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+        if (this.visibility === Visibility.VISIBLE) {
+            this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+        }
     }
 
-    get [visibilityProperty.native](): number {
-        return this._progressBar.getVisibility();
+    get [visibilityProperty.native](): Visibility {
+        return Visibility.HIDDEN;       
     }
-    set [visibilityProperty.native](value: number) {
-        this.busy = value === android.view.View.VISIBLE;
-        this._progressBar.setVisibility(value);
+    set [visibilityProperty.native](value: Visibility) {
+        switch (value) {
+            case Visibility.VISIBLE:
+                this._progressBar.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+                break;
+            case Visibility.HIDDEN:
+                this._progressBar.setVisibility(android.view.View.INVISIBLE);
+                break;
+            case Visibility.COLLAPSE:
+                this._progressBar.setVisibility(android.view.View.GONE);
+                break;
+            default: 
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+        }
     }
 
     get [colorProperty.native](): number {

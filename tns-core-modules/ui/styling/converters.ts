@@ -17,16 +17,6 @@ export function fontSizeConverter(value: string): number {
 
 export const numberConverter = parseFloat;
 
-export function visibilityConverter(value: string): string {
-    value = value.toLowerCase();
-    if (value === "collapsed" || value === "collapse") {
-        return "collapse";
-    } else if (value === "hidden") {
-        return "hidden";
-    }
-    return "visible";
-}
-
 export function opacityConverter(value: string): number {
     let result = parseFloat(value);
     result = Math.max(0.0, result);

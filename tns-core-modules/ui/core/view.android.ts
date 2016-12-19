@@ -8,7 +8,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
     Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility
 } from "./view-common";
 
 export * from "./view-common";
@@ -425,27 +425,32 @@ export class View extends ViewCommon {
         }
     }
 
-    get [visibilityProperty.native](): "visible" | "hidden" | "collapse" {
-        let visibility = this.nativeView.getVisibility();
-        if (visibility === android.view.View.VISIBLE) {
-            return "visible";
-        }
-        else if (visibility === android.view.View.INVISIBLE) {
-            return "hidden";
-        }
-        else {
-            return "collapse";
+    get [visibilityProperty.native](): Visibility {
+        let nativeVisibility = this.nativeView.getVisibility();
+        switch (nativeVisibility) {
+            case android.view.View.VISIBLE:
+                return Visibility.VISIBLE;
+            case android.view.View.INVISIBLE:
+                return Visibility.HIDDEN;
+            case android.view.View.GONE:
+                return Visibility.COLLAPSE;
+            default: 
+                throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
         }
     }
-    set [visibilityProperty.native](value: string) {
-        if (value === "visible") {
-            this.nativeView.setVisibility(android.view.View.VISIBLE);
-        }
-        else if (value === "hidden") {
-            this.nativeView.setVisibility(android.view.View.INVISIBLE);
-        }
-        else {
-            this.nativeView.setVisibility(android.view.View.GONE);
+    set [visibilityProperty.native](value: Visibility) {
+        switch (value) {
+            case Visibility.VISIBLE:
+                this.nativeView.setVisibility(android.view.View.VISIBLE);
+                break;
+            case Visibility.HIDDEN:
+                this.nativeView.setVisibility(android.view.View.INVISIBLE);
+                break;
+            case Visibility.COLLAPSE:
+                this.nativeView.setVisibility(android.view.View.GONE);
+                break;
+            default: 
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
         }
     }
 

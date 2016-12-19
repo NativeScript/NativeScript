@@ -1,5 +1,5 @@
 import { Style as StyleDefinition } from "ui/styling/style";
-import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat } from "ui/core/view";
+import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat, Visibility } from "ui/core/view";
 import { Observable } from "data/observable";
 import { resetStyleProperties } from "ui/core/properties";
 
@@ -63,7 +63,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public zIndex: number;
     public opacity: number;
-    public visibility: "visible" | "hidden" | "collapse" | "collapsed";
+    public visibility: Visibility;
 
     public letterSpacing: number;
     public textAlignment: TextAlignment;

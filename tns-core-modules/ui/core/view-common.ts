@@ -396,10 +396,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.verticalAlignment = value;
     }
 
-    get visibility(): "visible" | "hidden" | "collapse" | "collapsed" {
+    get visibility(): Visibility {
         return this.style.visibility;
     }
-    set visibility(value: "visible" | "hidden" | "collapse" | "collapsed") {
+    set visibility(value: Visibility) {
         this.style.visibility = value;
     }
 
@@ -1864,3 +1864,19 @@ const fontProperty = new ShorthandProperty<Style>({
     }
 })
 fontProperty.register(Style);
+
+export type Visibility = "visible" | "hidden" | "collapse";
+export namespace Visibility {
+    export const VISIBLE: "visible" = "visible";
+    export const HIDDEN: "hidden" = "hidden";
+    export const COLLAPSE: "collapse" = "collapse";
+    export const isValid = makeValidator<Visibility>(VISIBLE, HIDDEN, COLLAPSE);
+    export const parse = makeParser(isValid, VISIBLE);
+}
+
+export const visibilityProperty = new CssProperty<Style, Visibility>({
+    name: "visibility", cssName: "visibility", defaultValue: Visibility.VISIBLE, affectsLayout: isIOS, valueConverter: Visibility.parse, valueChanged: (target, newValue) => {
+        target.view.isCollapsed = (newValue === Visibility.COLLAPSE);
+    }
+});
+visibilityProperty.register(Style);
