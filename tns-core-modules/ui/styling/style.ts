@@ -1,5 +1,5 @@
 import { Style as StyleDefinition } from "ui/styling/style";
-import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat, Visibility } from "ui/core/view";
+import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 import { Observable } from "data/observable";
 import { resetStyleProperties } from "ui/core/properties";
 
@@ -85,8 +85,8 @@ export class Style extends Observable implements StyleDefinition {
     public paddingTop: Length;
     public paddingRight: Length;
     public paddingBottom: Length;
-    public horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
-    public verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+    public horizontalAlignment: HorizontalAlignment;
+    public verticalAlignment: VerticalAlignment;
 
     // TabView-specific props
     public tabTextColor: Color;

@@ -8,7 +8,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
     Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility, HorizontalAlignment, VerticalAlignment
 } from "./view-common";
 
 export * from "./view-common";
@@ -561,17 +561,17 @@ export class View extends ViewCommon {
         }
     }
 
-    get [horizontalAlignmentProperty.native](): string {
-        return org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
+    get [horizontalAlignmentProperty.native](): HorizontalAlignment {
+        return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
     }
-    set [horizontalAlignmentProperty.native](value: string) {
+    set [horizontalAlignmentProperty.native](value: HorizontalAlignment) {
         org.nativescript.widgets.ViewHelper.setHorizontalAlignment(this.nativeView, value);
     }
 
-    get [verticalAlignmentProperty.native](): string {
-        return org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
+    get [verticalAlignmentProperty.native](): VerticalAlignment {
+        return <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
     }
-    set [verticalAlignmentProperty.native](value: string) {
+    set [verticalAlignmentProperty.native](value: VerticalAlignment) {
         org.nativescript.widgets.ViewHelper.setVerticalAlignment(this.nativeView, value);
     }
 

@@ -1,5 +1,5 @@
 declare module "ui/styling/style" {
-    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat, Visibility} from "ui/core/view";
+    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "ui/core/view";
     import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
     import { FontStyle, FontWeight } from "ui/styling/font";
 
@@ -34,8 +34,8 @@ declare module "ui/styling/style" {
         rightMarginPercent: number;
         bottomMarginPercent: number;
 
-        horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
-        verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+        horizontalAlignment: HorizontalAlignment;
+        verticalAlignment: VerticalAlignment;
     }
 
     export class Style extends Observable {
@@ -106,8 +106,8 @@ declare module "ui/styling/style" {
         public paddingTop: Length;
         public paddingRight: Length;
         public paddingBottom: Length;
-        public horizontalAlignment: "left" | "center" | "middle" | "right" | "stretch";
-        public verticalAlignment: "top" | "center" | "middle" | "bottom" | "stretch";
+        public horizontalAlignment: HorizontalAlignment;
+        public verticalAlignment: VerticalAlignment;
 
         // TabView-specific props
         public tabTextColor: Color;
