@@ -1147,7 +1147,7 @@ export const zeroLength: Length = { value: 0, unit: "px" };
 
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         target.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
@@ -1155,7 +1155,7 @@ minWidthProperty.register(Style);
 
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         target.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
@@ -1197,7 +1197,7 @@ paddingProperty.register(Style);
 
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         target.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
@@ -1205,7 +1205,7 @@ paddingLeftProperty.register(Style);
 
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         target.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
@@ -1213,7 +1213,7 @@ paddingRightProperty.register(Style);
 
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         target.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
@@ -1221,7 +1221,7 @@ paddingTopProperty.register(Style);
 
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         target.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
     }, valueConverter: Length.parse
 });
@@ -1513,7 +1513,7 @@ export const backgroundImageProperty = new CssProperty<Style, string>({
 backgroundImageProperty.register(Style);
 
 export const backgroundColorProperty = new CssProperty<Style, Color>({
-    name: "backgroundColor", cssName: "background-color", valueChanged: (target, newValue) => {
+    name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
         printUnregisteredProperties();
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withColor(newValue);
@@ -1532,7 +1532,7 @@ export namespace BackgroundRepeat {
 }
 
 export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
-    name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse, valueChanged: (target, newValue) => {
+    name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse, valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withRepeat(newValue);
     }
@@ -1540,7 +1540,7 @@ export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>
 backgroundRepeatProperty.register(Style);
 
 export const backgroundSizeProperty = new CssProperty<Style, string>({
-    name: "backgroundSize", cssName: "background-size", valueChanged: (target, newValue) => {
+    name: "backgroundSize", cssName: "background-size", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withSize(newValue);
     }
@@ -1548,7 +1548,7 @@ export const backgroundSizeProperty = new CssProperty<Style, string>({
 backgroundSizeProperty.register(Style);
 
 export const backgroundPositionProperty = new CssProperty<Style, string>({
-    name: "backgroundPosition", cssName: "background-position", valueChanged: (target, newValue) => {
+    name: "backgroundPosition", cssName: "background-position", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withPosition(newValue);
     }
@@ -1635,7 +1635,7 @@ const borderColorProperty = new ShorthandProperty<Style>({
 borderColorProperty.register(Style);
 
 export const borderTopColorProperty = new CssProperty<Style, Color>({
-    name: "borderTopColor", cssName: "border-top-color", valueChanged: (target, newValue) => {
+    name: "borderTopColor", cssName: "border-top-color", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderTopColor(newValue);
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
@@ -1643,7 +1643,7 @@ export const borderTopColorProperty = new CssProperty<Style, Color>({
 borderTopColorProperty.register(Style);
 
 export const borderRightColorProperty = new CssProperty<Style, Color>({
-    name: "borderRightColor", cssName: "border-right-color", valueChanged: (target, newValue) => {
+    name: "borderRightColor", cssName: "border-right-color", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderRightColor(newValue);
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
@@ -1651,7 +1651,7 @@ export const borderRightColorProperty = new CssProperty<Style, Color>({
 borderRightColorProperty.register(Style);
 
 export const borderBottomColorProperty = new CssProperty<Style, Color>({
-    name: "borderBottomColor", cssName: "border-bottom-color", valueChanged: (target, newValue) => {
+    name: "borderBottomColor", cssName: "border-bottom-color", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderBottomColor(newValue);
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
@@ -1659,7 +1659,7 @@ export const borderBottomColorProperty = new CssProperty<Style, Color>({
 borderBottomColorProperty.register(Style);
 
 export const borderLeftColorProperty = new CssProperty<Style, Color>({
-    name: "borderLeftColor", cssName: "border-left-color", valueChanged: (target, newValue) => {
+    name: "borderLeftColor", cssName: "border-left-color", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderLeftColor(newValue);
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
@@ -1692,7 +1692,7 @@ borderWidthProperty.register(Style);
 
 export const borderTopWidthProperty = new CssProperty<Style, Length>({
     name: "borderTopWidth", cssName: "border-top-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
@@ -1706,7 +1706,7 @@ borderTopWidthProperty.register(Style);
 
 export const borderRightWidthProperty = new CssProperty<Style, Length>({
     name: "borderRightWidth", cssName: "border-right-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
@@ -1720,7 +1720,7 @@ borderRightWidthProperty.register(Style);
 
 export const borderBottomWidthProperty = new CssProperty<Style, Length>({
     name: "borderBottomWidth", cssName: "border-bottom-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
@@ -1734,7 +1734,7 @@ borderBottomWidthProperty.register(Style);
 
 export const borderLeftWidthProperty = new CssProperty<Style, Length>({
     name: "borderLeftWidth", cssName: "border-left-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
-    valueChanged: (target, newValue) => {
+    valueChanged: (target, oldValue, newValue) => {
         let value = Length.toDevicePixels(newValue, 0);
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
@@ -1771,7 +1771,7 @@ const borderRadiusProperty = new ShorthandProperty<Style>({
 borderRadiusProperty.register(Style);
 
 export const borderTopLeftRadiusProperty = new CssProperty<Style, number>({
-    name: "borderTopLeftRadius", cssName: "border-top-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderTopLeftRadius", cssName: "border-top-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderTopLeftRadius(newValue);
     }, valueConverter: isNonNegativeFiniteNumberConverter
@@ -1779,7 +1779,7 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, number>({
 borderTopLeftRadiusProperty.register(Style);
 
 export const borderTopRightRadiusProperty = new CssProperty<Style, number>({
-    name: "borderTopRightRadius", cssName: "border-top-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderTopRightRadius", cssName: "border-top-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderTopRightRadius(newValue);
     }, valueConverter: isNonNegativeFiniteNumberConverter
@@ -1787,7 +1787,7 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, number>({
 borderTopRightRadiusProperty.register(Style);
 
 export const borderBottomRightRadiusProperty = new CssProperty<Style, number>({
-    name: "borderBottomRightRadius", cssName: "border-bottom-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderBottomRightRadius", cssName: "border-bottom-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderBottomLeftRadius(newValue);
     }, valueConverter: isNonNegativeFiniteNumberConverter
@@ -1795,7 +1795,7 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, number>({
 borderBottomRightRadiusProperty.register(Style);
 
 export const borderBottomLeftRadiusProperty = new CssProperty<Style, number>({
-    name: "borderBottomLeftRadius", cssName: "border-bottom-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, newValue) => {
+    name: "borderBottomLeftRadius", cssName: "border-bottom-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderBottomRightRadius(newValue);
     }, valueConverter: isNonNegativeFiniteNumberConverter
@@ -1816,7 +1816,7 @@ function isClipPathValid(value: string): boolean {
 }
 
 export const clipPathProperty = new CssProperty<Style, string>({
-    name: "clipPath", cssName: "clip-path", valueChanged: (target, newValue) => {
+    name: "clipPath", cssName: "clip-path", valueChanged: (target, oldValue, newValue) => {
         if (!isClipPathValid(newValue)) {
             throw new Error("clip-path is not valid.");
         }
@@ -1863,7 +1863,7 @@ export const fontInternalProperty = new CssProperty<Style, Font>({ name: "fontIn
 fontInternalProperty.register(Style);
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
-    name: "fontFamily", cssName: "font-family", valueChanged: (target, newValue) => {
+    name: "fontFamily", cssName: "font-family", valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontFamily !== newValue) {
             target.fontInternal = currentFont.withFontFamily(newValue);
@@ -1873,7 +1873,7 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 fontFamilyProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
-    name: "fontSize", cssName: "font-size", valueChanged: (target, newValue) => {
+    name: "fontSize", cssName: "font-size", valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontSize !== newValue) {
             target.fontInternal = currentFont.withFontSize(newValue);
@@ -1884,7 +1884,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 fontSizeProperty.register(Style);
 
 export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
-    name: "fontStyle", cssName: "font-style", defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, newValue) => {
+    name: "fontStyle", cssName: "font-style", defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontStyle !== newValue) {
             target.fontInternal = currentFont.withFontStyle(newValue);
@@ -1894,7 +1894,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 fontStyleProperty.register(Style);
 
 export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
-    name: "fontWeight", cssName: "font-weight", defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, newValue) => {
+    name: "fontWeight", cssName: "font-weight", defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontWeight !== newValue) {
             target.fontInternal = currentFont.withFontWeight(newValue);
@@ -1932,7 +1932,7 @@ export namespace Visibility {
 }
 
 export const visibilityProperty = new CssProperty<Style, Visibility>({
-    name: "visibility", cssName: "visibility", defaultValue: Visibility.VISIBLE, affectsLayout: isIOS, valueConverter: Visibility.parse, valueChanged: (target, newValue) => {
+    name: "visibility", cssName: "visibility", defaultValue: Visibility.VISIBLE, affectsLayout: isIOS, valueConverter: Visibility.parse, valueChanged: (target, oldValue, newValue) => {
         target.view.isCollapsed = (newValue === Visibility.COLLAPSE);
     }
 });

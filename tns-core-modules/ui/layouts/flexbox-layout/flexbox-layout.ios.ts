@@ -75,7 +75,7 @@ const alignSelfDescriptor: TypedPropertyDescriptor<AlignSelf> = {
 }
 
 // register native properties on View type.
-Object.defineProperties(View, {
+Object.defineProperties(View.prototype, {
     [orderProperty.native]: orderDescriptor,
     [flexGrowProperty.native]: flexGrowDescriptor,
     [flexShrinkProperty.native]: flexShrinkDescriptor,
