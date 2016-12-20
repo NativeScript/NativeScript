@@ -34,10 +34,6 @@ export class SegmentedBar extends SegmentedBarBase {
         return this._ios;
     }
 
-    private insertTab(tabItem: SegmentedBarItem, index: number): void {
-
-    }
-
     get [selectedIndexProperty.native](): number {
         return -1;
     }

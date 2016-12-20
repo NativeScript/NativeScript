@@ -1,7 +1,7 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition } from "ui/tab-view";
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from "ui/tab-view";
 import {
-    View, Style, Bindable, Property, CssProperty, CoercibleProperty,
-    EventData, Color, isIOS, AddArrayFromBuilder
+    View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
+    EventData, Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder
 } from "ui/core/view";
 
 export * from "ui/core/view";
@@ -10,7 +10,7 @@ export const traceCategory = "TabView";
 
 // TODO: Change base class to ViewBase and use addView method to add it.
 // This way we will support property and binding propagation automatically.
-export abstract class TabViewItemBase extends Bindable implements TabViewItemDefinition {
+export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition {
     private _title: string = "";
     private _view: View;
     private _iconSource: string;
@@ -36,6 +36,7 @@ export abstract class TabViewItemBase extends Bindable implements TabViewItemDef
             }
 
             this._view = value;
+            this._addView(value);
         }
     }
 
@@ -49,6 +50,13 @@ export abstract class TabViewItemBase extends Bindable implements TabViewItemDef
         }
     }
 
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        const view = this._view;
+        if (view) {
+            callback(view);
+        }
+    }
+
     public abstract _update();
 }
 
@@ -56,7 +64,7 @@ export module knownCollections {
     export const items = "items";
 }
 
-export class TabViewBase extends View implements TabViewDefinition, AddArrayFromBuilder {
+export class TabViewBase extends View implements TabViewDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
     public items: TabViewItemDefinition[];
@@ -64,11 +72,18 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
     public androidOffscreenTabLimit: number;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
 
-    protected previousItems: TabViewItemDefinition[];
-
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {
             this.items = value;
+        }
+    }
+
+    public _addChildFromBuilder(name: string, value: any): void {
+        if (name === "TabViewItem") {
+            if (!this.items) {
+                this.items = new Array<TabViewItemBase>();
+            }
+            this.items.push(<TabViewItemBase>value);
         }
     }
 
@@ -83,7 +98,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
             if (!oldItem.view) {
                 throw new Error("TabViewItem at index " + i + " does not have a view.");
             }
-            this._removeView(oldItem.view);
+            this._removeView(oldItem);
         }
     }
 
@@ -99,7 +114,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
             if (!newItem.view) {
                 throw new Error(`TabViewItem at index ${i} does not have a view.`);
             }
-            this._addView(newItem.view, i);
+            this._addView(newItem);
         }
     }
 
@@ -116,51 +131,47 @@ export class TabViewBase extends View implements TabViewDefinition, AddArrayFrom
         return 0;
     }
 
-    public _eachChildView(callback: (child: View) => boolean) {
-        let items = this.items;
+    public _eachChildView(callback: (child: ViewBase) => boolean) {
+        const items = this.items;
         if (!items) {
             return;
         }
 
         for (let i = 0, length = items.length; i < length; i++) {
             let item = items[i];
-            if (item.view) {
-                let retVal = callback(item.view);
-                if (retVal === false) {
-                    break;
-                }
+            if (item) {
+                callback(item);
             }
         }
     }
 
-    // public _onBindingContextChanged(oldValue: any, newValue: any) {
-    //     super._onBindingContextChanged(oldValue, newValue);
-    //     if (this.items && this.items.length > 0) {
+    public onItemsChanged(oldItems: TabViewItemDefinition[], newItems: TabViewItemDefinition[]): void {
+        if (oldItems) {
+            for (let i = 0, count = oldItems.length; i < count; i++) {
+                this._removeView(oldItems[i]);
+            }
+        }
 
-    //         for (let i = 0, length = this.items.length; i < length; i++) {
-    //             this.items[i].bindingContext = newValue;
-    //         }
-    //     }
-    // }
+        if (newItems) {
+            for (let i = 0, count = newItems.length; i < count; i++) {
+                const item = newItems[i];
+                if (!item) {
+                    throw new Error(`TabViewItem at index ${i} is undefined.`);
+                }
 
-    public onItemsPropertyChanged(oldValue: TabViewItemDefinition[], newValue: TabViewItemDefinition[]) {
-        this.previousItems = oldValue;
+                if (!item.view) {
+                    throw new Error(`TabViewItem at index ${i} does not have a view.`);
+                }
+                this._addView(item);
+            }
+        }
     }
 }
-
-export const itemsProperty = new Property<TabViewBase, TabViewItemBase[]>({
-    name: "items", valueChanged: (target, oldValue, newValue) => {
-        target.onItemsPropertyChanged(oldValue, newValue);
-        selectedIndexProperty.coerce(target);
-    }
-});
-itemsProperty.register(TabViewBase);
 
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
     name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
     valueChanged: (target, oldValue, newValue) => {
-        let args = { eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue };
-        target.notify(args);
+        target.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue });
     },
     coerceValue: (target, value) => {
         let items = target.items;
@@ -179,7 +190,15 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
 });
 selectedIndexProperty.register(TabViewBase);
 
-export const iosIconRenderingModeProperty = new Property<TabViewBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({name: "iosIconRenderingMode", defaultValue: "automatic" });
+export const itemsProperty = new Property<TabViewBase, TabViewItemDefinition[]>({
+    name: "items", valueChanged: (target, oldValue, newValue) => {
+        target.onItemsChanged(oldValue, newValue);
+        selectedIndexProperty.coerce(target);
+    }
+});
+itemsProperty.register(TabViewBase);
+
+export const iosIconRenderingModeProperty = new Property<TabViewBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
 iosIconRenderingModeProperty.register(TabViewBase);
 
 export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({

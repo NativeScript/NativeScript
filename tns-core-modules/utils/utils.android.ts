@@ -1,7 +1,59 @@
-﻿import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, 
-    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+﻿import {
+    enabled as traceEnabled, write as traceWrite, categories as traceCategories,
+    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet
+} from "trace";
 
 export * from "./utils-common";
+
+export module layout {
+    let density = -1;
+    let metrics: android.util.DisplayMetrics;
+
+    // cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Java
+    // TODO: While this boosts the performance it is error-prone in case Google changes these constants
+    const MODE_SHIFT = 30;
+    const MODE_MASK = 0x3 << MODE_SHIFT;
+    let sdkVersion = -1;
+    let useOldMeasureSpec = false;
+
+    export function makeMeasureSpec(size: number, mode: number): number {
+        if (sdkVersion === -1) {
+            // check whether the old layout is needed
+            sdkVersion = ad.getApplicationContext().getApplicationInfo().targetSdkVersion;
+            useOldMeasureSpec = sdkVersion <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
+        }
+
+        if (useOldMeasureSpec) {
+            return size + mode;
+        }
+
+        return (size & ~MODE_MASK) | (mode & MODE_MASK);
+    }
+
+    export function getDisplayMetrics(): android.util.DisplayMetrics {
+        if (!metrics) {
+            metrics = ad.getApplicationContext().getResources().getDisplayMetrics();
+        }
+
+        return metrics;
+    }
+
+    export function getDisplayDensity(): number {
+        if (density === -1) {
+            density = getDisplayMetrics().density;
+        }
+
+        return density;
+    }
+
+    export function toDevicePixels(value: number): number {
+        return value * getDisplayDensity();
+    }
+
+    export function toDeviceIndependentPixels(value: number): number {
+        return value / getDisplayDensity();
+    }
+}
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {

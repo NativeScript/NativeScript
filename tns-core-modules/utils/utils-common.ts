@@ -58,17 +58,17 @@ export function convertString(value: any): any {
 
 export module layout {
 
-    var MODE_SHIFT = 30;
-    var MODE_MASK = 0x3 << MODE_SHIFT;
+    const MODE_SHIFT = 30;
+    const MODE_MASK = 0x3 << MODE_SHIFT;
 
-    export var UNSPECIFIED = 0 << MODE_SHIFT;
-    export var EXACTLY = 1 << MODE_SHIFT;
-    export var AT_MOST = 2 << MODE_SHIFT;
+    export const UNSPECIFIED = 0 << MODE_SHIFT;
+    export const EXACTLY = 1 << MODE_SHIFT;
+    export const AT_MOST = 2 << MODE_SHIFT;
 
-    export var MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
-    export var MEASURED_STATE_TOO_SMALL = 0x01000000;
-    export var MEASURED_STATE_MASK = 0xff000000;
-    export var MEASURED_SIZE_MASK = 0x00ffffff;
+    export const MEASURED_HEIGHT_STATE_SHIFT = 0x00000010; /* 16 */
+    export const MEASURED_STATE_TOO_SMALL = 0x01000000;
+    export const MEASURED_STATE_MASK = 0xff000000;
+    export const MEASURED_SIZE_MASK = 0x00ffffff;
 
     export function getMode(mode: number): string {
         switch (mode) {
