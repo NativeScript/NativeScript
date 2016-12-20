@@ -1,5 +1,5 @@
 ﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from "ui/layouts/grid-layout";
-import { LayoutBase, View, Observable, Property } from "ui/layouts/layout-base";
+import { LayoutBase, View, Observable, Property, makeParser, makeValidator } from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 
@@ -24,14 +24,6 @@ View.prototype.col = 0;
 View.prototype.rowSpan = 1;
 View.prototype.colSpan = 1;
 
-function convertUnitType(value: string): "pixel" | "star" | "auto" {
-    if (value === "pixel" || value === "star" || value === "auto") {
-        return <"pixel" | "star" | "auto">value;
-    }
-
-    throw new Error(`Invalid value for unitType: ${value}`);
-}
-
 function validateItemSpec(itemSpec: ItemSpec): void {
     if (!itemSpec) {
         throw new Error("Value cannot be undefined.");
@@ -43,15 +35,15 @@ function validateItemSpec(itemSpec: ItemSpec): void {
 }
 
 function convertGridLength(value: string): ItemSpec {
-    if (value === "auto") {
-        return ItemSpec.create(1, "auto");
+    if (value === GridUnitType.AUTO) {
+        return ItemSpec.create(1, GridUnitType.AUTO);
     }
     else if (value.indexOf("*") !== -1) {
         const starCount = parseInt(value.replace("*", "") || "1");
-        return ItemSpec.create(starCount, "star");
+        return ItemSpec.create(starCount, GridUnitType.STAR);
     }
     else if (!isNaN(parseInt(value))) {
-        return ItemSpec.create(parseInt(value), "pixel");
+        return ItemSpec.create(parseInt(value), GridUnitType.PIXEL);
     }
     else {
         throw new Error(`Cannot parse item spec from string: ${value}`);
@@ -70,14 +62,14 @@ function parseAndAddItemSpecs(value: string, func: (itemSpec: ItemSpec) => void)
 
 export class ItemSpec extends Observable implements ItemSpecDefinition {
     private _value: number;
-    private _unitType: "pixel" | "star" | "auto";
+    private _unitType: GridUnitType;
 
     constructor() {
         super();
 
         if (arguments.length === 0) {
             this._value = 1;
-            this._unitType = "star";
+            this._unitType = GridUnitType.STAR;
 
         }
         else if (arguments.length === 2) {
@@ -89,7 +81,7 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
                 }
 
                 this._value = value;
-                this._unitType = convertUnitType(type);
+                this._unitType = GridUnitType.parse(type);
             }
             else {
                 throw new Error("First argument should be number, second argument should be string.");
@@ -106,7 +98,7 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
     public index: number;
     public _actualLength: number = 0;
 
-    public static create(value: number, type: "pixel" | "star" | "auto"): ItemSpec {
+    public static create(value: number, type: GridUnitType): ItemSpec {
         let spec = new ItemSpec();
         spec._value = value;
         spec._unitType = type;
@@ -121,20 +113,20 @@ export class ItemSpec extends Observable implements ItemSpecDefinition {
         return (value1.gridUnitType === value2.gridUnitType) && (value1.value === value2.value) && (value1.owner === value2.owner) && (value1.index === value2.index);
     }
 
-    get gridUnitType(): "pixel" | "star" | "auto" {
+    get gridUnitType(): GridUnitType {
         return this._unitType;
     }
 
     get isAbsolute(): boolean {
-        return this._unitType === "pixel";
+        return this._unitType === GridUnitType.PIXEL;
     }
 
     get isAuto(): boolean {
-        return this._unitType === "auto";
+        return this._unitType === GridUnitType.AUTO;
     }
 
     get isStar(): boolean {
-        return this._unitType === "star";
+        return this._unitType === GridUnitType.STAR;
     }
 
     get value(): number {
@@ -369,3 +361,12 @@ export const rowSpanProperty = new Property<View, number>({
     valueConverter: (v) => Math.max(1, parseInt(v))
 });
 rowSpanProperty.register(View);
+
+export type GridUnitType = "pixel" | "star" | "auto";
+export namespace GridUnitType {
+    export const PIXEL: "pixel" = "pixel";
+    export const STAR: "star" = "star";
+    export const AUTO: "auto" = "auto";
+    export const isValid = makeValidator<GridUnitType>(PIXEL, STAR, AUTO);
+    export const parse = makeParser(isValid, undefined);
+}

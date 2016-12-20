@@ -7,7 +7,7 @@
     export class ItemSpec {
 
         constructor();
-        constructor(value: number, type: "pixel" | "star" | "auto");
+        constructor(value: number, type: GridUnitType);
 
         /**
          * Gets the actual length of an ItemSpec.
@@ -17,7 +17,7 @@
         /**
          * Returns unit type of this ItemSpec instance.
          */
-        gridUnitType: "pixel" | "star" | "auto";
+        gridUnitType: GridUnitType;
 
         /** 
          * Returns true if this ItemSpec instance holds
@@ -155,4 +155,13 @@
      * Represents the observable property backing the rowSpan property.
      */
     export const rowSpanProperty: Property<GridLayout, number>;
+
+    export type GridUnitType = "pixel" | "star" | "auto";
+    export namespace GridUnitType {
+        export const PIXEL: "pixel";
+        export const STAR: "star";
+        export const AUTO: "auto";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): GridUnitType;
+    }
 }
