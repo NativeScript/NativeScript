@@ -1,6 +1,6 @@
 ﻿import {
     GridLayoutBase, ItemSpec as ItemSpecBase, View, layout,
-    rowProperty, columnProperty, rowSpanProperty, columnSpanProperty
+    rowProperty, columnProperty, rowSpanProperty, columnSpanProperty, GridUnitType
 } from "./grid-layout-common";
 
 export * from "./grid-layout-common";
@@ -64,13 +64,13 @@ Object.defineProperties(View.prototype, {
 
 function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
     switch (itemSpec.gridUnitType) {
-        case "auto":
+        case GridUnitType.AUTO:
             return new org.nativescript.widgets.ItemSpec(itemSpec.value, org.nativescript.widgets.GridUnitType.auto);
 
-        case "star":
+        case GridUnitType.STAR:
             return new org.nativescript.widgets.ItemSpec(itemSpec.value, org.nativescript.widgets.GridUnitType.star);
 
-        case "pixel":
+        case GridUnitType.PIXEL:
             return new org.nativescript.widgets.ItemSpec(itemSpec.value * layout.getDisplayDensity(), org.nativescript.widgets.GridUnitType.pixel);
 
         default:
