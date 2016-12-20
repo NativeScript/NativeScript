@@ -79,7 +79,6 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
  */
 export const selectedIndexProperty = new CoercibleProperty<SegmentedBarBase, number>({
     name: "selectedIndex", defaultValue: -1,
-    valueConverter: (v) => parseInt(v),
     valueChanged: (target, oldValue, newValue) => {
         target.notify(<SelectedIndexChangedEventData>{ eventName: SegmentedBarBase.selectedIndexChangedEvent, object: target, oldIndex: oldValue, newIndex: newValue });
     },
@@ -95,19 +94,11 @@ export const selectedIndexProperty = new CoercibleProperty<SegmentedBarBase, num
         }
 
         return value;
-    }
+    },
+    valueConverter: (v) => parseInt(v)
 });
 selectedIndexProperty.register(SegmentedBarBase);
 
-/**
- * Gets or sets the selected background color property of the SegmentedBar.
- */
-export const selectedBackgroundColorProperty = new CssProperty<Style, Color>({ name: "selectedBackgroundColor", cssName: "selected-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) })
-selectedBackgroundColorProperty.register(Style);
-
-/**
- * Gets or sets the items dependency property of the SegmentedBar.
- */
 export const itemsProperty = new Property<SegmentedBarBase, SegmentedBarItemDefinition[]>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         target.onItemsChanged(oldValue, newValue);
@@ -115,3 +106,6 @@ export const itemsProperty = new Property<SegmentedBarBase, SegmentedBarItemDefi
     }
 });
 itemsProperty.register(SegmentedBarBase);
+
+export const selectedBackgroundColorProperty = new CssProperty<Style, Color>({ name: "selectedBackgroundColor", cssName: "selected-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) })
+selectedBackgroundColorProperty.register(Style);

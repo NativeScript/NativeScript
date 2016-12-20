@@ -330,7 +330,7 @@ export class TabView extends TabViewBase {
             const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
             this._tabBarHeight = TabView.measureHelper(this._ios.tabBar, width, widthMode, height, heightMode).height;
-            let moreNavBarVisible = !!this._ios.moreNavigationController.navigationBar.window;
+            const moreNavBarVisible = !!this._ios.moreNavigationController.navigationBar.window;
             this._navBarHeight = moreNavBarVisible ? TabView.measureHelper(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
 
             const density = layout.getDisplayDensity();
@@ -346,7 +346,7 @@ export class TabView extends TabViewBase {
                 measureWidth = childSize.measuredWidth;
             }
 
-            let style = this.style;
+            const style = this.style;
             measureWidth = Math.max(measureWidth, style.effectiveMinWidth * density);
             measureHeight = Math.max(measureHeight, style.effectiveMinHeight * density);
 
