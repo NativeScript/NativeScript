@@ -400,15 +400,16 @@ export class TabView extends TabViewBase {
     }
 
     private _onItemsPropertyChangedSetNativeValue() {
-        let oldValue = <TabViewItem[]>this.previousItems;
-        if (oldValue) {
-            this._removeTabs(oldValue);
-        }
+        throw new Error("Compilation error: Can't find this.previousItems");
+        // let oldValue = <TabViewItem[]>this.previousItems;
+        // if (oldValue) {
+        //     this._removeTabs(oldValue);
+        // }
 
-        let newValue = <TabViewItem[]>this.items;
-        if (newValue) {
-            this._addTabs(newValue);
-        }
+        // let newValue = <TabViewItem[]>this.items;
+        // if (newValue) {
+        //     this._addTabs(newValue);
+        // }
     }
 
     get [selectedIndexProperty.native](): number {
