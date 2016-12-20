@@ -7,6 +7,8 @@
 
 import { ad } from "utils/utils";
 
+export * from "./editable-text-base-common";
+
 @Interfaces([android.text.TextWatcher])
 class TextWatcher extends java.lang.Object implements android.text.TextWatcher {
     constructor(private owner: WeakRef<EditableTextBase>) {
