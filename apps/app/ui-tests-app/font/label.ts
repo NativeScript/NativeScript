@@ -1,9 +1,9 @@
-import * as stack from "ui/layouts/stack-layout";
-import * as style from "ui/styling/style";
-import * as view from "ui/core/view";
+import { StackLayout } from "ui/layouts/stack-layout";
+import { View, unsetValue, eachDescendant } from "ui/core/view";
+
 export function resetStyles(args) {
-    var stackLayout = <stack.StackLayout>args.object.parent;
-    view.eachDescendant(stackLayout, function (v: view.View) {
+    var stackLayout = <StackLayout>args.object.parent;
+    eachDescendant(stackLayout, function (v: View) {
         v.style.fontFamily = unsetValue;
         v.style.fontSize = unsetValue;
         v.style.fontStyle = unsetValue;
