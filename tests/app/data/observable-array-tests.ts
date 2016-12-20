@@ -1,5 +1,5 @@
 import * as TKUnit from "../TKUnit";
-import * as bindableModule from "ui/core/bindable";
+import { ViewBase } from "ui/core/view-base";
 require("globals");
 
 // >> observable-array-require
@@ -8,34 +8,34 @@ import * as observableArrayModule from "data/observable-array";
 
 require("globals");
 
-export var test_ObservableArray_shouldCopySourceArrayItems = function () {
+export const test_ObservableArray_shouldCopySourceArrayItems = function () {
     // >> observable-array-create
-    var sa = [1, 2, 3];
-    var array = new observableArrayModule.ObservableArray(sa);
+    const sa = [1, 2, 3];
+    const array = new observableArrayModule.ObservableArray(sa);
     // << observable-array-create
 
     TKUnit.assert(sa.length === array.length && array.length === 3, "ObservableArray should copy all source array items!");
 };
 
-export var test_ObservableArray_shouldCopyMultipleItemsAsSource = function () {
+export const test_ObservableArray_shouldCopyMultipleItemsAsSource = function () {
     // >> observable-array-arguments
-    var array = new observableArrayModule.ObservableArray(1, 2, 3);
+    const array = new observableArrayModule.ObservableArray(1, 2, 3);
     // << observable-array-arguments
 
     TKUnit.assert(array.length === 3 && array.getItem(1) === 2, "ObservableArray should copy multiple items from source!");
 };
 
-export var test_ObservableArray_shouldCreateArrayFromSpecifiedLength = function () {
+export const test_ObservableArray_shouldCreateArrayFromSpecifiedLength = function () {
     // >> observable-array-length
-    var array = new observableArrayModule.ObservableArray(100);
+    const array = new observableArrayModule.ObservableArray(100);
     // << observable-array-length
 
     TKUnit.assert(array.length === 100, "ObservableArray should create array from specified length!");
 };
 
-export var test_ObservableArray_shouldBeAbleToSetLength = function () {
+export const test_ObservableArray_shouldBeAbleToSetLength = function () {
     // >> observable-array-newvalue
-    var array = new observableArrayModule.ObservableArray(100);
+    const array = new observableArrayModule.ObservableArray(100);
     // >> (hide)
     TKUnit.assert(array.length === 100, "ObservableArray should create array from specified length!");
     // << (hide)
@@ -45,33 +45,33 @@ export var test_ObservableArray_shouldBeAbleToSetLength = function () {
     TKUnit.assert(array.length === 50, "ObservableArray should respect new length!");
 };
 
-export var test_ObservableArray_getItemShouldReturnCorrectItem = function () {
+export const test_ObservableArray_getItemShouldReturnCorrectItem = function () {
     // >> observable-array-getitem
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    var firstItem = array.getItem(0);
-    var secondItem = array.getItem(1);
-    var thirdItem = array.getItem(2);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const firstItem = array.getItem(0);
+    const secondItem = array.getItem(1);
+    const thirdItem = array.getItem(2);
     // << observable-array-getitem
 
     TKUnit.assert(firstItem === 1 && secondItem === 2 && thirdItem === 3, "ObservableArray getItem() should return correct item!");
 };
 
-export var test_ObservableArray_setItemShouldSetCorrectItem = function () {
+export const test_ObservableArray_setItemShouldSetCorrectItem = function () {
     // >> observable-array-setitem
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.setItem(1, 5);
     // << observable-array-setitem
     TKUnit.assert(array.getItem(1) === 5, "ObservableArray setItem() should set correct item!");
 };
 
-export var test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
+export const test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
     // >> observable-array-eventdata
-    var index: number;
-    var action: string;
-    var addedCount: number;
-    var removed: Array<number>;
+    let index: number;
+    let action: string;
+    let addedCount: number;
+    let removed: Array<number>;
 
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on("change", (args) => {
         index = args.index; // Index of the changed item.
         action = args.action; // Action. In this case Update.
@@ -86,51 +86,51 @@ export var test_ObservableArray_setItemShouldRaiseCorrectEvent = function () {
     TKUnit.assertEqual(removed[0], 2);
 };
 
-export var test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEnd = function () {
+export const test_ObservableArray_concatShouldReturnNewArrayWithNewItemsAtTheEnd = function () {
     // >> observable-array-combine
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    var result = array.concat([4, 5, 6]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const result = array.concat([4, 5, 6]);
     // << observable-array-combine
     TKUnit.assert(result.length === 6 && result[4] === 5, "ObservableArray concat() should add items at the end!");
 };
 
-export var test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithComma = function () {
+export const test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithComma = function () {
     // >> observable-array-join
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    var result = array.join();
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const result = array.join();
     // << observable-array-join
     TKUnit.assert(result === "1,2,3", "ObservableArray join() should return string with all items separated with comma!");
 };
 
-export var test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithDot = function () {
+export const test_ObservableArray_joinShouldReturnStringWithAllItemsSeparatedWithDot = function () {
     // >> observable-array-join-separator
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    var result = array.join(".");
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const result = array.join(".");
     // << observable-array-join-separator
     TKUnit.assert(result === "1.2.3", "ObservableArray join() should return string with all items separated with dot!");
 };
 
-export var test_ObservableArray_popShouldRemoveTheLastElement = function () {
+export const test_ObservableArray_popShouldRemoveTheLastElement = function () {
     // >> observable-array-join-pop
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.pop();
+    const result = array.pop();
     // << observable-array-join-pop
     TKUnit.assert(result === 3 && array.length === 2, "ObservableArray pop() should remove last element!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-join-change
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var index = array.length - 1;
+    const index = array.length - 1;
     // << (hide)
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
@@ -153,25 +153,25 @@ export var test_ObservableArray_popShouldRemoveTheLastElementAndRaiseChangeEvent
         result.removed.length === 1 && result.index === index && result.addedCount === 0, "ObservableArray pop() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_pushShouldAppendNewElement = function () {
+export const test_ObservableArray_pushShouldAppendNewElement = function () {
     // >> observable-array-push
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.push(4);
+    const result = array.push(4);
     // << observable-array-push
     TKUnit.assert(result === 4 && array.getItem(3) === 4, "ObservableArray push() should append new element!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-change-push
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
         // args.eventName is "change".
@@ -192,25 +192,25 @@ export var test_ObservableArray_pushShouldAppendNewElementAndRaiseChangeEventWit
         result.removed.length === 0 && result.index === 3 && result.addedCount === 1, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_pushShouldAppendNewElements = function () {
+export const test_ObservableArray_pushShouldAppendNewElements = function () {
     // >> observable-array-push-multiple
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.push(4, 5, 6);
+    const result = array.push(4, 5, 6);
     // << observable-array-push-multiple
     TKUnit.assert(result === 6 && array.getItem(5) === 6, "ObservableArray push() should append new elements!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-push-multiple-info
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
         // args.eventName is "change".
@@ -231,25 +231,25 @@ export var test_ObservableArray_pushShouldAppendNewElementsAndRaiseChangeEventWi
         result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArray = function () {
+export const test_ObservableArray_pushShouldAppendNewElementsFromSourceArray = function () {
     // >> observable-array-push-source
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.push([4, 5, 6]);
+    const result = array.push([4, 5, 6]);
     // << observable-array-push-source
     TKUnit.assert(result === 6 && array.getItem(5) === 6, "ObservableArray push() should append new elements from source array!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-push-source-info
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
         // args.eventName is "change".
@@ -270,33 +270,33 @@ export var test_ObservableArray_pushShouldAppendNewElementsFromSourceArrayAndRai
         result.removed.length === 0 && result.index === 3 && result.addedCount === 3, "ObservableArray push() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_reverseShouldReturnNewReversedArray = function () {
+export const test_ObservableArray_reverseShouldReturnNewReversedArray = function () {
     // >> observable-array-reverse
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    var result = array.reverse();
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const result = array.reverse();
     // << observable-array-reverse
     TKUnit.assert(result.length === 3 && result[0] === 3, "ObservableArray reverse() should return new reversed array!");
 };
 
-export var test_ObservableArray_shiftShouldRemoveTheFirstElement = function () {
+export const test_ObservableArray_shiftShouldRemoveTheFirstElement = function () {
     // >> observable-array-shift
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.shift();
+    const result = array.shift();
     // << observable-array-shift
     TKUnit.assert(result === 1 && array.length === 2, "ObservableArray shift() should remove first element!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-shift-change
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
@@ -318,58 +318,58 @@ export var test_ObservableArray_shiftShouldRemoveTheFirstElementAndRaiseChangeEv
         result.removed.length === 1 && result.index === 0 && result.addedCount === 0, "ObservableArray shift() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_sliceShouldReturnSectionAsNewArray = function () {
+export const test_ObservableArray_sliceShouldReturnSectionAsNewArray = function () {
     // >> observable-array-slice
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
-    var result = array.slice();
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const result = array.slice();
     // << observable-array-slice
     TKUnit.assert(result[2] === 3 && result.length === 3, "ObservableArray slice() should return section!");
 };
 
-export var test_ObservableArray_sliceWithParamsShouldReturnSectionAsNewArray = function () {
+export const test_ObservableArray_sliceWithParamsShouldReturnSectionAsNewArray = function () {
     // >> observable-array-slice-args
-    var array = new observableArrayModule.ObservableArray([1, 2, 3, 4, 5]);
-    var result = array.slice(2, 4);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3, 4, 5]);
+    const result = array.slice(2, 4);
     // << observable-array-slice-args
     TKUnit.assert(result[1] === 4 && result.length === 2, "ObservableArray slice() should return section according to specified arguments!");
 };
 
-export var test_ObservableArray_sortShouldReturnNewSortedArray = function () {
+export const test_ObservableArray_sortShouldReturnNewSortedArray = function () {
     // >> observable-array-sort
-    var array = new observableArrayModule.ObservableArray([3, 2, 1]);
-    var result = array.sort();
+    const array = new observableArrayModule.ObservableArray([3, 2, 1]);
+    const result = array.sort();
     // << observable-array-sort
     TKUnit.assert(result[0] === 1 && result.length === 3, "ObservableArray sort() should return new sorted array!");
 };
 
-export var test_ObservableArray_sortShouldReturnNewSortedArrayAccordingSpecifiedOrder = function () {
+export const test_ObservableArray_sortShouldReturnNewSortedArrayAccordingSpecifiedOrder = function () {
     // >> observable-array-sort-comparer
-    var array = new observableArrayModule.ObservableArray([10, 100, 1]);
-    var result = array.sort((a: number, b: number) => { return a - b; });
+    const array = new observableArrayModule.ObservableArray([10, 100, 1]);
+    const result = array.sort((a: number, b: number) => { return a - b; });
     // << observable-array-sort-comparer
     TKUnit.assert(result[2] === 100 && result.length === 3, "ObservableArray sort() should return new sorted array according to specified order!");
 };
 
-export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndex = function () {
+export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndex = function () {
     // >> observable-array-splice
-    var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
+    const array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.splice(1, 2);
+    const result = array.splice(1, 2);
     // << observable-array-splice
     TKUnit.assert(result.length === 2 && result[0] === "two" && array.length === 1 && array.getItem(0) === "one",
         "ObservableArray splice() should remove specified number of elements starting from specified index!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-splice-change
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
@@ -391,20 +391,20 @@ export var test_ObservableArray_spliceShouldRemoveSpecifiedNumberOfElementsStart
         result.removed.length === 2 && result.index === 1 && result.addedCount === 0, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_spliceShouldInsertNewItemsInPlaceOfRemovedItemsStartingFromSpecifiedIndex = function () {
+export const test_ObservableArray_spliceShouldInsertNewItemsInPlaceOfRemovedItemsStartingFromSpecifiedIndex = function () {
     // >> observable-array-splice-args
-    var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
-    var result = array.splice(1, 2, "six", "seven");
+    const array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
+    const result = array.splice(1, 2, "six", "seven");
     // << observable-array-splice-args
     TKUnit.assert(result.length === 2 && result[0] === "two" && array.length === 3 && array.getItem(2) === "seven",
         "ObservableArray splice() should insert new items in place of removed!");
 };
 
-export var test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfElementsStartingFromSpecifiedIndexAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-splice-args-change
-    var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
+    const array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
 
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         // Argument (args) is ChangedData<T>.
@@ -426,26 +426,26 @@ export var test_ObservableArray_spliceShouldRemoveAndInertSpecifiedNumberOfEleme
         result.removed.length === 2 && result.index === 1 && result.addedCount === 1, "ObservableArray splice() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStart = function () {
+export const test_ObservableArray_unshiftShouldInsertNewElementsFromTheStart = function () {
     // >> observable-array-unshift
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     // >> (hide)
-    var bindable = new bindableModule.Bindable();
-    bindable.set("testProperty", 0);
-    bindable.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
+    const viewBase = new ViewBase();
+    viewBase.set("testProperty", 0);
+    viewBase.bind({ sourceProperty: "length", targetProperty: "testProperty" }, array);
     // << (hide)
-    var result = array.unshift(4, 5);
+    const result = array.unshift(4, 5);
     // << observable-array-unshift
 
     TKUnit.assert(array.getItem(0) === 4 && result === 5 && array.length === 5, "ObservableArray unshift() should insert new elements from the start!");
-    TKUnit.assert(bindable.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + bindable.get("testProperty"));
+    TKUnit.assert(viewBase.get("testProperty") === array.length, "Expected: " + array.length + ", Actual: " + viewBase.get("testProperty"));
 };
 
-export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStartAndRaiseChangeEventWithCorrectArgs = function () {
-    var result: observableArrayModule.ChangedData<number>;
+export const test_ObservableArray_unshiftShouldInsertNewElementsFromTheStartAndRaiseChangeEventWithCorrectArgs = function () {
+    let result: observableArrayModule.ChangedData<number>;
 
     // >> observable-array-unshift-change
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
     array.on(observableArrayModule.ObservableArray.changeEvent, (args: observableArrayModule.ChangedData<number>) => {
         //// Argument (args) is ChangedData<T>.
         //// args.eventName is "change".
@@ -466,42 +466,42 @@ export var test_ObservableArray_unshiftShouldInsertNewElementsFromTheStartAndRai
         result.removed.length === 0 && result.index === 0 && result.addedCount === 2, "ObservableArray unshift() should raise 'change' event with correct args!");
 };
 
-export var test_ObservableArray_indexOfShouldReturnCorrectIndex = function () {
+export const test_ObservableArray_indexOfShouldReturnCorrectIndex = function () {
     // >> observable-array-indexof
-    var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
-    var result = array.indexOf("two");
+    const array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
+    const result = array.indexOf("two");
     // << observable-array-indexof
     TKUnit.assert(result === 1, "ObservableArray indexOf() should return correct index!");
 };
 
-export var test_ObservableArray_indexOfShouldReturnCorrectIndexStartingFrom = function () {
+export const test_ObservableArray_indexOfShouldReturnCorrectIndexStartingFrom = function () {
     // >> observable-array-indexof-args
-    var array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
-    var result = array.indexOf("two", 2);
+    const array = new observableArrayModule.ObservableArray(["one", "two", "three"]);
+    const result = array.indexOf("two", 2);
     // << observable-array-indexof-args
     TKUnit.assert(result === -1, "ObservableArray indexOf() should return correct index!");
 };
 
-export var test_ObservableArray_lastIndexOfShouldReturnCorrectIndex = function () {
-    var array = new observableArrayModule.ObservableArray(["one", "two", "two", "three"]);
+export const test_ObservableArray_lastIndexOfShouldReturnCorrectIndex = function () {
+    const array = new observableArrayModule.ObservableArray(["one", "two", "two", "three"]);
     // >> observable-array-lastindexof
-    var result = array.lastIndexOf("two");
+    const result = array.lastIndexOf("two");
     // << observable-array-lastindexof
     TKUnit.assert(result === 2, "ObservableArray lastIndexOf() should return correct index!");
 };
 
-export var test_ObservableArray_lastIndexOfShouldReturnCorrectIndexStartingFrom = function () {
+export const test_ObservableArray_lastIndexOfShouldReturnCorrectIndexStartingFrom = function () {
     // >> observable-array-lastindexof-args
-    var array = new observableArrayModule.ObservableArray(["one", "two", "two", "one", "three"]);
-    var result = array.lastIndexOf("two", 1);
+    const array = new observableArrayModule.ObservableArray(["one", "two", "two", "one", "three"]);
+    const result = array.lastIndexOf("two", 1);
     // << observable-array-lastindexof-args
     TKUnit.assert(result === 1, "ObservableArray lastIndexOf() should return correct index!");
 };
 
-export var test_ObservableArray_settingLengthToZeroPerformsSplice = function () {
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+export const test_ObservableArray_settingLengthToZeroPerformsSplice = function () {
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
 
-    var changeRaised = false;
+    let changeRaised = false;
     array.on("change", (args: observableArrayModule.ChangedData<number>) => {
         changeRaised = true;
         TKUnit.assertEqual(args.object, array);
@@ -518,10 +518,10 @@ export var test_ObservableArray_settingLengthToZeroPerformsSplice = function () 
     TKUnit.assertTrue(changeRaised);
 };
 
-export var test_ObservableArray_settingLengthToSomethingPerformsSplice = function () {
-    var array = new observableArrayModule.ObservableArray([1, 2, 3]);
+export const test_ObservableArray_settingLengthToSomethingPerformsSplice = function () {
+    const array = new observableArrayModule.ObservableArray([1, 2, 3]);
+    let changeRaised = false;
 
-    var changeRaised = false;
     array.on("change", (args: observableArrayModule.ChangedData<number>) => {
         changeRaised = true;
         TKUnit.assertEqual(args.object, array);
@@ -538,102 +538,102 @@ export var test_ObservableArray_settingLengthToSomethingPerformsSplice = functio
     TKUnit.assertTrue(changeRaised);
 };
 
-var array = new observableArrayModule.ObservableArray();
+const array = new observableArrayModule.ObservableArray();
 
 // We do not have indexer!
-export var test_getItem_isDefined = function () {
+export const test_getItem_isDefined = function () {
     TKUnit.assert(typeof (array.getItem) === "function", "Method 'getItem()' should be defined!");
 };
 
-export var test_setItem_isDefined = function () {
+export const test_setItem_isDefined = function () {
     TKUnit.assert(typeof (array.setItem) === "function", "Method 'setItem()' should be defined!");
 };
 
 // Standard array properties and methods
-export var test_length_isDefined = function () {
+export const test_length_isDefined = function () {
     TKUnit.assert(typeof (array.length) === "number", "Property 'length' should be defined!");
 };
 
-export var test_toString_isDefined = function () {
+export const test_toString_isDefined = function () {
     TKUnit.assert(typeof (array.toString) === "function", "Method 'toString()' should be defined!");
 };
 
-export var test_toLocaleString_isDefined = function () {
+export const test_toLocaleString_isDefined = function () {
     TKUnit.assert(typeof (array.toLocaleString) === "function", "Method 'toString()' should be defined!");
 };
 
-export var test_concat_isDefined = function () {
+export const test_concat_isDefined = function () {
     TKUnit.assert(typeof (array.concat) === "function", "Method 'concat()' should be defined!");
 };
 
-export var test_join_isDefined = function () {
+export const test_join_isDefined = function () {
     TKUnit.assert(typeof (array.join) === "function", "Method 'join()' should be defined!");
 };
 
-export var test_pop_isDefined = function () {
+export const test_pop_isDefined = function () {
     TKUnit.assert(typeof (array.pop) === "function", "Method 'pop()' should be defined!");
 };
 
-export var test_push_isDefined = function () {
+export const test_push_isDefined = function () {
     TKUnit.assert(typeof (array.push) === "function", "Method 'push()' should be defined!");
 };
 
-export var test_reverse_isDefined = function () {
+export const test_reverse_isDefined = function () {
     TKUnit.assert(typeof (array.reverse) === "function", "Method 'reverse()' should be defined!");
 };
 
-export var test_shift_isDefined = function () {
+export const test_shift_isDefined = function () {
     TKUnit.assert(typeof (array.shift) === "function", "Method 'shift()' should be defined!");
 };
 
-export var test_slice_isDefined = function () {
+export const test_slice_isDefined = function () {
     TKUnit.assert(typeof (array.slice) === "function", "Method 'slice()' should be defined!");
 };
 
-export var test_sort_isDefined = function () {
+export const test_sort_isDefined = function () {
     TKUnit.assert(typeof (array.sort) === "function", "Method 'sort()' should be defined!");
 };
 
-export var test_splice_isDefined = function () {
+export const test_splice_isDefined = function () {
     TKUnit.assert(typeof (array.splice) === "function", "Method 'splice()' should be defined!");
 };
 
-export var test_unshift_isDefined = function () {
+export const test_unshift_isDefined = function () {
     TKUnit.assert(typeof (array.unshift) === "function", "Method 'unshift()' should be defined!");
 };
 
-export var test_indexOf_isDefined = function () {
+export const test_indexOf_isDefined = function () {
     TKUnit.assert(typeof (array.indexOf) === "function", "Method 'indexOf()' should be defined!");
 };
 
-export var test_lastIndexOf_isDefined = function () {
+export const test_lastIndexOf_isDefined = function () {
     TKUnit.assert(typeof (array.lastIndexOf) === "function", "Method 'lastIndexOf()' should be defined!");
 };
 
-export var test_every_isDefined = function () {
+export const test_every_isDefined = function () {
     TKUnit.assert(typeof (array.every) === "function", "Method 'every()' should be defined!");
 };
 
-export var test_some_isDefined = function () {
+export const test_some_isDefined = function () {
     TKUnit.assert(typeof (array.some) === "function", "Method 'some()' should be defined!");
 };
 
-export var test_forEach_isDefined = function () {
+export const test_forEach_isDefined = function () {
     TKUnit.assert(typeof (array.forEach) === "function", "Method 'forEach()' should be defined!");
 };
 
-export var test_map_isDefined = function () {
+export const test_map_isDefined = function () {
     TKUnit.assert(typeof (array.map) === "function", "Method 'map()' should be defined!");
 };
 
-export var test_filter_isDefined = function () {
+export const test_filter_isDefined = function () {
     TKUnit.assert(typeof (array.filter) === "function", "Method 'filter()' should be defined!");
 };
 
-export var test_reduce_isDefined = function () {
+export const test_reduce_isDefined = function () {
     TKUnit.assert(typeof (array.reduce) === "function", "Method 'reduce()' should be defined!");
 };
 
-export var test_reduceRight_isDefined = function () {
+export const test_reduceRight_isDefined = function () {
     TKUnit.assert(typeof (array.reduceRight) === "function", "Method 'reduceRight()' should be defined!");
 };
