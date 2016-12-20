@@ -1,13 +1,10 @@
-﻿import * as observable from "data/observable";
-import * as enums from "ui/enums";
-import * as view from "ui/core/view";
-import * as layouts from "ui/layouts/layout-base";
+﻿import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility} from "ui/layouts/layout-base";
 
-export class ViewModel extends observable.Observable {
+export class ViewModel extends Observable {
 
     // View properties
     public onWidthHeight(args: { eventName: string, object: any }): void {
-        var view: view.View = <view.View>args.object;
+        var view: View = <View>args.object;
         if (view.width !== 30) {
             view.width = 30;
             view.height = 50;
@@ -18,7 +15,7 @@ export class ViewModel extends observable.Observable {
     }
 
     public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
-        var view: view.View = <view.View>args.object;
+        var view: View = <View>args.object;
         if (view.minWidth !== 105) {
             view.minWidth = 105;
             view.minHeight = 55;
@@ -29,7 +26,7 @@ export class ViewModel extends observable.Observable {
     }
 
     public onMargins(args: { eventName: string, object: any }): void {
-        var view: view.View = <view.View>args.object;
+        var view: View = <View>args.object;
         if (view.marginLeft !== 5) {
             view.marginLeft = 5;
             view.marginTop = 5;
@@ -44,33 +41,33 @@ export class ViewModel extends observable.Observable {
     }
 
     public onAlignments(args: { eventName: string, object: any }): void {
-        var view: view.View = <view.View>args.object;
-        if (view.horizontalAlignment === enums.HorizontalAlignment.stretch) {
-            view.horizontalAlignment = enums.HorizontalAlignment.left;
-            view.verticalAlignment = enums.VerticalAlignment.top;
-        } else if (view.horizontalAlignment === enums.HorizontalAlignment.left) {
-            view.horizontalAlignment = enums.HorizontalAlignment.center;
-            view.verticalAlignment = enums.VerticalAlignment.center;
-        } else if (view.horizontalAlignment === enums.HorizontalAlignment.center) {
-            view.horizontalAlignment = enums.HorizontalAlignment.right;
-            view.verticalAlignment = enums.VerticalAlignment.bottom;
+        var view: View = <View>args.object;
+        if (view.horizontalAlignment === HorizontalAlignment.STRETCH) {
+            view.horizontalAlignment = HorizontalAlignment.LEFT;
+            view.verticalAlignment = VerticalAlignment.TOP;
+        } else if (view.horizontalAlignment === HorizontalAlignment.LEFT) {
+            view.horizontalAlignment = HorizontalAlignment.CENTER;
+            view.verticalAlignment = VerticalAlignment.MIDDLE;
+        } else if (view.horizontalAlignment === HorizontalAlignment.CENTER) {
+            view.horizontalAlignment = HorizontalAlignment.RIGHT;
+            view.verticalAlignment = VerticalAlignment.BOTTOM;
         } else {
-            view.horizontalAlignment = enums.HorizontalAlignment.stretch;
-            view.verticalAlignment = enums.VerticalAlignment.stretch;
+            view.horizontalAlignment = HorizontalAlignment.STRETCH;
+            view.verticalAlignment = VerticalAlignment.STRETCH;
         }
     }
 
     public onCollapse(args: { eventName: string, object: any }): void {
-        var view: view.View = <view.View>args.object;
-        view.visibility = enums.Visibility.collapse;
+        var view: View = <View>args.object;
+        view.visibility = Visibility.COLLAPSE;
     }
 
     public onVisibile(args: { eventName: string, object: any }): void {
-        var view: view.View = <view.View>args.object;
-        var layout = <layouts.LayoutBase>view.parent;
+        var view: View = <View>args.object;
+        var layout = <LayoutBase>view.parent;
 
-        var child = layout.getViewById("collapse");
-        child.visibility = enums.Visibility.visible;
+        var child = <View>layout.getViewById("collapse");
+        child.visibility = Visibility.VISIBLE;
     }
 
     // Layout properties
@@ -129,26 +126,26 @@ export class ViewModel extends observable.Observable {
 
         // Alignments
         child = layout.getViewById("alignments");
-        if (child.horizontalAlignment === enums.HorizontalAlignment.stretch) {
-            child.horizontalAlignment = enums.HorizontalAlignment.left;
-            child.verticalAlignment = enums.VerticalAlignment.top;
-        } else if (child.horizontalAlignment === enums.HorizontalAlignment.left) {
-            child.horizontalAlignment = enums.HorizontalAlignment.center;
-            child.verticalAlignment = enums.VerticalAlignment.center;
-        } else if (child.horizontalAlignment === enums.HorizontalAlignment.center) {
-            child.horizontalAlignment = enums.HorizontalAlignment.right;
-            child.verticalAlignment = enums.VerticalAlignment.bottom;
+        if (child.horizontalAlignment === HorizontalAlignment.STRETCH) {
+            child.horizontalAlignment = HorizontalAlignment.LEFT;
+            child.verticalAlignment = VerticalAlignment.TOP;
+        } else if (child.horizontalAlignment === HorizontalAlignment.LEFT) {
+            child.horizontalAlignment = HorizontalAlignment.CENTER;
+            child.verticalAlignment = VerticalAlignment.MIDDLE;
+        } else if (child.horizontalAlignment === HorizontalAlignment.CENTER) {
+            child.horizontalAlignment = HorizontalAlignment.RIGHT;
+            child.verticalAlignment = VerticalAlignment.BOTTOM;
         } else {
-            child.horizontalAlignment = enums.HorizontalAlignment.stretch;
-            child.verticalAlignment = enums.VerticalAlignment.stretch;
+            child.horizontalAlignment = HorizontalAlignment.STRETCH;
+            child.verticalAlignment = VerticalAlignment.MIDDLE;
         }
 
         // Collapse
         child = layout.getViewById("collapse");
-        if (child.visibility === enums.Visibility.visible) {
-            child.visibility = enums.Visibility.collapse;
+        if (child.visibility === Visibility.VISIBLE) {
+            child.visibility = Visibility.COLLAPSE;
         } else {
-            child.visibility = enums.Visibility.visible;
+            child.visibility = Visibility.VISIBLE;
         }
 
         // Paddings
