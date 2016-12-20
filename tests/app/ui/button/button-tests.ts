@@ -235,7 +235,7 @@ var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View
     TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
 }
 
-var expectedTextAlignment = enums.TextAlignment.right;
+var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];

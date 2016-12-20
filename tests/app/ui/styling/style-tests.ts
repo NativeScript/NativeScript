@@ -609,36 +609,6 @@ function testButtonPressedStateIsRed(btn: buttonModule.Button) {
     TKUnit.assert(btn.style.color === undefined, "Color should not have a value after returned to normal state.");
 }
 
-export function test_styling_converters_are_defined() {
-    TKUnit.assert(types.isDefined(styling.converters), "converters module is not defined");
-    TKUnit.assert(types.isFunction(styling.converters.colorConverter), "colorConverter function is not defined");
-    TKUnit.assert(types.isFunction(styling.converters.fontSizeConverter), "fontSizeConverter function is not defined");
-    TKUnit.assert(types.isFunction(styling.converters.textAlignConverter), "textAlignConverter function is not defined");
-}
-
-export function test_styling_properties_are_defined() {
-    TKUnit.assert(types.isDefined(styling.properties), "properties module is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.backgroundColorProperty), "backgroundColorProperty property is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.colorProperty), "colorProperty property is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.fontSizeProperty), "fontSizeProperty property is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.textAlignmentProperty), "textAlignmentProperty property is not defined");
-
-    TKUnit.assert(types.isFunction(styling.properties.eachInheritableProperty), "properties.eachInheritableProperty function is not defined");
-    TKUnit.assert(types.isFunction(styling.properties.eachProperty), "properties.eachProperty function is not defined");
-    TKUnit.assert(types.isFunction(styling.properties.getPropertyByCssName), "properties.getPropertyByCssName function is not defined");
-    TKUnit.assert(types.isFunction(styling.properties.getPropertyByName), "properties.getPropertyByName function is not defined");
-}
-
-export function test_styling_stylers_are_defined() {
-    TKUnit.assert(types.isFunction(styleModule.registerHandler), "registerHandler function is not defined");
-    TKUnit.assert(types.isFunction(styleModule.StylePropertyChangedHandler), "StylePropertyChangedHandler class is not defined");
-}
-
-export function test_styling_classes_are_defined() {
-    TKUnit.assert(types.isFunction(styling.Style), "Style class is not defined");
-    TKUnit.assert(types.isFunction(styling.Property), "Property class is not defined");
-}
-
 export function test_setInlineStyle_setsLocalValues() {
     var testButton = new buttonModule.Button();
     testButton.text = "Test";
@@ -647,7 +617,7 @@ export function test_setInlineStyle_setsLocalValues() {
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
         (<any>testButton)._applyInlineStyle("color: red;");
-        helper.assertViewColor(testButton, "#FF0000", dependencyObservableModule.ValueSource.Local);
+        helper.assertViewColor(testButton, "#FF0000");
     });
 }
 

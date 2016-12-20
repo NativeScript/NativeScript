@@ -289,7 +289,7 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
         btn.horizontalAlignment = "center";
-        btn.verticalAlignment = "center";
+        btn.verticalAlignment = "middle";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();

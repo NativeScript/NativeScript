@@ -642,8 +642,8 @@ export var testIsVisible = function () {
         TKUnit.assertEqual(lbl.visibility, "collapse");
         TKUnit.assertEqual(lbl.isCollapsed, true);
 
-        lbl.visibility = "collapsed";
-        TKUnit.assertEqual(lbl.visibility, "collapsed");
+        lbl.visibility = "collapse";
+        TKUnit.assertEqual(lbl.visibility, "collapse");
         TKUnit.assertEqual(lbl.isCollapsed, true);
     });
 }

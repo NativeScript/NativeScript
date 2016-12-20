@@ -17,7 +17,7 @@ export function createPage() {
 
     var btn2 = new buttonModule.Button();
     btn2.horizontalAlignment = "center";
-    btn2.verticalAlignment = "center";
+    btn2.verticalAlignment = "middle";
     btn2.text = "center, center";
 
     var btn3 = new buttonModule.Button();

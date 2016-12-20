@@ -28,7 +28,6 @@ export var test_Bindable_Members = function () {
     var obj = new bindable.Bindable();
     TKUnit.assert(types.isDefined(obj.bind), "Bindable.bind not defined");
     TKUnit.assert(types.isDefined(obj.unbind), "Bindable.unbind not defined");
-    TKUnit.assert(types.isDefined(obj._updateTwoWayBinding), "Bindable.updateTwoWayBinding not defined");
 }
 
 export var test_Bindable_Bind_ToTarget_OneWay = function () {
@@ -155,7 +154,6 @@ export var test_bindingContext_ValueSource_IsInherited = function () {
         var context = {};
         views[0].bindingContext = context;
         TKUnit.assert(views[1].bindingContext === context, "bindingContext not inherited.");
-        TKUnit.assert(views[1]._getValueSource(bindable.Bindable.bindingContextProperty) === dependencyObservableModule.ValueSource.Inherited, "bindingContext should be propagated as Inherited.");
     }
 
     helper.do_PageTest_WithButton(test);

@@ -219,7 +219,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
         btn.horizontalAlignment = "center";
-        btn.verticalAlignment = "center";
+        btn.verticalAlignment = "middle";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();
@@ -264,7 +264,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
         btn.horizontalAlignment = "center";
-        btn.verticalAlignment = "center";
+        btn.verticalAlignment = "middle";
         this.waitUntilTestElementLayoutIsValid();
 
         bounds = btn._getCurrentLayoutBounds();

@@ -57,7 +57,6 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = new listViewModule.ListView();
         // << article-create-listview
 
-        TKUnit.assertEqual(listView.isScrolling, false, "Default listView.isScrolling");
         TKUnit.assert(types.isUndefined(listView.items), "Default listView.items should be undefined");
     }
 

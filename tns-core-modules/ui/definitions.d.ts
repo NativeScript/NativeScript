@@ -93,7 +93,7 @@ declare module "ui/core/view-base" {
         public onLoaded(): void;
         public onUnloaded(): void;
 
-        public bind(options: BindingOptions, source: Object): void;
+        public bind(options: BindingOptions, source?: Object): void;
         public unbind(property: string): void;
 
         public requestLayout(): void;

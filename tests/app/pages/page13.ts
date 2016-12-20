@@ -23,7 +23,7 @@ export function createPage() {
     return page;
 }
 
-function addButton(layout: layout.StackLayout, text: "left" | "center" | "middle" | "right" | "stretch") {
+function addButton(layout: layout.StackLayout, text: "left" | "center" | "right" | "stretch") {
     var btn = new btns.Button();
     btn.text = text;
     btn.horizontalAlignment = text;

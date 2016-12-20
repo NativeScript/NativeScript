@@ -9,9 +9,11 @@ export function onLoaded(args: { eventName: string, object: any }) {
 }
 
 export function onAddRowColumn(args: { eventName: string, object: any }) {
+
     var layout = <GridLayout>args.object.parent.parent;
-    var row = new ItemSpec(1, GridUnitType.AUTO);
-    var column = new ItemSpec(1, GridUnitType.AUTO);
+    var row = new ItemSpec(1, "auto");
+    var column = new ItemSpec(1, "auto");
+
     layout.addRow(row);
     layout.addColumn(column);
 
