@@ -227,46 +227,47 @@ export class TabView extends TabViewBase {
     }
 
     public _onItemsPropertyChangedSetNativeValue() {
-        let oldItems = <TabViewItem[]>this.previousItems;
-        if (oldItems) {
-            oldItems.forEach((oldItem) => {
-                // _removeView is called within destroyItem method 
-                oldItem._parent = null;
-            });
+        throw new Error("Compilation error: Can't find this.previousItems");
+        // let oldItems = <TabViewItem[]>this.previousItems;
+        // if (oldItems) {
+        //     oldItems.forEach((oldItem) => {
+        //         // _removeView is called within destroyItem method 
+        //         oldItem._parent = null;
+        //     });
 
-            this._viewPager.setAdapter(null);
-            this._pagerAdapter = null;
-            this._tabLayout.setItems(null, null);
-        }
+        //     this._viewPager.setAdapter(null);
+        //     this._pagerAdapter = null;
+        //     this._tabLayout.setItems(null, null);
+        // }
 
-        let items = <TabViewItem[]>this.items;
-        if (items) {
-            let tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-            items.forEach((item, idx, arr) => {
-                if (!item.view) {
-                    throw new Error("View of TabViewItem at index " + idx + " is " + item.view);
-                }
+        // let items = <TabViewItem[]>this.items;
+        // if (items) {
+        //     let tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
+        //     items.forEach((item, idx, arr) => {
+        //         if (!item.view) {
+        //             throw new Error("View of TabViewItem at index " + idx + " is " + item.view);
+        //         }
 
-                item._parent = this;
-                if (item.view.parent !== this) {
-                    this._addView(item.view, idx);
-                }
-                tabItems.push(this.createTabItem(item));
-            });
+        //         item._parent = this;
+        //         if (item.view.parent !== this) {
+        //             this._addView(item.view, idx);
+        //         }
+        //         tabItems.push(this.createTabItem(item));
+        //     });
 
-            ensurePagerAdapterClass();
-            // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
-            this._pagerAdapter = new PagerAdapterClass(this, items);
-            this._viewPager.setAdapter(this._pagerAdapter);
+        //     ensurePagerAdapterClass();
+        //     // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
+        //     this._pagerAdapter = new PagerAdapterClass(this, items);
+        //     this._viewPager.setAdapter(this._pagerAdapter);
 
-            this._tabLayout.setItems(tabItems, this._viewPager);
-        }
+        //     this._tabLayout.setItems(tabItems, this._viewPager);
+        // }
 
-        let nativeSelectedIndex = this._viewPager.getCurrentItem();
-        let selectedIndex = this.selectedIndex;
-        if (selectedIndex < 0) {
-            this.selectedIndex = nativeSelectedIndex;
-        }
+        // let nativeSelectedIndex = this._viewPager.getCurrentItem();
+        // let selectedIndex = this.selectedIndex;
+        // if (selectedIndex < 0) {
+        //     this.selectedIndex = nativeSelectedIndex;
+        // }
     }
 
     public _updateTabForItem(item: TabViewItem) {
