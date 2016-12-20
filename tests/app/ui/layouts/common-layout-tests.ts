@@ -101,7 +101,7 @@ export function percent_support_children_test(test: testModule.UITest<LayoutBase
     TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
     btn.horizontalAlignment = "center";
-    btn.verticalAlignment = "center";
+    btn.verticalAlignment = "middle";
     test.waitUntilTestElementLayoutIsValid();
 
     bounds = btn._getCurrentLayoutBounds();

@@ -308,7 +308,7 @@ export function test_AnimationCurveInKeyframes() {
     TKUnit.assertEqual(animation.keyframes[0].curve, enums.AnimationCurve.linear);
     TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
     TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
-    let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation, 2);
+    let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
     TKUnit.assertEqual(realAnimation.animations[1].curve, enums.AnimationCurve.linear);
     TKUnit.assertEqual(realAnimation.animations[2].curve, enums.AnimationCurve.easeIn);
 }

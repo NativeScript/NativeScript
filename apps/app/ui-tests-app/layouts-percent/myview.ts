@@ -1,4 +1,4 @@
-﻿import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility} from "ui/layouts/layout-base";
+import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility} from "ui/layouts/layout-base";
 
 export class ViewModel extends Observable {
 
@@ -42,32 +42,34 @@ export class ViewModel extends Observable {
 
     public onAlignments(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
-        if (view.horizontalAlignment === HorizontalAlignment.STRETCH) {
-            view.horizontalAlignment = HorizontalAlignment.LEFT;
-            view.verticalAlignment = VerticalAlignment.TOP;
-        } else if (view.horizontalAlignment === HorizontalAlignment.LEFT) {
-            view.horizontalAlignment = HorizontalAlignment.CENTER;
-            view.verticalAlignment = VerticalAlignment.MIDDLE;
-        } else if (view.horizontalAlignment === HorizontalAlignment.CENTER) {
-            view.horizontalAlignment = HorizontalAlignment.RIGHT;
-            view.verticalAlignment = VerticalAlignment.BOTTOM;
+
+        if (view.horizontalAlignment === "stretch") {
+            view.horizontalAlignment = "left";
+            view.verticalAlignment = "top";
+        } else if (view.horizontalAlignment === "left") {
+            view.horizontalAlignment = "center";
+            view.verticalAlignment = "middle";
+        } else if (view.horizontalAlignment === "center") {
+            view.horizontalAlignment = "right";
+            view.verticalAlignment = "bottom";
         } else {
-            view.horizontalAlignment = HorizontalAlignment.STRETCH;
-            view.verticalAlignment = VerticalAlignment.STRETCH;
+            view.horizontalAlignment = "stretch";
+            view.verticalAlignment = "stretch";
         }
     }
 
     public onCollapse(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
-        view.visibility = Visibility.COLLAPSE;
+        view.visibility = "collapse";
     }
 
     public onVisibile(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
+
         var layout = <LayoutBase>view.parent;
 
-        var child = <View>layout.getViewById("collapse");
-        child.visibility = Visibility.VISIBLE;
+        var child = layout.getViewById<View>("collapse");
+        child.visibility = "visible";
     }
 
     // Layout properties

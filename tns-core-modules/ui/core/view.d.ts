@@ -102,6 +102,12 @@ declare module "ui/core/view" {
     export namespace Length {
         export function parse(text: string): Length;
         export function equals(a: Length, b: Length): boolean;
+        /**
+         * Converts Length unit to device pixels.
+         * @param length The PercentLength to convert.
+         * @param auto Value to use for conversion of "auto".
+         */
+        export function toDevicePixels(length: PercentLength, auto: number): number;
     }
 
     export type PercentLength = "auto" | number | {
@@ -111,6 +117,13 @@ declare module "ui/core/view" {
     export namespace PercentLength {
         export function parse(text: string): PercentLength;
         export function equals(a: PercentLength, b: PercentLength): boolean;
+        /**
+         * Converts PercentLength unit to device pixels.
+         * @param length The PercentLength to convert.
+         * @param auto Value to use for conversion of "auto".
+         * @param parentAvailableWidth Value to use as base when converting percent unit.
+         */
+        export function toDevicePixels(length: PercentLength, auto: number, parentAvailableWidth: number): number;
     }
 
     /**
@@ -604,15 +617,15 @@ declare module "ui/core/view" {
         // _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
 
-        // /**
-        //  * __Obsolete:__ There is a new property system that does not rely on _getValue.
-        //  */
-        // public _getValue(property: any): never;
+        /**
+         * __Obsolete:__ There is a new property system that does not rely on _getValue.
+         */
+        public _getValue(property: any): never;
 
-        // /**
-        //  * __Obsolete:__ There is a new property system that does not rely on _setValue.
-        //  */
-        // public _setValue(property: any, value: any): never;
+        /**
+         * __Obsolete:__ There is a new property system that does not rely on _setValue.
+         */
+        public _setValue(property: any, value: any): never;
     }
 
     /**

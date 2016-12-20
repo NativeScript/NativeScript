@@ -1,6 +1,5 @@
 ﻿import * as style from "ui/styling/style";
 import {PropertyMetadata, PropertyMetadataSettings} from "ui/core/dependency-observable";
-import * as styleProperty from "ui/styling/style-property";
 import * as view from "ui/core/view";
 import * as buttonModule from "ui/button";
 import * as pages from "ui/page";
@@ -10,46 +9,46 @@ import {isAndroid} from "platform";
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
 let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
-export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family", new PropertyMetadata(undefined, AffectsLayout));
+// export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family", new PropertyMetadata(undefined, AffectsLayout));
 
-export class MyTextViewStyler implements style.Styler {
-    public static setFontFamilyProperty(view: view.View, newValue: any) {
-        if (view.android) {
-            (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(newValue, android.graphics.Typeface.NORMAL));
-        }
-        else if (view.ios) {
-            var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
-            (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(newValue, fontSize);
-        }
-    }
+// export class MyTextViewStyler implements style.Styler {
+//     public static setFontFamilyProperty(view: view.View, newValue: any) {
+//         if (view.android) {
+//             (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(newValue, android.graphics.Typeface.NORMAL));
+//         }
+//         else if (view.ios) {
+//             var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
+//             (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(newValue, fontSize);
+//         }
+//     }
 
-    public static resetFontFamilyProperty(view: view.View, nativeValue: any) {
-        if (view.android) {
-            (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(nativeValue, android.graphics.Typeface.NORMAL));
-        }
-        else if (view.ios) {
-            var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
-            (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(nativeValue, fontSize);;
-        }
-    }
+//     public static resetFontFamilyProperty(view: view.View, nativeValue: any) {
+//         if (view.android) {
+//             (<android.widget.TextView>view.android).setTypeface(android.graphics.Typeface.create(nativeValue, android.graphics.Typeface.NORMAL));
+//         }
+//         else if (view.ios) {
+//             var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
+//             (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(nativeValue, fontSize);;
+//         }
+//     }
 
-    public static getNativeFontFamilyValue = function (view: view.View): any {
-        if (view.android) {
-            return (<android.widget.TextView>view.android).getTypeface();
-        }
-        else if (view.ios) {
-            return (<UIButton>view._nativeView).titleLabel.font.fontName;
-        }
-        return null;
-    }
+//     public static getNativeFontFamilyValue = function (view: view.View): any {
+//         if (view.android) {
+//             return (<android.widget.TextView>view.android).getTypeface();
+//         }
+//         else if (view.ios) {
+//             return (<UIButton>view._nativeView).titleLabel.font.fontName;
+//         }
+//         return null;
+//     }
 
-    public static registerHandlers() {
-        style.registerHandler(fontFamilyProperty, new style.StylePropertyChangedHandler(
-            MyTextViewStyler.setFontFamilyProperty,
-            MyTextViewStyler.resetFontFamilyProperty,
-            MyTextViewStyler.getNativeFontFamilyValue), "MyButton");
-    }
-}
+//     public static registerHandlers() {
+//         style.registerHandler(fontFamilyProperty, new style.StylePropertyChangedHandler(
+//             MyTextViewStyler.setFontFamilyProperty,
+//             MyTextViewStyler.resetFontFamilyProperty,
+//             MyTextViewStyler.getNativeFontFamilyValue), "MyButton");
+//     }
+// }
 
 //export class MyStyle extends styles.Style {
 //    get fontFamily(): string {
@@ -75,7 +74,7 @@ export class MyButton extends buttonModule.Button {
     
 }
 
-MyTextViewStyler.registerHandlers();
+// MyTextViewStyler.registerHandlers();
 
 export function createPage() {
     var stackLayout = new stackLayoutDef.StackLayout();

@@ -11,12 +11,12 @@ import * as types from "utils/types";
 import * as fs from "file-system";
 import * as observable from "data/observable";
 import * as stackLayoutModule from "ui/layouts/stack-layout";
-import {Label} from "ui/label";
-import {Page} from "ui/page";
-import {Button} from "ui/button";
-import {TabView} from "ui/tab-view";
-import {Observable} from "data/observable";
-import {TemplateView} from "./template-builder-tests/template-view";
+import { Label } from "ui/label";
+import { Page } from "ui/page";
+import { Button } from "ui/button";
+import { TabView } from "ui/tab-view";
+import { Observable } from "data/observable";
+import { TemplateView } from "./template-builder-tests/template-view";
 import * as myCustomControlWithoutXml from "./mymodule/MyControl";
 import * as listViewModule from "ui/list-view";
 import * as helper from "../ui/helper";
@@ -25,6 +25,7 @@ import * as platform from "platform";
 import * as gesturesModule from "ui/gestures";
 import * as segmentedBar from "ui/segmented-bar";
 import { Source } from "utils/debug";
+import { PercentLength } from "ui/core/view";
 
 export function test_load_IsDefined() {
     TKUnit.assertTrue(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -307,8 +308,7 @@ export function test_parse_ShouldSetCanvasAttachedProperties() {
 
 export function test_parse_ShouldParseNumberProperties() {
     var p = <Page>builder.parse("<Page width='100' />");
-    TKUnit.assertEqual(p.width.value, 100);
-    TKUnit.assertEqual(p.width.unit, "dip");
+    TKUnit.assertTrue(PercentLength.equals(p.width, 100));
 };
 
 export function test_parse_ShouldParseBooleanProperties() {
@@ -451,7 +451,7 @@ export function test_parse_ShouldParseSubProperties() {
     p.bindingContext = obj;
     var sw = <switchModule.Switch>p.content;
 
-    TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
+    TKUnit.assert(sw.visibility === "collapse", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
 export function test_parse_ShouldParseBindingToSpecialProperty() {

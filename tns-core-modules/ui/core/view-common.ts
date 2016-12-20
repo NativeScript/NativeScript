@@ -965,17 +965,17 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
     let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
     let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
     let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-    style.effectiveWidth = PercentLength.toDevicePixels(style.width, parentAvailableWidth)
-    style.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, parentAvailableWidth);
-    style.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, parentAvailableWidth);
+    style.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth)
+    style.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
+    style.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
 
     let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
     let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
     let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
     let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-    style.effectiveHeight = PercentLength.toDevicePixels(style.height, parentAvailableHeight);
-    style.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, parentAvailableHeight);
-    style.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, parentAvailableHeight);
+    style.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
+    style.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
+    style.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
 }
 
 function equalsCommon(a: Length, b: Length): boolean;
@@ -1066,7 +1066,7 @@ export namespace PercentLength {
         }
     }
     export const equals: { (a: PercentLength, b: PercentLength): boolean } = equalsCommon;
-    export const toDevicePixels: { (length: PercentLength, parentAvailableWidth: number): number } = toDevicePixelsCommon;
+    export const toDevicePixels: { (length: PercentLength, auto: number, parentAvailableWidth: number): number } = toDevicePixelsCommon;
 }
 
 export type Length = "auto" | number | {
