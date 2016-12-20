@@ -160,14 +160,12 @@ export class View extends ViewCommon {
                 }
 
                 // copy all the locally cached values to the native android widget
-                applyNativeSetters(child);
                 return true;
             }
             this._eachChildView(eachChild);
-        } else if (this._nativeView && !this.parent) {
-            // copy all the locally cached values to the native android widget
-            applyNativeSetters(this);
-        }
+        } 
+
+        applyNativeSetters(this);
     }
 
     public _onDetached(force?: boolean) {

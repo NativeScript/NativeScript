@@ -58,7 +58,7 @@ export module ad {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
                 
-                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(v.toString());
+                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(1, v.toString());
                 refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
 
                 if (getSDK() >= 16) {
