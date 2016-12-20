@@ -255,7 +255,7 @@ declare module "application" {
     /**
      * This event is raised when an uncaught error occurs while the application is running.
      */
-    export function on(event: "uncaughtError", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventData) => void, thisArg?: any);
 
     /**
      * This event is raised the orientation of the current device has changed.
