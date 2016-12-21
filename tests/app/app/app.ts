@@ -84,14 +84,9 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
     }
 });
 
-application.on(application.uncaughtErrorEvent, function (args: application.ApplicationEventData) {
-    if (args.android) {
-        // For Android applications, args.android is an NativeScriptError.
-        console.log("NativeScriptError: " + args.android);
-    } else if (args.ios) {
-        // For iOS applications, args.ios is NativeScriptError.
-        console.log("NativeScriptError: " + args.ios);
-    }
+application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
+    console.log("NativeScriptError: " + args.error);
+    console.log(args.error.stack);
 });
 
 // Android activity events
