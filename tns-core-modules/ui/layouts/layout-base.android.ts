@@ -1,4 +1,7 @@
-﻿import { LayoutBaseCommon, clipToBoundsProperty } from "./layout-base-common";
+﻿import { 
+    LayoutBaseCommon, clipToBoundsProperty,
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, layout
+} from "./layout-base-common";
 
 export * from "./layout-base-common";
 
@@ -20,5 +23,38 @@ export class LayoutBase extends LayoutBaseCommon {
         // The following article explains this in detail:
         // http://stackoverflow.com/questions/25044085/when-drawing-outside-the-view-clip-bounds-with-android-how-do-i-prevent-underli
         console.warn(`clipToBounds with value false is not supported on Android. You can use this.android.getParent().setClipChildren(false) as an alternative`);
+    }
+
+
+    //PaddingTop
+    get [paddingTopProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView), unit: "px" };
+    }
+    set [paddingTopProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderTopWidth);
+    }
+
+    //PaddingRight
+    get [paddingRightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView), unit: "px" };
+    }
+    set [paddingRightProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderRightWidth);
+    }
+
+    //PaddingBottom
+    get [paddingBottomProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView), unit: "px" };
+    }
+    set [paddingBottomProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderBottomWidth);
+    }
+
+    //PaddingLeft
+    get [paddingLeftProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView), unit: "px" };
+    }
+    set [paddingLeftProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderLeftWidth);
     }
 }

@@ -4,7 +4,6 @@ import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
     widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
     marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
     Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
@@ -582,30 +581,6 @@ createNativePercentLengthProperty({
     getPixels: ViewHelper.getMarginLeft,
     setPixels: ViewHelper.setMarginLeft,
     setPercent: ViewHelper.setMarginLeftPercent
-});
-
-createNativePercentLengthProperty({
-    key: paddingTopProperty.native,
-    getPixels: ViewHelper.getPaddingTop,
-    setPixels: ViewHelper.setPaddingTop
-});
-
-createNativePercentLengthProperty({
-    key: paddingRightProperty.native,
-    getPixels: ViewHelper.getPaddingRight,
-    setPixels: ViewHelper.setPaddingRight
-});
-
-createNativePercentLengthProperty({
-    key: paddingBottomProperty.native,
-    getPixels: ViewHelper.getPaddingBottom,
-    setPixels: ViewHelper.setPaddingBottom
-});
-
-createNativePercentLengthProperty({
-    key: paddingLeftProperty.native,
-    getPixels: ViewHelper.getPaddingLeft,
-    setPixels: ViewHelper.setPaddingLeft
 });
 
 createNativePercentLengthProperty({

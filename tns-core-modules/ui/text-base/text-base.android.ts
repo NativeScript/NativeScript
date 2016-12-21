@@ -1,7 +1,8 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty,
-    Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace
+    Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, layout
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -186,6 +187,38 @@ export class TextBase extends TextBaseCommon {
     }
     set [letterSpacingProperty.native](value: number) {
         org.nativescript.widgets.ViewHelper.setLetterspacing(this._nativeView, value);
+    }
+
+    //PaddingTop
+    get [paddingTopProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView), unit: "px" };
+    }
+    set [paddingTopProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderTopWidth);
+    }
+
+    //PaddingRight
+    get [paddingRightProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView), unit: "px" };
+    }
+    set [paddingRightProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderRightWidth);
+    }
+
+    //PaddingBottom
+    get [paddingBottomProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView), unit: "px" };
+    }
+    set [paddingBottomProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderBottomWidth);
+    }
+
+    //PaddingLeft
+    get [paddingLeftProperty.native](): Length {
+        return { value: org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView), unit: "px" };
+    }
+    set [paddingLeftProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderLeftWidth);
     }
 }
 
