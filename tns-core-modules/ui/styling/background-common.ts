@@ -1,5 +1,5 @@
 import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
-import { Color, layout, BackgroundRepeat } from "ui/core/view";
+import { Color, BackgroundRepeat } from "ui/core/view";
 import { ImageSource } from "image-source";
 import { CSSValue, parse as cssParse } from "css-value";
 export * from "ui/core/view";

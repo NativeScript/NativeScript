@@ -83,7 +83,6 @@ export class SearchBar extends SearchBarBase {
 
         this._android.setIconified(false);
 
-        var that = new WeakRef(this);
         this._queryTextListener = this._queryTextListener || new QueryTextListener(new WeakRef(this));
         this._android.setOnQueryTextListener(this._queryTextListener);
 
@@ -144,7 +143,6 @@ export class SearchBar extends SearchBarBase {
         let textView = getSearchViewTextView(this._android);
 
         let typeface: android.graphics.Typeface;
-        let fontSize: number;
         if (value instanceof Font) {
             typeface = value.getAndroidTypeface();
             textView.setTextSize(value.fontSize);

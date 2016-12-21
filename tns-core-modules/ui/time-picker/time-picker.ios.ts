@@ -1,4 +1,4 @@
-﻿import { TimePickerBase, timeProperty, minuteIntervalProperty, 
+﻿import { TimePickerBase, timeProperty, 
     minuteProperty, minMinuteProperty, maxMinuteProperty,
     hourProperty, minHourProperty, maxHourProperty, colorProperty } from "./time-picker-common";
 

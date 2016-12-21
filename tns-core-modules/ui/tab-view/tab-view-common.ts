@@ -1,7 +1,7 @@
 ﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from "ui/tab-view";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
-    EventData, Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder
+    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder
 } from "ui/core/view";
 
 export * from "ui/core/view";

@@ -1,8 +1,6 @@
 ﻿import * as bindable from "ui/core/bindable";
 import * as dependencyObservable from "ui/core/dependency-observable";
 import * as definition from "ui/core/proxy";
-import * as types from "utils/types";
-import * as observable from "data/observable";
 
 export class PropertyMetadata extends dependencyObservable.PropertyMetadata implements definition.PropertyMetadata {
     private _onSetNativeValue: dependencyObservable.PropertyChangedCallback;

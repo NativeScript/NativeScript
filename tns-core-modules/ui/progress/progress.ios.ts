@@ -1,5 +1,5 @@
 ﻿import {
-    ProgressBase, View, Color, valueProperty, maxValueProperty,
+    ProgressBase, Color, valueProperty, maxValueProperty,
     colorProperty, backgroundColorProperty, backgroundInternalProperty
 } from "./progress-common";
 

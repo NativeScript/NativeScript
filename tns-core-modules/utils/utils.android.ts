@@ -1,6 +1,5 @@
 ﻿import {
-    enabled as traceEnabled, write as traceWrite, categories as traceCategories,
-    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet
+    write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "trace";
 
 export * from "./utils-common";

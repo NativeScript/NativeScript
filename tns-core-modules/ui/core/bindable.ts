@@ -1,6 +1,6 @@
 ﻿import * as definition from "ui/core/bindable";
 import { Observable, PropertyChangeData } from "data/observable";
-import { unsetValue, DependencyObservable, Property, PropertyMetadata, PropertyMetadataSettings, PropertyChangeData as DependencyPropertyChangeData } from "ui/core/dependency-observable";
+import { unsetValue, DependencyObservable, Property } from "ui/core/dependency-observable";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import types = require("utils/types");
 import bindingBuilder = require("../builder/binding-builder");
@@ -10,7 +10,7 @@ import * as polymerExpressions from "js-libs/polymer-expressions";
 import * as specialProperties from "ui/builder/special-properties";
 import * as utils from "utils/utils";
 
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType } from "trace";
+import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 
 // let bindingContextProperty = new Property(
 //     "bindingContext",
@@ -38,7 +38,6 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     public static bindingContextProperty = bindingContextProperty;
 
     private bindings = new Map<string, Binding>();
-
 
     get bindingContext(): Object {
         throw new Error("Not implemented");

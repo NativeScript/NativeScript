@@ -95,6 +95,5 @@
         clipToBounds: boolean;
     }
 
-
     export const clipToBoundsProperty: Property<LayoutBase, boolean>;
 }

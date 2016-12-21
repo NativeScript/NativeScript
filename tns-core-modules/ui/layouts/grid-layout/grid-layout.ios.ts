@@ -1,6 +1,5 @@
 ﻿import {
-    GridLayoutBase, ItemSpec, View, layout,
-    rowProperty, columnProperty, rowSpanProperty, columnSpanProperty
+    GridLayoutBase, ItemSpec, View, layout
 } from "./grid-layout-common";
 
 export * from "./grid-layout-common";

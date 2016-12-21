@@ -1,5 +1,5 @@
 ﻿import { ScrollEventData } from "ui/scroll-view";
-import { View, layout, ScrollViewBase, orientationProperty } from "./scroll-view-common";
+import { View, layout, ScrollViewBase } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 

@@ -172,7 +172,7 @@ export class Animation extends AnimationBase {
         return _resolveAnimationCurve(curve);
     }
 
-    private _onAndroidAnimationEnd() {
+    private _onAndroidAnimationEnd() { // tslint:disable-line
         if (!this.isPlaying) {
             // It has been cancelled
             return;
@@ -187,7 +187,7 @@ export class Animation extends AnimationBase {
         this._resolveAnimationFinishedPromise();
     }
 
-    private _onAndroidAnimationCancel() {
+    private _onAndroidAnimationCancel() { // tslint:disable-line 
         let i = 0;
         let length = this._propertyResetCallbacks.length;
         for (; i < length; i++) {

@@ -1,5 +1,4 @@
 ﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "ui/placeholder"
-import { View } from "ui/core/view";
 
 export class Placeholder extends PlaceholderDefinition {
     public static creatingViewEvent = "creatingView";

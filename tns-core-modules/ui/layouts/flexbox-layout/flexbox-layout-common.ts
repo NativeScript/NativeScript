@@ -1,4 +1,3 @@
-import * as flexbox from "ui/layouts/flexbox-layout";
 import { LayoutBase, View, Style, Property, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser} from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
@@ -275,7 +274,6 @@ flexWrapBeforeProperty1.register(View);
 
 const alignSelfProperty1 = new Property<View, AlignSelf>({ name: "alignSelf", defaultValue: AlignSelf.AUTO, valueConverter: AlignSelf.parse });
 alignSelfProperty1.register(View);
-
 
 // registerSpecialProperty("order", (instance, propertyValue) => {
 //     FlexboxLayoutBase.setOrder(instance, !isNaN(+propertyValue) && +propertyValue);

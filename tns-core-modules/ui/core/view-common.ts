@@ -4,9 +4,9 @@ import { Animation, AnimationPromise } from "ui/animation";
 import { Source } from "utils/debug";
 import { Background } from "ui/styling/background";
 import {
-    ViewBase, getEventOrGestureName, Observable, EventData, Style,
-    Property, InheritedProperty, CssProperty, ShorthandProperty, InheritedCssProperty,
-    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, printUnregisteredProperties, makeParser, makeValidator
+    ViewBase, getEventOrGestureName, EventData, Style,
+    Property, CssProperty, ShorthandProperty, InheritedCssProperty,
+    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, printUnregisteredProperties, makeParser, makeValidator
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
@@ -94,7 +94,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _isLayoutValid: boolean;
     private _cssType: string;
 
-    private _updatingInheritedProperties: boolean;
     public _isAddedToNativeVisualTree: boolean;
     public _gestureObservers = {};
 
@@ -596,11 +595,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             vAlignment = childStyle.verticalAlignment;
         }
 
-        let marginTop = childStyle.marginTop;
-        let marginBottom = childStyle.marginBottom;
-        let marginLeft = childStyle.marginLeft;
-        let marginRight = childStyle.marginRight;
-
         switch (vAlignment) {
             case VerticalAlignment.TOP:
                 childTop = top + effectiveMarginTop;
@@ -676,7 +670,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             let height = layout.getMeasureSpecSize(heightMeasureSpec);
             let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
             updateChildLayoutParams(child, parent, density);
 
             let style = child.style;
@@ -974,31 +967,31 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
 function equalsCommon(a: Length, b: Length): boolean;
 function equalsCommon(a: PercentLength, b: PercentLength): boolean;
 function equalsCommon(a: PercentLength, b: PercentLength): boolean {
-    if (a == "auto") {
-        return b == "auto";
+    if (a == "auto") { // tslint:disable-line
+        return b == "auto";  // tslint:disable-line
     }
     if (typeof a === "number") {
-        if (b == "auto") {
+        if (b == "auto") { // tslint:disable-line
             return false;
         }
         if (typeof b === "number") {
-            return a == b;
+            return a == b; // tslint:disable-line
         }
-        return b.unit == "dip" && a == b.value;
+        return b.unit == "dip" && a == b.value; // tslint:disable-line
     }
-    if (b == "auto") {
+    if (b == "auto") { // tslint:disable-line
         return false;
     }
     if (typeof b === "number") {
-        return a.unit == "dip" && a.value == b;
+        return a.unit == "dip" && a.value == b; // tslint:disable-line
     }
-    return a.value == b.value && a.unit == b.unit;
+    return a.value == b.value && a.unit == b.unit; // tslint:disable-line
 }
 
 function toDevicePixelsCommon(length: Length, auto: number): number;
 function toDevicePixelsCommon(length: PercentLength, auto: number, parentSize: number): number;
 function toDevicePixelsCommon(length: PercentLength, auto: number, parentAvailableWidth?: number): number {
-    if (length == "auto") {
+    if (length == "auto") { // tslint:disable-line
         return auto;
     }
     if (typeof length === "number") {
@@ -1069,7 +1062,7 @@ export type Length = "auto" | number | {
 
 export namespace Length {
     export function parse(value: string | Length): Length {
-        if (value == "auto") {
+        if (value == "auto") { // tslint:disable-line
             return "auto";
         } else if (typeof value === "string") {
             let type: "dip" | "px";
@@ -1478,7 +1471,7 @@ export const backgroundImageProperty = new CssProperty<Style, string>({
                 style.backgroundInternal = currentBackground.withImage(fromBase64(base64Data));
                 isValid = true;
             } else {
-                style.backgroundInternal, currentBackground.withImage(undefined);
+                style.backgroundInternal = currentBackground.withImage(undefined);
             }
         }
         else if (isFileOrResourcePath(url)) {
@@ -1840,11 +1833,6 @@ function opacityConverter(value: any): number {
     }
 
     throw new Error(`Opacity should be between [0, 1]. Value: ${newValue}`);
-}
-
-function isOpacityValid(value: string): boolean {
-    let parsedValue: number = parseFloat(value);
-    return !isNaN(parsedValue) && 0 <= parsedValue && parsedValue <= 1;
 }
 
 export const opacityProperty = new CssProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });

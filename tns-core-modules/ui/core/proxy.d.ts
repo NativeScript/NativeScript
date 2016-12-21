@@ -1,6 +1,5 @@
 ﻿declare module "ui/core/proxy" {
     import { DependencyObservable, Property, PropertyMetadata as PropertyMetadataBase, PropertyChangedCallback, PropertyValidationCallback } from "ui/core/dependency-observable";
-    import { Bindable } from "ui/core/bindable";
 
     /**
      * A class that describes dependency property metadata.

@@ -1,8 +1,7 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
-    returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
-    autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty
+    returnKeyTypeProperty,
+    autocapitalizationTypeProperty, autocorrectProperty
 } from "./editable-text-base-common";
 
 export * from "./editable-text-base-common";

@@ -1,5 +1,5 @@
 ﻿import { Switch as SwitchDefinition } from "ui/switch";
-import { View, layout, Color, Property, colorProperty, backgroundColorProperty, backgroundInternalProperty, booleanConverter } from "ui/core/view";
+import { View, Color, Property, colorProperty, backgroundColorProperty, backgroundInternalProperty, booleanConverter } from "ui/core/view";
 
 export * from "ui/core/view";
 

@@ -6,7 +6,7 @@
     NavigationButton
 } from "ui/action-bar";
 import { Page } from "ui/page";
-import { View, ViewBase, Bindable, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
+import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 
 export * from "ui/core/view";
 
@@ -338,7 +338,6 @@ function onTitlePropertyChanged(actionBar: ActionBarBase, oldValue: string, newV
 
 let titleProperty = new Property<ActionBarBase, string>({ name: "title", valueChanged: onTitlePropertyChanged });
 titleProperty.register(ActionBarBase);
-
 
 function onItemChanged(item: ActionItemBase, oldValue: string, newValue: string) {
     if (item.actionBar) {

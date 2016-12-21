@@ -3,7 +3,6 @@
  */
 declare module "ui/activity-indicator" {
     import { View } from "ui/core/view";
-    import { Property } from "ui/core/properties";
 
     /**
      * Represents a UI widget which displays a progress indicator hinting the user for some background operation running.
@@ -24,9 +23,4 @@ declare module "ui/activity-indicator" {
          */
         busy: boolean;
     }
-
-    /**
-     * Represents the busy property of the ActivityIndicator class.
-     */
-    let busyProperty: Property<ActivityIndicator, boolean>;
 }

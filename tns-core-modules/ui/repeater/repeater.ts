@@ -1,6 +1,6 @@
 ﻿import { Repeater as RepeaterDefinition, ItemsSource } from "ui/repeater";
 import { Label } from "ui/label";
-import { LayoutBase, CustomLayoutView, View, Template, Property, Observable ,layout } from "ui/layouts/layout-base";
+import { LayoutBase, CustomLayoutView, View, Template, Property, layout } from "ui/layouts/layout-base";
 import { StackLayout } from "ui/layouts/stack-layout";
 import { ObservableArray, ChangedData } from "data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";

@@ -1,5 +1,4 @@
-﻿import * as enums from "ui/enums";
-import * as pageModule from "ui/page";
+﻿import * as pageModule from "ui/page";
 import * as buttonModule from "ui/button";
 import * as stackModule from "ui/layouts/stack-layout";
 

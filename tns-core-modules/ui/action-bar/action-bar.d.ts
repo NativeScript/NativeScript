@@ -2,7 +2,7 @@
  * Contains the action bar related classes.
  */
 declare module "ui/action-bar" {
-    import { EventData, ViewBase, View, AddArrayFromBuilder, AddChildFromBuilder, Property } from "ui/core/view";
+    import { EventData, ViewBase, View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
     import { Page } from "ui/page";
 
     /**
@@ -238,26 +238,6 @@ declare module "ui/action-bar" {
     export class NavigationButton extends ActionItem {
 
     }
-
-    /**
-     * String value used when hooking to tap event.
-     */
-    let tapEvent: string;
-
-    /**
-     * Represents the observable property backing the text property.
-     */
-    let textProperty: Property<ActionItem, string>;
-
-    /**
-     * Represents the observable property backing the icon property.
-     */
-    let iconProperty: Property<ActionItem, string>;
-
-    /**
-     * Represents the observable property backing the visibility property.
-     */
-    let visibilityProperty: Property<ActionItem, string>;
 
     /** @internal */
     export function _setNavBarColor(navBar: any /* UINavigationBar */, color: any /* UIColor */);

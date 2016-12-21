@@ -8,10 +8,6 @@ import * as commonTests from "./common-layout-tests";
 import * as wrapLayoutModule from "ui/layouts/wrap-layout";
 // << wrap-layout-require
 
-// >> wrap-layout-others
-import * as enums from "ui/enums";
-// << wrap-layout-others
-
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {
 
     public create(): wrapLayoutModule.WrapLayout {

@@ -1,6 +1,5 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
-import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, Color, Background, layout } from "./action-bar-common";
-import { Frame, topmost as topmostFrame } from "ui/frame";
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout } from "./action-bar-common";
 import { ImageSource, fromFileOrResource } from "image-source";
 
 export * from "./action-bar-common";
@@ -319,7 +318,6 @@ export class ActionBar extends ActionBarBase {
     get [backgroundInternalProperty.native](): UIColor {
         return null;
     }
-    set [backgroundInternalProperty.native](value: UIColor) {
-
+    set [backgroundInternalProperty.native](value: UIColor) { // tslint:disable-line
     }
 }

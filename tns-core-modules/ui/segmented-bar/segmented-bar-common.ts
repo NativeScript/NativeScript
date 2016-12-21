@@ -1,7 +1,7 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from "ui/segmented-bar";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, CssProperty, EventData, Color, Style
+    Property, CoercibleProperty, CssProperty, Color, Style
 } from "ui/core/view";
 
 export * from "ui/core/view";

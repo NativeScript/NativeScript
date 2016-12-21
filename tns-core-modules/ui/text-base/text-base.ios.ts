@@ -171,7 +171,6 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
     }
 }
 
-
 function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {
     return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
 }

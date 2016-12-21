@@ -1,5 +1,5 @@
 ﻿import { Image as ImageDefinition } from "ui/image";
-import { View, Property, CssProperty, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "ui/core/view";
+import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "ui/core/view";
 import { ImageAsset } from "image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "image-source";
 import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";

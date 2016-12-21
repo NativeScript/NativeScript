@@ -1,4 +1,4 @@
-﻿import { WrapLayoutBase, View, orientationProperty, itemWidthProperty, itemHeightProperty, layout } from "./wrap-layout-common";
+﻿import { WrapLayoutBase, View, layout } from "./wrap-layout-common";
 
 export * from "./wrap-layout-common";
 

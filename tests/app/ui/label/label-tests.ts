@@ -10,7 +10,6 @@ import * as colorModule from "color";
 import * as utils from "utils/utils";
 import * as observableModule from "data/observable";
 import * as bindable from "ui/core/bindable";
-import * as textBase from "ui/text-base";
 import * as enums from "ui/enums";
 import * as labelTestsNative from "./label-tests-native";
 import * as fs from "file-system";

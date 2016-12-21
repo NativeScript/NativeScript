@@ -5,7 +5,6 @@ import * as TKUnit from "../../TKUnit";
 import * as view from "ui/core/view";
 import { unsetValue } from "ui/core/view";
 import * as builder from "ui/builder";
-import * as enums from "ui/enums";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
 import * as platform from "platform";

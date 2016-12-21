@@ -1,4 +1,4 @@
-import { WebViewBase, File, knownFolders, path, traceWrite, traceEnabled, traceCategories } from "./web-view-common";
+import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories } from "./web-view-common";
 
 export * from "./web-view-common";
 

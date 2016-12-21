@@ -299,7 +299,6 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
         const setBase = this.set;
         const setFunc = (valueSource: ValueSource) => function (value: U): void {
             const that = <T>this;
-            const currentValueSource: number = that[sourceKey] || ValueSource.Default;
 
             let unboxedValue: U;
             let newValueSource: number;
@@ -358,8 +357,6 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
 
 export class CssProperty<T extends Style, U> {
     private registered: boolean;
-    private readonly setLocalValue: (value: U) => void;
-    private readonly setCssValue: (value: U) => void;
 
     public readonly name: string;
     public readonly cssName: string;
@@ -554,7 +551,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
     constructor(options: CssPropertyOptions<T, U>) {
         super(options);
         const name = options.name;
-        const cssName = `css-${name}`;
 
         const key = this.key;
         const sourceKey = this.sourceKey;
@@ -676,8 +672,6 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
 export class ShorthandProperty<T extends Style> {
     private registered: boolean;
-    private readonly setLocalValue: (value: string) => void;
-    private readonly setCssValue: (value: string) => void;
 
     public readonly key: symbol;
     public readonly name: string;
@@ -776,32 +770,6 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
         const valueSource: number = style[sourceKey] || ValueSource.Default;
         if (valueSource !== ValueSource.Default) {
             array.push({ property: prop, value: style[prop.key] });
-        }
-    }
-
-    return array;
-}
-
-function inheritablePropertiesOn(view: ViewBase): Array<InheritedProperty<any, any>> {
-    const array = new Array<InheritedProperty<any, any>>();
-    for (let prop of inheritableProperties) {
-        const sourceKey = prop.sourceKey;
-        const valueSource: number = view[sourceKey] || ValueSource.Default;
-        if (valueSource === ValueSource.Inherited) {
-            array.push(prop);
-        }
-    }
-
-    return array;
-}
-
-function inheritableCssPropertiesOn(style: Object): Array<InheritedCssProperty<any, any>> {
-    const array = new Array<InheritedCssProperty<any, any>>();
-    for (let prop of inheritableCssProperties) {
-        const sourceKey = prop.sourceKey;
-        const valueSource: number = style[sourceKey] || ValueSource.Default;
-        if (valueSource === ValueSource.Inherited) {
-            array.push(prop);
         }
     }
 

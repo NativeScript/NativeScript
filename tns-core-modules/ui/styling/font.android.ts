@@ -1,4 +1,4 @@
-﻿import { FontBase, parseFontFamily, genericFontFamilies, parseFont, FontWeight } from "./font-common";
+﻿import { FontBase, parseFontFamily, genericFontFamilies, FontWeight } from "./font-common";
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 import * as application from "application";
 import * as fs from "file-system";

@@ -35,7 +35,6 @@ export class Border extends ContentView implements BorderDefinition {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        let density = layout.getDisplayDensity();
         let style = this.style;
         let horizontalBorderLength = style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
         let verticalBorderLength = style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;

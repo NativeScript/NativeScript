@@ -1,6 +1,10 @@
 ﻿import { Transition as TransitionDefinition } from "ui/transition";
 import { NavigationTransition } from "ui/frame";
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+import { 
+    enabled as traceEnabled,
+    write as traceWrite,
+    categories as traceCategories
+} from "trace";
 import * as _slideTransitionModule from "./slide-transition";
 import * as _fadeTransitionModule from "./fade-transition";
 

@@ -5,12 +5,10 @@ import { KeyframeAnimationInfo, KeyframeAnimation } from "ui/animation/keyframe-
 import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 import { File, knownFolders, path } from "file-system";
 import { CssAnimationParser } from "./css-animation-parser";
-import { isFileOrResourcePath } from "utils/utils";
 
 import * as application from "application";
 
 const animationsSymbol: symbol = Symbol("animations");
-
 
 let pattern: RegExp = /('|")(.*?)\1/;
 

@@ -1,4 +1,4 @@
-﻿import { StackLayoutBase, orientationProperty, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
+﻿import { StackLayoutBase, View, layout, VerticalAlignment, HorizontalAlignment } from "./stack-layout-common";
 
 export * from "./stack-layout-common";
 

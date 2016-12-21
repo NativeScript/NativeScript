@@ -1,7 +1,7 @@
 ﻿import * as model from "./myview";
 import { Button } from "ui/button";
 import { Page } from "ui/page";
-import { GridLayout, ItemSpec, GridUnitType } from "ui/layouts/grid-layout";
+import { GridLayout, ItemSpec } from "ui/layouts/grid-layout";
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <Page>args.object;

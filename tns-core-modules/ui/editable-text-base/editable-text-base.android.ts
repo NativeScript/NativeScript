@@ -1,6 +1,6 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
-    returnKeyTypeProperty, editableProperty, updateTextTriggerProperty,
+    returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
     textProperty, placeholderColorProperty, Color
 } from "./editable-text-base-common";

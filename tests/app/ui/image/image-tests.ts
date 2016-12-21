@@ -18,7 +18,6 @@ import * as ImageSourceModule from "image-source";
 import * as ViewModule from "ui/core/view";
 import * as helper from "../helper";
 import * as ObservableModule from "data/observable";
-import * as enumsModule from "ui/enums";
 import * as fs from "file-system";
 import * as color from "color";
 

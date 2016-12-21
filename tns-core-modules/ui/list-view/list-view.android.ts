@@ -1,6 +1,6 @@
 ﻿import { ItemEventData, ItemsSource } from "ui/list-view";
 import {
-    ListViewBase, View, KeyedTemplate, Length, Property, unsetValue, Observable, Color,
+    ListViewBase, View, KeyedTemplate, Length, unsetValue, Observable, Color,
     separatorColorProperty, itemTemplatesProperty
 } from "./list-view-common";
 import { StackLayout } from "ui/layouts/stack-layout";
@@ -51,7 +51,6 @@ export class ListView extends ListViewBase {
         ensureListViewAdapterClass();
         this._android.setAdapter(new ListViewAdapterClass(this));
 
-        let that = new WeakRef(this);
         this._itemClickListener = this._itemClickListener || new ItemClickListener(new WeakRef(this));
         this.android.setOnItemClickListener(this._itemClickListener);
     }

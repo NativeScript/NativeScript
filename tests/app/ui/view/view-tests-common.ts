@@ -13,7 +13,6 @@ import * as layoutModule from "ui/layouts/layout";
 import * as observable from "data/observable";
 import * as bindable from "ui/core/bindable";
 import * as definition from "./view-tests";
-import * as enums from "ui/enums";
 import * as absoluteLayoutModule from "ui/layouts/absolute-layout";
 
 export var test_eachDescendant = function () {
