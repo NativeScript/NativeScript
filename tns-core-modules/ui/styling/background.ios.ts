@@ -10,7 +10,7 @@ export module ios {
             return undefined;
         }
 
-        let nativeView = view._nativeView;
+        let nativeView = view.nativeView;
         // Clip-path
         if (background.clipPath) {
             drawClipPath(nativeView, background);
