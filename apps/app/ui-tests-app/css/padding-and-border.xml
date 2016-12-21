@@ -1,0 +1,15 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="padding-and-border-page">
+    <StackLayout>
+        <Button id="changeButton" tap="onChangeCSS"/>
+        <TextView id="info" isEnabled="false" isUserInteractionEnabled="false"/>
+        <StackLayout id="container" style.backgroundColor="gray">
+            <Label id="label" text="Label"/>
+            <TextField id="textField" text="TextField"/>
+            <TextView id="textView" text="TextView"/>
+            <Button id="button" text="Button"/>
+            <StackLayout id="stack-layout">
+                <StackLayout id="child-of-stack-layout" width="50" height="50" style.backgroundColor="red"></StackLayout>
+            </StackLayout>
+        </StackLayout>
+    </StackLayout>
+</Page>

@@ -1557,7 +1557,7 @@ function isNonNegativeFiniteNumberConverter(value: string): number {
 }
 
 function parseBorderColor(value: string): { top: Color, right: Color, bottom: Color, left: Color } {
-    let result: { top: Color, right: Color, bottom: Color, left: Color };
+    let result: { top: Color, right: Color, bottom: Color, left: Color } = { top: undefined, right: undefined, bottom: undefined, left: undefined };
     if (value.indexOf("rgb") === 0) {
         result.top = result.right = result.bottom = result.left = new Color(value);
         return result;
@@ -1599,8 +1599,9 @@ function parseBorderColor(value: string): { top: Color, right: Color, bottom: Co
         result.left = arr3;
     }
     else {
-        throw new Error("Expected 1, 2, 3 or 4 parameters. Actual: " + value);
+        throw new Error(`Expected 1, 2, 3 or 4 parameters. Actual: ${value}`);
     }
+    return result;
 }
 
 // Border Color properties.

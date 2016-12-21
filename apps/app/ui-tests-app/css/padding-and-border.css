@@ -1,0 +1,19 @@
+#padding {
+    padding: 10;
+}
+
+#border {
+    border-width: 10;
+    border-color: black;
+}
+
+#background-color {
+    background-color: yellow;
+}
+
+/*#background-image {
+    background-image: url('~/ui-tests-app/pages/test2.png'); 
+    background-repeat: no-repeat; 
+    background-position: center center; 
+    background-size: 100% 100%;
+}*/
