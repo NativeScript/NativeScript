@@ -252,8 +252,8 @@ export class PageBase extends ContentView implements PageDefinition {
         return this._styleScope;
     }
 
-    public _eachChildView(callback: (child: View) => boolean) {
-        super._eachChildView(callback);
+    public eachChildView(callback: (child: View) => boolean) {
+        super.eachChildView(callback);
         callback(this.actionBar);
     }
 

@@ -66,8 +66,6 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
     }
 }
 
-let viewIdCounter = 0;
-
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     // Dynamic properties.
     left: Length;
@@ -97,9 +95,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _cssType: string;
 
     private _updatingInheritedProperties: boolean;
-
-
-    public _domId: number;
     public _isAddedToNativeVisualTree: boolean;
     public _gestureObservers = {};
 
@@ -107,8 +102,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     constructor() {
         super();
-
-        this._domId = viewIdCounter++;
         this._goToVisualState("normal");
     }
 
@@ -794,13 +787,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     //@endios
 
     public eachChild(callback: (child: ViewBase) => boolean): void {
-        this._eachChildView(<any>callback);
+        this.eachChildView(<any>callback);
     }
 
-    public _eachChildView(callback: (view: ViewDefinition) => boolean) {
+    public eachChildView(callback: (view: ViewDefinition) => boolean) {
         //
     }
-
+ 
     _childIndexToNativeChildIndex(index?: number): number {
         return index;
     }
@@ -857,8 +850,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     //     //     return true;
     //     // });
     // }
-
-    /**
+    
+      /**
      * Method is intended to be overridden by inheritors and used as "protected".
      */
     public _addViewToNativeVisualTree(view: ViewDefinition, atIndex?: number): boolean {

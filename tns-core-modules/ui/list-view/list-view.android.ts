@@ -90,7 +90,7 @@ export class ListView extends ListViewBase {
         return this._realizedItems.size;
     }
 
-    public _eachChildView(callback: (child: View) => boolean): void {
+    public eachChildView(callback: (child: View) => boolean): void {
         this._realizedItems.forEach((view, nativeView, map) => {
             if (view.parent instanceof ListView) {
                 callback(view);

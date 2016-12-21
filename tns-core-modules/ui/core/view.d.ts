@@ -562,32 +562,27 @@ declare module "ui/core/view" {
         _removeFromSuperview();
 
         public _applyXmlAttribute(attribute: string, value: any): boolean;
+        public eachChildView(callback: (view: View) => boolean): void;
+
 
         //@private
         /**
          * A property has changed on the native side directly - e.g. the user types in a TextField.
          */
         public nativePropertyChanged(property: Property<any, any>, newValue: any): void;
-        public bind(options: BindingOptions, source?: any): void;
-        public unbind(property: string): void;
-
-        isCollapsed: boolean;
+        
         isLayoutRequired: boolean;
-
         _gestureObservers: any;
         // _isInheritedChange(): boolean;
-        _domId: number;
 
         _isAddedToNativeVisualTree: boolean;
 
         /**
          * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
          */
-        _addViewToNativeVisualTree(view: View, atIndex?: number): boolean;
-        _removeViewFromNativeVisualTree(view: View): void;
+        _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean;
+        _removeViewFromNativeVisualTree(view: ViewBase): void;
 
-        _eachChildView(callback: (child: View) => boolean);
-        _childrenCount: number;
 
         _onAttached(context: any /* android.content.Context */): void;
         _onContextChanged(): void;

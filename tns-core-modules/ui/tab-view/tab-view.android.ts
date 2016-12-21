@@ -16,11 +16,11 @@ const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
 export class TabViewItem extends TabViewItemBase {
-    public _parent: TabView;
 
     public _update() {
-        if (this._parent) {
-            this._parent._updateTabForItem(this);
+        const parent = <TabView>this.parent;
+        if (parent) {
+            parent._updateTabForItem(this);
         }
     }
 }
@@ -62,9 +62,9 @@ function ensurePagerAdapterClass() {
             }
 
             let item = this.items[index];
-            if (item.view.parent !== this.owner) {
-                this.owner._addView(item.view);
-            }
+            // if (item.view.parent !== this.owner) {
+            //     this.owner._addView(item.view);
+            // }
 
             if (this[VIEWS_STATES]) {
                 if (traceEnabled) {
@@ -92,9 +92,9 @@ function ensurePagerAdapterClass() {
 
             // Note: this.owner._removeView will clear item.view._nativeView.
             // So call this after the native instance is removed form the container. 
-            if (item.view.parent === this.owner) {
-                this.owner._removeView(item.view);
-            }
+            // if (item.view.parent === this.owner) {
+            //     this.owner._removeView(item.view);
+            // }
         }
 
         isViewFromObject(view: android.view.View, _object: any) {
@@ -122,7 +122,8 @@ function ensurePagerAdapterClass() {
                 }
                 return true;
             }
-            owner._eachChildView(childCallback);
+            
+            owner.eachChildView(childCallback);
 
             let bundle = new android.os.Bundle();
             bundle.putSparseParcelableArray(VIEWS_STATES, viewStates);
@@ -191,12 +192,12 @@ export class TabView extends TabViewBase {
 
         this.setElevation();
 
-        let accentColor = ad.resources.getPalleteColor(ACCENT_COLOR, this._context);
+        const accentColor = ad.resources.getPalleteColor(ACCENT_COLOR, this._context);
         if (accentColor) {
             this._tabLayout.setSelectedIndicatorColors([accentColor]);
         }
 
-        let primaryColor = ad.resources.getPalleteColor(PRIMARY_COLOR, this._context);
+        const primaryColor = ad.resources.getPalleteColor(PRIMARY_COLOR, this._context);
         if (primaryColor) {
             this._tabLayout.setBackgroundColor(primaryColor);
         }
@@ -207,7 +208,7 @@ export class TabView extends TabViewBase {
 
         this._viewPager = new android.support.v4.view.ViewPager(this._context);
         this._viewPager.setId(this._androidViewId);
-        let lp = new org.nativescript.widgets.CommonLayoutParams();
+        const lp = new org.nativescript.widgets.CommonLayoutParams();
         lp.row = 1;
         this._viewPager.setLayoutParams(lp);
         this._grid.addView(this._viewPager);
@@ -218,7 +219,7 @@ export class TabView extends TabViewBase {
     }
 
     private setElevation() {
-        let compat = <any>android.support.v4.view.ViewCompat;
+        const compat = <any>android.support.v4.view.ViewCompat;
         if (compat.setElevation) {
             let val = DEFAULT_ELEVATION * layout.getDisplayDensity();
             compat.setElevation(this._grid, val);
@@ -226,48 +227,31 @@ export class TabView extends TabViewBase {
         }
     }
 
-    public _onItemsPropertyChangedSetNativeValue() {
-        throw new Error("Compilation error: Can't find this.previousItems");
-        // let oldItems = <TabViewItem[]>this.previousItems;
-        // if (oldItems) {
-        //     oldItems.forEach((oldItem) => {
-        //         // _removeView is called within destroyItem method 
-        //         oldItem._parent = null;
-        //     });
+    private setAdapter(items: Array<TabViewItem>) {
+        const length = items ? items.length : 0;
+        if (length === 0) {
+            this._viewPager.setAdapter(null);
+            this._pagerAdapter = null;
+            this._tabLayout.setItems(null, null);
+            return;
+        }
 
-        //     this._viewPager.setAdapter(null);
-        //     this._pagerAdapter = null;
-        //     this._tabLayout.setItems(null, null);
-        // }
+        const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
+        items.forEach((item, idx, arr) => {
+            tabItems.push(this.createTabItem(item));
+        });
 
-        // let items = <TabViewItem[]>this.items;
-        // if (items) {
-        //     let tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        //     items.forEach((item, idx, arr) => {
-        //         if (!item.view) {
-        //             throw new Error("View of TabViewItem at index " + idx + " is " + item.view);
-        //         }
+        ensurePagerAdapterClass();
+        // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
+        this._pagerAdapter = new PagerAdapterClass(this, items);
+        this._viewPager.setAdapter(this._pagerAdapter);
 
-        //         item._parent = this;
-        //         if (item.view.parent !== this) {
-        //             this._addView(item.view, idx);
-        //         }
-        //         tabItems.push(this.createTabItem(item));
-        //     });
+        this._tabLayout.setItems(tabItems, this._viewPager);
 
-        //     ensurePagerAdapterClass();
-        //     // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
-        //     this._pagerAdapter = new PagerAdapterClass(this, items);
-        //     this._viewPager.setAdapter(this._pagerAdapter);
-
-        //     this._tabLayout.setItems(tabItems, this._viewPager);
-        // }
-
-        // let nativeSelectedIndex = this._viewPager.getCurrentItem();
-        // let selectedIndex = this.selectedIndex;
-        // if (selectedIndex < 0) {
-        //     this.selectedIndex = nativeSelectedIndex;
-        // }
+        let selectedIndex = this.selectedIndex;
+        if (selectedIndex < 0) {
+            this.selectedIndex = this._viewPager.getCurrentItem();
+        }
     }
 
     public _updateTabForItem(item: TabViewItem) {
@@ -320,7 +304,7 @@ export class TabView extends TabViewBase {
         return null;
     }
     set [itemsProperty.native](value: TabViewItemBase[]) {
-        this._onItemsPropertyChangedSetNativeValue();
+        this.setAdapter(value);
     }
 
     get [tabTextColorProperty.native](): number {

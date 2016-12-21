@@ -60,9 +60,10 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         }
     }
 
-    public _eachChildView(callback: (child: View) => boolean) {
-        if (this._content) {
-            callback(this._content);
+    public eachChildView(callback: (child: View) => boolean) {
+        const content = this._content;
+        if (content) {
+            callback(content);
         }
     }
 

@@ -12,7 +12,6 @@ export module knownCollections {
 
 export abstract class SegmentedBarItemBase extends ViewBase implements SegmentedBarItemDefinition {
     private _title: string = "";
-    public _parent: SegmentedBarBase;
 
     get title(): string {
         return this._title;
@@ -64,8 +63,8 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
     }
 
     // TODO: Make _addView to keep its children so this method is not needed!
-    public _eachChildView(callback: (child: ViewBase) => boolean): void {
-        let items = this.items;
+    public eachChild(callback: (child: ViewBase) => boolean): void {
+        const items = this.items;
         if (items) {
             items.forEach((item, i) => {
                 callback(item);

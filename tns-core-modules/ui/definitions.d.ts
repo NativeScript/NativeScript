@@ -103,7 +103,7 @@ declare module "ui/core/view-base" {
         public _removeView(view: ViewBase): void;
         public _parentChanged(oldParent: ViewBase): void;
 
-        _childrenCount: number;
+        _domId: number;
 
         _cssState: any /* "ui/styling/style-scope" */;
         _setCssState(next: any /* "ui/styling/style-scope" */);

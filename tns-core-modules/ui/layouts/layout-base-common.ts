@@ -90,7 +90,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
         return result;
     }
 
-    public _eachChildView(callback: (child: View) => boolean): void {
+    public eachChildView(callback: (child: View) => boolean): void {
         for (let i = 0, length = this._subViews.length; i < length; i++) {
             const retVal = callback(this._subViews[i]);
             if (retVal === false) {
@@ -98,11 +98,11 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
             }
         }
     }
-
+    
     public eachLayoutChild(callback: (child: View, isLast: boolean) => void): void {
         var lastChild: View = null;
         
-        this._eachChildView((cv) => {
+        this.eachChildView((cv) => {
             cv._eachLayoutView((lv) => {
                 if (lastChild && !lastChild.isCollapsed) {
                     callback(lastChild, false);

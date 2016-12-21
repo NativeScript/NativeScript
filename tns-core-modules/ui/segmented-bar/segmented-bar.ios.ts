@@ -9,11 +9,12 @@ export * from "./segmented-bar-common";
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
     public _update() {
-        if (this._parent) {
-            let tabIndex = this._parent.items.indexOf(this);
+        const parent = <SegmentedBar>this.parent;
+        if (parent) {
+            let tabIndex = parent.items.indexOf(this);
             let title = this.title;
             title = (title === null || title === undefined) ? "" : title;
-            this._parent.ios.setTitleForSegmentAtIndex(title, tabIndex);
+            parent.ios.setTitleForSegmentAtIndex(title, tabIndex);
         }
     }
 }

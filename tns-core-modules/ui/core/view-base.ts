@@ -91,6 +91,8 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
     view.eachChild(localCallback);
 }
 
+let viewIdCounter = 0;
+
 export class ViewBase extends Observable implements ViewBaseDefinition {
     private _updatingJSPropertiesDict = {};
     private _style: Style;
@@ -106,9 +108,12 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public id: string;
     public className: string;
 
+    public _domId: number;
+
     public _cssState: CssState;
     constructor() {
         super();
+        this._domId = viewIdCounter++;
         this._style = new Style(this);
     }
 
@@ -154,17 +159,11 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._emit("loaded");
     }
 
-    get _childrenCount(): number {
-        return 0;
-    }
-
     public _loadEachChildView() {
-        if (this._childrenCount > 0) {
-            this.eachChild((child) => {
-                child.onLoaded();
-                return true;
-            });
-        }
+        this.eachChild((child) => {
+            child.onLoaded();
+            return true;
+        });
     }
 
     public onUnloaded() {
@@ -175,15 +174,13 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     private _unloadEachChildView() {
-        if (this._childrenCount > 0) {
-            this.eachChild((child) => {
-                if (child.isLoaded) {
-                    child.onUnloaded();
-                }
+        this.eachChild((child) => {
+            if (child.isLoaded) {
+                child.onUnloaded();
+            }
 
-                return true;
-            });
-        }
+            return true;
+        });
     }
 
     public _applyStyleFromScope() {

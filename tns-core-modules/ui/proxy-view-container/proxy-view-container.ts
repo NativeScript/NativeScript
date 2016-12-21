@@ -38,7 +38,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
     public _getNativeViewsCount(): number {
         let result = 0;
-        this._eachChildView((cv) => {
+        this.eachChildView((cv) => {
             result += cv._getNativeViewsCount();
             return true;
         });
@@ -47,7 +47,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
     }
 
     public _eachLayoutView(callback: (View) => void): void {
-        this._eachChildView((cv) => {
+        this.eachChildView((cv) => {
             if (!cv.isCollapsed) {
                 cv._eachLayoutView(callback);
             }
@@ -99,7 +99,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
     public _addToSuperview(superview: any, atIndex?: number): boolean {
         let index = 0;
-        this._eachChildView((cv) => {
+        this.eachChildView((cv) => {
             if (!cv._isAddedToNativeVisualTree) {
                 cv._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(cv, index++);
             }
@@ -110,7 +110,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
     }
 
     public _removeFromSuperview() {
-        this._eachChildView((cv) => {
+        this.eachChildView((cv) => {
             if (cv._isAddedToNativeVisualTree) {
                 this._removeViewFromNativeVisualTree(cv);
             }
@@ -147,12 +147,12 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         const oldLayout = <LayoutBase>oldParent;
 
         if (addingToParent && newLayout instanceof LayoutBase) {
-            this._eachChildView((child) => {
+            this.eachChildView((child) => {
                 newLayout._registerLayoutChild(child);
                 return true;
             });
         } else if (oldLayout instanceof LayoutBase) {
-            this._eachChildView((child) => {
+            this.eachChildView((child) => {
                 oldLayout._unregisterLayoutChild(child);
                 return true;
             });

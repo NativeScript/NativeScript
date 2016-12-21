@@ -396,7 +396,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return 0;
     }
 
-    public _eachChildView(callback: (child: View) => boolean) {
+    public eachChildView(callback: (child: View) => boolean) {
         if (this.currentPage) {
             callback(this.currentPage);
         }

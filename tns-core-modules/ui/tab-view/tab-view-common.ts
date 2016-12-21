@@ -87,37 +87,6 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
         }
     }
 
-    public _removeTabs(oldItems: Array<TabViewItemDefinition>) {
-        for (let i = 0, length = oldItems.length; i < length; i++) {
-            let oldItem = oldItems[i];
-
-            if (!oldItem) {
-                throw new Error("TabViewItem at index " + i + " is undefined.");
-            }
-
-            if (!oldItem.view) {
-                throw new Error("TabViewItem at index " + i + " does not have a view.");
-            }
-            this._removeView(oldItem);
-        }
-    }
-
-    public _addTabs(newItems: Array<TabViewItemDefinition>) {
-        // Validate that all items are ok before the native _addTabs code runs.
-        for (let i = 0, length = newItems.length; i < length; i++) {
-            let newItem = newItems[i];
-
-            if (!newItem) {
-                throw new Error(`TabViewItem at index ${i} is undefined.`);
-            }
-
-            if (!newItem.view) {
-                throw new Error(`TabViewItem at index ${i} does not have a view.`);
-            }
-            this._addView(newItem);
-        }
-    }
-
     get _selectedView(): View {
         let selectedIndex = this.selectedIndex;
         return selectedIndex > -1 ? this.items[selectedIndex].view : null;
@@ -131,17 +100,21 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
         return 0;
     }
 
-    public _eachChildView(callback: (child: ViewBase) => boolean) {
+    public eachChild(callback: (child: ViewBase) => boolean) {
         const items = this.items;
-        if (!items) {
-            return;
-        }
-
-        for (let i = 0, length = items.length; i < length; i++) {
-            let item = items[i];
-            if (item) {
+        if (items) {
+            items.forEach((item, i) => {
                 callback(item);
-            }
+            });
+        }
+    }
+
+    public eachChildView(callback: (child: View) => boolean) {
+        const items = this.items;
+        if (items) {
+            items.forEach((item, i) => {
+                callback(item.view);
+            });
         }
     }
 
