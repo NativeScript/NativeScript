@@ -117,13 +117,13 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
                         delete this[defaultValueKey];
                     }
                 } else {
-                    this[key] = value;
+                    this[key] = unboxedValue;
                     if (setNativeValue) {
                         if (!(defaultValueKey in this)) {
                             this[defaultValueKey] = this[native];
                         }
 
-                        this[native] = value;
+                        this[native] = unboxedValue;
                     }
                 }
 
