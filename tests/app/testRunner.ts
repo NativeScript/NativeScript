@@ -29,28 +29,29 @@ export function isRunningOnEmulator(): boolean {
 
 export var allTests = {};
 
-// allTests["PLATFORM"] = require("./platform-tests");
-// allTests["FILE SYSTEM"] = require("./file-system-tests");
-// allTests["HTTP"] = require("./http-tests");
-// allTests["XHR"] = require("./xhr-tests");
-// allTests["FETCH"] = require("./fetch-tests");
-// allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
-// allTests["APPLICATION"] = require("./application-tests");
-// allTests["IMAGE SOURCE"] = require("./image-source-tests");
-// allTests["OBSERVABLE-ARRAY"] = require("./data/observable-array-tests");
-// allTests["VIRTUAL-ARRAY"] = require("./data/virtual-array-tests");
-// allTests["OBSERVABLE"] = require("./data/observable-tests");
-// allTests["TIMER"] = require("./timer-tests");
-// allTests["COLOR"] = require("./color-tests");
-// allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
+allTests["PLATFORM"] = require("./platform-tests");
+allTests["FILE SYSTEM"] = require("./file-system-tests");
+allTests["HTTP"] = require("./http-tests");
+allTests["XHR"] = require("./xhr-tests");
+allTests["FETCH"] = require("./fetch-tests");
+allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
+allTests["APPLICATION"] = require("./application-tests");
+allTests["IMAGE SOURCE"] = require("./image-source-tests");
+allTests["OBSERVABLE-ARRAY"] = require("./data/observable-array-tests");
+allTests["VIRTUAL-ARRAY"] = require("./data/virtual-array-tests");
+allTests["OBSERVABLE"] = require("./data/observable-tests");
+allTests["TIMER"] = require("./timer-tests");
+allTests["COLOR"] = require("./color-tests");
+
+allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
 // allTests["BINDABLE"] = require("./ui/bindable-tests");
 // allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
-// allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
+allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
 // allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
-// allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
-// allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
-// allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
-// allTests["CONNECTIVITY"] = require("./connectivity-tests");
+allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
+allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
+allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
+allTests["CONNECTIVITY"] = require("./connectivity-tests");
 
 // allTests["PROXY-VIEW-CONTAINER"] = require("./ui/proxy-view-container/proxy-view-container-tests")
 // allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");

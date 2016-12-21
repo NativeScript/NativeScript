@@ -542,7 +542,7 @@ interface NativePercentLengthPropertyOptions {
     setPercent?: NativeSetter
 }
 function createNativePercentLengthProperty({key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported}: NativePercentLengthPropertyOptions) {
-    Object.defineProperty(View, key, {
+    Object.defineProperty(View.prototype, key, {
         get: function (this: View) { return { value: getPixels(this.nativeView), unit: "px" } },
         set: function (this: View, length: PercentLength) {
             if (length == "auto") {

@@ -3,6 +3,9 @@ import { View, layout, Property } from "ui/core/view";
 
 export * from "ui/core/view";
 
+// TODO: Can we use Label.ios optimization for affectsLayout???
+export const htmlProperty = new Property<HtmlView, string>({ name: "html", defaultValue: "", affectsLayout: true });
+
 export class HtmlView extends View implements HtmlViewDefinition {
     private _ios: UITextView;
 
@@ -70,6 +73,4 @@ export class HtmlView extends View implements HtmlViewDefinition {
     }
 }
 
-// TODO: Can we use Label.ios optimization for affectsLayout???
-export const htmlProperty = new Property<HtmlView, string>({ name: "html", defaultValue: "", affectsLayout: true });
 htmlProperty.register(HtmlView);

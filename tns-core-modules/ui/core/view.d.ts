@@ -104,10 +104,10 @@ declare module "ui/core/view" {
         export function equals(a: Length, b: Length): boolean;
         /**
          * Converts Length unit to device pixels.
-         * @param length The PercentLength to convert.
+         * @param length The Length to convert.
          * @param auto Value to use for conversion of "auto".
          */
-        export function toDevicePixels(length: PercentLength, auto: number): number;
+        export function toDevicePixels(length: Length, auto: number): number;
     }
 
     export type PercentLength = "auto" | number | {

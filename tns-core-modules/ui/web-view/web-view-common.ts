@@ -6,6 +6,8 @@ import { File, knownFolders, path } from "file-system";
 export { File, knownFolders, path };
 export * from "ui/core/view";
 
+export const srcProperty = new Property<WebViewBase, string>({ name: "url" });
+
 export abstract class WebViewBase extends View implements WebViewDefinition {
     public static loadStartedEvent = "loadStarted";
     public static loadFinishedEvent = "loadFinished";
@@ -103,5 +105,4 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
     }
 }
 
-export const srcProperty = new Property<WebViewBase, string>({ name: "url" });
 srcProperty.register(WebViewBase);
