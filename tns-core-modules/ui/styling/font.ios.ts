@@ -3,6 +3,8 @@ import { enabled as traceEnabled, write as traceWrite, categories as traceCatego
 import * as fs from "file-system";
 import * as utils from "utils/utils";
 
+export * from "./font-common";
+
 export class Font extends FontBase {
     public static default = new Font(undefined, undefined, FontStyle.NORMAL, FontWeight.NORMAL);
 

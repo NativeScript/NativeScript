@@ -99,7 +99,7 @@ export class Transition implements TransitionDefinition {
     }
 
     public toString(): string {
-        return `${this}@${this._id}`;
+        return `Transition@${this._id}`;
     }
 }
 
