@@ -20,25 +20,25 @@ enum FixedSize {
 const zeroLength: Length = {
     value: 0,
     unit: "px"
-}
+};
 
 export class Label extends TextBase implements LabelDefinition {
-    private _ios: TNSLabel;
+    public nativeView: TNSLabel;
     private _fixedSize: FixedSize;
 
     constructor() {
         super();
 
-        this._ios = TNSLabel.new();
-        this._ios.userInteractionEnabled = true;
+        this.nativeView = TNSLabel.new();
+        this.nativeView.userInteractionEnabled = true;
     }
 
     get ios(): TNSLabel {
-        return this._ios;
+        return this.nativeView;
     }
 
     get _nativeView(): TNSLabel {
-        return this._ios;
+        return this.nativeView;
     }
 
     get textWrap(): boolean {
@@ -106,7 +106,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
     set [whiteSpaceProperty.native](value: WhiteSpace) {
         let nativeView = this.nativeView;
-        switch(value){
+        switch (value) {
             case WhiteSpace.NORMAL:
                 nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
                 nativeView.numberOfLines = 0;
@@ -115,7 +115,7 @@ export class Label extends TextBase implements LabelDefinition {
                 nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
                 nativeView.numberOfLines = 1;
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }

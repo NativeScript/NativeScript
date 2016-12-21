@@ -45,9 +45,9 @@ allTests["COLOR"] = require("./color-tests");
 
 allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
 // allTests["BINDABLE"] = require("./ui/bindable-tests");
-// allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
+allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
 allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
-// allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
+allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
 allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
 allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
 allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
