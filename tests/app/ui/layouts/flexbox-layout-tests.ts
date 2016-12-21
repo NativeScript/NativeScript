@@ -10,7 +10,7 @@ import {
 } from "ui/layouts/flexbox-layout";
 // << flexbox-layout-require
 
-import {View, unsetValue, Length} from "ui/core/view";
+import {View, unsetValue, Length, PercentLength} from "ui/core/view";
 import {Label} from "ui/label";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
@@ -1844,7 +1844,7 @@ export const testWrap_childMargin_horizontal = test(
     ({flexbox, text1, text2, text3}) => {
         isBelow(text2, text1);
         isRightOf(text3, text2);
-        closeEnough(height(flexbox), height(text1) + height(text2) + Length.toDevicePixels(text2.style.marginTop, 0) + Length.toDevicePixels(text2.style.marginBottom, 0));
+        closeEnough(height(flexbox), height(text1) + height(text2) + PercentLength.toDevicePixels(text2.style.marginTop, 0, Number.NaN) + PercentLength.toDevicePixels(text2.style.marginBottom, 0, Number.NaN));
     }
 );
 
@@ -1907,7 +1907,7 @@ export const testWrap_childMargin_vertical = test(
         isRightOf(text2, text1);
         isBelow(text3, text2);
         // dips anyone?
-        closeEnough(width(flexbox), width(text1) + width(text2) + Length.toDevicePixels(text2.marginLeft, 0) + Length.toDevicePixels(text2.marginRight, 0));
+        closeEnough(width(flexbox), width(text1) + width(text2) + PercentLength.toDevicePixels(text2.marginLeft, 0, Number.NaN) + PercentLength.toDevicePixels(text2.marginRight, 0, Number.NaN));
     }
 );
 
