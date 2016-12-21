@@ -227,7 +227,7 @@ export class ListView extends ListViewBase {
         return this._map.size;
     }
 
-    public _eachChildView(callback: (child: View) => boolean): void {
+    public eachChildView(callback: (child: View) => boolean): void {
         this._map.forEach((view, key) => {
             callback(view);
         });

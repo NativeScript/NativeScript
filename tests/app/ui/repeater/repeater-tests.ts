@@ -353,12 +353,12 @@ export var test_RepeaterItemsGestureBindings = function () {
                 hasObservers = gestureObservers ? gestureObservers.length > 0 : false;
             }
             else if (childItem instanceof layoutBaseModule.LayoutBase) {
-                childItem._eachChildView(eachChildCallback);
+                childItem.eachChildView(eachChildCallback);
             }
             return true;
         }
 
-        repeater._eachChildView(eachChildCallback);
+        repeater.eachChildView(eachChildCallback);
 
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
     }
@@ -380,12 +380,12 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
                 }
             }
             else if (childItem instanceof layoutBaseModule.LayoutBase) {
-                childItem._eachChildView(eachChildCallback);
+                childItem.eachChildView(eachChildCallback);
             }
             return true;
         }
 
-        repeater._eachChildView(eachChildCallback);
+        repeater.eachChildView(eachChildCallback);
 
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
     }

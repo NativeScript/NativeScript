@@ -148,23 +148,18 @@ export class View extends ViewCommon {
             traceNotifyEvent(this, "_onAttached");
         }
 
-        if (this._childrenCount > 0) {
-            // Notify each child for the _onAttached event
-            let that = this;
-            // TODO: This should be done in a call 
-            let eachChild = (child: View): boolean => {
-                child._onAttached(context);
-                if (!child._isAddedToNativeVisualTree) {
-                    // since we have lazy loading of the android widgets, we need to add the native instances at this point.
-                    child._isAddedToNativeVisualTree = that._addViewToNativeVisualTree(child);
-                }
-
-                // copy all the locally cached values to the native android widget
-                return true;
+        // Notify each child for the _onAttached event
+        this.eachChildView((child) => {
+            child._onAttached(context);
+            if (!child._isAddedToNativeVisualTree) {
+                // since we have lazy loading of the android widgets, we need to add the native instances at this point.
+                child._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(child);
             }
-            this._eachChildView(eachChild);
-        } 
 
+            return true;
+        });
+
+        // copy all the locally cached values to the native android widget
         applyNativeSetters(this);
     }
 
@@ -173,20 +168,16 @@ export class View extends ViewCommon {
             traceWrite(`${this}._onDetached(force)`, traceCategories.VisualTreeEvents);
         }
 
-        if (this._childrenCount > 0) {
-            // Detach children first
-            let that = this;
-            let eachChild = function (child: View): boolean {
-                if (child._isAddedToNativeVisualTree) {
-                    that._removeViewFromNativeVisualTree(child);
-                }
-                if (child._context) {
-                    child._onDetached(force);
-                }
-                return true;
+        // Detach children first
+        this.eachChildView((child: View) => {
+            if (child._isAddedToNativeVisualTree) {
+                this._removeViewFromNativeVisualTree(child);
             }
-            this._eachChildView(eachChild);
-        }
+            if (child._context) {
+                child._onDetached(force);
+            }
+            return true;
+        });
 
         this._clearAndroidReference();
         this._context = undefined;
@@ -215,6 +206,7 @@ export class View extends ViewCommon {
         if (traceEnabled) {
             traceWrite(`${this}._onContextChanged`, traceCategories.VisualTreeEvents);
         }
+
         this._createUI();
         // Ensure layout params
         if (this._nativeView && !this._nativeView.getLayoutParams()) {
@@ -432,7 +424,7 @@ export class View extends ViewCommon {
                 return Visibility.HIDDEN;
             case android.view.View.GONE:
                 return Visibility.COLLAPSE;
-            default: 
+            default:
                 throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
         }
     }
@@ -447,7 +439,7 @@ export class View extends ViewCommon {
             case Visibility.COLLAPSE:
                 this.nativeView.setVisibility(android.view.View.GONE);
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
         }
     }

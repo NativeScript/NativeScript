@@ -141,15 +141,32 @@ export class ActionBarBase extends View implements ActionBarDefinition {
     //     this._actionItems.getItems().forEach((item, i, arr) => { item.bindingContext = newValue; });
     // }
 
-    public _eachChildView(callback: (child: View) => boolean) {
-        if (this.titleView) {
-            callback(this.titleView);
+    public eachChildView(callback: (child: View) => boolean) {
+        const titleView = this.titleView;
+        if (titleView) {
+            callback(titleView);
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView) {
                 callback(actionItem.actionView);
             }
+        });
+    }
+
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        const titleView = this.titleView;
+        if (titleView) {
+            callback(titleView);
+        }
+
+        const navigationButton = this._navigationButton;
+        if (navigationButton) {
+            callback(navigationButton);
+        }
+
+        this.actionItems.getItems().forEach((actionItem) => {
+            callback(actionItem);
         });
     }
 

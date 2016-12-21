@@ -121,23 +121,24 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
 }
 
 export class TabViewItem extends TabViewItemBase {
-    public _controller: UIViewController;
-    public _parent: TabView;
 
     public _update() {
-        if (this._parent && this._controller) {
-            const icon = this._parent._getIcon(this.iconSource);
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((this.title), icon, this._parent.items.indexOf(this));
+        const parent = <TabView>this.parent;
+        let controller = <UIViewController>this.nativeView;
+        if (parent && controller) {
+            const icon = parent._getIcon(this.iconSource);
+            const index = parent.items.indexOf(this);
+            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(this.title, icon, index);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
             }
 
             // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
             // Delete the repeating code.
-            const states = getTitleAttributesForStates(this._parent);
+            const states = getTitleAttributesForStates(parent);
             tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
             tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
-            this._controller.tabBarItem = tabBarItem;
+            controller.tabBarItem = tabBarItem;
         }
     }
 }
@@ -226,47 +227,30 @@ export class TabView extends TabViewBase {
         }
     }
 
-    public _removeTabs(oldItems: Array<TabViewItem>) {
-        if (traceEnabled) {
-            traceWrite("TabView._removeTabs(" + oldItems + ");", traceCategories.Debug);
-        }
-        super._removeTabs(oldItems);
-
-        for (let i = 0, length = oldItems.length; i < length; i++) {
-            let oldItem = oldItems[i];
-            oldItem._parent = null;
-            oldItem._controller = null;
+    private setViewControllers(items: Array<TabViewItem>) {
+        const length = items ? items.length : 0;
+        if (length === 0) {
+            this._ios.viewControllers = null;
+            return;
         }
 
-        this._ios.viewControllers = null;
-    }
-
-    public _addTabs(newItems: Array<TabViewItem>) {
-        if (traceEnabled) {
-            traceWrite("TabView._addTabs(" + newItems + ");", traceCategories.Debug);
-        }
-        super._addTabs(newItems);
-
-        const length = newItems.length;
-        const newControllers: NSMutableArray<any> = NSMutableArray.alloc().initWithCapacity(length);
+        const controllers = NSMutableArray.alloc<UIViewController>().initWithCapacity(length);
         const states = getTitleAttributesForStates(this);
 
         for (let i = 0; i < length; i++) {
-            const item = <TabViewItem>newItems[i];
+            const item = items[i];
             let newController: UIViewController;
 
             if (item.view.ios instanceof UIViewController) {
-                newController = <UIViewController>item.view.ios;
+                newController = item.view.ios;
             } else {
                 newController = UIViewController.new();
                 newController.view.addSubview(item.view.ios);
             }
 
-            item._parent = this;
-            item._controller = newController;
+            item.nativeView = newController;
 
             const icon = this._getIcon(item.iconSource);
-
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
@@ -275,17 +259,17 @@ export class TabView extends TabViewBase {
             tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
 
             newController.tabBarItem = tabBarItem;
-            newControllers.addObject(newController);
+            controllers.addObject(newController);
         }
 
-        this._ios.viewControllers = newControllers;
+        this._ios.viewControllers = controllers;
         this._ios.customizableViewControllers = null;
 
         // When we set this._ios.viewControllers, someone is clearing the moreNavigationController.delegate, so we have to reassign it each time here.
         this._ios.moreNavigationController.delegate = this._moreNavigationControllerDelegate;
 
-        if (this._ios.selectedIndex !== this.selectedIndex) {
-            this._ios.selectedIndex = this.selectedIndex;
+        if (this.selectedIndex < 0) {
+            this.selectedIndex = this._ios.selectedIndex;
         }
     }
 
@@ -399,19 +383,6 @@ export class TabView extends TabViewBase {
         }
     }
 
-    private _onItemsPropertyChangedSetNativeValue() {
-        throw new Error("Compilation error: Can't find this.previousItems");
-        // let oldValue = <TabViewItem[]>this.previousItems;
-        // if (oldValue) {
-        //     this._removeTabs(oldValue);
-        // }
-
-        // let newValue = <TabViewItem[]>this.items;
-        // if (newValue) {
-        //     this._addTabs(newValue);
-        // }
-    }
-
     get [selectedIndexProperty.native](): number {
         return -1;
     }
@@ -429,7 +400,7 @@ export class TabView extends TabViewBase {
         return null;
     }
     set [itemsProperty.native](value: TabViewItemBase[]) {
-        this._onItemsPropertyChangedSetNativeValue();
+        this.setViewControllers(value);
     }
 
     get [tabTextColorProperty.native](): UIColor {
@@ -479,7 +450,7 @@ export class TabView extends TabViewBase {
         let items = this.items;
         if (items && items.length) {
             for (let i = 0, length = items.length; i < length; i++) {
-                const item = items[i]; 
+                const item = items[i];
                 if (items[i].iconSource) {
                     (<TabViewItem>items[i])._update();
                 }
@@ -495,7 +466,7 @@ function getTitleAttributesForStates(tabView: TabView): { normalState: any, sele
     }
 
     const selectedState = {};
-    let tabItemTextColor = tabView.style.tabTextColor; 
+    let tabItemTextColor = tabView.style.tabTextColor;
     if (tabItemTextColor instanceof Color) {
         selectedState[UITextAttributeTextColor] = tabItemTextColor.ios;
     }
