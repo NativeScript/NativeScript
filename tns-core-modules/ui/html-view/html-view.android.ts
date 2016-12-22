@@ -1,16 +1,15 @@
-﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
-import { View, Property } from "ui/core/view";
+﻿import {
+    HtmlViewBase, htmlProperty
+} from "./html-view-common";
 
-export * from "ui/core/view";
+export * from "./html-view-common";
 
-export class HtmlView extends View implements HtmlViewDefinition {
+export class HtmlView extends HtmlViewBase {
     private _android: android.widget.TextView;
 
     get android(): android.widget.TextView {
         return this._android;
     }
-
-    public html: string;
 
     public _createUI() {
         this._android = new android.widget.TextView(this._context);
@@ -34,7 +33,3 @@ export class HtmlView extends View implements HtmlViewDefinition {
         this._android.setText(<any>android.text.Html.fromHtml(value));
     }
 }
-
-// TODO: Can we use Label.ios optimization for affectsLayout???
-export const htmlProperty = new Property<HtmlView, string>({ name: "html", defaultValue: "", affectsLayout: true });
-htmlProperty.register(HtmlView);

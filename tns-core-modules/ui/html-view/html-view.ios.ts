@@ -1,12 +1,10 @@
-﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
-import { View, layout, Property } from "ui/core/view";
+﻿import {
+    HtmlViewBase, View, layout,  htmlProperty
+} from "./html-view-common";
 
-export * from "ui/core/view";
+export * from "./html-view-common";
 
-// TODO: Can we use Label.ios optimization for affectsLayout???
-export const htmlProperty = new Property<HtmlView, string>({ name: "html", defaultValue: "", affectsLayout: true });
-
-export class HtmlView extends View implements HtmlViewDefinition {
+export class HtmlView extends HtmlViewBase {
     private _ios: UITextView;
 
     constructor() {
@@ -19,8 +17,6 @@ export class HtmlView extends View implements HtmlViewDefinition {
         this._ios.userInteractionEnabled = true;
         this._ios.dataDetectorTypes = UIDataDetectorTypes.All;
     }
-
-    public html: string;
 
     get ios(): UITextView {
         return this._ios;
