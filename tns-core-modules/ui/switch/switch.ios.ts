@@ -1,7 +1,8 @@
-﻿import { Switch as SwitchDefinition } from "ui/switch";
-import { View, layout, Color, Property, colorProperty, backgroundColorProperty, backgroundInternalProperty, booleanConverter } from "ui/core/view";
+﻿import {
+    SwitchBase, layout, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty
+} from "./switch-common";
 
-export * from "ui/core/view";
+export * from "./switch-common";
 
 class SwitchChangeHandlerImpl extends NSObject {
 
@@ -25,7 +26,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     };
 }
 
-export class Switch extends View implements SwitchDefinition {
+export class Switch extends SwitchBase {
     private _ios: UISwitch;
     private _handler: NSObject;
 
@@ -36,8 +37,6 @@ export class Switch extends View implements SwitchDefinition {
         this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
     }
-
-    public checked: boolean;
 
     get ios(): UISwitch {
         return this._ios;
@@ -82,6 +81,3 @@ export class Switch extends View implements SwitchDefinition {
         //
     }
 }
-
-export const checkedProperty = new Property<Switch, boolean>({ name: "checked", defaultValue: false, valueConverter: booleanConverter });
-checkedProperty.register(Switch);
