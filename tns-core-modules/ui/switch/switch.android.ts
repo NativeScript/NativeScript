@@ -1,7 +1,8 @@
-﻿import { Switch as SwitchDefinition } from "ui/switch";
-import { View, Color, Property, colorProperty, backgroundColorProperty, backgroundInternalProperty, booleanConverter } from "ui/core/view";
+﻿import {
+    SwitchBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty
+} from "./switch-common";
 
-export * from "ui/core/view";
+export * from "./switch-common";
 
 @Interfaces([android.widget.CompoundButton.OnCheckedChangeListener])
 class CheckedChangeListener extends java.lang.Object implements android.widget.CompoundButton.OnCheckedChangeListener {
@@ -18,7 +19,7 @@ class CheckedChangeListener extends java.lang.Object implements android.widget.C
     }
 }
 
-export class Switch extends View implements SwitchDefinition {
+export class Switch extends SwitchBase {
     private _android: android.widget.Switch;
     private listener: android.widget.CompoundButton.OnCheckedChangeListener;
     public checked: boolean;
@@ -69,6 +70,3 @@ export class Switch extends View implements SwitchDefinition {
         //
     }
 }
-
-export const checkedProperty = new Property<Switch, boolean>({ name: "checked", defaultValue: false, valueConverter: booleanConverter });
-checkedProperty.register(Switch);
