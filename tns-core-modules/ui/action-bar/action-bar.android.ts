@@ -1,5 +1,5 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from "ui/action-bar";
-import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, Color } from "./action-bar-common";
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty } from "./action-bar-common";
 import { RESOURCE_PREFIX } from "utils/utils";
 import { fromFileOrResource } from "image-source";
 import * as application from "application";
@@ -330,7 +330,6 @@ export class ActionBar extends ActionBarBase {
             this.nativeView.removeView(child._nativeView);
         }
     }
-
 
     get [colorProperty.native](): number {
         if (!defaultTitleTextColor) {

@@ -1,5 +1,5 @@
 ﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from "ui/layouts/absolute-layout";
-import { LayoutBase, View, Property, Length, lengthComparer, zeroLength, getLengthEffectiveValue } from "ui/layouts/layout-base";
+import { LayoutBase, View, Property, Length, zeroLength, getLengthEffectiveValue } from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 

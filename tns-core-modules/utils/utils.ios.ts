@@ -1,9 +1,7 @@
-﻿import * as dts from "utils/utils";
-import { Color } from "color";
+﻿import { Color } from "color";
 import * as fsModule from "file-system";
 import {
-    enabled as traceEnabled, write as traceWrite, categories as traceCategories,
-    messageType as traceMessageType, notifyEvent as traceNotifyEvent, isCategorySet
+    write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "trace";
 
 export * from "./utils-common";

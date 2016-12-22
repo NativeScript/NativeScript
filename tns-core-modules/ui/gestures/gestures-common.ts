@@ -1,4 +1,4 @@
-﻿import { GestureTypes as GestureTypesDefinition, GestureEventData, GesturesObserver as GesturesObserverDefinition } from "ui/gestures";
+﻿import { GestureEventData as GestureEventData, GesturesObserver as GesturesObserverDefinition } from "ui/gestures";
 import { View } from "ui/core/view";
 
 export { View, EventData, layout } from "ui/core/view";

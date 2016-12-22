@@ -3,9 +3,7 @@ import { DockLayout } from "ui/layouts/dock-layout";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
-import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";
-import { PercentLength } from "ui/core/view";
 
 // >> dock-layout-require
 import * as dockModule from "ui/layouts/dock-layout";

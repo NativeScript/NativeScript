@@ -21,9 +21,6 @@ Using a WrapLayout requires the WrapLayout module.
 </Page>
 ```
 
-Other frequently used modules when working with a WrapLayout include:
-{%snippet wrap-layout-others%}
-
 ## Creating a WrapLayout
 {%snippet wrap-layout-new%}
 

@@ -86,7 +86,6 @@ export class Image extends ImageBase {
 
         let value = this.src;
         let async = this.loadMode === ASYNC;
-        let owner = new WeakRef<Image>(this);
         this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
         
         this.imageSource = <any>unsetValue;

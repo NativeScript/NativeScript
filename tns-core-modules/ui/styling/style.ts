@@ -1,7 +1,6 @@
 import { Style as StyleDefinition } from "ui/styling/style";
 import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 import { Observable } from "data/observable";
-import { resetStyleProperties } from "ui/core/properties";
 
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,

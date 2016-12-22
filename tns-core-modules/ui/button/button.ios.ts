@@ -1,6 +1,6 @@
 ﻿import { ControlStateChangeListener } from "ui/core/control-state-change";
 import {
-    View, ButtonBase, PseudoClassHandler, textProperty, formattedTextProperty, whiteSpaceProperty,
+    ButtonBase, PseudoClassHandler, whiteSpaceProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace
 } from "./button-common";

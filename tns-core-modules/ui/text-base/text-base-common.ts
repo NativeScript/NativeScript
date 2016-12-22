@@ -1,13 +1,11 @@
 import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser } from "ui/core/view";
+import { View, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser } from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
 import { FormattedString, FormattedStringView } from "text/formatted-string";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 
 export { FormattedString };
 export * from "ui/core/view";
-
-const CHILD_SPAN = "Span";
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
 

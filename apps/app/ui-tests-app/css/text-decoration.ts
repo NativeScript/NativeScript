@@ -1,5 +1,4 @@
 ﻿import { EventData, TextBase, TextDecoration } from "ui/text-base";
-import { Page } from "ui/page";
 
 const possibleValues = [
     TextDecoration.NONE, 

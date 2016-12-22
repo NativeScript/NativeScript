@@ -1,12 +1,10 @@
 ﻿import {
-    PageBase, View, layout, Color,
-    actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty,
+    PageBase, View, layout,
+    actionBarHiddenProperty, statusBarStyleProperty,
     traceEnabled, traceWrite, traceCategories
 } from "./page-common";
 import { ios as iosApp } from "application";
 import { device } from "platform";
-import { ActionBar } from "ui/action-bar";
-import { GridLayout } from "ui/layouts/grid-layout";
 import * as uiUtils from "ui/utils";
 
 export * from "./page-common";

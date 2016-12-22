@@ -178,7 +178,6 @@ export class SegmentedBar extends SegmentedBarBase {
     private _android: android.widget.TabHost;
     private listener: android.widget.TabHost.OnTabChangeListener;
     private tabContentFactory: android.widget.TabHost.TabContentFactory;
-    private apiLevel: number;
 
     public _createUI() {
         ensureTabHostClass();
@@ -222,10 +221,10 @@ export class SegmentedBar extends SegmentedBarBase {
         // this.resetNativeListener();
     }
 
-    private resetNativeListener() {
-        this.android.setOnTabChangedListener(null);
-        this.android.setOnTabChangedListener(this.listener);
-    }
+    // private resetNativeListener() {
+    //     this.android.setOnTabChangedListener(null);
+    //     this.android.setOnTabChangedListener(this.listener);
+    // }
 
     get [selectedIndexProperty.native](): number {
         return -1;

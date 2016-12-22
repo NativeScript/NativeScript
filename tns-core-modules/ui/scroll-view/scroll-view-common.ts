@@ -1,5 +1,5 @@
 ﻿import { ScrollView as ScrollViewDefinition } from "ui/scroll-view";
-import { ContentView, EventData, Property } from "ui/content-view";
+import { ContentView, Property } from "ui/content-view";
 
 export * from "ui/content-view";
 
@@ -78,7 +78,6 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public abstract scrollToVerticalOffset(value: number, animated: boolean);
     public abstract scrollToHorizontalOffset(value: number, animated: boolean);
 }
-
 
 export const orientationProperty = new Property<ScrollViewBase, "horizontal" | "vertical">({
     name: "orientation", defaultValue: "vertical", affectsLayout: true, valueConverter: (value) => {

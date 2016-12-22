@@ -1,6 +1,6 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
 import {
-    ContentView, EventData, View, Template, KeyedTemplate, Length, backgroundColorProperty,
+    ContentView, View, backgroundColorProperty,
     eachDescendant, Property, Color, isIOS, booleanConverter, resetStyleProperties
 } from "ui/content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
@@ -50,7 +50,6 @@ export class PageBase extends ContentView implements PageDefinition {
     //     this._applyCss();
     //     super.onLoaded();
     // }
-
 
     get navigationContext(): any {
         return this._navigationContext;

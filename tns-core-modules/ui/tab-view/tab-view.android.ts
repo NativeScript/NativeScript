@@ -2,7 +2,7 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontInternalProperty, traceCategory, View, colorProperty, layout, Bindable, isIOS, Color, Font, traceEnabled, traceWrite
+    fontInternalProperty, traceCategory, View, colorProperty, layout, Color, Font, traceEnabled, traceWrite
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";

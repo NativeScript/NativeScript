@@ -22,7 +22,7 @@ import { Label } from "ui/label";
 import { EventData } from "data/observable";
 import { PercentLength } from "ui/core/view";
 import * as platform from "platform";
-import {unsetValue, Length} from "ui/core/view";
+import {unsetValue} from "ui/core/view";
 
 export function addLabelToPage(page: Page, text?: string) {
     let label = new Label();

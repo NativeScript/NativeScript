@@ -679,7 +679,6 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             traceWrite(`${fragment}.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
         }
 
-
         superFunc.call(fragment, savedInstanceState);
         // There is no entry set to the fragment, so this must be destroyed fragment that was recreated by Android.
         // We should find its corresponding page in our backstack and set it manually.

@@ -1,6 +1,6 @@
 ﻿import {
-    ButtonBase, textProperty, formattedTextProperty, TouchGestureEventData, FormattedString, GestureTypes, TouchAction,
-    PseudoClassHandler, TextTransform
+    ButtonBase, TouchGestureEventData, GestureTypes, TouchAction,
+    PseudoClassHandler
 } from "./button-common";
 
 export * from "./button-common";
@@ -22,7 +22,6 @@ class ClickListener extends java.lang.Object implements android.view.View.OnClic
 
 export class Button extends ButtonBase {
     _button: android.widget.Button;
-    private _isPressed: boolean;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     get android(): android.widget.Button {

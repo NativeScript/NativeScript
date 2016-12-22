@@ -1,15 +1,12 @@
 ﻿import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
-    tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty, traceCategory,
-    Font, View, colorProperty, fontInternalProperty, layout, Color, traceEnabled, traceWrite, traceCategories
+    tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
+    Font, View, fontInternalProperty, layout, Color, traceEnabled, traceWrite, traceCategories
 } from "./tab-view-common"
 
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
 import { Page } from "ui/page";
-import { ios } from "utils/utils";
-
-import getter = ios.getter;
 
 export * from "./tab-view-common";
 
@@ -451,8 +448,8 @@ export class TabView extends TabViewBase {
         if (items && items.length) {
             for (let i = 0, length = items.length; i < length; i++) {
                 const item = items[i];
-                if (items[i].iconSource) {
-                    (<TabViewItem>items[i])._update();
+                if (item.iconSource) {
+                    (<TabViewItem>item)._update();
                 }
             }
         }

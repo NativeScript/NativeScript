@@ -1,5 +1,5 @@
 import { WebView as WebViewDefinition, LoadEventData } from "ui/web-view";
-import { View, Property, EventData } from "ui/core/view";
+import { View, Property } from "ui/core/view";
 import { isFileOrResourcePath } from "utils/utils";
 import { File, knownFolders, path } from "file-system";
 

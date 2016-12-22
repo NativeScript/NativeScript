@@ -1,5 +1,5 @@
 ﻿import { SearchBar as SearchBarDefinition } from "ui/search-bar";
-import { View, Property, EventData, Color, isIOS } from "ui/core/view";
+import { View, Property, Color, isIOS } from "ui/core/view";
 
 export * from "ui/core/view";
 

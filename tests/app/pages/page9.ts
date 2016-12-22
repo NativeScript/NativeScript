@@ -1,7 +1,6 @@
 ﻿import * as pages from "ui/page";
 import * as imageSource from "image-source";
 import * as gridModule from "ui/layouts/grid-layout";
-import * as enums from "ui/enums";
 import * as img from "ui/image";
 
 export function createPage() {

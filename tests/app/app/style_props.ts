@@ -1,13 +1,14 @@
-﻿import * as style from "ui/styling/style";
-import {PropertyMetadata, PropertyMetadataSettings} from "ui/core/dependency-observable";
-import * as view from "ui/core/view";
-import * as buttonModule from "ui/button";
+﻿import * as buttonModule from "ui/button";
 import * as pages from "ui/page";
 import * as stackLayoutDef from "ui/layouts/stack-layout";
-import {isAndroid} from "platform";
+
+// import {isAndroid} from "platform";
+// import * as style from "ui/styling/style";
+// import {PropertyMetadata, PropertyMetadataSettings} from "ui/core/dependency-observable";
+// import * as view from "ui/core/view";
 
 // on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+// let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
 
 // export var fontFamilyProperty = new styleProperty.Property("fontFamily", "font-family", new PropertyMetadata(undefined, AffectsLayout));
 

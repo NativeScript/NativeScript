@@ -8,7 +8,6 @@ import * as labelModule from "ui/label";
 import * as color from "color";
 
 import {SelectorCore} from "ui/styling/css-selector";
-import { unsetValue } from "ui/core/view";
 
 //import * as styling from "ui/styling";
 

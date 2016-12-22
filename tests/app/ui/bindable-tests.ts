@@ -1,7 +1,6 @@
-﻿import { Observable, fromObjectRecursive } from "data/observable";
+import { Observable, fromObjectRecursive } from "data/observable";
 import { ViewBase } from "ui/core/view-base";
 import { BindingOptions } from "ui/core/bindable";
-
 import * as TKUnit from "../TKUnit";
 import * as types from "utils/types";
 import * as helper from "../ui/helper";

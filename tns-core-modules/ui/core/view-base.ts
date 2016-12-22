@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData } from "data/observable";
-import { Property, InheritedProperty, CssProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetStyleProperties } from "./properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetStyleProperties } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -506,7 +506,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
-
 
 function onCssClassPropertyChanged(view: ViewBase, oldValue: string, newValue: string) {
     let classes = view.cssClasses;

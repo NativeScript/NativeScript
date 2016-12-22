@@ -2,7 +2,7 @@
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty,
     Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, layout
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -54,7 +54,6 @@ export class TextBase extends TextBaseCommon {
         let textView = this._nativeView;
 
         let typeface: android.graphics.Typeface;
-        let fontSize: number;
         if (value instanceof Font) {
             typeface = value.getAndroidTypeface();
             textView.setTextSize(value.fontSize);

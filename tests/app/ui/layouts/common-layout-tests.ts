@@ -1,6 +1,5 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as layoutHelper from "./layout-helper";
-import * as enums from "ui/enums";
 import * as testModule from "../../ui-test";
 import {LayoutBase, unsetValue, PercentLength} from "ui/layouts/layout-base";
 import * as platform from "platform";

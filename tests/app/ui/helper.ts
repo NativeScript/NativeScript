@@ -5,7 +5,6 @@ import * as stackLayoutModule from "ui/layouts/stack-layout";
 import * as button from "ui/button";
 import * as TKUnit from "../TKUnit";
 import * as utils from "utils/utils";
-import * as types from "utils/types";
 import * as platform from "platform";
 import * as colorModule from "color";
 import * as formattedStringModule from "text/formatted-string";

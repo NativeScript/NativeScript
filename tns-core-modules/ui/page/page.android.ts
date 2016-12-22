@@ -1,4 +1,4 @@
-﻿import { View, PageBase, Color, actionBarHiddenProperty, enableSwipeBackNavigationProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty, HorizontalAlignment, VerticalAlignment } from "./page-common";
+﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty, HorizontalAlignment, VerticalAlignment } from "./page-common";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";

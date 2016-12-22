@@ -1,10 +1,7 @@
-﻿import { Length, Point, CustomLayoutView as CustomLayoutViewDefinition, View as ViewDefinition } from "ui/core/view";
+﻿import { Point, View as ViewDefinition } from "ui/core/view";
 import { ios } from "ui/styling/background";
 import {
-    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
-    widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
-    marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
     clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background, Visibility

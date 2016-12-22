@@ -1,4 +1,4 @@
-import { PercentLength, Length, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
+import { PercentLength, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
 import { ad as androidBackground } from "ui/styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
@@ -6,13 +6,11 @@ import {
     marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    Background, GestureTypes, GestureEventData, applyNativeSetters, Property,
+    Background, GestureTypes, GestureEventData, applyNativeSetters,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility, HorizontalAlignment, VerticalAlignment
 } from "./view-common";
 
 export * from "./view-common";
-
-let flexbox;
 
 const ANDROID = "_android";
 const NATIVE_VIEW = "_nativeView";
@@ -65,7 +63,6 @@ const disableUserInteractionListener = new DisableUserInteractionListener();
 export class View extends ViewCommon {
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
-    private _gesturesListener: android.view.View.OnTouchListener;
 
     public nativeView: android.view.View;
 
@@ -536,15 +533,15 @@ function createNativePercentLengthProperty({key, auto = 0, getPixels, setPixels,
     Object.defineProperty(View.prototype, key, {
         get: function (this: View) { return { value: getPixels(this.nativeView), unit: "px" } },
         set: function (this: View, length: PercentLength) {
-            if (length == "auto") {
+            if (length == "auto") {  // tslint:disable-line
                 setPixels(this.nativeView, auto);
             } else if (typeof length === "number") {
                 setPixels(this.nativeView, length * layout.getDisplayDensity());
-            } else if (length.unit == "dip") {
+            } else if (length.unit == "dip") {  // tslint:disable-line
                 setPixels(this.nativeView, length.value * layout.getDisplayDensity());
-            } else if (length.unit == "px") {
+            } else if (length.unit == "px") {  // tslint:disable-line
                 setPixels(this.nativeView, length.value);
-            } else if (length.unit == "%") {
+            } else if (length.unit == "%") {  // tslint:disable-line
                 setPercent(this.nativeView, length.value);
             } else {
                 throw new Error(`Unsupported PercentLength ${length}`);

@@ -1,5 +1,4 @@
 import * as stack from "ui/layouts/stack-layout";
-import * as style from "ui/styling/style";
 import * as view from "ui/core/view";
 import { unsetValue } from "ui/core/view";
 

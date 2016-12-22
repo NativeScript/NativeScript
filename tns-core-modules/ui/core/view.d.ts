@@ -23,8 +23,7 @@ declare module "ui/core/view" {
     import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
     import {
-        ViewBase, Property, CssProperty, InheritedCssProperty, Style,
-        BindingOptions, Observable, EventData
+        ViewBase, Property, CssProperty, InheritedCssProperty, Style, EventData
     } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
     import { Font, FontWeight, FontStyle } from "ui/styling/font";
@@ -550,7 +549,6 @@ declare module "ui/core/view" {
 
         // Lifecycle events
 
-
         _context: any /* android.content.Context */;
 
         _childIndexToNativeChildIndex(index?: number): number;
@@ -563,7 +561,6 @@ declare module "ui/core/view" {
 
         public _applyXmlAttribute(attribute: string, value: any): boolean;
         public eachChildView(callback: (view: View) => boolean): void;
-
 
         //@private
         /**
@@ -582,7 +579,6 @@ declare module "ui/core/view" {
          */
         _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean;
         _removeViewFromNativeVisualTree(view: ViewBase): void;
-
 
         _onAttached(context: any /* android.content.Context */): void;
         _onContextChanged(): void;

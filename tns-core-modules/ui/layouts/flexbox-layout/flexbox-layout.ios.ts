@@ -6,8 +6,7 @@ import {
     flexShrinkProperty, FlexShrink,
     flexWrapBeforeProperty, FlexWrapBefore,
     alignSelfProperty, AlignSelf,
-    FlexBasisPercent,
-    flexDirectionProperty, flexWrapProperty, justifyContentProperty, alignItemsProperty, alignContentProperty
+    FlexBasisPercent
 } from "./flexbox-layout-common";
 
 export * from "./flexbox-layout-common";

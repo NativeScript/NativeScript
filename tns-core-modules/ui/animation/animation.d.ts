@@ -102,5 +102,5 @@
         public _resolveAnimationCurve(curve: any): any;
     }
 
-    function _resolveAnimationCurve(curve: any): any;
+    export function _resolveAnimationCurve(curve: any): any;
 }

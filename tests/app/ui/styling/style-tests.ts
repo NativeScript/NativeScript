@@ -9,8 +9,6 @@ import * as tabViewModule from "ui/tab-view";
 import * as helper from "../../ui/helper";
 import * as types from "utils/types";
 import * as viewModule from "ui/core/view";
-import * as styleModule from "ui/styling/style";
-import * as dependencyObservableModule from "ui/core/dependency-observable";
 import { resolveFileNameFromUrl } from "ui/styling/style-scope";
 import { unsetValue } from "ui/core/view";
 

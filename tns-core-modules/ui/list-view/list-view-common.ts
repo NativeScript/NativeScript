@@ -1,5 +1,5 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { CoercibleProperty, CssProperty, Style, Bindable, EventData, Observable, View, Template, KeyedTemplate, Length, layout, Property, Color, lengthComparer } from "ui/core/view";
+import { CoercibleProperty, CssProperty, Style, Bindable, View, Template, KeyedTemplate, Length, Property, Color, lengthComparer } from "ui/core/view";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
 import { ObservableArray, ChangedData } from "data/observable-array";
@@ -24,7 +24,6 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     public static loadMoreItemsEvent = "loadMoreItems";
     // TODO: get rid of such hacks.
     public static knownFunctions = ["itemTemplateSelector"]; //See component-builder.ts isKnownFunction
-
 
     private _itemTemplateSelector: (item: any, index: number, items: any) => string;
     private _itemTemplateSelectorBindable = new Bindable();

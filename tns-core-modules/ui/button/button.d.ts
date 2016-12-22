@@ -2,7 +2,7 @@
  * Contains the Button class, which represents a standard button widget.
  */
 declare module "ui/button" {
-    import { TextBase, Property, EventData, FormattedString, FormattedStringView } from "ui/text-base";
+    import { TextBase, EventData } from "ui/text-base";
 
     /**
      * Represents a standard Button widget.

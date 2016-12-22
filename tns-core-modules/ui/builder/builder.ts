@@ -536,7 +536,6 @@ namespace xml2ui {
                         });
                     }
 
-
                 } else {
 
                     var componentModule: ComponentModule;

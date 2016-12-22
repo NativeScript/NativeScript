@@ -1,8 +1,7 @@
-﻿import * as p from "ui/page";
-import * as gridModule from "ui/layouts/grid-layout";
+﻿import * as gridModule from "ui/layouts/grid-layout";
 import * as sp from "ui/layouts/stack-layout";
 import * as button from "ui/button";
-import * as enums from "ui/enums";
+import { Page } from "ui/page";
 
 export function createPage() {
     var StackLayout = new sp.StackLayout();
@@ -48,7 +47,7 @@ export function createPage() {
     grid.addColumn(new gridModule.ItemSpec());
     grid.addColumn(new gridModule.ItemSpec());
 
-    var page = new p.Page();
+    var page = new Page();
     //page.content = GridLayout;
     page.content = StackLayout;
     var x = 1;
