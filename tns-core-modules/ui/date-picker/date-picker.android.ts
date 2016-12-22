@@ -43,7 +43,6 @@ class DateChangedListener extends java.lang.Object implements android.widget.Dat
 export class DatePicker extends DatePickerBase {
     private _android: android.widget.DatePicker;
     public _listener: android.widget.DatePicker.OnDateChangedListener;
-    public _datePicker: android.widget.DatePicker;
 
     get android(): android.widget.DatePicker {
         return this._android;
@@ -57,71 +56,65 @@ export class DatePicker extends DatePickerBase {
     }
 
     private updateNativeDate(): void {
-        let year = typeof this.year === "number" ? this.year : this._datePicker.getYear();
-        let month = typeof this.month === "number" ? (this.month - 1) : this._datePicker.getMonth();
-        let day = typeof this.day === "number" ? this.day : this._datePicker.getDayOfMonth();
+        let year = typeof this.year === "number" ? this.year : this.android.getYear();
+        let month = typeof this.month === "number" ? (this.month - 1) : this.android.getMonth();
+        let day = typeof this.day === "number" ? this.day : this.android.getDayOfMonth();
         this.date = new Date(year, month, day);
     }
 
     get [yearProperty.native](): number {
-        return this._datePicker.getYear();
+        return this.android.getYear();
     }
     set [yearProperty.native](value: number) {
-        let picker = this._datePicker;
-        if (picker.getYear() !== value) {
+        if (this.android.getYear() !== value) {
             this.updateNativeDate();
         }
     }
 
     get [monthProperty.native](): number {
-        return this._datePicker.getMonth();
+        return this.android.getMonth();
     }
     set [monthProperty.native](value: number) {
-        let picker = this._datePicker;
-        if (picker.getMonth() !== (value - 1)) {
+        if (this.android.getMonth() !== (value - 1)) {
             this.updateNativeDate();
         }
     }
 
     get [dayProperty.native](): number {
-        return this._datePicker.getDayOfMonth();
+        return this.android.getDayOfMonth();
     }
     set [dayProperty.native](value: number) {
-        let picker = this._datePicker;
-        if (picker.getDayOfMonth() !== value) {
+        if (this.android.getDayOfMonth() !== value) {
             this.updateNativeDate();
         }
     }
 
     get [dateProperty.native](): Date {
-        let picker = this._datePicker;
-        return new Date(picker.getYear(), picker.getMonth(), picker.getDayOfMonth());
+        return new Date(this.android.getYear(), this.android.getMonth(), this.android.getDayOfMonth());
     }
     set [dateProperty.native](value: Date) {
-        let picker = this._datePicker;
-        if (picker.getDayOfMonth() !== value.getDay()
-            || picker.getMonth() !== value.getMonth()
-            || picker.getYear() !== value.getFullYear()) {
-            picker.updateDate(value.getFullYear(), value.getMonth(), value.getDate());
+        if (this.android.getDayOfMonth() !== value.getDay()
+            || this.android.getMonth() !== value.getMonth()
+            || this.android.getYear() !== value.getFullYear()) {
+            this.android.updateDate(value.getFullYear(), value.getMonth(), value.getDate());
         }
     }
 
     get [maxDateProperty.native](): Date {
-        return this._datePicker.getMaxDate();
+        return this.android.getMaxDate();
     }
     set [maxDateProperty.native](value: Date) {
-        let picker = this._datePicker;
         let newValue = value.getTime();
-        if (picker.getMaxDate() !== newValue) {
-            picker.setMaxDate(newValue);
+        if (this.android.getMaxDate() !== newValue) {
+            this.android.setMaxDate(newValue);
         }
     }
 
     get [minDateProperty.native](): Date {
-        return this._datePicker.getMinDate();
+        return this.android.getMinDate();
     }
     set [minDateProperty.native](value: Date) {
-        let picker = this._datePicker;
+        let picker = this.android;
         let newValue = value.getTime();
         if (picker.getMinDate() !== newValue) {
             picker.setMinDate(newValue);
