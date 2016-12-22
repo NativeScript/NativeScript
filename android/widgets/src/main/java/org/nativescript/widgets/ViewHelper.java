@@ -46,8 +46,9 @@ public class ViewHelper {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
             params = new CommonLayoutParams();
-            params.width = value;
         }
+        
+        params.width = value;
 
         view.setLayoutParams(params);
     }
@@ -79,8 +80,9 @@ public class ViewHelper {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
             params = new CommonLayoutParams();
-            params.height = value;
         }
+        
+        params.height = value;
 
         view.setLayoutParams(params);
     }
