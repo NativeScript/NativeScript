@@ -1,15 +1,25 @@
-<Page xmlns="http://schemas.nativescript.org/tns.xsd" id="padding-and-border-page">
-    <StackLayout>
-        <Button id="changeButton" tap="onChangeCSS"/>
-        <TextView id="info" isEnabled="false" isUserInteractionEnabled="false"/>
-        <StackLayout id="container" style.backgroundColor="gray">
-            <Label id="label" text="Label"/>
-            <TextField id="textField" text="TextField"/>
-            <TextView id="textView" text="TextView"/>
-            <Button id="button" text="Button"/>
-            <StackLayout id="stack-layout">
-                <StackLayout id="child-of-stack-layout" width="50" height="50" style.backgroundColor="red"></StackLayout>
-            </StackLayout>
-        </StackLayout>
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <StackLayout id="container" class="padding green">
+
+        <Label text="Label padding" class="padding"/>
+        <TextField text="TextField padding" class="padding"/>
+        <TextView text="TextView padding" class="padding"/>
+        <Button text="Button padding" class="padding"/>
+
+        <Label text="Label padding yellow" class="padding yellow"/>
+        <TextField text="TextField padding yellow" class="padding yellow"/>
+        <TextView text="TextView padding yellow" class="padding yellow"/>
+        <Button text="Button padding yellow" class="padding yellow"/>
+
+        <Label text="Label border" class="border"/>
+        <TextField text="TextField border" class="border"/>
+        <TextView text="TextView border" class="border"/>
+        <Button text="Button border" class="border"/>
+
+        <Label text="Label padding border" class="padding border"/>
+        <TextField text="TextField padding border" class="padding border"/>
+        <TextView text="TextView padding border" class="padding border"/>
+        <Button text="Button padding border" class="padding border"/>
+
     </StackLayout>
 </Page>
