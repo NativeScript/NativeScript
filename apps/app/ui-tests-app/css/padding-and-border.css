@@ -1,19 +1,20 @@
-#padding {
-    padding: 10;
+.padding {
+    padding: 5;
 }
 
-#border {
-    border-width: 10;
-    border-color: black;
+.border {
+    border-width: 5;
 }
 
-#background-color {
+.green {
+    background-color: green;
+}
+
+.yellow {
     background-color: yellow;
 }
 
-/*#background-image {
-    background-image: url('~/ui-tests-app/pages/test2.png'); 
-    background-repeat: no-repeat; 
-    background-position: center center; 
-    background-size: 100% 100%;
-}*/
+Label, TextField, TextView, Button {
+    text-align: left;
+    margin: 1;
+}

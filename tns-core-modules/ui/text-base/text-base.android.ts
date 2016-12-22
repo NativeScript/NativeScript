@@ -193,7 +193,7 @@ export class TextBase extends TextBaseCommon {
         return { value: org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView), unit: "px" };
     }
     set [paddingTopProperty.native](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderTopWidth);
+        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
     //PaddingRight
@@ -201,7 +201,7 @@ export class TextBase extends TextBaseCommon {
         return { value: org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView), unit: "px" };
     }
     set [paddingRightProperty.native](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderRightWidth);
+        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
     //PaddingBottom
@@ -209,7 +209,7 @@ export class TextBase extends TextBaseCommon {
         return { value: org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView), unit: "px" };
     }
     set [paddingBottomProperty.native](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderBottomWidth);
+        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
     //PaddingLeft
@@ -217,7 +217,7 @@ export class TextBase extends TextBaseCommon {
         return { value: org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView), unit: "px" };
     }
     set [paddingLeftProperty.native](value: Length) {
-        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + this.style.effectiveBorderLeftWidth);
+        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 }
 
