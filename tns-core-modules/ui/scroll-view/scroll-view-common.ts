@@ -77,10 +77,15 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 
     public abstract scrollToVerticalOffset(value: number, animated: boolean);
     public abstract scrollToHorizontalOffset(value: number, animated: boolean);
+    public abstract _onOrientationChanged();
 }
 
 export const orientationProperty = new Property<ScrollViewBase, "horizontal" | "vertical">({
-    name: "orientation", defaultValue: "vertical", affectsLayout: true, valueConverter: (value) => {
+    name: "orientation", defaultValue: "vertical", affectsLayout: true,
+    valueChanged: (target: ScrollViewBase, oldValue: "horizontal" | "vertical", newValue: "horizontal" | "vertical") => {
+        target._onOrientationChanged();
+    },
+    valueConverter: (value) => {
         if (value === "vertical") {
             return "vertical";
         } else if (value === "horizontal") {

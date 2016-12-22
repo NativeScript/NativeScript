@@ -64,6 +64,8 @@ declare module "ui/scroll-view" {
          * Raised when a scroll event occurs.
          */
         on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
+
+        _onOrientationChanged();
     }
 
     interface ScrollEventData extends EventData {

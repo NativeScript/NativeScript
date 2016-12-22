@@ -28,31 +28,31 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 }
 
 export class ScrollView extends ScrollViewBase {
-    private _scroll: UIScrollView;
+    public nativeView: UIScrollView;
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
     private _delegate: UIScrollViewDelegateImpl;
 
     constructor() {
         super();
-        this._scroll = UIScrollView.new();
+        this.nativeView = UIScrollView.new();
     }
 
     protected attachNative() {
         this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
-        this._scroll.delegate = this._delegate;
+        this.nativeView.delegate = this._delegate;
     }
 
     protected dettachNative() {
-        this._scroll.delegate = null;
+        this.nativeView.delegate = null;
     }
 
     get horizontalOffset(): number {
-        return this._scroll.contentOffset.x;
+        return this.nativeView.contentOffset.x;
     }
 
     get verticalOffset(): number {
-        return this._scroll.contentOffset.y;
+        return this.nativeView.contentOffset.y;
     }
 
     get scrollableWidth(): number {
@@ -60,7 +60,7 @@ export class ScrollView extends ScrollViewBase {
             return 0;
         }
 
-        return Math.max(0, this._scroll.contentSize.width - this._scroll.bounds.size.width) / layout.getDisplayDensity();
+        return Math.max(0, this.nativeView.contentSize.width - this.nativeView.bounds.size.width) / layout.getDisplayDensity();
     }
 
     get scrollableHeight(): number {
@@ -68,28 +68,28 @@ export class ScrollView extends ScrollViewBase {
             return 0;
         }
 
-        return Math.max(0, this._scroll.contentSize.height - this._scroll.bounds.size.height) / layout.getDisplayDensity();
+        return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height) / layout.getDisplayDensity();
     }
 
     get ios(): UIView {
-        return this._scroll;
+        return this.nativeView;
     }
 
     get _nativeView(): UIView {
-        return this._scroll;
+        return this.nativeView;
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
         if (this.orientation === "vertical") {
-            const bounds = this._scroll.bounds.size;
-            this._scroll.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
+            const bounds = this.nativeView.bounds.size;
+            this.nativeView.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
         }
     }
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
         if (this.orientation === "horizontal") {
-            const bounds = this._scroll.bounds.size;
-            this._scroll.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
+            const bounds = this.nativeView.bounds.size;
+            this.nativeView.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
         }
     }
 
@@ -117,7 +117,7 @@ export class ScrollView extends ScrollViewBase {
                 childSize = View.measureChild(this, child, layout.makeMeasureSpec(0, layout.UNSPECIFIED), heightMeasureSpec);
             }
 
-            this._scroll.contentSize = CGSizeMake(childSize.measuredWidth, childSize.measuredHeight);
+            this.nativeView.contentSize = CGSizeMake(childSize.measuredWidth, childSize.measuredHeight);
             this._contentMeasuredWidth = Math.max(childSize.measuredWidth, style.effectiveMinWidth * density);
             this._contentMeasuredHeight = Math.max(childSize.measuredHeight, style.effectiveMinHeight * density);
         }
@@ -139,5 +139,9 @@ export class ScrollView extends ScrollViewBase {
         else {
             View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
         }
+    }
+
+    public _onOrientationChanged() {
+        // NOOP
     }
 }

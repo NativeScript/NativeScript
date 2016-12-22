@@ -1,5 +1,5 @@
 ﻿import { ScrollEventData } from "ui/scroll-view";
-import { ScrollViewBase, orientationProperty, layout } from "./scroll-view-common";
+import { ScrollViewBase, layout } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 
@@ -87,7 +87,7 @@ export class ScrollView extends ScrollViewBase {
 
     public _onOrientationChanged() {
         if (this._android) {
-            var parent = this.parent;
+            const parent = this.parent;
 
             if (parent) {
                 parent._removeView(this);
@@ -137,12 +137,5 @@ export class ScrollView extends ScrollViewBase {
     protected dettachNative() {
         this._android.getViewTreeObserver().removeOnScrollChangedListener(this.handler);
         this.handler = null;
-    }
-    
-    get [orientationProperty.native](): "horizontal" | "vertical" {
-        return "vertical";
-    }
-    set [orientationProperty.native](value: "horizontal" | "vertical") {
-        this._onOrientationChanged();
     }
 }
