@@ -69,7 +69,7 @@ export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinit
     }
 }
 
-export class NavigationButton extends ActionItemBase {
+export class NavigationButton extends ActionItem {
 
 }
 

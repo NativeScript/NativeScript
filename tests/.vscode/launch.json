@@ -43,7 +43,8 @@
             "sourceMaps": true,
             "diagnosticLogging": false,
             "emulator": false,
-            "rebuild": false
+            "rebuild": false,
+            "stopOnEntry": true
         },
         {
             "name": "Launch on Android",

@@ -28,6 +28,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
     set navigationButton(value: NavigationButton) {
         if (this._navigationButton !== value) {
             if (this._navigationButton) {
+                this._removeView(this._navigationButton);
                 this._navigationButton.actionBar = undefined;
             }
 
@@ -35,6 +36,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
             if (this._navigationButton) {
                 this._navigationButton.actionBar = this;
+                this._addView(this._navigationButton);
             }
 
             this.update();
@@ -76,12 +78,6 @@ export class ActionBarBase extends View implements ActionBarDefinition {
     }
     set page(value: Page) {
         this._page = value;
-        // // TODO: Move this in _eachChildView of Page class.
-        // this.unbind("bindingContext");
-        // this.bind({
-        //     sourceProperty: "bindingContext",
-        //     targetProperty: "bindingContext"
-        // }, this._page);
     }
 
     get android(): AndroidActionBarSettings {
@@ -104,7 +100,7 @@ export class ActionBarBase extends View implements ActionBarDefinition {
         this._actionItems = new ActionItems(this);
     }
 
-    public static onTitleChanged
+    public static onTitleChanged;
 
     public update() {
         // 
@@ -132,26 +128,11 @@ export class ActionBarBase extends View implements ActionBarDefinition {
         }
     }
 
-    // public _onBindingContextChanged(oldValue: any, newValue: any) {
-    //     super._onBindingContextChanged(oldValue, newValue);
-    //     if (this._navigationButton) {
-    //         this._navigationButton.bindingContext = newValue;
-    //     }
-
-    //     this._actionItems.getItems().forEach((item, i, arr) => { item.bindingContext = newValue; });
-    // }
-
     public eachChildView(callback: (child: View) => boolean) {
         const titleView = this.titleView;
         if (titleView) {
             callback(titleView);
         }
-
-        this.actionItems.getItems().forEach((actionItem) => {
-            if (actionItem.actionView) {
-                callback(actionItem.actionView);
-            }
-        });
     }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
@@ -199,6 +180,9 @@ export class ActionItems implements ActionItemsDefinition {
 
         this._items.push(item);
         item.actionBar = this._actionBar;
+
+        this._actionBar._addView(item);
+
         this.invalidate();
     }
 
@@ -207,12 +191,14 @@ export class ActionItems implements ActionItemsDefinition {
             throw new Error("Cannot remove empty item");
         }
 
-        var itemIndex = this._items.indexOf(item);
+        const itemIndex = this._items.indexOf(item);
         if (itemIndex < 0) {
             throw new Error("Cannot find item to remove");
         }
 
         this._items.splice(itemIndex, 1);
+        this._actionBar._removeView(item);
+
         item.actionBar = undefined;
         this.invalidate();
     }
@@ -222,7 +208,7 @@ export class ActionItems implements ActionItemsDefinition {
     }
 
     public getVisibleItems(): Array<ActionItemDefinition> {
-        var visibleItems = [];
+        const visibleItems = [];
         this._items.forEach((item) => {
             if (isVisible(item)) {
                 visibleItems.push(item);
@@ -279,14 +265,20 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
     }
     set actionView(value: View) {
         if (this._actionView !== value) {
-            if (this._actionView && this._actionBar) {
-                this._actionBar._removeView(this._actionView);
+            if (this._actionView) {
                 this._actionView.style[horizontalAlignmentProperty.cssName] = unsetValue;
                 this._actionView.style[verticalAlignmentProperty.cssName] = unsetValue;
+                this._removeView(this._actionView);
             }
 
             this._actionView = value;
-            this._addActionViewToActionBar();
+
+            if (this._actionView) {
+                this._addView(this._actionView);
+                this._actionView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.CENTER;
+                this._actionView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.MIDDLE;
+            }
+
             if (this._actionBar) {
                 this._actionBar.update();
             }
@@ -299,11 +291,6 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
     set actionBar(value: ActionBarDefinition) {
         if (value !== this._actionBar) {
             this._actionBar = value;
-            if (this._actionBar) {
-                // ActionBarBase overrides _eachChildView so bindingContext should work without any manual work.
-                // this.bindingContext = this._actionBar.bindingContext;
-                this._addActionViewToActionBar();
-            }
         }
     }
 
@@ -319,11 +306,9 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
         this.actionView = value;
     }
 
-    private _addActionViewToActionBar() {
-        if (this._actionView && !this._actionView._isAddedToNativeVisualTree && this._actionBar) {
-            this._actionView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.CENTER;
-            this._actionView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.MIDDLE;
-            this._actionBar._addView(this._actionView);
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        if (this._actionView) {
+            callback(this._actionView);
         }
     }
 }
