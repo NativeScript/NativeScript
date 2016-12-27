@@ -96,7 +96,8 @@ export class SearchBar extends SearchBarBase {
 
     get [backgroundColorProperty.native](): number {
         // TODO: Why do we get DrawingCacheBackgroundColor but set backgroundColor?????
-        return this._android.getDrawingCacheBackgroundColor();
+        let result = this._android.getDrawingCacheBackgroundColor();
+        return result;
     }
     set [backgroundColorProperty.native](value: Color) {
         let color: number;
@@ -107,16 +108,13 @@ export class SearchBar extends SearchBarBase {
         }
 
         this._android.setBackgroundColor(color);
-        changeSearchViewPlateBackgroundColor(this._android, color);
+        let searchPlate = this._getSearchPlate();
+        searchPlate.setBackgroundColor(color);
     }
 
     get [colorProperty.native](): number {
-        let textView = getSearchViewTextView(this._android);
-        if (textView) {
-            return textView.getCurrentTextColor();
-        }
-
-        throw new Error("TextView not founf in android.widget.SearchView.");
+        let textView = this._getTextView();
+        return textView.getCurrentTextColor();
     }
     set [colorProperty.native](value: Color) {
         let color: number;
@@ -126,21 +124,19 @@ export class SearchBar extends SearchBarBase {
             color = value.android;
         }
 
-        let textView = getSearchViewTextView(this._android);
-        if (textView) {
-            textView.setTextColor(color);
-        }
+        let textView = this._getTextView();
+        textView.setTextColor(color);
     }
 
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let textView = getSearchViewTextView(this._android);
+        let textView = this._getTextView();
         return {
             typeface: textView.getTypeface(),
             fontSize: textView.getTextSize()
         };
     }
     set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let textView = getSearchViewTextView(this._android);
+        let textView = this._getTextView();
 
         let typeface: android.graphics.Typeface;
         if (value instanceof Font) {
@@ -174,44 +170,31 @@ export class SearchBar extends SearchBarBase {
         this._android.setQueryHint(value);
     }
     get [textFieldBackgroundColorProperty.native](): number {
-        let textView = getTextView(this._android);
+        let textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
     set [textFieldBackgroundColorProperty.native](value: Color) {
-        let textView = getTextView(this._android);
+        let textView = this._getTextView();
         let color = value instanceof Color ? value.android : value;
         textView.setBackgroundColor(color);
     }
     get [textFieldHintColorProperty.native](): number {
-        let textView = getTextView(this._android);
+        let textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
     set [textFieldHintColorProperty.native](value: Color) {
-        let textView = getTextView(this._android);
+        let textView = this._getTextView();
         let color = value instanceof Color ? value.android : value;
         textView.setHintTextColor(color);
     }
-}
 
-function changeSearchViewPlateBackgroundColor(searchView: android.widget.SearchView, color: number) {
-    let textView = getSearchViewTextView(searchView);
-    if (textView) {
-        textView.setBackgroundColor(color);
-    }
-}
-
-function getSearchViewTextView(searchView: android.widget.SearchView): android.widget.TextView {
-    let id = searchView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
-    return <android.widget.TextView>searchView.findViewById(id);
-}
-
-function getTextView(bar: android.widget.SearchView): android.widget.TextView {
-    if (bar) {
-        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        if (id) {
-            return <android.widget.TextView>bar.findViewById(id);
-        }
+    private _getTextView(): android.widget.TextView {
+        let id = this._android.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        return <android.widget.TextView>this._android.findViewById(id);
     }
 
-    return undefined;
+    private _getSearchPlate(): android.widget.LinearLayout {
+        let id = this._android.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
+        return <android.widget.LinearLayout>this._android.findViewById(id);
+    }
 }
