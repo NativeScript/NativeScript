@@ -20,13 +20,13 @@ class TimeChangedListener extends java.lang.Object implements android.widget.Tim
 }
 
 export class TimePicker extends TimePickerBase {
-    public _timePicker: android.widget.TimePicker;
+    private _android: android.widget.TimePicker;
     private _listener: android.widget.TimePicker.OnTimeChangedListener;
 
     public _createUI() {
-        this._timePicker = new android.widget.TimePicker(this._context);
+        this._android = new android.widget.TimePicker(this._context);
         this._listener = this._listener || new TimeChangedListener(new WeakRef(this));
-        this._timePicker.setOnTimeChangedListener(this._listener);
+        this._android.setOnTimeChangedListener(this._listener);
 
         let c = java.util.Calendar.getInstance();
         if (this.hour === 0) {
@@ -41,17 +41,21 @@ export class TimePicker extends TimePickerBase {
         this._setNativeValueSilently(validTime.hour, validTime.minute);
     }
 
-    public _setNativeValueSilently(hour: number, minute: number) {
-        if (this.android) {
-            this.android.setOnTimeChangedListener(null);
+    get android(): android.widget.TimePicker {
+        return this._android;
+    }
 
-            this.android.setCurrentHour(new java.lang.Integer(hour));
-            this.android.setCurrentMinute(new java.lang.Integer(minute));
+    public _setNativeValueSilently(hour: number, minute: number) {
+        if (this._android) {
+            this._android.setOnTimeChangedListener(null);
+
+            this._android.setCurrentHour(new java.lang.Integer(hour));
+            this._android.setCurrentMinute(new java.lang.Integer(minute));
 
             this.minute = minute;
             this.hour = hour;
 
-            this.android.setOnTimeChangedListener(this._listener);
+            this._android.setOnTimeChangedListener(this._listener);
         }
     }
 
@@ -60,7 +64,7 @@ export class TimePicker extends TimePickerBase {
     }
 
     get [timeProperty.native](): Date {
-        let nativeView = this._timePicker;
+        let nativeView = this._android;
         return new Date(0, 0, 0, nativeView.getCurrentHour().intValue(), nativeView.getCurrentMinute().intValue());
     }
     set [timeProperty.native](value: Date) {
@@ -68,14 +72,14 @@ export class TimePicker extends TimePickerBase {
     }
 
     get [minuteProperty.native](): number {
-        return this._timePicker.getCurrentMinute().intValue();
+        return this._android.getCurrentMinute().intValue();
     }
     set [minuteProperty.native](value: number) {
         this._setNativeValueSilently(this.hour, value);
     }
 
     get [hourProperty.native](): number {
-        return this._timePicker.getCurrentHour().intValue()
+        return this._android.getCurrentHour().intValue()
     }
     set [hourProperty.native](value: number) {
         this._setNativeValueSilently(value, this.minute);
