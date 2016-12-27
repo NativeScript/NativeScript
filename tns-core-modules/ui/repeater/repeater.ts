@@ -150,15 +150,15 @@ itemsProperty.register(Repeater);
 export const itemsLayoutProperty = new Property<Repeater, LayoutBase>({
     name: "itemsLayout", affectsLayout: true, valueChanged: (target, oldValue, newValue) => {
         if (oldValue) {
-            this._removeView(oldValue);
+            target._removeView(oldValue);
             oldValue.removeChildren();
         }
 
         if (newValue) {
-            this._addView(newValue);
+            target._addView(newValue);
         }
 
-        this._requestRefresh();
+        target._requestRefresh();
     }
 });
 itemsLayoutProperty.register(Repeater);
