@@ -3,8 +3,10 @@
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, Font, Color, FormattedString,
     TextDecoration, TextAlignment, TextTransform
 } from "./text-base-common";
+import * as utils from "utils/utils";
 
 export * from "./text-base-common";
+
 export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
@@ -56,20 +58,23 @@ export class TextBase extends TextBaseCommon {
     }
 
     //Color
-    get [colorProperty.native](): UIColor {
+    get [colorProperty.native](): Color {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
-            return nativeView.titleColorForState(UIControlState.Normal);
+            return utils.ios.getColor(nativeView.titleColorForState(UIControlState.Normal));
         } else {
-            return nativeView.textColor;
+            return utils.ios.getColor(nativeView.textColor);
         }
     }
-    set [colorProperty.native](value: UIColor) {
+    set [colorProperty.native](value: Color) {
+        console.log("Setting native color: " + value);
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
-            nativeView.setTitleColorForState(value, UIControlState.Normal);
+            if (value instanceof UIColor) {
+                nativeView.setTitleColorForState(value.ios, UIControlState.Normal);
+            }
         } else {
-            nativeView.textColor = value;
+            nativeView.textColor = value.ios;
         }
     }
 

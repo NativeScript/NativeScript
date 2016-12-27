@@ -21,6 +21,10 @@ export class Button extends ButtonBase {
         this.nativeView.addTargetActionForControlEvents(this._tapHandler, "tap", UIControlEvents.TouchUpInside);
     }
 
+    get ios() {
+        return this.nativeView;
+    }
+
     public onUnloaded() {
         super.onUnloaded();
         if (this._stateChangedHandler) {
