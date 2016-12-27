@@ -503,9 +503,8 @@ export class Page extends PageBase {
         // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
         let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightSpec);
 
-        let style = this.style;
-        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, style.effectiveMinWidth);
-        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, style.effectiveMinHeight);
+        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.effectiveMinWidth);
+        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.effectiveMinHeight);
 
         let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

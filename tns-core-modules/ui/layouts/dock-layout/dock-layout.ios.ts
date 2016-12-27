@@ -20,9 +20,8 @@ export class DockLayout extends DockLayoutBase {
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        const style = this.style;
-        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
         
         let remainingWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
         let remainingHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
@@ -68,8 +67,8 @@ export class DockLayout extends DockLayoutBase {
         measureWidth += horizontalPaddingsAndMargins;
         measureHeight += verticalPaddingsAndMargins;
 
-        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
-        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
         const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -80,12 +79,11 @@ export class DockLayout extends DockLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        const style = this.style;
-        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
-        let childLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
-        let childTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
+        let childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
+        let childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
 
         let x = childLeft;
         let y = childTop;
@@ -94,10 +92,9 @@ export class DockLayout extends DockLayoutBase {
         let remainingHeight = Math.max(0, bottom - top - verticalPaddingsAndMargins);
 
         this.eachLayoutChild((child, last) => {
-            let childStlye = child.style;
 
-            let childWidth = child.getMeasuredWidth() + childStlye.effectiveMarginLeft + childStlye.effectiveMarginRight;
-            let childHeight = child.getMeasuredHeight() + childStlye.effectiveMarginTop + childStlye.effectiveMarginBottom;
+            let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
+            let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
 
             if (last && this.stretchLastChild) {
                 // Last child with stretch - give it all the space and return;

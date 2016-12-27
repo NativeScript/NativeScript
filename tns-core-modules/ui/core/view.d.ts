@@ -1,24 +1,3 @@
-declare module "ui/styling/style" {
-    interface Style {
-        effectiveMinWidth: number;
-        effectiveMinHeight: number;
-        effectiveWidth: number;
-        effectiveHeight: number;
-        effectiveMarginTop: number;
-        effectiveMarginRight: number;
-        effectiveMarginBottom: number;
-        effectiveMarginLeft: number;
-        effectivePaddingTop: number;
-        effectivePaddingRight: number;
-        effectivePaddingBottom: number;
-        effectivePaddingLeft: number;
-        effectiveBorderTopWidth: number;
-        effectiveBorderRightWidth: number;
-        effectiveBorderBottomWidth: number;
-        effectiveBorderLeftWidth: number;
-    }
-}
-
 declare module "ui/core/view" {
     import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
@@ -607,6 +586,23 @@ declare module "ui/core/view" {
         _setNativeViewFrame(nativeView: any, frame: any): void;
         // _onStylePropertyChanged(property: dependencyObservable.Property): void;
         //@endprivate
+
+        public effectiveMinWidth: number;
+        public effectiveMinHeight: number;
+        public effectiveWidth: number;
+        public effectiveHeight: number;
+        public effectiveMarginTop: number;
+        public effectiveMarginRight: number;
+        public effectiveMarginBottom: number;
+        public effectiveMarginLeft: number;
+        public effectivePaddingTop: number;
+        public effectivePaddingRight: number;
+        public effectivePaddingBottom: number;
+        public effectivePaddingLeft: number;
+        public effectiveBorderTopWidth: number;
+        public effectiveBorderRightWidth: number;
+        public effectiveBorderBottomWidth: number;
+        public effectiveBorderLeftWidth: number;
 
         /**
          * __Obsolete:__ There is a new property system that does not rely on _getValue.

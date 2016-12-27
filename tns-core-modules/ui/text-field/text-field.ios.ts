@@ -102,10 +102,9 @@ class UITextFieldImpl extends UITextField {
         }
 
         let size = bounds.size;
-        let style = owner.style;
-        return CGRectMake(style.effectiveBorderLeftWidth + style.effectivePaddingLeft, style.effectiveBorderTopWidth + style.effectivePaddingTop,
-            size.width - (style.effectiveBorderLeftWidth + style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderRightWidth),
-            size.height - (style.effectiveBorderTopWidth + style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderBottomWidth)
+        return CGRectMake(owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft, owner.effectiveBorderTopWidth + owner.effectivePaddingTop,
+            size.width - (owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft + owner.effectivePaddingRight + owner.effectiveBorderRightWidth),
+            size.height - (owner.effectiveBorderTopWidth + owner.effectivePaddingTop + owner.effectivePaddingBottom + owner.effectiveBorderBottomWidth)
         );
     }
 

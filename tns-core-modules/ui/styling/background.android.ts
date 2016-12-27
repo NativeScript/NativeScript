@@ -28,16 +28,15 @@ export module ad {
         ); 
     }
     
-    export function onBackgroundOrBorderPropertyChanged(v: View) {
-        let nativeView = <android.view.View>v._nativeView;
+    export function onBackgroundOrBorderPropertyChanged(view: View) {
+        let nativeView = <android.view.View>view._nativeView;
         if (!nativeView) {
             return;
         }
-        let style = v.style;
 
-        let background = style.backgroundInternal;
+        let background = view.style.backgroundInternal;
         let backgroundDrawable = nativeView.getBackground();
-        let cache = <CacheLayerType>v._nativeView;
+        let cache = <CacheLayerType>view._nativeView;
 
         if (isSetColorFilterOnlyWidget(nativeView) 
         && !isNullOrUndefined(backgroundDrawable) 
@@ -53,13 +52,13 @@ export module ad {
         }
         else if (!background.isEmpty()) {
             if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
-                let viewClass = getClass(v);
+                let viewClass = getClass(view);
                 if (!isSetColorFilterOnlyWidget(nativeView) && !_defaultBackgrounds.has(viewClass)) {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
-                
-                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(1, v.toString());
-                refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
+
+                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(1, view.toString());
+                refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
 
                 if (getSDK() >= 16) {
                     nativeView.setBackground(backgroundDrawable);
@@ -68,7 +67,7 @@ export module ad {
                 }
             }
             else {
-                refreshBorderDrawable(v, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
+                refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
             }
 
             if ((background.hasBorderWidth() || background.hasBorderRadius() || background.clipPath) && getSDK() < 18) {
@@ -90,7 +89,7 @@ export module ad {
                 }
             }
             else {
-                let viewClass = getClass(v);
+                let viewClass = getClass(view);
                 if (_defaultBackgrounds.has(viewClass)) {
                     if (getSDK() >= 16) {
                         nativeView.setBackground(_defaultBackgrounds.get(viewClass));
@@ -108,10 +107,10 @@ export module ad {
 
         // TODO: Can we move BorderWidths as separate native setter?
         // This way we could skip setPadding if borderWidth is not changed.
-        let leftPadding = Math.round(style.effectiveBorderLeftWidth + style.effectivePaddingLeft);
-        let topPadding = Math.round(style.effectiveBorderTopWidth + style.effectivePaddingTop);
-        let rightPadding = Math.round(style.effectiveBorderRightWidth + style.effectivePaddingRight);
-        let bottomPadding = Math.round(style.effectiveBorderBottomWidth + style.effectivePaddingBottom);
+        let leftPadding = Math.round(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
+        let topPadding = Math.round(view.effectiveBorderTopWidth + view.effectivePaddingTop);
+        let rightPadding = Math.round(view.effectiveBorderRightWidth + view.effectivePaddingRight);
+        let bottomPadding = Math.round(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
 
         nativeView.setPadding(
             leftPadding,

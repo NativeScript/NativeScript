@@ -48,9 +48,8 @@ export class HtmlView extends HtmlViewBase {
             let labelWidth = nativeSize.width;
 
             labelWidth = Math.min(labelWidth, width);
-            let style = this.style;
-            let measureWidth = Math.max(labelWidth, style.effectiveMinWidth);
-            let measureHeight = Math.max(nativeSize.height, style.effectiveMinHeight);
+            let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
+            let measureHeight = Math.max(nativeSize.height, this.effectiveMinHeight);
 
             let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

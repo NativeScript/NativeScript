@@ -32,23 +32,6 @@ export {
 //     instance.set("text", propertyValue);
 // });
 
-Style.prototype.effectiveMinWidth = 0;
-Style.prototype.effectiveMinHeight = 0;
-Style.prototype.effectiveWidth = 0;
-Style.prototype.effectiveHeight = 0;
-Style.prototype.effectiveMarginTop = 0;
-Style.prototype.effectiveMarginRight = 0;
-Style.prototype.effectiveMarginBottom = 0;
-Style.prototype.effectiveMarginLeft = 0;
-Style.prototype.effectivePaddingTop = 0;
-Style.prototype.effectivePaddingRight = 0;
-Style.prototype.effectivePaddingBottom = 0;
-Style.prototype.effectivePaddingLeft = 0;
-Style.prototype.effectiveBorderTopWidth = 0;
-Style.prototype.effectiveBorderRightWidth = 0;
-Style.prototype.effectiveBorderBottomWidth = 0;
-Style.prototype.effectiveBorderLeftWidth = 0;
-
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator {
     let stateEventNames = pseudoClasses.map(s => ":" + s);
     let listeners = Symbol("listeners");
@@ -98,6 +81,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public _gestureObservers = {};
 
     // public parent: ViewCommon;
+
+    public effectiveMinWidth: number;
+    public effectiveMinHeight: number;
+    public effectiveWidth: number;
+    public effectiveHeight: number;
+    public effectiveMarginTop: number;
+    public effectiveMarginRight: number;
+    public effectiveMarginBottom: number;
+    public effectiveMarginLeft: number;
+    public effectivePaddingTop: number;
+    public effectivePaddingRight: number;
+    public effectivePaddingBottom: number;
+    public effectivePaddingLeft: number;
+    public effectiveBorderTopWidth: number;
+    public effectiveBorderRightWidth: number;
+    public effectiveBorderBottomWidth: number;
+    public effectiveBorderLeftWidth: number;
 
     constructor() {
         super();
@@ -584,11 +584,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let childWidth = child.getMeasuredWidth();
         let childHeight = child.getMeasuredHeight();
 
-        let effectiveMarginTop = childStyle.effectiveMarginTop;
-        let effectiveMarginBottom = childStyle.effectiveMarginBottom;
+        let effectiveMarginTop = child.effectiveMarginTop;
+        let effectiveMarginBottom = child.effectiveMarginBottom;
 
         let vAlignment: VerticalAlignment;
-        if (childStyle.effectiveHeight >= 0 && childStyle.verticalAlignment === VerticalAlignment.STRETCH) {
+        if (child.effectiveHeight >= 0 && childStyle.verticalAlignment === VerticalAlignment.STRETCH) {
             vAlignment = VerticalAlignment.MIDDLE;
         }
         else {
@@ -615,11 +615,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
                 break;
         }
 
-        let effectiveMarginLeft = childStyle.effectiveMarginLeft;
-        let effectiveMarginRight = childStyle.effectiveMarginRight;
+        let effectiveMarginLeft = child.effectiveMarginLeft;
+        let effectiveMarginRight = child.effectiveMarginRight;
 
         let hAlignment: HorizontalAlignment;
-        if (childStyle.effectiveWidth >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.STRETCH) {
+        if (child.effectiveWidth >= 0 && childStyle.horizontalAlignment === HorizontalAlignment.STRETCH) {
             hAlignment = HorizontalAlignment.CENTER;
         }
         else {
@@ -673,11 +673,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             updateChildLayoutParams(child, parent, density);
 
             let style = child.style;
-            let horizontalMargins = style.effectiveMarginLeft + style.effectiveMarginRight;
-            let verticalMargins = style.effectiveMarginTop + style.effectiveMarginRight;
+            let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
+            let verticalMargins = child.effectiveMarginTop + child.effectiveMarginRight;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, style.effectiveWidth, style.horizontalAlignment === HorizontalAlignment.STRETCH);
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, style.effectiveHeight, style.verticalAlignment === VerticalAlignment.STRETCH);
+            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === HorizontalAlignment.STRETCH);
+            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, child.effectiveHeight, style.verticalAlignment === VerticalAlignment.STRETCH);
 
             if (traceEnabled) {
                 traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
@@ -944,6 +944,23 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 }
 
+ViewCommon.prototype.effectiveMinWidth = 0;
+ViewCommon.prototype.effectiveMinHeight = 0;
+ViewCommon.prototype.effectiveWidth = 0;
+ViewCommon.prototype.effectiveHeight = 0;
+ViewCommon.prototype.effectiveMarginTop = 0;
+ViewCommon.prototype.effectiveMarginRight = 0;
+ViewCommon.prototype.effectiveMarginBottom = 0;
+ViewCommon.prototype.effectiveMarginLeft = 0;
+ViewCommon.prototype.effectivePaddingTop = 0;
+ViewCommon.prototype.effectivePaddingRight = 0;
+ViewCommon.prototype.effectivePaddingBottom = 0;
+ViewCommon.prototype.effectivePaddingLeft = 0;
+ViewCommon.prototype.effectiveBorderTopWidth = 0;
+ViewCommon.prototype.effectiveBorderRightWidth = 0;
+ViewCommon.prototype.effectiveBorderBottomWidth = 0;
+ViewCommon.prototype.effectiveBorderLeftWidth = 0;
+
 function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density: number): void {
     let style = child.style;
 
@@ -951,17 +968,19 @@ function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density:
     let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
     let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
     let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-    style.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth)
-    style.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
-    style.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
+
+    child.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth)
+    child.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
+    child.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
 
     let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
     let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
     let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
     let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-    style.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
-    style.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
-    style.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
+
+    child.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
+    child.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
+    child.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
 }
 
 function equalsCommon(a: Length, b: Length): boolean;
@@ -1051,6 +1070,7 @@ export namespace PercentLength {
             return value;
         }
     }
+
     export const equals: { (a: PercentLength, b: PercentLength): boolean } = equalsCommon;
     export const toDevicePixels: { (length: PercentLength, auto: number, parentAvailableWidth: number): number } = toDevicePixelsCommon;
 }
@@ -1134,7 +1154,9 @@ export const zeroLength: Length = { value: 0, unit: "px" };
 export const minWidthProperty = new CssProperty<Style, Length>({
     name: "minWidth", cssName: "min-width", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
+        if (target.view instanceof ViewCommon) {
+            target.view.effectiveMinWidth = Length.toDevicePixels(newValue, 0);
+        }
     }, valueConverter: Length.parse
 });
 minWidthProperty.register(Style);
@@ -1142,7 +1164,9 @@ minWidthProperty.register(Style);
 export const minHeightProperty = new CssProperty<Style, Length>({
     name: "minHeight", cssName: "min-height", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
+        if (target.view instanceof ViewCommon) {
+            target.view.effectiveMinHeight = Length.toDevicePixels(newValue, 0);
+        }
     }, valueConverter: Length.parse
 });
 minHeightProperty.register(Style);
@@ -1184,7 +1208,9 @@ paddingProperty.register(Style);
 export const paddingLeftProperty = new CssProperty<Style, Length>({
     name: "paddingLeft", cssName: "padding-left", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+        if (target.view instanceof ViewCommon) {
+            target.view.effectivePaddingLeft = Length.toDevicePixels(newValue, 0);
+        }
     }, valueConverter: Length.parse
 });
 paddingLeftProperty.register(Style);
@@ -1192,7 +1218,9 @@ paddingLeftProperty.register(Style);
 export const paddingRightProperty = new CssProperty<Style, Length>({
     name: "paddingRight", cssName: "padding-right", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+        if (target.view instanceof ViewCommon) {
+            target.view.effectivePaddingRight = Length.toDevicePixels(newValue, 0);
+        }
     }, valueConverter: Length.parse
 });
 paddingRightProperty.register(Style);
@@ -1200,7 +1228,9 @@ paddingRightProperty.register(Style);
 export const paddingTopProperty = new CssProperty<Style, Length>({
     name: "paddingTop", cssName: "padding-top", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+        if (target.view instanceof ViewCommon) {
+            target.view.effectivePaddingTop = Length.toDevicePixels(newValue, 0);
+        }
     }, valueConverter: Length.parse
 });
 paddingTopProperty.register(Style);
@@ -1208,7 +1238,9 @@ paddingTopProperty.register(Style);
 export const paddingBottomProperty = new CssProperty<Style, Length>({
     name: "paddingBottom", cssName: "padding-bottom", defaultValue: zeroLength, affectsLayout: isIOS, equalityComparer: Length.equals,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+        if (target.view instanceof ViewCommon) {
+            target.view.effectivePaddingBottom = Length.toDevicePixels(newValue, 0);
+        }
     }, valueConverter: Length.parse
 });
 paddingBottomProperty.register(Style);
@@ -1684,7 +1716,9 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-width should be Non-Negative Finite number. Value: ${value}`);
         }
-        target.effectiveBorderTopWidth = value;
+        if (target.view instanceof ViewCommon) {
+            target.view.effectiveBorderTopWidth = value;
+        }
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderTopWidth(value);
     }, valueConverter: Length.parse
@@ -1698,7 +1732,9 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-right-width should be Non-Negative Finite number. Value: ${value}`);
         }
-        target.effectiveBorderRightWidth = value;
+        if (target.view instanceof ViewCommon) {
+            target.view.effectiveBorderRightWidth = value;
+        }
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderRightWidth(value);
     }, valueConverter: Length.parse
@@ -1712,7 +1748,9 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-width should be Non-Negative Finite number. Value: ${value}`);
         }
-        target.effectiveBorderBottomWidth = value;
+        if (target.view instanceof ViewCommon) {
+            target.view.effectiveBorderBottomWidth = value;
+        }
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderBottomWidth(value);
     }, valueConverter: Length.parse
@@ -1726,7 +1764,9 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-left-width should be Non-Negative Finite number. Value: ${value}`);
         }
-        target.effectiveBorderLeftWidth = value;
+        if (target.view instanceof ViewCommon) {
+            target.view.effectiveBorderLeftWidth = value;
+        }
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withBorderLeftWidth(value);
     }, valueConverter: Length.parse

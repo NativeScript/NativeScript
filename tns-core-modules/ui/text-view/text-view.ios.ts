@@ -171,8 +171,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [borderTopWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let top = style.effectivePaddingTop + style.effectiveBorderTopWidth;
+        let top = this.effectivePaddingTop + this.effectiveBorderTopWidth;
         this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
@@ -184,8 +183,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [borderRightWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let right = style.effectivePaddingRight + style.effectiveBorderRightWidth;
+        let right = this.effectivePaddingRight + this.effectiveBorderRightWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
@@ -197,8 +195,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [borderBottomWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let bottom = style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
+        let bottom = this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
@@ -210,8 +207,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [borderLeftWidthProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let left = style.effectivePaddingLeft + style.effectiveBorderLeftWidth;
+        let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
@@ -223,8 +219,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [paddingTopProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let top = style.effectivePaddingTop + style.effectiveBorderTopWidth;
+        let top = this.effectivePaddingTop + this.effectiveBorderTopWidth;
         this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
@@ -236,8 +231,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [paddingRightProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let right = style.effectivePaddingRight + style.effectiveBorderRightWidth;
+        let right = this.effectivePaddingRight + this.effectiveBorderRightWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
@@ -249,8 +243,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [paddingBottomProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let bottom = style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
+        let bottom = this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
     
@@ -262,8 +255,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [paddingLeftProperty.native](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let style = this.style;
-        let left = style.effectivePaddingLeft + style.effectiveBorderLeftWidth;
+        let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 }
