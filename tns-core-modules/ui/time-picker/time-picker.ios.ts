@@ -1,6 +1,7 @@
 ﻿import { TimePickerBase, timeProperty, 
     minuteProperty, minMinuteProperty, maxMinuteProperty,
     hourProperty, minHourProperty, maxHourProperty, colorProperty } from "./time-picker-common";
+import { Color } from "color";
 
 import { ios } from "utils/utils";
 import getter = ios.getter;
@@ -35,6 +36,7 @@ export class TimePicker extends TimePickerBase {
         let components = getComponents(NSDate.date());
         this.hour = components.hour;
         this.minute = components.minute;
+        this.nativeView = this._ios;
     }
 
     get ios(): UIDatePicker {
@@ -63,28 +65,28 @@ export class TimePicker extends TimePickerBase {
     }
 
     get [minHourProperty.native](): number {
-        return this.nativeView.minimumDate.getHours();
+        return this.nativeView.minimumDate ? this.nativeView.minimumDate.getHours() : 0;
     }
     set [minHourProperty.native](value: number) {
         this.nativeView.minimumDate = getDate(value, this.minute);
     }
 
     get [maxHourProperty.native](): number {
-        return this.nativeView.maximumDate.getHours();
+        return this.nativeView.maximumDate ? this.nativeView.maximumDate.getHours() : 24;
     }
     set [maxHourProperty.native](value: number) {
         this.nativeView.maximumDate = getDate(value, this.minute);
     }
 
     get [minMinuteProperty.native](): number {
-        return this.nativeView.minimumDate.getMinutes();
+        return this.nativeView.minimumDate ? this.nativeView.minimumDate.getMinutes() : 0;
     }
     set [minMinuteProperty.native](value: number) {
         this.nativeView.minimumDate = getDate(this.hour, value);
     }
 
     get [maxMinuteProperty.native](): number {
-        return this.nativeView.maximumDate.getMinutes();
+        return this.nativeView.maximumDate ? this.nativeView.maximumDate.getMinutes() : 60;
     }
     set [maxMinuteProperty.native](value: number) {
         this.nativeView.maximumDate = getDate(this.hour, value);
@@ -97,11 +99,11 @@ export class TimePicker extends TimePickerBase {
         this.nativeView.minuteInterval = value;
     }
 
-    get [colorProperty.native](): UIColor {
-        return this.nativeView.valueForKey("textColor");
+    get [colorProperty.native](): Color {
+        return ios.getColor(this.nativeView.valueForKey("textColor"));
     }
-    set [colorProperty.native](value: UIColor) {
-        this.nativeView.setValueForKey(value, "textColor");
+    set [colorProperty.native](value: Color) {
+        this.nativeView.setValueForKey(value.ios, "textColor");
     }
 }
 

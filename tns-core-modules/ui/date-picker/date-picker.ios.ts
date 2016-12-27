@@ -3,6 +3,8 @@
     dateProperty, maxDateProperty, minDateProperty, colorProperty
 } from "./date-picker-common";
 
+import { Color } from "color";
+
 import { ios } from "utils/utils";
 
 export * from "./date-picker-common";
@@ -19,6 +21,10 @@ export class DatePicker extends DatePickerBase {
 
         this._changeHandler = UIDatePickerChangeHandlerImpl.initWithOwner(new WeakRef(this));
         this.nativeView.addTargetActionForControlEvents(this._changeHandler, "valueChanged", UIControlEvents.ValueChanged);
+    }
+
+    get ios(): UIDatePicker {
+        return this.nativeView;
     }
 
     get [yearProperty.native](): number {
@@ -81,12 +87,12 @@ export class DatePicker extends DatePickerBase {
         picker.minimumDate = <any>nsDate;
     }
 
-    get [colorProperty.native](): UIColor {
-        return this.nativeView.valueForKey("textColor");
+    get [colorProperty.native](): Color {
+        return ios.getColor(this.nativeView.valueForKey("textColor"));
     }
-    set [minDateProperty.native](value: UIColor) {
+    set [colorProperty.native](value: Color) {
         let picker = this.nativeView;
-        picker.setValueForKey(value, "textColor");
+        picker.setValueForKey(value.ios, "textColor");
     }
 }
 
