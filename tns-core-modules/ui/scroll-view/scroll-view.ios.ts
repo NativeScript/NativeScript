@@ -103,10 +103,9 @@ export class ScrollView extends ScrollViewBase {
 
         const density = layout.getDisplayDensity();
         const child = this.layoutView;
-        const style = this.style;
         if (!child) {
-            this._contentMeasuredWidth = style.effectiveMinWidth * density;
-            this._contentMeasuredHeight = style.effectiveMinHeight * density;
+            this._contentMeasuredWidth = this.effectiveMinWidth * density;
+            this._contentMeasuredHeight = this.effectiveMinHeight * density;
         }
         else {
             let childSize: { measuredWidth: number; measuredHeight: number };
@@ -118,8 +117,8 @@ export class ScrollView extends ScrollViewBase {
             }
 
             this.nativeView.contentSize = CGSizeMake(childSize.measuredWidth, childSize.measuredHeight);
-            this._contentMeasuredWidth = Math.max(childSize.measuredWidth, style.effectiveMinWidth * density);
-            this._contentMeasuredHeight = Math.max(childSize.measuredHeight, style.effectiveMinHeight * density);
+            this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth * density);
+            this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight * density);
         }
 
         const widthAndState = View.resolveSizeAndState(this._contentMeasuredWidth, width, widthMode, 0);

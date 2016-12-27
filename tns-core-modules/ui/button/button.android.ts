@@ -39,11 +39,11 @@ export class Button extends ButtonBase {
         let result = new android.graphics.Rect();
         this._button.getBackground().getPadding(result);
         this._defaultNativePadding = result;
-        
-        this.style.effectivePaddingTop = this._defaultNativePadding.top;
-        this.style.effectivePaddingRight = this._defaultNativePadding.right;
-        this.style.effectivePaddingBottom = this._defaultNativePadding.bottom;
-        this.style.effectivePaddingLeft = this._defaultNativePadding.left;
+
+        this.effectivePaddingTop = this._defaultNativePadding.top;
+        this.effectivePaddingRight = this._defaultNativePadding.right;
+        this.effectivePaddingBottom = this._defaultNativePadding.bottom;
+        this.effectivePaddingLeft = this._defaultNativePadding.left;
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")

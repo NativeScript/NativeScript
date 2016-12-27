@@ -53,9 +53,8 @@ export class Image extends ImageBase {
         let nativeWidth = this.imageSource ? this.imageSource.width : 0;
         let nativeHeight = this.imageSource ? this.imageSource.height : 0;
 
-        let style = this.style;
-        let measureWidth = Math.max(nativeWidth, style.effectiveMinWidth);
-        let measureHeight = Math.max(nativeHeight, style.effectiveMinHeight);
+        let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+        let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
 
         let finiteWidth: boolean = widthMode !== layout.UNSPECIFIED;
         let finiteHeight: boolean = heightMode !== layout.UNSPECIFIED;

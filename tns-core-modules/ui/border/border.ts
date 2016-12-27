@@ -21,8 +21,8 @@ export class Border extends ContentView implements BorderDefinition {
         let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let style = this.style;
-        let horizontalBorderLength = style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        let verticalBorderLength = style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        let horizontalBorderLength = this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        let verticalBorderLength = this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
         let result = View.measureChild(this, this.layoutView,
             layout.makeMeasureSpec(width - horizontalBorderLength, widthMode),
@@ -36,9 +36,9 @@ export class Border extends ContentView implements BorderDefinition {
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         let style = this.style;
-        let horizontalBorderLength = style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        let verticalBorderLength = style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        let horizontalBorderLength = this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        let verticalBorderLength = this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
-        View.layoutChild(this, this.layoutView, style.effectiveBorderLeftWidth, style.effectiveBorderTopWidth, right - left - horizontalBorderLength, bottom - top - verticalBorderLength);
+        View.layoutChild(this, this.layoutView, this.effectiveBorderLeftWidth, this.effectiveBorderTopWidth, right - left - horizontalBorderLength, bottom - top - verticalBorderLength);
     }
 }

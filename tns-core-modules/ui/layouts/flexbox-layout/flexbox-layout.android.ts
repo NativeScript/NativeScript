@@ -181,8 +181,7 @@ export function _setAndroidLayoutParams(lp: org.nativescript.widgets.FlexboxLayo
     lp.flexShrink = FlexboxLayout.getFlexShrink(view);
     lp.alignSelf = alignSelfMap[FlexboxLayout.getAlignSelf(view)];
     lp.wrapBefore = FlexboxLayout.getFlexWrapBefore(view);
-    const style = view.style;
 
-    lp.minWidth = layout.toDevicePixels(style.effectiveMinWidth);
-    lp.minHeight = layout.toDevicePixels(style.effectiveMinHeight);
+    lp.minWidth = layout.toDevicePixels(view.effectiveMinWidth);
+    lp.minHeight = layout.toDevicePixels(view.effectiveMinHeight);
 }

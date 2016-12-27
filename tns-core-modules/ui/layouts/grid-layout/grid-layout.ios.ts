@@ -111,9 +111,8 @@ export class GridLayout extends GridLayoutBase {
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        const style = this.style;
-        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
         let infinityWidth = widthMode === layout.UNSPECIFIED;
         let infinityHeight = heightMode === layout.UNSPECIFIED;
@@ -143,8 +142,8 @@ export class GridLayout extends GridLayoutBase {
         measureHeight = this.helper.measuredHeight + verticalPaddingsAndMargins;
 
         // Check against our minimum sizes
-        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
-        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
         const widthSizeAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         const heightSizeAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -157,8 +156,8 @@ export class GridLayout extends GridLayoutBase {
 
         const style = this.style;
 
-        let paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
-        let paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
+        let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
+        let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
 
         this.columnOffsets.length = 0;
         this.rowOffsets.length = 0;

@@ -90,9 +90,8 @@ export class Label extends TextBase implements LabelDefinition {
                 labelWidth = Math.min(labelWidth, width);
             }
 
-            let style = this.style;
-            let measureWidth = Math.max(labelWidth, style.effectiveMinWidth);
-            let measureHeight = Math.max(nativeSize.height, style.effectiveMinHeight);
+            let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
+            let measureHeight = Math.max(nativeSize.height, this.effectiveMinHeight);
 
             let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -149,7 +148,7 @@ export class Label extends TextBase implements LabelDefinition {
         let nativeView = this._nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
-            top: this.style.effectiveBorderTopWidth,
+            top: this.effectiveBorderTopWidth,
             right: border.right,
             bottom: border.bottom,
             left: border.left
@@ -164,7 +163,7 @@ export class Label extends TextBase implements LabelDefinition {
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
-            right: this.style.effectiveBorderRightWidth,
+            right: this.effectiveBorderRightWidth,
             bottom: border.bottom,
             left: border.left
         };
@@ -179,7 +178,7 @@ export class Label extends TextBase implements LabelDefinition {
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
-            bottom: this.style.effectiveBorderBottomWidth,
+            bottom: this.effectiveBorderBottomWidth,
             left: border.left
         };
     }
@@ -194,7 +193,7 @@ export class Label extends TextBase implements LabelDefinition {
             top: border.top,
             right: border.right,
             bottom: border.bottom,
-            left: this.style.effectiveBorderLeftWidth
+            left: this.effectiveBorderLeftWidth
         };
     }
 
@@ -205,7 +204,7 @@ export class Label extends TextBase implements LabelDefinition {
         let nativeView = this._nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
-            top: this.style.effectivePaddingTop,
+            top: this.effectivePaddingTop,
             right: padding.right,
             bottom: padding.bottom,
             left: padding.left
@@ -220,7 +219,7 @@ export class Label extends TextBase implements LabelDefinition {
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
-            right: this.style.effectivePaddingRight,
+            right: this.effectivePaddingRight,
             bottom: padding.bottom,
             left: padding.left
         };
@@ -235,7 +234,7 @@ export class Label extends TextBase implements LabelDefinition {
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
-            bottom: this.style.effectivePaddingBottom,
+            bottom: this.effectivePaddingBottom,
             left: padding.left
         };
     }
@@ -250,7 +249,7 @@ export class Label extends TextBase implements LabelDefinition {
             top: padding.top,
             right: padding.right,
             bottom: padding.bottom,
-            left: this.style.effectivePaddingLeft
+            left: this.effectivePaddingLeft
         };
     }
 }

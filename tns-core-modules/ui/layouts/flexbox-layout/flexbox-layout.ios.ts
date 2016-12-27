@@ -263,7 +263,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     continue;
                 }
 
-                let lp = child.style;
+                let lp = child; // child.style;
                 if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
                     flexLine._indicesAlignSelfStretch.push(i);
                 }
@@ -330,7 +330,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 let largestHeightInLine = Number.MIN_VALUE;
                 for (let i = viewIndex; i < viewIndex + flexLine._itemCount; i++) {
                     let child = this._getReorderedChildAt(i);
-                    const lp = child.style;
+                    const lp = child; // .style;
                     if (this.flexWrap !== FlexWrap.WRAP_REVERSE) {
                         let marginTop = flexLine._maxBaseline - FlexboxLayout.getBaseline(child);
                         marginTop = Math.max(marginTop, lp.effectiveMarginTop);
@@ -346,8 +346,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             });
         }
 
-        const style = this.style;
-        this._determineCrossSize(this.flexDirection, widthMeasureSpec, heightMeasureSpec, style.effectivePaddingTop + style.effectivePaddingBottom);
+        this._determineCrossSize(this.flexDirection, widthMeasureSpec, heightMeasureSpec, this.effectivePaddingTop + this.effectivePaddingBottom);
         this._stretchViews(this.flexDirection, this.alignItems);
         this._setMeasuredDimensionForFlex(this.flexDirection, widthMeasureSpec, heightMeasureSpec, childState);
     }
@@ -360,9 +359,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this._flexLines.length = 0;
 
         let childCount = this.getChildrenCount();
-        const style = this.style;
-        let paddingTop = style.effectivePaddingTop;
-        let paddingBottom = style.effectivePaddingBottom;
+        let paddingTop = this.effectivePaddingTop;
+        let paddingBottom = this.effectivePaddingBottom;
         let largestWidthInColumn = Number.MIN_VALUE;
         let flexLine = new FlexLine();
         flexLine._mainSize = paddingTop + paddingBottom;
@@ -379,7 +377,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 continue;
             }
 
-            const lp = child.style;
+            const lp = child; // .style;
             if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
                 flexLine._indicesAlignSelfStretch.push(i);
             }
@@ -391,10 +389,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             }
 
             let childWidthMeasureSpec = FlexboxLayout.getChildMeasureSpec(widthMeasureSpec,
-                style.effectivePaddingLeft + style.effectivePaddingRight + lp.effectiveMarginLeft
+                this.effectivePaddingLeft + this.effectivePaddingRight + lp.effectiveMarginLeft
                 + lp.effectiveMarginRight, lp.effectiveWidth < 0 ? WRAP_CONTENT : lp.effectiveWidth);
             let childHeightMeasureSpec = FlexboxLayout.getChildMeasureSpec(heightMeasureSpec,
-                style.effectivePaddingTop + style.effectivePaddingBottom + lp.effectiveMarginTop
+                this.effectivePaddingTop + this.effectivePaddingBottom + lp.effectiveMarginTop
                 + lp.effectiveMarginBottom, childHeight < 0 ? WRAP_CONTENT : childHeight);
             child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
 
@@ -433,7 +431,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         }
 
         this._determineMainSize(this.flexDirection, widthMeasureSpec, heightMeasureSpec);
-        this._determineCrossSize(this.flexDirection, widthMeasureSpec, heightMeasureSpec, style.effectivePaddingLeft + style.effectivePaddingRight);
+        this._determineCrossSize(this.flexDirection, widthMeasureSpec, heightMeasureSpec, this.effectivePaddingLeft + this.effectivePaddingRight);
         this._stretchViews(this.flexDirection, this.alignItems);
         this._setMeasuredDimensionForFlex(this.flexDirection, widthMeasureSpec, heightMeasureSpec, childState);
     }
@@ -443,8 +441,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let childWidth = view.getMeasuredWidth();
         let childHeight = view.getMeasuredHeight();
 
-        const style = view.style;
-        let minWidth = style.effectiveMinWidth;
+        let minWidth = view.effectiveMinWidth;
         if (view.getMeasuredWidth() < minWidth) {
             needsMeasure = true;
             childWidth = minWidth;
@@ -453,7 +450,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             childWidth = MAX_SIZE /*lp.maxWidth*/;
         }
 
-        let minHeight = style.effectiveMinHeight;
+        let minHeight = view.effectiveMinHeight;
         if (childHeight < minHeight) {
             needsMeasure = true;
             childHeight = minHeight;
@@ -480,7 +477,6 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _determineMainSize(flexDirection: FlexDirection, widthMeasureSpec: number, heightMeasureSpec: number) {
         let mainSize: number;
         let paddingAlongMainAxis: number;
-        const style = this.style;
 
         switch (flexDirection) {
             case FlexDirection.ROW:
@@ -492,7 +488,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 } else {
                     mainSize = this._getLargestMainSize();
                 }
-                paddingAlongMainAxis = style.effectivePaddingLeft + style.effectivePaddingRight;
+                paddingAlongMainAxis = this.effectivePaddingLeft + this.effectivePaddingRight;
                 break;
             case FlexDirection.COLUMN:
             case FlexDirection.COLUMN_REVERSE:
@@ -503,7 +499,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 } else {
                     mainSize = this._getLargestMainSize();
                 }
-                paddingAlongMainAxis = style.effectivePaddingTop + style.effectivePaddingBottom;
+                paddingAlongMainAxis = this.effectivePaddingTop + this.effectivePaddingBottom;
                 break;
             default:
                 throw new Error("Invalid flex direction: " + flexDirection);
@@ -539,7 +535,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 childIndex++;
                 continue;
             }
-            const lp = child.style;
+            const lp = child; // .style;
             if (this._isMainAxisDirectionHorizontal(flexDirection)) {
                 if (!this._childrenFrozen[childIndex]) {
                     let flexGrow = FlexboxLayout.getFlexGrow(child);
@@ -603,14 +599,14 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 childIndex++;
                 continue;
             }
-            const lp = child.style;
+            const lp = child; // .style;
             if (this._isMainAxisDirectionHorizontal(flexDirection)) {
                 // The direction of main axis is horizontal
                 if (!this._childrenFrozen[childIndex]) {
                     let flexShrink = FlexboxLayout.getFlexShrink(child);
                     let rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * flexShrink + accumulatedRoundError;
                     let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
-                    let minWidth = child.style.effectiveMinWidth;
+                    let minWidth = child.effectiveMinWidth;
                     if (roundedCalculatedWidth < minWidth) {
                         needsReshrink = true;
                         roundedCalculatedWidth = minWidth;
@@ -627,7 +623,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     let flexShrink = FlexboxLayout.getFlexShrink(child);
                     let rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * flexShrink + accumulatedRoundError;
                     let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
-                    const minHeight = child.style.effectiveMinHeight;
+                    const minHeight = child.effectiveMinHeight;
                     if (roundedCalculatedHeight < minHeight) {
                         needsReshrink = true;
                         roundedCalculatedHeight = minHeight;
@@ -822,21 +818,18 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _stretchViewVertically(view: View, crossSize: number) {
-        let lp = view.style;
-        let newHeight = crossSize - lp.effectiveMarginTop - lp.effectiveMarginBottom;
+        let newHeight = crossSize - view.effectiveMarginTop - view.effectiveMarginBottom;
         newHeight = Math.max(newHeight, 0);
         view.measure(makeMeasureSpec(view.getMeasuredWidth(), EXACTLY), makeMeasureSpec(newHeight, EXACTLY));
     }
 
     private _stretchViewHorizontally(view: View, crossSize: number) {
-        let lp = view.style;
-        let newWidth = crossSize - lp.effectiveMarginLeft - lp.effectiveMarginRight;
+        let newWidth = crossSize - view.effectiveMarginLeft - view.effectiveMarginRight;
         newWidth = Math.max(newWidth, 0);
         view.measure(makeMeasureSpec(newWidth, EXACTLY), makeMeasureSpec(view.getMeasuredHeight(), EXACTLY));
     }
 
     private _setMeasuredDimensionForFlex(flexDirection: FlexDirection, widthMeasureSpec: number, heightMeasureSpec: number, childState: number) {
-        const style = this.style;
         let widthMode = getMeasureSpecMode(widthMeasureSpec);
         let widthSize = getMeasureSpecSize(widthMeasureSpec);
         let heightMode = getMeasureSpecMode(heightMeasureSpec);
@@ -846,13 +839,13 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         switch (flexDirection) {
             case FlexDirection.ROW:
             case FlexDirection.ROW_REVERSE:
-                calculatedMaxHeight = this._getSumOfCrossSize() + style.effectivePaddingTop + style.effectivePaddingBottom;
+                calculatedMaxHeight = this._getSumOfCrossSize() + this.effectivePaddingTop + this.effectivePaddingBottom;
                 calculatedMaxWidth = this._getLargestMainSize();
                 break;
             case FlexDirection.COLUMN:
             case FlexDirection.COLUMN_REVERSE:
                 calculatedMaxHeight = this._getLargestMainSize();
-                calculatedMaxWidth = this._getSumOfCrossSize() + style.effectivePaddingLeft + style.effectivePaddingRight;
+                calculatedMaxWidth = this._getSumOfCrossSize() + this.effectivePaddingLeft + this.effectivePaddingRight;
                 break;
             default:
                 throw new Error("Invalid flex direction: " + flexDirection);
@@ -970,9 +963,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _layoutHorizontal(isRtl: boolean, left: number, top: number, right: number, bottom: number) {
-        const style = this.style;
-        let paddingLeft = style.effectivePaddingLeft;
-        let paddingRight = style.effectivePaddingRight;
+        let paddingLeft = this.effectivePaddingLeft;
+        let paddingRight = this.effectivePaddingRight;
 
         let childLeft;
         let currentViewIndex = 0;
@@ -980,8 +972,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let height = bottom - top;
         let width = right - left;
 
-        let childBottom = height - style.effectivePaddingBottom;
-        let childTop = style.effectivePaddingTop;
+        let childBottom = height - this.effectivePaddingBottom;
+        let childTop = this.effectivePaddingTop;
 
         let childRight;
         this._flexLines.forEach((flexLine, i) => {
@@ -1028,7 +1020,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     currentViewIndex++;
                     continue;
                 }
-                const lp = child.style;
+                const lp = child; // .style;
                 childLeft += lp.effectiveMarginLeft;
                 childRight -= lp.effectiveMarginRight;
 
@@ -1075,7 +1067,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _layoutSingleChildHorizontal(view: View, flexLine: FlexLine, flexWrap: FlexWrap, alignItems: AlignItems, left: number, top: number, right: number, bottom: number): void {
-        let lp = view.style;
+        let lp = view; // .style;
 
         let alignSelf = FlexboxLayout.getAlignSelf(view);
         if (alignSelf !== AlignSelf.AUTO) {
@@ -1129,12 +1121,11 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _layoutVertical(isRtl: boolean, fromBottomToTop: boolean, left: number, top: number, right: number, bottom: number) {
-        const style = this.style;
-        let paddingTop = style.effectivePaddingTop;
-        let paddingBottom = style.effectivePaddingBottom;
+        let paddingTop = this.effectivePaddingTop;
+        let paddingBottom = this.effectivePaddingBottom;
 
-        let paddingRight = style.effectivePaddingRight;
-        let childLeft = style.effectivePaddingLeft;
+        let paddingRight = this.effectivePaddingRight;
+        let childLeft = this.effectivePaddingLeft;
         let currentViewIndex = 0;
 
         let width = right - left;
@@ -1189,7 +1180,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     currentViewIndex++;
                     continue;
                 }
-                const lp = child.style;
+                const lp = child; // .style;
                 childTop += lp.effectiveMarginTop;
                 childBottom -= lp.effectiveMarginBottom;
 
@@ -1235,7 +1226,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private _layoutSingleChildVertical(view: View, flexLine: FlexLine, isRtl: boolean, alignItems: AlignItems, left: number, top: number, right: number, bottom: number) {
-        let lp = view.style;
+        let lp = view; // .style;
         let alignSelf = FlexboxLayout.getAlignSelf(view);
         if (alignSelf !== AlignSelf.AUTO) {
             alignItems = alignSelf;
@@ -1345,10 +1336,10 @@ export namespace FlexboxLayout {
     }
 
     export function getPaddingStart(child: View): number {
-        return child.style.effectivePaddingLeft;
+        return child.effectivePaddingLeft;
     }
 
     export function getPaddingEnd(child: View): number {
-        return child.style.effectivePaddingRight;
+        return child.effectivePaddingRight;
     }
 }

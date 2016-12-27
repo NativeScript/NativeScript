@@ -18,9 +18,8 @@ export class StackLayout extends StackLayoutBase {
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         const isVertical = this.orientation === "vertical";
-        const style = this.style;
-        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
         let measureSpec: number;
 
@@ -71,8 +70,8 @@ export class StackLayout extends StackLayoutBase {
         measureHeight += verticalPaddingsAndMargins;
 
         // Check against our minimum sizes
-        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
-        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
         this._totalLength = isVertical ? measureHeight : measureWidth;
 
@@ -93,11 +92,10 @@ export class StackLayout extends StackLayoutBase {
     }
 
     private layoutVertical(left: number, top: number, right: number, bottom: number): void {
-        const style = this.style;
-        const paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
-        const paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
-        const paddingRight = style.effectiveBorderRightWidth + style.effectivePaddingRight;
-        const paddingBottom = style.effectiveBorderBottomWidth + style.effectivePaddingBottom;
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
 
         let childTop: number;
         let childLeft: number = paddingLeft;
@@ -120,8 +118,7 @@ export class StackLayout extends StackLayoutBase {
         }
 
         this.eachLayoutChild((child, last) => {
-            const childStyle = child.style;
-            const childHeight = child.getMeasuredHeight() + childStyle.effectiveMarginTop + childStyle.effectiveMarginBottom;
+            const childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childTop + childHeight);
             childTop += childHeight;
@@ -129,11 +126,10 @@ export class StackLayout extends StackLayoutBase {
     }
 
     private layoutHorizontal(left: number, top: number, right: number, bottom: number): void {
-        const style = this.style;
-        const paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
-        const paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
-        const paddingRight = style.effectiveBorderRightWidth + style.effectivePaddingRight;
-        const paddingBottom = style.effectiveBorderBottomWidth + style.effectivePaddingBottom;
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
 
         let childTop: number = paddingTop;
         let childLeft: number;
@@ -156,8 +152,7 @@ export class StackLayout extends StackLayoutBase {
         }
 
         this.eachLayoutChild((child, last) => {
-            const childStyle = child.style;
-            const childWidth = child.getMeasuredWidth() + childStyle.effectiveMarginLeft + childStyle.effectiveMarginRight;
+            const childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
 
             View.layoutChild(this, child, childLeft, childTop, childLeft + childWidth, childBottom);
             childLeft += childWidth;

@@ -327,9 +327,8 @@ export class TabView extends TabViewBase {
                 measureWidth = childSize.measuredWidth;
             }
 
-            const style = this.style;
-            measureWidth = Math.max(measureWidth, style.effectiveMinWidth * density);
-            measureHeight = Math.max(measureHeight, style.effectiveMinHeight * density);
+            measureWidth = Math.max(measureWidth, this.effectiveMinWidth * density);
+            measureHeight = Math.max(measureHeight, this.effectiveMinHeight * density);
 
             const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

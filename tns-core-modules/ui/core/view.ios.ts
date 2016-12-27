@@ -114,9 +114,8 @@ export class View extends ViewCommon {
             nativeHeight = nativeSize.height;
         }
 
-        let style = this.style;
-        let measureWidth = Math.max(nativeWidth, style.effectiveMinWidth);
-        let measureHeight = Math.max(nativeHeight, style.effectiveMinHeight);
+        let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+        let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
 
         let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

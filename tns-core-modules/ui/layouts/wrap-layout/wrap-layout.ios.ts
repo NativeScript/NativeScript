@@ -29,9 +29,8 @@ export class WrapLayout extends WrapLayoutBase {
         const height = layout.getMeasureSpecSize(heightMeasureSpec);
         const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        const style = this.style;
-        const horizontalPaddingsAndMargins = style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderLeftWidth + style.effectiveBorderRightWidth;
-        const verticalPaddingsAndMargins = style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderTopWidth + style.effectiveBorderBottomWidth;
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
         const availableWidth = widthMode === layout.UNSPECIFIED ? Number.MAX_VALUE : width - horizontalPaddingsAndMargins;
         const availableHeight = heightMode === layout.UNSPECIFIED ? Number.MAX_VALUE : height - verticalPaddingsAndMargins;
@@ -111,8 +110,8 @@ export class WrapLayout extends WrapLayoutBase {
         measureHeight += verticalPaddingsAndMargins;
 
         // Check against our minimum sizes
-        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
-        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
         const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -124,11 +123,10 @@ export class WrapLayout extends WrapLayoutBase {
         super.onLayout(left, top, right, bottom);
 
         const isVertical = this.orientation === "vertical";
-        const style = this.style;
-        const paddingLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft;
-        const paddingTop = style.effectiveBorderTopWidth + style.effectivePaddingTop;
-        const paddingRight = style.effectiveBorderRightWidth + style.effectivePaddingRight;
-        const paddingBottom = style.effectiveBorderBottomWidth + style.effectivePaddingBottom;
+        const paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
+        const paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
+        const paddingRight = this.effectiveBorderRightWidth + this.effectivePaddingRight;
+        const paddingBottom = this.effectiveBorderBottomWidth + this.effectivePaddingBottom;
 
         let childLeft = paddingLeft;
         let childTop = paddingTop;
@@ -144,9 +142,8 @@ export class WrapLayout extends WrapLayoutBase {
         this.eachLayoutChild((child, last) => {
             // Add margins because layoutChild will sustract them.
             // * density converts them to device pixels.
-            const childStyle = child.style;
-            let childHeight = child.getMeasuredHeight() + childStyle.effectiveMarginTop + childStyle.effectiveMarginBottom;
-            let childWidth = child.getMeasuredWidth() + childStyle.effectiveMarginLeft + childStyle.effectiveMarginRight;
+            let childHeight = child.getMeasuredHeight() + child.effectiveMarginTop + child.effectiveMarginBottom;
+            let childWidth = child.getMeasuredWidth() + child.effectiveMarginLeft + child.effectiveMarginRight;
             
             let length = this._lengths[rowOrColumn];
             if (isVertical) {

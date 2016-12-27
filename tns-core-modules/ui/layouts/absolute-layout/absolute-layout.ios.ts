@@ -32,13 +32,11 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
             measureHeight = Math.max(measureHeight, child.effectiveTop + childSize.measuredHeight);
         });
 
-        const style = this.style;
+        measureWidth += this.effectiveBorderLeftWidth + this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderRightWidth;
+        measureHeight += this.effectiveBorderTopWidth + this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
 
-        measureWidth += style.effectiveBorderLeftWidth + style.effectivePaddingLeft + style.effectivePaddingRight + style.effectiveBorderRightWidth;
-        measureHeight += style.effectiveBorderTopWidth + style.effectivePaddingTop + style.effectivePaddingBottom + style.effectiveBorderBottomWidth;
-
-        measureWidth = Math.max(measureWidth, style.effectiveMinWidth);
-        measureHeight = Math.max(measureHeight, style.effectiveMinHeight);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
         const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -49,16 +47,15 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        const style = this.style;
         this.eachLayoutChild((child, last) => {
 
             const childWidth = child.getMeasuredWidth();
             const childHeight = child.getMeasuredHeight();
 
-            const childLeft = style.effectiveBorderLeftWidth + style.effectivePaddingLeft + child.effectiveLeft;
-            const childTop = style.effectiveBorderTopWidth + style.effectivePaddingTop + child.effectiveTop;
-            const childRight = childLeft + childWidth + style.effectiveMarginLeft + style.effectiveMarginRight;
-            const childBottom = childTop + childHeight + style.effectiveMarginTop + style.effectiveMarginBottom;
+            const childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + child.effectiveLeft;
+            const childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + child.effectiveTop;
+            const childRight = childLeft + childWidth + this.effectiveMarginLeft + this.effectiveMarginRight;
+            const childBottom = childTop + childHeight + this.effectiveMarginTop + this.effectiveMarginBottom;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childBottom);
         });
