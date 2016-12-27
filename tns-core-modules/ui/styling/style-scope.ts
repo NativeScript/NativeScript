@@ -25,7 +25,32 @@ export class CssState {
         resetStyleProperties(this.view.style);
 
         let matchingSelectors = this.match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
-        matchingSelectors.forEach(s => applyDescriptors(this.view, s.ruleset));
+        matchingSelectors.forEach(s => this.applyDescriptors(this.view, s.ruleset));
+    }
+
+    private applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
+        let style = view.style;
+        ruleset.declarations.forEach(d => {
+            let name = `css-${d.property}`;
+            if (name in style) {
+                style[name] = d.value;
+            } else {
+                view[name] = d.value;
+            }
+        });
+
+        let ruleAnimations: KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+        if (ruleAnimations && view.isLoaded && view.nativeView !== undefined) {
+            for (let animationInfo of ruleAnimations) {
+                let animation = KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+                if (animation) {
+                    view._registerAnimation(animation);
+                    animation.play(view)
+                        .then(() => { view._unregisterAnimation(animation); })
+                        .catch((e) => { view._unregisterAnimation(animation); });
+                }
+            }
+        }
     }
 }
 
@@ -247,58 +272,6 @@ function isDeclaration(node: Node): node is Declaration {
 }
 function isKeyframe(node: Node): node is Keyframes {
     return node.type === "keyframes";
-}
-
-function applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
-    let style = view.style;
-    ruleset.declarations.forEach(d => {
-        let name = `css-${d.property}`;
-        if (name in style) {
-            style[name] = d.value;
-        } else {
-            view[name] = d.value;
-        }
-    });
-
-    // let modifier = observable.ValueSource.Css;
-    // ruleset.declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
-    //     if (types.isString(property)) {
-    //         const propertyName = <string>property;
-    //         let attrHandled = false;
-    //         let specialSetter = getSpecialPropertySetter(propertyName);
-
-    //         if (!attrHandled && specialSetter) {
-    //             specialSetter(view, value);
-    //             attrHandled = true;
-    //         }
-
-    //         if (!attrHandled && propertyName in view) {
-    //             view[propertyName] = convertString(value);
-    //         }
-    //     } else {
-    //         const resolvedProperty = <StyleProperty>property;
-    //         try {
-    //             view.style._setValue(resolvedProperty, value, modifier);
-    //         } catch (ex) {
-    //             if (traceEnabled) {
-    //                 traceWrite("Error setting property: " + resolvedProperty.name + " view: " + view + " value: " + value + " " + ex, traceCategories.Style, trace.messageType.error);
-    //             }
-    //         }
-    //     }
-    // }));
-
-    let ruleAnimations: KeyframeAnimationInfo[] = ruleset[animationsSymbol];
-    if (ruleAnimations && view.isLoaded && view.nativeView !== undefined) {
-        for (let animationInfo of ruleAnimations) {
-            let animation = KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
-            if (animation) {
-                view._registerAnimation(animation);
-                animation.play(view)
-                    .then(() => { view._unregisterAnimation(animation); })
-                    .catch((e) => { view._unregisterAnimation(animation); });
-            }
-        }
-    }
 }
 
 function applyInlineStyle(view: ViewBase, declarations: Declaration[]): void {

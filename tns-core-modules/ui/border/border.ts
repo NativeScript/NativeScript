@@ -20,7 +20,6 @@ export class Border extends ContentView implements BorderDefinition {
         let height = layout.getMeasureSpecSize(heightMeasureSpec);
         let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let style = this.style;
         let horizontalBorderLength = this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
         let verticalBorderLength = this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
@@ -35,7 +34,6 @@ export class Border extends ContentView implements BorderDefinition {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        let style = this.style;
         let horizontalBorderLength = this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
         let verticalBorderLength = this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 

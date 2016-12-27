@@ -77,7 +77,6 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         let height = layout.getMeasureSpecSize(heightMeasureSpec);
         let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let style = this.style;
         let measureWidth = Math.max(result.measuredWidth, this.effectiveMinWidth);
         let measureHeight = Math.max(result.measuredHeight, this.effectiveMinHeight);
 

@@ -11,6 +11,7 @@ export class TextBase extends TextBaseCommon {
 
     //Text
     get [textProperty.native](): string {
+        console.log("Set textProperty.native...");
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             return nativeView.titleForState(UIControlState.Normal);

@@ -154,8 +154,6 @@ export class GridLayout extends GridLayoutBase {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        const style = this.style;
-
         let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
         let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
 
