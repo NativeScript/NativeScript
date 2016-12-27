@@ -326,12 +326,20 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends PageBase {
-    private _ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+    public nativeView: UIView;
+
+    private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
     public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
     public _viewWillDisappear: boolean;
     public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
+
+    constructor() {
+        super();
+        this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+        this.nativeView = this._ios.view;
+    }
 
     public requestLayout(): void {
         super.requestLayout();
