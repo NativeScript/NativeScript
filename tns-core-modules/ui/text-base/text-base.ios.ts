@@ -67,7 +67,6 @@ export class TextBase extends TextBaseCommon {
         }
     }
     set [colorProperty.native](value: Color) {
-        console.log("Setting native color: " + value);
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             nativeView.setTitleColorForState(value.ios, UIControlState.Normal);
