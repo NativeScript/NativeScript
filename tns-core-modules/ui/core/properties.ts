@@ -546,7 +546,7 @@ export class CssProperty<T extends Style, U> {
 }
 
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> {
-    public setInhertiedValue: (value: U) => void;
+    public setInheritedValue: (value: U) => void;
 
     constructor(options: CssPropertyOptions<T, U>) {
         super(options);
@@ -662,7 +662,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
         const setDefaultFunc = setFunc(ValueSource.Default);
         const setInheritedFunc = setFunc(ValueSource.Inherited);
 
-        this.setInhertiedValue = setInheritedFunc;
+        this.setInheritedValue = setInheritedFunc;
         this.cssValueDescriptor.set = setFunc(ValueSource.Css);
         this.localValueDescriptor.set = setFunc(ValueSource.Local);
 
@@ -829,7 +829,7 @@ export function clearInheritedProperties(view: ViewBase): void {
     for (let prop of inheritableCssProperties) {
         const sourceKey = prop.sourceKey;
         if (style[sourceKey] === ValueSource.Inherited) {
-            prop.setInhertiedValue.call(style, unsetValue);
+            prop.setInheritedValue.call(style, unsetValue);
         }
     }
 }
@@ -878,7 +878,7 @@ export function propagateInheritedProperties(view: ViewBase): void {
             const style = child.style;
             const currentValueSource: number = style[sourceKey] || ValueSource.Default;
             if (currentValueSource <= ValueSource.Inherited) {
-                prop.setInhertiedValue.call(style, pair.value, ValueSource.Inherited);
+                prop.setInheritedValue.call(style, pair.value, ValueSource.Inherited);
             }
             return true;
         }
