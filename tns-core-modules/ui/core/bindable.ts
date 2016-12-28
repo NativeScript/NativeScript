@@ -243,12 +243,9 @@ export class Binding {
             return;
         }
 
-        let source = target.bindingContext;
-        // We don't have source so this is first bindingContextChange.
-        // Bind to the new source.
-        if (!this.source) {
-            this.bind(source);
-        } else if (source == null || source === undefined) {
+        if (data.value) {
+            this.bind(data.value);
+        } else {
             this.clearBinding();
         }
     }

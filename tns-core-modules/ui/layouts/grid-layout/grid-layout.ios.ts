@@ -925,7 +925,7 @@ class MeasureHelper {
         let heightMeasureSpec = layout.makeMeasureSpec(measureHeight,
             (measureSpec.starRowsCount > 0 && !this.stretchedVertically) ? layout.AT_MOST : layout.EXACTLY);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 

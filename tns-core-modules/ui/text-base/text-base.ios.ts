@@ -13,7 +13,6 @@ export class TextBase extends TextBaseCommon {
 
     //Text
     get [textProperty.native](): string {
-        console.log("Set textProperty.native...");
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             return nativeView.titleForState(UIControlState.Normal);
@@ -22,7 +21,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
     set [textProperty.native](value: string) {
-        let newValue = value + "";
+        let newValue = (typeof value === "undefined") || (value === null) ? "" : value + "";
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             nativeView.setTitleForState(newValue, UIControlState.Normal);
@@ -34,7 +33,7 @@ export class TextBase extends TextBaseCommon {
                 setTextDecorationAndTransform(newValue, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing, style.color);
             }
         } else {
-            nativeView.text = value;
+            nativeView.text = newValue;
         }
         this._requestLayoutOnTextChanged();
     }
@@ -93,12 +92,13 @@ export class TextBase extends TextBaseCommon {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         switch (nativeView.textAlignment) {
+            case NSTextAlignment.Natural:
             case NSTextAlignment.Left:
-                return TextAlignment.LEFT;
+                return "left";
             case NSTextAlignment.Center:
-                return TextAlignment.CENTER;
+                return "center";
             case NSTextAlignment.Right:
-                return TextAlignment.RIGHT;
+                return "right";
             default:
                 throw new Error(`Unsupported NSTextAlignment: ${nativeView.textAlignment}. Currently supported values are NSTextAlignment.Left, NSTextAlignment.Center, and NSTextAlignment.Right.`);
         }
@@ -108,13 +108,13 @@ export class TextBase extends TextBaseCommon {
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         // NOTE: if Button textAlignment is not enough - set also btn.contentHorizontalAlignment
         switch (value) {
-            case TextAlignment.LEFT:
+            case "left":
                 nativeView.textAlignment = NSTextAlignment.Left;
                 break;
-            case TextAlignment.CENTER:
+            case "center":
                 nativeView.textAlignment = NSTextAlignment.Center;
                 break;
-            case TextAlignment.RIGHT:
+            case "right":
                 nativeView.textAlignment = NSTextAlignment.Right;
                 break;
             default:

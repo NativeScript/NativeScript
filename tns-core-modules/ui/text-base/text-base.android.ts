@@ -175,10 +175,6 @@ export class TextBase extends TextBaseCommon {
             default: 
                 throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
-
-        let nowrap = value === WhiteSpace.NO_WRAP;
-        nativeView.setSingleLine(nowrap);
-        nativeView.setEllipsize(nowrap ? android.text.TextUtils.TruncateAt.END : null);
     }
 
     get [letterSpacingProperty.native](): number {
