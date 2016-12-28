@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData } from "data/observable";
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetStyleProperties } from "./properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -504,22 +504,24 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
 
-function onCssClassPropertyChanged(view: ViewBase, oldValue: string, newValue: string) {
-    let classes = view.cssClasses;
-    classes.clear();
-    if (typeof newValue === "string") {
-        newValue.split(" ").forEach(c => classes.add(c));
+export const classNameProperty = new Property<ViewBase, string>({
+    name: "className",
+    valueChanged(view: ViewBase, oldValue: string, newValue: string) {
+        let classes = view.cssClasses;
+        classes.clear();
+        if (typeof newValue === "string") {
+            newValue.split(" ").forEach(c => classes.add(c));
+        }
+        resetStyles(view);
     }
-}
-
-export const classNameProperty = new Property<ViewBase, string>({ name: "className", valueChanged: onCssClassPropertyChanged });
+});
 classNameProperty.register(ViewBase);
 
 function resetStyles(view: ViewBase): void {
+    view._cancelAllAnimations();
+    resetCSSProperties(view.style);
+    view._applyStyleFromScope();
     view.eachChild((child) => {
-        child._cancelAllAnimations();
-        resetStyleProperties(child.style);
-        child._applyStyleFromScope();
         resetStyles(child);
         return true;
     });

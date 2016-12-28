@@ -38,8 +38,8 @@ export class GesturesObserver extends GesturesObserverBase {
                 this._detach();
             };
 
-            this.target.on(View.loadedEvent, this._onTargetLoaded);
-            this.target.on(View.unloadedEvent, this._onTargetUnloaded);
+            this.target.on("loaded", this._onTargetLoaded);
+            this.target.on("unloaded", this._onTargetUnloaded);
 
             if (this.target.isLoaded) {
                 this._attach(this.target, type);
@@ -51,8 +51,8 @@ export class GesturesObserver extends GesturesObserverBase {
         this._detach();
 
         if (this.target) {
-            this.target.off(View.loadedEvent, this._onTargetLoaded);
-            this.target.off(View.unloadedEvent, this._onTargetUnloaded);
+            this.target.off("loaded", this._onTargetLoaded);
+            this.target.off("unloaded", this._onTargetUnloaded);
 
             this._onTargetLoaded = null;
             this._onTargetUnloaded = null;
