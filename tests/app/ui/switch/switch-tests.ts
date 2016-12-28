@@ -90,7 +90,7 @@ export function test_set_native_checked_triggers_propertyChanged() {
     function testAction(views: Array<viewModule.View>) {
         var checkedChanged = false;
         var allChanges = 0;
-        mySwitch.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
+        mySwitch.on("checkedChange", function (data: observable.EventData) {
             allChanges++;
             var propertyData = <observable.PropertyChangeData>data;
             if (propertyData && propertyData.propertyName === "checked" && propertyData.value === true) {
@@ -100,7 +100,7 @@ export function test_set_native_checked_triggers_propertyChanged() {
 
         setNativeValue(mySwitch, true);
 
-        mySwitch.off(observable.Observable.propertyChangeEvent);
+        mySwitch.off("checkedChange");
 
         TKUnit.assert(checkedChanged, "Property changed for checked not called.");
         TKUnit.assertEqual(allChanges, 1, "Property changed callbacks.");
