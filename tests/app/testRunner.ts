@@ -54,7 +54,7 @@ allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["CONNECTIVITY"] = require("./connectivity-tests");
 
 // allTests["PROXY-VIEW-CONTAINER"] = require("./ui/proxy-view-container/proxy-view-container-tests")
-// allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
+allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 // allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 // allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 // allTests["DOCKLAYOUT"] = require("./ui/layouts/dock-layout-tests");
