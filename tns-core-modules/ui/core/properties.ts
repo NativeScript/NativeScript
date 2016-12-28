@@ -293,6 +293,8 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
         const key = this.key;
         const defaultValue = options.defaultValue;
 
+        const eventName = name + "Change";
+
         const sourceKey = Symbol(name + ":valueSourceKey");
         this.sourceKey = sourceKey;
 
@@ -329,6 +331,17 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
             that[sourceKey] = newValueSource;
 
             if (currentValue !== newValue) {
+
+                if (this.hasListeners(eventName)) {
+                    console.log("Notify " + eventName);
+                    this.notify({
+                        eventName: eventName,
+                        propertyName: name,
+                        object: this,
+                        value: unboxedValue
+                    });
+                }
+
                 const reset = newValueSource === ValueSource.Default;
                 that.eachChild((child) => {
                     const childValueSource = child[sourceKey] || ValueSource.Default;
@@ -836,7 +849,6 @@ export function clearInheritedProperties(view: ViewBase): void {
 
 export function resetCSSProperties(style: Style): void {
     let symbols = (<any>Object).getOwnPropertySymbols(style);
-    const view = style.view;
     for (let symbol of symbols) {
         const cssProperty = cssSymbolPropertyMap[symbol];
         if (!cssProperty) {

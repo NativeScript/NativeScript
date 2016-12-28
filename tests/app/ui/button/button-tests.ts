@@ -4,9 +4,9 @@ import * as viewModule from "ui/core/view";
 import * as pagesModule from "ui/page";
 import * as buttonTestsNative from "./button-tests-native";
 import * as colorModule from "color";
-import * as enums from "ui/enums";
-import * as formattedStringModule from "text/formatted-string";
-import * as spanModule from "text/span";
+// import * as enums from "ui/enums";
+// import * as formattedStringModule from "text/formatted-string";
+// import * as spanModule from "text/span";
 
 // >> button-require
 import * as buttonModule from "ui/button";
