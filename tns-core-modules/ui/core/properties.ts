@@ -32,12 +32,12 @@ const enum ValueSource {
 }
 
 export interface PropertyOptions<T, U> {
-    name: string,
-    defaultValue?: U,
-    affectsLayout?: boolean,
-    equalityComparer?: (x: U, y: U) => boolean,
-    valueChanged?: (target: T, oldValue: U, newValue: U) => void,
-    valueConverter?: (value: string) => U
+    name: string;
+    defaultValue?: U;
+    affectsLayout?: boolean;
+    equalityComparer?(this: void, x: U, y: U): boolean;
+    valueChanged?(this: void, target: T, oldValue: U, newValue: U): void;
+    valueConverter?(this: void, value: string): U;
 }
 
 export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
@@ -45,10 +45,10 @@ export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
 }
 
 export interface ShorthandPropertyOptions {
-    name: string,
+    name: string;
     cssName: string;
-    converter: (value: string) => [CssProperty<any, any>, any][],
-    getter: (this: Style) => string
+    converter(this: void, value: string): [CssProperty<any, any>, any][];
+    getter(this: Style): string;
 }
 
 export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
@@ -831,6 +831,19 @@ export function clearInheritedProperties(view: ViewBase): void {
         if (style[sourceKey] === ValueSource.Inherited) {
             prop.setInheritedValue.call(style, unsetValue);
         }
+    }
+}
+
+export function resetCSSProperties(style: Style): void {
+    let symbols = (<any>Object).getOwnPropertySymbols(style);
+    const view = style.view;
+    for (let symbol of symbols) {
+        const cssProperty = cssSymbolPropertyMap[symbol];
+        if (!cssProperty) {
+            continue;
+        }
+
+        style[cssProperty.cssName] = unsetValue;
     }
 }
 

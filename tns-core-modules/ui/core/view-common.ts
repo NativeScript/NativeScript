@@ -1143,7 +1143,14 @@ originXProperty.register(ViewCommon);
 export const originYProperty = new Property<ViewCommon, number>({ name: "originY", defaultValue: 0.5, valueConverter: (v) => parseFloat(v) });
 originYProperty.register(ViewCommon);
 
-export const isEnabledProperty = new Property<ViewCommon, boolean>({ name: "isEnabled", defaultValue: true, valueConverter: booleanConverter });
+export const isEnabledProperty = new Property<ViewCommon, boolean>({
+    name: "isEnabled",
+    defaultValue: true,
+    valueConverter: booleanConverter,
+    valueChanged(this: void, target, oldValue, newValue): void {
+        target._goToVisualState(newValue ? "normal" : "disabled");
+    }
+});
 isEnabledProperty.register(ViewCommon);
 
 export const isUserInteractionEnabledProperty = new Property<ViewCommon, boolean>({ name: "isUserInteractionEnabled", defaultValue: true, valueConverter: booleanConverter });
@@ -1326,7 +1333,7 @@ function parseThickness(value: string): Thickness {
     }
 }
 
-function convertToMargins(this: Style, value: string): [CssProperty<any, any>, any][] {
+function convertToMargins(this: void, value: string): [CssProperty<any, any>, any][] {
     let thickness = parseThickness(value);
     return [
         [marginTopProperty, Length.parse(thickness.top)],
@@ -1336,7 +1343,7 @@ function convertToMargins(this: Style, value: string): [CssProperty<any, any>, a
     ];
 }
 
-function convertToPaddings(this: Style, value: string): [CssProperty<any, any>, any][] {
+function convertToPaddings(this: void, value: string): [CssProperty<any, any>, any][] {
     let thickness = parseThickness(value);
     return [
         [paddingTopProperty, Length.parse(thickness.top)],

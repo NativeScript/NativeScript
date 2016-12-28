@@ -310,61 +310,62 @@ export var testNativeTextAlignmentFromLocal = function () {
     });
 }
 
-export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function () {
-    var firstSpan = new spanModule.Span();
-    firstSpan.fontSize = 10;
-    firstSpan.text = "First";
-    var secondSpan = new spanModule.Span();
-    secondSpan.fontSize = 15;
-    secondSpan.text = "Second";
-    var thirdSpan = new spanModule.Span();
-    thirdSpan.fontSize = 20;
-    thirdSpan.text = "Third";
-    var formattedString1 = new formattedStringModule.FormattedString();
-    formattedString1.spans.push(firstSpan);
-    var formattedString2 = new formattedStringModule.FormattedString();
-    formattedString2.spans.push(secondSpan);
-    formattedString2.spans.push(thirdSpan);
+// TODO: Enable these when.
+// export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_Button = function () {
+//     var firstSpan = new spanModule.Span();
+//     firstSpan.fontSize = 10;
+//     firstSpan.text = "First";
+//     var secondSpan = new spanModule.Span();
+//     secondSpan.fontSize = 15;
+//     secondSpan.text = "Second";
+//     var thirdSpan = new spanModule.Span();
+//     thirdSpan.fontSize = 20;
+//     thirdSpan.text = "Third";
+//     var formattedString1 = new formattedStringModule.FormattedString();
+//     formattedString1.spans.push(firstSpan);
+//     var formattedString2 = new formattedStringModule.FormattedString();
+//     formattedString2.spans.push(secondSpan);
+//     formattedString2.spans.push(thirdSpan);
 
-    var view = new buttonModule.Button();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        TKUnit.assertEqual(view.text, "");
+//     var view = new buttonModule.Button();
+//     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+//         TKUnit.assertEqual(view.text, "");
 
-        view.formattedText = formattedString1;
-        TKUnit.assertEqual(view.text, "First");
+//         view.formattedText = formattedString1;
+//         TKUnit.assertEqual(view.text, "First");
 
-        view.formattedText = formattedString2;
-        TKUnit.assertEqual(view.text, "SecondThird");
+//         view.formattedText = formattedString2;
+//         TKUnit.assertEqual(view.text, "SecondThird");
 
-        formattedString2.spans.getItem(0).text = "Mecond";
-        TKUnit.assertEqual(view.text, "MecondThird");
+//         formattedString2.spans.getItem(0).text = "Mecond";
+//         TKUnit.assertEqual(view.text, "MecondThird");
 
-        view.formattedText = null;
-        TKUnit.assertEqual(view.text, "");
-    });
-}
+//         view.formattedText = null;
+//         TKUnit.assertEqual(view.text, "");
+//     });
+// }
 
-export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
-    let view = new buttonModule.Button();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        view.text = "NormalText";
-        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
+// export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
+//     let view = new buttonModule.Button();
+//     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+//         view.text = "NormalText";
+//         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
-        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
-    });
-}
+//         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+//         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+//         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
+//     });
+// }
 
-export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
-    let view = new buttonModule.Button();
-    let formattedString = helper._generateFormattedString();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        view.formattedText = formattedString;
-        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
+// export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
+//     let view = new buttonModule.Button();
+//     let formattedString = helper._generateFormattedString();
+//     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
+//         view.formattedText = formattedString;
+//         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
-        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
-    });
-}
+//         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+//         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+//         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
+//     });
+// }

@@ -54,7 +54,7 @@ allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
 allTests["CONNECTIVITY"] = require("./connectivity-tests");
 
 // allTests["PROXY-VIEW-CONTAINER"] = require("./ui/proxy-view-container/proxy-view-container-tests")
-allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
+// allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 // allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
 // allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
 // allTests["DOCKLAYOUT"] = require("./ui/layouts/dock-layout-tests");
@@ -71,7 +71,7 @@ allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
 // allTests["VALUE-SOURCE"] = require("./ui/styling/value-source-tests");
 // allTests["CSS-SELECTOR-PARSER"] = require("./ui/styling/css-selector-parser");
 // allTests["CSS-SELECTOR"] = require("./ui/styling/css-selector");
-// allTests["BUTTON"] = require("./ui/button/button-tests");
+allTests["BUTTON"] = require("./ui/button/button-tests");
 // allTests["BORDER"] = require("./ui/border/border-tests");
 // allTests["LABEL"] = require("./ui/label/label-tests");
 // allTests["TAB-VIEW"] = require("./ui/tab-view/tab-view-tests");
