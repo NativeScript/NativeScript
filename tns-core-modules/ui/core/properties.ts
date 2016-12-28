@@ -204,7 +204,7 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
 
         this.coerce = function (target: T): void {
             const originalValue: U = coerceKey in target ? target[coerceKey] : defaultValue;
-            target[key] = originalValue;
+            target[key] = coerceCallback(target, originalValue);
         }
 
         this.set = function (this: T, value: U): void {

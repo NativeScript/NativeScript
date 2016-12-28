@@ -93,8 +93,9 @@ export class ListPicker extends ListPickerBase {
             //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
             editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
         }
-        
+
         this._android.setWrapSelectorWheel(false);
+        this.nativeView = this._android;
     }
 
     private _fixNumberPickerRendering() {
