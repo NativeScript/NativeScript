@@ -136,7 +136,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
     private assertChildTexts(expected, layout, message) {
         let texts: Array<string> = [];
-        layout._eachChildView((child: { text: string }) => texts.push(child.text));
+        layout.eachChildView((child: { text: string }) => texts.push(child.text));
         TKUnit.assertEqual(expected, texts.join('|'), message);
     }
 

@@ -1336,10 +1336,10 @@ function parseThickness(value: string): Thickness {
 function convertToMargins(this: void, value: string): [CssProperty<any, any>, any][] {
     let thickness = parseThickness(value);
     return [
-        [marginTopProperty, Length.parse(thickness.top)],
-        [marginRightProperty, Length.parse(thickness.right)],
-        [marginBottomProperty, Length.parse(thickness.bottom)],
-        [marginLeftProperty, Length.parse(thickness.left)]
+        [marginTopProperty, PercentLength.parse(thickness.top)],
+        [marginRightProperty, PercentLength.parse(thickness.right)],
+        [marginBottomProperty, PercentLength.parse(thickness.bottom)],
+        [marginLeftProperty, PercentLength.parse(thickness.left)]
     ];
 }
 
