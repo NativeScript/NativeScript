@@ -27,7 +27,9 @@ export class View extends ViewCommon {
     public _removeViewCore(view: ViewCommon) {
         super._removeViewCore(view);
         // TODO: Detach from the context?
-        view._onDetached();
+        if (view._onDetached) {
+            view._onDetached();
+        }
         this.requestLayout();
     }
 

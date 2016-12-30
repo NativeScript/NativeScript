@@ -107,7 +107,9 @@ export class View extends ViewCommon {
 
     public _addViewCore(view: ViewCommon, atIndex?: number) {
         if (this._context) {
-            view._onAttached(this._context);
+            if (view._onAttached) {
+                view._onAttached(this._context);
+            }
         }
 
         super._addViewCore(view, atIndex);
