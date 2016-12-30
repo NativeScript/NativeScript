@@ -1178,12 +1178,10 @@ export const minHeightProperty = new CssProperty<Style, Length>({
 });
 minHeightProperty.register(Style);
 
-const matchParent: Length = { value: -1, unit: "px" };
-
-export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
+export const widthProperty = new CssProperty<Style, PercentLength>({ name: "width", cssName: "width", defaultValue: "auto", affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 widthProperty.register(Style);
 
-export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: matchParent, affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
+export const heightProperty = new CssProperty<Style, PercentLength>({ name: "height", cssName: "height", defaultValue: "auto", affectsLayout: isIOS, equalityComparer: Length.equals, valueConverter: PercentLength.parse });
 heightProperty.register(Style);
 
 const marginProperty = new ShorthandProperty<Style>({

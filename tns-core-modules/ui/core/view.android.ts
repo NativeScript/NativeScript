@@ -533,17 +533,24 @@ interface NativePercentLengthPropertyOptions {
 }
 function createNativePercentLengthProperty({key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported}: NativePercentLengthPropertyOptions) {
     Object.defineProperty(View.prototype, key, {
-        get: function (this: View) { return { value: getPixels(this.nativeView), unit: "px" } },
+        get: function (this: View): PercentLength {
+            const value = getPixels(this.nativeView);
+            if (value == auto) { // tslint:disable-line
+                return "auto";
+            } else {
+                return { value, unit: "px" };
+            }
+        },
         set: function (this: View, length: PercentLength) {
-            if (length == "auto") {  // tslint:disable-line
+            if (length == "auto") { // tslint:disable-line
                 setPixels(this.nativeView, auto);
             } else if (typeof length === "number") {
                 setPixels(this.nativeView, length * layout.getDisplayDensity());
-            } else if (length.unit == "dip") {  // tslint:disable-line
+            } else if (length.unit == "dip") { // tslint:disable-line
                 setPixels(this.nativeView, length.value * layout.getDisplayDensity());
-            } else if (length.unit == "px") {  // tslint:disable-line
+            } else if (length.unit == "px") { // tslint:disable-line
                 setPixels(this.nativeView, length.value);
-            } else if (length.unit == "%") {  // tslint:disable-line
+            } else if (length.unit == "%") { // tslint:disable-line
                 setPercent(this.nativeView, length.value);
             } else {
                 throw new Error(`Unsupported PercentLength ${length}`);

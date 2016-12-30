@@ -16,8 +16,6 @@ declare module "ui/core/view" {
     }
 }
 
-View.prototype.dock = "left";
-
 export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
 
     public static getDock(element: View): "left" | "top" | "right" | "bottom" {
@@ -51,7 +49,7 @@ export const dockProperty = new Property<View, "left" | "top" | "right" | "botto
         throw new Error(`Invalid value for dock property: ${v}`);
     }
 });
-dockProperty.register(DockLayoutBase);
+dockProperty.register(View);
 
 export const stretchLastChildProperty = new Property<DockLayoutBase, boolean>({
     name: "stretchLastChild", defaultValue: true, affectsLayout: isIOS, valueConverter: booleanConverter

@@ -1,5 +1,5 @@
 ﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from "ui/layouts/absolute-layout";
-import { LayoutBase, View, Property, Length, zeroLength, getLengthEffectiveValue } from "ui/layouts/layout-base";
+import { LayoutBase, View, Property, Length, zeroLength } from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 
@@ -55,23 +55,23 @@ export class AbsoluteLayoutBase extends LayoutBase implements AbsoluteLayoutDefi
 export const leftProperty = new Property<View, Length>({
     name: "left", defaultValue: zeroLength,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectiveLeft = getLengthEffectiveValue(newValue);
+        target.effectiveLeft = Length.toDevicePixels(newValue, 0);
         const layout = target.parent;
         if (layout instanceof AbsoluteLayoutBase) {
             layout.onLeftChanged(target, oldValue, newValue);
         }
     }, valueConverter: (v) => Length.parse(v)
 });
-leftProperty.register(AbsoluteLayoutBase);
+leftProperty.register(View);
 
 export const topProperty = new Property<View, Length>({
     name: "top", defaultValue: zeroLength,
     valueChanged: (target, oldValue, newValue) => {
-        target.effectiveTop = getLengthEffectiveValue(newValue);
+        target.effectiveTop = Length.toDevicePixels(newValue, 0);
         const layout = target.parent;
         if (layout instanceof AbsoluteLayoutBase) {
             layout.onTopChanged(target, oldValue, newValue);
         }
     }, valueConverter: (v) => Length.parse(v)
 });
-topProperty.register(AbsoluteLayoutBase);
+topProperty.register(View);
