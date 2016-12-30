@@ -103,18 +103,24 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        progress.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
+        progress.on("valueChange", function (data: observable.EventData) {
+            allChanges++;
+            changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
+        });
+
+        progress.on("maxValueChange", function (data: observable.EventData) {
             allChanges++;
             changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
         });
 
         // Act
         progress.maxValue = 40;
-        progress.off(observable.Observable.propertyChangeEvent);
+        progress.off("valueChange");
+        progress.off("maxValueChange");
 
         // Assert
-        TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assert(changedProperties["maxValue"], "Property changed for 'maxValue' not called.");
+        TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assertEqual(allChanges, 2, "Property changed callbacks.");
     };
 
