@@ -42,6 +42,14 @@ export class Switch extends SwitchBase {
         return this._ios;
     }
 
+    get _nativeView(): UISwitch {
+        return this._ios;
+    }
+
+    get nativeView(): UISwitch {
+        return this._ios;
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // It can't be anything different from 51x31
         let nativeSize = this._nativeView.sizeThatFits(CGSizeMake(0, 0));
