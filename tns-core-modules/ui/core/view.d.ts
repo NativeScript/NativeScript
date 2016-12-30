@@ -17,7 +17,6 @@ declare module "ui/core/view" {
     export * from "ui/core/view-base";
 
     export const zeroLength: Length;
-    export function getLengthEffectiveValue(param: Length): number;
 
     /**
      * Converts string into boolean value.

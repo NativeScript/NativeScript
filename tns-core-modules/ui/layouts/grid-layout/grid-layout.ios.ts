@@ -759,7 +759,7 @@ class MeasureHelper {
         let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
         let heightMeasureSpec = (isFakeMeasure || measureSpec.autoRowsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth: number = childSize.measuredWidth;
         let childMeasuredHeight: number = childSize.measuredHeight;
 
@@ -824,7 +824,7 @@ class MeasureHelper {
         let widthMeasureSpec = layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? layout.EXACTLY : layout.AT_MOST);
         let heightMeasureSpec = (measureSpec.autoRowsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 
@@ -868,7 +868,7 @@ class MeasureHelper {
         let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
         let heightMeasureSpec = layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? layout.EXACTLY : layout.AT_MOST);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 

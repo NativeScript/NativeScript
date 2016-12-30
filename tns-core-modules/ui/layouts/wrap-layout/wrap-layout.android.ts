@@ -1,4 +1,4 @@
-﻿import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty } from "./wrap-layout-common";
+﻿import { WrapLayoutBase, orientationProperty, itemWidthProperty, itemHeightProperty, Length } from "./wrap-layout-common";
 
 export * from "./wrap-layout-common";
 
@@ -24,17 +24,17 @@ export class WrapLayout extends WrapLayoutBase {
         this._layout.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
     }
 
-    get [itemWidthProperty.native](): number {
-        return 0;
+    get [itemWidthProperty.native](): Length {
+        return "auto";
     }
-    set [itemWidthProperty.native](value: number) {
-        this._layout.setItemWidth(this.effectiveItemWidth);
+    set [itemWidthProperty.native](value: Length) {
+        this._layout.setItemWidth(Length.toDevicePixels(value, -1));
     }
 
-    get [itemHeightProperty.native](): number {
-        return 0;
+    get [itemHeightProperty.native](): Length {
+        return "auto";
     }
-    set [itemHeightProperty.native](value: number) {
-        this._layout.setItemHeight(this.effectiveItemHeight);
+    set [itemHeightProperty.native](value: Length) {
+        this._layout.setItemHeight(Length.toDevicePixels(value, -1));
     }
 }

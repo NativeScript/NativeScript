@@ -68,19 +68,19 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
                 GridLayout.setColumn(btn, c);
                 GridLayout.setRow(btn, r);
                 if (c === 3) {
-                    btn.width = { value: 100, unit: "dip" }; // Auto column should take 100px for this test.
+                    btn.width = { value: 100, unit: "px" }; // Auto column should take 100px for this test.
                 }
 
                 if (r === 3) {
-                    btn.height = { value: 100, unit: "dip" }; // Auto row should take 100px for this test.
+                    btn.height = { value: 100, unit: "px" }; // Auto row should take 100px for this test.
                 }
 
                 this.testView.addChild(btn);
             }
         }
 
-        this.testView.width = { value: 300, unit: "dip" };
-        this.testView.height = { value: 300, unit: "dip" };
+        this.testView.width = { value: 300, unit: "px" };
+        this.testView.height = { value: 300, unit: "px" };
 
         if (wait) {
             this.waitUntilTestElementLayoutIsValid();
@@ -159,29 +159,30 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         }, "setColumnSpan called with null should throw exception");
     }
 
-    public test_setRow_shouldThrow_onNegativeValues() {
-        TKUnit.assertThrows(() => {
-            GridLayout.setRow(new Button(), -1);
-        }, "setRow should throw when value < 0");
-    }
+    // TODO: These 4 asserted that wrong numbers will throw and now they are clamped internally to valid values and does not throw.
+    // public test_setRow_shouldThrow_onNegativeValues() {
+    //     TKUnit.assertThrows(() => {
+    //         GridLayout.setRow(new Button(), -1);
+    //     }, "setRow should throw when value < 0");
+    // }
 
-    public test_setRowSpan_shouldThrow_onNotPositiveValues() {
-        TKUnit.assertThrows(() => {
-            GridLayout.setRowSpan(new Button(), 0);
-        }, "setRowSpan should throw when value <= 0");
-    }
+    // public test_setRowSpan_shouldThrow_onNotPositiveValues() {
+    //     TKUnit.assertThrows(() => {
+    //         GridLayout.setRowSpan(new Button(), 0);
+    //     }, "setRowSpan should throw when value <= 0");
+    // }
 
-    public test_setColumn_shouldThrow_onNegativeValues() {
-        TKUnit.assertThrows(() => {
-            GridLayout.setColumn(new Button(), -1);
-        }, "setColumn should when value < 0");
-    }
+    // public test_setColumn_shouldThrow_onNegativeValues() {
+    //     TKUnit.assertThrows(() => {
+    //         GridLayout.setColumn(new Button(), -1);
+    //     }, "setColumn should when value < 0");
+    // }
 
-    public test_setColumnSpan_shouldThrow_onNotPositiveValues() {
-        TKUnit.assertThrows(() => {
-            GridLayout.setColumnSpan(new Button(), 0);
-        }, "setColumnSpan should throw when value <= 0");
-    }
+    // public test_setColumnSpan_shouldThrow_onNotPositiveValues() {
+    //     TKUnit.assertThrows(() => {
+    //         GridLayout.setColumnSpan(new Button(), 0);
+    //     }, "setColumnSpan should throw when value <= 0");
+    // }
 
     public test_addRow_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
@@ -251,16 +252,16 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
         let btn = new Button();
         btn.text = "A";
-        btn.width = { value: 100, unit: "dip" };
+        btn.width = { value: 100, unit: "px" };
         GridLayout.setColumnSpan(btn, 2);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
 
         var cols = this.testView.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA);
-        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(20)), DELTA);
-        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100, DELTA);
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA, "column 0");
+        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(20)), DELTA, "column 1");
+        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 100, DELTA, "measured width");
     }
 
     public test_measuredWidth_when_not_stretched_three_columns() {
@@ -272,24 +273,24 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         for (let i = 1; i < 4; i++) {
             let btn = new Button();
             btn.text = "A";
-            btn.width = { value: 20, unit: "dip" };
+            btn.width = { value: i * 20, unit: "px" };
             GridLayout.setColumn(btn, i - 1);
             this.testView.addChild(btn);
         }
 
         let btn = new Button();
         btn.text = "B";
-        btn.width = { value: 100, unit: "dip" };
+        btn.width = { value: 100, unit: "px" };
         GridLayout.setColumnSpan(btn, 3);
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
 
         var cols = this.testView.getColumns();
-        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA);
-        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(40)), DELTA);
-        TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(60)), DELTA);
-        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180, DELTA);
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(80)), DELTA, "column 0");
+        TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(40)), DELTA, "column 1");
+        TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(60)), DELTA, "column 2");
+        TKUnit.assertAreClose(this.testView.getMeasuredWidth(), 180, DELTA, "measured width");
     }
 
     public test_getRows_shouldNotReturnNULL() {
@@ -324,11 +325,12 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         }
     }
 
-    public test_ItemSpec_constructor_throws_onWrongType() {
-        TKUnit.assertThrows(() => {
-            return new ItemSpec(1, <any>"unsupported");
-        }, "'ItemSpec type' incorrect value.");
-    }
+    // TODO: This used to throw but the underlaying "makeParser" used fallbacks to default value instead of throwing
+    // public test_ItemSpec_constructor_throws_onWrongType() {
+    //     TKUnit.assertThrows(() => {
+    //         return new ItemSpec(1, <any>"unsupported");
+    //     }, "'ItemSpec type' incorrect value.");
+    // }
 
     public test_ItemSpec_auto() {
         var w = new ItemSpec(1, "auto");
@@ -471,7 +473,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_ColumnWidth_when_4stars_and_width_110() {
 
-        this.testView.width = { value: 110, unit: "dip" };
+        this.testView.width = { value: 110, unit: "px" };
         this.testView.addColumn(new ItemSpec(1, "star"));
         this.testView.addColumn(new ItemSpec(1, "star"));
         this.testView.addColumn(new ItemSpec(1, "star"));
@@ -481,7 +483,7 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
         var cols = this.testView.getColumns();
 
-        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(20)), DELTA, "Column[0] actual length should be 28");
+        TKUnit.assertAreClose(cols[0].actualLength, Math.round(layoutHelper.dp(28)), DELTA, "Column[0] actual length should be 28");
         TKUnit.assertAreClose(cols[1].actualLength, Math.round(layoutHelper.dp(27)), DELTA, "Column[1] actual length should be 27");
         TKUnit.assertAreClose(cols[2].actualLength, Math.round(layoutHelper.dp(28)), DELTA, "Column[2] actual length should be 28");
         TKUnit.assertAreClose(cols[3].actualLength, Math.round(layoutHelper.dp(27)), DELTA, "Column[3] actual length should be 27");
@@ -489,14 +491,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public test_margins_and_verticalAlignment_center() {
 
-        this.testView.height = { value: 200, unit: "dip" };
-        this.testView.width = { value: 200, unit: "dip" };
+        this.testView.height = { value: 200, unit: "px" };
+        this.testView.width = { value: 200, unit: "px" };
         var btn = new layoutHelper.MyButton();
         btn.text = "btn";
-        btn.height = { value: 100, unit: "dip" };
-        btn.width = { value: 100, unit: "dip" };
-        btn.marginBottom = { value: 50, unit: "dip" };
-        btn.marginRight = { value: 50, unit: "dip" };
+        btn.height = { value: 100, unit: "px" };
+        btn.width = { value: 100, unit: "px" };
+        btn.marginBottom = { value: 50, unit: "px" };
+        btn.marginRight = { value: 50, unit: "px" };
         this.testView.addChild(btn);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -562,13 +564,13 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_padding() {
-        this.testView.style.paddingLeft = { value: 10, unit: "dip" };
-        this.testView.style.paddingTop = { value: 20, unit: "dip" };
-        this.testView.style.paddingRight = { value: 30, unit: "dip" };
-        this.testView.style.paddingBottom = { value: 40, unit: "dip" };
+        this.testView.style.paddingLeft = { value: 10, unit: "px" };
+        this.testView.style.paddingTop = { value: 20, unit: "px" };
+        this.testView.style.paddingRight = { value: 30, unit: "px" };
+        this.testView.style.paddingBottom = { value: 40, unit: "px" };
 
-        this.testView.width = { value: 300, unit: "dip" };
-        this.testView.height = { value: 300, unit: "dip" };
+        this.testView.width = { value: 300, unit: "px" };
+        this.testView.height = { value: 300, unit: "px" };
 
         var btn = new layoutHelper.MyButton();
         this.testView.addChild(btn);
@@ -638,20 +640,20 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_layout_correctnes() {
-        this.testView.width = { value: 300, unit: "dip" };
-        this.testView.height = { value: 300, unit: "dip" };
+        this.testView.width = { value: 300, unit: "px" };
+        this.testView.height = { value: 300, unit: "px" };
 
         let grid = new layoutHelper.MyGridLayout();
-        grid.width = { value: 150, unit: "dip" };
-        grid.height = { value: 150, unit: "dip" };
+        grid.width = { value: 150, unit: "px" };
+        grid.height = { value: 150, unit: "px" };
         grid.horizontalAlignment = "right";
         grid.verticalAlignment = "bottom";
 
         this.testView.addChild(grid);
 
         let btn = new layoutHelper.MyButton();
-        btn.width = { value: 75, unit: "dip" };
-        btn.height = { value: 75, unit: "dip" };
+        btn.width = { value: 75, unit: "px" };
+        btn.height = { value: 75, unit: "px" };
         btn.horizontalAlignment = "left";
         btn.verticalAlignment = "bottom";
         grid.addChild(btn);
@@ -680,8 +682,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
     }
 
     public test_columns_widths() {
-        this.testView.width = { value: 400, unit: "dip" };
-        this.testView.height = { value: 600, unit: "dip" };
+        this.testView.width = { value: 400, unit: "px" };
+        this.testView.height = { value: 600, unit: "px" };
 
         let grid = new GridLayout();
         this.testView.addChild(grid);
@@ -697,8 +699,8 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         grid.addRow(new ItemSpec(2, "star"));
 
         let btn = new Button();
-        btn.width = { value: 300, unit: "dip" };
-        btn.height = { value: 500, unit: "dip" };
+        btn.width = { value: 300, unit: "px" };
+        btn.height = { value: 500, unit: "px" };
         grid.addChild(btn);
         GridLayout.setColumnSpan(btn, 3);
         GridLayout.setRowSpan(btn, 3);
