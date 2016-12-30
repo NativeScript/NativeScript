@@ -30,11 +30,25 @@ export class ProgressBase extends View implements ProgressDefinition {
 /**
  * Represents the observable property backing the value property of each Progress instance.
  */
-export const valueProperty = new CoercibleProperty<ProgressBase, number>({ name: "value", defaultValue: 0, coerceValue: (t, v) => v < 0 ? 0 : Math.min(v, t.maxValue) });
+export const valueProperty = new CoercibleProperty<ProgressBase, number>({
+    name: "value", 
+    defaultValue: 0, 
+    coerceValue: (t, v) => {
+        return v < 0 ? 0 : Math.min(v, t.maxValue)
+    },
+    valueConverter: (v) => parseInt(v)
+});
 valueProperty.register(ProgressBase);
 
 /**
  * Represents the observable property backing the maxValue property of each Progress instance.
  */
-export const maxValueProperty = new Property<ProgressBase, number>({ name: "maxValue", defaultValue: 100, valueChanged: (target, oldValue, newValue) => valueProperty.coerce(target) });
+export const maxValueProperty = new Property<ProgressBase, number>({
+    name: "maxValue",
+    defaultValue: 100,
+    valueChanged: (target, oldValue, newValue) => {
+        valueProperty.coerce(target);
+    },
+    valueConverter: (v) => parseInt(v)
+});
 maxValueProperty.register(ProgressBase);

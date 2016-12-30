@@ -12,6 +12,14 @@ export class Progress extends ProgressBase {
         return this._ios;
     }
 
+    get nativeView(): UIProgressView {
+        return this._ios;
+    }
+
+    get _nativeView(): UIProgressView {
+        return this._ios;
+    }
+
     get [valueProperty.native](): number {
         return 0;
     }

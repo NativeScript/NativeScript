@@ -18,6 +18,10 @@ export class Progress extends ProgressBase {
         return this._android;
     }
 
+    get nativeView(): android.widget.ProgressBar {
+        return this._android;
+    }
+
     get [valueProperty.native](): number {
         return 0;
     }
