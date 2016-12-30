@@ -73,7 +73,9 @@ function ensurePagerAdapterClass() {
                 item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
             }
 
-            container.addView(item.view._nativeView);
+            if (item.view._nativeView) {
+                container.addView(item.view._nativeView);
+            }
             return item.view._nativeView;
         }
 
@@ -83,6 +85,10 @@ function ensurePagerAdapterClass() {
             }
             let item = this.items[index];
             let nativeView = item.view._nativeView;
+
+            if (!nativeView || !_object) {
+                return;
+            }
 
             if (nativeView.toString() !== _object.toString()) {
                 throw new Error("Expected " + nativeView.toString() + " to equal " + _object.toString());
@@ -216,6 +222,8 @@ export class TabView extends TabViewBase {
         ensurePageChangedListenerClass();
         this._pageChagedListener = new PageChangedListenerClass(this);
         (<any>this._viewPager).addOnPageChangeListener(this._pageChagedListener);
+        this.nativeView = this._viewPager;
+        this._nativeView = this._viewPager;
     }
 
     private setElevation() {
@@ -307,7 +315,7 @@ export class TabView extends TabViewBase {
         this.setAdapter(value);
     }
 
-    get [tabTextColorProperty.native](): number {
+    get [colorProperty.native](): number {
         return this._tabLayout.getTabTextColor();
     }
     set [colorProperty.native](value: number | Color) {

@@ -172,6 +172,10 @@ export class TabView extends TabViewBase {
         return this._ios;
     }
 
+    get nativeView(): UIView {
+        return this._ios.view;
+    }
+
     get _nativeView(): UIView {
         return this._ios.view;
     }
@@ -181,7 +185,7 @@ export class TabView extends TabViewBase {
         if (traceEnabled) {
             traceWrite("TabView._onViewControllerShown(" + viewController + ");", traceCategories.Debug);
         }
-        if (this._ios.viewControllers.containsObject(viewController)) {
+        if (this._ios.viewControllers && this._ios.viewControllers.containsObject(viewController)) {
             this.selectedIndex = this._ios.viewControllers.indexOfObject(viewController);
         }
         else {

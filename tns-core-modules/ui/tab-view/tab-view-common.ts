@@ -150,6 +150,9 @@ export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>(
         let items = target.items;
         if (items) {
             let max = items.length - 1;
+            if (value < 0) {
+                value = 0;
+            }
             if (value > max) {
                 value = max;
             }
