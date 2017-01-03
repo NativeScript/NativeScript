@@ -6,7 +6,7 @@ import {
     marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    Background, GestureTypes, GestureEventData, applyNativeSetters,
+    Background, GestureTypes, GestureEventData,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility, HorizontalAlignment, VerticalAlignment
 } from "./view-common";
 
@@ -105,83 +105,11 @@ export class View extends ViewCommon {
         }
     }
 
-    public _addViewCore(view: ViewCommon, atIndex?: number) {
-        if (this._context) {
-            if (view._onAttached) {
-                view._onAttached(this._context);
-            }
-        }
-
-        super._addViewCore(view, atIndex);
-    }
-
-    public _removeViewCore(view: ViewCommon) {
-        super._removeViewCore(view);
-        if (view._context) {
-            view._onDetached();
-        }
-    }
-
-    public _onAttached(context: android.content.Context) {
-        if (!context) {
-            throw new Error("Expected valid android.content.Context instance.");
-        }
-
-        if (traceEnabled) {
-            traceWrite(`${this}._onAttached(context)`, traceCategories.VisualTreeEvents);
-        }
-
-        if (this._context === context) {
-            return;
-        }
-
-        if (this._context) {
-            this._onDetached(true);
-        }
-
-        this._context = context;
-        this._onContextChanged();
-
-        if (traceEnabled) {
-            traceNotifyEvent(this, "_onAttached");
-        }
-
-        // Notify each child for the _onAttached event
-        this.eachChildView((child) => {
-            child._onAttached(context);
-            if (!child._isAddedToNativeVisualTree) {
-                // since we have lazy loading of the android widgets, we need to add the native instances at this point.
-                child._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(child);
-            }
-
-            return true;
-        });
-
-        // copy all the locally cached values to the native android widget
-        applyNativeSetters(this);
-    }
-
     public _onDetached(force?: boolean) {
-        if (traceEnabled) {
-            traceWrite(`${this}._onDetached(force)`, traceCategories.VisualTreeEvents);
-        }
-
-        // Detach children first
-        this.eachChildView((child: View) => {
-            if (child._isAddedToNativeVisualTree) {
-                this._removeViewFromNativeVisualTree(child);
-            }
-            if (child._context) {
-                child._onDetached(force);
-            }
-            return true;
-        });
+        // Call super for recursive detach of all children.
+        super._onDetached(force);
 
         this._clearAndroidReference();
-        this._context = undefined;
-        if (traceEnabled) {
-            traceNotifyEvent(this, "_onDetached");
-        }
     }
 
     // TODO: revise this method

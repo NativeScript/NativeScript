@@ -526,10 +526,6 @@ declare module "ui/core/view" {
         public getActualSize(): Size;
 
         // Lifecycle events
-
-        _context: any /* android.content.Context */;
-
-        _childIndexToNativeChildIndex(index?: number): number;
         _getNativeViewsCount(): number;
 
         _eachLayoutView(callback: (View) => void): void;
@@ -550,17 +546,6 @@ declare module "ui/core/view" {
         _gestureObservers: any;
         // _isInheritedChange(): boolean;
 
-        _isAddedToNativeVisualTree: boolean;
-
-        /**
-         * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
-         */
-        _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean;
-        _removeViewFromNativeVisualTree(view: ViewBase): void;
-
-        _onAttached(context: any /* android.content.Context */): void;
-        _onContextChanged(): void;
-        _onDetached(force?: boolean): void;
         _createUI(): void;
 
         _updateLayout(): void;

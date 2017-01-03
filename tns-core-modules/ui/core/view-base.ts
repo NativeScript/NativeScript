@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData } from "data/observable";
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties } from "./properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, applyNativeSetters } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -109,6 +109,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public className: string;
 
     public _domId: number;
+    public _context: any;
+    public _isAddedToNativeVisualTree: any;
 
     public _cssState: CssState;
     constructor() {
@@ -154,12 +156,12 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public onLoaded() {
         this._isLoaded = true;
-        this._loadEachChildView();
+        this._loadEachChild();
         this._applyStyleFromScope();
         this._emit("loaded");
     }
 
-    public _loadEachChildView() {
+    public _loadEachChild() {
         this.eachChild((child) => {
             child.onLoaded();
             return true;
@@ -168,12 +170,12 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public onUnloaded() {
         this._setCssState(null);
-        this._unloadEachChildView();
+        this._unloadEachChild();
         this._isLoaded = false;
         this._emit("unloaded");
     }
 
-    private _unloadEachChildView() {
+    private _unloadEachChild() {
         this.eachChild((child) => {
             if (child.isLoaded) {
                 child.onUnloaded();
@@ -405,6 +407,15 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     protected _addViewCore(view: ViewBase, atIndex?: number) {
+        if (this._context) {
+            view._onAttached(this._context);
+        }
+
+        if (!view._isAddedToNativeVisualTree) {
+            let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
+            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
+        }
+
         // TODO: Discuss this.
         if (this._isLoaded) {
             view.onLoaded();
@@ -420,6 +431,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (traceEnabled) {
             traceWrite(`${this}._removeView(${view})`, traceCategories.ViewHierarchy);
         }
+
         if (view.parent !== this) {
             throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
         }
@@ -439,6 +451,102 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
 
         // view.unsetInheritedProperties();
+
+        // Remove the view from the native visual scene first
+        this._removeViewFromNativeVisualTree(view);
+
+        if (view._context) {
+            view._onDetached();
+        }
+    }
+
+    public _onAttached(context: any) {
+        if (!context) {
+            throw new Error("Expected valid android.content.Context instance.");
+        }
+
+        if (traceEnabled) {
+            traceWrite(`${this}._onAttached(context)`, traceCategories.VisualTreeEvents);
+        }
+
+        if (this._context === context) {
+            return;
+        }
+
+        if (this._context) {
+            this._onDetached(true);
+        }
+
+        this._context = context;
+        this._onContextChanged();
+
+        if (traceEnabled) {
+            traceNotifyEvent(this, "_onAttached");
+        }
+
+        // Notify each child for the _onAttached event
+        this.eachChild((child) => {
+            child._onAttached(context);
+
+            if (!child._isAddedToNativeVisualTree) {
+                // since we have lazy loading of the android widgets, we need to add the native instances at this point.
+                child._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(child);
+            }
+
+            return true;
+        });
+
+        // copy all the locally cached values to the native android widget
+        applyNativeSetters(this);
+    }
+
+    public _onDetached(force?: boolean) {
+        if (traceEnabled) {
+            traceWrite(`${this}._onDetached(force)`, traceCategories.VisualTreeEvents);
+        }
+
+        // Detach children first
+        this.eachChild((child: ViewBase) => {
+            if (child._isAddedToNativeVisualTree) {
+                this._removeViewFromNativeVisualTree(child);
+            }
+
+            if (child._context) {
+                child._onDetached(force);
+            }
+            return true;
+        });
+
+        this._context = undefined;
+        if (traceEnabled) {
+            traceNotifyEvent(this, "_onDetached");
+        }
+    }
+
+    public _onContextChanged(): void {
+        //
+    }
+
+    _childIndexToNativeChildIndex(index?: number): number {
+        return index;
+    }
+
+    /**
+     * Method is intended to be overridden by inheritors and used as "protected".
+     */
+    public _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean {
+        if (view._isAddedToNativeVisualTree) {
+            throw new Error("Child already added to the native visual tree.");
+        }
+
+        return true;
+    }
+
+    /**
+     * Method is intended to be overridden by inheritors and used as "protected"
+     */
+    public _removeViewFromNativeVisualTree(view: ViewBase) {
+        view._isAddedToNativeVisualTree = false;
     }
 
     public _goToVisualState(state: string) {

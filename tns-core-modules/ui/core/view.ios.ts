@@ -26,10 +26,6 @@ export class View extends ViewCommon {
 
     public _removeViewCore(view: ViewCommon) {
         super._removeViewCore(view);
-        // TODO: Detach from the context?
-        if (view._onDetached) {
-            view._onDetached();
-        }
         this.requestLayout();
     }
 
@@ -355,7 +351,7 @@ export class View extends ViewCommon {
             case Visibility.COLLAPSE:
                 this.nativeView.hidden = true;
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
         }
     }

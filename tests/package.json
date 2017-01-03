@@ -13,7 +13,8 @@
     }
   },
   "dependencies": {
-    "tns-core-modules": "2.4.0"
+    "tns-core-modules": "2.4.0",
+    "tns-core-modules-widgets": "file:///Users/vakrilov/Work/Projects/tns-core-modules-widgets/dist/tns-core-modules-widgets-2.5.0.tgz"
   },
   "devDependencies": {
     "tns-platform-declarations": "*",

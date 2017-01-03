@@ -77,7 +77,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _isLayoutValid: boolean;
     private _cssType: string;
 
-    public _isAddedToNativeVisualTree: boolean;
     public _gestureObservers = {};
 
     // public parent: ViewCommon;
@@ -754,30 +753,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return { boundsChanged, sizeChanged };
     }
 
-    // TODO: We need to implement some kind of build step that includes these members only when building for Android
-    //@android
-    public _context: android.content.Context;
-
-    public _onAttached(context: android.content.Context) {
-        //
-    }
-
-    public _onDetached(force?: boolean) {
-        //
-    }
-
     public _createUI() {
         //
     }
-
-    public _onContextChanged() {
-        //
-    }
-    //@endandroid
-
-    // TODO: We need to implement some kind of build step that includes these members only when building for iOS
-
-    //@endios
 
     public eachChild(callback: (child: ViewBase) => boolean): void {
         this.eachChildView(<any>callback);
@@ -785,10 +763,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public eachChildView(callback: (view: ViewDefinition) => boolean) {
         //
-    }
- 
-    _childIndexToNativeChildIndex(index?: number): number {
-        return index;
     }
 
     _getNativeViewsCount(): number {
@@ -807,33 +781,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         // IOS specific
     }
 
-    /**
-     * Method is intended to be overridden by inheritors and used as "protected"
-     */
-    public _addViewCore(view: ViewBase, atIndex?: number) {
-        if (view instanceof ViewCommon) {
-            if (!view._isAddedToNativeVisualTree) {
-                let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
-                view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
-            }
-        }
-
-        super._addViewCore(view, atIndex);
-    }
-
-    /**
-     * Method is intended to be overridden by inheritors and used as "protected"
-     */
-    public _removeViewCore(view: ViewBase) {
-        if (view instanceof ViewCommon) {
-            // TODO: Change type from ViewCommon to ViewBase. Probably this 
-            // method will need to go to ViewBase class.
-            // Remove the view from the native visual scene first
-            this._removeViewFromNativeVisualTree(view);
-        }
-        super._removeViewCore(view);
-    }
-
     // public unsetInheritedProperties(): void {
     //     // this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
     //     // this._eachSetProperty((property) => {
@@ -843,24 +790,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     //     //     return true;
     //     // });
     // }
-    
-      /**
-     * Method is intended to be overridden by inheritors and used as "protected".
-     */
-    public _addViewToNativeVisualTree(view: ViewDefinition, atIndex?: number): boolean {
-        if (view._isAddedToNativeVisualTree) {
-            throw new Error("Child already added to the native visual tree.");
-        }
-
-        return true;
-    }
-
-    /**
-     * Method is intended to be overridden by inheritors and used as "protected"
-     */
-    public _removeViewFromNativeVisualTree(view: ViewDefinition) {
-        view._isAddedToNativeVisualTree = false;
-    }
 
     public _updateLayout() {
         // needed for iOS.
