@@ -10,10 +10,16 @@ export const traceCategory = "TabView";
 
 // TODO: Change base class to ViewBase and use addView method to add it.
 // This way we will support property and binding propagation automatically.
-export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition {
+export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
     private _title: string = "";
     private _view: View;
     private _iconSource: string;
+
+    public _addChildFromBuilder(name: string, value: any): void {
+        if (value instanceof View) {
+            this.view = value;
+        }
+    }
 
     get title(): string {
         return this._title;
@@ -84,6 +90,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
                 this.items = new Array<TabViewItemBase>();
             }
             this.items.push(<TabViewItemBase>value);
+            this._addView(value);
         }
     }
 
