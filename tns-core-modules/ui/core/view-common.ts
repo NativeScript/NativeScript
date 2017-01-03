@@ -1034,6 +1034,9 @@ export type PercentLength = "auto" | number | {
 
 export namespace PercentLength {
     export function parse(value: string | Length): PercentLength {
+        if (value == "auto") { // tslint:disable-line
+            return "auto";
+        }
         if (typeof value === "string") {
             let type: "%" | "dip" | "px";
             let numberValue = 0;
