@@ -14,3 +14,16 @@ export function getNativeSelectedIndex(tabView: tabViewModule.TabView): number {
     var viewPager: android.support.v4.view.ViewPager = (<any>tabView)._viewPager;
     return viewPager.getCurrentItem();
 }
+
+export function getNativeFont(tabView: tabViewModule.TabView): any {
+        var tv: android.widget.TextView = tabView._getAndroidTabView().getTextViewForItemAt(0);
+        if (tv) {
+            return {
+                typeface: tv.getTypeface(),
+                size: tv.getTextSize()
+            }
+        }
+        else {
+            return null;
+        }
+}

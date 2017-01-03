@@ -277,6 +277,9 @@ export class TabView extends common.TabView {
         }
 
         this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
+        
+        // Style properties such as fonts need to re-applied on the newwly created native TextViews
+        this.style._syncNativeProperties();
     }
 
     public _updateTabForItem(item: TabViewItem) {
@@ -348,7 +351,6 @@ export class TabView extends common.TabView {
             }
         }
     }
-
 }
 
 export class TabViewStyler implements style.Styler {
@@ -358,40 +360,34 @@ export class TabViewStyler implements style.Styler {
         var tab = <definition.TabView>v;
         var fontValue = <font.Font>newValue;
         var typeface = fontValue.getAndroidTypeface();
+        var tabLayout = tab._getAndroidTabView();
+        let tabCount = tabLayout.getItemCount(); 
+        for (var i = 0; i < tabCount; i++) {
+            let tv = tabLayout.getTextViewForItemAt(i);
+            if (typeface) {
+                tv.setTypeface(typeface);
+            }
+            else if (nativeValue) {
+                tv.setTypeface(nativeValue.typeface);
+            }
 
-        if (tab.items && tab.items.length > 0) {
-            var tabLayout = tab._getAndroidTabView();
-
-            for (var i = 0; i < tab.items.length; i++) {
-                let tv = tabLayout.getTextViewForItemAt(i);
-                if (typeface) {
-                    tv.setTypeface(typeface);
-                }
-                else {
-                    tv.setTypeface(nativeValue.typeface);
-                }
-
-                if (fontValue.fontSize) {
-                    tv.setTextSize(fontValue.fontSize);
-                }
-                else {
-                    tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
-                }
+            if (fontValue.fontSize) {
+                tv.setTextSize(fontValue.fontSize);
+            }
+            else if (nativeValue) {
+                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
             }
         }
     }
 
     private static resetFontInternalProperty(v: view.View, nativeValue: any) {
         var tab = <definition.TabView>v;
-
-        if (tab.items && tab.items.length > 0) {
-            var tabLayout = tab._getAndroidTabView();
-
-            for (var i = 0; i < tab.items.length; i++) {
-                let tv = tabLayout.getTextViewForItemAt(i);
-                tv.setTypeface(nativeValue.typeface);
-                tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
-            }
+        var tabLayout = tab._getAndroidTabView();
+        let tabCount = tabLayout.getItemCount(); 
+        for (var i = 0; i < tabCount; i++) {
+            let tv = tabLayout.getTextViewForItemAt(i);
+            tv.setTypeface(nativeValue.typeface);
+            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, nativeValue.size);
         }
     }
 

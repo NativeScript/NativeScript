@@ -430,7 +430,7 @@ export class TabView extends common.TabView {
             return;
         }
 
-        var tabBar = this.ios.tabBar;
+        var tabBar = <UITabBar>this.ios.tabBar;
         var states = getTitleAttributesForStates(this);
         for (var i = 0; i < tabBar.items.count; i++) {
             var item = <UITabBarItem>tabBar.items[i];
@@ -496,12 +496,11 @@ export class TabViewStyler implements style.Styler {
     }
 
     private static getNativeFontValue(v: view.View) {
-        var tab = <definition.TabView>v;
-
+        var tabBar = <UITabBar>v.ios.tabBar;
         let currentFont;
 
-        if (tab.ios && tab.ios.items && tab.ios.items.length > 0) {
-            let currentAttrs = tab.ios.items[0].titleTextAttributesForState(UIControlState.Normal);
+        if (tabBar.items.count > 0) {
+            let currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
             if (currentAttrs) {
                 currentFont = currentAttrs.objectForKey(NSFontAttributeName);
             }

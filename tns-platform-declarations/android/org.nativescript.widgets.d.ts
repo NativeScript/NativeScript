@@ -360,6 +360,7 @@
 
                 getTextViewForItemAt(index: number): android.widget.TextView;
                 getViewForItemAt(index: number): android.widget.LinearLayout;
+                getItemCount(): number;
             }
 
             export class TabItemSpec {
