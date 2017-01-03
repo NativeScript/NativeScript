@@ -316,8 +316,8 @@ export class Background implements BackgroundDefinition {
     };
 
     public isEmpty(): boolean {
-        return this.color
-            && this.image
+        return !this.color
+            && !this.image
             && !this.hasBorderWidth()
             && !this.hasBorderRadius()
             && !this.clipPath;
