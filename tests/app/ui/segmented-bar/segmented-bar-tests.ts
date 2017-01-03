@@ -270,3 +270,14 @@ export var testSelectedIndexChangedIsRaisedCorrectlyIfItemsNotBound = function (
         TKUnit.assertEqual(newSelectedIndex, 1);
     });
 }
+
+export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
+    let segmentedBar = new segmentedBarModule.SegmentedBar();
+    let item = new segmentedBarModule.SegmentedBarItem();
+    (<any>item).title = 1;
+    segmentedBar.items = [item];
+    
+    buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
+        TKUnit.assertEqual(item.title, "1");
+    });
+}

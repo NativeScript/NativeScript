@@ -28,8 +28,9 @@ export class SegmentedBarItem extends bindable.Bindable implements definition.Se
     }
 
     set title(value: string) {
-        if (this._title !== value) {
-            this._title = value;
+        let strValue = (value !== null && value !== undefined) ? value.toString() : "";
+        if (this._title !== strValue) {
+            this._title = strValue;
             this._update();
         }
     }

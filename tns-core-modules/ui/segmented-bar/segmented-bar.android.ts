@@ -110,7 +110,7 @@ export class SegmentedBarItem extends common.SegmentedBarItem {
             var tabIndex = this._parent.items.indexOf(this);
             var titleTextViewId = 16908310; // http://developer.android.com/reference/android/R.id.html#title
             var titleTextView = <android.widget.TextView>this._parent.android.getTabWidget().getChildAt(tabIndex).findViewById(titleTextViewId);
-            titleTextView.setText(this.title || "");
+            titleTextView.setText(this.title + "");
         }
     }
 }
@@ -162,7 +162,7 @@ export class SegmentedBar extends common.SegmentedBar {
         tabItem._parent = this;
 
         var tab = this.android.newTabSpec(this.getValidIndex(index) + "");
-        tab.setIndicator(tabItem.title || "");
+        tab.setIndicator(tabItem.title + "");
         let that = this;
         tab.setContent(new android.widget.TabHost.TabContentFactory({
             createTabContent: function (tag: string): android.view.View {
