@@ -1,4 +1,12 @@
-﻿//iOS specific timer functions implementation.
+﻿import * as utilsModule from "utils/utils";
+let utils: typeof utilsModule;
+function ensureUtils() {
+    if (!utils) {
+        utils = require("utils/utils");
+    }
+}
+
+//iOS specific timer functions implementation.
 var timeoutCallbacks = new Map<number, KeyValuePair<NSTimer, TimerTargetImpl>>();
 var timerId = 0;
 
@@ -51,6 +59,10 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
     let id = timerId;
     let timerTarget = TimerTargetImpl.initWithCallback(callback, id, shouldRepeat);
     let timer = NSTimer.scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(milliseconds / 1000, timerTarget, "tick", null, shouldRepeat);
+    
+    // https://github.com/NativeScript/NativeScript/issues/2116
+    ensureUtils();
+    utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).addTimerForMode(timer, NSRunLoopCommonModes); 
 
     let pair: KeyValuePair<NSTimer, TimerTargetImpl> = { k: timer, v: timerTarget };
     timeoutCallbacks.set(id, pair);
