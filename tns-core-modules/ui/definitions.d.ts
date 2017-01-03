@@ -111,6 +111,20 @@ declare module "ui/core/view-base" {
         _unregisterAnimation(animation: KeyframeAnimation);
         _cancelAllAnimations();
 
+        _context: any /* android.content.Context */;
+        _onAttached(context: any /* android.content.Context */): void;
+        _onContextChanged(): void;
+        _onDetached(force?: boolean): void;
+
+        _isAddedToNativeVisualTree: boolean;
+
+        /**
+         * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
+         */
+        _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean;
+        _removeViewFromNativeVisualTree(view: ViewBase): void;
+        _childIndexToNativeChildIndex(index?: number): number;
+
         /**
          * @protected
          * @unstable
