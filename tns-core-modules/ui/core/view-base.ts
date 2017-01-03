@@ -424,7 +424,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
         }
 
-        clearInheritedProperties(view);
         this._removeViewCore(view);
         view.parent = undefined;
         view._parentChanged(this);
@@ -474,6 +473,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public _parentChanged(oldParent: ViewBase): void {
         //Overridden
+        if (oldParent) {
+            // Move these method in property class.
+            clearInheritedProperties(this);
+        }
     }
 
     public _registerAnimation(animation: KeyframeAnimation) {
