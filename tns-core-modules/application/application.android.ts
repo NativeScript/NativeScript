@@ -142,6 +142,7 @@ function initComponentCallbacks() {
                     break;
             }
 
+            appModule._onOrientationChanged();
             typedExports.notify(<definition.OrientationChangedEventData>{
                 eventName: typedExports.orientationChangedEvent,
                 android: androidApp.nativeApp,
