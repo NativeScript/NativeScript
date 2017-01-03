@@ -4,7 +4,6 @@ import helper = require("../helper");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
-import style = require("ui/styling/style");
 import { resetStyleProperties } from "ui/core/view";
 
 // Using a TabView requires the "ui/tab-view" module.
@@ -331,7 +330,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be bold 12 monospace after rebinding items.");
         //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
-        //console.log(`>>>>>>>>>>>>> RESET`);
+        console.log(`>>>>>>>>>>>>> RESET`);
         resetStyleProperties(this.testView.style);
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), originalFont, "Font must be the original one after resetting the style.");
     }

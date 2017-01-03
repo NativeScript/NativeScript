@@ -2,7 +2,7 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontInternalProperty, traceCategory, View, colorProperty, layout, Color, Font, traceEnabled, traceWrite
+    fontInternalProperty, traceCategory, View, layout, Color, Font, traceEnabled, traceWrite
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
@@ -323,10 +323,10 @@ export class TabView extends TabViewBase {
         this.setAdapter(value);
     }
 
-    get [colorProperty.native](): number {
+    get [tabTextColorProperty.native](): number {
         return this._tabLayout.getTabTextColor();
     }
-    set [colorProperty.native](value: number | Color) {
+    set [tabTextColorProperty.native](value: number | Color) {
         let color = value instanceof Color ? value.android : value;
         this._tabLayout.setTabTextColor(color);
     }

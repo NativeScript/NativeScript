@@ -402,7 +402,6 @@ export class TabView extends TabViewBase {
         this.setViewControllers(value);
     }
 
-    
     get [tabTextColorProperty.native](): UIColor {
         return null;
     }
