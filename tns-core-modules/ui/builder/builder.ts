@@ -63,6 +63,12 @@ function parseInternal(value: string, context: any, uri?: string): ComponentModu
 }
 
 function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: Page): ComponentModule {
+    if (!parentPage && context){
+        // Read the parent page that was passed down below
+        // https://github.com/NativeScript/NativeScript/issues/1639
+        parentPage = context["_parentPage"];
+        delete context["_parentPage"];
+    }
     var result: ComponentModule;
     componentPath = componentPath.replace("~/", "");
     const moduleName = componentPath + "/" + componentName;
@@ -89,7 +95,14 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
                 subExports = global.loadModule(jsFilePath)
             }
         }
-
+        
+        // Pass the parent page down the chain in case of custom components nested on many levels. Use the context for piggybacking.
+        // https://github.com/NativeScript/NativeScript/issues/1639
+        if (!subExports) {
+            subExports = {};    
+        }
+        subExports["_parentPage"] = parentPage;
+        
         result = loadInternal(xmlFilePath, subExports);
 
         // Attributes will be transfered to the custom component
