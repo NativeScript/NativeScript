@@ -311,6 +311,11 @@ function loadCss() {
     }
 }
 
+export function setCssFileName(cssFileName: string) {
+    typedExports.cssFile = cssFileName;
+    console.log(`>>>>>>>> cssFile: ${typedExports.cssFile}`);
+}
+
 export function addCss(cssText: string) {
     //HACK: identical to application.ios.ts
     const parsed = typedExports.parseCss(cssText);
