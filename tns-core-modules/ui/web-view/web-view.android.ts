@@ -97,18 +97,18 @@ export class WebView extends WebViewBase {
         return this._android;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.webkit.WebView(this._context);
         this._android.getSettings().setJavaScriptEnabled(true);
         this._android.getSettings().setBuiltInZoomControls(true);
         this._android.setWebViewClient(this._webViewClient);
     }
 
-    public _onDetached(force?: boolean) {
+    public _resetNativeView() {
         if (this.android) {
             this.android.destroy();
         }
-        super._onDetached(force);
+        super._resetNativeView();
     }
 
     public _loadUrl(url: string) {

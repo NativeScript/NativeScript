@@ -36,7 +36,7 @@ export class ListView extends ListViewBase {
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.ListView(this._context);
         this._android.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
         this.updateEffectiveRowHeight();
@@ -80,8 +80,8 @@ export class ListView extends ListViewBase {
         }
     }
 
-    public _onDetached(force?: boolean) {
-        super._onDetached(force);
+    public _disposeNativeView() {
+        super._disposeNativeView();
         this.clearRealizedCells();
     }
 
@@ -183,7 +183,7 @@ function ensureListViewAdapterClass() {
 
         public getItem(i: number) {
             if (this._listView && this._listView.items && i < this._listView.items.length) {
-                let getItem = (<ItemsSource>this._listView.items).getItem
+                let getItem = (<ItemsSource>this._listView.items).getItem;
                 return getItem ? getItem(i) : this._listView.items[i];
             }
 

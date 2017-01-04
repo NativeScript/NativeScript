@@ -765,7 +765,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return { boundsChanged, sizeChanged };
     }
 
-    public _createUI() {
+    public _createNativeView() {
         //
     }
 

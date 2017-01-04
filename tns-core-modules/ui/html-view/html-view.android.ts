@@ -11,7 +11,7 @@ export class HtmlView extends HtmlViewBase {
         return this._android;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.TextView(this._context);
         // This makes the html <a href...> work
         this._android.setLinksClickable(true);

@@ -106,15 +106,8 @@ export class View extends ViewCommon {
         }
     }
 
-    public _onDetached(force?: boolean) {
-        // Call super for recursive detach of all children.
-        super._onDetached(force);
-
-        this._clearAndroidReference();
-    }
-
     // TODO: revise this method
-    public _clearAndroidReference() {
+    public _disposeNativeView() {
 
         // Widgets like buttons and such have reference to their native view in both properties.
         if (this[NATIVE_VIEW] === this[ANDROID]) {
@@ -127,24 +120,6 @@ export class View extends ViewCommon {
         }
 
         this[ANDROID] = undefined;
-    }
-
-    public _onContextChanged() {
-        if (traceEnabled) {
-            traceWrite(`${this}._onContextChanged`, traceCategories.VisualTreeEvents);
-        }
-
-        this._createUI();
-        // Ensure layout params
-        if (this._nativeView && !this._nativeView.getLayoutParams()) {
-            this._nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
-        }
-
-        this.nativeView = this._nativeView;
-
-        if (traceEnabled) {
-            traceNotifyEvent(this, "_onContextChanged");
-        }
     }
 
     get _nativeView(): android.view.View {
@@ -573,7 +548,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         return this._viewGroup;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
     }
 

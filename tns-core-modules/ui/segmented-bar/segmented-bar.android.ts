@@ -184,7 +184,7 @@ export class SegmentedBar extends SegmentedBarBase {
     private listener: android.widget.TabHost.OnTabChangeListener;
     private tabContentFactory: android.widget.TabHost.TabContentFactory;
 
-    public _createUI() {
+    public _createNativeView() {
         ensureTabHostClass();
         ensureSegmentedBarColorDrawableClass();
 

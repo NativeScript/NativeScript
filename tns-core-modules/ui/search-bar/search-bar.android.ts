@@ -78,7 +78,7 @@ export class SearchBar extends SearchBarBase {
         return result;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.SearchView(this._context);
 
         this._android.setIconified(false);

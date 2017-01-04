@@ -32,7 +32,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         return false;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         // 
     }
 

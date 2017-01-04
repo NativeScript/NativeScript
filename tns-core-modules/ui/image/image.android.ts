@@ -59,7 +59,7 @@ export class Image extends ImageBase {
         return this._android;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         if (!imageFetcher) {
             initImageCache(this._context);
         }
@@ -72,7 +72,7 @@ export class Image extends ImageBase {
         if (!nativeImage) {
             return;
         }
-        
+
         let rotation = nativeImage.rotationAngle ? nativeImage.rotationAngle : 0;
         this.android.setRotationAngle(rotation);
         this.android.setImageBitmap(nativeImage.android);
@@ -87,7 +87,7 @@ export class Image extends ImageBase {
         let value = this.src;
         let async = this.loadMode === ASYNC;
         this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
-        
+
         this.imageSource = <any>unsetValue;
         if (typeof value === "string") {
             value = value.trim();

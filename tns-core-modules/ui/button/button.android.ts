@@ -30,7 +30,7 @@ export class Button extends ButtonBase {
         return this._button;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         let weakRef = new WeakRef(this);
         this._button = new android.widget.Button(this._context);
         this._button.setOnClickListener(new ClickListener(weakRef));

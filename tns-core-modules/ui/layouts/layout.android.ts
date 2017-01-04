@@ -35,15 +35,15 @@ export class Layout extends LayoutBase implements LayoutDefinition {
         return this._viewGroup;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         ensureNativeViewGroupClass();
         this._viewGroup = new NativeViewGroupClass(this._context);
         this._viewGroup[OWNER] = this;
     }
 
-    public _onDetached(force?: boolean) {
+    public _disposeNativeView() {
         delete this._viewGroup[OWNER];
-        super._onDetached(force);
+        super._disposeNativeView();
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {

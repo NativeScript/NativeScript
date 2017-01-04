@@ -294,7 +294,7 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _createUI() {
+    public _createNativeView() {
         let root = new org.nativescript.widgets.ContentLayout(this._context);
         if (this._containerViewId < 0) {
             this._containerViewId = android.view.View.generateViewId();
@@ -327,8 +327,11 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _clearAndroidReference() {
+    public _resetNativeView() {
         this._android.rootViewGroup.removeOnAttachStateChangeListener(this._listener);
+    }
+
+    public _disposeNativeView() {
         // we should keep the reference to underlying native object, since frame can contain many pages.
         this._android.rootViewGroup = null;
     }
@@ -704,7 +707,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         const page = entry.resolvedPage;
         if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
             fragment.getFragmentManager().beginTransaction().hide(fragment).commit();
-            page._onAttached(fragment.getActivity());
+            this.frame._addView(page);
         }
         else {
             onFragmentShown(fragment);
@@ -813,7 +816,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         this._rootView = rootView;
 
         // Initialize native visual tree;
-        rootView._onAttached(activity);
+        rootView._setupUI(activity);
         activity.setContentView(rootView._nativeView, new org.nativescript.widgets.CommonLayoutParams());
         // frameId is negative w
         if (frame) {
@@ -858,7 +861,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     public onDestroy(activity: any, superFunc: Function): void {
         let rootView = this._rootView;
         if (rootView && rootView._context) {
-            rootView._onDetached(true);
+            rootView._tearDownUI(true);
         }
 
         superFunc.call(activity);

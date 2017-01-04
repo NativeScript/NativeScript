@@ -71,7 +71,7 @@ export class ScrollView extends ScrollViewBase {
         }
     }
 
-    public _createUI() {
+    public _createNativeView() {
         if (this.orientation === "horizontal") {
             this._android = new org.nativescript.widgets.HorizontalScrollView(this._context);
         } else {

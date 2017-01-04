@@ -19,6 +19,10 @@ export class View extends ViewCommon {
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
 
+    get _nativeView(): UIView {
+        return this.ios;
+    }
+
     public _addViewCore(view: ViewCommon, atIndex?: number) {
         super._addViewCore(view, atIndex);
         this.requestLayout();

@@ -67,7 +67,7 @@ export class ListPicker extends ListPickerBase {
         return this._android;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.NumberPicker(this._context);
         let editText = getEditText(this._android);
         this._editText = editText;

@@ -5,7 +5,7 @@ export class Placeholder extends PlaceholderDefinition {
 
     private _android: android.view.View;
 
-    public _createUI() {
+    public _createNativeView() {
         let args = <CreateViewEventData>{ eventName: Placeholder.creatingViewEvent, object: this, view: undefined, context: this._context };
         this.notify(args);
         this._android = <android.view.View>args.view;
