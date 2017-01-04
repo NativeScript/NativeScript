@@ -236,7 +236,6 @@ function loadCss() {
 
 export function setCssFileName(cssFileName: string) {
     typedExports.cssFile = cssFileName;
-    console.log(`>>>>>>>> cssFile: ${typedExports.cssFile}`);
 }
 
 export function addCss(cssText: string) {
