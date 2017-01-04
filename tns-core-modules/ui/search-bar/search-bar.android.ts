@@ -138,16 +138,18 @@ export class SearchBar extends SearchBarBase {
     set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
         let textView = this._getTextView();
 
-        let typeface: android.graphics.Typeface;
         if (value instanceof Font) {
-            typeface = value.getAndroidTypeface();
-            textView.setTextSize(value.fontSize);
-        } else {
-            typeface = value.typeface;
+            // Set value
+            textView.setTypeface(value.getAndroidTypeface());
+            if (value.fontSize !== undefined){
+                textView.setTextSize(value.fontSize);
+            }
+        } 
+        else {
+            // Reset value
+            textView.setTypeface(value.typeface);
             textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
         }
-
-        textView.setTypeface(typeface);
     }
 
     get [backgroundInternalProperty.native](): Font {

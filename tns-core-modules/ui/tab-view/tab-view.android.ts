@@ -384,7 +384,8 @@ export class TabView extends TabViewBase {
         if (value instanceof Font) {
             isFont = true;
             typeface = value.getAndroidTypeface();
-        } else {
+        } 
+        else {
             typeface = value.typeface;
         }
 
@@ -397,7 +398,9 @@ export class TabView extends TabViewBase {
                 tv.setTypeface(typeface);
 
                 if (isFont) {
-                    tv.setTextSize(fontSize);
+                    if (fontSize !== undefined){
+                        tv.setTextSize(fontSize);
+                    }
                 }
                 else {
                     tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, fontSize);
