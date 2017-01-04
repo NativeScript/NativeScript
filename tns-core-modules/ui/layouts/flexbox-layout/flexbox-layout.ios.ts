@@ -263,6 +263,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     continue;
                 }
 
+                child._updateEffectiveLayoutValues(this);
                 let lp = child; // child.style;
                 if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
                     flexLine._indicesAlignSelfStretch.push(i);
@@ -377,6 +378,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 continue;
             }
 
+            child._updateEffectiveLayoutValues(this);
             const lp = child; // .style;
             if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
                 flexLine._indicesAlignSelfStretch.push(i);

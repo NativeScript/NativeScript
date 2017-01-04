@@ -12,6 +12,9 @@ import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEvent
 import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
 import { fontSizeConverter } from "../styling/converters";
 
+// Only types:
+import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout"
+
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
 import { isDataURI, isFileOrResourcePath, layout } from "utils/utils";
@@ -61,6 +64,12 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     rowSpan: number;
     colSpan: number;
 
+    order: Order;
+    flexGrow: FlexGrow;
+    flexShrink: FlexShrink;
+    flexWrapBefore: FlexWrapBefore;
+    alignSelf: AlignSelf;
+
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
@@ -69,10 +78,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     _currentWidthMeasureSpec: number;
     _currentHeightMeasureSpec: number;
-    private _oldLeft: number;
-    private _oldTop: number;
-    private _oldRight: number;
-    private _oldBottom: number;
+
+    _oldLeft: number;
+    _oldTop: number;
+    _oldRight: number;
+    _oldBottom: number;
 
     private _isLayoutValid: boolean;
     private _cssType: string;
@@ -662,14 +672,13 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let measureHeight = 0;
 
         if (child && !child.isCollapsed) {
-            let density = layout.getDisplayDensity();
             let width = layout.getMeasureSpecSize(widthMeasureSpec);
             let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
             let height = layout.getMeasureSpecSize(heightMeasureSpec);
             let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            updateChildLayoutParams(child, parent, density);
+            child._updateEffectiveLayoutValues(parent);
 
             let style = child.style;
             let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
@@ -871,7 +880,35 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public _setValue(): never {
         throw new Error("The View._setValue is obsolete. There is a new property system.")
     }
+
+    _updateEffectiveLayoutValues(parent: ViewCommon): void {
+        const density = layout.getDisplayDensity();
+        const style = this.style;
+
+        let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
+        let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
+        let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
+        let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
+
+        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth)
+        this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
+        this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
+
+        let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
+        let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
+        let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
+        let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+
+        this.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
+        this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
+        this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
+    }
 }
+
+ViewCommon.prototype._oldLeft = 0;
+ViewCommon.prototype._oldTop = 0;
+ViewCommon.prototype._oldRight = 0;
+ViewCommon.prototype._oldBottom = 0;
 
 ViewCommon.prototype.effectiveMinWidth = 0;
 ViewCommon.prototype.effectiveMinHeight = 0;
@@ -889,28 +926,6 @@ ViewCommon.prototype.effectiveBorderTopWidth = 0;
 ViewCommon.prototype.effectiveBorderRightWidth = 0;
 ViewCommon.prototype.effectiveBorderBottomWidth = 0;
 ViewCommon.prototype.effectiveBorderLeftWidth = 0;
-
-function updateChildLayoutParams(child: ViewCommon, parent: ViewCommon, density: number): void {
-    let style = child.style;
-
-    let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;
-    let parentWidthMeasureSize = layout.getMeasureSpecSize(parentWidthMeasureSpec);
-    let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
-    let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
-
-    child.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth)
-    child.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
-    child.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
-
-    let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
-    let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec);
-    let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
-    let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
-
-    child.effectiveHeight = PercentLength.toDevicePixels(style.height, -2, parentAvailableHeight);
-    child.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
-    child.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
-}
 
 function equalsCommon(a: Length, b: Length): boolean;
 function equalsCommon(a: PercentLength, b: PercentLength): boolean;

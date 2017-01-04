@@ -569,6 +569,8 @@ declare module "ui/core/view" {
         _nativeView: any;
         _setNativeViewFrame(nativeView: any, frame: any): void;
         // _onStylePropertyChanged(property: dependencyObservable.Property): void;
+
+        _updateEffectiveLayoutValues(parent: View): void;
         //@endprivate
 
         public effectiveMinWidth: number;

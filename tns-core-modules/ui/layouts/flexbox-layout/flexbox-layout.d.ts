@@ -18,6 +18,20 @@ declare module "ui/styling/style" {
     }
 }
 
+declare module "ui/core/view" {
+    import {
+        Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
+    } from "ui/layouts/flexbox-layout"
+
+    interface View {
+        order: Order;
+        flexGrow: FlexGrow;
+        flexShrink: FlexShrink;
+        flexWrapBefore: FlexWrapBefore;
+        alignSelf: AlignSelf;
+    }
+}
+
 declare module "ui/layouts/flexbox-layout" {
 
     import { LayoutBase, View, Style, CssProperty } from "ui/layouts/layout-base";
