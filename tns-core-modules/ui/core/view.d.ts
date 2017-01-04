@@ -546,8 +546,6 @@ declare module "ui/core/view" {
         _gestureObservers: any;
         // _isInheritedChange(): boolean;
 
-        _createUI(): void;
-
         _updateLayout(): void;
 
         /**

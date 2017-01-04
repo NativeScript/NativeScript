@@ -28,7 +28,7 @@ export class Switch extends SwitchBase {
         return this._android;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.Switch(this._context);
         this.listener = this.listener || new CheckedChangeListener(new WeakRef(this));
         this._android.setOnCheckedChangeListener(this.listener);

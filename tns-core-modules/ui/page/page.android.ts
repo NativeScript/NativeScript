@@ -68,8 +68,7 @@ function ensureDialogFragmentClass() {
             }
 
             this._owner._isAddedToNativeVisualTree = false;
-            this._owner._onDetached(true);
-
+            this._owner._tearDownUI(true);
         }
 
         public onDismiss(dialog: android.content.IDialogInterface) {
@@ -94,7 +93,7 @@ export class Page extends PageBase {
         return this._grid;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
@@ -123,11 +122,11 @@ export class Page extends PageBase {
         }
     }
 
-    public _onDetached(force?: boolean) {
+    public _tearDownUI(force?: boolean) {
         const skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
         if (!skipDetached) {
-            super._onDetached();
+            super._tearDownUI();
         }
     }
 
@@ -145,7 +144,7 @@ export class Page extends PageBase {
             this.backgroundColor = new Color("White");
         }
 
-        this._onAttached(parent._context);
+        this._setupUI(parent._context);
         this._isAddedToNativeVisualTree = true;
         applyNativeSetters(this);
 

@@ -13,7 +13,7 @@ export class StackLayout extends StackLayoutBase {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new org.nativescript.widgets.StackLayout(this._context);
     }
 

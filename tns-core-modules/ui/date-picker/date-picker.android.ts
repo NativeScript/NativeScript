@@ -48,7 +48,7 @@ export class DatePicker extends DatePickerBase {
         return this._android;
     }
 
-    public _createUI() {        
+    public _createNativeView() {
         this._android = new android.widget.DatePicker(this._context);
         this._android.setCalendarViewShown(false);
         this._listener = this._listener = new DateChangedListener(new WeakRef(this));

@@ -13,7 +13,7 @@ export class WrapLayout extends WrapLayoutBase {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new org.nativescript.widgets.WrapLayout(this._context);
     }
 

@@ -204,7 +204,8 @@ export var test_event_onContextChanged_IsNotRaised_WhenAttachedToSameContext = f
         var listener = new Listener("_onContextChanged");
         trace.addEventListener(listener);
 
-        views[2]._onAttached(views[0]._context);
+        // views[2]._onContextChanged(views[0]._context);
+        views[2]._setupUI(views[0]._context);
 
         TKUnit.assertEqual(listener.receivedEvents.length, 0, "listener.receivedEvents.length");
 

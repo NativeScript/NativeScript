@@ -184,7 +184,7 @@ export class TabView extends TabViewBase {
         return this._grid;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         if (traceEnabled) {
             traceWrite("TabView._createUI(" + this + ");", traceCategory);
         }

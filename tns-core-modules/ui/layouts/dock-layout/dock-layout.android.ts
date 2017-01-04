@@ -54,7 +54,7 @@ export class DockLayout extends DockLayoutBase {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new org.nativescript.widgets.DockLayout(this._context);
     }
 

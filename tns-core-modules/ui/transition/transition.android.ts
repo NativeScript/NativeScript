@@ -402,7 +402,7 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
     if (expandedFragment.isDestroyed) {
         expandedFragment.isDestroyed = undefined;
         if (page._context) {
-            page._onDetached(true);
+            page._tearDownUI(true);
             if (traceEnabled) {
                 traceWrite(`DETACHMENT of ${page} completed`, traceCategories.Transition);
             }
@@ -425,7 +425,7 @@ export function _removePageNativeViewFromAndroidParent(page: Page): void {
             if (traceEnabled) {
                 traceWrite(`REMOVED ${page}._nativeView from its Android parent`, traceCategories.Transition);
             }
-            page._onDetached(true);
+            page._tearDownUI(true);
             androidParent.removeView(page._nativeView);
         }
     }

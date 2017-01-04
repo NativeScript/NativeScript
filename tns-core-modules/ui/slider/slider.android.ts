@@ -37,7 +37,7 @@ export class Slider extends SliderBase {
     private _android: android.widget.SeekBar;
     private changeListener: android.widget.SeekBar.OnSeekBarChangeListener;
 
-    public _createUI() {
+    public _createNativeView() {
         this.changeListener = this.changeListener || new SeekBarChangeListener(new WeakRef(this));
         this._android = new android.widget.SeekBar(this._context);
         this._android.setOnSeekBarChangeListener(this.changeListener);

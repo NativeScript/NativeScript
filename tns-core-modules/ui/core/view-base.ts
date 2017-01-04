@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData } from "data/observable";
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, applyNativeSetters } from "./properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, applyNativeSetters, resetStyleProperties } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -408,20 +408,16 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     protected _addViewCore(view: ViewBase, atIndex?: number) {
         if (this._context) {
-            view._onAttached(this._context);
+            view._setupUI(this._context, atIndex);
         }
 
-        if (!view._isAddedToNativeVisualTree) {
-            let nativeIndex = this._childIndexToNativeChildIndex(atIndex);
-            view._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(view, nativeIndex);
-        }
+        // TODO: Split this method - we want binding context before loaded.
+        propagateInheritedProperties(this);
 
         // TODO: Discuss this.
         if (this._isLoaded) {
             view.onLoaded();
         }
-
-        propagateInheritedProperties(this);
     }
 
     /**
@@ -452,79 +448,75 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
         // view.unsetInheritedProperties();
 
-        // Remove the view from the native visual scene first
-        this._removeViewFromNativeVisualTree(view);
-
         if (view._context) {
-            view._onDetached();
+            view._tearDownUI();
         }
     }
 
-    public _onAttached(context: any) {
-        if (!context) {
-            throw new Error("Expected valid android.content.Context instance.");
-        }
-
-        if (traceEnabled) {
-            traceWrite(`${this}._onAttached(context)`, traceCategories.VisualTreeEvents);
-        }
-
-        if (this._context === context) {
-            return;
-        }
-
-        if (this._context) {
-            this._onDetached(true);
-        }
-
-        this._context = context;
-        this._onContextChanged();
-
-        if (traceEnabled) {
-            traceNotifyEvent(this, "_onAttached");
-        }
-
-        // Notify each child for the _onAttached event
-        this.eachChild((child) => {
-            child._onAttached(context);
-
-            if (!child._isAddedToNativeVisualTree) {
-                // since we have lazy loading of the android widgets, we need to add the native instances at this point.
-                child._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(child);
-            }
-
-            return true;
-        });
-
-        // copy all the locally cached values to the native android widget
-        applyNativeSetters(this);
-    }
-
-    public _onDetached(force?: boolean) {
-        if (traceEnabled) {
-            traceWrite(`${this}._onDetached(force)`, traceCategories.VisualTreeEvents);
-        }
-
-        // Detach children first
-        this.eachChild((child: ViewBase) => {
-            if (child._isAddedToNativeVisualTree) {
-                this._removeViewFromNativeVisualTree(child);
-            }
-
-            if (child._context) {
-                child._onDetached(force);
-            }
-            return true;
-        });
-
-        this._context = undefined;
-        if (traceEnabled) {
-            traceNotifyEvent(this, "_onDetached");
-        }
-    }
-
-    public _onContextChanged(): void {
+    public _createNativeView() {
         //
+    }
+
+    public _disposeNativeView() {
+        //
+    }
+
+    public _initNativeView(): void {
+        //
+    }
+
+    public _resetNativeView(): void {
+        //
+    }
+
+    public _setupUI(context: android.content.Context, atIndex?: number) {
+        this._context = context;
+
+        // TODO: refactor createUI to return native view
+        this._createNativeView();
+        this.nativeView = (<any>this)._nativeView;
+
+        this._initNativeView();
+
+        // TODO: Remove this 
+        if (this.nativeView && !this.nativeView.getLayoutParams()) {
+            this.nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
+        }
+
+        if (this.parent) {
+            this.parent._addViewToNativeVisualTree(this, atIndex);
+        }
+
+        applyNativeSetters(this);
+
+        this.eachChild((child) => {
+            child._setupUI(context);
+            return true;
+        });
+
+        // if (traceEnabled) {
+        //     traceNotifyEvent(this, "_onAttached");
+        // }
+    }
+
+    public _tearDownUI(force?: boolean) {
+        this.eachChild((child) => {
+            child._tearDownUI(force);
+            return true;
+        });
+
+        // TODO: rename and implement this as resetNativeSetters
+        resetStyleProperties(this.style);
+
+        if (this.parent) {
+            this.parent._removeViewFromNativeVisualTree(this);
+        }
+
+        this._resetNativeView();
+
+        this._disposeNativeView();
+
+        this._context = null;
     }
 
     _childIndexToNativeChildIndex(index?: number): number {

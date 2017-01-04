@@ -115,7 +115,7 @@ export class ActionBar extends ActionBarBase {
         return this._toolbar;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._toolbar = new android.support.v7.widget.Toolbar(this._context);
         this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(new WeakRef(this));
         this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
@@ -302,7 +302,7 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    public _clearAndroidReference() {
+    public _disposeNativeView() {
         // don't clear _android field!
         this.nativeView = undefined;
     }

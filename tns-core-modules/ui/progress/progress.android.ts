@@ -10,7 +10,7 @@ const R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL = 0x01010078;
 export class Progress extends ProgressBase {
     private _android: android.widget.ProgressBar;
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
     }
 

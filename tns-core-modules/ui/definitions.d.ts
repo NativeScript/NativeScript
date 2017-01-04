@@ -112,12 +112,40 @@ declare module "ui/core/view-base" {
         _cancelAllAnimations();
 
         _context: any /* android.content.Context */;
-        _onAttached(context: any /* android.content.Context */): void;
-        _onContextChanged(): void;
-        _onDetached(force?: boolean): void;
+
+        /** 
+         * Setups the UI for ViewBase and all its children recursively.
+         * This method should *not* be overridden by derived views.
+         */
+        _setupUI(context: any /* android.content.Context */, atIndex?: number): void;
+
+        /**
+         * Tears down the UI for ViewBase and all its children recursively.
+         * This method should *not* be overridden by derived views.
+         */
+        _tearDownUI(force?: boolean): void;
+
+        /**
+         * Creates a native view
+         */
+        _createNativeView(): void;
+
+        /**
+         * Clean up references to the native view.
+         */
+        _disposeNativeView(): void;
+
+        /**
+         * Initializes properties/listeners of the native view.
+         */
+        _initNativeView(): void;
+
+        /**
+         * Resets properties/listeners set to the native view.
+         */
+        _resetNativeView(): void;
 
         _isAddedToNativeVisualTree: boolean;
-
         /**
          * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
          */

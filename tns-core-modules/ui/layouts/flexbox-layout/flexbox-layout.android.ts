@@ -138,7 +138,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     get android(): FlexboxLayoutWidget { return this._layout; }
     get _nativeView(): FlexboxLayoutWidget { return this._layout; }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
     }
 

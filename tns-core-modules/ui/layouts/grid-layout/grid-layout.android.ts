@@ -102,7 +102,7 @@ export class GridLayout extends GridLayoutBase {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new org.nativescript.widgets.GridLayout(this._context);
 
         // Update native GridLayout
