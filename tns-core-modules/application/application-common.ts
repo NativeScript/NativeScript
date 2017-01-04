@@ -48,11 +48,7 @@ export var orientationChangedEvent = "orientationChanged";
 export var mainModule: string;
 export var mainEntry: NavigationEntry;
 
-export var cssFile: string = "app.css"
-
-export function setCssFileName(cssFileName: string) {
-    cssFile = cssFileName;
-}
+export var cssFile: string = "app.css";
 
 export var appSelectors: RuleSet[] = [];
 export var additionalSelectors: RuleSet[] = [];
