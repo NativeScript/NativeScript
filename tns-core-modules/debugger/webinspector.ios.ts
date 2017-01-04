@@ -3,6 +3,7 @@ var inspectorCommands: typeof inspectorCommandTypes = require("./InspectorBacken
 
 import * as debuggerDomains from "./debugger";
 
+declare var __inspectorSendEvent;
 /**
  * Checks if the property is a function and if it is, calls it on this.
  * Designed to support backward compatibility for methods that became properties.
@@ -245,5 +246,16 @@ export class NetworkDomainDebugger implements inspectorCommandTypes.NetworkDomai
         let resourceData = new Request(this, id);
         resources_datas[id] = resourceData;
         return resourceData;
+    }
+}
+
+@inspectorCommands.DomainDispatcher("Runtime")
+export class RuntimeDomainDebugger {
+    constructor() {
+        __inspectorSendEvent(`{"method":"Runtime.executionContextCreated","params":{"context":{"id":1,"origin":"http://main.xml","name":"","auxData":{"isDefault":true,"frameId":"${frameId}"}}}}`);
+    }
+
+    compileScript(): { scriptId?: string, exceptionDetails?: Object } {
+        return {};
     }
 }
