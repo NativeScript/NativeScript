@@ -231,7 +231,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
 export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({ name: "flexDirection", cssName: "flex-direction", defaultValue: FlexDirection.ROW, affectsLayout: isIOS, valueConverter: FlexDirection.parse });
 flexDirectionProperty.register(Style);
 
-export const flexWrapProperty = new CssProperty<Style, FlexWrap>({ name: "flexWrap", cssName: "flex-wrap", defaultValue: FlexWrap.NOWRAP, affectsLayout: isIOS, valueConverter: FlexWrap.parse });
+export const flexWrapProperty = new CssProperty<Style, FlexWrap>({ name: "flexWrap", cssName: "flex-wrap", defaultValue: "nowrap", affectsLayout: isIOS, valueConverter: FlexWrap.parse });
 flexWrapProperty.register(Style);
 
 export const justifyContentProperty = new CssProperty<Style, JustifyContent>({ name: "justifyContent", cssName: "justify-content", defaultValue: JustifyContent.FLEX_START, affectsLayout: isIOS, valueConverter: JustifyContent.parse });
@@ -245,84 +245,68 @@ alignContentProperty.register(Style);
 
 export const orderProperty = new CssProperty<Style, Order>({ name: "order", cssName: "order", defaultValue: ORDER_DEFAULT, valueConverter: Order.parse });
 orderProperty.register(Style);
+Object.defineProperty(View.prototype, "order", {
+    get(this: View): Order {
+        return this.style.order;
+    },
+    set(this: View, value: Order) {
+        this.style.order = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 export const flexGrowProperty = new CssProperty<Style, FlexGrow>({ name: "flexGrow", cssName: "flex-grow", defaultValue: FLEX_GROW_DEFAULT, valueConverter: FlexGrow.parse });
 flexGrowProperty.register(Style);
+Object.defineProperty(View.prototype, "flexGrow", {
+    get(this: View): FlexGrow {
+        return this.style.flexGrow;
+    },
+    set(this: View, value: FlexGrow) {
+        this.style.flexGrow = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 export const flexShrinkProperty = new CssProperty<Style, FlexShrink>({ name: "flexShrink", cssName: "flex-shrink", defaultValue: FLEX_SHRINK_DEFAULT, valueConverter: FlexShrink.parse });
 flexShrinkProperty.register(Style);
+Object.defineProperty(View.prototype, "flexShrink", {
+    get(this: View): FlexShrink {
+        return this.style.flexShrink;
+    },
+    set(this: View, value: FlexShrink) {
+        this.style.flexShrink = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 export const flexWrapBeforeProperty = new CssProperty<Style, FlexWrapBefore>({ name: "flexWrapBefore", cssName: "flex-wrap-before", defaultValue: false, valueConverter: FlexWrapBefore.parse });
 flexWrapBeforeProperty.register(Style);
+Object.defineProperty(View.prototype, "flexWrapBefore", {
+    get(this: View): FlexWrapBefore {
+        return this.style.flexWrapBefore;
+    },
+    set(this: View, value: FlexWrapBefore) {
+        this.style.flexWrapBefore = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 export const alignSelfProperty = new CssProperty<Style, AlignSelf>({ name: "alignSelf", cssName: "align-self", defaultValue: AlignSelf.AUTO, valueConverter: AlignSelf.parse });
 alignSelfProperty.register(Style);
-
-// These support setting attached properties through XML. Delete if we stop supporting them.
-// they could be set in XML through style -- <button style.order="1" />
-const orderProperty1 = new Property<View, Order>({ name: "order", defaultValue: ORDER_DEFAULT, valueConverter: Order.parse });
-orderProperty1.register(View);
-
-const flexGrowProperty1 = new Property<View, FlexGrow>({ name: "flexGrow", defaultValue: FLEX_GROW_DEFAULT, valueConverter: FlexGrow.parse });
-flexGrowProperty1.register(View);
-
-const flexShrinkProperty1 = new Property<View, FlexShrink>({ name: "flexShrink", defaultValue: FLEX_SHRINK_DEFAULT, valueConverter: FlexShrink.parse });
-flexShrinkProperty1.register(View);
-
-const flexWrapBeforeProperty1 = new Property<View, FlexWrapBefore>({ name: "flexWrapBefore", defaultValue: false, valueConverter: FlexWrapBefore.parse });
-flexWrapBeforeProperty1.register(View);
-
-const alignSelfProperty1 = new Property<View, AlignSelf>({ name: "alignSelf", defaultValue: AlignSelf.AUTO, valueConverter: AlignSelf.parse });
-alignSelfProperty1.register(View);
-
-// registerSpecialProperty("order", (instance, propertyValue) => {
-//     FlexboxLayoutBase.setOrder(instance, !isNaN(+propertyValue) && +propertyValue);
-// });
-// registerSpecialProperty("flexGrow", (instance, propertyValue) => {
-//     FlexboxLayoutBase.setFlexGrow(instance, !isNaN(+propertyValue) && +propertyValue);
-// });
-// registerSpecialProperty("flexShrink", (instance, propertyValue) => {
-//     FlexboxLayoutBase.setFlexShrink(instance, !isNaN(+propertyValue) && +propertyValue);
-// });
-// registerSpecialProperty("alignSelf", (instance, propertyValue) => {
-//     FlexboxLayoutBase.setAlignSelf(instance, propertyValue);
-// });
-// registerSpecialProperty("flexWrapBefore", (instance, propertyValue) => {
-//     FlexboxLayoutBase.setFlexWrapBefore(instance, isString(propertyValue) ? FlexWrapBefore.parse(propertyValue) : propertyValue);
-// });
-
-// const flexboxGuard = <T>(handler: (flexbox: FlexboxLayoutBase, newValue: any) => void) => (view: View, newValue: any) => view instanceof FlexboxLayoutBase ? handler(view, newValue) : void 0;
-// style.registerHandler(flexDirectionProperty, new style.StylePropertyChangedHandler(
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexDirection(newValue)),
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexDirection(FlexDirection.ROW))), "FlexboxLayout");
-// style.registerHandler(flexWrapProperty, new style.StylePropertyChangedHandler(
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexWrap(newValue)),
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexWrap(FlexWrap.NOWRAP))), "FlexboxLayout");
-// style.registerHandler(justifyContentProperty, new style.StylePropertyChangedHandler(
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeJustifyContent(newValue)),
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeJustifyContent(JustifyContent.FLEX_START))), "FlexboxLayout");
-// style.registerHandler(alignItemsProperty, new style.StylePropertyChangedHandler(
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignItems(newValue)),
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignItems(AlignItems.STRETCH))), "FlexboxLayout");
-// style.registerHandler(alignContentProperty, new style.StylePropertyChangedHandler(
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignContent(newValue)),
-//     flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignContent(AlignContent.STRETCH))), "FlexboxLayout");
-
-// style.registerHandler(orderProperty, new style.StylePropertyChangedHandler(
-//     (view, value) => flexbox._onNativeOrderPropertyChanged(view, value),
-//     (view, value) => flexbox._onNativeOrderPropertyChanged(view, 1)), "View");
-// style.registerHandler(flexGrowProperty, new style.StylePropertyChangedHandler(
-//     (view, value) => flexbox._onNativeFlexGrowPropertyChanged(view, value),
-//     (view, value) => flexbox._onNativeFlexGrowPropertyChanged(view, 0)), "View");
-// style.registerHandler(flexShrinkProperty, new style.StylePropertyChangedHandler(
-//     (view, value) => flexbox._onNativeFlexShrinkPropertyChanged(view, value),
-//     (view, value) => flexbox._onNativeFlexShrinkPropertyChanged(view, 1)), "View");
-// style.registerHandler(flexWrapBeforeProperty, new style.StylePropertyChangedHandler(
-//     (view, value) => flexbox._onNativeFlexWrapBeforePropertyChanged(view, value),
-//     (view, value) => flexbox._onNativeFlexWrapBeforePropertyChanged(view, false)), "View");
-// style.registerHandler(alignSelfProperty, new style.StylePropertyChangedHandler(
-//     (view, value) => flexbox._onNativeAlignSelfPropertyChanged(view, value),
-//     (view, value) => flexbox._onNativeAlignSelfPropertyChanged(view, AlignSelf.AUTO)), "View");
+Object.defineProperty(View.prototype, "alignSelf", {
+    get(this: View): AlignSelf {
+        return this.style.alignSelf;
+    },
+    set(this: View, value: AlignSelf) {
+        this.style.alignSelf = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 // flex-flow: <flex-direction> || <flex-wrap>
 const flexFlowProperty = new ShorthandProperty<Style, string>({

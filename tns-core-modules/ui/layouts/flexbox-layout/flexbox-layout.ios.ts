@@ -263,6 +263,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     continue;
                 }
 
+                child._updateEffectiveLayoutValues(this);
                 let lp = child; // child.style;
                 if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
                     flexLine._indicesAlignSelfStretch.push(i);
@@ -377,6 +378,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 continue;
             }
 
+            child._updateEffectiveLayoutValues(this);
             const lp = child; // .style;
             if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
                 flexLine._indicesAlignSelfStretch.push(i);
@@ -442,6 +444,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let childHeight = view.getMeasuredHeight();
 
         let minWidth = view.effectiveMinWidth;
+        view.effectiveMinWidth = 0;
         if (view.getMeasuredWidth() < minWidth) {
             needsMeasure = true;
             childWidth = minWidth;
@@ -451,6 +454,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         }
 
         let minHeight = view.effectiveMinHeight;
+        view.effectiveMinHeight = 0;
         if (childHeight < minHeight) {
             needsMeasure = true;
             childHeight = minHeight;
@@ -461,6 +465,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         if (needsMeasure) {
             view.measure(makeMeasureSpec(childWidth, EXACTLY), makeMeasureSpec(childHeight, EXACTLY));
         }
+        view.effectiveMinWidth = minWidth;
+        view.effectiveMinHeight = minHeight;
     }
 
     private _addFlexLineIfLastFlexItem(childIndex: number, childCount: number, flexLine: FlexLine) {
@@ -607,6 +613,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     let rawCalculatedWidth = child.getMeasuredWidth() - unitShrink * flexShrink + accumulatedRoundError;
                     let roundedCalculatedWidth = Math.round(rawCalculatedWidth);
                     let minWidth = child.effectiveMinWidth;
+                    child.effectiveMinWidth = 0;
                     if (roundedCalculatedWidth < minWidth) {
                         needsReshrink = true;
                         roundedCalculatedWidth = minWidth;
@@ -616,6 +623,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                         accumulatedRoundError = rawCalculatedWidth - roundedCalculatedWidth;
                     }
                     child.measure(makeMeasureSpec(roundedCalculatedWidth, EXACTLY), makeMeasureSpec(child.getMeasuredHeight(), EXACTLY));
+                    child.effectiveMinWidth = minWidth;
                 }
                 flexLine._mainSize += child.getMeasuredWidth() + lp.effectiveMarginLeft + lp.effectiveMarginRight;
             } else {
@@ -624,6 +632,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                     let rawCalculatedHeight = child.getMeasuredHeight() - unitShrink * flexShrink + accumulatedRoundError;
                     let roundedCalculatedHeight = Math.round(rawCalculatedHeight);
                     const minHeight = child.effectiveMinHeight;
+                    child.effectiveMinHeight = 0;
                     if (roundedCalculatedHeight < minHeight) {
                         needsReshrink = true;
                         roundedCalculatedHeight = minHeight;
@@ -633,6 +642,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                         accumulatedRoundError = rawCalculatedHeight - roundedCalculatedHeight;
                     }
                     child.measure(makeMeasureSpec(child.getMeasuredWidth(), EXACTLY), makeMeasureSpec(roundedCalculatedHeight, EXACTLY));
+                    child.effectiveMinHeight = minHeight;
                 }
                 flexLine._mainSize += child.getMeasuredHeight() + lp.effectiveMarginTop + lp.effectiveMarginBottom;
             }
