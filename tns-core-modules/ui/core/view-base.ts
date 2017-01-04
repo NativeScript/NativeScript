@@ -407,7 +407,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     protected _addViewCore(view: ViewBase, atIndex?: number) {
-        if (this._context) {
+        if (isIOS || this._context) {
             view._setupUI(this._context, atIndex);
         }
 
@@ -448,7 +448,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
         // view.unsetInheritedProperties();
 
-        if (view._context) {
+        if (isIOS || view._context) {
             view._tearDownUI();
         }
     }
@@ -477,11 +477,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this.nativeView = (<any>this)._nativeView;
 
         this._initNativeView();
-
-        // TODO: Remove this 
-        if (this.nativeView && !this.nativeView.getLayoutParams()) {
-            this.nativeView.setLayoutParams(new org.nativescript.widgets.CommonLayoutParams());
-        }
 
         if (this.parent) {
             this.parent._addViewToNativeVisualTree(this, atIndex);
