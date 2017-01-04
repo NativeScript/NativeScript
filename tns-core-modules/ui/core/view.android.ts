@@ -595,14 +595,6 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     }
 
     public _updateNativeLayoutParams(child: View): void {
-        child[marginTopProperty.native] = child.marginTop;
-        child[marginRightProperty.native] = child.marginRight;
-        child[marginBottomProperty.native] = child.marginBottom;
-        child[marginLeftProperty.native] = child.marginLeft;
-
-        child[widthProperty.native] = child.width;
-        child[heightProperty.native] = child.height;
-
         this._setChildMinWidthNative(child);
         this._setChildMinHeightNative(child);
     }

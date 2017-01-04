@@ -180,11 +180,13 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     public _updateNativeLayoutParams(child: View): void {
         super._updateNativeLayoutParams(child);
 
-        child[orderProperty.native] = child.order;
-        child[flexGrowProperty.native] = child.flexGrow;
-        child[flexShrinkProperty.native] = child.flexShrink;
-        child[flexWrapBeforeProperty.native] = child.flexWrapBefore;
-        child[alignSelfProperty.native] = child.alignSelf;
+        const lp = <org.nativescript.widgets.FlexboxLayout.LayoutParams>child.nativeView.getLayoutParams();
+        lp.order = child.order;
+        lp.flexGrow = child.flexGrow;
+        lp.flexShrink = child.flexShrink;
+        lp.wrapBefore = child.flexWrapBefore;
+        lp.alignSelf = alignSelfMap[child.alignSelf];
+        child.nativeView.setLayoutParams(lp);
     }
 
     public _setChildMinWidthNative(child: View): void {
