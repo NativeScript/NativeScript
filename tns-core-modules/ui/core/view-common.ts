@@ -84,6 +84,9 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _oldRight: number;
     _oldBottom: number;
 
+    _minWidthNative: Length;
+    _minHeightNative: Length;
+
     private _isLayoutValid: boolean;
     private _cssType: string;
 
@@ -881,7 +884,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         throw new Error("The View._setValue is obsolete. There is a new property system.")
     }
 
-    _updateEffectiveLayoutValues(parent: ViewCommon): void {
+    _updateEffectiveLayoutValues(parent: ViewDefinition): void {
         const density = layout.getDisplayDensity();
         const style = this.style;
 

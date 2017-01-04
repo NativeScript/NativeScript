@@ -1,7 +1,8 @@
 import { PercentLength, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
 import { ad as androidBackground } from "ui/styling/background";
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty, minWidthProperty, minHeightProperty,
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
+    minWidthProperty, minHeightProperty, Length,
     widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
     marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
@@ -447,6 +448,22 @@ export class View extends ViewCommon {
             androidBackground.onBackgroundOrBorderPropertyChanged(this);
         }
     }
+
+    set [minWidthProperty.native](value: Length) {
+        if (this.parent instanceof CustomLayoutView && this.parent.nativeView) {
+            this.parent._setChildMinWidthNative(this);
+        } else {
+            this._minWidthNative = this.minWidth;
+        }
+    }
+
+    set [minHeightProperty.native](value: Length) {
+        if (this.parent instanceof CustomLayoutView && this.parent.nativeView) {
+            this.parent._setChildMinHeightNative(this);
+        } else {
+            this._minHeightNative = this.minHeight;
+        }
+    }
 }
 
 type NativeSetter = { (view: android.view.View, value: number): void };
@@ -534,13 +551,13 @@ createNativePercentLengthProperty({
 });
 
 createNativePercentLengthProperty({
-    key: minWidthProperty.native,
+    key: "_minWidthNative",
     getPixels: ViewHelper.getMinWidth,
     setPixels: ViewHelper.setMinWidth
 });
 
 createNativePercentLengthProperty({
-    key: minHeightProperty.native,
+    key: "_minHeightNative",
     getPixels: ViewHelper.getMinHeight,
     setPixels: ViewHelper.setMinHeight
 });
@@ -568,10 +585,34 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
                 traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
             }
             this._nativeView.addView(child.nativeView, atIndex);
+            if (child instanceof View) {
+                this._updateNativeLayoutParams(child);
+            }
             return true;
         }
 
         return false;
+    }
+
+    public _updateNativeLayoutParams(child: View): void {
+        child[marginTopProperty.native] = child.marginTop;
+        child[marginRightProperty.native] = child.marginRight;
+        child[marginBottomProperty.native] = child.marginBottom;
+        child[marginLeftProperty.native] = child.marginLeft;
+
+        child[widthProperty.native] = child.width;
+        child[heightProperty.native] = child.height;
+
+        this._setChildMinWidthNative(child);
+        this._setChildMinHeightNative(child);
+    }
+
+    public _setChildMinWidthNative(child: View): void {
+        child._minWidthNative = child.minWidth;
+    }
+
+    public _setChildMinHeightNative(child: View): void {
+        child._minHeightNative = child.minHeight;
     }
 
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
