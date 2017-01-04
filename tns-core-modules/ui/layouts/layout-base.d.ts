@@ -1,5 +1,5 @@
 ﻿declare module "ui/layouts/layout-base" {
-    import { View, CustomLayoutView, Property } from "ui/core/view";
+    import { View, CustomLayoutView, Property, Length } from "ui/core/view";
 
     export * from "ui/core/view";
     
@@ -64,30 +64,30 @@
          */
         eachLayoutChild(callback: (child: View, isLast: boolean) => void): void;
 
-        // /**
-        //  * Gets or sets padding style property.
-        //  */
-        // padding: string;
+        /**
+         * Gets or sets padding style property.
+         */
+        padding: string | Length;
 
-        // /**
-        //  * Specify the bottom padding of this layout.
-        //  */
-        // paddingBottom: number;
+        /**
+         * Specify the bottom padding of this layout.
+         */
+        paddingBottom: Length;
 
-        // /**
-        //  * Specify the left padding of this layout.
-        //  */
-        // paddingLeft: number;
+        /**
+         * Specify the left padding of this layout.
+         */
+        paddingLeft: Length;
 
-        // /**
-        //  * Specify the right padding of this layout.
-        //  */
-        // paddingRight: number;
+        /**
+         * Specify the right padding of this layout.
+         */
+        paddingRight: Length;
 
-        // /**
-        //  * Specify the top padding of this layout.
-        //  */
-        // paddingTop: number;
+        /**
+         * Specify the top padding of this layout.
+         */
+        paddingTop: Length;
 
         /**
          * Gets or sets a value indicating whether to clip the content of this layout.

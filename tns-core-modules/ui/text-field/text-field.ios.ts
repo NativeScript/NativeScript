@@ -1,6 +1,14 @@
-﻿import { TextFieldBase, Color, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty } from "./text-field-common";
+﻿import { 
+    TextFieldBase, Color, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
+    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty
+} from "./text-field-common";
 
 export * from "./text-field-common";
+
+const zeroLength: Length = {
+    value: 0,
+    unit: "px"
+};
 
 class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public static ObjCProtocols = [UITextFieldDelegate];
@@ -181,5 +189,33 @@ export class TextField extends TextFieldBase {
         let colorAttibutes = NSMutableDictionary.new<string, any>();
         colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
         nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(nativeView.placeholder || "", colorAttibutes);
+    }
+
+    get [paddingTopProperty.native](): Length {
+        return zeroLength;
+    }
+    set [paddingTopProperty.native](value: Length) {
+        // Padding is realized via UITextFieldImpl.textRectForBounds method
+    }
+
+    get [paddingRightProperty.native](): Length {
+        return zeroLength;
+    }
+    set [paddingRightProperty.native](value: Length) {
+        // Padding is realized via UITextFieldImpl.textRectForBounds method
+    }
+
+    get [paddingBottomProperty.native](): Length {
+        return zeroLength;
+    }
+    set [paddingBottomProperty.native](value: Length) {
+        // Padding is realized via UITextFieldImpl.textRectForBounds method
+    }
+
+    get [paddingLeftProperty.native](): Length {
+        return zeroLength;
+    }
+    set [paddingLeftProperty.native](value: Length) {
+        // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 }

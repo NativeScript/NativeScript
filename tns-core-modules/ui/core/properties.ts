@@ -44,11 +44,11 @@ export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
     readonly coerceValue: (t: T, u: U) => U;
 }
 
-export interface ShorthandPropertyOptions {
+export interface ShorthandPropertyOptions<P> {
     name: string;
     cssName: string;
-    converter(this: void, value: string): [CssProperty<any, any>, any][];
-    getter(this: Style): string;
+    converter(this: void, value: string | P): [CssProperty<any, any>, any][];
+    getter(this: Style): string | P;
 }
 
 export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
@@ -684,7 +684,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
     }
 }
 
-export class ShorthandProperty<T extends Style> {
+export class ShorthandProperty<T extends Style, P> {
     private registered: boolean;
 
     public readonly key: symbol;
@@ -697,7 +697,7 @@ export class ShorthandProperty<T extends Style> {
     public readonly native: symbol;
     public readonly sourceKey: symbol;
 
-    constructor(options: ShorthandPropertyOptions) {
+    constructor(options: ShorthandPropertyOptions<P>) {
         const name = options.name;
         this.name = name;
 
@@ -712,7 +712,7 @@ export class ShorthandProperty<T extends Style> {
 
         const converter = options.converter;
 
-        function setLocalValue(this: T, value: string): void {
+        function setLocalValue(this: T, value: string| P): void {
             this[sourceKey] = ValueSource.Local;
             if (this[key] !== value) {
                 this[key] = value;

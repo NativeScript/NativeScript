@@ -325,7 +325,7 @@ alignSelfProperty1.register(View);
 //     (view, value) => flexbox._onNativeAlignSelfPropertyChanged(view, AlignSelf.AUTO)), "View");
 
 // flex-flow: <flex-direction> || <flex-wrap>
-const flexFlowProperty = new ShorthandProperty<Style>({
+const flexFlowProperty = new ShorthandProperty<Style, string>({
     name: "flex-flow", cssName: "flex-flow",
     getter: function (this: Style) {
         return `${this.flexDirection} ${this.flexWrap}`;
@@ -348,7 +348,7 @@ const flexFlowProperty = new ShorthandProperty<Style>({
 flexFlowProperty.register(Style);
 
 // flex: inital | auto | none | <flex-grow> <flex-shrink> || <flex-basis>
-const flexProperty = new ShorthandProperty<Style>({
+const flexProperty = new ShorthandProperty<Style, string>({
     name: "flex", cssName: "flex",
     getter: function (this: Style) {
         return `${this.flexGrow} ${this.flexShrink}`;

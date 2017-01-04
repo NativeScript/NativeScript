@@ -2,7 +2,7 @@ declare module "ui/core/view" {
     import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
     import {
-        ViewBase, Property, CssProperty, InheritedCssProperty, Style, EventData
+        ViewBase, Property, CssProperty, InheritedCssProperty, Style, EventData, ShorthandProperty
     } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
     import { Font, FontWeight, FontStyle } from "ui/styling/font";
@@ -153,7 +153,7 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the border width of the view.
          */
-        borderWidth: string | number;
+        borderWidth: string | Length;
 
         /**
          * Gets or sets the top border width of the view.
@@ -238,7 +238,7 @@ declare module "ui/core/view" {
         /**
          * Gets or sets margin style property.
          */
-        margin: string;
+        margin: string | PercentLength;
 
         /**
          * Specifies extra space on the left side of this view.
@@ -710,13 +710,13 @@ declare module "ui/core/view" {
     export const backgroundSizeProperty: CssProperty<Style, string>;
     export const backgroundPositionProperty: CssProperty<Style, string>;
 
-    export const borderColorProperty: CssProperty<Style, Color>;
+    export const borderColorProperty: ShorthandProperty<Style, string | Color>;
     export const borderTopColorProperty: CssProperty<Style, Color>;
     export const borderRightColorProperty: CssProperty<Style, Color>;
     export const borderBottomColorProperty: CssProperty<Style, Color>;
     export const borderLeftColorProperty: CssProperty<Style, Color>;
 
-    export const borderWidthProperty: CssProperty<Style, number>;
+    export const borderWidthProperty: ShorthandProperty<Style, string | Length>;
     export const borderTopWidthProperty: CssProperty<Style, Length>;
     export const borderRightWidthProperty: CssProperty<Style, Length>;
     export const borderBottomWidthProperty: CssProperty<Style, Length>;
@@ -736,13 +736,13 @@ declare module "ui/core/view" {
     export const minHeightProperty: CssProperty<Style, Length>;
     export const widthProperty: CssProperty<Style, Length>;
     export const heightProperty: CssProperty<Style, Length>;
-    export const marginProperty: CssProperty<Style, string>;
-    export const marginLeftProperty: CssProperty<Style, Length>;
-    export const marginRightProperty: CssProperty<Style, Length>;
-    export const marginTopProperty: CssProperty<Style, Length>;
-    export const marginBottomProperty: CssProperty<Style, Length>;
+    export const marginProperty: ShorthandProperty<Style, string | PercentLength>;
+    export const marginLeftProperty: CssProperty<Style, PercentLength>;
+    export const marginRightProperty: CssProperty<Style, PercentLength>;
+    export const marginTopProperty: CssProperty<Style, PercentLength>;
+    export const marginBottomProperty: CssProperty<Style, PercentLength>;
 
-    export const paddingProperty: CssProperty<Style, string>;
+    export const paddingProperty: ShorthandProperty<Style, string | Length>;
     export const paddingLeftProperty: CssProperty<Style, Length>;
     export const paddingRightProperty: CssProperty<Style, Length>;
     export const paddingTopProperty: CssProperty<Style, Length>;

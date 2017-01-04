@@ -204,15 +204,15 @@ declare module "ui/core/properties" {
         constructor(options: CssPropertyOptions<T, U>);
     }
 
-    export interface ShorthandPropertyOptions {
+    export interface ShorthandPropertyOptions<P> {
         readonly name: string,
         readonly cssName: string;
-        readonly converter: (value: string) => [CssProperty<any, any>, any][],
-        readonly getter: (this: Style) => string
+        readonly converter: (value: string | P) => [CssProperty<any, any>, any][],
+        readonly getter: (this: Style) => string | P
     }
 
-    export class ShorthandProperty<T extends Style> {
-        constructor(options: ShorthandPropertyOptions);
+    export class ShorthandProperty<T extends Style, P> {
+        constructor(options: ShorthandPropertyOptions<P>);
 
         public readonly native: symbol;
         public readonly name: string;

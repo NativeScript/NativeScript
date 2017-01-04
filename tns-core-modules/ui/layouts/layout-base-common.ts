@@ -1,5 +1,5 @@
 ﻿import { LayoutBase as LayoutBaseDefinition } from "ui/layouts/layout-base";
-import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById } from "ui/core/view";
+import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length } from "ui/core/view";
 
 export * from "ui/core/view";
 
@@ -70,11 +70,39 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
         }
     }
 
-    get padding(): string {
+    get padding(): string | Length {
         return this.style.padding;
     }
-    set padding(value: string) {
+    set padding(value: string | Length) {
         this.style.padding = value;
+    }
+
+    get paddingTop(): Length {
+        return this.style.paddingTop;
+    }
+    set paddingTop(value: Length) {
+        this.style.paddingTop = value;
+    }
+
+    get paddingRight(): Length {
+        return this.style.paddingRight;
+    }
+    set paddingRight(value: Length) {
+        this.style.paddingRight = value;
+    }
+
+    get paddingBottom(): Length {
+        return this.style.paddingBottom;
+    }
+    set paddingBottom(value: Length) {
+        this.style.paddingBottom = value;
+    }
+
+    get paddingLeft(): Length {
+        return this.style.paddingLeft;
+    }
+    set paddingLeft(value: Length) {
+        this.style.paddingLeft = value;
     }
 
     public clipToBounds: boolean;

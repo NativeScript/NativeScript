@@ -65,7 +65,7 @@ declare module "ui/styling/style" {
         public borderRightColor: Color;
         public borderBottomColor: Color;
         public borderLeftColor: Color;
-        public borderWidth: string | number;
+        public borderWidth: string | Length;
         public borderTopWidth: Length;
         public borderRightWidth: Length;
         public borderBottomWidth: Length;
@@ -96,12 +96,12 @@ declare module "ui/styling/style" {
         public minHeight: Length;
         public width: PercentLength;
         public height: PercentLength;
-        public margin: string;
+        public margin: string | PercentLength;
         public marginLeft: PercentLength;
         public marginTop: PercentLength;
         public marginRight: PercentLength;
         public marginBottom: PercentLength;
-        public padding: string;
+        public padding: string | Length;
         public paddingLeft: Length;
         public paddingTop: Length;
         public paddingRight: Length;
