@@ -94,13 +94,18 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         };
     }
     set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let tv = this._textView;
+        let textView = this._textView;
         if (value instanceof Font) {
-            tv.setTypeface(value.getAndroidTypeface());
-            tv.setTextSize(value.fontSize);
-        } else {
-            tv.setTypeface(value.typeface);
-            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
+            // Set value
+            textView.setTypeface(value.getAndroidTypeface());
+            if (value.fontSize !== undefined){
+                textView.setTextSize(value.fontSize);
+            }
+        } 
+        else {
+            // Reset value
+            textView.setTypeface(value.typeface);
+            textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
         }
     }
 
