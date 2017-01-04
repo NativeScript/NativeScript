@@ -146,7 +146,6 @@ export class Page extends PageBase {
 
         this._setupUI(parent._context);
         this._isAddedToNativeVisualTree = true;
-        applyNativeSetters(this);
 
         ensureDialogFragmentClass();
 
