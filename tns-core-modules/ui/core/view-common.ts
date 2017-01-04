@@ -1767,16 +1767,15 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 borderLeftWidthProperty.register(Style);
 
 // Border Radius properties.
-const borderRadiusProperty = new ShorthandProperty<Style, number>({
+const borderRadiusProperty = new ShorthandProperty<Style, string | number>({
     name: "borderRadius", cssName: "border-radius",
     getter: function (this: Style) {
         if (this.borderTopLeftRadius === this.borderTopRightRadius &&
             this.borderTopLeftRadius === this.borderBottomRightRadius &&
             this.borderTopLeftRadius === this.borderBottomLeftRadius) {
-            return this.borderTopLeftRadius + "";
-        } else {
-            return `${this.borderTopLeftRadius} ${this.borderTopRightRadius} ${this.borderBottomRightRadius} ${this.borderBottomLeftRadius}`;
+            return this.borderTopLeftRadius;
         }
+        return `${this.borderTopLeftRadius} ${this.borderTopRightRadius} ${this.borderBottomRightRadius} ${this.borderBottomLeftRadius}`;
     },
     converter: function (value) {
         if (typeof value === "string"){

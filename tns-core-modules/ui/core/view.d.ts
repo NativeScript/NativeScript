@@ -722,7 +722,7 @@ declare module "ui/core/view" {
     export const borderBottomWidthProperty: CssProperty<Style, Length>;
     export const borderLeftWidthProperty: CssProperty<Style, Length>;
 
-    export const borderRadiusProperty: CssProperty<Style, number>;
+    export const borderRadiusProperty: ShorthandProperty<Style, string | number>;
     export const borderTopLeftRadiusProperty: CssProperty<Style, number>;
     export const borderTopRightRadiusProperty: CssProperty<Style, number>;
     export const borderBottomRightRadiusProperty: CssProperty<Style, number>;
