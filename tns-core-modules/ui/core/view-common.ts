@@ -885,7 +885,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     _updateEffectiveLayoutValues(parent: ViewDefinition): void {
-        const density = layout.getDisplayDensity();
         const style = this.style;
 
         let parentWidthMeasureSpec = parent._currentWidthMeasureSpec;

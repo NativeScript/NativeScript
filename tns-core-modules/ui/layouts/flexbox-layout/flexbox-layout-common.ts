@@ -1,4 +1,4 @@
-import { LayoutBase, View, Style, Property, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser} from "ui/layouts/layout-base";
+import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser} from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 
