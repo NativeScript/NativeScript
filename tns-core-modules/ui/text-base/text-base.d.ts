@@ -1,5 +1,5 @@
 ﻿declare module "ui/text-base" {
-    import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style } from "ui/core/view";
+    import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "ui/core/view";
     import { FormattedString, FormattedStringView } from "text/formatted-string";
 
     export * from "ui/core/view";
@@ -48,6 +48,31 @@
          * Gets or sets white space style property.
          */
         whiteSpace: WhiteSpace;
+
+        /**
+         * Gets or sets padding style property.
+         */
+        padding: string | Length;
+
+        /**
+         * Specify the bottom padding of this layout.
+         */
+        paddingBottom: Length;
+
+        /**
+         * Specify the left padding of this layout.
+         */
+        paddingLeft: Length;
+
+        /**
+         * Specify the right padding of this layout.
+         */
+        paddingRight: Length;
+
+        /**
+         * Specify the top padding of this layout.
+         */
+        paddingTop: Length;
 
         /**
          * Called for every child element declared in xml.

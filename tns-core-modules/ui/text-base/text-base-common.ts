@@ -1,5 +1,5 @@
 import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser } from "ui/core/view";
+import { View, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
 import { FormattedString, FormattedStringView } from "text/formatted-string";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
@@ -54,6 +54,41 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     }
     set whiteSpace(value: WhiteSpace) {
         this.style.whiteSpace = value;
+    }
+
+    get padding(): string | Length {
+        return this.style.padding;
+    }
+    set padding(value: string | Length) {
+        this.style.padding = value;
+    }
+
+    get paddingTop(): Length {
+        return this.style.paddingTop;
+    }
+    set paddingTop(value: Length) {
+        this.style.paddingTop = value;
+    }
+
+    get paddingRight(): Length {
+        return this.style.paddingRight;
+    }
+    set paddingRight(value: Length) {
+        this.style.paddingRight = value;
+    }
+
+    get paddingBottom(): Length {
+        return this.style.paddingBottom;
+    }
+    set paddingBottom(value: Length) {
+        this.style.paddingBottom = value;
+    }
+
+    get paddingLeft(): Length {
+        return this.style.paddingLeft;
+    }
+    set paddingLeft(value: Length) {
+        this.style.paddingLeft = value;
     }
 
     public onFormattedTextChanged(data: PropertyChangeData) {
