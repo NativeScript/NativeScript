@@ -1,8 +1,6 @@
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
-    FlexboxLayoutBase, View, ViewBase, layout,
-    widthProperty, heightProperty, minWidthProperty, minHeightProperty,
-    marginTopProperty, marginRightProperty, marginBottomProperty, marginLeftProperty,
+    FlexboxLayoutBase, View,
     Length,
     orderProperty, Order,
     flexGrowProperty, FlexGrow,

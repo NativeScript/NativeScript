@@ -3,7 +3,6 @@ import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
 import { device } from "platform";
-import { applyNativeSetters } from "ui/core/properties";
 
 export * from "./page-common";
 
