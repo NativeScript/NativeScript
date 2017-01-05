@@ -50,9 +50,11 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
     public setNativeView(textView: android.widget.TextView): void {
         this._textView = textView;
-        applyNativeSetters(this);
-        if (this.titleDirty) {
-            this._update();
+        if (textView) {
+            applyNativeSetters(this);
+            if (this.titleDirty) {
+                this._update();
+            }
         }
     }
 
@@ -67,7 +69,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         //     titleTextView.setText(this.title || "");
         // }
 
-        let tv = this._textView;
+        const tv = this._textView;
         if (tv) {
             let title = this.title;
             title = (title === null || title === undefined) ? "" : title;
@@ -98,10 +100,10 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         if (value instanceof Font) {
             // Set value
             textView.setTypeface(value.getAndroidTypeface());
-            if (value.fontSize !== undefined){
+            if (value.fontSize !== undefined) {
                 textView.setTextSize(value.fontSize);
             }
-        } 
+        }
         else {
             // Reset value
             textView.setTypeface(value.typeface);
@@ -247,7 +249,7 @@ export class SegmentedBar extends SegmentedBarBase {
         const newItems = value;
         let tabHost = this._android;
         if (newItems) {
-            newItems.forEach((item, i,arr) => this.insertTab(item, i));
+            newItems.forEach((item, i, arr) => this.insertTab(item, i));
 
             if (this.selectedIndex < 0) {
                 this.selectedIndex = tabHost.getCurrentTab();

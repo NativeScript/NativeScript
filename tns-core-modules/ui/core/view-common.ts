@@ -4,7 +4,7 @@ import { Animation, AnimationPromise } from "ui/animation";
 import { Source } from "utils/debug";
 import { Background } from "ui/styling/background";
 import {
-    ViewBase, getEventOrGestureName, EventData, Style,
+    ViewBase, getEventOrGestureName, EventData, Style, unsetValue,
     Property, CssProperty, ShorthandProperty, InheritedCssProperty,
     gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, printUnregisteredProperties, makeParser, makeValidator
 } from "./view-base";
@@ -1135,13 +1135,13 @@ heightProperty.register(Style);
 
 const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
     name: "margin", cssName: "margin",
-    getter: function (this: Style) { 
-        if (this.marginTop === this.marginRight && 
-            this.marginTop === this.marginBottom && 
+    getter: function (this: Style) {
+        if (this.marginTop === this.marginRight &&
+            this.marginTop === this.marginBottom &&
             this.marginTop === this.marginLeft) {
-                return this.marginTop;
+            return this.marginTop;
         }
-        return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`; 
+        return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`;
     },
     converter: convertToMargins
 });
@@ -1161,13 +1161,13 @@ marginBottomProperty.register(Style);
 
 const paddingProperty = new ShorthandProperty<Style, string | Length>({
     name: "padding", cssName: "padding",
-    getter: function (this: Style) { 
-        if (this.paddingTop === this.paddingRight && 
+    getter: function (this: Style) {
+        if (this.paddingTop === this.paddingRight &&
             this.paddingTop === this.paddingBottom &&
             this.paddingTop === this.paddingLeft) {
-                return this.paddingTop;
+            return this.paddingTop;
         }
-        return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`; 
+        return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`;
     },
     converter: convertToPaddings
 });
@@ -1295,7 +1295,7 @@ function parseThickness(value: string): Thickness {
 }
 
 function convertToMargins(this: void, value: string | PercentLength): [CssProperty<any, any>, any][] {
-    if (typeof value === "string" && value !== "auto"){
+    if (typeof value === "string" && value !== "auto") {
         let thickness = parseThickness(value);
         return [
             [marginTopProperty, PercentLength.parse(thickness.top)],
@@ -1315,7 +1315,7 @@ function convertToMargins(this: void, value: string | PercentLength): [CssProper
 }
 
 function convertToPaddings(this: void, value: string | Length): [CssProperty<any, any>, any][] {
-    if (typeof value === "string" && value !== "auto"){
+    if (typeof value === "string" && value !== "auto") {
         let thickness = parseThickness(value);
         return [
             [paddingTopProperty, Length.parse(thickness.top)],
@@ -1406,10 +1406,10 @@ function transformConverter(value: string): Object {
 }
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
-    let newTransform = transformConverter(value);
+    let newTransform = value == unsetValue ? { "none": "none" } : transformConverter(value);
     let array = [];
     let values: Array<string>;
-    for (var transform in newTransform) {
+    for (let transform in newTransform) {
         switch (transform) {
             case "scaleX":
                 array.push([scaleXProperty, parseFloat(newTransform[transform])]);
@@ -1625,7 +1625,7 @@ const borderColorProperty = new ShorthandProperty<Style, string | Color>({
             Color.equals(this.borderTopColor, this.borderBottomColor) &&
             Color.equals(this.borderTopColor, this.borderLeftColor)) {
             return this.borderTopColor ? this.borderTopColor.toString() : "";
-        } 
+        }
         else {
             return `${this.borderTopColor} ${this.borderRightColor} ${this.borderBottomColor} ${this.borderLeftColor}`;
         }
@@ -1690,15 +1690,15 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
     getter: function (this: Style) {
         if (this.borderTopWidth === this.borderRightWidth &&
             this.borderTopWidth === this.borderBottomWidth &&
-            this.borderTopWidth === this.borderLeftWidth){
-                return this.borderTopWidth;
+            this.borderTopWidth === this.borderLeftWidth) {
+            return this.borderTopWidth;
         }
         else {
             return `${this.borderTopWidth} ${this.borderRightWidth} ${this.borderBottomWidth} ${this.borderLeftWidth}`;
         }
     },
     converter: function (value) {
-        if (typeof value === "string" && value !== "auto"){
+        if (typeof value === "string" && value !== "auto") {
             let borderWidths = parseThickness(value);
             return [
                 [borderTopWidthProperty, borderWidths.top],
@@ -1795,7 +1795,7 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | number>({
         return `${this.borderTopLeftRadius} ${this.borderTopRightRadius} ${this.borderBottomRightRadius} ${this.borderBottomLeftRadius}`;
     },
     converter: function (value) {
-        if (typeof value === "string"){
+        if (typeof value === "string") {
             let borderRadius = parseThickness(value);
             return [
                 [borderTopLeftRadiusProperty, borderRadius.top],
@@ -1950,15 +1950,24 @@ const fontProperty = new ShorthandProperty<Style, string>({
         return `${this.fontStyle} ${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
     },
     converter: function (value) {
-        let font = parseFont(value);
-        let fontSize = fontSizeConverter(font.fontSize);
+        if (value == unsetValue) {
+            return [
+                [fontStyleProperty, unsetValue],
+                [fontWeightProperty, unsetValue],
+                [fontSizeProperty, unsetValue],
+                [fontFamilyProperty, unsetValue]
+            ];
+        } else {
+            let font = parseFont(value);
+            let fontSize = fontSizeConverter(font.fontSize);
 
-        return [
-            [fontStyleProperty, font.fontStyle],
-            [fontWeightProperty, font.fontWeight],
-            [fontSizeProperty, fontSize],
-            [fontFamilyProperty, font.fontFamily]
-        ]
+            return [
+                [fontStyleProperty, font.fontStyle],
+                [fontWeightProperty, font.fontWeight],
+                [fontSizeProperty, fontSize],
+                [fontFamilyProperty, font.fontFamily]
+            ];
+        }
     }
 })
 fontProperty.register(Style);

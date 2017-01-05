@@ -1,4 +1,4 @@
-import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser} from "ui/layouts/layout-base";
+import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "ui/layouts/layout-base";
 
 export * from "ui/layouts/layout-base";
 
@@ -316,17 +316,22 @@ const flexFlowProperty = new ShorthandProperty<Style, string>({
     },
     converter: function (value: string) {
         const properties: [CssProperty<any, any>, any][] = [];
-        const trimmed = value && value.trim();
-        if (trimmed) {
-            const values = trimmed.split(/\s+/);
-            if (values.length >= 1 && FlexDirection.isValid(values[0])) {
-                properties.push([flexDirectionProperty, FlexDirection.parse(values[0])]);
-            }
-            if (value.length >= 2 && FlexWrap.isValid(values[1])) {
-                properties.push([flexWrapProperty, FlexWrap.parse(values[1])]);
+        if (value == unsetValue) {
+            properties.push([flexDirectionProperty, value]);
+            properties.push([flexWrapProperty, value]);
+        } else {
+            const trimmed = value && value.trim();
+            if (trimmed) {
+                const values = trimmed.split(/\s+/);
+                if (values.length >= 1 && FlexDirection.isValid(values[0])) {
+                    properties.push([flexDirectionProperty, FlexDirection.parse(values[0])]);
+                }
+                if (value.length >= 2 && FlexWrap.isValid(values[1])) {
+                    properties.push([flexWrapProperty, FlexWrap.parse(values[1])]);
+                }
             }
         }
-        return properties;;
+        return properties;
     }
 })
 flexFlowProperty.register(Style);
@@ -339,43 +344,48 @@ const flexProperty = new ShorthandProperty<Style, string>({
     },
     converter: function (value: string) {
         const properties: [CssProperty<any, any>, any][] = [];
-        const trimmed = value && value.trim();
-        if (trimmed) {
-            const values = trimmed.split(/\s+/);
-            if (values.length === 1) {
-                switch (values[0]) {
-                    case "inital":
-                        properties.push([flexGrowProperty, 0]);
-                        properties.push([flexShrinkProperty, 1]);
-                        // properties.push([flexBasisProperty, FlexBasis.AUTO])
-                        break;
-                    case "auto":
-                        properties.push([flexGrowProperty, 1]);
-                        properties.push([flexShrinkProperty, 1]);
-                        // properties.push([flexBasisProperty, FlexBasis.AUTO])
-                        break;
-                    case "none":
-                        properties.push([flexGrowProperty, 0]);
-                        properties.push([flexShrinkProperty, 0]);
-                        // properties.push([flexBasisProperty, FlexBasis.AUTO])
-                        break;
-                    default:
-                        if (FlexGrow.isValid(values[0])) {
-                            properties.push([flexGrowProperty, FlexGrow.parse(values[0])]);
+        if (value == unsetValue) {
+            properties.push([flexGrowProperty, value]);
+            properties.push([flexShrinkProperty, value]);
+        } else {
+            const trimmed = value && value.trim();
+            if (trimmed) {
+                const values = trimmed.split(/\s+/);
+                if (values.length === 1) {
+                    switch (values[0]) {
+                        case "inital":
+                            properties.push([flexGrowProperty, 0]);
                             properties.push([flexShrinkProperty, 1]);
-                            // properties.push([flexBasisProperty, 0])
-                        }
+                            // properties.push([flexBasisProperty, FlexBasis.AUTO])
+                            break;
+                        case "auto":
+                            properties.push([flexGrowProperty, 1]);
+                            properties.push([flexShrinkProperty, 1]);
+                            // properties.push([flexBasisProperty, FlexBasis.AUTO])
+                            break;
+                        case "none":
+                            properties.push([flexGrowProperty, 0]);
+                            properties.push([flexShrinkProperty, 0]);
+                            // properties.push([flexBasisProperty, FlexBasis.AUTO])
+                            break;
+                        default:
+                            if (FlexGrow.isValid(values[0])) {
+                                properties.push([flexGrowProperty, FlexGrow.parse(values[0])]);
+                                properties.push([flexShrinkProperty, 1]);
+                                // properties.push([flexBasisProperty, 0])
+                            }
+                    }
                 }
-            }
-            if (values.length >= 2) {
-                if (FlexGrow.isValid(values[0]) && FlexShrink.isValid(values[1])) {
-                    properties.push([flexGrowProperty, FlexGrow.parse(values[0])]);
-                    properties.push([flexShrinkProperty, FlexShrink.parse(values[1])]);
+                if (values.length >= 2) {
+                    if (FlexGrow.isValid(values[0]) && FlexShrink.isValid(values[1])) {
+                        properties.push([flexGrowProperty, FlexGrow.parse(values[0])]);
+                        properties.push([flexShrinkProperty, FlexShrink.parse(values[1])]);
+                    }
                 }
+                // if (value.length >= 3) {
+                //     properties.push({ property: flexBasisProperty, value: FlexBasis.parse(values[2])})
+                // }
             }
-            // if (value.length >= 3) {
-            //     properties.push({ property: flexBasisProperty, value: FlexBasis.parse(values[2])})
-            // }
         }
         return properties;
 

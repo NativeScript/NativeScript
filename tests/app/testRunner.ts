@@ -210,7 +210,7 @@ function startLog(): void {
 function log(): void {
     let testsName: string = this.name;
     let duration = TKUnit.time() - this.start;
-    TKUnit.write(testsName + " COMPLETED for " + duration + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
+    TKUnit.write(testsName + " COMPLETED for " + duration.toFixed(2) + " BACKSTACK DEPTH: " + topmost().backStack.length, messageType.info);
 }
 
 let testsSelector: string
@@ -243,7 +243,7 @@ export var runAll = function (testSelector?: string) {
         }
     }
 
-    console.log("TESTS: " + singleModuleName + " " + singleTestName);
+    console.log("TESTS: " + singleModuleName ? singleModuleName : "" + " " + singleTestName ? singleTestName : "");
 
     var totalSuccess = 0;
     var totalFailed: Array<TKUnit.TestFailure> = [];
