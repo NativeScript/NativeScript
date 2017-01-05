@@ -49,7 +49,7 @@ export var write = function write(message: string, type?: number) {
 
 var runTest = function (testInfo: TestInfoEntry) {
     let start = time();
-    let duration;
+    let duration: number;
     try {
         if (testInfo.instance) {
             testInfo.testFunc.apply(testInfo.instance);
@@ -59,7 +59,7 @@ var runTest = function (testInfo: TestInfoEntry) {
         }
 
         if (testInfo.isTest) {
-            duration = time() - start;
+            duration = (time() - start).toFixed(2);
             testInfo.duration = duration;
             write(`--- [${testInfo.testName}] OK, duration: ${duration}`, trace.messageType.info);
             testInfo.isPassed = true;
@@ -67,7 +67,7 @@ var runTest = function (testInfo: TestInfoEntry) {
     }
     catch (e) {
         if (testInfo.isTest) {
-            duration = time() - start;
+            duration = (time() - start).toFixed(2);
             testInfo.duration = duration;
             write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration}`, trace.messageType.error);
             testInfo.isPassed = false;

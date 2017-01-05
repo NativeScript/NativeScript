@@ -120,6 +120,7 @@ export class View extends ViewCommon {
         }
 
         this[ANDROID] = undefined;
+        this.nativeView = undefined;
     }
 
     get _nativeView(): android.view.View {

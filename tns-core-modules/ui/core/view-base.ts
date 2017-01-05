@@ -492,7 +492,9 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             this.parent._addViewToNativeVisualTree(this, atIndex);
         }
 
-        applyNativeSetters(this);
+        if (this.nativeView) {
+            applyNativeSetters(this);
+        }
 
         this.eachChild((child) => {
             child._setupUI(context);
@@ -510,8 +512,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             return true;
         });
 
-        // TODO: rename and implement this as resetNativeSetters
-        resetStyleProperties(this.style);
+        if (this.nativeView) {
+            // TODO: rename and implement this as resetNativeSetters
+            resetStyleProperties(this.style);
+        }
 
         if (this.parent) {
             this.parent._removeViewFromNativeVisualTree(this);

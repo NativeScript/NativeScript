@@ -2,7 +2,8 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontInternalProperty, traceCategory, View, layout, Color, Font, traceEnabled, traceWrite
+    fontInternalProperty, traceCategory, View, layout, Color, Font, traceEnabled, traceWrite,
+    applyNativeSetters
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
@@ -16,11 +17,74 @@ const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
 export class TabViewItem extends TabViewItemBase {
+    public nativeView: android.widget.TextView;
+    public tabItemSpec: org.nativescript.widgets.TabItemSpec;
+    public index: number;
 
-    public _update() {
-        const parent = <TabView>this.parent;
-        if (parent) {
-            parent._updateTabForItem(this);
+    public setNativeView(textView: android.widget.TextView): void {
+        this.nativeView = textView;
+        if (textView) {
+            applyNativeSetters(this);
+        }
+    }
+
+    public _update(): void {
+        const tv = this.nativeView;
+        if (tv) {
+            const tabLayout = <org.nativescript.widgets.TabLayout>tv.getParent();
+            tabLayout.updateItemAt(this.index, this.tabItemSpec);
+        }
+    }
+
+    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
+        const tv = this.nativeView;
+        return {
+            typeface: tv.getTypeface(),
+            fontSize: tv.getTextSize()
+        };
+    }
+    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
+        let typeface: android.graphics.Typeface;
+        let isFont: boolean;
+        const fontSize = value.fontSize;
+        if (value instanceof Font) {
+            isFont = true;
+            typeface = value.getAndroidTypeface();
+        }
+        else {
+            typeface = value.typeface;
+        }
+
+        const tv = this.nativeView;
+        tv.setTypeface(typeface);
+
+        if (isFont) {
+            if (fontSize !== undefined) {
+                tv.setTextSize(fontSize);
+            }
+        }
+        else {
+            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, fontSize);
+        }
+    }
+
+    get [textTransformProperty.native](): TextTransform {
+        return "none";
+    }
+    set [textTransformProperty.native](value: TextTransform) {
+        const tv = this.nativeView;
+        const result = getTransformedText(this.title, value);
+        tv.setText(result);
+    }
+
+    get [tabTextColorProperty.native](): android.content.res.ColorStateList {
+        return this.nativeView.getTextColors();
+    }
+    set [tabTextColorProperty.native](value: android.content.res.ColorStateList | Color) {
+        if (value instanceof Color) {
+            this.nativeView.setTextColor(value.android);
+        } else {
+            this.nativeView.setTextColor(value);
         }
     }
 }
@@ -128,7 +192,7 @@ function ensurePagerAdapterClass() {
                 }
                 return true;
             }
-            
+
             owner.eachChildView(childCallback);
 
             let bundle = new android.os.Bundle();
@@ -171,6 +235,25 @@ function ensurePageChangedListenerClass() {
     PageChangedListenerClass = PageChangedListener;
 }
 
+function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
+    let result = new org.nativescript.widgets.TabItemSpec();
+    result.title = item.title;
+
+    if (item.iconSource) {
+        if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
+            result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
+        } else {
+            let is = fromFileOrResource(item.iconSource);
+            if (is) {
+                // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
+                result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
+            }
+        }
+    }
+
+    return result;
+}
+
 export class TabView extends TabViewBase {
     private _grid: org.nativescript.widgets.GridLayout;
     private _tabLayout: org.nativescript.widgets.TabLayout;
@@ -182,6 +265,18 @@ export class TabView extends TabViewBase {
 
     get android(): android.view.View {
         return this._grid;
+    }
+
+    public onItemsChanged(oldItems: TabViewItem[], newItems: TabViewItem[]): void {
+        super.onItemsChanged(oldItems, newItems);
+        
+        if (oldItems) {
+            oldItems.forEach((item: TabViewItem, i, arr) => {
+                item.index = 0;
+                item.tabItemSpec = null;
+                item.setNativeView(null);
+            });
+        }
     }
 
     public _createNativeView() {
@@ -245,8 +340,11 @@ export class TabView extends TabViewBase {
         }
 
         const tabItems = new Array<org.nativescript.widgets.TabItemSpec>();
-        items.forEach((item, idx, arr) => {
-            tabItems.push(this.createTabItem(item));
+        items.forEach((item, i, arr) => {
+            const tabItemSpec = createTabItemSpec(item);
+            item.index = i;
+            item.tabItemSpec = tabItemSpec;
+            tabItems.push(tabItemSpec);
         });
 
         ensurePagerAdapterClass();
@@ -254,49 +352,17 @@ export class TabView extends TabViewBase {
         this._pagerAdapter = new PagerAdapterClass(this, items);
         this._viewPager.setAdapter(this._pagerAdapter);
 
-        this._tabLayout.setItems(tabItems, this._viewPager);
+        const tabLayout = this._tabLayout;
+        tabLayout.setItems(tabItems, this._viewPager);
+        items.forEach((item, i, arr) => {
+            const tv = tabLayout.getTextViewForItemAt(i);
+            item.setNativeView(tv);
+        });
 
         let selectedIndex = this.selectedIndex;
         if (selectedIndex < 0) {
             this.selectedIndex = this._viewPager.getCurrentItem();
         }
-//<<<<<<< HEAD
-//=======
-
-//        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
-        
-        // Style properties such as fonts need to re-applied on the newwly created native TextViews
-//        this.style._syncNativeProperties();
-//>>>>>>> ae68368... Fixed: Setting `setTypeface()` to null object
-    }
-
-    public _updateTabForItem(item: TabViewItem) {
-        let items = this.items;
-        if (items && items.length > 0) {
-            let index = this.items.indexOf(item);
-            if (index >= 0) {
-                this._tabLayout.updateItemAt(index, this.createTabItem(item));
-            }
-        }
-    }
-
-    private createTabItem(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
-        let result = new org.nativescript.widgets.TabItemSpec();
-        result.title = item.title;
-
-        if (item.iconSource) {
-            if (item.iconSource.indexOf(RESOURCE_PREFIX) === 0) {
-                result.iconId = ad.resources.getDrawableId(item.iconSource.substr(RESOURCE_PREFIX.length));
-            } else {
-                let is = fromFileOrResource(item.iconSource);
-                if (is) {
-                    // TODO: Make this native call that accepts string so that we don't load Bitmap in JS.
-                    result.iconDrawable = new android.graphics.drawable.BitmapDrawable(is.android);
-                }
-            }
-        }
-
-        return result;
     }
 
     get [androidOffscreenTabLimitProperty.native](): number {
@@ -316,19 +382,11 @@ export class TabView extends TabViewBase {
         this._viewPager.setCurrentItem(value, true);
     }
 
-    get [itemsProperty.native](): TabViewItemBase[] {
+    get [itemsProperty.native](): TabViewItem[] {
         return null;
     }
-    set [itemsProperty.native](value: TabViewItemBase[]) {
+    set [itemsProperty.native](value: TabViewItem[]) {
         this.setAdapter(value);
-    }
-
-    get [tabTextColorProperty.native](): number {
-        return this._tabLayout.getTabTextColor();
-    }
-    set [tabTextColorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
-        this._tabLayout.setTabTextColor(color);
     }
 
     get [tabBackgroundColorProperty.native](): android.graphics.drawable.Drawable {
@@ -358,72 +416,5 @@ export class TabView extends TabViewBase {
         let tabLayout = this._tabLayout;
         let color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);
-    }
-
-    // TODO: Move this to TabViewItem
-    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let items = this.items;
-        if (items && items.length > 0) {
-            let tabLayout = this._tabLayout;
-            let tv = tabLayout.getTextViewForItemAt(0);
-            return {
-                typeface: tv.getTypeface(),
-                fontSize: tv.getTextSize()
-            };
-        }
-
-        return {
-            typeface: undefined,
-            fontSize: undefined
-        };
-    }
-    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let typeface: android.graphics.Typeface;
-        let fontSize = value.fontSize;
-        let isFont: boolean;
-        if (value instanceof Font) {
-            isFont = true;
-            typeface = value.getAndroidTypeface();
-        } 
-        else {
-            typeface = value.typeface;
-        }
-
-        let items = this.items;
-        if (items && items.length > 0) {
-            let tabLayout = this._tabLayout;
-
-            for (let i = 0, length = items.length; i < length; i++) {
-                let tv = tabLayout.getTextViewForItemAt(i);
-                tv.setTypeface(typeface);
-
-                if (isFont) {
-                    if (fontSize !== undefined){
-                        tv.setTextSize(fontSize);
-                    }
-                }
-                else {
-                    tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, fontSize);
-                }
-            }
-        }
-    }
-
-    // TODO: Move this to TabViewItem
-    get [textTransformProperty.native](): TextTransform {
-        return "none";
-    }
-    set [textTransformProperty.native](value: TextTransform) {
-        let tabLayout = this._tabLayout;
-        let items = this.items;
-        if (!items) {
-            return;
-        }
-
-        for (let i = 0, count = items.length; i < count; i++) {
-            const textView = tabLayout.getTextViewForItemAt(i);
-            const result = getTransformedText(items[i].title, value);
-            textView.setText(result);
-        }
     }
 }
