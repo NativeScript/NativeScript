@@ -220,7 +220,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return this._android.getText();
     }
     set [textProperty.native](value: string) {
-        let newValue = value + '';
+        let newValue;
+        if (value === null || value === void 0) {
+            newValue = "";
+        } else {
+            newValue = value + "";
+        }
         this._android.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
     }
 

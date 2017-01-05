@@ -5,6 +5,7 @@ import {
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length
 
 } from "ui/editable-text-base";
+import { Color } from "color";
 import { ios } from "utils/utils";
 
 export * from "ui/editable-text-base";
@@ -74,8 +75,6 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
 
-    public nativeView: UITextView;
-
     constructor() {
         super();
 
@@ -100,6 +99,10 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         return this._ios;
     }
 
+    get nativeView(): UITextView {
+        return this._ios;
+    }
+
     public _refreshHintState(hint: string, text: string) {
         if (hint && !text) {
             this._showHint(hint);
@@ -112,14 +115,22 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     public _showHint(hint: string) {
         let nativeView = this.nativeView;
         nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
-        nativeView.text = hint + "";
+        let hintAsString = hint + "";
+        if (hint === null || hint === void 0) {
+            hintAsString = "";
+        }
+        nativeView.text = hintAsString;
         this._isShowingHint = true;
     }
 
     public _hideHint() {
         let nativeView = this.nativeView;
         nativeView.textColor = this.color ? this.color.ios : null;
-        nativeView.text = this.text + "";
+        let textAsString = this.text + "";
+        if (this.text === null || this.text === void 0) {
+            textAsString = "";
+        }
+        nativeView.text = textAsString;
         this._isShowingHint = false;
     }
 
@@ -153,13 +164,14 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             return textView.textColor;
         }
     }
-    set [colorProperty.native](color: UIColor) {
+    set [colorProperty.native](color: UIColor | Color) {
         let textView = this.nativeView;
-        if (this._isShowingHint && color) {
-            textView.textColor = color.colorWithAlphaComponent(0.22);
+        let uiColor = typeof color === "UIColor" ? color : (<Color>color).ios;
+        if (this._isShowingHint && uiColor) {
+            textView.textColor = uiColor.colorWithAlphaComponent(0.22);
         } else {
-            textView.textColor = color;
-            textView.tintColor = color;
+            textView.textColor = uiColor;
+            textView.tintColor = uiColor;
         }
     }
 

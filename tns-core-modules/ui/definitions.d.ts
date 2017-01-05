@@ -7,6 +7,7 @@ declare module "ui/core/view-base" {
     } from "ui/core/properties";
     import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
     import { Style } from "ui/styling/style";
+    import { SelectorCore } from "ui/styling/css-selector";
     import { isIOS, isAndroid } from "platform";
     import { fromString as gestureFromString } from "ui/gestures";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
@@ -72,6 +73,11 @@ declare module "ui/core/view-base" {
          * Gets or sets the CSS class name for this view.
          */
         public className: string;
+
+        /**
+         * Gets or sets inline style selectors for this view.   
+         */
+        public inlineStyleSelector: SelectorCore;
 
         /**
          * Gets owner page. This is a read-only property.

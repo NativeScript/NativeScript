@@ -4,7 +4,8 @@ import { Property, InheritedProperty, Style, clearInheritedProperties, propagate
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
-import { CssState, StyleScope, applyInlineSyle } from "ui/styling/style-scope";
+import { CssState, StyleScope, applyInlineStyle } from "ui/styling/style-scope";
+import { SelectorCore } from "ui/styling/css-selector";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
@@ -99,6 +100,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     private _isLoaded: boolean;
     private _registeredAnimations: Array<KeyframeAnimation>;
     private _visualState: string;
+    private _inlineStyleSelector: SelectorCore;
 
     public bindingContext: any;
     public nativeView: any;
@@ -140,6 +142,14 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
     set class(v: string) {
         this.className = v;
+    }
+
+    public get inlineStyleSelector(): SelectorCore {
+        return this._inlineStyleSelector;
+    }
+
+    public set inlineStyleSelector(value: SelectorCore) {
+        this._inlineStyleSelector = value;
     }
 
     getViewById<T extends ViewBaseDefinition>(id: string): T {
@@ -321,7 +331,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (typeof inlineStyle === "string") {
             try {
                 // this.style._beginUpdate();
-                applyInlineSyle(this, inlineStyle);
+                applyInlineStyle(this, inlineStyle);
             } finally {
                 // this.style._endUpdate();
             }

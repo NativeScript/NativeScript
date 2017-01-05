@@ -226,24 +226,39 @@ class TextTransformation extends android.text.method.ReplacementTransformationMe
     }
 
     protected getOriginal(): native.Array<string> {
-        return this.formattedText ? this.formattedText._formattedText : this.originalText;
+        let result: native.Array<string> = [];
+        if (this.formattedText) {
+            for(let i = 0, loopLength = this.formattedText._formattedText.length(); i < loopLength; i++) {
+                result[i] = this.formattedText._formattedText.charAt(i);
+            }
+            return result;
+        }
+        return result;
     }
 
     protected getReplacement(): native.Array<string> {
-        let result: string = "";
+        let stringResult: string = "";
+        let result: native.Array<string> = [];
         let textTransform = this.textTransform
         if (this.formattedText) {
             for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
                 let span = this.formattedText.spans.getItem(i);
-                result += getTransformedText(span.text, textTransform);
-                // span.text = formatString(span.text, this.textTransform);
+                stringResult += getTransformedText(span.text, textTransform);
             }
         } 
         else {
-            result = getTransformedText(this.originalText, textTransform);
+            stringResult = getTransformedText(this.originalText, textTransform);
+        }
+
+        for(let j = 0, loopLength = stringResult.length; j < loopLength; j++) {
+            result[j] = stringResult.charAt(j);
         }
 
         return result;
+    }
+
+    public getTransformation(charSeq: string, view: android.view.View): string {
+        return this.getReplacement().toString();
     }
 }
 
