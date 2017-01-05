@@ -33,5 +33,5 @@ declare module "ui/styling/style-scope" {
     }
 
     export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean): string;
-    export function applyInlineSyle(view: ViewBase, style: string): void;
+    export function applyInlineStyle(view: ViewBase, style: string): void;
 }

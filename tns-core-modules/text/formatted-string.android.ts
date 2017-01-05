@@ -14,7 +14,7 @@ export class FormattedString extends FormattedStringBase {
             if (spanLength !== 0) {
                 ssb.insert(spanStart, spanText);
                 span.updateSpanModifiers(this);
-                for (let p = 0, spanLength = span.spanModifiers.length; p < length; p++) {
+                for (let p = 0, spanModifiersLength = span.spanModifiers.length; p < spanModifiersLength; p++) {
                     ssb.setSpan(span.spanModifiers[p], spanStart, spanStart + spanLength, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }
                 spanStart += spanLength;

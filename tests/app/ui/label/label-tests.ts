@@ -520,6 +520,43 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         TKUnit.assertNotEqual(this.errorMessage, undefined);
     }
 
+    public test_applying_disabled_visual_State_when_label_is_disable = function () {
+        let view = this.testView;
+        let page = this.testPage;
+        this.waitUntilTestElementIsLoaded();
+        let expectedColor = "#ffff0000";
+
+        page.css = "label:disabled { background-color: " + expectedColor + "; }";
+
+        view.isEnabled = false;
+
+        let actualResult = labelTestsNative.getNativeBackgroundColor(view);
+        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+    }
+
+    public test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
+        let view = this.testView;
+        view.text = "NormalText";
+        this.waitUntilTestElementIsLoaded();
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
+    }
+
+    public test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
+        let view = this.testView;
+        let formattedString = helper._generateFormattedString();
+        this.waitUntilTestElementIsLoaded();
+        view.formattedText = formattedString;
+        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
+        
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
+    }
+
     private requestLayoutFixture(expectRequestLayout: boolean, initialValue: string, setup: (label: Label) => LayoutBase): void {
         if (!isIOS) {
             return;
@@ -644,44 +681,4 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
 export function createTestCase(): LabelTest {
     return new LabelTest();
-}
-
-export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {
-    let view = new LabelModule.Label();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        view.text = "NormalText";
-        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
-        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
-    });
-}
-
-export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedText_DoesNotCrash() {
-    let view = new LabelModule.Label();
-    let formattedString = helper._generateFormattedString();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        view.formattedText = formattedString;
-        view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
-        TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
-    });
-}
-
-export var test_applying_disabled_visual_State_when_label_is_disable = function () {
-    let view = new Label();
-    helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
-        var view = <Label>views[0];
-        var page = <Page>views[1];
-        var expectedColor = "#ffff0000";
-        page.css = "label:disabled { background-color: " + expectedColor + "; }";
-
-        view.isEnabled = false;
-
-        var actualResult = labelTestsNative.getNativeBackgroundColor(view);
-        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
-    });
 }

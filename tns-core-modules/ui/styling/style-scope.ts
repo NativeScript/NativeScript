@@ -25,6 +25,10 @@ export class CssState {
         resetStyleProperties(this.view.style);
 
         let matchingSelectors = this.match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
+        if (this.view.inlineStyleSelector) {
+            matchingSelectors.push(this.view.inlineStyleSelector);
+        }
+
         matchingSelectors.forEach(s => this.applyDescriptors(this.view, s.ruleset));
     }
 
@@ -254,11 +258,13 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     return null;
 }
 
-export function applyInlineSyle(view: ViewBase, style: string) {
+export function applyInlineStyle(view: ViewBase, style: string) {
     try {
-        let syntaxTree = parseCss("local { " + style + " }", undefined);
-        let filteredDeclarations = <Declaration[]>(<Rule[]>syntaxTree.stylesheet.rules.filter(isRule))[0].declarations.filter(isDeclaration);
-        applyInlineStyle(view, filteredDeclarations);
+        let localStyle = `local { ${style} }`;
+        let inlineRuleSet = StyleScope.createSelectorsFromCss(localStyle, null, {});
+        let inlineSelector = new InlineSelector(inlineRuleSet[0]);
+        view.inlineStyleSelector = inlineSelector;
+        view._cssState.apply();
     } catch (ex) {
         traceWrite("Applying local style failed: " + ex, traceCategories.Error, traceMessageType.error);
     }
@@ -274,19 +280,15 @@ function isKeyframe(node: Node): node is Keyframes {
     return node.type === "keyframes";
 }
 
-function applyInlineStyle(view: ViewBase, declarations: Declaration[]): void {
-    let style = view.style;
-    declarations.forEach(d => {
-        let name = d.property;
-        if (name in style) {
-            style[name] = d.value;
-        } else {
-            view[name] = d.value;
-        }
-    });
+class InlineSelector extends SelectorCore {
+    constructor(ruleSet: RuleSet) {
+        super();
+        this.ruleset = ruleSet;
+    }
 
-    // declarations.forEach(d => withStyleProperty(d.property, d.value, (property, value) => {
-    //     const resolvedProperty = <StyleProperty>property;
-    //     view.style._setValue(resolvedProperty, value, observable.ValueSource.Local);
-    // }));
+    public specificity = 0x01000000;
+    public rarity = 0;
+    public dynamic: boolean = false;
+    public ruleset: RuleSet;
+    public match(node: Node): boolean { return true; }
 }

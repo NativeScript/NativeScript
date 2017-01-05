@@ -115,7 +115,11 @@ export const textProperty = new Property<TextBaseCommon, string>({ name: "text",
 textProperty.register(TextBaseCommon);
 
 //FormattedText
-export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
+export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({
+    name: "formattedText",
+    affectsLayout: isIOS,
+    valueChanged: onFormattedTextPropertyChanged
+});
 formattedTextProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
@@ -140,7 +144,11 @@ export namespace TextAlignment {
     export const parse = makeParser(isValid, undefined);
 }
 
-export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({ name: "textAlignment", cssName: "text-align", valueConverter: TextAlignment.parse });
+export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({
+    name: "textAlignment",
+    cssName: "text-align",
+    valueConverter: TextAlignment.parse
+});
 textAlignmentProperty.register(Style);
 
 //TextDecoration
@@ -155,7 +163,10 @@ export namespace TextDecoration {
     export const parse = makeParser(isValid, NONE);
 }
 export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
-    name: "textDecoration", cssName: "text-decoration", defaultValue: TextDecoration.NONE, valueConverter: TextDecoration.parse
+    name: "textDecoration",
+    cssName: "text-decoration",
+    defaultValue: TextDecoration.NONE,
+    valueConverter: TextDecoration.parse
 });
 textDecorationProperty.register(Style);
 
@@ -169,7 +180,12 @@ export namespace TextTransform {
     export const isValid = makeValidator<TextTransform>(NONE, CAPITALIZE, UPPERCASE, LOWERCASE);
     export const parse = makeParser(isValid, NONE);
 }
-export const textTransformProperty = new CssProperty<Style, TextTransform>({ name: "textTransform", cssName: "text-transform", defaultValue: TextTransform.NONE, valueConverter: TextTransform.parse });
+export const textTransformProperty = new CssProperty<Style, TextTransform>({
+    name: "textTransform",
+    cssName: "text-transform",
+    defaultValue: TextTransform.NONE,
+    valueConverter: TextTransform.parse
+});
 textTransformProperty.register(Style);
 
 //Whitespace
@@ -181,8 +197,19 @@ export namespace WhiteSpace {
     export const parse = makeParser(isValid, NORMAL);
 }
 
-export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({ name: "whiteSpace", cssName: "white-space", defaultValue: WhiteSpace.NORMAL, valueConverter: WhiteSpace.parse });
+export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
+    name: "whiteSpace",
+    cssName: "white-space",
+    defaultValue: WhiteSpace.NORMAL,
+    valueConverter: WhiteSpace.parse
+});
 whiteSpaceProperty.register(Style);
 
-export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: (v: string) => parseFloat(v) });
+export const letterSpacingProperty = new CssProperty<Style, number>({
+    name: "letterSpacing",
+    cssName: "letter-spacing",
+    defaultValue: 0,
+    affectsLayout: isIOS,
+    valueConverter: (v: string) => parseFloat(v)
+});
 letterSpacingProperty.register(Style);
