@@ -23,7 +23,7 @@ export function addWriter(writer: definition.TraceWriter) {
 }
 
 export function removeWriter(writer: definition.TraceWriter) {
-    var index = _writers.indexOf(writer);
+    let index = _writers.indexOf(writer);
     if (index >= 0) {
         _writers.splice(index, 1);
     }
@@ -41,7 +41,7 @@ export function setCategories(categories: string) {
 }
 
 export function addCategories(categories: string) {
-    var split = categories.split(",");
+    let split = categories.split(",");
     for (let i = 0; i < split.length; i++) {
         _categories[split[i].trim()] = true;
     }
@@ -49,13 +49,14 @@ export function addCategories(categories: string) {
 
 export function write(message: any, category: string, type?: number) {
     // print error no matter what
-    var i;
+    let i;
     if (type === messageType.error) {
         for (i = 0; i < _writers.length; i++) {
             _writers[i].write(message, category, type);
         }
+        return;
     }
-    
+
     if (!enabled) {
         return;
     }
@@ -74,7 +75,7 @@ export function notifyEvent(object: Object, name: string, data?: any) {
         return;
     }
 
-    var i,
+    let i,
         listener: definition.EventListener,
         filters: Array<string>;
     for (i = 0; i < _eventListeners.length; i++) {

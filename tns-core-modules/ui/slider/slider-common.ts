@@ -15,8 +15,8 @@ export class SliderBase extends View implements SliderDefinition {
  */
 export const valueProperty = new CoercibleProperty<SliderBase, number>({
     name: "value", defaultValue: 0, coerceValue: (target, value) => {
-        value = Math.max(value, this.minValue);
-        value = Math.min(value, this.maxValue);
+        value = Math.max(value, target.minValue);
+        value = Math.min(value, target.maxValue);
         return value;
     }, valueConverter: (v) => isIOS ? parseFloat(v) : parseInt(v)
 });
