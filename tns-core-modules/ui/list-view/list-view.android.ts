@@ -5,7 +5,7 @@ import stackLayout = require("ui/layouts/stack-layout");
 import proxy = require("ui/core/proxy");
 import dependencyObservable = require("ui/core/dependency-observable");
 import definition = require("ui/list-view");
-import {ProxyViewContainer} from "ui/proxy-view-container";
+import { ProxyViewContainer } from "ui/proxy-view-container";
 import * as layoutBase from "ui/layouts/layout-base";
 import * as colorModule from "color";
 import { separatorColorProperty, registerHandler, Styler, StylePropertyChangedHandler } from "ui/styling/style";
@@ -43,7 +43,7 @@ function onSeparatorColorPropertyChanged(data: dependencyObservable.PropertyChan
 export class ListView extends common.ListView {
     private _androidViewId: number = -1;
     private _android: android.widget.ListView;
-    public _realizedItems = new Map<android.view.View, viewModule.View>();    
+    public _realizedItems = new Map<android.view.View, viewModule.View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, viewModule.View>>();
 
     public _createUI() {
@@ -82,12 +82,12 @@ export class ListView extends common.ListView {
         }
 
         // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
-        this._realizedItems.forEach((view, nativeView, map) => {            
+        this._realizedItems.forEach((view, nativeView, map) => {
             if (!(view.bindingContext instanceof observable.Observable)) {
                 view.bindingContext = null;
             }
         });
-        
+
         (<android.widget.BaseAdapter>this.android.getAdapter()).notifyDataSetChanged();
     }
 
@@ -120,16 +120,16 @@ export class ListView extends common.ListView {
         });
     }
 
-    public _dumpRealizedTemplates(){
-        console.log(`Realized Templates:`);    
+    public _dumpRealizedTemplates() {
+        console.log(`Realized Templates:`);
         this._realizedTemplates.forEach((value, index, map) => {
             console.log(`\t${index}:`);
             value.forEach((value, index, map) => {
                 console.log(`\t\t${index.hashCode()}: ${value}`);
             });
         });
-        console.log(`Realized Items Size: ${this._realizedItems.size}`);    
-    } 
+        console.log(`Realized Items Size: ${this._realizedItems.size}`);
+    }
 
     private clearRealizedCells(): void {
         // clear the cache
@@ -148,16 +148,16 @@ export class ListView extends common.ListView {
     }
 
     public _onItemTemplatesPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        this._itemTemplatesInternal = new Array<viewModule.KeyedTemplate>(this._defaultTemplate); 
-        if (data.newValue){
+        this._itemTemplatesInternal = new Array<viewModule.KeyedTemplate>(this._defaultTemplate);
+        if (data.newValue) {
             this._itemTemplatesInternal = this._itemTemplatesInternal.concat(data.newValue);
         }
-        
-        if (this.android){
+
+        if (this.android) {
             ensureListViewAdapterClass();
             this.android.setAdapter(new ListViewAdapterClass(this));
         }
-        
+
         this.refresh();
     }
 }
@@ -200,7 +200,7 @@ function ensureListViewAdapterClass() {
         }
 
         public getViewTypeCount() {
-            return this._listView._itemTemplatesInternal.length; 
+            return this._listView._itemTemplatesInternal.length;
         }
 
         public getItemViewType(index: number) {
@@ -208,10 +208,10 @@ function ensureListViewAdapterClass() {
             let itemViewType = this._listView._itemTemplatesInternal.indexOf(template);
             return itemViewType;
         }
-        
+
         public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
             //this._listView._dumpRealizedTemplates();
-            
+
             if (!this._listView) {
                 return null;
             }
@@ -224,9 +224,9 @@ function ensureListViewAdapterClass() {
             // Recycle an existing view or create a new one if needed.
             let template = this._listView._getItemTemplate(index);
             let view: viewModule.View;
-            if (convertView){
+            if (convertView) {
                 view = this._listView._realizedTemplates.get(template.key).get(convertView);
-                if (!view){
+                if (!view) {
                     throw new Error(`There is no entry with key '${convertView}' in the realized views cache for template with key'${template.key}'.`);
                 }
             }
@@ -273,10 +273,10 @@ function ensureListViewAdapterClass() {
 
                 // Cache the view for recycling
                 let realizedItemsForTemplateKey = this._listView._realizedTemplates.get(template.key);
-                if (!realizedItemsForTemplateKey){
+                if (!realizedItemsForTemplateKey) {
                     realizedItemsForTemplateKey = new Map<android.view.View, viewModule.View>();
                     this._listView._realizedTemplates.set(template.key, realizedItemsForTemplateKey);
-                } 
+                }
                 realizedItemsForTemplateKey.set(convertView, args.view);
                 this._listView._realizedItems.set(convertView, args.view);
             }
@@ -290,22 +290,37 @@ function ensureListViewAdapterClass() {
 
 export class ListViewStyler implements Styler {
     // separator-color
+    private static getSeparatorColorProperty(view: viewModule.View): any {
+        let listView = <android.widget.ListView>view._nativeView;
+        return listView.getDivider();
+    }
+
     private static setSeparatorColorProperty(view: viewModule.View, newValue: any) {
         let listView = <android.widget.ListView>view._nativeView;
-        listView.setDivider(new android.graphics.drawable.ColorDrawable(newValue));
+    
+        if (newValue instanceof android.graphics.drawable.Drawable) {
+            listView.setDivider(newValue);
+        } else {
+            listView.setDivider(new android.graphics.drawable.ColorDrawable(newValue));
+        }
         listView.setDividerHeight(1);
     }
 
     private static resetSeparatorColorProperty(view: viewModule.View, nativeValue: any) {
         let listView = <android.widget.ListView>view._nativeView;
-        listView.setDivider(new android.graphics.drawable.ColorDrawable(nativeValue));
-        listView.setDividerHeight(1);
+
+        if (nativeValue instanceof android.graphics.drawable.Drawable) {
+            listView.setDivider(nativeValue);
+        } else {
+            listView.setDivider(new android.graphics.drawable.ColorDrawable(nativeValue));       
+        }
     }
 
     public static registerHandlers() {
         registerHandler(separatorColorProperty, new StylePropertyChangedHandler(
             ListViewStyler.setSeparatorColorProperty,
-            ListViewStyler.resetSeparatorColorProperty), "ListView");
+            ListViewStyler.resetSeparatorColorProperty, 
+            ListViewStyler.getSeparatorColorProperty), "ListView");
     }
 }
 

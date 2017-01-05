@@ -9,6 +9,7 @@ import { Label } from "ui/label";
 import helper = require("../helper");
 import { Page } from "ui/page";
 import { View, KeyedTemplate } from "ui/core/view";
+import { separatorColorProperty } from "ui/styling/style";
 
 // >> article-require-listview-module
 import listViewModule = require("ui/list-view");
@@ -698,6 +699,35 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
     }
 
+    public test_separatorColor_setInCSS_is_respected() {
+        let listView = this.testView;
+        let items = ["John", "Joshua", "Gregory"];
+        listView.items = items;
+
+        helper.buildUIAndRunTest(listView, function (views) {
+            let page = views[1];
+            page.css = "ListView { separator-color: #FF0000; }";
+
+            TKUnit.assertEqual(listView.style.separatorColor.hex, "#FF0000", "separatorColor property");
+        });
+    }
+    
+    public test_separatorColor_reset() {
+        let listView = this.testView;
+        let items = ["John", "Joshua", "Gregory"];
+        listView.items = items;
+
+        helper.buildUIAndRunTest(listView, function (views) {
+            let defaultsSeparatorColor = listView.style.separatorColor;
+
+            listView.style._setValue(separatorColorProperty, "#FF0000");
+            TKUnit.assertEqual(listView.style.separatorColor.hex, "#FF0000", "set separatorColor property");
+
+            listView.style._resetValue(separatorColorProperty);
+            TKUnit.assertEqual(listView.style.separatorColor, defaultsSeparatorColor, "reset separatorColor property");
+        });
+    }
+    
     private assertNoMemoryLeak(weakRef: WeakRef<listViewModule.ListView>) {
         this.tearDown();
         TKUnit.waitUntilReady(() => {
@@ -785,7 +815,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.wait(0.1);
 
         let firstNativeElementText = this.getTextFromNativeElementAt(listView, 0);
-        
+
         TKUnit.assertEqual(firstNativeElementText, "default", "first element text");
     }
 
@@ -820,19 +850,19 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     public test_ItemTemplateSelector_ItemTemplatesAreCorrectlyParsedFromString() {
         let listView = this.testView;
         listView.itemTemplates = this._itemTemplatesString;
-        
+
         let itemTemplatesArray = <any>listView.itemTemplates;
 
         TKUnit.assertEqual(itemTemplatesArray.length, 3, "itemTemplates array length");
-        
+
         let template0 = <KeyedTemplate>itemTemplatesArray[0];
         TKUnit.assertEqual(template0.key, "red", "template0.key");
         TKUnit.assertEqual((<Label>template0.createView()).text, "red", "template0 created view text");
-        
+
         let template1 = <KeyedTemplate>itemTemplatesArray[1];
         TKUnit.assertEqual(template1.key, "green", "template1.key");
         TKUnit.assertEqual((<Label>template1.createView()).text, "green", "template1 created view text");
-        
+
         let template2 = <KeyedTemplate>itemTemplatesArray[2];
         TKUnit.assertEqual(template2.key, "blue", "template2.key");
         TKUnit.assertEqual((<Label>template2.createView()).text, "blue", "template2 created view text");
@@ -849,7 +879,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         let firstNativeElementText = this.getTextFromNativeElementAt(listView, 0);
         let secondNativeElementText = this.getTextFromNativeElementAt(listView, 1);
-        
+
         TKUnit.assertEqual(firstNativeElementText, "red", "first element text");
         TKUnit.assertEqual(secondNativeElementText, "green", "second element text");
     }
@@ -864,23 +894,23 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.wait(0.05);
 
         // Forward
-        for(let i = 0, length = listView.items.length; i < length; i++){
-            listView.scrollToIndex(i);
-            TKUnit.wait(0.05);
-        }
-        
-        // Back
-        for(let i = listView.items.length - 1; i >= 0; i--){
+        for (let i = 0, length = listView.items.length; i < length; i++) {
             listView.scrollToIndex(i);
             TKUnit.wait(0.05);
         }
 
-        if (listView.android){
+        // Back
+        for (let i = listView.items.length - 1; i >= 0; i--) {
+            listView.scrollToIndex(i);
+            TKUnit.wait(0.05);
+        }
+
+        if (listView.android) {
             //(<any>listView)._dumpRealizedTemplates();
             let realizedItems = <Map<android.view.View, View>>(<any>listView)._realizedItems;
             TKUnit.assertTrue(realizedItems.size <= 6, 'Realized items must be 6 or less');
-            
-            let realizedTemplates = <Map<string, Map<android.view.View, View>>>(<any>listView)._realizedTemplates; 
+
+            let realizedTemplates = <Map<string, Map<android.view.View, View>>>(<any>listView)._realizedTemplates;
             TKUnit.assertEqual(realizedTemplates.size, 3, 'Realized templates');
             TKUnit.assertTrue(realizedTemplates.get("red").size <= 2, 'Red realized items must be 2 or less');
             TKUnit.assertTrue(realizedTemplates.get("green").size <= 2, 'Green realized items must be 2 or less');
@@ -899,7 +929,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             <Label text='blue' style.backgroundColor='blue' minHeight='100' maxHeight='100'/>
         </template>
         `;
-    
+
     private static generateItemsForMultipleTemplatesTests(count: number): Array<Item> {
         let items = new Array<Item>();
         for (let i = 0; i < count; i++) {
