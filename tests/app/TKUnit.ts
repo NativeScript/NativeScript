@@ -49,7 +49,7 @@ export var write = function write(message: string, type?: number) {
 
 var runTest = function (testInfo: TestInfoEntry) {
     let start = time();
-    let duration: number;
+    let duration;
     try {
         if (testInfo.instance) {
             testInfo.testFunc.apply(testInfo.instance);
