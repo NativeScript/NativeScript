@@ -85,10 +85,15 @@ declare module "ui/core/view" {
          * @param auto Value to use for conversion of "auto".
          */
         export function toDevicePixels(length: Length, auto: number): number;
+        export function convertToString(length: Length): string;
+
     }
 
     export type PercentLength = "auto" | number | {
         readonly unit: "%" | "dip" | "px";
+        /**
+         * Length value. When unit is "%" the value is normalized (ex. for 5% the value is 0.05)
+         */
         readonly value: number;
     }
     export namespace PercentLength {
@@ -101,6 +106,7 @@ declare module "ui/core/view" {
          * @param parentAvailableWidth Value to use as base when converting percent unit.
          */
         export function toDevicePixels(length: PercentLength, auto: number, parentAvailableWidth: number): number;
+        export function convertToString(length: PercentLength): string;
     }
 
     /**

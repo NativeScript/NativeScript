@@ -197,10 +197,11 @@ export namespace WhiteSpace {
     export const parse = makeParser(isValid, NORMAL);
 }
 
+//NB: Default value is deferent for Android and IOS
 export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
     name: "whiteSpace",
     cssName: "white-space",
-    defaultValue: WhiteSpace.NORMAL,
+    defaultValue: isIOS ? WhiteSpace.NO_WRAP : WhiteSpace.NORMAL,
     valueConverter: WhiteSpace.parse
 });
 whiteSpaceProperty.register(Style);

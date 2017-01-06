@@ -118,7 +118,7 @@ export class TextBase extends TextBaseCommon {
                 nativeView.textAlignment = NSTextAlignment.Right;
                 break;
             default:
-                throw new Error(`Invalid text alignment value: ${value}. Valid values are: "${TextAlignment.LEFT}", "${TextAlignment.CENTER}", "${TextAlignment.RIGHT}".`);                
+                throw new Error(`Invalid text alignment value: ${value}. Valid values are: "${TextAlignment.LEFT}", "${TextAlignment.CENTER}", "${TextAlignment.RIGHT}".`);
         }
     }
 
@@ -170,7 +170,7 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
         case TextTransform.CAPITALIZE:
             return NSStringFromNSAttributedString(text).capitalizedString;
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}, "${TextTransform.LOWERCASE}".`);                
+            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}, "${TextTransform.LOWERCASE}".`);
     }
 }
 
@@ -181,7 +181,7 @@ function NSStringFromNSAttributedString(source: NSAttributedString | string): NS
 function updateFormattedStringTextDecoration(formattedText: FormattedString, textDecoration: TextDecoration): void {
     // TODO: Refactor this method so it doesn't modify FormattedString properties.
     // Instead it should create NSAttributedString and apply it to the nativeView.
-    switch(textDecoration) {
+    switch (textDecoration) {
         case TextDecoration.NONE:
             formattedText.underline = NSUnderlineStyle.StyleNone;
             formattedText.strikethrough = NSUnderlineStyle.StyleNone;
@@ -198,7 +198,7 @@ function updateFormattedStringTextDecoration(formattedText: FormattedString, tex
             formattedText.underline = NSUnderlineStyle.StyleSingle;
             formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
             break;
-        default: 
+        default:
             throw new Error(`Invalid text decoration value: ${textDecoration}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
     }
 }
@@ -216,7 +216,8 @@ function setFormattedTextDecorationAndTransform(formattedText: FormattedString, 
     updateFormattedStringTextDecoration(formattedText, textDecoration);
     updateFormattedStringTextTransformation(formattedText, textTransform);
 
-    if (typeof letterSpacing === "number" && !isNaN(letterSpacing)) {
+    const hasLetterSpacing = typeof letterSpacing === "number" && !isNaN(letterSpacing) && letterSpacing !== 0;
+    if (hasLetterSpacing) {
         if (nativeView instanceof UIButton) {
             let attrText = NSMutableAttributedString.alloc().initWithAttributedString(nativeView.attributedTitleForState(UIControlState.Normal));
             attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * nativeView.font.pointSize, { location: 0, length: attrText.length });
@@ -230,10 +231,10 @@ function setFormattedTextDecorationAndTransform(formattedText: FormattedString, 
 }
 
 function setTextDecorationAndTransform(text: string, nativeView: UITextField | UITextView | UILabel | UIButton, textDecoration: TextDecoration, textTransform: TextTransform, letterSpacing: number, color: Color) {
-    let hasLetterSpacing = typeof letterSpacing === "number" && !isNaN(letterSpacing);
+    const hasLetterSpacing = typeof letterSpacing === "number" && !isNaN(letterSpacing) && letterSpacing !== 0;
 
     let dict = new Map<string, number>();
-    switch(textDecoration) {
+    switch (textDecoration) {
         case TextDecoration.NONE:
             break;
         case TextDecoration.UNDERLINE:
@@ -246,10 +247,10 @@ function setTextDecorationAndTransform(text: string, nativeView: UITextField | U
             dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
             dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
             break;
-        default: 
+        default:
             throw new Error(`Invalid text decoration value: ${textDecoration}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
     }
-    
+
     if (hasLetterSpacing) {
         dict.set(NSKernAttributeName, letterSpacing * nativeView.font.pointSize);
     }
