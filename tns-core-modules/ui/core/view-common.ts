@@ -1480,6 +1480,11 @@ export const backgroundImageProperty = new CssProperty<Style, string>({
         let url: string = newValue;
         let isValid = false;
 
+        if (url === undefined){
+            style.backgroundInternal = currentBackground.withImage(undefined);
+            return;
+        }
+
         let match = url.match(pattern);
         if (match && match[2]) {
             url = match[2];
