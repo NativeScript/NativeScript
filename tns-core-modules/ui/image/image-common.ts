@@ -47,7 +47,8 @@ export abstract class ImageBase extends View implements ImageDefinition {
                 }
                 this.imageSource = source;
                 this.isLoading = false;
-            }
+            };
+
             if (isDataURI(value)) {
                 let base64Data = value.split(",")[1];
                 if (base64Data !== undefined) {
@@ -107,8 +108,13 @@ export abstract class ImageBase extends View implements ImageDefinition {
 }
 
 export const imageSourceProperty = new Property<ImageBase, ImageSource>({ name: "imageSource" });
+imageSourceProperty.register(ImageBase);
 
-export const srcProperty = new Property<ImageBase, any>({ name: "src" });
+function onSrcPropertyChanged(image: ImageBase, oldValue: string, newValue: string) {
+    image._createImageSourceFromSrc();
+};
+
+export const srcProperty = new Property<ImageBase, any>({ name: "src", valueChanged: onSrcPropertyChanged });
 srcProperty.register(ImageBase);
 
 export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "async" });
@@ -117,7 +123,7 @@ loadModeProperty.register(ImageBase);
 export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false, valueConverter: booleanConverter });
 isLoadingProperty.register(ImageBase);
 
-export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS })
+export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS });
 stretchProperty.register(ImageBase);
 
 export const tintColorProperty = new InheritedCssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });
