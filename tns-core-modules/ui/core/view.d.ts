@@ -178,27 +178,27 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the border radius of the view.
          */
-        borderRadius: string | number;
+        borderRadius: string | Length;
 
         /**
          * Gets or sets the top left border radius of the view.
          */
-        borderTopLeftRadius: number;
+        borderTopLeftRadius: Length;
 
         /**
          * Gets or sets the top right border radius of the view.
          */
-        borderTopRightRadius: number;
+        borderTopRightRadius: Length;
 
         /**
          * Gets or sets the bottom right border radius of the view.
          */
-        borderBottomRightRadius: number;
+        borderBottomRightRadius: Length;
 
         /**
          * Gets or sets the bottom left border radius of the view.
          */
-        borderBottomLeftRadius: number;
+        borderBottomLeftRadius: Length;
 
         /**
          * Gets or sets the color of the view.
@@ -733,11 +733,11 @@ declare module "ui/core/view" {
     export const borderBottomWidthProperty: CssProperty<Style, Length>;
     export const borderLeftWidthProperty: CssProperty<Style, Length>;
 
-    export const borderRadiusProperty: ShorthandProperty<Style, string | number>;
-    export const borderTopLeftRadiusProperty: CssProperty<Style, number>;
-    export const borderTopRightRadiusProperty: CssProperty<Style, number>;
-    export const borderBottomRightRadiusProperty: CssProperty<Style, number>;
-    export const borderBottomLeftRadiusProperty: CssProperty<Style, number>;
+    export const borderRadiusProperty: ShorthandProperty<Style, string | Length>;
+    export const borderTopLeftRadiusProperty: CssProperty<Style, Length>;
+    export const borderTopRightRadiusProperty: CssProperty<Style, Length>;
+    export const borderBottomRightRadiusProperty: CssProperty<Style, Length>;
+    export const borderBottomLeftRadiusProperty: CssProperty<Style, Length>;
 
     export const zIndexProperty: CssProperty<Style, number>;
     export const visibilityProperty: CssProperty<Style, Visibility>;

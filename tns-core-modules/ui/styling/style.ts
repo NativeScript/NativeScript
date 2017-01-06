@@ -48,11 +48,11 @@ export class Style extends Observable implements StyleDefinition {
     public borderRightWidth: Length;
     public borderBottomWidth: Length;
     public borderLeftWidth: Length;
-    public borderRadius: string | number;
-    public borderTopLeftRadius: number;
-    public borderTopRightRadius: number;
-    public borderBottomRightRadius: number;
-    public borderBottomLeftRadius: number;
+    public borderRadius: string | Length;
+    public borderTopLeftRadius: Length;
+    public borderTopRightRadius: Length;
+    public borderBottomRightRadius: Length;
+    public borderBottomLeftRadius: Length;
 
     public fontSize: number;
     public fontFamily: string;

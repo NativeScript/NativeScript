@@ -267,38 +267,38 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.borderLeftWidth = value;
     }
 
-    get borderRadius(): string | number {
+    get borderRadius(): string | Length {
         return this.style.borderRadius;
     }
-    set borderRadius(value: string | number) {
+    set borderRadius(value: string | Length) {
         this.style.borderRadius = value;
     }
 
-    get borderTopLeftRadius(): number {
+    get borderTopLeftRadius(): Length {
         return this.style.borderTopLeftRadius;
     }
-    set borderTopLeftRadius(value: number) {
+    set borderTopLeftRadius(value: Length) {
         this.style.borderTopLeftRadius = value;
     }
 
-    get borderTopRightRadius(): number {
+    get borderTopRightRadius(): Length {
         return this.style.borderTopRightRadius;
     }
-    set borderTopRightRadius(value: number) {
+    set borderTopRightRadius(value: Length) {
         this.style.borderTopRightRadius = value;
     }
 
-    get borderBottomRightRadius(): number {
+    get borderBottomRightRadius(): Length {
         return this.style.borderBottomRightRadius;
     }
-    set borderBottomRightRadius(value: number) {
+    set borderBottomRightRadius(value: Length) {
         this.style.borderBottomRightRadius = value;
     }
 
-    get borderBottomLeftRadius(): number {
+    get borderBottomLeftRadius(): Length {
         return this.style.borderBottomLeftRadius;
     }
-    set borderBottomLeftRadius(value: number) {
+    set borderBottomLeftRadius(value: Length) {
         this.style.borderBottomLeftRadius = value;
     }
 
@@ -1566,14 +1566,6 @@ export const backgroundPositionProperty = new CssProperty<Style, string>({
 });
 backgroundPositionProperty.register(Style);
 
-function isNonNegativeFiniteNumberConverter(value: string): number {
-    let number = parseFloat(value);
-    if (!isNonNegativeFiniteNumber(number)) {
-        throw new Error("border-width should be Non-Negative Finite number.");
-    }
-    return number;
-}
-
 function parseBorderColor(value: string): { top: Color, right: Color, bottom: Color, left: Color } {
     let result: { top: Color, right: Color, bottom: Color, left: Color } = { top: undefined, right: undefined, bottom: undefined, left: undefined };
     if (value.indexOf("rgb") === 0) {
@@ -1789,7 +1781,7 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
 borderLeftWidthProperty.register(Style);
 
 // Border Radius properties.
-const borderRadiusProperty = new ShorthandProperty<Style, string | number>({
+const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
     name: "borderRadius", cssName: "border-radius",
     getter: function (this: Style) {
         if (this.borderTopLeftRadius === this.borderTopRightRadius &&
@@ -1821,35 +1813,51 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | number>({
 })
 borderRadiusProperty.register(Style);
 
-export const borderTopLeftRadiusProperty = new CssProperty<Style, number>({
+export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
     name: "borderTopLeftRadius", cssName: "border-top-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+        let value = Length.toDevicePixels(newValue, 0);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
+        }
         let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopLeftRadius(newValue);
-    }, valueConverter: isNonNegativeFiniteNumberConverter
+        target.backgroundInternal = background.withBorderTopLeftRadius(value);
+    }, valueConverter: Length.parse
 });
 borderTopLeftRadiusProperty.register(Style);
 
-export const borderTopRightRadiusProperty = new CssProperty<Style, number>({
+export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
     name: "borderTopRightRadius", cssName: "border-top-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+        let value = Length.toDevicePixels(newValue, 0);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
+        }
         let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopRightRadius(newValue);
-    }, valueConverter: isNonNegativeFiniteNumberConverter
+        target.backgroundInternal = background.withBorderTopRightRadius(value);
+    }, valueConverter: Length.parse
 });
 borderTopRightRadiusProperty.register(Style);
 
-export const borderBottomRightRadiusProperty = new CssProperty<Style, number>({
+export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
     name: "borderBottomRightRadius", cssName: "border-bottom-right-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+        let value = Length.toDevicePixels(newValue, 0);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
+        }
         let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomLeftRadius(newValue);
-    }, valueConverter: isNonNegativeFiniteNumberConverter
+        target.backgroundInternal = background.withBorderBottomRightRadius(value);
+    }, valueConverter: Length.parse
 });
 borderBottomRightRadiusProperty.register(Style);
 
-export const borderBottomLeftRadiusProperty = new CssProperty<Style, number>({
+export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
     name: "borderBottomLeftRadius", cssName: "border-bottom-left-radius", defaultValue: 0, affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+        let value = Length.toDevicePixels(newValue, 0);
+        if (!isNonNegativeFiniteNumber(value)) {
+            throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
+        }
         let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomRightRadius(newValue);
-    }, valueConverter: isNonNegativeFiniteNumberConverter
+        target.backgroundInternal = background.withBorderBottomLeftRadius(value);
+    }, valueConverter: Length.parse
 });
 borderBottomLeftRadiusProperty.register(Style);
 
