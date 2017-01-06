@@ -1,6 +1,7 @@
 ﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "ui/placeholder"
+import { View } from "ui/core/view"
 
-export class Placeholder extends PlaceholderDefinition {
+export class Placeholder extends View implements PlaceholderDefinition {
     public static creatingViewEvent = "creatingView";
 
     private _ios: UIView;
