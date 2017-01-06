@@ -110,11 +110,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 export const imageSourceProperty = new Property<ImageBase, ImageSource>({ name: "imageSource" });
 imageSourceProperty.register(ImageBase);
 
-function onSrcPropertyChanged(image: ImageBase, oldValue: string, newValue: string) {
-    image._createImageSourceFromSrc();
-};
-
-export const srcProperty = new Property<ImageBase, any>({ name: "src", valueChanged: onSrcPropertyChanged });
+export const srcProperty = new Property<ImageBase, any>({ name: "src"});
 srcProperty.register(ImageBase);
 
 export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "async" });
