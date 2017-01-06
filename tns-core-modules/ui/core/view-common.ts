@@ -1406,7 +1406,7 @@ function transformConverter(value: string): Object {
 }
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
-    let newTransform = value == unsetValue ? { "none": "none" } : transformConverter(value);
+    let newTransform = value === unsetValue ? { "none": "none" } : transformConverter(value);
     let array = [];
     let values: Array<string>;
     for (let transform in newTransform) {
@@ -1950,7 +1950,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
         return `${this.fontStyle} ${this.fontWeight} ${this.fontSize} ${this.fontFamily}`;
     },
     converter: function (value) {
-        if (value == unsetValue) {
+        if (value === unsetValue) {
             return [
                 [fontStyleProperty, unsetValue],
                 [fontWeightProperty, unsetValue],

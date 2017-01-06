@@ -59,17 +59,17 @@ var runTest = function (testInfo: TestInfoEntry) {
         }
 
         if (testInfo.isTest) {
-            duration = (time() - start).toFixed(2);
+            duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] OK, duration: ${duration}`, trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, trace.messageType.info);
             testInfo.isPassed = true;
         }
     }
     catch (e) {
         if (testInfo.isTest) {
-            duration = (time() - start).toFixed(2);
+            duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration.toFixed(2)}`, trace.messageType.error);
             testInfo.isPassed = false;
             testInfo.errorMessage = e.message;
         }

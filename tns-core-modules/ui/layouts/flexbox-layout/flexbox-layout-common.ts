@@ -316,7 +316,7 @@ const flexFlowProperty = new ShorthandProperty<Style, string>({
     },
     converter: function (value: string) {
         const properties: [CssProperty<any, any>, any][] = [];
-        if (value == unsetValue) {
+        if (value === unsetValue) {
             properties.push([flexDirectionProperty, value]);
             properties.push([flexWrapProperty, value]);
         } else {
@@ -344,7 +344,7 @@ const flexProperty = new ShorthandProperty<Style, string>({
     },
     converter: function (value: string) {
         const properties: [CssProperty<any, any>, any][] = [];
-        if (value == unsetValue) {
+        if (value === unsetValue) {
             properties.push([flexGrowProperty, value]);
             properties.push([flexShrinkProperty, value]);
         } else {

@@ -1,5 +1,5 @@
 import { ViewBase, resetStyleProperties } from "ui/core/view-base";
-import { SyntaxTree, Keyframes, parse as parseCss, Rule, Declaration, Node } from "css";
+import { SyntaxTree, Keyframes, parse as parseCss, Node } from "css";
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
 import { KeyframeAnimationInfo, KeyframeAnimation } from "ui/animation/keyframe-animation";
 import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
@@ -270,12 +270,6 @@ export function applyInlineStyle(view: ViewBase, style: string) {
     }
 }
 
-function isRule(node: Node): node is Rule {
-    return node.type === "rule";
-}
-function isDeclaration(node: Node): node is Declaration {
-    return node.type === "declaration";
-}
 function isKeyframe(node: Node): node is Keyframes {
     return node.type === "keyframes";
 }

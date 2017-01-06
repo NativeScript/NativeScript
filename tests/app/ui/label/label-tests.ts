@@ -20,8 +20,6 @@ import {isIOS} from "platform";
 import {Label} from "ui/label";
 import {LayoutBase} from  "ui/layouts/layout-base";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import {Page} from "ui/page";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
