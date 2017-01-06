@@ -65,7 +65,6 @@ export class Image extends ImageBase {
         }
 
         this._android = new org.nativescript.widgets.ImageView(this._context);
-        this._createImageSourceFromSrc();
     }
 
     public _setNativeImage(nativeImage: any) {
@@ -80,6 +79,8 @@ export class Image extends ImageBase {
 
     public _createImageSourceFromSrc() {
         let imageView = this._android;
+        this.imageSource = <any>unsetValue;
+
         if (!imageView || !this.src) {
             return;
         }
@@ -88,7 +89,6 @@ export class Image extends ImageBase {
         let async = this.loadMode === ASYNC;
         this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
 
-        this.imageSource = <any>unsetValue;
         if (typeof value === "string") {
             value = value.trim();
             this.isLoading = true;
