@@ -1,7 +1,7 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
 import {
     ContentView, View, backgroundColorProperty,
-    eachDescendant, Property, Color, isIOS, booleanConverter, resetStyleProperties
+    eachDescendant, Property, Color, isIOS, booleanConverter, resetCSSProperties
 } from "ui/content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
 import { ActionBar } from "ui/action-bar";
@@ -282,7 +282,7 @@ export class PageBase extends ContentView implements PageDefinition {
     private _resetCssValues() {
         const resetCssValuesFunc = (view: View): boolean => {
             view._cancelAllAnimations();
-            resetStyleProperties(view.style);
+            resetCSSProperties(view.style);
             return true;
         };
 

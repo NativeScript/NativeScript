@@ -256,6 +256,7 @@ declare module "ui/core/properties" {
 
     export function applyNativeSetters(view: ViewBase): void;
     export function resetStyleProperties(style: Style): void;
+    export function resetCSSProperties(style: Style): void;
 
     export function makeValidator<T>(...values: T[]): (value: any) => value is T;
     export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T;
