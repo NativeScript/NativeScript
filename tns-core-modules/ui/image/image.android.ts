@@ -1,5 +1,5 @@
 ﻿import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, unsetValue, Color,
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, unsetValue, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
 import { path, knownFolders } from "file-system";
@@ -38,7 +38,7 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
     }
 
     let params = new org.nativescript.widgets.image.Cache.CacheParams();
-    params.memoryCacheEnabled = mode !== CacheMode.none; 
+    params.memoryCacheEnabled = mode !== CacheMode.none;
     params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
     params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
     params.diskCacheSize = diskCacheSize;
@@ -65,7 +65,6 @@ export class Image extends ImageBase {
         }
 
         this._android = new org.nativescript.widgets.ImageView(this._context);
-        this._createImageSourceFromSrc();
     }
 
     public _setNativeImage(nativeImage: any) {
@@ -80,6 +79,8 @@ export class Image extends ImageBase {
 
     public _createImageSourceFromSrc() {
         let imageView = this._android;
+        this.imageSource = <any>unsetValue;
+
         if (!imageView || !this.src) {
             return;
         }
@@ -88,7 +89,6 @@ export class Image extends ImageBase {
         let async = this.loadMode === ASYNC;
         this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
 
-        this.imageSource = <any>unsetValue;
         if (typeof value === "string") {
             value = value.trim();
             this.isLoading = true;
@@ -156,6 +156,13 @@ export class Image extends ImageBase {
     }
     set [imageSourceProperty.native](value: ImageSource) {
         this._setNativeImage(value ? value.android : null);
+    }
+
+    get [srcProperty.native](): any {
+        return undefined;
+    }
+    set [srcProperty.native](value: any) {
+        this._createImageSourceFromSrc();
     }
 }
 

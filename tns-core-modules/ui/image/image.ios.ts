@@ -1,5 +1,5 @@
 import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, layout, Color,
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, tintColorProperty, srcProperty, layout, Color,
     traceEnabled, traceWrite, traceCategories
 } from "./image-common";
 
@@ -148,5 +148,12 @@ export class Image extends ImageBase {
     }
     set [imageSourceProperty.native](value: ImageSource) {
         this._setNativeImage(value ? value.ios : null);
+    }
+
+    get [srcProperty.native](): any {
+        return undefined;
+    }
+    set [srcProperty.native](value: any) {
+        this._createImageSourceFromSrc();
     }
 }
