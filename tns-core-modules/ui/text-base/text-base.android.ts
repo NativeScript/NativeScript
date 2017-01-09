@@ -10,6 +10,13 @@ export class TextBase extends TextBaseCommon {
     _transformationMethod: any;
     _nativeView: android.widget.TextView;
 
+    public _setFormattedTextPropertyToNative(value: FormattedString) {
+        if (this._nativeView) {
+            let newText = value ? value._formattedText : this.text;
+            this._nativeView.setText(newText);
+        }
+    }
+
     //Text
     get [textProperty.native](): string {
         return this._nativeView.getText();
@@ -55,10 +62,10 @@ export class TextBase extends TextBaseCommon {
         if (value instanceof Font) {
             // Set value
             textView.setTypeface(value.getAndroidTypeface());
-            if (value.fontSize !== undefined){
+            if (value.fontSize !== undefined) {
                 textView.setTextSize(value.fontSize);
             }
-        } 
+        }
         else {
             // Reset value
             textView.setTypeface(value.typeface);
@@ -93,7 +100,7 @@ export class TextBase extends TextBaseCommon {
                 this._nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
                 break;
             default:
-                throw new Error(`Invalid text alignment value: ${value}. Valid values are: "${TextAlignment.LEFT}", "${TextAlignment.CENTER}", "${TextAlignment.RIGHT}".`);                
+                throw new Error(`Invalid text alignment value: ${value}. Valid values are: "${TextAlignment.LEFT}", "${TextAlignment.CENTER}", "${TextAlignment.RIGHT}".`);
         }
     }
 
@@ -103,8 +110,8 @@ export class TextBase extends TextBaseCommon {
     }
     set [textDecorationProperty.native](value: TextDecoration) {
         let flags: number;
-        
-        switch(value){
+
+        switch (value) {
             case TextDecoration.NONE:
                 flags = 0;
                 break;
@@ -117,45 +124,23 @@ export class TextBase extends TextBaseCommon {
             case TextDecoration.UNDERLINE_LINE_THROUGH:
                 flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid text decoration value: ${value}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
         }
-        
+
         this._nativeView.setPaintFlags(flags);
     }
 
     //TextTransform
-    get [textTransformProperty.native](): TextTransform {
-        return TextTransform.NONE;
+    get [textTransformProperty.native](): android.text.method.TransformationMethod {
+        return this._nativeView.getTransformationMethod();
     }
-    set [textTransformProperty.native](value: TextTransform) {
-        this._setFormattedTextPropertyToNative(this.formattedText);
-    }
-
-    private _originalTransformationMethod: android.text.method.TransformationMethod;
-    public _setFormattedTextPropertyToNative(value: FormattedString) {
-        // TODO: Check if there is an option to force call the transformation method without
-        // creating new native instance.
-        if (!this._nativeView) {
-            return;
+    set [textTransformProperty.native](value: TextTransform | android.text.method.TransformationMethod) {
+        if (typeof value === "string") {
+            this._nativeView.setTransformationMethod(new TextTransformation(this.text, this.formattedText, value));
+        } else {
+            this._nativeView.setTransformationMethod(value);
         }
-        
-        if (!this._originalTransformationMethod) {
-            this._originalTransformationMethod = this.android.getTransformationMethod();
-        }
-
-        let newText = value ? value._formattedText : null;//newText is of type android.text.SpannableStringBuilder
-        if (newText) {
-            this._nativeView.setTransformationMethod(new TextTransformation(this.text, value, this.style.textTransform));
-        } 
-        else {
-            if (this._originalTransformationMethod) {
-                this.android.setTransformationMethod(this._originalTransformationMethod);
-                this._originalTransformationMethod = null;
-            }
-        }
-
-        this._nativeView.setText(newText);
     }
 
     //WhiteSpace
@@ -164,7 +149,7 @@ export class TextBase extends TextBaseCommon {
     }
     set [whiteSpaceProperty.native](value: WhiteSpace) {
         let nativeView = this._nativeView;
-        switch(value){
+        switch (value) {
             case WhiteSpace.NORMAL:
                 nativeView.setSingleLine(false);
                 nativeView.setEllipsize(null);
@@ -173,7 +158,7 @@ export class TextBase extends TextBaseCommon {
                 nativeView.setSingleLine(true);
                 nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
@@ -227,11 +212,14 @@ class TextTransformation extends android.text.method.ReplacementTransformationMe
 
     protected getOriginal(): native.Array<string> {
         let result: native.Array<string> = [];
-        if (this.formattedText) {
-            for(let i = 0, loopLength = this.formattedText._formattedText.length(); i < loopLength; i++) {
+        if (this.formattedText && this.formattedText._formattedText) {
+            for (let i = 0, loopLength = this.formattedText._formattedText.length(); i < loopLength; i++) {
                 result[i] = this.formattedText._formattedText.charAt(i);
             }
-            return result;
+        } else {
+            for (let i = 0, loopLength = this.originalText.length; i < loopLength; i++) {
+                result[i] = this.originalText.charAt(i);
+            }
         }
         return result;
     }
@@ -244,17 +232,17 @@ class TextTransformation extends android.text.method.ReplacementTransformationMe
                 let span = this.formattedText.spans.getItem(i);
                 stringResult += getTransformedText(span.text, textTransform);
             }
-        } 
+        }
         else {
             stringResult = getTransformedText(this.originalText, textTransform);
         }
-        return stringResult;        
+        return stringResult;
     }
-    
+
     protected getReplacement(): native.Array<string> {
         let transformedString = this._getTransformedString();
         let result: native.Array<string> = [];
-        for(let i = 0, length = transformedString.length; i < length; i++) {
+        for (let i = 0, length = transformedString.length; i < length; i++) {
             result[i] = transformedString.charAt(i);
         }
         return result;
@@ -287,6 +275,6 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
         case TextTransform.CAPITALIZE:
             return getCapitalizedString(text);
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}, "${TextTransform.LOWERCASE}".`);                
+            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}", "${TextTransform.LOWERCASE}".`);
     }
 }

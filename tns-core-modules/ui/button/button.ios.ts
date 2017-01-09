@@ -47,20 +47,20 @@ export class Button extends ButtonBase {
     }
 
     get [whiteSpaceProperty.native](): WhiteSpace {
-        return WhiteSpace.NORMAL;
+        return WhiteSpace.NO_WRAP;
     }
     set [whiteSpaceProperty.native](value: WhiteSpace) {
-        let nativeView = this.nativeView.titleLabel;
-        switch(value){
+        const nativeView = this.nativeView.titleLabel;
+        switch (value) {
             case WhiteSpace.NORMAL:
                 nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
                 nativeView.numberOfLines = 0;
                 break;
             case WhiteSpace.NO_WRAP:
-                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
+                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
                 nativeView.numberOfLines = 1;
                 break;
-            default: 
+            default:
                 throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }

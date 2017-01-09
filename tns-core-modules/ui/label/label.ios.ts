@@ -101,10 +101,10 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     get [whiteSpaceProperty.native](): WhiteSpace {
-        return WhiteSpace.NORMAL;
+        return WhiteSpace.NO_WRAP;
     }
     set [whiteSpaceProperty.native](value: WhiteSpace) {
-        let nativeView = this.nativeView;
+        const nativeView = this.nativeView;
         switch (value) {
             case WhiteSpace.NORMAL:
                 nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;

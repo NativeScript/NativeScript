@@ -13,7 +13,7 @@ import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
 import { fontSizeConverter } from "../styling/converters";
 
 // Only types:
-import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout"
+import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
 
 // TODO: Remove this and start using string as source (for android).
 import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
@@ -49,7 +49,7 @@ export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator 
             }
         }
         stateEventNames.forEach(s => target[s] = update);
-    }
+    };
 }
 
 export abstract class ViewCommon extends ViewBase implements ViewDefinition {
@@ -748,7 +748,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
-        return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom }
+        return { left: this._oldLeft, top: this._oldTop, right: this._oldRight, bottom: this._oldBottom };
     }
 
     /**
@@ -836,7 +836,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return {
             width: layout.toDeviceIndependentPixels(currentBounds.right - currentBounds.left),
             height: layout.toDeviceIndependentPixels(currentBounds.bottom - currentBounds.top),
-        }
+        };
     }
 
     public animate(animation: any): AnimationPromise {
@@ -877,11 +877,11 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     // }
 
     public _getValue(): never {
-        throw new Error("The View._setValue is obsolete. There is a new property system.")
+        throw new Error("The View._setValue is obsolete. There is a new property system.");
     }
 
     public _setValue(): never {
-        throw new Error("The View._setValue is obsolete. There is a new property system.")
+        throw new Error("The View._setValue is obsolete. There is a new property system.");
     }
 
     _updateEffectiveLayoutValues(parent: ViewDefinition): void {
@@ -892,7 +892,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let parentWidthMeasureMode = layout.getMeasureSpecMode(parentWidthMeasureSpec);
         let parentAvailableWidth = parentWidthMeasureMode === layout.UNSPECIFIED ? -1 : parentWidthMeasureSize;
 
-        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth)
+        this.effectiveWidth = PercentLength.toDevicePixels(style.width, -2, parentAvailableWidth);
         this.effectiveMarginLeft = PercentLength.toDevicePixels(style.marginLeft, 0, parentAvailableWidth);
         this.effectiveMarginRight = PercentLength.toDevicePixels(style.marginRight, 0, parentAvailableWidth);
 
@@ -951,6 +951,23 @@ function equalsCommon(a: PercentLength, b: PercentLength): boolean {
         return a.unit == "dip" && a.value == b; // tslint:disable-line
     }
     return a.value == b.value && a.unit == b.unit; // tslint:disable-line
+}
+
+function convertToStringCommon(length: Length | PercentLength): string {
+    if (length == "auto") { // tslint:disable-line
+        return "auto";
+    }
+
+    if (typeof length === "number") {
+        return length.toString();
+    }
+
+    let val = length.value;
+    if (length.unit === "%") {
+        val *= 100;
+    }
+
+    return val + length.unit;
 }
 
 function toDevicePixelsCommon(length: Length, auto: number): number;
@@ -1014,7 +1031,7 @@ export namespace PercentLength {
             return {
                 value: numberValue,
                 unit: type
-            }
+            };
         } else {
             return value;
         }
@@ -1022,6 +1039,7 @@ export namespace PercentLength {
 
     export const equals: { (a: PercentLength, b: PercentLength): boolean } = equalsCommon;
     export const toDevicePixels: { (length: PercentLength, auto: number, parentAvailableWidth: number): number } = toDevicePixelsCommon;
+    export const convertToString: { (length: PercentLength): string } = convertToStringCommon;
 }
 
 export type Length = "auto" | number | {
@@ -1053,13 +1071,14 @@ export namespace Length {
             return {
                 value: numberValue,
                 unit: type
-            }
+            };
         } else {
             return value;
         }
     }
     export const equals: { (a: Length, b: Length): boolean } = equalsCommon;
     export const toDevicePixels: { (length: Length, auto: number): number } = toDevicePixelsCommon;
+    export const convertToString: { (length: Length): string } = convertToStringCommon;
 }
 
 declare module "ui/core/view" {
@@ -1136,12 +1155,12 @@ heightProperty.register(Style);
 const marginProperty = new ShorthandProperty<Style, string | PercentLength>({
     name: "margin", cssName: "margin",
     getter: function (this: Style) {
-        if (this.marginTop === this.marginRight &&
-            this.marginTop === this.marginBottom &&
-            this.marginTop === this.marginLeft) {
+        if (PercentLength.equals(this.marginTop, this.marginRight) &&
+            PercentLength.equals(this.marginTop, this.marginBottom) &&
+            PercentLength.equals(this.marginTop, this.marginLeft)) {
             return this.marginTop;
         }
-        return `${this.marginTop} ${this.marginRight} ${this.marginBottom} ${this.marginLeft}`;
+        return `${PercentLength.convertToString(this.marginTop)} ${PercentLength.convertToString(this.marginRight)} ${PercentLength.convertToString(this.marginBottom)} ${PercentLength.convertToString(this.marginLeft)}`;
     },
     converter: convertToMargins
 });
@@ -1162,12 +1181,12 @@ marginBottomProperty.register(Style);
 const paddingProperty = new ShorthandProperty<Style, string | Length>({
     name: "padding", cssName: "padding",
     getter: function (this: Style) {
-        if (this.paddingTop === this.paddingRight &&
-            this.paddingTop === this.paddingBottom &&
-            this.paddingTop === this.paddingLeft) {
+        if (Length.equals(this.paddingTop, this.paddingRight) &&
+            Length.equals(this.paddingTop, this.paddingBottom) &&
+            Length.equals(this.paddingTop, this.paddingLeft)) {
             return this.paddingTop;
         }
-        return `${this.paddingTop} ${this.paddingRight} ${this.paddingBottom} ${this.paddingLeft}`;
+        return `${Length.convertToString(this.paddingTop)} ${Length.convertToString(this.paddingRight)} ${Length.convertToString(this.paddingBottom)} ${Length.convertToString(this.paddingLeft)}`;
     },
     converter: convertToPaddings
 });
@@ -1240,10 +1259,10 @@ export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignmen
 verticalAlignmentProperty.register(Style);
 
 interface Thickness {
-    top: string,
-    right: string,
-    bottom: string,
-    left: string
+    top: string;
+    right: string;
+    bottom: string;
+    left: string;
 }
 
 function parseThickness(value: string): Thickness {
@@ -1288,7 +1307,7 @@ function parseThickness(value: string): Thickness {
             right: right,
             bottom: bottom,
             left: left
-        }
+        };
     } else {
         return value;
     }
@@ -1480,7 +1499,7 @@ export const backgroundImageProperty = new CssProperty<Style, string>({
         let url: string = newValue;
         let isValid = false;
 
-        if (url === undefined){
+        if (url === undefined) {
             style.backgroundInternal = currentBackground.withImage(undefined);
             return;
         }
@@ -1621,7 +1640,7 @@ const borderColorProperty = new ShorthandProperty<Style, string | Color>({
         if (Color.equals(this.borderTopColor, this.borderRightColor) &&
             Color.equals(this.borderTopColor, this.borderBottomColor) &&
             Color.equals(this.borderTopColor, this.borderLeftColor)) {
-            return this.borderTopColor ? this.borderTopColor.toString() : "";
+            return this.borderTopColor;
         }
         else {
             return `${this.borderTopColor} ${this.borderRightColor} ${this.borderBottomColor} ${this.borderLeftColor}`;
@@ -1646,7 +1665,7 @@ const borderColorProperty = new ShorthandProperty<Style, string | Color>({
             ];
         }
     }
-})
+});
 borderColorProperty.register(Style);
 
 export const borderTopColorProperty = new CssProperty<Style, Color>({
@@ -1685,13 +1704,13 @@ borderLeftColorProperty.register(Style);
 const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
     name: "borderWidth", cssName: "border-width",
     getter: function (this: Style) {
-        if (this.borderTopWidth === this.borderRightWidth &&
-            this.borderTopWidth === this.borderBottomWidth &&
-            this.borderTopWidth === this.borderLeftWidth) {
+        if (Length.equals(this.borderTopWidth, this.borderRightWidth) &&
+            Length.equals(this.borderTopWidth, this.borderBottomWidth) &&
+            Length.equals(this.borderTopWidth, this.borderLeftWidth)) {
             return this.borderTopWidth;
         }
         else {
-            return `${this.borderTopWidth} ${this.borderRightWidth} ${this.borderBottomWidth} ${this.borderLeftWidth}`;
+            return `${Length.convertToString(this.borderTopWidth)} ${Length.convertToString(this.borderRightWidth)} ${Length.convertToString(this.borderBottomWidth)} ${Length.convertToString(this.borderLeftWidth)}`;
         }
     },
     converter: function (value) {
@@ -1713,7 +1732,7 @@ const borderWidthProperty = new ShorthandProperty<Style, string | Length>({
             ];
         }
     }
-})
+});
 borderWidthProperty.register(Style);
 
 export const borderTopWidthProperty = new CssProperty<Style, Length>({
@@ -1784,12 +1803,12 @@ borderLeftWidthProperty.register(Style);
 const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
     name: "borderRadius", cssName: "border-radius",
     getter: function (this: Style) {
-        if (this.borderTopLeftRadius === this.borderTopRightRadius &&
-            this.borderTopLeftRadius === this.borderBottomRightRadius &&
-            this.borderTopLeftRadius === this.borderBottomLeftRadius) {
+        if (Length.equals(this.borderTopLeftRadius, this.borderTopRightRadius) &&
+            Length.equals(this.borderTopLeftRadius, this.borderBottomRightRadius) &&
+            Length.equals(this.borderTopLeftRadius, this.borderBottomLeftRadius)) {
             return this.borderTopLeftRadius;
         }
-        return `${this.borderTopLeftRadius} ${this.borderTopRightRadius} ${this.borderBottomRightRadius} ${this.borderBottomLeftRadius}`;
+        return `${Length.convertToString(this.borderTopLeftRadius)} ${Length.convertToString(this.borderTopRightRadius)} ${Length.convertToString(this.borderBottomRightRadius)} ${Length.convertToString(this.borderBottomLeftRadius)}`;
     },
     converter: function (value) {
         if (typeof value === "string") {
@@ -1810,7 +1829,7 @@ const borderRadiusProperty = new ShorthandProperty<Style, string | Length>({
             ];
         }
     }
-})
+});
 borderRadiusProperty.register(Style);
 
 export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
@@ -1982,7 +2001,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
             ];
         }
     }
-})
+});
 fontProperty.register(Style);
 
 export type Visibility = "visible" | "hidden" | "collapse";
