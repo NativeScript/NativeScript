@@ -264,7 +264,12 @@ export function applyInlineStyle(view: ViewBase, style: string) {
         let inlineRuleSet = StyleScope.createSelectorsFromCss(localStyle, null, {});
         let inlineSelector = new InlineSelector(inlineRuleSet[0]);
         view.inlineStyleSelector = inlineSelector;
-        view._cssState.apply();
+        if (view._cssState) {
+            view._cssState.apply();
+        } else {
+            let styleScope = new StyleScope();
+            styleScope.applySelectors(view);
+        }
     } catch (ex) {
         traceWrite("Applying local style failed: " + ex, traceCategories.Error, traceMessageType.error);
     }
