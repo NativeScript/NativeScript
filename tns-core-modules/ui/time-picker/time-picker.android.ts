@@ -14,7 +14,7 @@ class TimeChangedListener extends java.lang.Object implements android.widget.Tim
         if (timePicker) {
             let validTime = getValidTime(timePicker, hour, minute);
             timePicker._setNativeValueSilently(validTime.hour, validTime.minute);
-            timePicker.nativePropertyChanged(timeProperty, new Date(0, 0, 0, validTime.hour, validTime.minute));
+            timeProperty.nativeValueChange(timePicker, new Date(0, 0, 0, validTime.hour, validTime.minute));
         }
     }
 }

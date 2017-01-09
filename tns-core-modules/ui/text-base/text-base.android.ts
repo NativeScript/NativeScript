@@ -22,11 +22,8 @@ export class TextBase extends TextBaseCommon {
         return this._nativeView.getText();
     }
     set [textProperty.native](value: string) {
-        if (value === null || value === undefined) {
-            value = "";
-        }
-
-        this._nativeView.setText(value);
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._nativeView.setText(text);
     }
 
     //FormattedText

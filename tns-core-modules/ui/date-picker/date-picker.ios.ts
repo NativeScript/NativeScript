@@ -115,22 +115,22 @@ class UIDatePickerChangeHandlerImpl extends NSObject {
 
         let dateChanged = false;
         if (comps.year !== owner.year) {
-            owner.nativePropertyChanged(yearProperty, comps.year);
+            yearProperty.nativeValueChange(owner, comps.year);
             dateChanged = true;
         }
 
         if (comps.month !== owner.month) {
-            owner.nativePropertyChanged(monthProperty, comps.month);
+            monthProperty.nativeValueChange(owner, comps.month);
             dateChanged = true;
         }
 
         if (comps.day !== owner.day) {
-            owner.nativePropertyChanged(dayProperty, comps.day);
+            dayProperty.nativeValueChange(owner, comps.day);
             dateChanged = true;
         }
 
         if (dateChanged) {
-            owner.nativePropertyChanged(dateProperty, new Date(comps.year, comps.month - 1, comps.day));
+            dateProperty.nativeValueChange(owner, new Date(comps.year, comps.month - 1, comps.day));
         }
     }
 

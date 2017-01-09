@@ -27,10 +27,10 @@ class ValueChangeListener extends java.lang.Object implements android.widget.Num
         return global.__native(this);
     }
 
-    onValueChange(picker: android.widget.NumberPicker, oldVal: number, newVal: number): void {
+    onValueChange(picker: android.widget.NumberPicker, oldValue: number, newValue: number): void {
         let owner = this.owner.get();
         if (owner) {
-            owner.nativePropertyChanged(selectedIndexProperty, newVal);
+            selectedIndexProperty.nativeValueChange(owner, newValue);
         }
     }
 }

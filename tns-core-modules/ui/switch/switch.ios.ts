@@ -17,7 +17,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     public valueChanged(sender: UISwitch) {
         let owner = this._owner.get();
         if (owner) {
-            owner.nativePropertyChanged(checkedProperty, sender.on);
+            checkedProperty.nativeValueChange(owner, sender.on);
         }
     }
 

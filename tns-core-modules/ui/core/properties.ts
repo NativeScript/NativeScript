@@ -2,6 +2,7 @@ import { unsetValue } from "ui/core/dependency-observable";
 import { WrappedValue } from "data/observable";
 import { ViewBase } from "./view-base";
 import { Style } from "ui/styling/style";
+import * as definitions from "ui/core/view-base";
 
 export { unsetValue, Style };
 
@@ -31,44 +32,21 @@ const enum ValueSource {
     Local = 3
 }
 
-export interface PropertyOptions<T, U> {
-    name: string;
-    defaultValue?: U;
-    affectsLayout?: boolean;
-    equalityComparer?(this: void, x: U, y: U): boolean;
-    valueChanged?(this: void, target: T, oldValue: U, newValue: U): void;
-    valueConverter?(this: void, value: string): U;
-}
-
-export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {
-    readonly coerceValue: (t: T, u: U) => U;
-}
-
-export interface ShorthandPropertyOptions<P> {
-    name: string;
-    cssName: string;
-    converter(this: void, value: string | P): [CssProperty<any, any>, any][];
-    getter(this: Style): string | P;
-}
-
-export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<T, U> {
-    cssName: string;
-}
-
-export class Property<T extends ViewBase, U> implements PropertyDescriptor {
+export class Property<T extends ViewBase, U> implements PropertyDescriptor, definitions.Property<T, U> {
     private registered: boolean;
     private readonly name: string;
     public readonly key: symbol;
     public readonly native: symbol;
     public readonly defaultValueKey: symbol;
     public readonly defaultValue: U;
+    public readonly nativeValueChange: (owner: T, value: U) => void;
 
     public get: () => U;
     public set: (value: U) => void;
     public enumerable: boolean = true;
     public configurable: boolean = true;
 
-    constructor(options: PropertyOptions<T, U>) {
+    constructor(options: definitions.PropertyOptions<T, U>) {
         const name = options.name;
         this.name = name;
 
@@ -85,12 +63,12 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
         this.defaultValue = defaultValue;
 
         const eventName = name + "Change";
-        const affectsLayout: boolean = options.affectsLayout;
         const equalityComparer = options.equalityComparer;
+        const affectsLayout: boolean = options.affectsLayout;
         const valueChanged = options.valueChanged;
         const valueConverter = options.valueConverter;
 
-        this.set = function (this: T, value: any): void {
+        this.set = function (this: T, value: U): void {
             const reset = value === unsetValue;
             let unboxedValue: U;
             let wrapped: boolean;
@@ -146,8 +124,32 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
             }
         }
 
-        this.get = function (): U {
+        this.get = function (this: T): U {
             return key in this ? this[key] : defaultValue;
+        }
+
+        this.nativeValueChange = function (owner: T, value: U): void {
+            const currentValue = key in owner ? owner[key] : defaultValue;
+            const changed = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
+            if (changed) {
+                owner[key] = value;
+                if (valueChanged) {
+                    valueChanged(owner, currentValue, value);
+                }
+
+                if (owner.hasListeners(eventName)) {
+                    owner.notify({
+                        eventName: eventName,
+                        propertyName: name,
+                        object: owner,
+                        value: value
+                    });
+                }
+
+                if (affectsLayout) {
+                    owner.requestLayout();
+                }
+            }
         }
 
         symbolPropertyMap[key] = this;
@@ -162,13 +164,14 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor {
     }
 }
 
-export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescriptor {
+export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescriptor, definitions.CoercibleProperty<T, U> {
     private registered: boolean;
     private readonly name: string;
     public readonly key: symbol;
     public readonly native: symbol;
     public readonly defaultValueKey: symbol;
     public readonly defaultValue: U;
+    public readonly nativeValueChange: (owner: T, value: U) => void;
 
     public readonly get: () => U;
     public readonly set: (value: U) => void;
@@ -177,7 +180,7 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
 
     public readonly coerce: (target: T) => void;
 
-    constructor(options: CoerciblePropertyOptions<T, U>) {
+    constructor(options: definitions.CoerciblePropertyOptions<T, U>) {
         const name = options.name;
         this.name = name;
 
@@ -272,6 +275,31 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
             return key in this ? this[key] : defaultValue;
         }
 
+        this.nativeValueChange = function (owner: T, value: U): void {
+            const currentValue = key in owner ? owner[key] : defaultValue;
+            const changed = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
+            if (changed) {
+                owner[key] = value;
+                owner[coerceKey] = value;
+                if (valueChanged) {
+                    valueChanged(owner, currentValue, value);
+                }
+
+                if (owner.hasListeners(eventName)) {
+                    owner.notify({
+                        eventName: eventName,
+                        propertyName: name,
+                        object: owner,
+                        value: value
+                    });
+                }
+
+                if (affectsLayout) {
+                    owner.requestLayout();
+                }
+            }
+        }
+
         symbolPropertyMap[key] = this;
     }
 
@@ -284,11 +312,11 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
     }
 }
 
-export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
+export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> implements definitions.InheritedProperty<T, U> {
     public readonly sourceKey: symbol;
     public readonly setInheritedValue: (value: U) => void;
 
-    constructor(options: PropertyOptions<T, U>) {
+    constructor(options: definitions.PropertyOptions<T, U>) {
         super(options);
         const name = options.name;
         const key = this.key;
@@ -369,7 +397,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
     }
 }
 
-export class CssProperty<T extends Style, U> {
+export class CssProperty<T extends Style, U> implements definitions.CssProperty<T, U> {
     private registered: boolean;
 
     public readonly name: string;
@@ -384,7 +412,7 @@ export class CssProperty<T extends Style, U> {
     public readonly defaultValueKey: symbol;
     public readonly defaultValue: U;
 
-    constructor(options: CssPropertyOptions<T, U>) {
+    constructor(options: definitions.CssPropertyOptions<T, U>) {
         const name = options.name;
         this.name = name;
 
@@ -559,10 +587,10 @@ export class CssProperty<T extends Style, U> {
     }
 }
 
-export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> {
+export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements definitions.InheritedCssProperty<T,U> {
     public setInheritedValue: (value: U) => void;
 
-    constructor(options: CssPropertyOptions<T, U>) {
+    constructor(options: definitions.CssPropertyOptions<T, U>) {
         super(options);
         const name = options.name;
 
@@ -684,7 +712,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
     }
 }
 
-export class ShorthandProperty<T extends Style, P> {
+export class ShorthandProperty<T extends Style, P> implements definitions.ShorthandProperty<T, P> {
     private registered: boolean;
 
     public readonly key: symbol;
@@ -697,7 +725,7 @@ export class ShorthandProperty<T extends Style, P> {
     public readonly native: symbol;
     public readonly sourceKey: symbol;
 
-    constructor(options: ShorthandPropertyOptions<P>) {
+    constructor(options: definitions.ShorthandPropertyOptions<P>) {
         const name = options.name;
         this.name = name;
 
@@ -712,7 +740,7 @@ export class ShorthandProperty<T extends Style, P> {
 
         const converter = options.converter;
 
-        function setLocalValue(this: T, value: string| P): void {
+        function setLocalValue(this: T, value: string | P): void {
             this[sourceKey] = ValueSource.Local;
             if (this[key] !== value) {
                 this[key] = value;

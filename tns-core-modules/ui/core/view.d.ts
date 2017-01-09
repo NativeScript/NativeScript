@@ -543,14 +543,8 @@ declare module "ui/core/view" {
         public eachChildView(callback: (view: View) => boolean): void;
 
         //@private
-        /**
-         * A property has changed on the native side directly - e.g. the user types in a TextField.
-         */
-        public nativePropertyChanged(property: Property<any, any>, newValue: any): void;
-        
         isLayoutRequired: boolean;
         _gestureObservers: any;
-        // _isInheritedChange(): boolean;
 
         _updateLayout(): void;
 

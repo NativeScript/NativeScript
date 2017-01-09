@@ -16,25 +16,25 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     private _owner: WeakRef<TextView>;
 
     public static initWithOwner(owner: WeakRef<TextView>): UITextViewDelegateImpl {
-        let impl = <UITextViewDelegateImpl>UITextViewDelegateImpl.new();
+        const impl = <UITextViewDelegateImpl>UITextViewDelegateImpl.new();
         impl._owner = owner;
         return impl;
     }
 
     public textViewShouldBeginEditing(textView: UITextView): boolean {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
-            owner._hideHint();
+            owner.showText();
         }
 
         return true;
     }
 
     public textViewDidEndEditing(textView: UITextView) {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             if (owner.updateTextTrigger === "focusLost") {
-                owner.nativePropertyChanged(textProperty, textView.text);
+                textProperty.nativeValueChange(owner, textView.text);
             }
 
             owner.dismissSoftInput();
@@ -44,24 +44,20 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
                 owner.formattedText.createFormattedStringCore();
 
             }
-
-            // //RemoveThisDoubleCall
-            // owner.style._updateTextDecoration();
-            // owner.style._updateTextTransform();
         }
     }
 
     public textViewDidChange(textView: UITextView) {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             if (owner.updateTextTrigger === "textChanged") {
-                owner.nativePropertyChanged(textProperty, textView.text);
+                textProperty.nativeValueChange(owner, textView.text);
             }
         }
     }
 
     public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner && owner.formattedText) {
             owner.formattedText._updateCharactersInRangeReplacementString(range.location, range.length, replacementString);
         }
@@ -104,32 +100,29 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     public _refreshHintState(hint: string, text: string) {
-        if (hint && !text) {
-            this._showHint(hint);
-        }
-        else {
-            this._hideHint();
+        if (text !== null && text !== undefined && text !== '') {
+            this.showText();
+        } else if (hint !== null && hint !== undefined && hint !== '') {
+            this.showHint(hint);
+        } else {
+            this._isShowingHint = false;
+            this.nativeView.text = '';
         }
     }
 
-    public _showHint(hint: string) {
-        let nativeView = this.nativeView;
+    public showHint(hint: string) {
+        const nativeView = this.nativeView;
         nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
-        let hintAsString = hint + "";
-        if (hint === null || hint === void 0) {
-            hintAsString = "";
-        }
+        const hintAsString: string = (hint === null || hint === undefined) ? '' : hint.toString();
         nativeView.text = hintAsString;
         this._isShowingHint = true;
     }
 
-    public _hideHint() {
-        let nativeView = this.nativeView;
+    public showText() {
+        const nativeView = this.nativeView;
         nativeView.textColor = this.color ? this.color.ios : null;
-        let textAsString = this.text + "";
-        if (this.text === null || this.text === void 0) {
-            textAsString = "";
-        }
+        const text = this.text;
+        const textAsString = (text === null || text === undefined) ? '' : text.toString();
         nativeView.text = textAsString;
         this._isShowingHint = false;
     }
