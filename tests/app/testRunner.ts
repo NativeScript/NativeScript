@@ -93,7 +93,7 @@ allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
 // allTests["HTML-VIEW"] = require("./ui/html-view/html-view-tests");
 // allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 // allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
-// allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
+allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
 // allTests["ANIMATION"] = require("./ui/animation/animation-tests");
 // allTests["CSS-ANIMATION"] = require("./ui/animation/css-animation-tests");
 
