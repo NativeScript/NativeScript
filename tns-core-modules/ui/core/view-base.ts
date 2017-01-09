@@ -374,20 +374,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    // public _setCore(data: PropertyChangeData) {
-    //     super._setCore(data);
-    //     this._updateTwoWayBinding(data.propertyName, data.value);
-    // }
-
-    public nativePropertyChanged(property: Property<ViewBase, any>, newValue: any): void {
-        if (this._updatingJSPropertiesDict[property.native]) {
-            return;
-        }
-        this._updatingJSPropertiesDict[property.native] = true;
-        property.set.call(this, newValue);
-        delete this._updatingJSPropertiesDict[property.native];
-    }
-
     public requestLayout(): void {
         //
     }

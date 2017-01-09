@@ -22,7 +22,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
             return;
         }
 
-        owner.nativePropertyChanged(textProperty, searchText);
+        textProperty.nativeValueChange(owner, searchText);
 
         // This code is needed since sometimes searchBarCancelButtonClicked is not called!
         if (searchText === "") {
@@ -143,19 +143,23 @@ export class SearchBar extends SearchBarBase {
     }
 
     get [textProperty.native](): string {
-        return "";
+        return '';
     }
     set [textProperty.native](value: string) {
-        this._ios.text = value;
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._ios.text = text;
     }
+
     get [hintProperty.native](): string {
-        return "";
+        return '';
     }
     set [hintProperty.native](value: string) {
-        this._ios.placeholder = value;
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._ios.placeholder = text;
     }
+
     get [textFieldBackgroundColorProperty.native](): UIColor {
-        let textField = this._textField;
+        const textField = this._textField;
         if (textField) {
             return textField.backgroundColor;
         }
@@ -163,14 +167,15 @@ export class SearchBar extends SearchBarBase {
         return null;
     }
     set [textFieldBackgroundColorProperty.native](value: Color | UIColor) {
-        let color = value instanceof Color ? value.ios : value
-        let textField = this._textField;
+        const color = value instanceof Color ? value.ios : value
+        const textField = this._textField;
         if (textField) {
             textField.backgroundColor = color;
         }
     }
+
     get [textFieldHintColorProperty.native](): UIColor {
-        let placeholderLabel = this._placeholderLabel;
+        const placeholderLabel = this._placeholderLabel;
         if (placeholderLabel) {
             return placeholderLabel.textColor;
         }
@@ -178,8 +183,8 @@ export class SearchBar extends SearchBarBase {
         return null;
     }
     set [textFieldHintColorProperty.native](value: Color | UIColor) {
-        let color = value instanceof Color ? value.ios : value
-        let placeholderLabel = this._placeholderLabel;
+        const color = value instanceof Color ? value.ios : value
+        const placeholderLabel = this._placeholderLabel;
         if (placeholderLabel) {
             placeholderLabel.textColor = color;
         }

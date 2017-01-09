@@ -17,14 +17,14 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     private firstEdit: boolean;
 
     public static initWithOwner(owner: WeakRef<TextField>): UITextFieldDelegateImpl {
-        let delegate = <UITextFieldDelegateImpl>UITextFieldDelegateImpl.new();
+        const delegate = <UITextFieldDelegateImpl>UITextFieldDelegateImpl.new();
         delegate._owner = owner;
         return delegate;
     }
 
     public textFieldShouldBeginEditing(textField: UITextField): boolean {
         this.firstEdit = true;
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             return owner.editable;
         }
@@ -33,10 +33,10 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     }
 
     public textFieldDidEndEditing(textField: UITextField) {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             if (owner.updateTextTrigger === "focusLost") {
-                owner.nativePropertyChanged(textProperty, textField.text);
+                textProperty.nativeValueChange(owner, textField.text);
             }
 
             owner.dismissSoftInput();
@@ -49,9 +49,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
     public textFieldShouldClear(textField: UITextField) {
         this.firstEdit = false;
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
-            owner.nativePropertyChanged(textProperty, "");
+            textProperty.nativeValueChange(owner,  '');
         }
 
         return true;
@@ -59,25 +59,26 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
     public textFieldShouldReturn(textField: UITextField): boolean {
         // Called when the user presses the return button.
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             owner.dismissSoftInput();
             owner.notify({ eventName: TextField.returnPressEvent, object: owner });
         }
+
         return true;
     }
 
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
-        let owner = this._owner.get();
+        const owner = this._owner.get();
         if (owner) {
             if (owner.updateTextTrigger === "textChanged") {
                 if (textField.secureTextEntry && this.firstEdit) {
-                    owner.nativePropertyChanged(textProperty, replacementString);
+                    textProperty.nativeValueChange(owner,  replacementString);
                 }
                 else {
                     if (range.location <= textField.text.length) {
-                        let newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-                        owner.nativePropertyChanged(textProperty, newText);
+                        const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
+                        textProperty.nativeValueChange(owner,  newText);
                     }
                 }
             }
@@ -97,19 +98,19 @@ class UITextFieldImpl extends UITextField {
     private _owner: WeakRef<TextField>;
 
     public static initWithOwner(owner: WeakRef<TextField>): UITextFieldImpl {
-        let handler = <UITextFieldImpl>UITextFieldImpl.new();
+        const handler = <UITextFieldImpl>UITextFieldImpl.new();
         handler._owner = owner;
         return handler;
     }
 
     private _getTextRectForBounds(bounds: CGRect): CGRect {
-        let owner = this._owner ? this._owner.get() : null;
+        const owner = this._owner ? this._owner.get() : null;
 
         if (!owner) {
             return bounds;
         }
 
-        let size = bounds.size;
+        const size = bounds.size;
         return CGRectMake(owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft, owner.effectiveBorderTopWidth + owner.effectivePaddingTop,
             size.width - (owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft + owner.effectivePaddingRight + owner.effectiveBorderRightWidth),
             size.height - (owner.effectiveBorderTopWidth + owner.effectivePaddingTop + owner.effectivePaddingBottom + owner.effectiveBorderBottomWidth)

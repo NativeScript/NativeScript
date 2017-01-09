@@ -94,7 +94,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     public onFormattedTextChanged(data: PropertyChangeData) {
         let value = data.value;
         this._setFormattedTextPropertyToNative(value);
-        this.nativePropertyChanged(textProperty, value.toString());
+        textProperty.nativeValueChange(this, value.toString());
     }
 
     public _addChildFromBuilder(name: string, value: any): void {

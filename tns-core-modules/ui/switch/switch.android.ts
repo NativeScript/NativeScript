@@ -14,7 +14,7 @@ class CheckedChangeListener extends java.lang.Object implements android.widget.C
     onCheckedChanged(buttonView: android.widget.CompoundButton, isChecked: boolean): void {
         let owner = this.owner.get();
         if (owner) {
-            owner.nativePropertyChanged(checkedProperty, isChecked);
+            checkedProperty.nativeValueChange(owner, isChecked);
         }
     }
 }

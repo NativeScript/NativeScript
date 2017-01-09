@@ -19,7 +19,7 @@ class QueryTextListener extends java.lang.Object implements android.widget.Searc
     onQueryTextChange(newText: string): boolean {
         let owner = this.owner.get();
         if (owner) {
-            owner.nativePropertyChanged(textProperty, newText);
+            textProperty.nativeValueChange(owner, newText);
 
             // This code is needed since sometimes OnCloseListener is not called!
             if (newText === "" && this[SEARCHTEXT] !== newText) {
@@ -163,13 +163,15 @@ export class SearchBar extends SearchBarBase {
         return "";
     }
     set [textProperty.native](value: string) {
-        this._android.setQuery(value, false);
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._android.setQuery(text, false);
     }
     get [hintProperty.native](): string {
         return "";
     }
     set [hintProperty.native](value: string) {
-        this._android.setQueryHint(value);
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._android.setQueryHint(text);
     }
     get [textFieldBackgroundColorProperty.native](): number {
         let textView = this._getTextView();

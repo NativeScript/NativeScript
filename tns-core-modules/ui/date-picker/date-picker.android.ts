@@ -20,22 +20,22 @@ class DateChangedListener extends java.lang.Object implements android.widget.Dat
 
         let dateIsChanged = false;
         if (year !== owner.year) {
-            owner.nativePropertyChanged(yearProperty, year);
+            yearProperty.nativeValueChange(owner, year);
             dateIsChanged = true;
         }
 
         if ((month + 1) !== owner.month) {
-            owner.nativePropertyChanged(monthProperty, month + 1);
+            monthProperty.nativeValueChange(owner, month + 1);
             dateIsChanged = true;
         }
 
         if (day !== owner.day) {
-            owner.nativePropertyChanged(dayProperty, day);
+            dayProperty.nativeValueChange(owner, day);
             dateIsChanged = true;
         }
 
         if (dateIsChanged) {
-            owner.nativePropertyChanged(dateProperty, new Date(year, month, day));
+            dateProperty.nativeValueChange(owner, new Date(year, month, day));
         }
     }
 }

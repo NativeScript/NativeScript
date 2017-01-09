@@ -21,7 +21,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
     set [textProperty.native](value: string) {
-        let newValue = (typeof value === "undefined") || (value === null) ? "" : value + "";
+        let newValue = (value === undefined || value === null) ? '' : value.toString();
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             nativeView.setTitleForState(newValue, UIControlState.Normal);

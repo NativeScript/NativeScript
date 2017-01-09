@@ -209,6 +209,7 @@ declare module "ui/core/properties" {
         public readonly native: symbol;
         public readonly defaultValue: U;
         public register(cls: { prototype: T }): void;
+        public nativeValueChange(T, U): void;
     }
 
     export class CoercibleProperty<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
@@ -218,6 +219,7 @@ declare module "ui/core/properties" {
         public readonly defaultValue: U;
         public readonly coerce: (target: T) => void;
         public register(cls: { prototype: T }): void;
+        public nativeValueChange(T, U): void;
     }
 
     export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {

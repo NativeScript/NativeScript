@@ -18,7 +18,7 @@ class SeekBarChangeListener extends java.lang.Object implements android.widget.S
         if (owner) {
             if (!owner._supressNativeValue) {
                 let newValue: number = seekBar.getProgress() + owner.minValue;
-                owner.nativePropertyChanged(valueProperty, newValue);
+                valueProperty.nativeValueChange(owner, newValue);
             }
         }
     }

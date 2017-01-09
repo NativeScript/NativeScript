@@ -19,7 +19,7 @@ class SliderChangeHandlerImpl extends NSObject {
     public sliderValueChanged(sender: UISlider) {
         let owner = this._owner.get();
         if (owner) {
-            owner.nativePropertyChanged(valueProperty, sender.value);
+            valueProperty.nativeValueChange(owner, sender.value);
         }
     }
 

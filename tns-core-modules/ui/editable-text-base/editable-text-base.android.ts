@@ -47,7 +47,7 @@ class TextWatcher extends java.lang.Object implements android.text.TextWatcher {
                 owner._dirtyTextAccumulator = editable.toString();
                 break;
             case "textChanged":
-                owner.nativePropertyChanged(textProperty, editable.toString());
+                textProperty.nativeValueChange(owner, editable.toString());
                 break;
             default:
                 throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
@@ -81,7 +81,7 @@ class FocusChangeListener extends java.lang.Object implements android.view.View.
         }
         else {
             if (owner._dirtyTextAccumulator) {
-                owner.nativePropertyChanged(textProperty, owner._dirtyTextAccumulator);
+                textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
                 owner._dirtyTextAccumulator = undefined;
             }
 
@@ -220,13 +220,8 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return this._android.getText();
     }
     set [textProperty.native](value: string) {
-        let newValue;
-        if (value === null || value === void 0) {
-            newValue = "";
-        } else {
-            newValue = value + "";
-        }
-        this._android.setText(newValue, android.widget.TextView.BufferType.EDITABLE);
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._android.setText(text, android.widget.TextView.BufferType.EDITABLE);
     }
 
     get [keyboardTypeProperty.native](): "datetime" | "phone" | "number" | "url" | "email" | string {

@@ -107,7 +107,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
     public pickerViewDidSelectRowInComponent(pickerView: UIPickerView, row: number, component: number): void {
         let owner = this._owner.get();
         if (owner) {
-            owner.nativePropertyChanged(selectedIndexProperty, row);
+            selectedIndexProperty.nativeValueChange(owner, row);
         }
     }
 }
