@@ -923,7 +923,6 @@ export function propagateInheritedProperties(view: ViewBase): void {
             if (currentValueSource <= ValueSource.Inherited) {
                 prop.setInheritedValue.call(child, pair.value);
             }
-            return true;
         }
 
         for (let pair of inheritableCssPropertyValues) {
@@ -934,8 +933,8 @@ export function propagateInheritedProperties(view: ViewBase): void {
             if (currentValueSource <= ValueSource.Inherited) {
                 prop.setInheritedValue.call(style, pair.value, ValueSource.Inherited);
             }
-            return true;
         }
+        return true;
     });
 }
 

@@ -48,6 +48,14 @@ function setBackground(view: android.view.View, background: android.graphics.dra
 export class SegmentedBarItem extends SegmentedBarItemBase {
     private _textView: android.widget.TextView;
 
+    get nativeView(): android.widget.TextView {
+        return this._textView;
+    }
+
+    get android(): android.widget.TextView {
+        return this._textView;
+    }
+
     public setNativeView(textView: android.widget.TextView): void {
         this._textView = textView;
         if (textView) {
@@ -84,7 +92,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         return this._textView.getCurrentTextColor();
     }
     set [colorProperty.native](value: Color | number) {
-        let color = typeof value === "Color" ? value.android : value;
+        let color = value instanceof Color ? value.android : value;
         this._textView.setTextColor(color);
     }
 
@@ -148,7 +156,7 @@ class TabChangeListener extends java.lang.Object implements android.widget.TabHo
 
     onTabChanged(id: string): void {
         let owner = this.owner.get();
-        if (owner) {
+        if (owner && owner.shouldChangeSelectedIndex()) {
             owner.selectedIndex = parseInt(id);
         }
     }
@@ -185,6 +193,11 @@ export class SegmentedBar extends SegmentedBarBase {
     private _android: android.widget.TabHost;
     private listener: android.widget.TabHost.OnTabChangeListener;
     private tabContentFactory: android.widget.TabHost.TabContentFactory;
+    private _addingTab: boolean;
+
+    public shouldChangeSelectedIndex(): boolean {
+        return !this._addingTab;
+    }
 
     public _createNativeView() {
         ensureTabHostClass();
@@ -210,6 +223,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
         this._android.addView(tabHostLayout);
         this._android.setup();
+        this._android.setOnTabChangedListener(this.listener);
     }
 
     get android(): android.widget.TabHost {
@@ -222,16 +236,10 @@ export class SegmentedBar extends SegmentedBarBase {
         tab.setContent(this.tabContentFactory);
 
         let tabHost = this.android;
+        this._addingTab = true;
         tabHost.addTab(tab);
-
-        // TODO: Why do we need to call this for every added tab?
-        // this.resetNativeListener();
+        this._addingTab = false;
     }
-
-    // private resetNativeListener() {
-    //     this.android.setOnTabChangedListener(null);
-    //     this.android.setOnTabChangedListener(this.listener);
-    // }
 
     get [selectedIndexProperty.native](): number {
         return -1;
