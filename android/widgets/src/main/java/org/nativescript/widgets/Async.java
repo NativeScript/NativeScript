@@ -22,13 +22,59 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.util.Base64;
 
 import java.net.CookieManager;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Async
 {
+	static class PriorityThreadFactory implements ThreadFactory {
+		private final int mThreadPriority;
+
+		public PriorityThreadFactory(int threadPriority) {
+			mThreadPriority = threadPriority;
+		}
+
+		@Override
+		public Thread newThread(final Runnable runnable) {
+			Runnable wrapperRunnable = new Runnable() {
+				@Override
+				public void run() {
+					try {
+						android.os.Process.setThreadPriority(mThreadPriority);
+					} catch (Throwable t) {
+
+					}
+					runnable.run();
+				}
+			};
+			return new Thread(wrapperRunnable);
+		}
+	}
+
+	static ThreadPoolExecutor executor = null;
+	static ThreadPoolExecutor threadPoolExecutor(){
+		if(executor == null) {
+			int NUMBER_OF_CORES = Runtime.getRuntime().availableProcessors();
+			ThreadFactory backgroundPriorityThreadFactory = new PriorityThreadFactory(android.os.Process.THREAD_PRIORITY_BACKGROUND);
+
+			executor = new ThreadPoolExecutor(
+					NUMBER_OF_CORES * 2,
+					NUMBER_OF_CORES * 2,
+					60L,
+					TimeUnit.SECONDS,
+					new LinkedBlockingQueue<Runnable>(),
+					backgroundPriorityThreadFactory
+			);
+		}
+
+		return executor;
+	}
+
 	public interface CompleteCallback {
 		void onComplete(Object result, Object tag);
 	}
@@ -40,23 +86,75 @@ public class Async
 		* we use this id to detect the initial request, which result is currently received in the complete callback.
 		* When the async task completes it will pass back this id to JavaScript.
 		*/
-		public static void fromResource(String name, Context context, int requestId, CompleteCallback callback) {
-			new LoadImageFromResourceTask(context, requestId, callback).execute(name);
+		public static void fromResource(final String name, final Context context, final int requestId, final CompleteCallback callback) {
+			final android.os.Handler mHandler = new android.os.Handler();
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run() {
+					final LoadImageFromResourceTask task = new LoadImageFromResourceTask(context, requestId, callback);
+					final Bitmap result = task.doInBackground(name);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run() {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
 		}
 
-		public static void fromFile(String fileName, int requestId, CompleteCallback callback) {
-			new LoadImageFromFileTask(requestId, callback).execute(fileName);
+		public static void fromFile(final String fileName, final int requestId, final CompleteCallback callback) {
+			final android.os.Handler mHandler = new android.os.Handler();
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run () {
+					final LoadImageFromFileTask task = new LoadImageFromFileTask(requestId, callback);
+					final Bitmap result = task.doInBackground(fileName);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run () {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
 		}
 
-		public static void fromBase64(String source, int requestId, CompleteCallback callback) {
-			new LoadImageFromBase64StringTask(requestId, callback).execute(source);
+		public static void fromBase64(final String source, final int requestId, final CompleteCallback callback) {
+			final android.os.Handler mHandler = new android.os.Handler();
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run () {
+					final LoadImageFromBase64StringTask task = new LoadImageFromBase64StringTask(requestId, callback);
+					final Bitmap result = task.doInBackground(source);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run () {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
 		}
 
-		public static void download(String url, CompleteCallback callback, Object context) {
-			new DownloadImageTask(callback, context).execute(url);
+		public static void download(final String url, final CompleteCallback callback, final Object context) {
+			final android.os.Handler mHandler = new android.os.Handler();
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run () {
+					final DownloadImageTask task = new DownloadImageTask(callback, context);
+					final Bitmap result = task.doInBackground(url);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run () {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
 		}
 
-		static class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+		static class DownloadImageTask {
 			private CompleteCallback callback;
 			private Object context;
 
@@ -93,7 +191,7 @@ public class Async
 			}
 		}
 
-		static class LoadImageFromResourceTask extends AsyncTask<String, Void, Bitmap> {
+		static class LoadImageFromResourceTask {
 			private CompleteCallback callback;
 			private Context context;
 			private int requestId;
@@ -122,7 +220,7 @@ public class Async
 			}
 		}
 
-		static class LoadImageFromFileTask extends AsyncTask<String, Void, Bitmap> {
+		static class LoadImageFromFileTask {
 			private CompleteCallback callback;
 			private int requestId;
 
@@ -141,7 +239,7 @@ public class Async
 			}
 		}
 
-		static class LoadImageFromBase64StringTask extends AsyncTask<String, Void, Bitmap> {
+		static class LoadImageFromBase64StringTask {
 			private CompleteCallback callback;
 			private int requestId;
 
@@ -365,7 +463,7 @@ public class Async
 			}
 		}
 
-		public static void MakeRequest(RequestOptions options, CompleteCallback callback, Object context)
+		public static void MakeRequest(final RequestOptions options, final CompleteCallback callback, final Object context)
 		{
 			if (cookieManager == null)
 			{
@@ -373,10 +471,23 @@ public class Async
 				CookieHandler.setDefault(cookieManager);
 			}
 
-			new HttpRequestTask(callback, context).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, options);
+			final android.os.Handler mHandler = new android.os.Handler();
+			threadPoolExecutor().execute(new Runnable() {
+				@Override
+				public void run () {
+					final HttpRequestTask task = new HttpRequestTask(callback, context);
+					final RequestResult result = task.doInBackground(options);
+					mHandler.post(new Runnable() {
+						@Override
+						public void run () {
+							task.onPostExecute(result);
+						}
+					});
+				}
+			});
 		}
 
-		static class HttpRequestTask extends AsyncTask<RequestOptions, Void, RequestResult>
+		static class HttpRequestTask
 		{
 			private CompleteCallback callback;
 			private Object context;
@@ -387,7 +498,6 @@ public class Async
 				this.context = context;
 			}
 
-			@Override
 			protected RequestResult doInBackground(RequestOptions... params)
 			{
 				RequestResult result = new RequestResult();
