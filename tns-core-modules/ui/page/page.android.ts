@@ -183,7 +183,7 @@ export class Page extends PageBase {
             return {
                 color: (<any>window).getStatusBarColor(),
                 systemUiVisibility: decorView.getSystemUiVisibility()
-            }
+            };
         }
 
         return null;

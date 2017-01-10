@@ -685,7 +685,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
             let style = child.style;
             let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
-            let verticalMargins = child.effectiveMarginTop + child.effectiveMarginRight;
+            let verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
 
             let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === HorizontalAlignment.STRETCH);
             let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, child.effectiveHeight, style.verticalAlignment === VerticalAlignment.STRETCH);

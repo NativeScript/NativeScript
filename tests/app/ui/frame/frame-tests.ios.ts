@@ -1,8 +1,7 @@
 import * as frameModule from "ui/frame";
 import * as TKUnit from "../../TKUnit";
+import * as uiUtils from "ui/utils";
 import { PercentLength, unsetValue } from "ui/core/view";
-
-var uiUtils = require("ui/utils");
 
 export function test_percent_width_and_height_set_to_page_support() {
     let topFrame = frameModule.topmost();
@@ -33,31 +32,49 @@ export function test_percent_width_and_height_set_to_page_support() {
 }
 
 export function test_percent_margin_set_to_page_support() {
-    let topFrame = frameModule.topmost();
-    let currentPage = topFrame.currentPage;
+    percent_margin_set_to_page_support(false);
+}
+
+export function test_percent_margin_set_to_page_support_with_backgroundSpanUnderStatusBar() {
+    percent_margin_set_to_page_support(true);
+}
+
+function percent_margin_set_to_page_support(backgroundSpanUnderStatusBar: boolean) {
+    const topFrame = frameModule.topmost();
+    const currentPage = topFrame.currentPage;
+
+    const topFrameWidth = topFrame.getMeasuredWidth();
+    const topFrameHeight = topFrame.getMeasuredHeight();
+    const statusBar = backgroundSpanUnderStatusBar ? 0 : uiUtils.ios.getStatusBarHeight();
+
     currentPage.margin = "10%";
+    currentPage.backgroundSpanUnderStatusBar = backgroundSpanUnderStatusBar;
 
     TKUnit.waitUntilReady(() => {
         return currentPage.isLayoutValid;
     }, 1);
 
-    let topFrameWidth = topFrame.getMeasuredWidth();
-    let topFrameHeight = topFrame.getMeasuredHeight();
+    const currentPageWidth = currentPage.getMeasuredWidth();
+    const currentPageHeight = currentPage.getMeasuredHeight();
+    const marginWidth = Math.round(topFrameWidth * 0.1);
+    const marginHeight = Math.round((topFrameHeight - statusBar) * 0.1);
 
-    let currentPageWidth = currentPage.getMeasuredWidth();
-    let currentPageHeight = currentPage.getMeasuredHeight()
+    // expected page size
+    TKUnit.assertEqual(currentPageWidth, topFrameWidth - 2 * marginWidth, "Page measure width");
+    TKUnit.assertEqual(currentPageHeight, topFrameHeight - 2 * marginHeight - statusBar, "Page measure height");
 
-    let marginLeft = topFrameWidth * 0.1;
-    let marginTop = topFrameHeight * 0.1 + uiUtils.ios.getStatusBarHeight();
-
-    let bounds = currentPage._getCurrentLayoutBounds();
-    TKUnit.assertEqual(bounds.left, Math.round(marginLeft), "Current page LEFT position incorrect");
-    TKUnit.assertEqual(bounds.top, Math.round(marginTop), "Current page  TOP position incorrect");
-    TKUnit.assertEqual(bounds.right, Math.round(marginLeft + currentPageWidth), "Current page  RIGHT position incorrect");
-    TKUnit.assertEqual(bounds.bottom, Math.round(marginTop + currentPageHeight), "Current page  BOTTOM position incorrect");
+    // expected page bounds
+    const bounds = currentPage._getCurrentLayoutBounds();
+    TKUnit.assertEqual(bounds.left, Math.round(marginWidth), "Current page LEFT position incorrect");
+    TKUnit.assertEqual(bounds.top, Math.round(marginHeight + statusBar), "Current page TOP position incorrect");
+    TKUnit.assertEqual(bounds.right, Math.round(marginWidth + currentPageWidth), "Current page RIGHT position incorrect");
+    TKUnit.assertEqual(bounds.bottom, Math.round(marginHeight + statusBar + currentPageHeight), "Current page BOTTOM position incorrect");
 
     //reset values.
     currentPage.margin = "0";
+    TKUnit.waitUntilReady(() => {
+        return currentPage.isLayoutValid;
+    }, 1);
 
     TKUnit.assertTrue(PercentLength.equals(currentPage.marginLeft, 0));
     TKUnit.assertTrue(PercentLength.equals(currentPage.marginTop, 0));
