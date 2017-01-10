@@ -184,8 +184,6 @@ const noop = () => {
     // no operation
 };
 
-// TODO: Order tests!
-
 function test<U extends { root: View }>(ui: () => U, setup: (ui: U) => void, test: (ui: U) => void): () => void {
     return () => {
         let i = ui();
@@ -1604,6 +1602,72 @@ export const testFlexBasisPercent_nowrap_flexDirection_column = test(
         let totalHeight = height(text1) + height(text2) + height(text3);
 
         check(totalHeight >= height(flexbox) - 3 || totalHeight <= height(flexbox) + 3);
+    }
+);
+
+let activity_order_test= () => getViews(
+    `<FlexboxLayout id="flexbox" width="360" height="300" backgroundColor="gray">
+        <Label id="text1" order="2" width="160" height="120" text="1" backgroundColor="red" />
+        <Label id="text2" order="3" width="160" height="120" text="2" backgroundColor="green" />
+        <Label id="text3" order="1" width="160" height="120" text="3" backgroundColor="blue" />
+    </FlexboxLayout>`
+);
+
+export const testOrder = test(
+    activity_order_test,
+    noop,
+    ({root, flexbox, text1, text2, text3}) => {
+        equal(FlexboxLayout.getOrder(text1), 2);
+        equal(FlexboxLayout.getOrder(text2), 3);
+        equal(FlexboxLayout.getOrder(text3), 1);
+    }
+);
+
+let activity_order_set_runtime_test= () => getViews(
+    `<FlexboxLayout id="flexbox" width="360" height="300" backgroundColor="gray">
+        <Label id="text1" width="160" height="120" text="1" backgroundColor="red" />
+        <Label id="text2" width="160" height="120" text="2" backgroundColor="green" />
+        <Label id="text3" width="160" height="120" text="3" backgroundColor="blue" />
+    </FlexboxLayout>`
+);
+
+export const testOrder_set_runtime = test(
+    activity_order_set_runtime_test,
+    ({flexbox, text1, text2, text3}) => {
+       FlexboxLayout.setOrder(text1, 3);
+       FlexboxLayout.setOrder(text2, 1);
+       FlexboxLayout.setOrder(text3, 2);
+    },
+    ({root, flexbox, text1, text2, text3}) => {
+        equal(FlexboxLayout.getOrder(text1), 3);
+        equal(FlexboxLayout.getOrder(text2), 1);
+        equal(FlexboxLayout.getOrder(text3), 2);
+    }
+);
+
+export const testOrder_changed_runtime = test(
+    activity_order_set_runtime_test,
+    ({flexbox, text1, text2, text3}) => {
+       FlexboxLayout.setOrder(text1, 3);
+       FlexboxLayout.setOrder(text2, 1);
+       FlexboxLayout.setOrder(text3, 2);
+
+        helper.buildUIAndRunTest(flexbox, () => {
+            waitUntilTestElementLayoutIsValid(flexbox);
+            FlexboxLayout.setOrder(text1, 1);
+            FlexboxLayout.setOrder(text2, 2);
+            FlexboxLayout.setOrder(text3, 3);
+        });
+    },
+    ({root, flexbox, text1, text2, text3}) => {
+        equal(FlexboxLayout.getOrder(text1), 1);
+        equal(FlexboxLayout.getOrder(text2), 2);
+        equal(FlexboxLayout.getOrder(text3), 3);
+        
+        // verify views are visually displayed at the right position, not only that their order property is correct.
+        equal(text1, flexbox.getChildAt(0));
+        equal(text2, flexbox.getChildAt(1));
+        equal(text3, flexbox.getChildAt(2));
     }
 );
 
