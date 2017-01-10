@@ -244,6 +244,8 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
     abstract _setNativeJustifyContent(justifyContent: JustifyContent);
     abstract _setNativeAlignItems(alignItems: AlignItems);
     abstract _setNativeAlignContent(alignContent: AlignContent);
+
+    abstract _invalidateOrdersCache();
 }
 
 const flexboxAffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
