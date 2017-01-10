@@ -1,7 +1,7 @@
 ﻿import {
     ButtonBase, TouchGestureEventData, GestureTypes, TouchAction,
     PseudoClassHandler,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty
 } from "./button-common";
 
 export * from "./button-common";
@@ -25,7 +25,7 @@ export class Button extends ButtonBase {
     _button: android.widget.Button;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
     private _defaultNativePadding: android.graphics.Rect;
-
+    
     get android(): android.widget.Button {
         return this._button;
     }
@@ -95,5 +95,16 @@ export class Button extends ButtonBase {
     }
     set [paddingLeftProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+    }
+
+    get [zIndexProperty.native](): number {
+        return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
+    }
+    set [zIndexProperty.native](value: number) {
+        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
+        // API >= 21
+        if (this.nativeView.setStateListAnimator){
+            this.nativeView.setStateListAnimator(null);
+        }
     }
 }
