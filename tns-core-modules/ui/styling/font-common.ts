@@ -1,51 +1,30 @@
 ﻿import { Font as FontDefinition, ParsedFont } from "ui/styling/font";
-import { makeValidator, makeParser} from "ui/core/properties";
+import { makeValidator, makeParser } from "ui/core/properties";
 
 export abstract class FontBase implements FontDefinition {
     public static default = undefined;
 
-    private _fontFamily: string;
-    private _fontStyle: FontStyle;
-    private _fontWeight: FontWeight;
-    private _fontSize: number;
-
-    get fontFamily(): string {
-        return this._fontFamily;
-    }
-
-    get fontStyle(): FontStyle {
-        return this._fontStyle;
-    }
-
-    get fontWeight(): FontWeight {
-        return this._fontWeight;
-    }
-
-    get fontSize(): number {
-        return this._fontSize;
-    }
-
     get isItalic(): boolean {
-        return this._fontStyle === FontStyle.ITALIC;
+        return this.fontStyle === FontStyle.ITALIC;
     }
 
     get isBold(): boolean {
-        return this._fontWeight === FontWeight.BOLD
-            || this._fontWeight === "700";
+        return this.fontWeight === FontWeight.BOLD
+            || this.fontWeight === "700";
     }
 
-    protected constructor(family: string, size: number, style: FontStyle, weight: FontWeight) {
-        this._fontFamily = family;
-        this._fontSize = size;
-        this._fontStyle = style;
-        this._fontWeight = weight;
+    protected constructor(
+        public readonly fontFamily: string,
+        public readonly fontSize: number,
+        public readonly fontStyle: FontStyle,
+        public readonly fontWeight: FontWeight) {
     }
 
     public abstract getAndroidTypeface(): android.graphics.Typeface;
     public abstract getUIFont(defaultFont: UIFont): UIFont;
     public abstract withFontFamily(family: string): FontBase;
     public abstract withFontStyle(style: string): FontBase;
-    public abstract withFontWeight(weight: string):FontBase;
+    public abstract withFontWeight(weight: string): FontBase;
     public abstract withFontSize(size: number): FontBase;
 
     public static equals(value1: FontBase, value2: FontBase): boolean {
@@ -79,10 +58,10 @@ export namespace FontWeight {
     export const THIN: "100" = "100";
     export const EXTRA_LIGHT: "200" = "200";
     export const LIGHT: "300" = "300";
-    export const NORMAL: "normal" = "normal"; 
+    export const NORMAL: "normal" = "normal";
     export const MEDIUM: "500" = "500";
     export const SEMI_BOLD: "600" = "600";
-    export const BOLD: "bold" = "bold"; 
+    export const BOLD: "bold" = "bold";
     export const EXTRA_BOLD: "800" = "800";
     export const BLACK: "900" = "900";
     export const isValid = makeValidator<FontWeight>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, "400", MEDIUM, SEMI_BOLD, BOLD, "700", EXTRA_BOLD, BLACK);
@@ -114,7 +93,7 @@ export module genericFontFamilies {
 
 const styles = new Set();
 [
-    FontStyle.NORMAL, 
+    FontStyle.NORMAL,
     FontStyle.ITALIC
 ].forEach((val, i, a) => styles.add(val));
 
@@ -132,16 +111,16 @@ const styles = new Set();
 //- 900(Black / Heavy) (API21 -black)
 const weights = new Set();
 [
-    FontWeight.THIN, 
-    FontWeight.EXTRA_LIGHT, 
-    FontWeight.LIGHT, 
-    FontWeight.NORMAL, 
-    "400", 
-    FontWeight.MEDIUM, 
-    FontWeight.SEMI_BOLD, 
-    FontWeight.BOLD, 
-    "700", 
-    FontWeight.EXTRA_BOLD, 
+    FontWeight.THIN,
+    FontWeight.EXTRA_LIGHT,
+    FontWeight.LIGHT,
+    FontWeight.NORMAL,
+    "400",
+    FontWeight.MEDIUM,
+    FontWeight.SEMI_BOLD,
+    FontWeight.BOLD,
+    "700",
+    FontWeight.EXTRA_BOLD,
     FontWeight.BLACK
 ].forEach((val, i, a) => weights.add(val));
 

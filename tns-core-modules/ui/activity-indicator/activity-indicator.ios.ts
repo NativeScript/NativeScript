@@ -1,5 +1,6 @@
 import { ActivityIndicatorBase, busyProperty, colorProperty } from "./activity-indicator-common";
 import { ios } from "utils/utils";
+import { Color } from "color";
 
 export * from "./activity-indicator-common";
 
@@ -36,7 +37,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     get [colorProperty.native](): UIColor {
         return this.nativeView.color;
     }
-    set [colorProperty.native](value: UIColor) {
-        this.nativeView.color = value;
+    set [colorProperty.native](value: UIColor | Color) {
+        this.nativeView.color = value instanceof Color ? value.ios : value;;
     }
 }

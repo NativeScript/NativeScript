@@ -1,7 +1,7 @@
 ﻿import {
-    TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, whiteSpaceProperty,
-    Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
+    TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
+    textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
+    whiteSpaceProperty, Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./text-base-common";
 import { toUIString } from "utils/types";
@@ -64,6 +64,18 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
+    //FontSize
+    get [fontSizeProperty.native](): { nativeSize: number } {
+        return { nativeSize: this._nativeView.getTextSize() };
+    }
+    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+        if (typeof value === "number") {
+            this._nativeView.setTextSize(value);
+        } else {
+            this._nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+        }
+    }
+
     //FontInternal
     get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
         let textView = this._nativeView;
@@ -75,14 +87,11 @@ export class TextBase extends TextBaseCommon {
     set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
         let textView = this._nativeView;
         if (value instanceof Font) {
-            // Set value
+            // Set value. Note: Size is handled in fontSizeProperty.native
             textView.setTypeface(value.getAndroidTypeface());
-            if (value.fontSize !== undefined) {
-                textView.setTextSize(value.fontSize);
-            }
         }
         else {
-            // Reset value
+            // Reset value. Note: Resetting fontInternal will reset the size also.
             textView.setTypeface(value.typeface);
             textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
         }
