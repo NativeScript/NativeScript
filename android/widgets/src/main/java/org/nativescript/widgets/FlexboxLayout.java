@@ -519,6 +519,15 @@ public class FlexboxLayout extends ViewGroup {
     }
 
     /**
+    * Invalidates the cache of the orders so that they are recalculated. 
+    */
+    public void invalidateOrdersCache() {
+        if (this.mOrderCache != null) {
+            this.mOrderCache.clear();
+        }
+    }
+
+    /**
      * Sub method for {@link #onMeasure(int, int)}, when the main axis direction is horizontal
      * (either left to right or right to left).
      *
