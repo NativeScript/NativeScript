@@ -1914,7 +1914,7 @@ function isFloatValueConverter(value: string): number {
     return newValue;
 }
 
-export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: 0, valueConverter: isFloatValueConverter });
+export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: Number.NaN, valueConverter: isFloatValueConverter });
 zIndexProperty.register(Style);
 
 function opacityConverter(value: any): number {
