@@ -511,12 +511,12 @@ export var test_request_headersWithSameKeyAddedProperly = function (done) {
     var keyName = "key";
     var value1 = "value1";
     var value2 = "value2";
-    
+
     var headers = {};
-    
+
     (<any>http).addHeader(headers, keyName, value1);
     (<any>http).addHeader(headers, keyName, value2);
-    
+
     try {
         TKUnit.assertTrue(Array.isArray(headers[keyName]));
         TKUnit.assertEqual(headers[keyName][0], value1);
@@ -630,3 +630,22 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
     });
     // << http-post-json
 };
+
+declare var Worker: any;
+export var test_getString_WorksProperlyInWorker = function () {
+    var ready;
+
+    var worker = new Worker("./http-string-worker");
+
+    worker.onmessage = function (msg) {
+        TKUnit.assert(typeof msg.data === "string", "Result from getString() should be valid string object!");
+        ready = true;
+    }
+
+    worker.onerror = function (e) {
+        ready = true;
+        throw e;
+    }
+
+    TKUnit.waitUntilReady(() => ready);
+}
