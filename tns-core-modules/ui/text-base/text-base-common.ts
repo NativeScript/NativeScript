@@ -9,7 +9,7 @@ export * from "ui/core/view";
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
 
-    public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
+    // public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
 
     public text: string;
     public formattedText: FormattedString;
@@ -91,10 +91,11 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
         this.style.paddingLeft = value;
     }
 
-    public onFormattedTextChanged(data: PropertyChangeData) {
-        let value = data.value;
-        this._setFormattedTextPropertyToNative(value);
-        textProperty.nativeValueChange(this, value.toString());
+    public _onFormattedTextContentsChanged(data: PropertyChangeData) {
+        if (this._nativeView){
+            // Notifications from the FormattedString start arriving before the Android view is even created.
+            this[formattedTextProperty.native] = data.value;
+        }
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
@@ -125,12 +126,12 @@ formattedTextProperty.register(TextBaseCommon);
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
     if (oldValue) {
         oldValue.parent = null;
-        removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
+        removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
     }
 
     if (newValue) {
         newValue.parent = textBase;
-        addWeakEventListener(newValue, Observable.propertyChangeEvent, textBase.onFormattedTextChanged, textBase);
+        addWeakEventListener(newValue, Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
     }
 }
 

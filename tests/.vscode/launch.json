@@ -11,7 +11,8 @@
             "diagnosticLogging": false,
             "emulator": false,
             "rebuild": false,
-            "syncAllFiles": false
+            "syncAllFiles": true,
+            "stopOnEntry": true
         },
         {
             "name": "Launch on iOS",
@@ -22,7 +23,8 @@
             "sourceMaps": true,
             "diagnosticLogging": false,
             "emulator": false,
-            "rebuild": true
+            "rebuild": true,
+            "stopOnEntry": true
         },
         {
             "name": "Attach on iOS",
@@ -32,7 +34,8 @@
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "diagnosticLogging": false,
-            "emulator": false
+            "emulator": false,
+            "stopOnEntry": true
         },
         {
             "name": "Sync on Android",
@@ -44,6 +47,7 @@
             "diagnosticLogging": false,
             "emulator": false,
             "rebuild": false,
+            "syncAllFiles": true,
             "stopOnEntry": true
         },
         {
@@ -55,7 +59,8 @@
             "sourceMaps": true,
             "diagnosticLogging": false,
             "emulator": false,
-            "rebuild": true
+            "rebuild": true,
+            "stopOnEntry": true
         },
         {
             "name": "Attach on Android",
@@ -65,7 +70,8 @@
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "diagnosticLogging": false,
-            "emulator": false
+            "emulator": false,
+            "stopOnEntry": true
         }
     ]
 }

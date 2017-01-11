@@ -1,5 +1,5 @@
 ﻿declare module "ui/editable-text-base" {
-    import { TextBase, Property, CssProperty, Style, Color } from "ui/text-base";
+    import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "ui/text-base";
 
     export const keyboardTypeProperty: Property<EditableTextBase, string>;
     export const returnKeyTypeProperty: Property<EditableTextBase, string>;
@@ -55,6 +55,10 @@
          */
         dismissSoftInput(): void;
     }
+
+    //@private
+    export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
+    //@endprivate
 
     export * from "ui/text-base";
 }

@@ -2,7 +2,7 @@
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, _updateCharactersInRangeReplacementString
 
 } from "ui/editable-text-base";
 import { Color } from "color";
@@ -40,10 +40,9 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
             owner.dismissSoftInput();
             owner._refreshHintState(owner.hint, textView.text);
 
-            if (owner.formattedText) {
-                owner.formattedText.createFormattedStringCore();
-
-            }
+            // if (owner.formattedText) {
+            //     formattedTextProperty.nativeValueChange(owner, textView.attributedText);
+            // }
         }
     }
 
@@ -59,7 +58,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner && owner.formattedText) {
-            owner.formattedText._updateCharactersInRangeReplacementString(range.location, range.length, replacementString);
+            _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
         }
 
         return true;

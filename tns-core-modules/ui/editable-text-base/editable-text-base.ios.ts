@@ -1,7 +1,7 @@
 ﻿import {
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty,
-    autocapitalizationTypeProperty, autocorrectProperty
+    autocapitalizationTypeProperty, autocorrectProperty, FormattedString
 } from "./editable-text-base-common";
 
 export * from "./editable-text-base-common";
@@ -185,4 +185,29 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
         this.nativeView.autocorrectionType = newValue;
     }
+}
+
+export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void {
+    let deletingText = !replacementString;
+    let currentLocation = 0;
+    for (let i = 0, length = formattedText.spans.length; i < length; i++) {
+        let span = formattedText.spans.getItem(i);
+        if (currentLocation <= rangeLocation && rangeLocation < (currentLocation + span.text.length)){
+            let newText = splice(span.text, rangeLocation - currentLocation, deletingText ? rangeLength : 0, replacementString);
+            span._setTextInternal(newText); 
+            return;
+        } 
+        currentLocation += span.text.length;
+    }
+}
+
+/*
+ * @param {String} value The string to splice.
+ * @param {number} start Index at which to start changing the string.
+ * @param {number} delCount An integer indicating the number of old chars to remove.
+ * @param {string} newSubStr The String that is spliced in.
+ * @return {string} A new string with the spliced substring.function splice(value: string, start: number, delCount: number, newSubStr: string) {
+ */
+function splice(value: string, start: number, delCount: number, newSubStr: string) {
+    return value.slice(0, start) + newSubStr + value.slice(start + Math.abs(delCount));
 }
