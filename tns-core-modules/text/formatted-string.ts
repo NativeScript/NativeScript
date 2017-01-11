@@ -14,9 +14,8 @@ const CHILD_SPAN = "Span";
 const CHILD_FORMATTED_TEXT = "formattedText";
 const CHILD_FORMATTED_STRING = "FormattedString";
 
-export abstract class FormattedStringBase extends Observable implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
+export class FormattedString extends Observable implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
     private _spans: ObservableArray<Span>;
-    private _isDirty: boolean;
     private _fontFamily: string;
     private _fontSize: number;
     private _foregroundColor: Color;
@@ -25,6 +24,7 @@ export abstract class FormattedStringBase extends Observable implements Formatte
     private _strikethrough: number;
     private _fontAttributes: number;
     private _parent: View;
+    private _dummyPropertyChangedData: PropertyChangeData;
 
     public _formattedText: any;
 
@@ -32,7 +32,7 @@ export abstract class FormattedStringBase extends Observable implements Formatte
         super();
         this._spans = new ObservableArray<Span>();
         this._spans.addEventListener(ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
-        this._isDirty = true;
+        this._dummyPropertyChangedData = this._createPropertyChangeData("", this);
     }
 
     get parent(): View {
@@ -149,10 +149,6 @@ export abstract class FormattedStringBase extends Observable implements Formatte
         return this._spans;
     }
 
-    public abstract createFormattedStringCore(): void;
-
-    public abstract _updateCharactersInRangeReplacementString(rangeLocation: number, rangeLength: number, replacementString: string): void;
-
     public toString(): string {
         let result = "";
         for (let i = 0, length = this._spans.length; i < length; i++) {
@@ -212,19 +208,10 @@ export abstract class FormattedStringBase extends Observable implements Formatte
                 removedSpan.removeEventListener(Observable.propertyChangeEvent, this.onSpanChanged, this);
             }
         }
-        this.updateFormattedText(true);
+        this.notify(this._dummyPropertyChangedData);
     }
 
     private onSpanChanged(eventData: PropertyChangeData) {
-        this.updateFormattedText(true);
-    }
-
-    private updateFormattedText(isDirty?: boolean) {
-        let shouldUpdate = isDirty || this._isDirty;
-        if (shouldUpdate) {
-            this.createFormattedStringCore();
-            this._isDirty = false;
-            this.notify(this._createPropertyChangeData("", this));
-        }
+        this.notify(this._dummyPropertyChangedData);
     }
 }

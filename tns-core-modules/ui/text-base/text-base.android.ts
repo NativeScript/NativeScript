@@ -4,18 +4,12 @@
     Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./text-base-common";
+import { toUIString } from "utils/types";
 
 export * from "./text-base-common";
 export class TextBase extends TextBaseCommon {
     _transformationMethod: any;
     _nativeView: android.widget.TextView;
-
-    public _setFormattedTextPropertyToNative(value: FormattedString) {
-        if (this._nativeView) {
-            let newText = value ? value._formattedText : this.text;
-            this._nativeView.setText(newText);
-        }
-    }
 
     //Text
     get [textProperty.native](): string {
@@ -31,7 +25,31 @@ export class TextBase extends TextBaseCommon {
         return null;
     }
     set [formattedTextProperty.native](value: FormattedString) {
-        this._setFormattedTextPropertyToNative(value);
+        let spannableStringBuilder = createSpannableStringBuilder(value);
+        const text = (spannableStringBuilder === null || spannableStringBuilder === undefined) ? '' : <any>spannableStringBuilder;
+        this._nativeView.setText(text);
+
+        if (spannableStringBuilder && this._nativeView instanceof android.widget.Button && 
+            !(this._nativeView.getTransformationMethod() instanceof TextTransformation)){
+                // Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method 
+                // with our transformation method which can handle formatted text.
+                // Otherwise, the default tranformation method of the Android Button will overwrite and ignore our spannableStringBuilder.
+                // We can't set it to NONE since it is the default value. Set it to something else first.
+                this.style[textTransformProperty.cssName] = TextTransform.UPPERCASE;
+                this.style[textTransformProperty.cssName] = TextTransform.NONE;
+        }
+    }
+
+    //TextTransform
+    get [textTransformProperty.native](): android.text.method.TransformationMethod {
+        return this._nativeView.getTransformationMethod();
+    }
+    set [textTransformProperty.native](value: TextTransform | android.text.method.TransformationMethod) {
+        if (typeof value === "string") {
+            this._nativeView.setTransformationMethod(new TextTransformation(this.text, this.formattedText, value));
+        } else {
+            this._nativeView.setTransformationMethod(value);
+        }
     }
 
     //Color
@@ -128,18 +146,6 @@ export class TextBase extends TextBaseCommon {
         this._nativeView.setPaintFlags(flags);
     }
 
-    //TextTransform
-    get [textTransformProperty.native](): android.text.method.TransformationMethod {
-        return this._nativeView.getTransformationMethod();
-    }
-    set [textTransformProperty.native](value: TextTransform | android.text.method.TransformationMethod) {
-        if (typeof value === "string") {
-            this._nativeView.setTransformationMethod(new TextTransformation(this.text, this.formattedText, value));
-        } else {
-            this._nativeView.setTransformationMethod(value);
-        }
-    }
-
     //WhiteSpace
     get [whiteSpaceProperty.native](): WhiteSpace {
         return WhiteSpace.NORMAL;
@@ -208,45 +214,31 @@ class TextTransformation extends android.text.method.ReplacementTransformationMe
     }
 
     protected getOriginal(): native.Array<string> {
-        let result: native.Array<string> = [];
-        if (this.formattedText && this.formattedText._formattedText) {
-            for (let i = 0, loopLength = this.formattedText._formattedText.length(); i < loopLength; i++) {
-                result[i] = this.formattedText._formattedText.charAt(i);
-            }
-        } else {
-            for (let i = 0, loopLength = this.originalText.length; i < loopLength; i++) {
-                result[i] = this.originalText.charAt(i);
-            }
-        }
-        return result;
-    }
-
-    private _getTransformedString(): string {
-        let stringResult: string = "";
-        let textTransform = this.textTransform;
-        if (this.formattedText) {
-            for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
-                let span = this.formattedText.spans.getItem(i);
-                stringResult += getTransformedText(span.text, textTransform);
-            }
-        }
-        else {
-            stringResult = getTransformedText(this.originalText, textTransform);
-        }
-        return stringResult;
+        return convertStringToNativeCharArray(this.formattedText ? this.formattedText.toString() : this.originalText);        
     }
 
     protected getReplacement(): native.Array<string> {
-        let transformedString = this._getTransformedString();
-        let result: native.Array<string> = [];
-        for (let i = 0, length = transformedString.length; i < length; i++) {
-            result[i] = transformedString.charAt(i);
+        let replacementString: string = "";
+        if (this.formattedText) {
+            for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
+                let span = this.formattedText.spans.getItem(i);
+                replacementString += getTransformedText(span.text, this.textTransform);
+            }
         }
-        return result;
+        else {
+            replacementString = getTransformedText(this.originalText, this.textTransform);
+        }
+
+        return convertStringToNativeCharArray(replacementString);        
     }
 
-    public getTransformation(charSeq: string, view: android.view.View): string {
-        return this._getTransformedString();
+    public getTransformation(charSeq: any, view: android.view.View): any {
+        if (this.formattedText) {
+            return createSpannableStringBuilder(this.formattedText);
+        }
+        else {
+            return getTransformedText(this.originalText, this.textTransform);
+        }
     }
 }
 
@@ -261,7 +253,7 @@ function getCapitalizedString(str: string): string {
     return newWords.join(" ");
 }
 
-export function getTransformedText(text: string, textTransform: TextTransform): string {
+function getTransformedText(text: string, textTransform: TextTransform): string {
     switch (textTransform) {
         case TextTransform.NONE:
             return text;
@@ -274,4 +266,42 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
         default:
             throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}", "${TextTransform.LOWERCASE}".`);
     }
+}
+
+function createSpannableStringBuilder(formattedString: FormattedString): android.text.SpannableStringBuilder {
+    let ssb = new android.text.SpannableStringBuilder();
+
+    if (formattedString === null || formattedString === undefined){
+        return ssb;
+    }
+
+    for (let i = 0, spanStart = 0, spanLength = 0, spanText = "", length = formattedString.spans.length; i < length; i++) {
+        let span = formattedString.spans.getItem(i);
+        spanText = toUIString(span.text);
+        if (formattedString.parent){
+            let textTransform = (<TextBase>formattedString.parent).textTransform;
+            if (textTransform){
+                spanText = getTransformedText(spanText, textTransform);
+            }
+        }
+        spanLength = spanText.length;
+        if (spanLength !== 0) {
+            ssb.insert(spanStart, spanText);
+            span.updateSpanModifiers(formattedString);
+            for (let p = 0, spanModifiersLength = span.spanModifiers.length; p < spanModifiersLength; p++) {
+                ssb.setSpan(span.spanModifiers[p], spanStart, spanStart + spanLength, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
+            spanStart += spanLength;
+        }
+    }
+    return ssb;
+}
+
+function convertStringToNativeCharArray(value: string): native.Array<string> {
+    let nativeCharArray: native.Array<string> = [];
+
+    for (let i = 0, length = value.length; i < length; i++) {
+        nativeCharArray[i] = value.charAt(i);
+    }
+    return nativeCharArray;
 }

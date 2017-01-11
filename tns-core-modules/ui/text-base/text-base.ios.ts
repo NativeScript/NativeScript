@@ -4,6 +4,7 @@
     TextDecoration, TextAlignment, TextTransform
 } from "./text-base-common";
 import * as utils from "utils/utils";
+import { toUIString } from "utils/types";
 
 export * from "./text-base-common";
 
@@ -32,7 +33,8 @@ export class TextBase extends TextBaseCommon {
                 let style = this.style;
                 setTextDecorationAndTransform(newValue, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing, style.color);
             }
-        } else {
+        } 
+        else {
             nativeView.text = newValue;
         }
         this._requestLayoutOnTextChanged();
@@ -43,16 +45,12 @@ export class TextBase extends TextBaseCommon {
         return null;
     }
     set [formattedTextProperty.native](value: FormattedString) {
-        this._setFormattedTextPropertyToNative(value);
-    }
-
-    public _setFormattedTextPropertyToNative(value: FormattedString) {
-        let newText = value ? value._formattedText : null;
+        let mas = createNSMutableAttributedString(value);
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
-            nativeView.setAttributedTitleForState(newText, UIControlState.Normal);
+            nativeView.setAttributedTitleForState(mas, UIControlState.Normal);
         } else {
-            nativeView.attributedText = newText;
+            nativeView.attributedText = mas;
         }
     }
 
@@ -279,4 +277,22 @@ function setTextDecorationAndTransform(text: string, nativeView: UITextField | U
             nativeView.text = source;
         }
     }
+}
+
+function createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
+    let mas = NSMutableAttributedString.alloc().init();
+    for (let i = 0, spanStart = 0, spanLength = 0, length = formattedString.spans.length, spanText = ""; i < length; i++) {
+        let span = formattedString.spans.getItem(i);
+        spanText = toUIString(span.text);
+        spanLength = spanText.length;
+        span.updateSpanModifiers(formattedString);
+        let attrDict = NSMutableDictionary.alloc<string, any>().init();
+        for (let p = 0; p < span.spanModifiers.length; p++) {
+            attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);
+        }
+        let nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
+        mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
+        spanStart += spanLength;
+    }
+    return mas;
 }

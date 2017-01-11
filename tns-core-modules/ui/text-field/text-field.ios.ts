@@ -1,6 +1,6 @@
 ﻿import { 
     TextFieldBase, Color, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
-    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty
+    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString
 } from "./text-field-common";
 
 export * from "./text-field-common";
@@ -41,9 +41,9 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
 
             owner.dismissSoftInput();
 
-            if (owner.formattedText) {
-                owner.formattedText.createFormattedStringCore();
-            }
+            // if (owner.formattedText) {
+            //     formattedTextProperty.nativeValueChange(owner, textField.attributedText);
+            // }
         }
     }
 
@@ -73,7 +73,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         if (owner) {
             if (owner.updateTextTrigger === "textChanged") {
                 if (textField.secureTextEntry && this.firstEdit) {
-                    textProperty.nativeValueChange(owner,  replacementString);
+                    textProperty.nativeValueChange(owner, replacementString);
                 }
                 else {
                     if (range.location <= textField.text.length) {
@@ -84,7 +84,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
             }
 
             if (owner.formattedText) {
-                owner.formattedText._updateCharactersInRangeReplacementString(range.location, range.length, replacementString);
+                _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
             }
         }
 
