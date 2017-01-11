@@ -89,6 +89,11 @@ declare module "http" {
      * Gets or sets the request timeout in milliseconds.
      */
     timeout?: number;
+
+    /**
+     * Gets or sets wether to *not* follow server's redirection responses.
+     */
+    dontFollowRedirects?: boolean;
   }
 
   /**
