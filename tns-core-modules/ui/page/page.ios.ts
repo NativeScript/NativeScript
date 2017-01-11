@@ -1,7 +1,7 @@
 ﻿import {
     PageBase, View, layout,
     actionBarHiddenProperty, statusBarStyleProperty,
-    traceEnabled, traceWrite, traceCategories
+    traceEnabled, traceWrite, traceCategories, PercentLength
 } from "./page-common";
 import { ios as iosApp } from "application";
 import { device } from "platform";
@@ -473,6 +473,23 @@ export class Page extends PageBase {
             // Make sure we don't set true if cannot go back
             enabled = enabled && this.frame.canGoBack();
             navController.interactivePopGestureRecognizer.enabled = enabled;
+        }
+    }
+
+    public _updateEffectiveLayoutValues(parent: View): void {
+        super._updateEffectiveLayoutValues(parent);
+
+        // Patch vertical margins to respect status bar height
+        if (!this.backgroundSpanUnderStatusBar) {
+            const style = this.style;
+
+            let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
+            let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec) - uiUtils.ios.getStatusBarHeight();
+            let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
+            let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+
+            this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
+            this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
         }
     }
 

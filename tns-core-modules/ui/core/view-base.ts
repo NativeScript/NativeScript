@@ -69,7 +69,7 @@ export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefin
         }
 
         return true;
-    }
+    };
 
     eachDescendant(view, descendantsCallback);
     return retVal;
@@ -87,7 +87,7 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
             child.eachChild(localCallback);
         }
         return continueIteration;
-    }
+    };
 
     view.eachChild(localCallback);
 }
@@ -95,7 +95,6 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
 let viewIdCounter = 0;
 
 export class ViewBase extends Observable implements ViewBaseDefinition {
-    private _updatingJSPropertiesDict = {};
     private _style: Style;
     private _isLoaded: boolean;
     private _registeredAnimations: Array<KeyframeAnimation>;
@@ -225,7 +224,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
                 next.changeMap.forEach((changes, view) => {
                     if (changes.attributes) {
                         changes.attributes.forEach(attribute => {
-                            view.addEventListener(attribute + "Change", this._invalidateCssHandler)
+                            view.addEventListener(attribute + "Change", this._invalidateCssHandler);
                         });
                     }
                     if (changes.pseudoClasses) {
@@ -244,13 +243,13 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
                 previous.changeMap.forEach((changes, view) => {
                     if (changes.attributes) {
                         changes.attributes.forEach(attribute => {
-                            view.removeEventListener("onPropertyChanged:" + attribute, this._invalidateCssHandler)
+                            view.removeEventListener("onPropertyChanged:" + attribute, this._invalidateCssHandler);
                         });
                     }
                     if (changes.pseudoClasses) {
                         changes.pseudoClasses.forEach(pseudoClass => {
                             let eventName = ":" + pseudoClass;
-                            view.removeEventListener(eventName, this._invalidateCssHandler)
+                            view.removeEventListener(eventName, this._invalidateCssHandler);
                             if (view[eventName]) {
                                 view[eventName](-1);
                             }
