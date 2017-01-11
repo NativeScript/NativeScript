@@ -1,6 +1,4 @@
-import { Template } from "ui/core/view"
 import { Property } from "ui/core/properties"
-import * as proxy from "ui/core/proxy"
 import { LayoutBase } from "ui/layouts/layout-base"
 import { parse } from "ui/builder"
 

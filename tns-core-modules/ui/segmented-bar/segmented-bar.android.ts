@@ -255,13 +255,8 @@ export class SegmentedBar extends SegmentedBarBase {
         this._android.clearAllTabs();
 
         const newItems = value;
-        let tabHost = this._android;
         if (newItems) {
             newItems.forEach((item, i, arr) => this.insertTab(item, i));
-
-            // if (this.selectedIndex < 0) {
-            //     this.selectedIndex = tabHost.getCurrentTab();
-            // }
         }
     }
 }
