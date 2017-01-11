@@ -362,7 +362,6 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
             if (currentValue !== newValue) {
 
                 if (this.hasListeners(eventName)) {
-                    console.log("Notify " + eventName);
                     this.notify({
                         eventName: eventName,
                         propertyName: name,

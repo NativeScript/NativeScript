@@ -91,6 +91,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
             }
             this.items.push(<TabViewItemBase>value);
             this._addView(value);
+            selectedIndexProperty.coerce(this);
         }
     }
 

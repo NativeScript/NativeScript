@@ -1,5 +1,5 @@
-import {Template} from "ui/core/view"
-import {Property, PropertyMetadataSettings} from "ui/core/dependency-observable"
+import { Template } from "ui/core/view"
+import { Property } from "ui/core/properties"
 import * as proxy from "ui/core/proxy"
 import { LayoutBase } from "ui/layouts/layout-base"
 import { parse } from "ui/builder"
@@ -9,27 +9,17 @@ export module knownTemplates {
 }
 
 export class TemplateView extends LayoutBase {
-	public static templateProperty = new Property(
-        "template",
-        "TemplateView",
-        new proxy.PropertyMetadata(
-            undefined,
-            PropertyMetadataSettings.AffectsLayout,
-            null
-            )
-        );
-        
-    public static testEvent: string = "test";
-	
-    get template(): string | Template {
-        return this._getValue(TemplateView.templateProperty);
-    }
-	
-    set template(value: string | Template) {
-        this._setValue(TemplateView.templateProperty, value);
-    }
+    public template: string;
+
+	public static testEvent: string = "test";
 	
     public parseTemplate() {
         this.addChild(parse(this.template));
     }
 }
+
+export const templateProperty = new Property<TemplateView, string>({
+        name: "template",
+        affectsLayout: true
+    });
+templateProperty.register(TemplateView);

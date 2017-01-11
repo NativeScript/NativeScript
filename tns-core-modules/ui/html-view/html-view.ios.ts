@@ -67,5 +67,3 @@ export class HtmlView extends HtmlViewBase {
         this._ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
     }
 }
-
-htmlProperty.register(HtmlView);
