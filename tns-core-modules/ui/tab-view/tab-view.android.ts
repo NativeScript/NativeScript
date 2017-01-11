@@ -358,11 +358,6 @@ export class TabView extends TabViewBase {
             const tv = tabLayout.getTextViewForItemAt(i);
             item.setNativeView(tv);
         });
-
-        let selectedIndex = this.selectedIndex;
-        if (selectedIndex < 0) {
-            this.selectedIndex = this._viewPager.getCurrentItem();
-        }
     }
 
     get [androidOffscreenTabLimitProperty.native](): number {

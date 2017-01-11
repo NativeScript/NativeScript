@@ -57,9 +57,9 @@ export class SegmentedBar extends SegmentedBarBase {
                 segmentedControl.insertSegmentWithTitleAtIndexAnimated(title, index, false);
             })
 
-            if (this.selectedIndex < 0) {
-                this.selectedIndex = segmentedControl.selectedSegmentIndex;
-            }
+            // if (this.selectedIndex < 0) {
+            //     this.selectedIndex = segmentedControl.selectedSegmentIndex;
+            // }
         }
     }
 

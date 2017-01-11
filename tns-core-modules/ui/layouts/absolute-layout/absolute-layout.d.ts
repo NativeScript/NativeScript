@@ -1,5 +1,5 @@
 ﻿declare module "ui/layouts/absolute-layout" {
-    import { LayoutBase, View, Property } from "ui/layouts/layout-base";
+    import { LayoutBase, View, Property, Length } from "ui/layouts/layout-base";
 
     /**
      *  A layout that lets you specify exact locations (left/top coordinates) of its children.
@@ -8,31 +8,31 @@
         /**
          * Gets the value of the Left property from a given View.
          */
-        static getLeft(view: View): number;
+        static getLeft(view: View): Length;
 
         /**
          * Sets the value of the Left property from a given View.
          */
-        static setLeft(view: View, value: number): void;
+        static setLeft(view: View, value: Length): void;
 
         /**
          * Gets the value of the Top property from a given View.
          */
-        static getTop(view: View): number;
+        static getTop(view: View): Length;
 
         /**
          * Sets the value of the Top property from a given View.
          */
-        static setTop(view: View, value: number): void;
+        static setTop(view: View, value: Length): void;
     }
 
     /**
      * Represents the observable property backing the left property.
      */
-    export const leftProperty: Property<View, number>;
+    export const leftProperty: Property<View, Length>;
 
     /**
      * Represents the observable property backing the top property.
      */
-    export const topProperty: Property<View, number>;
+    export const topProperty: Property<View, Length>;
 }

@@ -46,6 +46,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
                 this.items = new Array<SegmentedBarItemBase>();
             }
             this.items.push(<SegmentedBarItemBase>value);
+            selectedIndexProperty.coerce(this);
         }
     }
 

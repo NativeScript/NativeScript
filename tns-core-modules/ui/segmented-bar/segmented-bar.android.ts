@@ -259,9 +259,9 @@ export class SegmentedBar extends SegmentedBarBase {
         if (newItems) {
             newItems.forEach((item, i, arr) => this.insertTab(item, i));
 
-            if (this.selectedIndex < 0) {
-                this.selectedIndex = tabHost.getCurrentTab();
-            }
+            // if (this.selectedIndex < 0) {
+            //     this.selectedIndex = tabHost.getCurrentTab();
+            // }
         }
     }
 }

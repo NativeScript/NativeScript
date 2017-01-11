@@ -25,7 +25,7 @@ import * as platform from "platform";
 import * as gesturesModule from "ui/gestures";
 import * as segmentedBar from "ui/segmented-bar";
 import { Source } from "utils/debug";
-import { PercentLength } from "ui/core/view";
+import { PercentLength, Length } from "ui/core/view";
 
 export function test_load_IsDefined() {
     TKUnit.assertTrue(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -296,14 +296,15 @@ export function test_parse_ShouldSetGridAttachedProperties() {
 
 export function test_parse_ShouldSetCanvasAttachedProperties() {
     var p = <Page>builder.parse("<Page><AbsoluteLayout><Label left='1' top='2' right='3' bottom='4' /></AbsoluteLayout></Page>");
-    var grid = <gridLayoutModule.GridLayout>p.content;
-    var child = grid.getChildAt(0);
+    var absLayout = <absoluteLayoutModule.AbsoluteLayout>p.content;
+    var child = absLayout.getChildAt(0);
 
     var left = absoluteLayoutModule.AbsoluteLayout.getLeft(child);
-    TKUnit.assertEqual(left, 1, "Expected result for canvas left: 1; Actual result: " + left + ";");
+    
+    TKUnit.assert(Length.equals(left, Length.parse("1")), `Expected result for canvas left: 1; Actual result: ${(<any>left).value};`)
 
     var top = absoluteLayoutModule.AbsoluteLayout.getTop(child);
-    TKUnit.assertEqual(top, 2, "Expected result for canvas top: 2; Actual result: " + top + ";");
+    TKUnit.assert(Length.equals(top, Length.parse("2")), `Expected result for canvas top: 2; Actual result: ${(<any>top).value};`)
 };
 
 export function test_parse_ShouldParseNumberProperties() {
@@ -445,13 +446,13 @@ export function test_parse_ShouldParseBindingsToGesturesWithOn() {
 };
 
 export function test_parse_ShouldParseSubProperties() {
-    var p = <Page>builder.parse("<Page><Switch style.visibility='collapsed' checked='{{ myProp }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch style.visibility='collapse' checked='{{ myProp }}' /></Page>");
     var obj = new observable.Observable();
     obj.set("myProp", true);
     p.bindingContext = obj;
     var sw = <switchModule.Switch>p.content;
 
-    TKUnit.assert(sw.visibility === "collapse", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
+    TKUnit.assert(sw.visibility === "collapse", "Expected result: collapse; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
 export function test_parse_ShouldParseBindingToSpecialProperty() {
@@ -539,10 +540,10 @@ export function test_parse_ShouldParseCustomComponentWithXml() {
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml_WithAttributes() {
-    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapse" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
-    TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
+    TKUnit.assertEqual(panel.visibility, "collapse", "panel.visibility");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml_WithCustomAttributes() {
@@ -561,10 +562,10 @@ export function test_parse_ShouldParseCustomComponentWithXmlNoJS() {
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithAttributes() {
-    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapsed" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapse" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
-    TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
+    TKUnit.assertEqual(panel.visibility, "collapse", "panel.visibility");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttributes() {
@@ -613,13 +614,23 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
 }
 
 export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplate() {
-    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><SegmentedBar items="{{ $parents[\'ListView\'].items }}" selectedIndexChanged="{{ $parents[\'ListView\'].changed }}" /></ListView.itemTemplate></ListView></Page>');
+    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><SegmentedBar items="{{ $parents[\'ListView\'].segmentedBarItems }}" selectedIndexChanged="{{ $parents[\'ListView\'].changed }}" /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
         let ctrl: segmentedBar.SegmentedBar = null;
         let changed;
         let obj = new observable.Observable();
+
+        let firstItem = new segmentedBar.SegmentedBarItem();
+        firstItem.title = "One";
+        let secondItem = new segmentedBar.SegmentedBarItem();
+        secondItem.title = "Two";
+        let thirdItem = new segmentedBar.SegmentedBarItem();
+        thirdItem.title = "Tree";
+        let segmentedBarItems = [firstItem, secondItem, thirdItem];
+
         obj.set("items", [1, 2, 3]);
+        obj.set("segmentedBarItems", segmentedBarItems);
         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
             ctrl = <segmentedBar.SegmentedBar>args.view
         });

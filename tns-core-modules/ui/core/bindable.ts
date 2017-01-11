@@ -192,7 +192,7 @@ export class Binding {
 
     public loadedHandlerVisualTreeBinding(args) {
         let target = args.object;
-        target.off(ViewBase.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
+        target.off("loaded", this.loadedHandlerVisualTreeBinding, this);
         if (!types.isNullOrUndefined(target.bindingContext)) {
             this.bind(target.bindingContext);
         }
@@ -288,8 +288,8 @@ export class Binding {
                     currentObject = parentView.bindingContext;
                 } else {
                     let targetInstance = this.target.get();
-                    targetInstance.off(ViewBase.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
-                    targetInstance.on(ViewBase.loadedEvent, this.loadedHandlerVisualTreeBinding, this);
+                    targetInstance.off("loaded", this.loadedHandlerVisualTreeBinding, this);
+                    targetInstance.on("loaded", this.loadedHandlerVisualTreeBinding, this);
                 }
 
                 currentObjectChanged = true;
