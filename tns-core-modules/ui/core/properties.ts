@@ -507,10 +507,10 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 value = defaultValue;
                 delete this[sourceKey];
             } else {
-                this[sourceKey] = ValueSource.Css;
                 if (valueConverter && typeof value === "string") {
                     value = valueConverter(value);
                 }
+                this[sourceKey] = ValueSource.Css;
             }
 
             const currentValue: U = key in this ? this[key] : defaultValue;

@@ -34,7 +34,7 @@ export class Frame extends FrameBase {
     public get _context(): any {
         return FRAME_CONTEXT;
     }
-    public set _context(value:any) {
+    public set _context(value: any) {
         throw new Error("Frame _context is readonly");
     }
 
