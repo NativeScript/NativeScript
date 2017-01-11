@@ -631,18 +631,21 @@ export var test_request_jsonAsContentSentAndReceivedProperly = function (done) {
     // << http-post-json
 };
 
-declare var Worker : any;
-export var test_getString_WorksProperlyInWorker = function (done) {
-    console.log("HERE: " + java.lang.Thread.currentThread().getName())
-    var worker = new Worker("./http-worker");
+declare var Worker: any;
+export var test_getString_WorksProperlyInWorker = function () {
+    var ready;
+
+    var worker = new Worker("./http-string-worker");
+
     worker.onmessage = function (msg) {
-        try {
-            TKUnit.assert(typeof msg.data === "string", "Result from getString() should be valid string object!");
-            done(null);
-        }
-        catch (e) {
-            done(e);
-        }
-        done(null);
+        TKUnit.assert(typeof msg.data === "string", "Result from getString() should be valid string object!");
+        ready = true;
     }
+
+    worker.onerror = function (e) {
+        ready = true;
+        throw e;
+    }
+
+    TKUnit.waitUntilReady(() => ready);
 }

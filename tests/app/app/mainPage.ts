@@ -25,7 +25,7 @@ page.on(Page.navigatedToEvent, onNavigatedTo);
 
 function runTests() {
     setTimeout(function () {
-        tests.runAll("http");
+        tests.runAll();
     }, 10);
 }
 
