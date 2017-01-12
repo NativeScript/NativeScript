@@ -22,7 +22,7 @@ export function createPage() {
 
     var fileName = resolver.resolveFileName(moduleNamePath, "xml");
     lbl.text = fileName;
-    lbl.textWrap = true;;
+    lbl.textWrap = true;
 
     page.content = lbl;
     return page;

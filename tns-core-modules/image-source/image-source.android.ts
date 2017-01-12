@@ -159,7 +159,7 @@ export class ImageSource implements definition.ImageSource {
 
     public toBase64String(format: string, quality = 100): string {
         if (!this.android) {
-            return null;;
+            return null;
         }
 
         var targetFormat = getTargetFormat(format);

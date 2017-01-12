@@ -268,26 +268,6 @@ export class View extends ViewCommon {
         }
     }
 
-    public _addToSuperview(superview: any, atIndex: number = Number.POSITIVE_INFINITY): boolean {
-        if (superview && this.nativeView) {
-            if (atIndex >= superview.subviews.count) {
-                superview.addSubview(this.nativeView);
-            } else {
-                superview.insertSubviewAtIndex(this.nativeView, atIndex);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public _removeFromSuperview() {
-        if (this.nativeView) {
-            this.nativeView.removeFromSuperview();
-        }
-    }
-
     // By default we update the view's presentation layer when setting backgroundColor and opacity properties.
     // This is done by calling CATransaction begin and commit methods.
     // This action should be disabled when updating those properties during an animation.
@@ -457,12 +437,27 @@ export class CustomLayoutView extends View {
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
         super._addViewToNativeVisualTree(child, atIndex);
 
-        return child._addToSuperview(this.nativeView, atIndex);
+        const parentNativeView = this.nativeView;
+        const childNativeView = child.nativeView;
+
+        if (parentNativeView && childNativeView) {
+            if (typeof atIndex !== "number" || atIndex >= parentNativeView.subviews.count) {
+                parentNativeView.addSubview(childNativeView);
+            } else {
+                parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public _removeViewFromNativeVisualTree(child: View): void {
         super._removeViewFromNativeVisualTree(child);
 
-        child._removeFromSuperview();
+        if (child.nativeView) {
+            child.nativeView.removeFromSuperview();
+        }
     }
 }

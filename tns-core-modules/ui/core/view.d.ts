@@ -536,9 +536,6 @@ declare module "ui/core/view" {
 
         _eachLayoutView(callback: (View) => void): void;
 
-        _addToSuperview(superview: any, index?: number): boolean;
-        _removeFromSuperview();
-
         public _applyXmlAttribute(attribute: string, value: any): boolean;
         public eachChildView(callback: (view: View) => boolean): void;
 

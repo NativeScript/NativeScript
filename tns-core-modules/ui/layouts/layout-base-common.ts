@@ -126,10 +126,10 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
             }
         }
     }
-    
+
     public eachLayoutChild(callback: (child: View, isLast: boolean) => void): void {
         var lastChild: View = null;
-        
+
         this.eachChildView((cv) => {
             cv._eachLayoutView((lv) => {
                 if (lastChild && !lastChild.isCollapsed) {
@@ -141,7 +141,7 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
 
             return true;
         });
-        
+
         if (lastChild && !lastChild.isCollapsed) {
             callback(lastChild, true);
         }
@@ -149,5 +149,5 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
     }
 }
 
-export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({name: "clipToBounds", defaultValue: true});
+export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({ name: "clipToBounds", defaultValue: true });
 clipToBoundsProperty.register(LayoutBaseCommon);

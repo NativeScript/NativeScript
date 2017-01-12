@@ -3,7 +3,7 @@ import {
     traceEnabled, traceWrite, traceCategories
 } from "./image-common";
 
-export * from "./image-common";;
+export * from "./image-common";
 
 export class Image extends ImageBase {
     private _ios: UIImageView;

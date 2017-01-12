@@ -6,13 +6,9 @@ import { LayoutBase, View, traceEnabled, traceWrite, traceCategories } from "ui/
  */
 // Cases to cover:
 // * Child is added to the attached proxy. Handled in _addViewToNativeVisualTree.
-// * Proxy (with children) is added to the DOM.
-//   - IOS: Handled in _addToSuperview - when the proxy is added, it adds all its children to the new parent.
-//   - Android: _onAttached calls _addViewToNativeVisualTree recursively when the proxy is added to the parent.
+// * Proxy (with children) is added to the DOM. In _addViewToNativeVisualTree _addViewToNativeVisualTree recursively when the proxy is added to the parent.
 // * Child is removed from attached proxy. Handled in _removeViewFromNativeVisualTree.
-// * Proxy (with children) is removed form the DOM.
-//   - IOS: Handled in _removeFromSuperview - when the proxy is removed, it removes all its children from its parent.
-//   - Android: _onDetached calls _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
+// * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
     // No native view for proxy container.
     get ios(): any {
@@ -95,27 +91,6 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         if (parent instanceof View) {
             return parent._removeViewFromNativeVisualTree(child);
         }
-    }
-
-    public _addToSuperview(superview: any, atIndex?: number): boolean {
-        let index = 0;
-        this.eachChildView((cv) => {
-            if (!cv._isAddedToNativeVisualTree) {
-                cv._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(cv, index++);
-            }
-            return true;
-        });
-
-        return true;
-    }
-
-    public _removeFromSuperview() {
-        this.eachChildView((cv) => {
-            if (cv._isAddedToNativeVisualTree) {
-                this._removeViewFromNativeVisualTree(cv);
-            }
-            return true;
-        });
     }
 
     /*

@@ -1,18 +1,18 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import {View} from "ui/core/view";
-import {Button} from "ui/button";
-import {Page} from "ui/page";
-import {ScrollView} from "ui/scroll-view";
-import {LayoutBase} from "ui/layouts/layout-base"
-import {StackLayout} from "ui/layouts/stack-layout"
-import {GridLayout} from "ui/layouts/grid-layout"
-import {ProxyViewContainer} from "ui/proxy-view-container";
-import {ListView} from "ui/list-view";
+import { View } from "ui/core/view";
+import { Button } from "ui/button";
+import { Page } from "ui/page";
+import { ScrollView } from "ui/scroll-view";
+import { LayoutBase } from "ui/layouts/layout-base";
+import { StackLayout } from "ui/layouts/stack-layout";
+import { GridLayout } from "ui/layouts/grid-layout";
+import { ProxyViewContainer } from "ui/proxy-view-container";
+import { ListView } from "ui/list-view";
 
 export function test_add_children_to_attached_proxy() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     function testAction(views: Array<View>) {
         outer.addChild(createBtn("1"));
@@ -30,8 +30,8 @@ export function test_add_children_to_attached_proxy() {
 }
 
 export function test_children_immediately_registered_in_parent_grid_layout() {
-    var outer = new GridLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new GridLayout();
+    const proxy = new ProxyViewContainer();
 
     function testAction(views: Array<View>) {
         outer.addChild(proxy);
@@ -44,10 +44,11 @@ export function test_children_immediately_registered_in_parent_grid_layout() {
 }
 
 export function test_children_registered_in_parent_grid_layout_on_attach() {
-    var outer = new GridLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new GridLayout();
+    const proxy = new ProxyViewContainer();
 
     function testAction(views: Array<View>) {
+
         proxy.addChild(createBtn("1"));
         outer.addChild(proxy);
 
@@ -58,8 +59,8 @@ export function test_children_registered_in_parent_grid_layout_on_attach() {
 }
 
 export function test_add_children_to_detached_proxy() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     function testAction(views: Array<View>) {
         outer.addChild(createBtn("1"));
@@ -78,8 +79,8 @@ export function test_add_children_to_detached_proxy() {
 }
 
 export function test_remove_proxy() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     outer.addChild(createBtn("1"));
 
@@ -100,14 +101,14 @@ export function test_remove_proxy() {
 }
 
 export function test_remove_child_of_attached_proxy() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     outer.addChild(createBtn("1"));
 
     outer.addChild(proxy);
     proxy.addChild(createBtn("2"));
-    var testBtn = createBtn("3")
+    const testBtn = createBtn("3");
     proxy.addChild(testBtn);
     proxy.addChild(createBtn("4"));
 
@@ -122,9 +123,9 @@ export function test_remove_child_of_attached_proxy() {
     helper.buildUIAndRunTest(outer, testAction);
 }
 
-export function test_insert_inside_porxy() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+export function test_insert_inside_proxy() {
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     outer.addChild(createBtn("1"));
 
@@ -143,9 +144,9 @@ export function test_insert_inside_porxy() {
     helper.buildUIAndRunTest(outer, testAction);
 }
 
-export function test_insert_after_porxy() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+export function test_insert_after_proxy() {
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     outer.addChild(createBtn("1"));
 
@@ -164,12 +165,12 @@ export function test_insert_after_porxy() {
 }
 
 export function test_proxy_does_not_stop_request_layout_bubble() {
-    var outer = new StackLayout();
-    var proxy = new ProxyViewContainer();
+    const outer = new StackLayout();
+    const proxy = new ProxyViewContainer();
 
     outer.addChild(createBtn("1"));
     outer.addChild(proxy);
-    var btn = createBtn("2");
+    const btn = createBtn("2");
     proxy.addChild(btn);
 
     function testAction(views: Array<View>) {
@@ -184,51 +185,51 @@ export function test_proxy_does_not_stop_request_layout_bubble() {
 }
 
 export function test_proxy_iniside_page() {
-    var proxy = new ProxyViewContainer();
+    const proxy = new ProxyViewContainer();
     proxy.addChild(createBtn("1"));
 
     function testAction(views: Array<View>) {
-        var page = <Page>views[1];
+        const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
     };
 
     helper.buildUIAndRunTest(proxy, testAction);
 }
 
-export function test_proxy_iniside_scroll_view() {
-    var scroll = new ScrollView();
+export function test_proxy_inside_scroll_view() {
+    const scroll = new ScrollView();
+    const proxy = new ProxyViewContainer();
     scroll.content = proxy;
 
-    var proxy = new ProxyViewContainer();
     proxy.addChild(createBtn("1"));
 
     function testAction(views: Array<View>) {
-        var page = <Page>views[1];
+        const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
     };
 
     helper.buildUIAndRunTest(scroll, testAction);
 }
 
-export function test_proxy_iniside_border() {
-    var scroll = new ScrollView();
+export function test_proxy_inside_border() {
+    const scroll = new ScrollView();
+    const proxy = new ProxyViewContainer();
     scroll.content = proxy;
 
-    var proxy = new ProxyViewContainer();
     proxy.addChild(createBtn("1"));
 
     function testAction(views: Array<View>) {
-        var page = <Page>views[1];
+        const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
     };
 
     helper.buildUIAndRunTest(scroll, testAction);
 }
 
-export function test_proxy_iniside_listview_itemtemplate_crash() {
+export function test_proxy_inside_listview_itemTemplate_crash() {
     // Usually reproducible with an Angular component in the template
     // We use a simple declaration here to simulate it.
-    var list = new ListView();
+    const list = new ListView();
     list.items = ["item 1"];
     list.itemTemplate = `
     <ProxyViewContainer>
@@ -237,7 +238,7 @@ export function test_proxy_iniside_listview_itemtemplate_crash() {
     `;
 
     function testAction(views: Array<View>) {
-        var page = <Page>views[1];
+        const page = <Page>views[1];
         waitUntilElementLayoutIsValid(page);
     };
 
@@ -245,17 +246,17 @@ export function test_proxy_iniside_listview_itemtemplate_crash() {
 }
 
 // TODO: Proxy as a direct child to of TabItem is not supported. Not sure if we want to support it.
-//export function test_proxy_iniside_tab() {
-//    var proxy = new ProxyViewContainer();
+//export function test_proxy_inside_tab() {
+//    const proxy = new ProxyViewContainer();
 //    proxy.addChild(createBtn("1"));
 
-//    var tab = new TabView();
-//    var items = new Array<TabViewItem>();
+//    const tab = new TabView();
+//    const items = new Array<TabViewItem>();
 //    items.push(new TabViewItem({ title: "tab with proxy", view: proxy }));
 //    tab.items = items;
-    
+
 //    function testAction(views: Array<View>) {
-//        var page = <Page>views[1];
+//        const page = <Page>views[1];
 //        waitUntilElementLayoutIsValid(page);
 //    };
 
@@ -263,10 +264,10 @@ export function test_proxy_iniside_listview_itemtemplate_crash() {
 //}
 
 // TODO: Proxy as a direct child to of ActionBar is not supported. Not sure if we want to support it.
-//export function test_proxy_iniside_actionBar() {
+//export function test_proxy_inside_actionBar() {
 //    function testAction(views: Array<View>) {
-//        var page = <Page>views[1];
-//        var proxy = new ProxyViewContainer();
+//        const page = <Page>views[1];
+//        const proxy = new ProxyViewContainer();
 //        proxy.addChild(createBtn("1"));
 //        page.actionBar.titleView = proxy;
 //        waitUntilElementLayoutIsValid(page);
@@ -282,7 +283,7 @@ function waitUntilElementLayoutIsValid(view: View, timeoutSec?: number): void {
 }
 
 function createBtn(text: string): Button {
-    var b = new Button();
+    const b = new Button();
     b.text = text;
     return b;
 }

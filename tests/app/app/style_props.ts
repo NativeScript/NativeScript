@@ -29,7 +29,7 @@ import * as stackLayoutDef from "ui/layouts/stack-layout";
 //         }
 //         else if (view.ios) {
 //             var fontSize = (<UIButton>view._nativeView).titleLabel.font.pointSize;
-//             (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(nativeValue, fontSize);;
+//             (<UIButton>view._nativeView).titleLabel.font = UIFont.fontWithNameSize(nativeValue, fontSize);
 //         }
 //     }
 

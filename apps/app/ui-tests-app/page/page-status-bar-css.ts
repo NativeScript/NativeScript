@@ -58,7 +58,7 @@ export function applyTapWithActionBarHiddenAndSpan(args) {
     reset(page);
 
     page.backgroundSpanUnderStatusBar = true;
-    page.actionBarHidden = true;;
+    page.actionBarHidden = true;
     var css = "#test-element { " + args.object.tag + " }";
     page.css = css;
 }
