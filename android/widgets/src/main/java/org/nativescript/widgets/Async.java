@@ -288,6 +288,7 @@ public class Async
 			public int timeout = -1;
 			public int screenWidth = -1;
 			public int screenHeight = -1;
+			public boolean dontFollowRedirects = false;
 
 			public void addHeaders(HttpURLConnection connection)
 			{
@@ -520,6 +521,11 @@ public class Async
 					if (options.timeout > 0)
 					{
 						connection.setConnectTimeout(options.timeout);
+					}
+
+					// don't follow redirect (30x) responses; by default, HttpURLConnection follows them.
+					if (options.dontFollowRedirects) {
+						connection.setInstanceFollowRedirects(false);
 					}
 
 					// Do not attempt to write the content (body) for DELETE method, Java will throw directly
