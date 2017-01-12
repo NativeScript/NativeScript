@@ -2,8 +2,8 @@
 import * as types from "utils/types";
 import * as knownColors from "color/known-colors";
 
-var AMP = "#";
-var HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
+const SHARP = "#";
+const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
 
 export class Color implements definition.Color {
     private _a: number;
@@ -19,7 +19,7 @@ export class Color implements definition.Color {
     constructor(a: number, r: number, g: number, b: number);
     constructor() {
         if (arguments.length === 1) {
-            var arg = arguments[0];
+            const arg = arguments[0];
             if (types.isString(arg)) {
                 if (isRgbOrRgba(arg)) {
                     this._argb = argbFromRgbOrRgba(arg);
@@ -28,10 +28,12 @@ export class Color implements definition.Color {
                     this._hex = knownColors.getKnownColor(arg);
                     this._name = arg;
                     this._argb = this._argbFromString(this._hex);
-                } else {
+                } else if (HEX_REGEX.test(arg)) {
                     // The parameter is a "#AARRGGBB" formatted string
                     this._hex = this._normalizeHex(arg);
                     this._argb = this._argbFromString(this._hex);
+                } else {
+                    throw new Error("Invalid color: " + arg);
                 }
             } else if (types.isNumber(arg)) {
                 // The parameter is a 32-bit unsigned integer where each 8 bits specify a color component
@@ -131,11 +133,11 @@ export class Color implements definition.Color {
     }
 
     private _buildHex(): string {
-        return AMP + this._componentToHex(this._a) + this._componentToHex(this._r) + this._componentToHex(this._g) + this._componentToHex(this._b);
+        return SHARP + this._componentToHex(this._a) + this._componentToHex(this._r) + this._componentToHex(this._g) + this._componentToHex(this._b);
     }
 
     private _componentToHex(component: number): string {
-        var hex = component.toString(16);
+        let hex = component.toString(16);
         if (hex.length === 1) {
             hex = "0" + hex;
         }
@@ -161,7 +163,7 @@ export class Color implements definition.Color {
     }
 
     private _normalizeHex(hexStr: string): string {
-        if (hexStr.charAt(0) === AMP && hexStr.length === 4) {
+        if (hexStr.charAt(0) === SHARP && hexStr.length === 4) {
             // Duplicate each char after the #, so "#123" becomes "#112233"
             hexStr = hexStr.charAt(0)
                 + hexStr.charAt(1) + hexStr.charAt(1)
@@ -177,18 +179,18 @@ export class Color implements definition.Color {
 }
 
 function isRgbOrRgba(value: string): boolean {
-    var toLower = value.toLowerCase();
+    const toLower = value.toLowerCase();
     return (toLower.indexOf("rgb(") === 0 || toLower.indexOf("rgba(") === 0) && toLower.indexOf(")") === (toLower.length - 1);
 }
 
 function argbFromRgbOrRgba(value: string): number {
-    var toLower = value.toLowerCase();
-    var parts = toLower.replace("rgba(", "").replace("rgb(", "").replace(")", "").trim().split(",");
+    const toLower = value.toLowerCase();
+    const parts = toLower.replace("rgba(", "").replace("rgb(", "").replace(")", "").trim().split(",");
 
-    var r = 255,
-        g = 255,
-        b = 255,
-        a = 255;
+    let r = 255;
+    let g = 255;
+    let b = 255;
+    let a = 255;
 
     if (parts[0]) {
         r = parseInt(parts[0].trim());
@@ -201,7 +203,7 @@ function argbFromRgbOrRgba(value: string): number {
     if (parts[2]) {
         b = parseInt(parts[2].trim());
     }
-    
+
     if (parts[3]) {
         a = Math.round(parseFloat(parts[3].trim()) * 255);
     }

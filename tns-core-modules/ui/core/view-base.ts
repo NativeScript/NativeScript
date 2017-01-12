@@ -123,6 +123,9 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     get style(): Style {
         return this._style;
     }
+    set style(value) {
+        throw new Error("View.style property is read-only.");
+    }
 
     get android(): any {
         return undefined;

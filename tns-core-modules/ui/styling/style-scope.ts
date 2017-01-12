@@ -1,4 +1,4 @@
-import { ViewBase, resetStyleProperties } from "ui/core/view-base";
+import { ViewBase, resetCSSProperties } from "ui/core/view-base";
 import { SyntaxTree, Keyframes, parse as parseCss, Node } from "css";
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
 import { KeyframeAnimationInfo, KeyframeAnimation } from "ui/animation/keyframe-animation";
@@ -22,7 +22,7 @@ export class CssState {
 
     public apply(): void {
         this.view._cancelAllAnimations();
-        resetStyleProperties(this.view.style);
+        resetCSSProperties(this.view.style);
 
         let matchingSelectors = this.match.selectors.filter(sel => sel.dynamic ? sel.match(this.view) : true);
         if (this.view.inlineStyleSelector) {
@@ -37,9 +37,13 @@ export class CssState {
         ruleset.declarations.forEach(d => {
             let name = `css-${d.property}`;
             if (name in style) {
-                style[name] = d.value;
+                try {
+                    style[name] = d.value;
+                } catch (e) {
+                    traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error)
+                }
             } else {
-                view[name] = d.value;
+                view[d.property] = d.value;
             }
         });
 
@@ -145,7 +149,7 @@ export class StyleScope {
                 let url = match && match[2];
 
                 if (url !== null && url !== undefined) {
-		    let appDirectory = knownFolders.currentApp().path;
+                    let appDirectory = knownFolders.currentApp().path;
                     let fileName = resolveFileNameFromUrl(url, appDirectory, File.exists);
 
                     if (fileName !== null) {
