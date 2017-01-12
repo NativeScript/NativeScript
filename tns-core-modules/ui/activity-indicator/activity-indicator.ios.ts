@@ -38,6 +38,6 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         return this.nativeView.color;
     }
     set [colorProperty.native](value: UIColor | Color) {
-        this.nativeView.color = value instanceof Color ? value.ios : value;;
+        this.nativeView.color = value instanceof Color ? value.ios : value;
     }
 }

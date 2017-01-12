@@ -785,14 +785,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return callback(this);
     }
 
-    _addToSuperview(superview: any, index?: number): boolean {
-        // IOS specific
-        return false;
-    }
-    _removeFromSuperview(): void {
-        // IOS specific
-    }
-
     // public unsetInheritedProperties(): void {
     //     // this._setValue(ProxyObject.bindingContextProperty, undefined, ValueSource.Inherited);
     //     // this._eachSetProperty((property) => {

@@ -128,7 +128,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
         this.testView.hour = 14;
         this.testView.maxHour = this.testView.hour + 1;
         TKUnit.assertThrows(function() {
-            this.testView.hour = this.testView.maxHour + 1;;
+            this.testView.hour = this.testView.maxHour + 1;
         }, "Setting hour property to a value greater than maxHour property value should throw.");
     }
 

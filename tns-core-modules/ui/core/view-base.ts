@@ -104,7 +104,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public bindingContext: any;
     public nativeView: any;
     public parent: ViewBase;
-    public isCollapsed = false;
+    public isCollapsed; // Default(false) set in prototype
 
     public id: string;
     public className: string;
@@ -487,7 +487,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._initNativeView();
 
         if (this.parent) {
-            this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, atIndex);
+            let nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
+            this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
         }
 
         if (this.nativeView) {
@@ -613,6 +614,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 }
+
+ViewBase.prototype.isCollapsed = false;
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);

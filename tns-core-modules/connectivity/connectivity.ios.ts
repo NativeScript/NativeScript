@@ -80,6 +80,6 @@ export function stopMonitoring(): void {
     if (_monitorReachabilityRef) {
         SCNetworkReachabilityUnscheduleFromRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         _monitorReachabilityRef = undefined;
-        _connectionTypeChangedCallback = undefined;;
+        _connectionTypeChangedCallback = undefined;
     }
 }
