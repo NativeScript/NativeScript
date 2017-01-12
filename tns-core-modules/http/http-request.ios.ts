@@ -20,7 +20,28 @@ var USER_AGENT_HEADER = "User-Agent";
 var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25`;
 var sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
 var queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
-var session = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
+
+class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskDelegate {
+    public static ObjCProtocols = [NSURLSessionTaskDelegate];
+    public URLSessionTaskWillPerformHTTPRedirectionNewRequestCompletionHandler(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse, request: NSURLRequest, completionHandler: (p1: NSURLRequest) => void): void {
+        completionHandler(null);
+    }
+}
+var sessionTaskDelegateInstance: NSURLSessionTaskDelegateImpl = <NSURLSessionTaskDelegateImpl>NSURLSessionTaskDelegateImpl.new();
+
+var defaultSession;
+function ensureDefaultSession() {
+    if (!defaultSession) {
+        defaultSession = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, null, queue);
+    }
+}
+
+var sessionNotFollowingRedirects;
+function ensureSessionNotFollowingRedirects() {
+    if (!sessionNotFollowingRedirects) {
+        sessionNotFollowingRedirects = NSURLSession.sessionWithConfigurationDelegateDelegateQueue(sessionConfig, sessionTaskDelegateInstance, queue);
+    }
+}
 
 var imageSource: typeof imageSourceModule;
 function ensureImageSource() {
@@ -55,6 +76,15 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
 
             if (types.isNumber(options.timeout)) {
                 urlRequest.timeoutInterval = options.timeout / 1000;
+            }
+
+            var session;
+            if (types.isBoolean(options.dontFollowRedirects) && options.dontFollowRedirects) {
+                ensureSessionNotFollowingRedirects();
+                session = sessionNotFollowingRedirects;
+            } else {
+                ensureDefaultSession();
+                session = defaultSession;
             }
 
             var dataTask = session.dataTaskWithRequestCompletionHandler(urlRequest,

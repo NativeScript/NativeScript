@@ -30,6 +30,7 @@
                         public timeout: number;
                         public screenWidth: number;
                         public screenHeight: number;
+                        public dontFollowRedirects: boolean;
                     }
 
                     export class RequestResult {
