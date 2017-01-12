@@ -155,6 +155,9 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
     if (types.isNumber(options.timeout)) {
         javaOptions.timeout = options.timeout;
     }
+    if (types.isBoolean(options.dontFollowRedirects)) {
+        javaOptions.dontFollowRedirects = options.dontFollowRedirects;
+    }
 
     if (options.headers) {
         var arrayList = new java.util.ArrayList<org.nativescript.widgets.Async.Http.KeyValuePair>();
