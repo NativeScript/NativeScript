@@ -39,10 +39,6 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
             owner.dismissSoftInput();
             owner._refreshHintState(owner.hint, textView.text);
-
-            // if (owner.formattedText) {
-            //     formattedTextProperty.nativeValueChange(owner, textView.attributedText);
-            // }
         }
     }
 

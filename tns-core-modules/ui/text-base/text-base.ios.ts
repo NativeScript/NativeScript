@@ -49,9 +49,11 @@ export class TextBase extends TextBaseCommon {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             nativeView.setAttributedTitleForState(mas, UIControlState.Normal);
-        } else {
+        } 
+        else {
             nativeView.attributedText = mas;
         }
+        textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
     }
 
     //Color

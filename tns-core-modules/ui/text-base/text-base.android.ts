@@ -28,6 +28,7 @@ export class TextBase extends TextBaseCommon {
         let spannableStringBuilder = createSpannableStringBuilder(value);
         const text = (spannableStringBuilder === null || spannableStringBuilder === undefined) ? '' : <any>spannableStringBuilder;
         this._nativeView.setText(text);
+        textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
 
         if (spannableStringBuilder && this._nativeView instanceof android.widget.Button && 
             !(this._nativeView.getTransformationMethod() instanceof TextTransformation)){

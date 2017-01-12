@@ -40,10 +40,6 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
             }
 
             owner.dismissSoftInput();
-
-            // if (owner.formattedText) {
-            //     formattedTextProperty.nativeValueChange(owner, textField.attributedText);
-            // }
         }
     }
 

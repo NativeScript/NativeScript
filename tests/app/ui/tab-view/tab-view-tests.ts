@@ -330,7 +330,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), nativeFont, "Font must be bold 12 monospace after rebinding items.");
         //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
-        console.log(`>>>>>>>>>>>>> RESET`);
+        //console.log(`>>>>>>>>>>>>> RESET`);
         this.testView.style.font = unsetValue;
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), originalFont, "Font must be the original one after resetting the style.");
     }
