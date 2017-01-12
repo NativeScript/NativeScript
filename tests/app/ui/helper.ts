@@ -10,6 +10,7 @@ import * as colorModule from "color";
 import * as formattedStringModule from "text/formatted-string";
 import * as spanModule from "text/span";
 import * as enums from "ui/enums";
+import { ActionBar } from "ui/action-bar";
 import { unsetValue } from "ui/core/view";
 
 var DELTA = 0.1;
@@ -35,7 +36,7 @@ function clearPage(): void {
     newPage.id = unsetValue;
 }
 
-export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
+export function do_PageTest(test: (views: [page.Page, view.View, view.View, view.View, ActionBar]) => void, content: view.View, secondView: view.View, thirdView: view.View) {
     clearPage();
     let newPage = getCurrentPage();
     newPage.content = content;
@@ -43,7 +44,7 @@ export function do_PageTest(test: (views: Array<view.View>) => void, content: vi
     newPage.content = null;
 }
 
-export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) {
+export function do_PageTest_WithButton(test: (views: [page.Page, button.Button, ActionBar]) => void) {
     clearPage();
     let newPage = getCurrentPage();
     let btn = new button.Button();
@@ -52,7 +53,7 @@ export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) 
     newPage.content = null;
 }
 
-export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.View>) => void) {
+export function do_PageTest_WithStackLayout_AndButton(test: (views: [page.Page, stackLayoutModule.StackLayout, button.Button, ActionBar]) => void) {
     clearPage();
     let newPage = getCurrentPage();
     let stackLayout = new stackLayoutModule.StackLayout();
@@ -64,7 +65,7 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.V
 }
 
 //export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
-export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
+export function buildUIAndRunTest<T extends view.View>(controlToTest: T, testFunction: (views: [T, page.Page]) => void, pageCss?) {
     clearPage();
     let newPage = getCurrentPage();
     newPage.content = controlToTest;
@@ -92,9 +93,9 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
             }
 
             sp.removeChild(weakRef.get());
-            
+
             TKUnit.wait(1); // Wait for the TextField/TextView to close its keyboard so it can be released.
-            
+
             if (newPage.ios) {
                 /* tslint:disable:no-unused-expression */
                 // Could cause GC on the next call.
@@ -115,7 +116,7 @@ export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: (
     newPage.content = sp;
 
     TKUnit.waitUntilReady(() => testFinished, MEMORY_ASYNC);
-    TKUnit.assertTrue(testFinished, "Test did not completed.")
+    TKUnit.assertTrue(testFinished, "Test did not completed.");
     done(null);
 }
 
@@ -162,7 +163,7 @@ export function navigateWithEntry(entry: frame.NavigationEntry): page.Page {
     entry.moduleName = null;
     entry.create = function () {
         return page;
-    }
+    };
 
     let currentPage = getCurrentPage();
     frame.topmost().navigate(entry);
@@ -177,8 +178,8 @@ export function goBack() {
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+    const density = utils.layout.getDisplayDensity();
+    const delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
     TKUnit.assertAreClose(actual, expected, delta, message);
 }
@@ -204,7 +205,7 @@ export function forceGC() {
     utils.GC();
 }
 
-export function _generateFormattedString(): formattedStringModule.FormattedString{
+export function _generateFormattedString(): formattedStringModule.FormattedString {
     let formattedString = new formattedStringModule.FormattedString();
     let span: spanModule.Span;
 
@@ -218,7 +219,7 @@ export function _generateFormattedString(): formattedStringModule.FormattedStrin
     span.strikethrough = 1;
     span.text = "Formatted";
     formattedString.spans.push(span);
-    
+
     span = new spanModule.Span();
     span.fontFamily = "sans-serif";
     span.fontSize = 20;

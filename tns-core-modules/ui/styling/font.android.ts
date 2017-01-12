@@ -36,7 +36,7 @@ export class Font extends FontBase {
 
     public getAndroidTypeface(): android.graphics.Typeface {
         if (!this._typeface) {
-            var fontStyle = 0;
+            let fontStyle = 0;
             if (this.isBold) {
                 fontStyle |= android.graphics.Typeface.BOLD;
             }
@@ -44,7 +44,7 @@ export class Font extends FontBase {
                 fontStyle |= android.graphics.Typeface.ITALIC;
             }
 
-            var typeFace = createTypeface(this);
+            const typeFace = createTypeface(this);
             this._typeface = android.graphics.Typeface.create(typeFace, fontStyle);
         }
         return this._typeface;
@@ -66,8 +66,8 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
     if (result === undefined) {
         result = null;
 
-        var fontAssetPath: string;
-        var basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
+        let fontAssetPath: string;
+        const basePath = fs.path.join(fs.knownFolders.currentApp().path, "fonts", fontFamily);
         if (fs.File.exists(basePath + ".ttf")) {
             fontAssetPath = FONTS_BASE_PATH + fontFamily + ".ttf";
         }
@@ -83,7 +83,7 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
         if (fontAssetPath) {
             try {
                 fontAssetPath = fs.path.join(fs.knownFolders.currentApp().path, fontAssetPath);
-                result = android.graphics.Typeface.createFromFile(fontAssetPath)
+                result = android.graphics.Typeface.createFromFile(fontAssetPath);
             } catch (e) {
                 if (traceEnabled) {
                     traceWrite("Error loading font asset: " + fontAssetPath, traceCategories.Error, traceMessageType.error);
@@ -98,13 +98,13 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
 
 function createTypeface(font: Font): android.graphics.Typeface {
     //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
-    var fonts = parseFontFamily(font.fontFamily);
-    var result = null;
+    const fonts = parseFontFamily(font.fontFamily);
+    let result = null;
     if (fonts.length === 0) {
         return null;
     }
 
-    for (var i = 0; i < fonts.length; i++) {
+    for (let i = 0; i < fonts.length; i++) {
         switch (fonts[i].toLowerCase()) {
             case genericFontFamilies.serif:
                 result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), 0);

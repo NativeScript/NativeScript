@@ -1,6 +1,7 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
 import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout } from "./action-bar-common";
 import { ImageSource, fromFileOrResource } from "image-source";
+import { Color } from "color";
 
 export * from "./action-bar-common";
 
@@ -295,10 +296,15 @@ export class ActionBar extends ActionBarBase {
     get [colorProperty.native](): UIColor {
         return null;
     }
-    set [colorProperty.native](color: UIColor) {
-        let navBar = this.navBar;
-        navBar.tintColor = color;
-        navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color };
+    set [colorProperty.native](color: Color) {
+        const navBar = this.navBar;
+        if (color) {
+            navBar.tintColor = color.ios;
+            navBar.titleTextAttributes = <any>{ [NSForegroundColorAttributeName]: color.ios };
+        } else {
+            navBar.tintColor = null;
+            navBar.titleTextAttributes = null;
+        }
     }
 
     get [backgroundColorProperty.native](): UIColor {

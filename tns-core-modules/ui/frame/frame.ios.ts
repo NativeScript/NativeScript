@@ -16,6 +16,8 @@ const DELEGATE = "_delegate";
 
 let navDepth = -1;
 
+const FRAME_CONTEXT = {};
+
 export class Frame extends FrameBase {
     private _ios: iOSFrame;
     private _paramToNavigate: any;
@@ -28,6 +30,13 @@ export class Frame extends FrameBase {
     public _right: number;
     public _bottom: number;
     public _isInitialNavigation: boolean = true;
+
+    public get _context(): any {
+        return FRAME_CONTEXT;
+    }
+    public set _context(value:any) {
+        throw new Error("Frame _context is readonly");
+    }
 
     constructor() {
         super();
@@ -657,7 +666,7 @@ export function _getNativeCurve(transition: NavigationTransition): UIViewAnimati
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.Linear.", traceCategories.Transition);
                 }
                 return UIViewAnimationCurve.Linear;
-                
+
             default:
                 if (traceEnabled) {
                     traceWrite("Transition curve resolved to original: " + transition.curve, traceCategories.Transition);
