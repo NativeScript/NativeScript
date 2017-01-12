@@ -700,8 +700,8 @@ export function test_parseSpansDirectlyOnLabel() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testLabel = <Label>page.getViewById("testLabel");
-        TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "Formatted string should be set");
-        TKUnit.assertEqual(testLabel.text + "", "We areAwesome", "Formatted string should be set");
+        TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "formattedText");
+        TKUnit.assertEqual(testLabel.text + "", "We areAwesome", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -713,8 +713,8 @@ export function test_parseSpansDirectlyOnButton() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "We areAwesome", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "We areAwesome", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -726,8 +726,8 @@ export function test_parseFormattedStringWithoutFormattedText() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -739,8 +739,8 @@ export function test_parseFormattedStringFullSyntax() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -752,8 +752,8 @@ export function test_parseSpansDirectlyToFormattedString() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
     }
 
     helper.navigate(function () { return p; });
