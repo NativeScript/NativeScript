@@ -102,7 +102,7 @@ if (!(platform.device.os === platform.platformNames.android && parseInt(platform
     allTests["TANSITIONS"] = require("./navigation/transition-tests");
 }
 
-// allTests["NAVIGATION"] = require("./navigation/navigation-tests");
+allTests["NAVIGATION"] = require("./navigation/navigation-tests");
 
 var testsWithLongDelay = {
     test_Transitions: 3 * 60 * 1000,
