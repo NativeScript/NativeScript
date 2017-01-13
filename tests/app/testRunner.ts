@@ -99,7 +99,7 @@ allTests["ANIMATION"] = require("./ui/animation/animation-tests");
 
 // Skip transitions on android emulators with API 23
 if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
-    // allTests["TANSITIONS"] = require("./navigation/transition-tests");
+    allTests["TANSITIONS"] = require("./navigation/transition-tests");
 }
 
 // allTests["NAVIGATION"] = require("./navigation/navigation-tests");
