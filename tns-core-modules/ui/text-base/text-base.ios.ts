@@ -283,18 +283,20 @@ function setTextDecorationAndTransform(text: string, nativeView: UITextField | U
 
 function createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
     let mas = NSMutableAttributedString.alloc().init();
-    for (let i = 0, spanStart = 0, spanLength = 0, length = formattedString.spans.length, spanText = ""; i < length; i++) {
-        let span = formattedString.spans.getItem(i);
-        spanText = toUIString(span.text);
-        spanLength = spanText.length;
-        span.updateSpanModifiers(formattedString);
-        let attrDict = NSMutableDictionary.alloc<string, any>().init();
-        for (let p = 0; p < span.spanModifiers.length; p++) {
-            attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);
+    if (formattedString) {
+        for (let i = 0, spanStart = 0, spanLength = 0, length = formattedString.spans.length, spanText = ""; i < length; i++) {
+            let span = formattedString.spans.getItem(i);
+            spanText = toUIString(span.text);
+            spanLength = spanText.length;
+            span.updateSpanModifiers(formattedString);
+            let attrDict = NSMutableDictionary.alloc<string, any>().init();
+            for (let p = 0; p < span.spanModifiers.length; p++) {
+                attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);
+            }
+            let nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
+            mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
+            spanStart += spanLength;
         }
-        let nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
-        mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
-        spanStart += spanLength;
     }
     return mas;
 }

@@ -192,7 +192,7 @@ if (platform.device.os === platform.platformNames.ios) {
         helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
             var textField = <textFieldModule.TextField>views[0];
             textField.color = new colorModule.Color("red");
-            TKUnit.assertEqual(textField.color.ios.CGColor, textField.ios.tintColor.CGColor, "textField.color");
+            TKUnit.assertEqual(textField.color.ios.CGColor, textField.ios.textColor.CGColor, "textField.color");
         });
     }
 }
@@ -540,9 +540,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration");
-        TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform default value");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration default value");
+        TKUnit.assertTrue(view.style.letterSpacing === 0, "LetterSpacing default value");
 
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
