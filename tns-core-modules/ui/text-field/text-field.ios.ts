@@ -132,6 +132,7 @@ export class TextField extends TextFieldBase {
         let weakRef = new WeakRef(this);
         this._ios = UITextFieldImpl.initWithOwner(weakRef);
         this._delegate = UITextFieldDelegateImpl.initWithOwner(weakRef);
+        this.nativeView = this._ios;
     }
 
     public onLoaded() {
@@ -152,7 +153,13 @@ export class TextField extends TextFieldBase {
         return this.nativeView.placeholder;
     }
     set [hintProperty.native](value: string) {
-        this.nativeView.placeholder = value + '';
+        let stringValue;
+        if (value === null || value === void 0) {
+            stringValue = "";
+        } else {
+            stringValue = value + "";
+        }
+        this.nativeView.placeholder = stringValue;
     }
 
     get [secureProperty.native](): boolean {
@@ -166,7 +173,7 @@ export class TextField extends TextFieldBase {
         // return this.nativeView.tintColor;
         return this.nativeView.textColor;
     }
-    set [colorProperty.native](value: UIColor) {
+    set [colorProperty.native](value: UIColor | Color) {
         // NOTE: Do we need this code? We have placeholderColor.
         // let nativeValue = this.nativeView;
         // if (this.isShowingHint && value) {
@@ -175,7 +182,8 @@ export class TextField extends TextFieldBase {
         //     nativeValue.textColor = value;
         //     nativeValue.tintColor = value;
         // }
-        this.nativeView.textColor = value;
+        let color = value instanceof Color ? value.ios : value;
+        this.nativeView.textColor = color;
     }
 
     get [placeholderColorProperty.native](): UIColor {
@@ -185,7 +193,15 @@ export class TextField extends TextFieldBase {
         let nativeView = this.nativeView;
         let colorAttibutes = NSMutableDictionary.new<string, any>();
         colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
-        nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(nativeView.placeholder || "", colorAttibutes);
+        let stringValue;
+        if (nativeView.placeholder === null || nativeView.placeholder === void 0) {
+            // we do not use empty string since initWithStringAttributes does not return proper value and
+            // nativeView.attributedPlaceholder will be null
+            stringValue = " ";
+        } else {
+            stringValue = nativeView.placeholder + "";
+        }
+        nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, colorAttibutes);
     }
 
     get [paddingTopProperty.native](): Length {
