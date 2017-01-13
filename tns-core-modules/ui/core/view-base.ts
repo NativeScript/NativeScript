@@ -1,5 +1,5 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
-import { Observable, EventData } from "data/observable";
+import { Observable, EventData, PropertyChangeData } from "data/observable";
 import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, applyNativeSetters, resetStyleProperties } from "./properties";
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
@@ -8,6 +8,9 @@ import { SelectorCore } from "ui/styling/css-selector";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+
+// TODO: Remove this import!
+import * as types from "utils/types";
 
 import * as ssm from "ui/styling/style-scope";
 let styleScopeModule: typeof ssm;
@@ -46,6 +49,8 @@ export function getEventOrGestureName(name: string): string {
     return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
 }
 
+// TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
+// in controls. They will just override this one and provide their own event support.
 export function isEventOrGesture(name: string, view: ViewBaseDefinition): boolean {
     if (typeof name === "string") {
         let eventOrGestureName = getEventOrGestureName(name);
@@ -125,6 +130,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         super();
         this._domId = viewIdCounter++;
         this._style = new Style(this);
+    }
+
+    get typeName(): string {
+        return types.getClass(this);
     }
 
     get style(): Style {
@@ -348,39 +357,63 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    private bindings = new Map<string, Binding>();
+    private bindingContextChanged(data: PropertyChangeData): void {
+        this.bindings.get("bindingContext").bind(data.value);
+    }
+
+    private bindings: Map<string, Binding>;
+    private shouldAddHandlerToParentBindingContextChanged: boolean;
+    private bindingContextBoundToParentBindingContextChanged: boolean;
+
     public bind(options: BindingOptions, source: Object = defaultBindingSource): void {
-        let binding: Binding = this.bindings.get(options.targetProperty);
-        if (binding) {
-            binding.unbind();
+        const targetProperty = options.targetProperty;
+        this.unbind(targetProperty);
+
+        if (!this.bindings) {
+            this.bindings = new Map<string, Binding>();
         }
 
-        binding = new Binding(this, options);
-        this.bindings.set(options.targetProperty, binding);
+        const binding = new Binding(this, options);
+        this.bindings.set(targetProperty, binding);
 
         let bindingSource = source;
         if (bindingSource === defaultBindingSource) {
             bindingSource = this.bindingContext;
             binding.sourceIsBindingContext = true;
+            if (targetProperty === "bindingContext") {
+                this.bindingContextBoundToParentBindingContextChanged = true;
+                const parent = this.parent;
+                if (parent) {
+                    parent.on("bindingContextChange", this.bindingContextChanged, this);
+                } else {
+                    this.shouldAddHandlerToParentBindingContextChanged = true;
+                }
+            }
         }
 
-        // if (!types.isNullOrUndefined(bindingSource)) {
         binding.bind(bindingSource);
-        // }
     }
 
     public unbind(property: string): void {
-        let binding: Binding = this.bindings.get(property);
+        const bindings = this.bindings;
+        if (!bindings) {
+            return;
+        }
+
+        const binding = bindings.get(property);
         if (binding) {
             binding.unbind();
-            this.bindings.delete(property);
-        }
-    }
-
-    public _updateTwoWayBinding(propertyName: string, value: any) {
-        let binding: Binding = this.bindings.get(propertyName);
-        if (binding) {
-            binding.updateTwoWay(value);
+            bindings.delete(property);
+            if (binding.sourceIsBindingContext) {
+                if (property === "bindingContext") {
+                    this.shouldAddHandlerToParentBindingContextChanged = false;
+                    this.bindingContextBoundToParentBindingContextChanged = false;
+                    const parent = this.parent;
+                    if (parent) {
+                        parent.off("bindingContextChange", this.bindingContextChanged, this);
+                    }
+                }
+            }
         }
     }
 
@@ -593,8 +626,14 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public _parentChanged(oldParent: ViewBase): void {
         //Overridden
         if (oldParent) {
-            // Move these method in property class.
             clearInheritedProperties(this);
+            if (this.bindingContextBoundToParentBindingContextChanged) {
+                oldParent.parent.off("bindingContextChange", this.bindingContextChanged, this);
+            }
+        } else if (this.shouldAddHandlerToParentBindingContextChanged) {
+            const parent = this.parent;
+            parent.on("bindingContextChange", this.bindingContextChanged, this);
+            this.bindings.get("bindingContext").bind(parent.bindingContext);
         }
     }
 

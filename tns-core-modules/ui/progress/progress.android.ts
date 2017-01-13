@@ -52,7 +52,7 @@ export class Progress extends ProgressBase {
         }
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    get [backgroundColorProperty.native](): number {
         return null;
     }
     set [backgroundColorProperty.native](value: Color) {
@@ -73,7 +73,7 @@ export class Progress extends ProgressBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
+    get [backgroundInternalProperty.native](): number {
         return null;
     }
     set [backgroundInternalProperty.native](value: Color) {

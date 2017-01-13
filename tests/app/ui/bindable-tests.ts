@@ -1,4 +1,4 @@
-import { Observable, fromObjectRecursive } from "data/observable";
+import { Observable, fromObject, fromObjectRecursive } from "data/observable";
 import { ViewBase } from "ui/core/view-base";
 import { BindingOptions } from "ui/core/bindable";
 import * as TKUnit from "../TKUnit";
@@ -25,7 +25,7 @@ import { TextField } from "ui/text-field";
 // </snippet>
 
 export function test_Bindable_Members() {
-    const obj = new ViewBase();
+    const obj = new Label();
     TKUnit.assert(types.isDefined(obj.bind), "Bindable.bind not defined");
     TKUnit.assert(types.isDefined(obj.unbind), "Bindable.unbind not defined");
 };
@@ -36,17 +36,17 @@ export function test_Bindable_Bind_ToTarget_OneWay() {
 
     const options: BindingOptions = {
         sourceProperty: "name",
-        targetProperty: "test"
+        targetProperty: "text"
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options, model);
 
-    TKUnit.assert(obj.get("test") === "John", "Expected result after binding is [test value] === 'John'");
+    TKUnit.assert(obj.get("text") === "John", "Expected result after binding is [test value] === 'John'");
 
     model.set("name", "Changed");
 
-    TKUnit.assert(obj.get("test") === "Changed", "Expected result after binding is [test value] === 'Changed'");
+    TKUnit.assert(obj.get("text") === "Changed", "Expected result after binding is [test value] === 'Changed'");
 };
 
 export function test_Bindable_Bind_ToTarget_TwoWay() {
@@ -55,19 +55,19 @@ export function test_Bindable_Bind_ToTarget_TwoWay() {
 
     const options: BindingOptions = {
         sourceProperty: "name",
-        targetProperty: "test",
+        targetProperty: "text",
         twoWay: true
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options, model);
-    obj.set("test", "Changed");
+    obj.set("text", "Changed");
 
     TKUnit.assertEqual(model.get("name"), "Changed", "Two-way binding not updating the source when target is changed.");
 
     model.set("name", "John");
 
-    TKUnit.assertEqual(obj.get("test"), "John", "Two-way binding not updating the target when source is changed.");
+    TKUnit.assertEqual(obj.get("text"), "John", "Two-way binding not updating the target when source is changed.");
 };
 
 export function test_Bindable_Bind_ToBindingContext_OneWay() {
@@ -76,15 +76,15 @@ export function test_Bindable_Bind_ToBindingContext_OneWay() {
 
     const options: BindingOptions = {
         sourceProperty: "name",
-        targetProperty: "test"
+        targetProperty: "text"
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options);
-    obj.set("test", "local");
+    obj.set("text", "local");
     obj.bindingContext = model;
 
-    TKUnit.assert(obj.get("test") === "John", "Binding to a context does not update the target property.");
+    TKUnit.assert(obj.get("text") === "John", "Binding to a context does not update the target property.");
 };
 
 export function test_Bindable_Bind_ToBindingContext_TwoWay() {
@@ -93,19 +93,19 @@ export function test_Bindable_Bind_ToBindingContext_TwoWay() {
 
     const options: BindingOptions = {
         sourceProperty: "name",
-        targetProperty: "test",
+        targetProperty: "text",
         twoWay: true
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options);
 
-    obj.set("test", "local");
+    obj.set("text", "local");
     obj.bindingContext = model;
 
-    TKUnit.assertEqual(obj.get("test"), "John", "Binding to a context does not update the target property.");
+    TKUnit.assertEqual(obj.get("text"), "John", "Binding to a context does not update the target property.");
 
-    obj.set("test", "local");
+    obj.set("text", "local");
 
     TKUnit.assertEqual(model.get("name"), "local", "Two-way binding to a context does not update the source property.");
 };
@@ -115,20 +115,20 @@ export function test_Bindable_Unbind() {
 
     const options: BindingOptions = {
         sourceProperty: "name",
-        targetProperty: "test"
+        targetProperty: "text"
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options, model);
 
     model.set("name", "John");
 
-    TKUnit.assert(obj.get("test") === "John", "Binding does not updates target property.");
+    TKUnit.assert(obj.get("text") === "John", "Binding does not updates target property.");
 
-    obj.unbind("test");
+    obj.unbind("text");
     model.set("name", "Changed");
 
-    TKUnit.assert(obj.get("test") === "John", "Unbind does not remove binding.");
+    TKUnit.assert(obj.get("text") === "John", "Unbind does not remove binding.");
 };
 
 export function test_bind_NoSource_WillUse_BindingContext() {
@@ -233,7 +233,7 @@ export function test_OneBindableToBindMoreThanOneProperty_ToSameSource() {
 
     const firstPropertyOptions: BindingOptions = {
         sourceProperty: "name",
-        targetProperty: "test"
+        targetProperty: "text"
     };
 
     const secondPropertyOptions: BindingOptions = {
@@ -241,14 +241,14 @@ export function test_OneBindableToBindMoreThanOneProperty_ToSameSource() {
         targetProperty: "targetProperty"
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(firstPropertyOptions, model);
     obj.bind(secondPropertyOptions, model);
 
     model.set("name", "John");
     model.set("sourceProperty", "testValue");
 
-    TKUnit.assertEqual(obj.get("test"), "John", "Binding does not updates target property.");
+    TKUnit.assertEqual(obj.get("text"), "John", "Binding does not updates target property.");
     TKUnit.assertEqual(obj.get("targetProperty"), "testValue", "Binding does not updates target property1.");
 }
 
@@ -260,10 +260,10 @@ export function test_MoreThanOneBindables_BindToASameSourceAndProperty() {
         targetProperty: "targetProperty"
     };
 
-    const obj1 = new ViewBase();
+    const obj1 = new Label();
     obj1.bind(bindingOptions, model);
 
-    const obj2 = new ViewBase();
+    const obj2 = new Label();
     obj2.bind(bindingOptions, model);
 
     model.set("sourceProperty", "testValue");
@@ -285,7 +285,7 @@ class TestClass extends ViewBase {
     }
 };
 
-export function test_WhenBindingSetsInvalidValue_NoExptionIsThrown() {
+export function test_WhenBindingSetsInvalidValue_NoExceptionIsThrown() {
     const model = new Observable();
 
     const options: BindingOptions = {
@@ -357,27 +357,27 @@ export function test_binding_bindingContext_setBindingFirst() {
 };
 
 export function test_Bindable_BindingContext_Number_DoesNotThrow() {
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bindingContext = 42;
 };
 
 export function test_Bindable_BindingContext_Boolean_DoesNotThrow() {
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bindingContext = true;
 };
 
 export function test_Bindable_BindingContext_String_DoesNotThrow() {
     const options: BindingOptions = {
         sourceProperty: "length",
-        targetProperty: "test"
+        targetProperty: "text"
     };
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options);
-    obj.set("test", "local");
+    obj.set("text", "local");
     obj.bindingContext = "string";
 
-    TKUnit.assert(obj.get("test") === 6, "Expected: 6; Actual: " + obj.get("test"));
+    TKUnit.assert(obj.get("text") === 6, "Expected: 6; Actual: " + obj.get("text"));
 };
 
 export function test_getBindableOptionsFromStringFullFormat() {
@@ -483,7 +483,7 @@ export function test_bindingToNestedPropertyWithValueSyntax() {
     const bindingSource = new Observable();
     bindingSource.set("testProperty", "testValue");
 
-    const testElement = new ViewBase();
+    const testElement = new Label();
     testElement.bind({
         sourceProperty: "$value.testProperty",
         targetProperty: "targetPropertyName"
@@ -499,8 +499,8 @@ export function test_TwoElementsBindingToSameBindingContext() {
         const label1 = <Label>(page.getViewById("label1"));
         const label2 = <Label>(page.getViewById("label2"));
 
-        TKUnit.assertEqual(upperStackLabel.text, label1.text);
-        TKUnit.assertEqual(upperStackLabel.text, label2.text);
+        TKUnit.assertEqual(upperStackLabel.text, label1.text, "label1");
+        TKUnit.assertEqual(upperStackLabel.text, label2.text, "label2");
     };
     const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
     helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage"), null, testFunc);
@@ -662,28 +662,28 @@ export function test_UpdatingNestedPropertyViaBinding() {
     viewModel.set("parentView", parentViewModel);
     parentViewModel.set("name", expectedValue1);
 
-    const testElement: ViewBase = new ViewBase();
+    const testElement = new Label();
 
     testElement.bind({
         sourceProperty: "parentView.name",
-        targetProperty: "targetName",
+        targetProperty: "text",
         twoWay: true
     }, viewModel);
 
-    const testElement2: ViewBase = new ViewBase();
+    const testElement2 = new Label();
 
     testElement2.bind({
         sourceProperty: "parentView.name",
-        targetProperty: "targetProperty",
+        targetProperty: "text",
         twoWay: true
     }, viewModel);
 
-    TKUnit.assertEqual(testElement.get("targetName"), expectedValue1);
+    TKUnit.assertEqual(testElement.get("text"), expectedValue1);
 
-    testElement.set("targetName", expectedValue2);
+    testElement.set("text", expectedValue2);
 
     TKUnit.assertEqual(parentViewModel.get("name"), expectedValue2);
-    TKUnit.assertEqual(testElement2.get("targetProperty"), expectedValue2);
+    TKUnit.assertEqual(testElement2.get("text"), expectedValue2);
 }
 
 class Person extends Observable {
@@ -754,7 +754,7 @@ export function test_NestedPropertiesBinding() {
     const viewModel = new Observable();
     viewModel.set("activity", new Activity(expectedValue, "Default First Name", "Default Last Name"));
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "activity.Text",
         targetProperty: "targetProperty",
@@ -783,7 +783,7 @@ export function test_WrongNestedPropertiesBinding() {
     };
     trace.addWriter(traceWriter);
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "activity.",
         targetProperty: "targetProperty",
@@ -801,14 +801,14 @@ export function test_NestedPropertiesBindingTwoTargets() {
     const viewModel = new Observable();
     viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "activity.Text",
         targetProperty: "targetProperty",
         twoWay: true
     }, viewModel);
 
-    const target2 = new ViewBase();
+    const target2 = new Label();
     target2.bind({
         sourceProperty: "activity.Owner.FirstName",
         targetProperty: "targetProp",
@@ -836,14 +836,14 @@ export function test_NestedPropertiesBindingTwoTargetsAndSecondChange() {
     const viewModel = new Observable();
     viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "activity.Text",
         targetProperty: "targetProperty",
         twoWay: true
     }, viewModel);
 
-    const target2 = new ViewBase();
+    const target2 = new Label();
     target2.bind({
         sourceProperty: "activity.Owner.FirstName",
         targetProperty: "targetProp",
@@ -881,14 +881,14 @@ export function test_NestedPropertiesBindingTwoTargetsAndRegularChange() {
     const viewModel = new Observable();
     viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "activity.Text",
         targetProperty: "targetProperty",
         twoWay: true
     }, viewModel);
 
-    const target2 = new ViewBase();
+    const target2 = new Label();
     target2.bind({
         sourceProperty: "activity.Owner.FirstName",
         targetProperty: "targetProp",
@@ -925,14 +925,14 @@ export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObje
     const viewModel = new Observable();
     viewModel.set("activity", new Activity(expectedText, expectedFirstName, expectedLastName));
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "activity.Text",
         targetProperty: "targetProperty",
         twoWay: true
     }, viewModel);
 
-    const target2 = new ViewBase();
+    const target2 = new Label();
     target2.bind({
         sourceProperty: "activity.Owner.FirstName",
         targetProperty: "targetProp",
@@ -965,7 +965,7 @@ export function test_NestedPropertiesBindingTwoTargetsAndReplacingSomeNestedObje
 
 export function test_NullSourcePropertyShouldNotCrash() {
     const expectedValue = "Expected Value";
-    const target = new ViewBase();
+    const target = new Label();
     const convFunc = function (value) {
         return value + "Converted";
     };
@@ -1024,7 +1024,7 @@ export function test_BindingHitsGetterTooManyTimes() {
     const model = new Dummy();
     model.dummyProperty = "OPA";
 
-    const bindableObj = new ViewBase();
+    const bindableObj = new Label();
 
     bindableObj.bind({ sourceProperty: "dummyProperty", targetProperty: "dummyTarget" }, model);
 
@@ -1032,53 +1032,53 @@ export function test_BindingHitsGetterTooManyTimes() {
 };
 
 export function test_SupportFunctionsInExpressions() {
-    const model = new Observable({
+    const model = fromObject({
         "anyColor": "red",
         "isVisible": function () {
             return this.get("anyColor") === "red";
         }
     });
 
-    const bindableObj = new ViewBase();
+    const bindableObj = new Label();
 
     bindableObj.bind({
         "sourceProperty": "$value",
-        "targetProperty": "test",
+        "targetProperty": "text",
         "expression": "isVisible() ? 'visible' : 'collapsed'"
     }, model);
 
     model.set("anyColor", "blue");
 
-    TKUnit.assertEqual(bindableObj.get("test"), "collapsed", "When anyColor is blue test property should be collapsed.");
+    TKUnit.assertEqual(bindableObj.get("text"), "collapsed", "When anyColor is blue test property should be collapsed.");
 
     model.set("anyColor", "red");
 
-    TKUnit.assertEqual(bindableObj.get("test"), "visible", "When anyColor is red test property should be visible.");
+    TKUnit.assertEqual(bindableObj.get("text"), "visible", "When anyColor is red test property should be visible.");
 }
 
 export function test_$ValueSupportWithinExpression() {
-    const model = new Observable({
+    const model = fromObject({
         "anyColor": "red",
         "isVisible": function () {
             return this.get("anyColor") === "red";
         }
     });
 
-    const bindableObj = new ViewBase();
+    const bindableObj = new Label();
 
     bindableObj.bind({
         "sourceProperty": "$value",
-        "targetProperty": "test",
+        "targetProperty": "text",
         "expression": "$value.anyColor === 'red' ? 'red' : 'blue'"
     }, model);
 
     model.set("anyColor", "blue");
 
-    TKUnit.assertEqual(bindableObj.get("test"), "blue", "When anyColor is blue test property should be blue too.");
+    TKUnit.assertEqual(bindableObj.get("text"), "blue", "When anyColor is blue test property should be blue too.");
 
     model.set("anyColor", "red");
 
-    TKUnit.assertEqual(bindableObj.get("test"), "red", "When anyColor is red test property should be red too.");
+    TKUnit.assertEqual(bindableObj.get("text"), "red", "When anyColor is red test property should be red too.");
     TKUnit.assertTrue(model['$value'] === undefined, "We should not add $value to binding context.");
 }
 
@@ -1141,14 +1141,14 @@ export function test_BindingToPropertiesWithSameNames() {
     secondsobject.secondsobject = 1;
     model.item.secondsobject = secondsobject;
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "item.seconds",
         targetProperty: "targetProperty",
         twoWay: true
     }, model);
 
-    const target2 = new ViewBase();
+    const target2 = new Label();
     target2.bind({
         sourceProperty: "item.secondsobject.secondsobject",
         targetProperty: "targetProp",
@@ -1178,14 +1178,14 @@ export function test_BindingToPropertiesWithSameNamesSecondCase() {
     secondsobject.secondsobject = 1;
     model.item.secondsobject = secondsobject;
 
-    const target1 = new ViewBase();
+    const target1 = new Label();
     target1.bind({
         sourceProperty: "item.seconds",
         targetProperty: "targetProperty",
         twoWay: true
     }, model);
 
-    const target2 = new ViewBase();
+    const target2 = new Label();
     target2.bind({
         sourceProperty: "item.secondsobject.secondsobject",
         targetProperty: "targetProp",
@@ -1239,10 +1239,10 @@ export function test_BindingToRelatedProps() {
     model.prop1 = false;
     model.prop2 = "Alabala";
 
-    let target1 = new ViewBase();
+    let target1 = new Label();
     target1.bind({ sourceProperty: 'prop1', targetProperty: 'targetProp1' }, model);
 
-    let target2 = new ViewBase();
+    let target2 = new Label();
     target2.bind({ sourceProperty: 'prop2', targetProperty: 'targetProp2' }, model);
 
     model.prop2 = "Tralala";
@@ -1253,11 +1253,11 @@ export function test_BindingToRelatedProps() {
 export function test_only_Bindable_BindingContext_Null_DoesNotThrow() {
     const options: BindingOptions = {
         sourceProperty: "a.b",
-        targetProperty: "test"
+        targetProperty: "text"
     };
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind(options);
-    obj.bindingContext = new Observable({ a: "b" });
+    obj.bindingContext = fromObject({ a: "b" });
     obj.bindingContext = null;
 }
 
@@ -1271,15 +1271,15 @@ export function test_Observable_from_nested_json_binds_correctly() {
         }
     });
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind({
         sourceProperty: "firstObject.secondObject.dummyProperty",
-        targetProperty: "test"
+        targetProperty: "text"
     }, model);
 
     model.get("firstObject").get("secondObject").set("dummyProperty", expectedValue);
 
-    TKUnit.assertEqual(obj.get("test"), expectedValue);
+    TKUnit.assertEqual(obj.get("text"), expectedValue);
 }
 
 export function test_Observable_from_nested_json_binds_correctly_when_upper_object_is_changed() {
@@ -1292,15 +1292,15 @@ export function test_Observable_from_nested_json_binds_correctly_when_upper_obje
         }
     });
 
-    const obj = new ViewBase();
+    const obj = new Label();
     obj.bind({
         sourceProperty: "firstObject.secondObject.dummyProperty",
-        targetProperty: "test"
+        targetProperty: "text"
     }, model);
 
-    model.get("firstObject").set("secondObject", new Observable({ "dummyProperty": expectedValue }));
+    model.get("firstObject").set("secondObject", fromObject({ "dummyProperty": expectedValue }));
 
-    TKUnit.assertEqual(obj.get("test"), expectedValue);
+    TKUnit.assertEqual(obj.get("text"), expectedValue);
 }
 
 export function test_BindingToBindingContextProperty_ShouldUseNewContext() {

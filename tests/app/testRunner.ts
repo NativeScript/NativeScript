@@ -44,7 +44,7 @@ allTests["TIMER"] = require("./timer-tests");
 allTests["COLOR"] = require("./color-tests");
 
 allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
-// allTests["BINDABLE"] = require("./ui/bindable-tests");
+allTests["BINDABLE"] = require("./ui/bindable-tests");
 allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
 allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
 allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");

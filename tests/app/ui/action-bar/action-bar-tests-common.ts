@@ -6,7 +6,7 @@ import { Label } from "ui/label";
 import { Button } from "ui/button";
 import { Page } from "ui/page";
 import { View } from "ui/core/view";
-import { Observable } from "data/observable";
+import { fromObject } from "data/observable";
 
 // >> actionbar-common-require
 import * as actionBarModule from "ui/action-bar";
@@ -164,7 +164,7 @@ export function test_ActionBarItemBindingToEvent() {
         const firstHandler = function () { firstHandlerCallCounter++; };
         const secondHandler = function () { secondHandlerCallCounter++; };
 
-        page.bindingContext = new Observable({ "test": firstHandler });
+        page.bindingContext = fromObject({ "test": firstHandler });
 
         const actionBarItem = page.actionBar.actionItems.getItemAt(0);
 

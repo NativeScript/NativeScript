@@ -322,8 +322,6 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
         const key = this.key;
         const defaultValue = options.defaultValue;
 
-        const eventName = name + "Change";
-
         const sourceKey = Symbol(name + ":valueSourceKey");
         this.sourceKey = sourceKey;
 
@@ -360,16 +358,6 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
             that[sourceKey] = newValueSource;
 
             if (currentValue !== newValue) {
-
-                if (this.hasListeners(eventName)) {
-                    this.notify({
-                        eventName: eventName,
-                        propertyName: name,
-                        object: this,
-                        value: unboxedValue
-                    });
-                }
-
                 const reset = newValueSource === ValueSource.Default;
                 that.eachChild((child) => {
                     const childValueSource = child[sourceKey] || ValueSource.Default;
@@ -379,7 +367,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
                         }
                     } else {
                         if (childValueSource <= ValueSource.Inherited) {
-                            setInheritedValue.call(child, child.parent[key]);
+                            setInheritedValue.call(child, newValue);
                         }
                     }
                     return true;

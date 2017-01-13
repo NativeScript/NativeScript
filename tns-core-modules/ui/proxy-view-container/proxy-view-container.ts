@@ -117,6 +117,8 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
      * Register/unregister existing children with the parent layout.
      */
     public _parentChanged(oldParent: View): void {
+        // call super in order to execute base logic like clear inherited properties, etc.
+        super._parentChanged(oldParent);
         const addingToParent = this.parent && !oldParent;
         const newLayout = <LayoutBase>this.parent;
         const oldLayout = <LayoutBase>oldParent;
