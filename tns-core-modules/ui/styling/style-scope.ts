@@ -1,12 +1,25 @@
 import { ViewBase, resetCSSProperties } from "ui/core/view-base";
 import { SyntaxTree, Keyframes, parse as parseCss, Node } from "css";
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
-import { KeyframeAnimationInfo, KeyframeAnimation } from "ui/animation/keyframe-animation";
 import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 import { File, knownFolders, path } from "file-system";
-import { CssAnimationParser } from "./css-animation-parser";
-
 import * as application from "application";
+
+import * as kam from "ui/animation/keyframe-animation";
+let keyframeAnimationModule: typeof kam;
+function ensureKeyframeAnimationModule() {
+    if (!keyframeAnimationModule){
+        keyframeAnimationModule = require("ui/animation/keyframe-animation");
+    }
+}
+
+import * as capm from "./css-animation-parser";
+let cssAnimationParserModule: typeof capm;
+function ensureCssAnimationParserModule() {
+    if (!cssAnimationParserModule){
+        cssAnimationParserModule = require("./css-animation-parser");
+    }
+}
 
 const animationsSymbol: symbol = Symbol("animations");
 
@@ -47,10 +60,11 @@ export class CssState {
             }
         });
 
-        let ruleAnimations: KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+        let ruleAnimations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
         if (ruleAnimations && view.isLoaded && view.nativeView !== undefined) {
+            ensureKeyframeAnimationModule();
             for (let animationInfo of ruleAnimations) {
-                let animation = KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
+                let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
                 if (animation) {
                     view._registerAnimation(animation);
                     animation.play(view)
@@ -112,11 +126,13 @@ export class StyleScope {
         this.ensureSelectors();
     }
 
-    public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
+    public getKeyframeAnimationWithName(animationName: string): kam.KeyframeAnimationInfo {
         let keyframes = this._keyframes[animationName];
         if (keyframes !== undefined) {
-            let animation = new KeyframeAnimationInfo();
-            animation.keyframes = CssAnimationParser.keyframesArrayFromCSS(keyframes);
+            ensureKeyframeAnimationModule();
+            let animation = new keyframeAnimationModule.KeyframeAnimationInfo();
+            ensureCssAnimationParserModule();
+            animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframes);
             return animation;
         }
         return undefined;
@@ -212,7 +228,10 @@ export class StyleScope {
         (<Keyframes[]>nodes.filter(isKeyframe)).forEach(node => keyframes[node.name] = node);
 
         let rulesets = fromAstNodes(nodes);
-        rulesets.forEach(rule => rule[animationsSymbol] = CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations));
+        if (rulesets && rulesets.length){
+            ensureCssAnimationParserModule();
+            rulesets.forEach(rule => rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations));
+        }
 
         return rulesets;
     }
@@ -225,19 +244,20 @@ export class StyleScope {
     private _applyKeyframesOnSelectors() {
         for (let i = this._mergedCssSelectors.length - 1; i >= 0; i--) {
             let ruleset = this._mergedCssSelectors[i];
-            let animations = ruleset[animationsSymbol];
-            if (animations !== undefined) {
+            let animations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
+            if (animations !== undefined && animations.length) {
+                ensureCssAnimationParserModule();
                 for (let animation of animations) {
                     let keyframe = this._keyframes[animation.name];
                     if (keyframe !== undefined) {
-                        animation.keyframes = CssAnimationParser.keyframesArrayFromCSS(keyframe);
+                        animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframe);
                     }
                 }
             }
         }
     }
 
-    public getAnimations(ruleset: RuleSet): KeyframeAnimationInfo[] {
+    public getAnimations(ruleset: RuleSet): kam.KeyframeAnimationInfo[] {
         return ruleset[animationsSymbol];
     }
 }

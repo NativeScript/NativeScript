@@ -1,6 +1,5 @@
 declare module "ui/core/view" {
     import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
-    import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
     import {
         ViewBase, Property, CssProperty, InheritedCssProperty, Style, EventData, ShorthandProperty
     } from "ui/core/view-base";
@@ -10,9 +9,9 @@ declare module "ui/core/view" {
 
     export {
         GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction,
-        Animation, AnimationDefinition, AnimationPromise,
         Background, Font, Color
     }
+    import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
 
     export * from "ui/core/view-base";
 

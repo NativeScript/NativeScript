@@ -1,6 +1,5 @@
 import { View as ViewDefinition, Point, Size } from "ui/core/view";
 import { Color } from "color";
-import { Animation, AnimationPromise } from "ui/animation";
 import { Source } from "utils/debug";
 import { Background } from "ui/styling/background";
 import {
@@ -10,7 +9,6 @@ import {
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
-import { fontSizeConverter } from "../styling/converters";
 
 // Only types:
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
@@ -24,8 +22,15 @@ export * from "./view-base";
 
 export {
     GestureTypes, GesturesObserver, GestureEventData,
-    Animation, AnimationPromise,
     Background, Font, Color
+}
+
+import * as am from "ui/animation";
+let animationModule: typeof am;
+function ensureAnimationModule() {
+    if (!animationModule){
+        animationModule = require("ui/animation");
+    }
 }
 
 // registerSpecialProperty("class", (instance: ViewDefinition, propertyValue: string) => {
@@ -831,13 +836,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         };
     }
 
-    public animate(animation: any): AnimationPromise {
+    public animate(animation: any): am.AnimationPromise {
         return this.createAnimation(animation).play();
     }
 
-    public createAnimation(animation: any): any {
+    public createAnimation(animation: any): am.Animation {
+        ensureAnimationModule();
         animation.target = this;
-        return new Animation([animation]);
+        return new animationModule.Animation([animation]);
     }
 
     public toString(): string {
@@ -1983,7 +1989,7 @@ const fontProperty = new ShorthandProperty<Style, string>({
             ];
         } else {
             let font = parseFont(value);
-            let fontSize = fontSizeConverter(font.fontSize);
+            let fontSize = parseFloat(font.fontSize);
 
             return [
                 [fontStyleProperty, font.fontStyle],

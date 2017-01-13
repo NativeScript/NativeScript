@@ -136,7 +136,9 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
                 let animationCurve = <CubicBezierAnimationCurve>curve;
                 return CAMediaTimingFunction.functionWithControlPoints(animationCurve.x1, animationCurve.y1, animationCurve.x2, animationCurve.y2);
             }
-            return undefined;
+            else {
+                throw new Error(`Invalid animation curve: ${curve}`);
+            }
     }
 }
 
