@@ -127,27 +127,6 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
         // << webview-string
     }
 
-    public testLoadInvalidUrl(done) {
-        let webView = this.testView;
-        let actualError;
-
-        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-            if (actualError) {
-                // Android call this twice -- the second time args.error is undefined.
-                return;
-            }
-            actualError = args.error;
-            try {
-                TKUnit.assert(actualError !== undefined, "There should be an error.");
-                done(null);
-            }
-            catch (e) {
-                done(e);
-            }
-        });
-        webView.src = "kofti://mnogokofti";
-    }
-
     public testLoadUpperCaseSrc(done) {
         let webView = this.testView;
         let targetSrc = "HTTPS://github.com/";
