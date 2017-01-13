@@ -55,6 +55,11 @@ declare module "ui/core/view-base" {
         public bindingContext: any;
 
         /**
+         * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
+         */
+        public typeName: string;
+
+        /**
          * Gets the parent view. This property is read-only.
          */
         public readonly parent: ViewBase;

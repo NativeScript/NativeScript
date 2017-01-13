@@ -286,8 +286,7 @@ export class DependencyObservable extends Observable implements DependencyObserv
 
         let propName = property.name;
         if (this.hasListeners(Observable.propertyChangeEvent)) {
-            let changeData = super._createPropertyChangeData(propName, newValue);
-            this.notify(changeData);
+            this.notifyPropertyChange(propName, newValue);
         }
 
         let eventName = property.nameEvent;
@@ -323,10 +322,6 @@ export class DependencyObservable extends Observable implements DependencyObserv
                 break;
             }
         }
-    }
-
-    public toString(): string {
-        return this.typeName;
     }
 
     private _setValueInternal(property: Property, value: any, source: number) {
