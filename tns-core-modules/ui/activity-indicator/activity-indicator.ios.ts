@@ -13,12 +13,16 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         this.nativeView.hidesWhenStopped = true;
     }
 
+    get ios(): UIActivityIndicatorView {
+        return this.nativeView;
+    }
+
     get [busyProperty.native](): boolean {
-        if (ios.MajorVersion > 9) {
-            return this.nativeView.animating;
+        if ((<any>this.nativeView).isAnimating) {
+            return (<any>this.nativeView).isAnimating();
         }
         else {
-            return (<any>this.nativeView).isAnimating();
+            return this.nativeView.animating;
         }
     }
     set [busyProperty.native](value: boolean) {
