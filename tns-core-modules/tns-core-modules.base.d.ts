@@ -86,7 +86,6 @@
 /// <reference path="ui/styling/styling.d.ts" />
 /// <reference path="ui/switch/switch.d.ts" />
 /// <reference path="ui/tab-view/tab-view.d.ts" />
-/// <reference path="ui/text-base/text-base-styler.d.ts" />
 /// <reference path="ui/text-base/text-base.d.ts" />
 /// <reference path="ui/text-field/text-field.d.ts" />
 /// <reference path="ui/text-view/text-view.d.ts" />

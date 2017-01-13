@@ -3,10 +3,10 @@ import {
     AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise,
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, Color, layout, traceWrite, traceEnabled, traceCategories
+    scaleXProperty, scaleYProperty, Color, traceWrite, traceEnabled, traceCategories
 } from "./animation-common";
 
-import { CacheLayerType } from "utils/utils";
+import { CacheLayerType, layout } from "utils/utils";
 import lazy from "utils/lazy";
 
 export * from "./animation-common";
@@ -71,11 +71,12 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             }
             if (curve instanceof CubicBezierAnimationCurve) {
                 return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
-            } else if (curve instanceof android.view.animation.Interpolator) {
+            } 
+            else if (curve instanceof android.view.animation.Interpolator) {
                 return curve;
             }
             else {
-                throw new Error("Invalid android.view.animation.Interpolator.");
+                throw new Error(`Invalid animation curve: ${curve}`);
             }
     }
 }
@@ -206,16 +207,16 @@ export class Animation extends AnimationBase {
             traceWrite("Creating ObjectAnimator(s) for animation: " + Animation._getAnimationInfo(propertyAnimation) + "...", traceCategories.Animation);
         }
 
-        if (!propertyAnimation.target) {
-            throw new Error("Animation target cannot be null or undefined!");
+        if (propertyAnimation.target === null || propertyAnimation.target === undefined) {
+            throw new Error(`Animation target cannot be null or undefined; property: ${propertyAnimation.property}; value: ${propertyAnimation.value};`);
         }
 
-        if (!propertyAnimation.property) {
-            throw new Error("Animation property cannot be null or undefined!");
+        if (propertyAnimation.property === null || propertyAnimation.property === undefined) {
+            throw new Error(`Animation property cannot be null or undefined; target: ${propertyAnimation.target}; value: ${propertyAnimation.value};`);
         }
 
-        if (!propertyAnimation.value) {
-            throw new Error("Animation value cannot be null or undefined!");
+        if (propertyAnimation.value === null || propertyAnimation.value === undefined) {
+            throw new Error(`Animation value cannot be null or undefined; target: ${propertyAnimation.target}; property: ${propertyAnimation.property};`);
         }
 
         let nativeArray;

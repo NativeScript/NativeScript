@@ -5,7 +5,8 @@ import {
     KeyframeAnimation as KeyframeAnimationDefinition
 } from "ui/animation/keyframe-animation";
 
-import { View, unsetValue, Animation } from "ui/core/view";
+import { View, unsetValue } from "ui/core/view";
+import { Animation } from "ui/animation";
 
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;

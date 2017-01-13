@@ -4,14 +4,21 @@ import { Property, InheritedProperty, Style, clearInheritedProperties, propagate
 import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
-import { CssState, StyleScope, applyInlineStyle } from "ui/styling/style-scope";
 import { SelectorCore } from "ui/styling/css-selector";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
 import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 
+import * as ssm from "ui/styling/style-scope";
+let styleScopeModule: typeof ssm;
+function ensureStyleScopeModule() {
+    if (!styleScopeModule){
+        styleScopeModule = require("ui/styling/style-scope");
+    }
+}
+
 export {
-    KeyframeAnimation, Observable, EventData, Binding, BindingOptions, Bindable, isIOS, isAndroid,
+    Observable, EventData, Binding, BindingOptions, Bindable, isIOS, isAndroid,
     gestureFromString, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, isCategorySet
 };
 export * from "./properties";
@@ -113,7 +120,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public _context: any;
     public _isAddedToNativeVisualTree: any;
 
-    public _cssState: CssState;
+    public _cssState: ssm.CssState;
     constructor() {
         super();
         this._domId = viewIdCounter++;
@@ -202,12 +209,12 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (!rootPage || !rootPage.isLoaded) {
             return;
         }
-        let scope: StyleScope = (<any>rootPage)._getStyleScope();
+        let scope: ssm.StyleScope = (<any>rootPage)._getStyleScope();
         scope.applySelectors(this);
     }
 
     // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
-    _setCssState(next: CssState): void {
+    _setCssState(next: ssm.CssState): void {
         const previous = this._cssState;
         this._cssState = next;
 
@@ -333,7 +340,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (typeof inlineStyle === "string") {
             try {
                 // this.style._beginUpdate();
-                applyInlineStyle(this, inlineStyle);
+                ensureStyleScopeModule();
+                styleScopeModule.applyInlineStyle(this, inlineStyle);
             } finally {
                 // this.style._endUpdate();
             }

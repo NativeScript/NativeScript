@@ -69,7 +69,9 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
         this._propertyAnimations = new Array<PropertyAnimation>();
         for (let i = 0, length = animationDefinitions.length; i < length; i++) {
-            animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+            if (animationDefinitions[i].curve){
+                animationDefinitions[i].curve = this._resolveAnimationCurve(animationDefinitions[i].curve);
+            }
             this._propertyAnimations = this._propertyAnimations.concat(AnimationBase._createPropertyAnimations(animationDefinitions[i]));
         }
 
