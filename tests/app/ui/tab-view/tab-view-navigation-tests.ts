@@ -81,21 +81,22 @@ export function testWhenNavigatingBackToANonCachedPageContainingATabViewWithALis
 
     let pageFactory = function (): Page {
         tabView = _createTabView();
-        let items = [];
-        items.push({
-            title: "List",
-            view: _createListView()
-        });
+        let items = Array<TabViewItem>();
+        let tabViewitem = new TabViewItem();
+        tabViewitem.title = "List";
+        tabViewitem.view = _createListView();
+        items.push(tabViewitem);
 
         let label = new Label();
         label.text = "About";
         let aboutLayout = new StackLayout();
         aboutLayout.id = "AboutLayout";
         aboutLayout.addChild(label);
-        items.push({
-            title: "About",
-            view: aboutLayout
-        });
+        tabViewitem = new TabViewItem();
+        tabViewitem.title = "About";
+        tabViewitem.view = aboutLayout;
+        items.push(tabViewitem);
+        
         tabView.items = items;
 
         tabViewPage = new Page();
