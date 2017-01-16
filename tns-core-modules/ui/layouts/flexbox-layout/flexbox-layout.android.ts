@@ -23,6 +23,9 @@ function setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widge
 
 export function _onNativeOrderPropertyChanged(view: View, newValue: number): void {
     setLayoutParamsProperty(view, lp => lp.order = newValue);
+    if (view.parent && view.parent instanceof FlexboxLayout && view.parent.android) {
+        view.parent.android.invalidateOrdersCache();
+    }
 }
 
 export function _onNativeFlexGrowPropertyChanged(view: View, newValue: number): void {
@@ -104,6 +107,10 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     public _createUI() {
         this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
+    }
+
+    _invalidateOrdersCache() {
+        this._nativeView.invalidateOrdersCache();
     }
 
     _setNativeFlexDirection(flexDirection: FlexDirection) {
