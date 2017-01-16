@@ -68,12 +68,11 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     }
 
     public _getDefaultItemContent(index: number): View {
-
         const lbl = new Label();
         lbl.bind({
             targetProperty: "text",
             sourceProperty: "$value"
-        }, null);
+        });
         return lbl;
     }
 
