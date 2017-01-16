@@ -427,10 +427,34 @@ export class ActionBarStyler implements style.Styler {
         (<android.support.v7.widget.Toolbar>v._nativeView).setTitleTextColor(nativeValue);
     }
 
+    // background-color
+    private static getBackgroundColorProperty(view: view.View): any {
+        let toolbar = <android.support.v7.widget.Toolbar>view._nativeView;
+        return toolbar.getBackground();
+    }
+
+    private static setBackgroundColorProperty(v: view.View, newValue: any) {
+        var toolbar = (<android.support.v7.widget.Toolbar>v._nativeView);
+        if (toolbar) {
+            toolbar.setBackgroundColor(newValue);
+        }
+    }
+
+    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
+        var toolbar = (<android.support.v7.widget.Toolbar>v._nativeView);
+        if (toolbar) {
+            toolbar.setBackgroundColor(nativeValue);
+        }
+    }
+
     public static registerHandlers() {
         style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
             ActionBarStyler.setColorProperty,
             ActionBarStyler.resetColorProperty), "ActionBar");
+        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
+            ActionBarStyler.setBackgroundColorProperty,
+            ActionBarStyler.resetBackgroundColorProperty, 
+            ActionBarStyler.getBackgroundColorProperty), "ActionBar");
     }
 }
 
