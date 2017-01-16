@@ -1,7 +1,7 @@
 ﻿import * as definition from "trace";
 import * as types from "utils/types";
 
-export var enabled = false;
+var enabled = false;
 var _categories = {};
 var _writers: Array<definition.TraceWriter> = [];
 var _eventListeners: Array<definition.EventListener> = [];
@@ -12,6 +12,10 @@ export function enable() {
 
 export function disable() {
     enabled = false;
+}
+
+export function isEnabled() {
+    return enabled;
 }
 
 export function isCategorySet(category: string): boolean {

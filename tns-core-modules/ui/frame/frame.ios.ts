@@ -119,7 +119,7 @@ export class Frame extends FrameBase {
         // First navigation.
         if (!this._currentEntry) {
             this._ios.controller.pushViewControllerAnimated(viewController, animated);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
             return;
@@ -138,7 +138,7 @@ export class Frame extends FrameBase {
             }
 
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this}.setViewControllersAnimated([${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
             return;
@@ -164,7 +164,7 @@ export class Frame extends FrameBase {
 
             // replace the controllers instead of pushing directly
             this._ios.controller.setViewControllersAnimated(newControllers, animated);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this}.setViewControllersAnimated([originalControllers - lastController + ${viewController}], ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
             return;
@@ -172,7 +172,7 @@ export class Frame extends FrameBase {
 
         // General case.
         this._ios.controller.pushViewControllerAnimated(viewController, animated);
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
         }
     }
@@ -187,7 +187,7 @@ export class Frame extends FrameBase {
             let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
 
             this._updateActionBar(backstackEntry.resolvedPage);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
             }
             this._ios.controller.popToViewControllerAnimated(controller, animated);
@@ -366,7 +366,7 @@ export class Frame extends FrameBase {
             return;
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`Forcing navigationBar.frame.origin.y to ${statusBarHeight} due to a higher in-call status-bar`, traceCategories.Layout);
         }
 
@@ -394,19 +394,19 @@ class TransitionDelegate extends NSObject {
     }
 
     public animationWillStart(animationID: string, context: any): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`START ${this._id}`, traceCategories.Transition);
         }
     }
 
     public animationDidStop(animationID: string, finished: boolean, context: any): void {
         if (finished) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`END ${this._id}`, traceCategories.Transition);
             }
         }
         else {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`CANCEL ${this._id}`, traceCategories.Transition);
             }
         }
@@ -453,7 +453,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
             return null;
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`UINavigationControllerImpl.navigationControllerAnimationControllerForOperationFromViewControllerToViewController(${operation}, ${fromVC}, ${toVC}), transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
@@ -487,7 +487,7 @@ class UINavigationControllerImpl extends UINavigationController {
     public viewDidLayoutSubviews(): void {
         let owner = this._owner.get();
         if (owner) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(this._owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, traceCategories.ViewHierarchy);
             }
 
@@ -525,7 +525,7 @@ class UINavigationControllerImpl extends UINavigationController {
 
     public pushViewControllerAnimated(viewController: UIViewController, animated: boolean): void {
         let navigationTransition = <NavigationTransition>viewController[TRANSITION];
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`UINavigationControllerImpl.pushViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
@@ -544,7 +544,7 @@ class UINavigationControllerImpl extends UINavigationController {
         let viewController = viewControllers.lastObject;
         let navigationTransition = <NavigationTransition>viewController[TRANSITION];
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`UINavigationControllerImpl.setViewControllersAnimated(${viewControllers}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
@@ -562,7 +562,7 @@ class UINavigationControllerImpl extends UINavigationController {
     public popViewControllerAnimated(animated: boolean): UIViewController {
         let lastViewController = this.viewControllers.lastObject;
         let navigationTransition = <NavigationTransition>lastViewController[TRANSITION];
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`UINavigationControllerImpl.popViewControllerAnimated(${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
@@ -586,7 +586,7 @@ class UINavigationControllerImpl extends UINavigationController {
     public popToViewControllerAnimated(viewController: UIViewController, animated: boolean): NSArray<UIViewController> {
         let lastViewController = this.viewControllers.lastObject;
         let navigationTransition = <NavigationTransition>lastViewController[TRANSITION];
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`UINavigationControllerImpl.popToViewControllerAnimated(${viewController}, ${animated}); transition: ${JSON.stringify(navigationTransition)}`, traceCategories.NativeLifecycle);
         }
 
@@ -644,31 +644,31 @@ export function _getNativeCurve(transition: NavigationTransition): UIViewAnimati
     if (transition.curve) {
         switch (transition.curve) {
             case "easeIn":
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.EaseIn.", traceCategories.Transition);
                 }
                 return UIViewAnimationCurve.EaseIn;
 
             case "easeOut":
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.EaseOut.", traceCategories.Transition);
                 }
                 return UIViewAnimationCurve.EaseOut;
 
             case "easeInOut":
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.EaseInOut.", traceCategories.Transition);
                 }
                 return UIViewAnimationCurve.EaseInOut;
 
             case "linear":
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Transition curve resolved to UIViewAnimationCurve.Linear.", traceCategories.Transition);
                 }
                 return UIViewAnimationCurve.Linear;
 
             default:
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Transition curve resolved to original: " + transition.curve, traceCategories.Transition);
                 }
                 return transition.curve;

@@ -157,11 +157,11 @@ export class Animation extends AnimationBase {
         }
 
         if (!playSequentially) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Non-merged Property Animations: " + this._propertyAnimations.length, traceCategories.Animation);
             }
             this._mergedPropertyAnimations = Animation._mergeAffineTransformAnimations(this._propertyAnimations);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Merged Property Animations: " + this._mergedPropertyAnimations.length, traceCategories.Animation);
             }
         }
@@ -190,13 +190,13 @@ export class Animation extends AnimationBase {
                 }
 
                 if (that._cancelledAnimations > 0 && (that._cancelledAnimations + that._finishedAnimations) === that._mergedPropertyAnimations.length) {
-                    if (traceEnabled) {
+                    if (traceEnabled()) {
                         traceWrite(that._cancelledAnimations + " animations cancelled.", traceCategories.Animation);
                     }
                     that._rejectAnimationFinishedPromise();
                 }
                 else if (that._finishedAnimations === that._mergedPropertyAnimations.length) {
-                    if (traceEnabled) {
+                    if (traceEnabled()) {
                         traceWrite(that._finishedAnimations + " animations finished.", traceCategories.Animation);
                     }
                     that._resolveAnimationFinishedPromise();
@@ -237,7 +237,7 @@ export class Animation extends AnimationBase {
         return (cancelled?: boolean) => {
 
             if (cancelled && finishedCallback) {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Animation " + (index - 1).toString() + " was cancelled. Will skip the rest of animations and call finishedCallback(true).", traceCategories.Animation);
                 }
                 finishedCallback(cancelled);
@@ -558,11 +558,11 @@ export class Animation extends AnimationBase {
                     iterations: propertyAnimations[i].iterations,
                     curve: propertyAnimations[i].curve
                 };
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Curve: " + propertyAnimations[i].curve, traceCategories.Animation);
                 }
                 newTransformAnimation.value[propertyAnimations[i].property] = propertyAnimations[i].value;
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Created new transform animation: " + Animation._getAnimationInfo(newTransformAnimation), traceCategories.Animation);
                 }
 
@@ -571,7 +571,7 @@ export class Animation extends AnimationBase {
                 if (j < length) {
                     for (; j < length; j++) {
                         if (Animation._canBeMerged(propertyAnimations[i], propertyAnimations[j])) {
-                            if (traceEnabled) {
+                            if (traceEnabled()) {
                                 traceWrite("Merging animations: " + Animation._getAnimationInfo(newTransformAnimation) + " + " + Animation._getAnimationInfo(propertyAnimations[j]) + ";", traceCategories.Animation);
                             }
                             newTransformAnimation.value[propertyAnimations[j].property] = propertyAnimations[j].value;

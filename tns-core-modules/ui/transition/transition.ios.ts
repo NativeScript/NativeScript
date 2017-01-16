@@ -1,7 +1,7 @@
 ﻿import { Transition as TransitionDefinition } from "ui/transition";
 import { NavigationTransition } from "ui/frame";
 import { 
-    enabled as traceEnabled,
+    isEnabled as traceEnabled,
     write as traceWrite,
     categories as traceCategories
 } from "trace";
@@ -50,7 +50,7 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
             case UINavigationControllerOperation.None: this._transitionType = "none"; break;
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`START ${this._transition} ${this._transitionType}`, traceCategories.Transition);
         }
         this._transition.animateIOSTransition(containerView, this._fromVC.view, this._toVC.view, this._operation, completion);
@@ -62,12 +62,12 @@ class AnimatedTransitioning extends NSObject implements UIViewControllerAnimated
 
     public animationEnded(transitionCompleted: boolean): void {
         if (transitionCompleted) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`END ${this._transition} ${this._transitionType}`, traceCategories.Transition);
             }
         }
         else {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`CANCEL ${this._transition} ${this._transitionType}`, traceCategories.Transition);
             }
         }

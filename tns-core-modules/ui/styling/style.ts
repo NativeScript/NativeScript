@@ -180,7 +180,7 @@ export class Style extends Observable implements StyleDefinition {
     // }
 
     // public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-    //     if (traceEnabled) {
+    //     if (traceEnabled()) {
     //         traceWrite(
     //             "Style._onPropertyChanged view:" + this._view +
     //             ", property: " + property.name +
@@ -239,12 +239,12 @@ export class Style extends Observable implements StyleDefinition {
 
     //     let handler: definition.StylePropertyChangedHandler = getHandler(property, this._view);
     //     if (!handler) {
-    //         if (traceEnabled) {
+    //         if (traceEnabled()) {
     //             traceWrite("No handler for property: " + property.name + " with id: " + property.id + ", view:" + this._view, traceCategories.Style);
     //         }
     //     }
     //     else {
-    //         if (traceEnabled) {
+    //         if (traceEnabled()) {
     //             traceWrite("Found handler for property: " + property.name + ", view:" + this._view, traceCategories.Style);
     //         }
 

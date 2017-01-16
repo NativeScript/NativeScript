@@ -52,7 +52,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
         }
         super._addViewToNativeVisualTree(child);
@@ -72,7 +72,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
                 // Add last;
                 insideIndex = this._getNativeViewsCount();
             }
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, traceCategories.ViewHierarchy);
             }
             return parent._addViewToNativeVisualTree(child, baseIndex + insideIndex);
@@ -82,7 +82,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
     }
 
     public _removeViewFromNativeVisualTree(child: View): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("ProxyViewContainer._removeViewFromNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
         }
         super._removeViewFromNativeVisualTree(child);

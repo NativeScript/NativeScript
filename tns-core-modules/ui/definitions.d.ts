@@ -11,7 +11,7 @@ declare module "ui/core/view-base" {
     import { isIOS, isAndroid } from "platform";
     import { fromString as gestureFromString } from "ui/gestures";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
-    import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+    import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 
     export {
         Observable, EventData, KeyframeAnimation,

@@ -1,5 +1,5 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { CoercibleProperty, CssProperty, Style, Bindable, View, Template, KeyedTemplate, Length, Property, Color, lengthComparer } from "ui/core/view";
+import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, lengthComparer } from "ui/core/view";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
 import { ObservableArray, ChangedData } from "data/observable-array";

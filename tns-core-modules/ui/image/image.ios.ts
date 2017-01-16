@@ -69,7 +69,7 @@ export class Image extends ImageBase {
             measureWidth = finiteWidth ? Math.min(resultW, width) : resultW;
             measureHeight = finiteHeight ? Math.min(resultH, height) : resultH;
 
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Image stretch: " + this.stretch +
                     ", nativeWidth: " + nativeWidth +
                     ", nativeHeight: " + nativeHeight, traceCategories.Layout);

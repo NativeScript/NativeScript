@@ -557,7 +557,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         super._addViewToNativeVisualTree(child);
 
         if (this._nativeView && child.nativeView) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
             }
             this._nativeView.addView(child.nativeView, atIndex);
@@ -588,7 +588,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
 
         if (this._nativeView && child._nativeView) {
             this._nativeView.removeView(child._nativeView);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this}._nativeView.removeView(${child}._nativeView)`, traceCategories.VisualTreeEvents);
                 traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
             }

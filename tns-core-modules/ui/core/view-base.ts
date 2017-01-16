@@ -7,7 +7,7 @@ import { fromString as gestureFromString } from "ui/gestures";
 import { SelectorCore } from "ui/styling/css-selector";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
-import { enabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
 
 // TODO: Remove this import!
 import * as types from "utils/types";
@@ -426,7 +426,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _addView(view: ViewBase, atIndex?: number) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${this}._addView(${view}, ${atIndex})`, traceCategories.ViewHierarchy);
         }
 
@@ -463,7 +463,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
     */
     public _removeView(view: ViewBase) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${this}._removeView(${view})`, traceCategories.ViewHierarchy);
         }
 
@@ -510,7 +510,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public _setupUI(context: android.content.Context, atIndex?: number) {
         traceNotifyEvent(this, "_setupUI");
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${this}._setupUI(${context})`, traceCategories.VisualTreeEvents);
         }
 
@@ -543,7 +543,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _tearDownUI(force?: boolean) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }
 
@@ -594,7 +594,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _goToVisualState(state: string) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(this + " going to state: " + state, traceCategories.Style);
         }
         if (state === this._visualState) {
