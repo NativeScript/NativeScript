@@ -51,7 +51,7 @@ export class Layout extends LayoutBase implements LayoutDefinition {
 
         const view = this._nativeView;
         if (view) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this} :measure: ${layout.measureSpecToString(widthMeasureSpec)}, ${layout.measureSpecToString(heightMeasureSpec)}`, traceCategories.Layout);
             }
             view.measure(widthMeasureSpec, heightMeasureSpec);
@@ -64,7 +64,7 @@ export class Layout extends LayoutBase implements LayoutDefinition {
         var view = this._nativeView;
         if (view) {
             this.layoutNativeView(left, top, right, bottom);
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`${this} :layout: ${left}, ${top}, ${right - left}, ${bottom - top}`, traceCategories.Layout);
             }
         }

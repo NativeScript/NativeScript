@@ -76,7 +76,7 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     // }
 
     // public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-    //     if (traceEnabled) {
+    //     if (traceEnabled()) {
     //         traceWrite(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, traceCategories.Binding);
     //     }
     //     super._onPropertyChanged(property, oldValue, newValue);
@@ -89,13 +89,13 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
     //     let binding = this.bindings.get(property.name);
     //     if (binding && !binding.updating) {
     //         if (binding.options.twoWay) {
-    //             if (traceEnabled) {
+    //             if (traceEnabled()) {
     //                 traceWrite(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, traceCategories.Binding);
     //             }
     //             this._updateTwoWayBinding(property.name, newValue);
     //         }
     //         else {
-    //             if (traceEnabled) {
+    //             if (traceEnabled()) {
     //                 traceWrite(`${this}.unbind(${property.name});`, traceCategories.Binding);
     //             }
     //             this.unbind(property.name);
@@ -115,7 +115,7 @@ export class Bindable extends DependencyObservable implements definition.Bindabl
 
     //     this.bindings.forEach((binding, index, bindings) => {
     //         if (!binding.updating && binding.sourceIsBindingContext && binding.options.targetProperty !== "bindingContext") {
-    //             if (traceEnabled) {
+    //             if (traceEnabled()) {
     //                 traceWrite(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${bindingContextSource}`, traceCategories.Binding);
     //             }
     //             if (!types.isNullOrUndefined(bindingContextSource)) {

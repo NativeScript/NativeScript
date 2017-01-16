@@ -19,7 +19,7 @@ let fragmentId = -1;
 let activityInitialized = false;
 
 function onFragmentShown(fragment: android.app.Fragment) {
-    if (traceEnabled) {
+    if (traceEnabled()) {
         traceWrite(`SHOWN ${fragment}`, traceCategories.NativeLifecycle);
     }
 
@@ -27,7 +27,7 @@ function onFragmentShown(fragment: android.app.Fragment) {
     if (callbacks.clearHistory) {
         // This is the fragment which was at the bottom of the stack (fragment0) when we cleared history and called
         // manager.popBackStack(firstEntryName, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment} has been shown, but it is being cleared from history. Returning.`, traceCategories.NativeLifecycle);
         }
         return null;
@@ -66,7 +66,7 @@ function onFragmentShown(fragment: android.app.Fragment) {
 }
 
 function onFragmentHidden(fragment: android.app.Fragment, destroyed: boolean) {
-    if (traceEnabled) {
+    if (traceEnabled()) {
         traceWrite(`HIDDEN ${fragment}; destroyed: ${destroyed}`, traceCategories.NativeLifecycle);
     }
     let callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
@@ -170,7 +170,7 @@ export class Frame extends FrameBase {
         backstackEntry.navDepth = navDepth;
 
         let fragmentTransaction = manager.beginTransaction();
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`BEGIN TRANSACTION ${fragmentTransaction}`, traceCategories.Navigation);
         }
 
@@ -201,7 +201,7 @@ export class Frame extends FrameBase {
                 transitionModule._prepareCurrentFragmentForClearHistory(currentFragment);
             }
             let firstEntryName = manager.getBackStackEntryAt(0).getName();
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`POP BACK STACK ${firstEntryName}`, traceCategories.Navigation);
             }
             manager.popBackStackImmediate(firstEntryName, android.app.FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -210,13 +210,13 @@ export class Frame extends FrameBase {
         // Hide/remove current fragment if it exists and was not popped
         if (currentFragment && !emptyNativeBackStack) {
             if (this.android.cachePagesOnNavigate && !clearHistory) {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite(`\tHIDE ${currentFragment}`, traceCategories.Navigation);
                 }
                 fragmentTransaction.hide(currentFragment);
             }
             else {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite(`\tREMOVE ${currentFragment}`, traceCategories.Navigation);
                 }
                 fragmentTransaction.remove(currentFragment);
@@ -224,7 +224,7 @@ export class Frame extends FrameBase {
         }
 
         // Add newFragment
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`\tADD ${newFragmentTag}<${callbacks.entry.resolvedPage}>`, traceCategories.Navigation);
         }
         fragmentTransaction.add(this.containerViewId, newFragment, newFragmentTag);
@@ -232,7 +232,7 @@ export class Frame extends FrameBase {
         // addToBackStack
         if (this.backStack.length > 0 && currentFragment && !clearHistory) {
             // We add each entry in the backstack to avoid the "Stack corrupted" mismatch
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`\tADD TO BACK STACK ${currentFragment}`, traceCategories.Navigation);
             }
             fragmentTransaction.addToBackStack(this._currentEntry.fragmentTag);
@@ -251,20 +251,20 @@ export class Frame extends FrameBase {
             else {
                 trans = animated ? android.app.FragmentTransaction.TRANSIT_FRAGMENT_OPEN : android.app.FragmentTransaction.TRANSIT_NONE;
             }
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`\tSET TRANSITION ${trans === 0 ? "NONE" : "OPEN"}`, traceCategories.Navigation);
             }
             fragmentTransaction.setTransition(trans);
         }
 
         fragmentTransaction.commit();
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`END TRANSACTION ${fragmentTransaction}`, traceCategories.Navigation);
         }
     }
 
     private static _clearHistory(fragment: android.app.Fragment) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`CLEAR HISTORY FOR ${fragment}`, traceCategories.Navigation);
         }
         let callbacks: FragmentCallbacksImplementation = fragment[CALLBACKS];
@@ -374,14 +374,14 @@ export class Frame extends FrameBase {
                     let weakActivityInstance = weakActivity.get();
                     let isCurrent = args.activity === weakActivityInstance;
                     if (!weakActivityInstance) {
-                        if (traceEnabled) {
+                        if (traceEnabled()) {
                             traceWrite(`Frame _processNavigationContext: Drop For Activity GC-ed`, traceCategories.Navigation);
                         }
                         unsubscribe();
                         return;
                     }
                     if (isCurrent) {
-                        if (traceEnabled) {
+                        if (traceEnabled()) {
                             traceWrite(`Frame _processNavigationContext: Activity.Resumed, Continue`, traceCategories.Navigation);
                         }
                         super._processNavigationContext(navigationContext);
@@ -389,7 +389,7 @@ export class Frame extends FrameBase {
                     }
                 };
                 let unsubscribe = () => {
-                    if (traceEnabled) {
+                    if (traceEnabled()) {
                         traceWrite(`Frame _processNavigationContext: Unsubscribe from Activity.Resumed`, traceCategories.Navigation);
                     }
                     application.android.off(application.AndroidApplication.activityResumedEvent, resume);
@@ -397,7 +397,7 @@ export class Frame extends FrameBase {
                     application.android.off(application.AndroidApplication.activityDestroyedEvent, unsubscribe);
                 };
 
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite(`Frame._processNavigationContext: Subscribe for Activity.Resumed`, traceCategories.Navigation);
                 }
                 application.android.on(application.AndroidApplication.activityResumedEvent, resume);
@@ -542,12 +542,12 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
     let page: Page;
     let entry: BackstackEntry;
 
-    if (traceEnabled) {
+    if (traceEnabled()) {
         traceWrite(`Finding page for ${fragmentTag}.`, traceCategories.NativeLifecycle);
     }
 
     if (fragmentTag === DIALOG_FRAGMENT_TAG) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`No need to find page for dialog fragment.`, traceCategories.NativeLifecycle);
         }
         return;
@@ -556,7 +556,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
     if (frame._currentEntry && frame._currentEntry.fragmentTag === fragmentTag) {
         page = frame.currentPage;
         entry = frame._currentEntry;
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`Current page matches fragment ${fragmentTag}.`, traceCategories.NativeLifecycle);
         }
     }
@@ -570,7 +570,7 @@ function findPageForFragment(fragment: android.app.Fragment, frame: Frame) {
         }
         if (entry) {
             page = entry.resolvedPage;
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`Found ${page} for ${fragmentTag}`, traceCategories.NativeLifecycle);
             }
         }
@@ -644,7 +644,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     public clearHistory: boolean;
 
     public onHiddenChanged(fragment: android.app.Fragment, hidden: boolean, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onHiddenChanged(${hidden})`, traceCategories.NativeLifecycle);
         }
         superFunc.call(fragment, hidden);
@@ -671,14 +671,14 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             animator = superFunc.call(fragment, transit, enter, nextAnim);
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onCreateAnimator(${transit}, ${enter ? "enter" : "exit"}, ${nextAnimString}): ${animator}`, traceCategories.NativeLifecycle);
         }
         return animator;
     }
 
     public onCreate(fragment: android.app.Fragment, savedInstanceState: android.os.Bundle, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
         }
 
@@ -700,7 +700,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     public onCreateView(fragment: android.app.Fragment, inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle, superFunc: Function): android.view.View {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onCreateView(inflater, container, ${savedInstanceState})`, traceCategories.NativeLifecycle);
         }
         const entry = this.entry;
@@ -717,7 +717,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     public onSaveInstanceState(fragment: android.app.Fragment, outState: android.os.Bundle, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onSaveInstanceState(${outState})`, traceCategories.NativeLifecycle);
         }
         superFunc.call(fragment, outState);
@@ -727,7 +727,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     public onDestroyView(fragment: android.app.Fragment, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
         }
         superFunc.call(fragment);
@@ -736,7 +736,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     }
 
     public onDestroy(fragment: android.app.Fragment, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroy()`, traceCategories.NativeLifecycle);
         }
         superFunc.call(fragment);
@@ -751,7 +751,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     private _rootView: View;
 
     public onCreate(activity: android.app.Activity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`Activity.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
         }
 
@@ -837,7 +837,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     public onStart(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onStart();", traceCategories.NativeLifecycle);
         }
         let rootView = this._rootView;
@@ -849,7 +849,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     public onStop(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onStop();", traceCategories.NativeLifecycle);
         }
         let rootView = this._rootView;
@@ -866,7 +866,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         superFunc.call(activity);
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onDestroy();", traceCategories.NativeLifecycle);
         }
 
@@ -878,7 +878,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     public onBackPressed(activity: any, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onBackPressed;", traceCategories.NativeLifecycle);
         }
 
@@ -900,7 +900,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     }
 
     public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onRequestPermissionsResult;", traceCategories.NativeLifecycle);
         }
 
@@ -916,7 +916,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
     public onActivityResult(activity: any, requestCode: number, resultCode: number, data: android.content.Intent, superFunc: Function): void {
         superFunc.call(activity, requestCode, resultCode, data);
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, traceCategories.NativeLifecycle);
         }
 

@@ -19,7 +19,7 @@ function ensureWebViewClientClass() {
         }
 
         public shouldOverrideUrlLoading(view: android.webkit.WebView, url: string) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("WebViewClientClass.shouldOverrideUrlLoading(" + url + ")", traceCategories.Debug);
             }
             return false;
@@ -29,7 +29,7 @@ function ensureWebViewClientClass() {
             super.onPageStarted(view, url, favicon);
 
             if (this._view) {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
                 }
                 this._view._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
@@ -40,7 +40,7 @@ function ensureWebViewClientClass() {
             super.onPageFinished(view, url);
 
             if (this._view) {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("WebViewClientClass.onPageFinished(" + url + ")", traceCategories.Debug);
                 }
                 this._view._onLoadFinished(url, undefined);
@@ -58,7 +58,7 @@ function ensureWebViewClientClass() {
                 super.onReceivedError(view, errorCode, description, failingUrl);
 
                 if (this._view) {
-                    if (traceEnabled) {
+                    if (traceEnabled()) {
                         traceWrite("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", traceCategories.Debug);
                     }
                     this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
@@ -70,7 +70,7 @@ function ensureWebViewClientClass() {
                 super.onReceivedError(view, request, error);
 
                 if (this._view) {
-                    if (traceEnabled) {
+                    if (traceEnabled()) {
                         traceWrite("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", traceCategories.Debug);
                     }
                     this._view._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
@@ -116,7 +116,7 @@ export class WebView extends WebViewBase {
             return;
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
         }
         this._android.stopLoading();

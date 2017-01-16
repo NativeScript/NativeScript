@@ -142,7 +142,7 @@ export class FileNameResolver implements definition.FileNameResolver {
         var candidates = this.getFileCandidatesFromFolder(path, ext);
         result = _findFileMatch(path, ext, candidates, this._context);
 
-        if (trace.enabled) {
+        if (trace.isEnabled()) {
             trace.write("Resolved file name for \"" + path + ext + "\" result: " + (result ? result : "no match found"), trace.categories.Navigation);
         }
         return result;
@@ -166,7 +166,7 @@ export class FileNameResolver implements definition.FileNameResolver {
             });
         }
         else {
-            if (trace.enabled) {
+            if (trace.isEnabled()) {
                 trace.write("Could not find folder " + folderPath + " when loading " + path + ext, trace.categories.Navigation);
             }
         }
@@ -179,7 +179,7 @@ export function _findFileMatch(path: string, ext: string, candidates: Array<stri
     var bestValue = -1
     var result: string = null;
 
-    if (trace.enabled) {
+    if (trace.isEnabled()) {
         trace.write("Candidates for " + path + ext + ": " + candidates.join(", "), trace.categories.Navigation);
     }
     for (var i = 0; i < candidates.length; i++) {

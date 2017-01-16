@@ -131,7 +131,7 @@ export class View extends ViewCommon {
 
     public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
             }
             this._cachedFrame = frame;
@@ -161,7 +161,7 @@ export class View extends ViewCommon {
         // // in iOS 8 we set frame to subview again otherwise we get clipped.
         // let nativeView: UIView;
         // if (!this.parent && this.nativeView.subviews.count > 0 && ios.MajorVersion < 8) {
-        //     if (traceEnabled) {
+        //     if (traceEnabled()) {
         //         traceWrite(this + " has no parent. Setting frame to first child instead.", traceCategories.Layout);
         //     }
         //     nativeView = (<UIView>this.nativeView.subviews[0]);

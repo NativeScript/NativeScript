@@ -67,14 +67,14 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
 
         let moduleExports;
         if (global.moduleExists(entry.moduleName)) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
             }
             moduleExports = global.loadModule(entry.moduleName);
         } else {
             let moduleExportsResolvedPath = resolveFileName(moduleNamePath, "js");
             if (moduleExportsResolvedPath) {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("Loading JS file: " + moduleExportsResolvedPath, traceCategories.Navigation);
                 }
 
@@ -85,7 +85,7 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
         }
 
         if (moduleExports && moduleExports.createPage) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Calling createPage()", traceCategories.Navigation);
             }
             page = moduleExports.createPage();
@@ -115,7 +115,7 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     // Possible XML file path.
     let fileName = resolveFileName(moduleNamePath, "xml");
     if (fileName) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("Loading XML file: " + fileName, traceCategories.Navigation);
         }
 
@@ -170,7 +170,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
      * @param to The backstack entry to navigate back to.
      */
     public goBack(backstackEntry?: BackstackEntry) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`GO BACK`, traceCategories.Navigation);
         }
         if (!this.canGoBack()) {
@@ -199,7 +199,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             this._processNavigationContext(navigationContext);
         }
         else {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`Going back scheduled`, traceCategories.Navigation);
             }
         }
@@ -227,7 +227,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     // }
 
     public navigate(param: any) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`NAVIGATE`, traceCategories.Navigation);
         }
 
@@ -266,7 +266,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             this._processNavigationContext(navigationContext);
         }
         else {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(`Navigation scheduled`, traceCategories.Navigation);
             }
         }
@@ -346,13 +346,13 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`GO BACK CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
         }
     }
 
     public _navigateCore(backstackEntry: BackstackEntry) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(`NAVIGATE CORE(${this._backstackEntryTrace(backstackEntry)}); currentPage: ${this.currentPage}`, traceCategories.Navigation);
         }
     }

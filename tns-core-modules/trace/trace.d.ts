@@ -13,11 +13,11 @@ declare module "trace" {
     export function disable(): void;
     
     /**
-     * A field that indicates if the tracer is enabled and there is a point in writing messages.
+     * A function that returns whether the tracer is enabled and there is a point in writing messages.
      * Check this to avoid writing complex string templates.
-     * Send error messages should even if tracing is disabled.
+     * Send error messages even if tracing is disabled.
      */
-    export var enabled: boolean;
+    export function isEnabled(): boolean;
 
     /**
      * Adds a TraceWriter instance to the trace module.

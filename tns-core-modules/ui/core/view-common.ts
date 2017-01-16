@@ -550,7 +550,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
         this._measuredWidth = measuredWidth;
         this._measuredHeight = measuredHeight;
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(this + " :setMeasuredDimension: " + measuredWidth + ", " + measuredHeight, traceCategories.Layout);
         }
     }
@@ -668,7 +668,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         childLeft = Math.round(childLeft);
         childTop = Math.round(childTop);
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(child.parent + " :layoutChild: " + child + " " + childLeft + ", " + childTop + ", " + childRight + ", " + childBottom, traceCategories.Layout);
         }
 
@@ -695,7 +695,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
             let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === HorizontalAlignment.STRETCH);
             let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, child.effectiveHeight, style.verticalAlignment === VerticalAlignment.STRETCH);
 
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
             }
 

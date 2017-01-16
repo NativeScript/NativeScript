@@ -63,7 +63,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
             throw new Error("No animation definitions specified");
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("Analyzing " + animationDefinitions.length + " animation definitions...", traceCategories.Animation);
         }
 
@@ -78,7 +78,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         if (this._propertyAnimations.length === 0) {
             throw new Error("Nothing to animate.");
         }
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("Created " + this._propertyAnimations.length + " individual property animations.", traceCategories.Animation);
         }
 

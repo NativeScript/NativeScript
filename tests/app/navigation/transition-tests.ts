@@ -3,13 +3,13 @@ import * as helper from "../ui/helper";
 import * as platform from "platform";
 import * as trace from "trace";
 import {Color} from "color";
-import {NavigationEntry, NavigationTransition, topmost as topmostFrame} from "ui/frame";
+import {NavigationEntry, NavigationTransition, topmost as topmostFrame, traceEnabled} from "ui/frame";
 import {Page} from "ui/page";
 import {AnimationCurve} from "ui/enums"
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
-    if (trace.enabled) {
+    if (traceEnabled()) {
         trace.write(`Testing ${testId}`, trace.categories.Test);
     }
     var navigationEntry: NavigationEntry = {

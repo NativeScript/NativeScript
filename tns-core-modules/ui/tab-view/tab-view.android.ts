@@ -121,7 +121,7 @@ function ensurePagerAdapterClass() {
         }
 
         instantiateItem(container: android.view.ViewGroup, index: number) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("TabView.PagerAdapter.instantiateItem; container: " + container + "; index: " + index, traceCategory);
             }
 
@@ -131,7 +131,7 @@ function ensurePagerAdapterClass() {
             // }
 
             if (this[VIEWS_STATES]) {
-                if (traceEnabled) {
+                if (traceEnabled()) {
                     traceWrite("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
                 }
                 item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
@@ -144,7 +144,7 @@ function ensurePagerAdapterClass() {
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, traceCategory);
             }
             let item = this.items[index];
@@ -172,7 +172,7 @@ function ensurePagerAdapterClass() {
         }
 
         saveState(): android.os.Parcelable {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("TabView.PagerAdapter.saveState", traceCategory);
             }
 
@@ -201,7 +201,7 @@ function ensurePagerAdapterClass() {
         }
 
         restoreState(state: android.os.Parcelable, loader: java.lang.ClassLoader) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("TabView.PagerAdapter.restoreState", traceCategory);
             }
             let bundle: android.os.Bundle = <android.os.Bundle>state;
@@ -280,7 +280,7 @@ export class TabView extends TabViewBase {
     }
 
     public _createNativeView() {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("TabView._createUI(" + this + ");", traceCategory);
         }
 
@@ -371,7 +371,7 @@ export class TabView extends TabViewBase {
         return -1;
     }
     set [selectedIndexProperty.native](value: number) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", true);", traceCategory);
         }
         this._viewPager.setCurrentItem(value, true);

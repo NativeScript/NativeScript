@@ -75,7 +75,7 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, traceCategories.ViewHierarchy);
         }
 
@@ -130,7 +130,7 @@ class UIViewControllerImpl extends UIViewController {
                 }
             }
 
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), traceCategories.Layout);
             }
         }
@@ -146,8 +146,8 @@ class UIViewControllerImpl extends UIViewController {
         super.viewWillAppear(animated);
         this.shown = false;
         let page = this._owner.get();
-        if (traceEnabled) {
-            if (traceEnabled) {
+        if (traceEnabled()) {
+            if (traceEnabled()) {
                 traceWrite(page + " viewWillAppear", traceCategories.Navigation);
             }
         }
@@ -198,7 +198,7 @@ class UIViewControllerImpl extends UIViewController {
         super.viewDidAppear(animated);
         this.shown = true;
         let page = this._owner.get();
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(page + " viewDidAppear", traceCategories.Navigation);
         }
         if (!page) {
@@ -249,7 +249,7 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewWillDisappear(animated: boolean): void {
         let page = this._owner.get();
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(page + " viewWillDisappear", traceCategories.Navigation);
         }
         if (!page) {
@@ -275,7 +275,7 @@ class UIViewControllerImpl extends UIViewController {
 
     public viewDidDisappear(animated: boolean): void {
         let page = this._owner.get();
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite(page + " viewDidDisappear", traceCategories.Navigation);
         }
         // Exit if no page or page is hiding because it shows another page modally.
@@ -374,7 +374,7 @@ export class Page extends PageBase {
 
     private _addNativeView(view: View) {
         if (view) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Native: Adding " + view + " to " + this, traceCategories.ViewHierarchy);
             }
             if (view.ios instanceof UIView) {
@@ -388,7 +388,7 @@ export class Page extends PageBase {
 
     private _removeNativeView(view: View) {
         if (view) {
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("Native: Removing " + view + " from " + this, traceCategories.ViewHierarchy);
             }
             if (view.ios instanceof UIView) {

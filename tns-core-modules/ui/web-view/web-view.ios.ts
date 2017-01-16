@@ -37,7 +37,7 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
                     break;
             }
 
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", traceCategories.Debug);
             }
             owner._onLoadStarted(request.URL.absoluteString, WebViewBase.navigationTypes[navTypeIndex]);
@@ -47,13 +47,13 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
     }
 
     public webViewDidStartLoad(webView: UIWebView) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("UIWebViewDelegateClass.webViewDidStartLoad(" + webView.request.URL + ")", traceCategories.Debug);
         }
     }
 
     public webViewDidFinishLoad(webView: UIWebView) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("UIWebViewDelegateClass.webViewDidFinishLoad(" + webView.request.URL + ")", traceCategories.Debug);
         }
         let owner = this._owner.get();
@@ -70,7 +70,7 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
                 src = webView.request.URL.absoluteString;
             }
 
-            if (traceEnabled) {
+            if (traceEnabled()) {
                 traceWrite("UIWebViewDelegateClass.webViewDidFailLoadWithError(" + error.localizedDescription + ")", traceCategories.Debug);
             }
             if (owner) {
@@ -110,7 +110,7 @@ export class WebView extends WebViewBase {
     }
 
     public _loadUrl(url: string) {
-        if (traceEnabled) {
+        if (traceEnabled()) {
             traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
         }
 
