@@ -26,7 +26,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     public static knownFunctions = ["itemTemplateSelector"]; //See component-builder.ts isKnownFunction
 
     private _itemTemplateSelector: (item: any, index: number, items: any) => string;
-    private _itemTemplateSelectorBindable = new Bindable();
+    private _itemTemplateSelectorBindable = new Label();
     public _defaultTemplate: KeyedTemplate = {
         key: "default",
         createView: () => {
