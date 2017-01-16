@@ -23,7 +23,7 @@ export function test_NavigateToNewPage_InnerControl() {
 
     helper.goBack();
 
-    TKUnit.assertEqual(label._context, undefined, "label._context should be undefined after navigate back.");
+    TKUnit.assertEqual(label._context, null, "label._context should be undefined after navigate back.");
     TKUnit.assertEqual(label.android, undefined, "label.android should be undefined after navigate back.");
     TKUnit.assertFalse(label.isLoaded, "label.isLoaded should become false after navigating back");
 }

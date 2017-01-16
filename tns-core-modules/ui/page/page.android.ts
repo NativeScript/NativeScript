@@ -92,10 +92,15 @@ export class Page extends PageBase {
         return this._grid;
     }
 
+    get nativeView(): android.view.ViewGroup {
+        return this._grid;
+    }
+
     public _createNativeView() {
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        this.nativeView.setBackgroundColor(new Color("white").android);
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
@@ -126,6 +131,7 @@ export class Page extends PageBase {
 
         if (!skipDetached) {
             super._tearDownUI();
+            this._isAddedToNativeVisualTree = false;
         }
     }
 
