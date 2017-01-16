@@ -1,7 +1,6 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
 import {
-    ContentView, View, backgroundColorProperty,
-    eachDescendant, Property, Color, isIOS, booleanConverter, resetCSSProperties
+    ContentView, View, eachDescendant, Property, Color, isIOS, booleanConverter, resetCSSProperties
 } from "ui/content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
 import { ActionBar } from "ui/action-bar";
@@ -41,9 +40,6 @@ export class PageBase extends ContentView implements PageDefinition {
     constructor() {
         super();
         this.actionBar = new ActionBar();
-
-        // The default style of the page should be white background
-        this.style[backgroundColorProperty.cssName] = new Color("white");
     }
 
     // public onLoaded() {

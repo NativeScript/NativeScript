@@ -23,6 +23,7 @@ import { EventData } from "data/observable";
 import { PercentLength } from "ui/core/view";
 import * as platform from "platform";
 import {unsetValue} from "ui/core/view";
+import { Color } from "color";
 
 export function addLabelToPage(page: Page, text?: string) {
     let label = new Label();
@@ -122,7 +123,7 @@ export function test_NavigateToNewPage() {
 
     TKUnit.waitUntilReady(() => { return topFrame.currentPage !== null && topFrame.currentPage === currentPage });
     TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
-    TKUnit.assert(testPage._context === undefined, "Page._context should become undefined after navigating back");
+    TKUnit.assert(testPage._context === null, "Page._context should become undefined after navigating back");
     TKUnit.assert(testPage.isLoaded === false, "Page.isLoaded should become false after navigating back");
     TKUnit.assert(testPage.frame === undefined, "Page.frame should become undefined after navigating back");
     TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
@@ -376,7 +377,12 @@ export function test_page_backgroundColor_is_white() {
     page.id = "page_test_page_backgroundColor_is_white";
     let factory = () => page;
     helper.navigate(factory);
-    TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
+    let whiteColor = new Color("white");
+    if (platform.isIOS) {
+        TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeView.backgroundColor.CGColor), "page default backgroundColor should be white");
+    } else {
+        TKUnit.assertEqual(page.nativeView.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
+    }
 }
 
 export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() {

@@ -1485,7 +1485,11 @@ function convertToTransform(value: string): [CssProperty<any, any>, any][] {
 }
 
 // Background properties.
-export const backgroundInternalProperty = new CssProperty<Style, Background>({ name: "backgroundInternal", cssName: "_backgroundInternal", defaultValue: Background.default });
+export const backgroundInternalProperty = new CssProperty<Style, Background>({
+    name: "backgroundInternal",
+    cssName: "_backgroundInternal",
+    defaultValue: Background.default
+});
 backgroundInternalProperty.register(Style);
 
 let pattern: RegExp = /url\(('|")(.*?)\1\)/;

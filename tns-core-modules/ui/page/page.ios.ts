@@ -5,6 +5,7 @@
 } from "./page-common";
 import { ios as iosApp } from "application";
 import { device } from "platform";
+import { Color } from "color";
 import * as uiUtils from "ui/utils";
 
 export * from "./page-common";
@@ -115,9 +116,9 @@ class UIViewControllerImpl extends UIViewController {
             let widthSpec = layout.makeMeasureSpec(width, mode);
             let heightSpec = layout.makeMeasureSpec(height, mode);
 
-            View.measureChild(null, owner, widthSpec, heightSpec);
+            View.measureChild(owner._modalParent, owner, widthSpec, heightSpec);
             let top = ((backgroundSpanUnderStatusBar && isFullScreen) || ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
-            View.layoutChild(null, owner, 0, top, width, bottom);
+            View.layoutChild(owner._modalParent, owner, 0, top, width, bottom);
 
             if (ios.MajorVersion < 8) {
                 if (!backgroundSpanUnderStatusBar && (!isTablet || isFullScreen)) {
@@ -339,6 +340,7 @@ export class Page extends PageBase {
         super();
         this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
         this.nativeView = this._ios.view;
+        this.nativeView.backgroundColor = new Color("white").ios;
     }
 
     public requestLayout(): void {
@@ -582,6 +584,9 @@ export class Page extends PageBase {
     }
     set [actionBarHiddenProperty.native](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
+        if (this.isLoaded) {
+            this.updateActionBar(value);
+        }
     }
 
     get [statusBarStyleProperty.native](): UIBarStyle {
