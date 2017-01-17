@@ -10,14 +10,14 @@
     interface Owned {
         owner: any;
     }
-    
+
     /**
-     * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType. 
+     * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType.
      */
     interface CacheLayerType {
         layerType: number;
         setLayerType(layerType: number, paint: any): void;
-        getLayerType(): number;    
+        getLayerType(): number;
     }
     //@endprivate
 
@@ -211,8 +211,9 @@
         /**
          * Opens file with associated application.
          * @param filePath The file path.
+         * @param callback - Callback function which will be executed when 'didEndPreviewEventName' event is raised.
          */
-        export function openFile(filePath: string): boolean
+        export function openFile(filePath: string, callback?: Function): boolean
     }
     /**
      * An utility function that copies properties from source object to target object.
@@ -248,16 +249,16 @@
      * @param url The url.
      */
     export function openUrl(url: string): boolean
-    
+
     /**
      * Escapes special regex symbols (., *, ^, $ and so on) in string in order to create a valid regex from it.
-     * @param source The original value. 
+     * @param source The original value.
      */
     export function escapeRegexSymbols(source: string): string
-    
+
     /**
      * Converts string value to number or boolean.
-     * @param value The original value. 
+     * @param value The original value.
      */
     export function convertString(value: any): any
 
