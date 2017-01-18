@@ -95,7 +95,7 @@ allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
 allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
 allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
 allTests["ANIMATION"] = require("./ui/animation/animation-tests");
-//allTests["CSS-ANIMATION"] = require("./ui/animation/css-animation-tests");
+allTests["CSS-ANIMATION"] = require("./ui/animation/css-animation-tests");
 
 // Skip transitions on android emulators with API 23
 if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
