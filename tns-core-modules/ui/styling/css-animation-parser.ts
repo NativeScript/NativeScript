@@ -195,10 +195,10 @@ function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration>
                     }
                 }
             }
-            declarations[propertyName] = parseFloat(value);
+            delete declarations[propertyName];
         }
         else if (propertyName === "backgroundColor" || propertyName === "background-color") {
-            declarations[propertyName] = new Color(value);
+            declarations["backgroundColor"] = new Color(value);
         }
         else {
             declarations[propertyName] = value;

@@ -99,7 +99,7 @@ export class Color implements definition.Color {
     }
 
     public equals(value: definition.Color): boolean {
-        return this.argb === value.argb;
+        return value && this.argb === value.argb;
     }
 
     public static equals(value1: definition.Color, value2: definition.Color): boolean {
