@@ -53,9 +53,7 @@ export function test_FormattedTextProperty_IsChanged_When_SpanIsChanged() {
         formattedTextChanged = true;
     });
 
-    firstSpan.beginEdit();
     firstSpan.fontSize = expectedValue;
-    firstSpan.endEdit();
 
     TKUnit.assertTrue(formattedTextChanged, "FormattedText property is not changed.");
     TKUnit.assert(formattedString.spans.getItem(0).fontSize === expectedValue, "FormattedString internal span is not changed as expected");
@@ -67,7 +65,7 @@ export function test_FormattedTextProperty_DoNotCrash_When_KnownColorIsSetForFor
     const expectedValue2 = "blue";
 
     const firstSpan = new Span();
-    firstSpan.foregroundColor = <any>expectedValue1;
+    firstSpan.color = <any>expectedValue1;
     firstSpan.text = "LoremIpsum1";
     formattedString.spans.push(firstSpan);
 
@@ -76,6 +74,6 @@ export function test_FormattedTextProperty_DoNotCrash_When_KnownColorIsSetForFor
     secondSpan.text = "LoremIpsum2";
     formattedString.spans.push(secondSpan);
 
-    TKUnit.assertEqual(formattedString.spans.getItem(0).foregroundColor.name, expectedValue1);
+    TKUnit.assertEqual(formattedString.spans.getItem(0).color.name, expectedValue1);
     TKUnit.assertEqual(formattedString.spans.getItem(1).backgroundColor.name, expectedValue2);
 };

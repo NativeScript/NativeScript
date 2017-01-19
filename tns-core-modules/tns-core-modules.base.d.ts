@@ -45,7 +45,6 @@
 /// <reference path="ui/core/bindable.d.ts" />
 /// <reference path="ui/core/control-state-change.d.ts" />
 /// <reference path="ui/core/dependency-observable.d.ts" />
-/// <reference path="ui/core/proxy.d.ts" />
 /// <reference path="ui/core/view.d.ts" />
 /// <reference path="ui/core/weak-event-listener.d.ts" />
 /// <reference path="ui/date-picker/date-picker.d.ts" />

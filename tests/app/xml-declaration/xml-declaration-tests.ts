@@ -701,7 +701,7 @@ export function test_parseSpansDirectlyOnLabel() {
         var page = <Page>views[0];
         var testLabel = <Label>page.getViewById("testLabel");
         TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "formattedText");
-        TKUnit.assertEqual(testLabel.text + "", "We areAwesome", "text");
+        TKUnit.assertEqual(testLabel.text + "", "", "text should not change when formattedText is set.");
     }
 
     helper.navigate(function () { return p; });
@@ -714,7 +714,7 @@ export function test_parseSpansDirectlyOnButton() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "formattedText");
-        TKUnit.assertEqual(testButton.text + "", "We areAwesome", "text");
+        TKUnit.assertEqual(testButton.text + "", "", "text should not change when formattedText is set.");
     }
 
     helper.navigate(function () { return p; });
@@ -727,7 +727,7 @@ export function test_parseFormattedStringWithoutFormattedText() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
+        TKUnit.assertEqual(testButton.text + "", "", "text should not change when formattedText is set.");
     }
 
     helper.navigate(function () { return p; });
@@ -740,7 +740,7 @@ export function test_parseFormattedStringFullSyntax() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
+        TKUnit.assertEqual(testButton.text + "", "", "text should not change when formattedText is set.");
     }
 
     helper.navigate(function () { return p; });
@@ -753,7 +753,7 @@ export function test_parseSpansDirectlyToFormattedString() {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
         TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
+        TKUnit.assertEqual(testButton.text + "", "", "text should not change when formattedText is set.");
     }
 
     helper.navigate(function () { return p; });

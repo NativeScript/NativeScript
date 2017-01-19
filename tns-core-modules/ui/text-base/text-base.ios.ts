@@ -1,14 +1,19 @@
 ﻿import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, Font, Color, FormattedString,
-    TextDecoration, TextAlignment, TextTransform
+    TextDecoration, TextAlignment, TextTransform, Span
 } from "./text-base-common";
+
+import { FontWeight, FontStyle } from "ui/styling/font";
 import * as utils from "utils/utils";
-import { toUIString } from "utils/types";
 
 export * from "./text-base-common";
 
 export class TextBase extends TextBaseCommon {
+
+    private textDecorationSet: boolean;
+    private textTransformSet: boolean;
+    private letterSpacingSet: boolean;
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
@@ -22,21 +27,17 @@ export class TextBase extends TextBaseCommon {
         }
     }
     set [textProperty.native](value: string) {
-        let newValue = (value === undefined || value === null) ? '' : value.toString();
-        let nativeView = this.nativeView;
-        if (nativeView instanceof UIButton) {
+        const newValue = (value === undefined || value === null) ? '' : value.toString();
+        const nativeView = this.nativeView;
+        if (this.textDecorationSet || this.textTransformSet || this.letterSpacingSet) {
+            const style = this.style;
+            setTextDecorationAndTransform(newValue, nativeView, style.textDecoration, style.textTransform, style.letterSpacing, style.color);
+        } else if (nativeView instanceof UIButton) {
             nativeView.setTitleForState(newValue, UIControlState.Normal);
-
-            //https://github.com/NativeScript/NativeScript/issues/2615
-            let attributedTitle = nativeView.attributedTitleForState(UIControlState.Normal);
-            if (attributedTitle !== null) {
-                let style = this.style;
-                setTextDecorationAndTransform(newValue, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing, style.color);
-            }
-        } 
-        else {
+        } else {
             nativeView.text = newValue;
         }
+
         this._requestLayoutOnTextChanged();
     }
 
@@ -45,15 +46,8 @@ export class TextBase extends TextBaseCommon {
         return null;
     }
     set [formattedTextProperty.native](value: FormattedString) {
-        let mas = createNSMutableAttributedString(value);
-        let nativeView = this.nativeView;
-        if (nativeView instanceof UIButton) {
-            nativeView.setAttributedTitleForState(mas, UIControlState.Normal);
-        } 
-        else {
-            nativeView.attributedText = mas;
-        }
-        textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
+        const style = this.style;
+         setFormattedTextDecorationAndTransform(value, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing);
     }
 
     //Color
@@ -80,7 +74,7 @@ export class TextBase extends TextBaseCommon {
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         return nativeView.font;
     }
-    set [fontInternalProperty.native](value: Font) {
+    set [fontInternalProperty.native](value: Font | UIFont) {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         let font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
@@ -127,6 +121,7 @@ export class TextBase extends TextBaseCommon {
         return TextDecoration.NONE;
     }
     set [textDecorationProperty.native](value: TextDecoration) {
+        this.textDecorationSet = value !== TextDecoration.NONE;
         if (this.formattedText) {
             setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, value, this.style.textTransform, this.style.letterSpacing);
         } else {
@@ -139,6 +134,7 @@ export class TextBase extends TextBaseCommon {
         return TextTransform.NONE;
     }
     set [textTransformProperty.native](value: TextTransform) {
+        this.textTransformSet = value !== TextTransform.NONE;
         if (this.formattedText) {
             setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, this.style.textDecoration, value, this.style.letterSpacing);
         } else {
@@ -151,6 +147,7 @@ export class TextBase extends TextBaseCommon {
         return Number.NaN;
     }
     set [letterSpacingProperty.native](value: number) {
+        this.letterSpacingSet = value !== 0;
         if (this.formattedText) {
             setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, this.style.textDecoration, this.style.textTransform, value);
         } else {
@@ -178,55 +175,18 @@ function NSStringFromNSAttributedString(source: NSAttributedString | string): NS
     return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
 }
 
-function updateFormattedStringTextDecoration(formattedText: FormattedString, textDecoration: TextDecoration): void {
-    // TODO: Refactor this method so it doesn't modify FormattedString properties.
-    // Instead it should create NSAttributedString and apply it to the nativeView.
-    switch (textDecoration) {
-        case TextDecoration.NONE:
-            formattedText.underline = NSUnderlineStyle.StyleNone;
-            formattedText.strikethrough = NSUnderlineStyle.StyleNone;
-            break;
-        case TextDecoration.UNDERLINE:
-            formattedText.underline = NSUnderlineStyle.StyleSingle;
-            formattedText.strikethrough = NSUnderlineStyle.StyleNone;
-            break;
-        case TextDecoration.LINE_THROUGH:
-            formattedText.underline = NSUnderlineStyle.StyleNone;
-            formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
-            break;
-        case TextDecoration.UNDERLINE_LINE_THROUGH:
-            formattedText.underline = NSUnderlineStyle.StyleSingle;
-            formattedText.strikethrough = NSUnderlineStyle.StyleSingle;
-            break;
-        default:
-            throw new Error(`Invalid text decoration value: ${textDecoration}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
-    }
-}
-
-function updateFormattedStringTextTransformation(formattedText: FormattedString, textTransform: TextTransform): void {
-    // TODO: Refactor this method so it doesn't modify Span properties.
-    // Instead it should create NSAttributedString and apply it to the nativeView.
-    for (let i = 0, length = formattedText.spans.length; i < length; i++) {
-        let span = formattedText.spans.getItem(i);
-        span.text = getTransformedText(span.text, textTransform);
-    }
-}
-
 function setFormattedTextDecorationAndTransform(formattedText: FormattedString, nativeView: UITextField | UITextView | UILabel | UIButton, textDecoration: TextDecoration, textTransform: TextTransform, letterSpacing: number) {
-    updateFormattedStringTextDecoration(formattedText, textDecoration);
-    updateFormattedStringTextTransformation(formattedText, textTransform);
-
+    const attrText = createNSMutableAttributedString(formattedText);
     const hasLetterSpacing = typeof letterSpacing === "number" && !isNaN(letterSpacing) && letterSpacing !== 0;
     if (hasLetterSpacing) {
-        if (nativeView instanceof UIButton) {
-            let attrText = NSMutableAttributedString.alloc().initWithAttributedString(nativeView.attributedTitleForState(UIControlState.Normal));
-            attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * nativeView.font.pointSize, { location: 0, length: attrText.length });
-            nativeView.setAttributedTitleForState(attrText, UIControlState.Normal);
-        } else {
-            let attrText = NSMutableAttributedString.alloc().initWithAttributedString(nativeView.attributedText);
-            attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * nativeView.font.pointSize, { location: 0, length: attrText.length });
-            nativeView.attributedText = attrText;
-        }
+        attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * nativeView.font.pointSize, { location: 0, length: attrText.length });
+    }
+
+    if (nativeView instanceof UIButton) {
+        nativeView.setAttributedTitleForState(attrText, UIControlState.Normal);
+    }
+    else {
+        nativeView.attributedText = attrText;
     }
 }
 
@@ -284,19 +244,91 @@ function setTextDecorationAndTransform(text: string, nativeView: UITextField | U
 function createNSMutableAttributedString(formattedString: FormattedString): NSMutableAttributedString {
     let mas = NSMutableAttributedString.alloc().init();
     if (formattedString) {
-        for (let i = 0, spanStart = 0, spanLength = 0, length = formattedString.spans.length, spanText = ""; i < length; i++) {
-            let span = formattedString.spans.getItem(i);
-            spanText = toUIString(span.text);
-            spanLength = spanText.length;
-            span.updateSpanModifiers(formattedString);
-            let attrDict = NSMutableDictionary.alloc<string, any>().init();
-            for (let p = 0; p < span.spanModifiers.length; p++) {
-                attrDict.setObjectForKey(span.spanModifiers[p].value, span.spanModifiers[p].key);
+        for (let i = 0, spanStart = 0, spanLength = 0, length = formattedString.spans.length; i < length; i++) {
+            const span = formattedString.spans.getItem(i);
+            const text = span.text;
+            const textTransform = (<TextBase>formattedString.parent).textTransform;
+            let spanText = (text === null || text === undefined) ? '' : text.toString();
+            if (textTransform) {
+                spanText = getTransformedText(spanText, textTransform);
             }
-            let nsAttributedString = NSMutableAttributedString.alloc().initWithStringAttributes(String(spanText), attrDict);
+
+            spanLength = spanText.length;
+            const nsAttributedString = createMutableStringForSpan(span, spanText);
             mas.insertAttributedStringAtIndex(nsAttributedString, spanStart);
             spanStart += spanLength;
         }
     }
     return mas;
+}
+
+function isBold(fontWeight: FontWeight): boolean {
+    return fontWeight === FontWeight.BOLD
+        || fontWeight === "700"
+        || fontWeight === FontWeight.EXTRA_BOLD
+        || fontWeight === FontWeight.BLACK;
+}
+
+function createMutableStringForSpan(span: Span, text: string): NSMutableAttributedString {
+    let attrDict = <{ key: string, value: any }>{};
+    const style = span.style;
+    const bold = isBold(style.fontWeight);
+    const italic = style.fontStyle === FontStyle.ITALIC;
+
+    let fontFamily = span.fontFamily;
+    let fontSize = span.fontSize;
+
+    if (bold || italic || fontFamily || fontSize) {
+        let font;
+        if (fontFamily) {
+            if (!fontSize) {
+                fontSize = utils.ios.getter(UIFont, UIFont.systemFontSize);
+            }
+
+            font = UIFont.fontWithNameSize(fontFamily, fontSize);
+        }
+
+        if (!font) {
+            const fontDescriptor = UIFontDescriptor.new();
+            let symbolicTraits;
+            if (bold) {
+                symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
+            }
+
+            if (italic) {
+                symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
+            }
+
+            font = UIFont.fontWithDescriptorSize(fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits), fontSize);
+        }
+
+        attrDict[NSFontAttributeName] = font;
+    }
+
+    const color = span.color;
+    if (color) {
+        attrDict[NSForegroundColorAttributeName] = color.ios;
+    }
+
+    const backgroundColor = style.backgroundColor
+        || (<FormattedString>span.parent).backgroundColor
+        || (<TextBase>(<FormattedString>span.parent).parent).backgroundColor;
+    if (backgroundColor) {
+        attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
+    }
+
+    const textDecorations = style.textDecoration
+        || (<FormattedString>span.parent).textDecoration
+        || (<TextBase>(<FormattedString>span.parent).parent).textDecoration;
+    const underline = textDecorations.indexOf(TextDecoration.UNDERLINE) !== -1;
+    if (underline) {
+        attrDict[NSUnderlineStyleAttributeName] = underline;
+    }
+
+    const strikethrough = textDecorations.indexOf(TextDecoration.LINE_THROUGH) !== -1;
+    if (strikethrough) {
+        attrDict[NSStrikethroughStyleAttributeName] = strikethrough;
+    }
+
+    return NSMutableAttributedString.alloc().initWithStringAttributes(text, <any>attrDict);
 }

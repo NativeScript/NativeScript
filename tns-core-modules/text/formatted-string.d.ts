@@ -3,31 +3,23 @@
  */
 declare module "text/formatted-string" {
     import { Span } from "text/span";
-    import { Observable } from "data/observable";
     import { ObservableArray } from "data/observable-array";
-    import { View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
+    import { ViewBase } from "ui/core/view";
     import { Color } from "color";
+    import { FontStyle, FontWeight } from "ui/styling/font";
+    import { TextDecoration } from "ui/text-base";
 
-    /**
-     * Interface that specifies View that have formattedText property (like TextBase and Button).
-     */
-    export interface FormattedStringView {
-        formattedText: FormattedString;
-    }
-
+    export { Span };
+    
     /**
      * A class used to create a formatted (rich text) string.
      */
-    class FormattedString extends Observable implements AddArrayFromBuilder, AddChildFromBuilder {
+    export class FormattedString extends ViewBase {
+
         /**
          * An observable collection of Span objects used to define common text properties.
          */
         public spans: ObservableArray<Span>;
-
-        /**
-         * Initializes a new instance of FormattedString class.
-         */
-        constructor();
 
         /**
          * A human readable representation of the formatted string.
@@ -35,68 +27,38 @@ declare module "text/formatted-string" {
         public toString(): string;
 
         /**
-         * Gets or sets the font family which will be used for all spans that not have a specific value for font family.
+         * Gets or sets the font family which will be used for all spans that doesn't have a specific value.
          */
         public fontFamily: string;
 
         /**
-         * Gets or sets the font size which will be used for all spans that not have a specific value for font size.
+         * Gets or sets the font size which will be used for all spans that doesn't have a specific value.
          */
         public fontSize: number;
 
         /**
-         * Gets or sets the font attributes which will be used for all spans that not have a specific value for font attributes.
+         * Gets or sets the font style which will be used for all spans that doesn't have a specific value.
          */
-        public fontAttributes: number;
+        public fontStyle: FontStyle;
 
         /**
-         * Gets or sets the font foreground color which will be used for all spans that not have a specific value for font foreground color.
+         * Gets or sets the font weight which will be used for all spans that doesn't have a specific value.
          */
-        public foregroundColor: Color;
+        public fontWeight: FontWeight;
 
         /**
-         * Gets or sets the font background color which will be used for all spans that not have a specific value for font background color.
+         * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.
+         */
+        public textDecoration: TextDecoration;
+
+        /**
+         * Gets or sets the font foreground color which will be used for all spans that doesn't have a specific value.
+         */
+        public color: Color;
+
+        /**
+         * Gets or sets the font background color which will be used for all spans that doesn't have a specific value.
          */
         public backgroundColor: Color;
-
-        /**
-         * Gets or sets underline which will be used for all spans that not have a specific value for underline.
-         */
-        public underline: number;
-
-        /**
-         * Gets or sets strikethrough which will be used for all spans that not have a specific value for strikethrough.
-         */
-        public strikethrough: number;
-
-        /**
-         * Propogates binding context through the spans collection.
-         * @param newBindingContext The value of the newly set binding context.
-         */
-        public updateSpansBindingContext(newBindingContext: any): void
-
-        /**
-         * Gets the parent view of the formatted string.
-         */
-        public parent: View;
-
-        /**
-         * A function that is called when an array declaration is found in xml.
-         * @param name - Name of the array.
-         * @param value - The actual value of the array.
-         */
-        public _addArrayFromBuilder(name: string, value: Array<any>): void;
-
-        /**
-         * Called for every child element declared in xml.
-         * @param name - Name of the element.
-         * @param value - Value of the element.
-         */
-        public _addChildFromBuilder(name: string, value: any): void;
-
-        /**
-         * A static method used to add child elements of the FormattedString class to a View declared in xml.
-         */
-        public static addFormattedStringToView(view: FormattedStringView, name: string, value: any): void;
     }
 }

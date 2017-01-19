@@ -1,5 +1,4 @@
 ﻿declare module "ui/core/bindable" {
-    import { DependencyObservable } from "ui/core/dependency-observable";
     import { ViewBase } from "ui/core/view-base";
 
     /**
@@ -39,37 +38,6 @@
          * @param params - An array of parameters where first element is the value of the property and next elements are parameters send to converter.
          */
         toView: (...params: any[]) => any;
-    }
-
-    /**
-     * Represents an extended DependencyObservable object that supports data-binding.
-     */
-    export class Bindable extends DependencyObservable {
-        /**
-         * Represents the dependency Property used to back the bindingContext value.
-         */
-        // public static bindingContextProperty: dependencyObservable.Property;
-
-        /**
-         * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
-         */
-        bindingContext: any;
-        /**
-         * Establishes a binding between the source object and this Bindable instance.
-         * @param options The options for the binding.
-         * @param source An optional parameter, specifying the source object to bind to. If no source is specified the bindingContext value (if any) will be used as a source.
-         */
-        bind(options: BindingOptions, source?: Object);
-        /**
-         * Removes the existing binding (if any) for the specified property.
-         * @param property The name of the property to unbind.
-         */
-        unbind(property: string);
-
-        //@private
-        // _onBindingContextChanged(oldValue: any, newValue: any);
-        // _updateTwoWayBinding(propertyName: string, value: any);
-        //@endprivate
     }
 
     export class Binding {

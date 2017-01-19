@@ -1,7 +1,7 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData, PropertyChangeData } from "data/observable";
 import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, applyNativeSetters, resetStyleProperties } from "./properties";
-import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
+import { Binding, BindingOptions } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
 import { SelectorCore } from "ui/styling/css-selector";
@@ -21,7 +21,7 @@ function ensureStyleScopeModule() {
 }
 
 export {
-    Observable, EventData, Binding, BindingOptions, Bindable, isIOS, isAndroid,
+    Observable, EventData, Binding, BindingOptions, isIOS, isAndroid,
     gestureFromString, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, isCategorySet
 };
 export * from "./properties";
