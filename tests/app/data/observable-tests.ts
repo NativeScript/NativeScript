@@ -2,7 +2,6 @@
 import { Observable, fromObject, fromObjectRecursive, PropertyChangeData, EventData, WrappedValue } from "data/observable";
 // << observable-require
 
-import * as dependencyObservable from "ui/core/dependency-observable";
 import * as TKUnit from "../TKUnit";
 import * as types from "utils/types";
 import { ObservableArray } from "data/observable-array";

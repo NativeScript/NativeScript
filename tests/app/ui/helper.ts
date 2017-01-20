@@ -9,7 +9,6 @@ import * as platform from "platform";
 import * as colorModule from "color";
 import * as formattedStringModule from "text/formatted-string";
 import * as spanModule from "text/span";
-import * as enums from "ui/enums";
 import { ActionBar } from "ui/action-bar";
 import { unsetValue } from "ui/core/view";
 

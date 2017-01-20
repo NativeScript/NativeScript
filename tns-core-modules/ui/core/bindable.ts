@@ -3,7 +3,7 @@ import { Observable, PropertyChangeData } from "data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import types = require("utils/types");
 import bindingBuilder = require("../builder/binding-builder");
-import { ViewBase, isEventOrGesture, bindingContextProperty, unsetValue } from "ui/core/view-base";
+import { ViewBase, isEventOrGesture, unsetValue } from "ui/core/view-base";
 import * as application from "application";
 import * as polymerExpressions from "js-libs/polymer-expressions";
 import * as utils from "utils/utils";
@@ -17,8 +17,6 @@ let contextKey = "context";
 let paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
 
 let bc = bindingBuilder.bindingConstants;
-
-let defaultBindingSource = {};
 
 const emptyArray = [];
 function getProperties(property: string): Array<string> {

@@ -10,7 +10,7 @@ import { unsetValue } from "ui/core/properties";
 
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
 var propertyFromKey = {};
-var propertyIdCounter = 0;
+// var propertyIdCounter = 0;
 
 function generatePropertyKey(name: string, ownerType: string, validate?: boolean) {
     if (validate) {

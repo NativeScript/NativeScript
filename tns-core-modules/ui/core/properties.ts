@@ -266,7 +266,6 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                     }
                 }
 
-
                 if (this.hasListeners(eventName)) {
                     this.notify({
                         eventName: eventName,

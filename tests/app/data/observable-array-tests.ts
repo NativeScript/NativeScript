@@ -5,7 +5,6 @@ import { Label } from "ui/label";
 import { ObservableArray, ChangedData, ChangeType } from "data/observable-array";
 // << observable-array-require
 
-
 export const test_ObservableArray_shouldCopySourceArrayItems = function () {
     // >> observable-array-create
     const sa = [1, 2, 3];

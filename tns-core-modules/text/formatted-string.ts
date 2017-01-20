@@ -14,10 +14,8 @@ export module knownCollections {
 }
 
 const CHILD_SPAN = "Span";
-const CHILD_FORMATTED_TEXT = "formattedText";
-const CHILD_FORMATTED_STRING = "FormattedString";
 
-export class FormattedString extends ViewBase implements AddArrayFromBuilder, AddChildFromBuilder {
+export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
     private _spans: ObservableArray<Span>;
 
     constructor() {
