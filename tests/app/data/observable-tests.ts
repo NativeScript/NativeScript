@@ -2,10 +2,8 @@
 import { Observable, fromObject, fromObjectRecursive, PropertyChangeData, EventData, WrappedValue } from "data/observable";
 // << observable-require
 
-import * as dependencyObservable from "ui/core/dependency-observable";
 import * as TKUnit from "../TKUnit";
 import * as types from "utils/types";
-import * as proxy from "ui/core/proxy";
 import { ObservableArray } from "data/observable-array";
 
 var TESTED_NAME = "tested";
@@ -87,45 +85,45 @@ export var test_Observable_UpdateAnotherPropertyWithinChangedCallback = function
     TKUnit.assert(obj.get("test") === "Changed test", "Changed value for property test is not correct!");
 }
 
-export var test_DependencyObservable_UpdateAnotherPropertyWithinChangedCallback = function () {
-    var obj = new dependencyObservable.DependencyObservable();
+// export var test_DependencyObservable_UpdateAnotherPropertyWithinChangedCallback = function () {
+//     var obj = new dependencyObservable.DependencyObservable();
 
-    function onFirstPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        var testObj = <dependencyObservable.DependencyObservable>data.object;
-        testObj._setValue(secondProperty, "Changed test");
-    };
+//     function onFirstPropertyChanged(data: dependencyObservable.PropertyChangeData) {
+//         var testObj = <dependencyObservable.DependencyObservable>data.object;
+//         testObj._setValue(secondProperty, "Changed test");
+//     };
 
-    var firstProperty = new dependencyObservable.Property(
-        "first",
-        "obj",
-        new proxy.PropertyMetadata(
-            "",
-            dependencyObservable.PropertyMetadataSettings.None,
-            onFirstPropertyChanged
-        )
-    );
+//     var firstProperty = new dependencyObservable.Property(
+//         "first",
+//         "obj",
+//         new proxy.PropertyMetadata(
+//             "",
+//             dependencyObservable.PropertyMetadataSettings.None,
+//             onFirstPropertyChanged
+//         )
+//     );
 
-    var secondProperty = new dependencyObservable.Property(
-        "second",
-        "obj",
-        new proxy.PropertyMetadata(
-            "",
-            dependencyObservable.PropertyMetadataSettings.None,
-            null
-        )
-    );
+//     var secondProperty = new dependencyObservable.Property(
+//         "second",
+//         "obj",
+//         new proxy.PropertyMetadata(
+//             "",
+//             dependencyObservable.PropertyMetadataSettings.None,
+//             null
+//         )
+//     );
 
-    obj._setValue(firstProperty, "Initial name");
-    obj._setValue(secondProperty, "Initial test");
+//     obj._setValue(firstProperty, "Initial name");
+//     obj._setValue(secondProperty, "Initial test");
 
-    TKUnit.assert(obj._getValue(firstProperty) === "Initial name", "Initial value for property name is not correct!");
-    TKUnit.assert(obj._getValue(secondProperty) === "Initial test", "Initial value for property test is not correct!");
+//     TKUnit.assert(obj._getValue(firstProperty) === "Initial name", "Initial value for property name is not correct!");
+//     TKUnit.assert(obj._getValue(secondProperty) === "Initial test", "Initial value for property test is not correct!");
 
-    obj._setValue(firstProperty, "Changed name");
+//     obj._setValue(firstProperty, "Changed name");
 
-    TKUnit.assert(obj._getValue(firstProperty) === "Changed name", "Changed value for property name is not correct!");
-    TKUnit.assert(obj._getValue(secondProperty) === "Changed test", "Changed value for property test is not correct!");
-}
+//     TKUnit.assert(obj._getValue(firstProperty) === "Changed name", "Changed value for property name is not correct!");
+//     TKUnit.assert(obj._getValue(secondProperty) === "Changed test", "Changed value for property test is not correct!");
+// }
 
 export var test_Observable_addEventListener_SingleEvent = function () {
     var obj = new Observable();

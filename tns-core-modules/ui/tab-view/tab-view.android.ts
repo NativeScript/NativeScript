@@ -2,7 +2,8 @@ import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontInternalProperty, traceCategory, View, layout, Color, Font, traceEnabled, traceWrite,
+    fontSizeProperty, fontInternalProperty, View, layout, Color, Font,
+    traceCategory, traceEnabled, traceWrite,
     applyNativeSetters
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
@@ -36,36 +37,22 @@ export class TabViewItem extends TabViewItemBase {
         }
     }
 
-    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        const tv = this.nativeView;
-        return {
-            typeface: tv.getTypeface(),
-            fontSize: tv.getTextSize()
-        };
+    get [fontSizeProperty.native](): { nativeSize: number } {
+        return { nativeSize: this.nativeView.getTextSize() };
     }
-    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let typeface: android.graphics.Typeface;
-        let isFont: boolean;
-        const fontSize = value.fontSize;
-        if (value instanceof Font) {
-            isFont = true;
-            typeface = value.getAndroidTypeface();
+    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+        if (typeof value === "number") {
+            this.nativeView.setTextSize(value);
+        } else {
+            this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
         }
-        else {
-            typeface = value.typeface;
-        }
+    }
 
-        const tv = this.nativeView;
-        tv.setTypeface(typeface);
-
-        if (isFont) {
-            if (fontSize !== undefined) {
-                tv.setTextSize(fontSize);
-            }
-        }
-        else {
-            tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, fontSize);
-        }
+    get [fontInternalProperty.native](): android.graphics.Typeface {
+        return this.nativeView.getTypeface();
+    }
+    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+        this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
     get [textTransformProperty.native](): TextTransform {
@@ -269,7 +256,7 @@ export class TabView extends TabViewBase {
 
     public onItemsChanged(oldItems: TabViewItem[], newItems: TabViewItem[]): void {
         super.onItemsChanged(oldItems, newItems);
-        
+
         if (oldItems) {
             oldItems.forEach((item: TabViewItem, i, arr) => {
                 item.index = 0;

@@ -3,9 +3,9 @@ declare module "ui/core/view-base" {
     import {
         Property, PropertyOptions, CoercibleProperty, CoerciblePropertyOptions,
         InheritedProperty, CssProperty, CssPropertyOptions, InheritedCssProperty,
-        ShorthandProperty, ShorthandPropertyOptions
+        ShorthandProperty, ShorthandPropertyOptions, unsetValue
     } from "ui/core/properties";
-    import { Binding, BindingOptions, Bindable } from "ui/core/bindable";
+    import { Binding, BindingOptions } from "ui/core/bindable";
     import { Style } from "ui/styling/style";
     import { SelectorCore } from "ui/styling/css-selector";
     import { isIOS, isAndroid } from "platform";
@@ -15,7 +15,7 @@ declare module "ui/core/view-base" {
 
     export {
         Observable, EventData, KeyframeAnimation,
-        Binding, BindingOptions, Bindable, Style, isIOS, isAndroid, gestureFromString,
+        Binding, BindingOptions, Style, isIOS, isAndroid, gestureFromString,
         traceEnabled, traceWrite, traceCategories, traceNotifyEvent, isCategorySet
     };
 
@@ -28,6 +28,7 @@ declare module "ui/core/view-base" {
      * Returns an instance of a view (if found), otherwise undefined.
      */
     export function getAncestor(view: ViewBase, criterion: string | Function): ViewBase;
+
     export function isEventOrGesture(name: string, view: ViewBase): boolean;
 
     /**
@@ -38,7 +39,7 @@ declare module "ui/core/view-base" {
      */
     export function getViewById(view: ViewBase, id: string): ViewBase;
 
-    export class ViewBase extends Observable {
+    export abstract class ViewBase extends Observable {
         /**
          * String value used when hooking to loaded event.
          */
@@ -70,11 +71,6 @@ declare module "ui/core/view-base" {
         public id: string;
 
         /**
-         * Returns the child view with the specified id.
-         */
-        public getViewById<T extends ViewBase>(id: string): T;
-
-        /**
          * Gets or sets the CSS class name for this view.
          */
         public className: string;
@@ -100,6 +96,11 @@ declare module "ui/core/view-base" {
          */
         public isCollapsed: boolean;
         public readonly isLoaded: boolean;
+
+        /**
+         * Returns the child view with the specified id.
+         */
+        public getViewById<T extends ViewBase>(id: string): T;
 
         public onLoaded(): void;
         public onUnloaded(): void;
@@ -157,6 +158,7 @@ declare module "ui/core/view-base" {
         _resetNativeView(): void;
 
         _isAddedToNativeVisualTree: boolean;
+
         /**
          * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
          */
@@ -187,17 +189,19 @@ declare module "ui/core/view-base" {
 declare module "ui/core/properties" {
     import { ViewBase } from "ui/core/view-base";
     import { Style } from "ui/styling/style";
-    import { unsetValue } from "ui/core/dependency-observable";
 
-    export { unsetValue };
-
+    /**
+     * Value specifing that Property should be set to its initial value.
+     */
+    export const unsetValue: any;
+    
     export interface PropertyOptions<T, U> {
-        readonly name: string,
-        readonly defaultValue?: U,
-        readonly affectsLayout?: boolean,
-        readonly equalityComparer?: (x: U, y: U) => boolean,
-        readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void,
-        readonly valueConverter?: (value: string) => U
+        readonly name: string;
+        readonly defaultValue?: U;
+        readonly affectsLayout?: boolean;
+        readonly equalityComparer?: (x: U, y: U) => boolean;
+        readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+        readonly valueConverter?: (value: string) => U;
     }
 
     export interface CoerciblePropertyOptions<T, U> extends PropertyOptions<T, U> {

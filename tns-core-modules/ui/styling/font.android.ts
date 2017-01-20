@@ -44,8 +44,7 @@ export class Font extends FontBase {
                 fontStyle |= android.graphics.Typeface.ITALIC;
             }
 
-            const typeFace = createTypeface(this);
-            this._typeface = android.graphics.Typeface.create(typeFace, fontStyle);
+            this._typeface = createTypeface(this, fontStyle);
         }
         return this._typeface;
     }
@@ -96,7 +95,7 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
     return result;
 }
 
-function createTypeface(font: Font): android.graphics.Typeface {
+function createTypeface(font: Font, fontStyle: number): android.graphics.Typeface {
     //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
     const fonts = parseFontFamily(font.fontFamily);
     let result = null;
@@ -107,16 +106,16 @@ function createTypeface(font: Font): android.graphics.Typeface {
     for (let i = 0; i < fonts.length; i++) {
         switch (fonts[i].toLowerCase()) {
             case genericFontFamilies.serif:
-                result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), 0);
+                result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
                 break;
 
             case genericFontFamilies.sansSerif:
             case genericFontFamilies.system:
-                result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), 0);
+                result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
                 break;
 
             case genericFontFamilies.monospace:
-                result = android.graphics.Typeface.create("monospace" + getFontWeightSuffix(font.fontWeight), 0);
+                result = android.graphics.Typeface.create("monospace" + getFontWeightSuffix(font.fontWeight), fontStyle);
                 break;
 
             default:

@@ -1,6 +1,6 @@
 ﻿import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, Color, Font, applyNativeSetters
+    colorProperty, fontInternalProperty, fontSizeProperty, Color, Font, applyNativeSetters
 } from "./segmented-bar-common";
 
 export * from "./segmented-bar-common";
@@ -96,27 +96,22 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         this._textView.setTextColor(color);
     }
 
-    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let textView = this._textView;
-        return {
-            typeface: textView.getTypeface(),
-            fontSize: textView.getTextSize()
-        };
+    get [fontSizeProperty.native](): { nativeSize: number } {
+        return { nativeSize: this._textView.getTextSize() };
     }
-    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let textView = this._textView;
-        if (value instanceof Font) {
-            // Set value
-            textView.setTypeface(value.getAndroidTypeface());
-            if (value.fontSize !== undefined) {
-                textView.setTextSize(value.fontSize);
-            }
+    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+        if (typeof value === "number") {
+            this._textView.setTextSize(value);
+        } else {
+            this._textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
         }
-        else {
-            // Reset value
-            textView.setTypeface(value.typeface);
-            textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
-        }
+    }
+
+    get [fontInternalProperty.native](): android.graphics.Typeface {
+        return this._textView.getTypeface();
+    }
+    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+        this._textView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
     get [selectedBackgroundColorProperty.native](): android.graphics.drawable.Drawable {

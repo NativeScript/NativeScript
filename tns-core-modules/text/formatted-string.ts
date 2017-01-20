@@ -1,145 +1,78 @@
-﻿import { FormattedString as FormattedStringDefinition, FormattedStringView } from "text/formatted-string";
+﻿import { FormattedString as FormattedStringDefinition } from "text/formatted-string";
 import { Span } from "text/span";
 import { Observable, PropertyChangeData } from "data/observable";
 import { ObservableArray, ChangedData } from "data/observable-array";
-import { View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
-import { isString } from "utils/types";
+import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
 import { Color } from "color";
+import { FontStyle, FontWeight } from "ui/styling/font";
+import { TextDecoration } from "ui/text-base";
 
+export { Span };
+ 
 export module knownCollections {
     export const spans = "spans";
 }
 
 const CHILD_SPAN = "Span";
-const CHILD_FORMATTED_TEXT = "formattedText";
-const CHILD_FORMATTED_STRING = "FormattedString";
 
-export class FormattedString extends Observable implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
+export class FormattedString extends ViewBase implements FormattedStringDefinition, AddArrayFromBuilder, AddChildFromBuilder {
     private _spans: ObservableArray<Span>;
-    private _fontFamily: string;
-    private _fontSize: number;
-    private _foregroundColor: Color;
-    private _backgroundColor: Color;
-    private _underline: number;
-    private _strikethrough: number;
-    private _fontAttributes: number;
-    private _parent: View;
-    private _dummyPropertyChangedData: PropertyChangeData;
-
-    public _formattedText: any;
 
     constructor() {
         super();
         this._spans = new ObservableArray<Span>();
         this._spans.addEventListener(ObservableArray.changeEvent, this.onSpansCollectionChanged, this);
-        this._dummyPropertyChangedData = this._createPropertyChangeData("", this);
-    }
-
-    get parent(): View {
-        return this._parent;
-    }
-    set parent(value: View) {
-        if (this._parent !== value) {
-            this._parent = value;
-        }
     }
 
     get fontFamily(): string {
-        return this._fontFamily;
+        return this.style.fontFamily;
     }
     set fontFamily(value: string) {
-        if (this._fontFamily !== value) {
-            this._fontFamily = value;
-        }
+        this.style.fontFamily = value;
     }
 
     get fontSize(): number {
-        return this._fontSize;
+        return this.style.fontSize;
     }
     set fontSize(value: number) {
-        let fSize: number;
-        if (isString(value)) {
-            fSize = parseInt(<any>value);
-        }
-        else {
-            fSize = value;
-        }
-        if (this._fontSize !== fSize) {
-            this._fontSize = fSize;
-        }
+        this.style.fontSize = value;
     }
 
-    get foregroundColor(): Color {
-        return this._foregroundColor;
+    // Italic
+    get fontStyle(): FontStyle {
+        return this.style.fontStyle;
     }
-    set foregroundColor(value: Color) {
-        let foreColor;
-        if (isString(value)) {
-            foreColor = new Color(<any>value);
-        }
-        else {
-            foreColor = value;
-        }
-        if (this._foregroundColor !== foreColor) {
-            this._foregroundColor = foreColor;
-        }
+    set fontStyle(value: FontStyle) {
+        this.style.fontStyle = value;
+    }
+
+    // Bold
+    get fontWeight(): FontWeight {
+        return this.style.fontWeight;
+    }
+    set fontWeight(value: FontWeight) {
+        this.style.fontWeight = value;
+    }
+
+    get textDecoration(): TextDecoration {
+        return this.style.textDecoration;
+    }
+    set textDecoration(value: TextDecoration) {
+        this.style.textDecoration = value;
+    }
+
+    get color(): Color {
+        return this.style.color;
+    }
+    set color(value: Color) {
+        this.style.color = value;
     }
 
     get backgroundColor(): Color {
-        return this._backgroundColor;
+        return this.style.backgroundColor;
     }
     set backgroundColor(value: Color) {
-        let backColor;
-        if (isString(value)) {
-            backColor = new Color(<any>value);
-        }
-        else {
-            backColor = value;
-        }
-        if (this._backgroundColor !== backColor) {
-            this._backgroundColor = backColor;
-        }
-    }
-
-    get underline(): number {
-        return this._underline;
-    }
-    set underline(value: number) {
-        let underlineIntValue: number;
-        if (isString(value)) {
-            underlineIntValue = parseInt(<any>value);
-        }
-        else {
-            underlineIntValue = value;
-        }
-        if (this._underline !== underlineIntValue) {
-            this._underline = underlineIntValue;
-        }
-    }
-
-    get strikethrough(): number {
-        return this._strikethrough;
-    }
-    set strikethrough(value: number) {
-        let strikethroughIntValue: number;
-        if (isString(value)) {
-            strikethroughIntValue = parseInt(<any>value);
-        }
-        else {
-            strikethroughIntValue = value;
-        }
-        if (this._strikethrough !== strikethroughIntValue) {
-            this._strikethrough = strikethroughIntValue;
-        }
-    }
-
-    get fontAttributes(): number {
-        return this._fontAttributes;
-    }
-    set fontAttributes(value: number) {
-        if (this._fontAttributes !== value) {
-            this._fontAttributes = value;
-        }
+        this.style.backgroundColor = value;
     }
 
     get spans(): ObservableArray<Span> {
@@ -158,13 +91,8 @@ export class FormattedString extends Observable implements FormattedStringDefini
     }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
-        let i;
-        let span;
         if (name === knownCollections.spans) {
-            for (i = 0; i < value.length; i++) {
-                span = value[i];
-                this.spans.push(span);
-            }
+            this.spans.push(value);
         }
     }
 
@@ -174,44 +102,61 @@ export class FormattedString extends Observable implements FormattedStringDefini
         }
     }
 
-    public updateSpansBindingContext(newBindingContext) {
-        for (let i = 0, length = this.spans.length; i < length; i++) {
-            let span = this.spans.getItem(i);
-            span.bindingContext = newBindingContext;
-        }
-    }
-
-    public static addFormattedStringToView(view: FormattedStringView, name: string, value: any): void {
-        if (name === CHILD_SPAN) {
-            // NOTE: getter should either initialize the value or do it in the constructor.
-            // if (!view.formattedText) {
-            //     view.formattedText = new FormattedString();
-            // }
-            view.formattedText.spans.push(value);
-        }
-        else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
-            view.formattedText = value;
-        }
-    }
-
     private onSpansCollectionChanged(eventData: ChangedData<Span>) {
         if (eventData.addedCount > 0) {
             for (let i = 0; i < eventData.addedCount; i++) {
-                let addedSpan: Span = (<ObservableArray<Span>>eventData.object).getItem(eventData.index + i);
-                addedSpan.parentFormattedString = this;
-                addedSpan.addEventListener(Observable.propertyChangeEvent, this.onSpanChanged, this);
+                const span = (<ObservableArray<Span>>eventData.object).getItem(eventData.index + i);
+
+                // First add to logical tree so that inherited properties are set.
+                this._addView(span);
+
+                // Then attach handlers - we skip the first nofitication because
+                // we raise change for the whole instance. 
+                this.addPropertyChangeHandler(span);
             }
         }
+
         if (eventData.removed && eventData.removed.length > 0) {
             for (let p = 0; p < eventData.removed.length; p++) {
-                let removedSpan = eventData.removed[p];
-                removedSpan.removeEventListener(Observable.propertyChangeEvent, this.onSpanChanged, this);
+                const span = eventData.removed[p];
+
+                // First remove handlers so that we don't listen for changes
+                // on inherited properties.
+                this.removePropertyChangeHandler(span);
+
+                // Then remove the element.
+                this._removeView(span);
             }
         }
-        this.notify(this._dummyPropertyChangedData);
+
+        this.notifyPropertyChange('.', this);
     }
 
-    private onSpanChanged(eventData: PropertyChangeData) {
-        this.notify(this._dummyPropertyChangedData);
+    private addPropertyChangeHandler(span: Span) {
+        const style = span.style;
+        span.on(Observable.propertyChangeEvent, this.onPropertyChange, this);
+        style.on("fontFamilyChange", this.onPropertyChange, this);
+        style.on("fontSizeChange", this.onPropertyChange, this);
+        style.on("fontStyleChange", this.onPropertyChange, this);
+        style.on("fontWeightChange", this.onPropertyChange, this);
+        style.on("textDecorationChange", this.onPropertyChange, this);
+        style.on("colorChange", this.onPropertyChange, this);
+        style.on("backgroundColorChange", this.onPropertyChange, this);
+    }
+
+    private removePropertyChangeHandler(span: Span) {
+        const style = span.style;
+        span.off(Observable.propertyChangeEvent, this.onPropertyChange, this);
+        style.off("fontFamilyChange", this.onPropertyChange, this);
+        style.off("fontSizeChange", this.onPropertyChange, this);
+        style.off("fontStyleChange", this.onPropertyChange, this);
+        style.off("fontWeightChange", this.onPropertyChange, this);
+        style.off("textDecorationChange", this.onPropertyChange, this);
+        style.off("colorChange", this.onPropertyChange, this);
+        style.off("backgroundColorChange", this.onPropertyChange, this);
+    }
+
+    private onPropertyChange(data: PropertyChangeData) {
+        this.notifyPropertyChange(data.propertyName, this);
     }
 }

@@ -1,10 +1,9 @@
-﻿import * as definition from "ui/core/bindable";
+﻿import { BindingOptions } from "ui/core/bindable";
 import { Observable, PropertyChangeData } from "data/observable";
-import { unsetValue, DependencyObservable } from "ui/core/dependency-observable";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
 import types = require("utils/types");
 import bindingBuilder = require("../builder/binding-builder");
-import { ViewBase, isEventOrGesture, bindingContextProperty } from "ui/core/view-base";
+import { ViewBase, isEventOrGesture, unsetValue } from "ui/core/view-base";
 import * as application from "application";
 import * as polymerExpressions from "js-libs/polymer-expressions";
 import * as utils from "utils/utils";
@@ -18,115 +17,6 @@ let contextKey = "context";
 let paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
 
 let bc = bindingBuilder.bindingConstants;
-
-let defaultBindingSource = {};
-
-export class Bindable extends DependencyObservable implements definition.Bindable {
-
-    public static bindingContextProperty = bindingContextProperty;
-
-    private bindings = new Map<string, Binding>();
-
-    get bindingContext(): Object {
-        throw new Error("Not implemented");
-    }
-    set bindingContext(value: Object) {
-        throw new Error("Not implemented");
-    }
-
-    public bind(options: definition.BindingOptions, source: Object = defaultBindingSource) {
-        throw new Error("Not implemented");
-        // let binding: Binding = this.bindings.get(options.targetProperty);
-        // if (binding) {
-        //     binding.unbind();
-        // }
-
-        // binding = new Binding(this, options);
-        // this.bindings.set(options.targetProperty, binding);
-
-        // let bindingSource = source;
-        // if (bindingSource === defaultBindingSource) {
-        //     bindingSource = this.bindingContext;
-        //     binding.sourceIsBindingContext = true;
-        // }
-
-        // // if (!types.isNullOrUndefined(bindingSource)) {
-        // binding.bind(bindingSource);
-        // // }
-    }
-
-    public unbind(property: string) {
-        let binding: Binding = this.bindings.get(property);
-        if (binding) {
-            binding.unbind();
-            this.bindings.delete(property);
-        }
-    }
-
-    // public _updateTwoWayBinding(propertyName: string, value: any) {
-    //     let binding: Binding = this.bindings.get(propertyName);
-    //     if (binding) {
-    //         binding.updateTwoWay(value);
-    //     }
-    // }
-
-    // public _setCore(data: PropertyChangeData) {
-    //     super._setCore(data);
-    //     this._updateTwoWayBinding(data.propertyName, data.value);
-    // }
-
-    // public _onPropertyChanged(property: Property, oldValue: any, newValue: any) {
-    //     if (traceEnabled()) {
-    //         traceWrite(`${this}._onPropertyChanged(${property.name}, ${oldValue}, ${newValue})`, traceCategories.Binding);
-    //     }
-    //     super._onPropertyChanged(property, oldValue, newValue);
-    //     // if (this instanceof viewModule.View) {
-    //     //     if (property.inheritable && (<viewModule.View>(<any>this))._isInheritedChange() === true) {
-    //     //         return;
-    //     //     }
-    //     // }
-
-    //     let binding = this.bindings.get(property.name);
-    //     if (binding && !binding.updating) {
-    //         if (binding.options.twoWay) {
-    //             if (traceEnabled()) {
-    //                 traceWrite(`${this}._updateTwoWayBinding(${property.name}, ${newValue});` + property.name, traceCategories.Binding);
-    //             }
-    //             this._updateTwoWayBinding(property.name, newValue);
-    //         }
-    //         else {
-    //             if (traceEnabled()) {
-    //                 traceWrite(`${this}.unbind(${property.name});`, traceCategories.Binding);
-    //             }
-    //             this.unbind(property.name);
-    //         }
-    //     }
-    // }
-
-    // public _onBindingContextChanged(oldValue: any, newValue: any) {
-    //     let bindingContextBinding = this.bindings.get("bindingContext");
-    //     if (bindingContextBinding) {
-    //         if (!bindingContextBinding.updating) {
-    //             bindingContextBinding.bind(newValue);
-    //         }
-    //     }
-
-    //     let bindingContextSource = this.bindingContext;
-
-    //     this.bindings.forEach((binding, index, bindings) => {
-    //         if (!binding.updating && binding.sourceIsBindingContext && binding.options.targetProperty !== "bindingContext") {
-    //             if (traceEnabled()) {
-    //                 traceWrite(`Binding ${binding.target.get()}.${binding.options.targetProperty} to new context ${bindingContextSource}`, traceCategories.Binding);
-    //             }
-    //             if (!types.isNullOrUndefined(bindingContextSource)) {
-    //                 binding.bind(bindingContextSource);
-    //             } else {
-    //                 binding.clearBinding();
-    //             }
-    //         }
-    //     });
-    // }
-}
 
 const emptyArray = [];
 function getProperties(property: string): Array<string> {
@@ -166,9 +56,9 @@ export class Binding {
 
     public updating: boolean;
     public sourceIsBindingContext: boolean;
-    public options: definition.BindingOptions;
+    public options: BindingOptions;
 
-    constructor(target: ViewBase, options: definition.BindingOptions) {
+    constructor(target: ViewBase, options: BindingOptions) {
         this.target = new WeakRef(target);
         this.options = options;
         this.sourceProperties = getProperties(options.sourceProperty);

@@ -1,12 +1,13 @@
 ﻿declare module "text/span" {
-    import * as colorModule from "color";
-    import * as bindable from "ui/core/bindable";
-    import * as formattedString from "text/formatted-string";
+    import { Color } from "color";
+    import { ViewBase } from "ui/core/view-base";
+    import { FontStyle, FontWeight } from "ui/styling/font";
+    import { TextDecoration } from "ui/text-base";
 
     /**
      * A class used to create a single part of formatted string with a common text properties.
      */
-    class Span extends bindable.Bindable {
+    class Span extends ViewBase {
         /**
          * Gets or sets the font family of the span.
          */
@@ -16,66 +17,39 @@
          * Gets or sets the font size of the span.
          */
         public fontSize: number;
+        
+        /**
+         * Gets or sets the font style of the span.
+         */
+        public fontStyle: FontStyle;
 
         /**
-         * Gets or sets the font attributes of the span.
-         * It could be set to more than one value e.g. (Bold | Italic).
+         * Gets or sets the font weight of the span.
          */
-        public fontAttributes: number;
+        public fontWeight: FontWeight;
+
+        /**
+         * Gets or sets text decorations for the span.
+         */
+        public textDecoration: TextDecoration;
 
         /**
          * Gets or sets the font foreground color of the span.
          */
-        public foregroundColor: colorModule.Color;
+        public color: Color;
 
         /**
          * Gets or sets the font background color of the span.
          */
-        public backgroundColor: colorModule.Color;
-
-        /**
-         * Gets or sets underline for the span.
-         */
-        public underline: number;
-
-        /**
-         * Gets or sets strikethrough for the span.
-         */
-        public strikethrough: number;
-
-        /**
-         * A collection of modifiers build upon all text related properties.
-         */
-        public spanModifiers: Array<any>;
+        public backgroundColor: Color;
 
         /**
          * Gets or sets the text for the span.
          */
         public text: string;
-
-        /**
-         * An instance of the parent formatted string (used internally to support some short hand property settings).
-         */
-        public parentFormattedString: formattedString.FormattedString;
-
-        /**
-         * Updates all span modifiers according to current values of all text related properties.
-         */
-        public updateSpanModifiers(parent: formattedString.FormattedString): void;
-
-        /**
-         * Initializes a process of updating a span (text related property(s)).
-         */
-        public beginEdit(): void;
-
-        /**
-         * Ends the process previously initiated by beginEdit and updates the span modifiers collection.
-         */
-        public endEdit(): void;
-
+        
         //@private
         _setTextInternal(value: string): void;
         //@endprivate
-
     }
 }

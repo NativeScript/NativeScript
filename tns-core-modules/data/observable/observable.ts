@@ -110,7 +110,7 @@ export class Observable implements ObservableDefinition {
     }
 
     public notify<T extends EventData>(data: T) {
-        const observers = this._getEventList(data.eventName);
+        const observers = <Array<ListenerEntry>>this._observers[data.eventName];
         if (!observers) {
             return;
         }

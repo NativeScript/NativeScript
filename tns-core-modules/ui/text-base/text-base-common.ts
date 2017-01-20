@@ -1,13 +1,16 @@
 import { TextBase as TextBaseDefinition } from "ui/text-base";
 import { View, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
-import { FormattedString, FormattedStringView } from "text/formatted-string";
-import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
+import { FormattedString, Span } from "text/formatted-string";
 
-export { FormattedString };
+export { FormattedString, Span };
 export * from "ui/core/view";
 
-export abstract class TextBaseCommon extends View implements TextBaseDefinition, FormattedStringView {
+const CHILD_SPAN = "Span";
+const CHILD_FORMATTED_TEXT = "formattedText";
+const CHILD_FORMATTED_STRING = "FormattedString";
+
+export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 
     // public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
 
@@ -92,18 +95,25 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition,
     }
 
     public _onFormattedTextContentsChanged(data: PropertyChangeData) {
-        if (this._nativeView){
+        if (this._nativeView) {
             // Notifications from the FormattedString start arriving before the Android view is even created.
             this[formattedTextProperty.native] = data.value;
         }
     }
 
     public _addChildFromBuilder(name: string, value: any): void {
-        if (!this.formattedText) {
-            this.formattedText = new FormattedString();
+        if (name === CHILD_SPAN) {
+            if (!this.formattedText) {
+                const formattedText = new FormattedString();
+                formattedText.spans.push(value);
+                this.formattedText = formattedText;
+            } else {
+                this.formattedText.spans.push(value);
+            }
         }
-
-        FormattedString.addFormattedStringToView(this, name, value);
+        else if (name === CHILD_FORMATTED_TEXT || name === CHILD_FORMATTED_STRING) {
+            this.formattedText = value;
+        }
     }
 
     _requestLayoutOnTextChanged(): void {
@@ -125,13 +135,13 @@ formattedTextProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
     if (oldValue) {
-        oldValue.parent = null;
-        removeWeakEventListener(oldValue, Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
+        oldValue.off(Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
+        textBase._removeView(oldValue);
     }
 
     if (newValue) {
-        newValue.parent = textBase;
-        addWeakEventListener(newValue, Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
+        textBase._addView(newValue);
+        newValue.on(Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
     }
 }
 

@@ -9,7 +9,6 @@ import * as platform from "platform";
 import * as colorModule from "color";
 import * as formattedStringModule from "text/formatted-string";
 import * as spanModule from "text/span";
-import * as enums from "ui/enums";
 import { ActionBar } from "ui/action-bar";
 import { unsetValue } from "ui/core/view";
 
@@ -212,22 +211,20 @@ export function _generateFormattedString(): formattedStringModule.FormattedStrin
     span = new spanModule.Span();
     span.fontFamily = "serif";
     span.fontSize = 10;
-    span.fontAttributes = enums.FontAttributes.Bold;
-    span.foregroundColor = new colorModule.Color("red");
+    span.fontWeight = "bold";
+    span.color = new colorModule.Color("red");
     span.backgroundColor = new colorModule.Color("blue");
-    span.underline = 0;
-    span.strikethrough = 1;
+    span.textDecoration = "line-through";
     span.text = "Formatted";
     formattedString.spans.push(span);
 
     span = new spanModule.Span();
     span.fontFamily = "sans-serif";
     span.fontSize = 20;
-    span.fontAttributes = enums.FontAttributes.Italic;
-    span.foregroundColor = new colorModule.Color("green");
+    span.fontStyle = "italic";
+    span.color = new colorModule.Color("green");
     span.backgroundColor = new colorModule.Color("yellow");
-    span.underline = 1;
-    span.strikethrough = 0;
+    span.textDecoration = "underline";
     span.text = "Text";
     formattedString.spans.push(span);
 

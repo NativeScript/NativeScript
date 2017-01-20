@@ -10,7 +10,7 @@
         public isBold: boolean;
         public isItalic: boolean;
 
-        constructor(family: string, size: number, style: string, weight: string);
+        constructor(family: string, size: number, style: FontStyle, weight: FontWeight);
 
         public getAndroidTypeface(): any /* android.graphics.Typeface */;
         public getUIFont(defaultFont: any /* UIFont */): any /* UIFont */;

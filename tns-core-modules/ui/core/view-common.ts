@@ -5,7 +5,7 @@ import { Background } from "ui/styling/background";
 import {
     ViewBase, getEventOrGestureName, EventData, Style, unsetValue,
     Property, CssProperty, ShorthandProperty, InheritedCssProperty,
-    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, printUnregisteredProperties, makeParser, makeValidator
+    gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, makeParser, makeValidator
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
 import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
@@ -28,7 +28,7 @@ export {
 import * as am from "ui/animation";
 let animationModule: typeof am;
 function ensureAnimationModule() {
-    if (!animationModule){
+    if (!animationModule) {
         animationModule = require("ui/animation");
     }
 }
@@ -1429,39 +1429,39 @@ function convertToTransform(value: string): [CssProperty<any, any>, any][] {
     for (let transform in newTransform) {
         switch (transform) {
             case "scaleX":
-                array.push([scaleXProperty, parseFloat(newTransform[transform])]);
+                array.push([scaleXProperty, newTransform[transform]]);
                 break;
             case "scaleY":
-                array.push([scaleYProperty, parseFloat(newTransform[transform])]);
+                array.push([scaleYProperty, newTransform[transform]]);
                 break;
             case "scale":
             case "scale3d":
                 values = newTransform[transform].split(",");
                 if (values.length >= 2) {
-                    array.push([scaleXProperty, parseFloat(values[0])]);
-                    array.push([scaleYProperty, parseFloat(values[1])]);
+                    array.push([scaleXProperty, values[0]]);
+                    array.push([scaleYProperty, values[1]]);
                 }
                 else if (values.length === 1) {
-                    array.push([scaleXProperty, parseFloat(values[0])]);
-                    array.push([scaleYProperty, parseFloat(values[0])]);
+                    array.push([scaleXProperty, values[0]]);
+                    array.push([scaleYProperty, values[0]]);
                 }
                 break;
             case "translateX":
-                array.push([translateXProperty, parseFloat(newTransform[transform])]);
+                array.push([translateXProperty, newTransform[transform]]);
                 break;
             case "translateY":
-                array.push([translateYProperty, parseFloat(newTransform[transform])]);
+                array.push([translateYProperty, newTransform[transform]]);
                 break;
             case "translate":
             case "translate3d":
                 values = newTransform[transform].split(",");
                 if (values.length >= 2) {
-                    array.push([translateXProperty, parseFloat(values[0])]);
-                    array.push([translateYProperty, parseFloat(values[1])]);
+                    array.push([translateXProperty, values[0]]);
+                    array.push([translateYProperty, values[1]]);
                 }
                 else if (values.length === 1) {
-                    array.push([translateXProperty, parseFloat(values[0])]);
-                    array.push([translateYProperty, parseFloat(values[0])]);
+                    array.push([translateXProperty, values[0]]);
+                    array.push([translateYProperty, values[0]]);
                 }
                 break;
             case "rotate":
@@ -1546,7 +1546,6 @@ backgroundImageProperty.register(Style);
 
 export const backgroundColorProperty = new CssProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
-        printUnregisteredProperties();
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withColor(newValue);
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
@@ -1564,7 +1563,8 @@ export namespace BackgroundRepeat {
 }
 
 export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
-    name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse, valueChanged: (target, oldValue, newValue) => {
+    name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse,
+    valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withRepeat(newValue);
     }
@@ -1941,7 +1941,8 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
     name: "fontFamily", cssName: "font-family", valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontFamily !== newValue) {
-            target.fontInternal = currentFont.withFontFamily(newValue);
+            const newFont = currentFont.withFontFamily(newValue);
+            target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
         }
     }
 });
@@ -1951,7 +1952,8 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
     name: "fontSize", cssName: "font-size", valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontSize !== newValue) {
-            target.fontInternal = currentFont.withFontSize(newValue);
+            const newFont = currentFont.withFontSize(newValue);
+            target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
         }
     },
     valueConverter: (v) => parseFloat(v)
@@ -1962,7 +1964,8 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
     name: "fontStyle", cssName: "font-style", defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontStyle !== newValue) {
-            target.fontInternal = currentFont.withFontStyle(newValue);
+            const newFont = currentFont.withFontStyle(newValue);
+            target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
         }
     }
 });
@@ -1972,7 +1975,8 @@ export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
     name: "fontWeight", cssName: "font-weight", defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontWeight !== newValue) {
-            target.fontInternal = currentFont.withFontWeight(newValue);
+            const newFont = currentFont.withFontWeight(newValue);
+            target.fontInternal = Font.equals(Font.default, newFont) ? unsetValue : newFont;
         }
     }
 });

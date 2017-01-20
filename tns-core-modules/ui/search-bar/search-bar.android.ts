@@ -1,6 +1,6 @@
 ﻿import {
     SearchBarBase, Font, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
-    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty
 } from "./search-bar-common";
 import { ad } from "utils/utils";
 
@@ -128,34 +128,28 @@ export class SearchBar extends SearchBarBase {
         textView.setTextColor(color);
     }
 
-    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let textView = this._getTextView();
-        return {
-            typeface: textView.getTypeface(),
-            fontSize: textView.getTextSize()
-        };
+    get [fontSizeProperty.native](): { nativeSize: number } {
+        return { nativeSize: this._getTextView().getTextSize() };
     }
-    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let textView = this._getTextView();
-
-        if (value instanceof Font) {
-            // Set value
-            textView.setTypeface(value.getAndroidTypeface());
-            if (value.fontSize !== undefined){
-                textView.setTextSize(value.fontSize);
-            }
-        } 
-        else {
-            // Reset value
-            textView.setTypeface(value.typeface);
-            textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
+    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+        if (typeof value === "number") {
+            this._getTextView().setTextSize(value);
+        } else {
+            this._getTextView().setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
         }
     }
 
-    get [backgroundInternalProperty.native](): Font {
+    get [fontInternalProperty.native](): android.graphics.Typeface {
+        return this._getTextView().getTypeface();
+    }
+    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+        this._getTextView().setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+    }
+
+    get [backgroundInternalProperty.native](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Font) {
+    set [backgroundInternalProperty.native](value: any) {
         //
     }
 
