@@ -270,5 +270,5 @@ declare module "ui/core/properties" {
     export function resetCSSProperties(style: Style): void;
 
     export function makeValidator<T>(...values: T[]): (value: any) => value is T;
-    export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T;
+    export function makeParser<T>(isValid: (value: any) => boolean): (value: any) => T;
 }

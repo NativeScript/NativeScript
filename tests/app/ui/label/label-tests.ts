@@ -377,32 +377,6 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         TKUnit.assertEqual(label.text, secondExpValue);
     }
 
-    // TODO: Check if bindings will be cleared when the target property is set.
-    // public test_BindingToText_BindingContext_SetingLocalValue() {
-    //     const label = this.testView;
-    //     this.waitUntilTestElementIsLoaded();
-
-    //     const firstExpValue = "Expected Value";
-    //     const bindingOptions: bindable.BindingOptions = {
-    //         sourceProperty: "sourceProperty",
-    //         targetProperty: "text"
-    //     };
-    //     label.bind(bindingOptions);
-    //     const firstSourceObject = new observableModule.Observable();
-    //     firstSourceObject.set("sourceProperty", firstExpValue);
-
-    //     this.testPage.bindingContext = firstSourceObject;
-    //     TKUnit.assertEqual(label.text, firstExpValue);
-
-    //     const secondExpValue = "Second value";
-    //     label.text = secondExpValue;
-    //     TKUnit.assertEqual(label.text, secondExpValue);
-
-    //     firstSourceObject.set("sourceProperty", "some value");
-    //     // after setting a value one way binding should be gone.
-    //     TKUnit.assertEqual(label.text, secondExpValue);
-    // }
-
     private expectedTextAlignment: "right" = "right";
     public testLocalTextAlignmentFromCss() {
         const label = this.testView;

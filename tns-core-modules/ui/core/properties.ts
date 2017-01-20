@@ -946,9 +946,13 @@ export function makeValidator<T>(...values: T[]): (value: any) => value is T {
     return (value: any): value is T => set.has(value);
 }
 
-export function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
+export function makeParser<T>(isValid: (value: any) => boolean): (value: any) => T {
     return value => {
         const lower = value && value.toLowerCase();
-        return isValid(lower) ? lower : def;
+        if (isValid(lower)) {
+            return lower;
+        } else {
+            throw new Error("Invalid value: " + value);
+        }
     }
 }

@@ -50,7 +50,7 @@ export namespace FontStyle {
     export const NORMAL: "normal" = "normal";
     export const ITALIC: "italic" = "italic";
     export const isValid = makeValidator<FontStyle>(NORMAL, ITALIC);
-    export const parse = makeParser(isValid, NORMAL);
+    export const parse = makeParser<FontStyle>(isValid);
 }
 
 export type FontWeight = "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900";
@@ -65,7 +65,7 @@ export namespace FontWeight {
     export const EXTRA_BOLD: "800" = "800";
     export const BLACK: "900" = "900";
     export const isValid = makeValidator<FontWeight>(THIN, EXTRA_LIGHT, LIGHT, NORMAL, "400", MEDIUM, SEMI_BOLD, BOLD, "700", EXTRA_BOLD, BLACK);
-    export const parse = makeParser(isValid, NORMAL);
+    export const parse = makeParser<FontStyle>(isValid);
 }
 
 export function parseFontFamily(value: string): Array<string> {

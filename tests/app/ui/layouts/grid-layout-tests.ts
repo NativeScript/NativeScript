@@ -159,30 +159,21 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         }, "setColumnSpan called with null should throw exception");
     }
 
-    // TODO: These 4 asserted that wrong numbers will throw and now they are clamped internally to valid values and does not throw.
-    // public test_setRow_shouldThrow_onNegativeValues() {
-    //     TKUnit.assertThrows(() => {
-    //         GridLayout.setRow(new Button(), -1);
-    //     }, "setRow should throw when value < 0");
-    // }
+    public test_setRow_shouldNotThrow_onNegativeValues() {
+        GridLayout.setRow(new Button(), -1);
+    }
 
-    // public test_setRowSpan_shouldThrow_onNotPositiveValues() {
-    //     TKUnit.assertThrows(() => {
-    //         GridLayout.setRowSpan(new Button(), 0);
-    //     }, "setRowSpan should throw when value <= 0");
-    // }
+    public test_setRowSpan_shouldNotThrow_onNotPositiveValues() {
+        GridLayout.setRowSpan(new Button(), 0);
+    }
 
-    // public test_setColumn_shouldThrow_onNegativeValues() {
-    //     TKUnit.assertThrows(() => {
-    //         GridLayout.setColumn(new Button(), -1);
-    //     }, "setColumn should when value < 0");
-    // }
+    public test_setColumn_shouldNotThrow_onNegativeValues() {
+        GridLayout.setColumn(new Button(), -1);
+    }
 
-    // public test_setColumnSpan_shouldThrow_onNotPositiveValues() {
-    //     TKUnit.assertThrows(() => {
-    //         GridLayout.setColumnSpan(new Button(), 0);
-    //     }, "setColumnSpan should throw when value <= 0");
-    // }
+    public test_setColumnSpan_shouldNotThrow_onNotPositiveValues() {
+        GridLayout.setColumnSpan(new Button(), 0);
+    }
 
     public test_addRow_shouldThrow_onNullValues() {
         TKUnit.assertThrows(() => {
@@ -325,12 +316,11 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
         }
     }
 
-    // TODO: This used to throw but the underlaying "makeParser" used fallbacks to default value instead of throwing
-    // public test_ItemSpec_constructor_throws_onWrongType() {
-    //     TKUnit.assertThrows(() => {
-    //         return new ItemSpec(1, <any>"unsupported");
-    //     }, "'ItemSpec type' incorrect value.");
-    // }
+    public test_ItemSpec_constructor_throws_onWrongType() {
+        TKUnit.assertThrows(() => {
+            return new ItemSpec(1, <any>"unsupported");
+        }, "Invalid value: unsupported");
+    }
 
     public test_ItemSpec_auto() {
         var w = new ItemSpec(1, "auto");

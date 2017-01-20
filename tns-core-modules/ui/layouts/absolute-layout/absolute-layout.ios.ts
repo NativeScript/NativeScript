@@ -54,8 +54,8 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
 
             const childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + child.effectiveLeft;
             const childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + child.effectiveTop;
-            const childRight = childLeft + childWidth + this.effectiveMarginLeft + this.effectiveMarginRight;
-            const childBottom = childTop + childHeight + this.effectiveMarginTop + this.effectiveMarginBottom;
+            const childRight = childLeft + childWidth + child.effectiveMarginLeft + child.effectiveMarginRight;
+            const childBottom = childTop + childHeight + child.effectiveMarginTop + child.effectiveMarginBottom;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childBottom);
         });
