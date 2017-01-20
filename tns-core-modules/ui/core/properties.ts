@@ -5,7 +5,7 @@ import * as definitions from "ui/core/view-base";
 
 export { Style };
 
-export const unsetValue = new Object();
+export const unsetValue: any = new Object();
 
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
@@ -36,7 +36,8 @@ const enum ValueSource {
 
 export class Property<T extends ViewBase, U> implements PropertyDescriptor, definitions.Property<T, U> {
     private registered: boolean;
-    private readonly name: string;
+
+    public readonly name: string;
     public readonly key: symbol;
     public readonly native: symbol;
     public readonly defaultValueKey: symbol;
@@ -347,7 +348,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
                 const parent: ViewBase = that.parent;
                 // If we have parent and it has non-default value we use as our inherited value.
                 if (parent && parent[sourceKey] !== ValueSource.Default) {
-                    unboxedValue = parent[key];
+                    unboxedValue = parent[name];
                     newValueSource = ValueSource.Inherited;
                 }
                 else {
@@ -633,7 +634,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 let style = parent ? parent.style : null
                 // If we have parent and it has non-default value we use as our inherited value.
                 if (style && style[sourceKey] > ValueSource.Default) {
-                    newValue = style[key];
+                    newValue = style[name];
                     this[sourceKey] = ValueSource.Inherited;
                 }
                 else {
@@ -797,7 +798,9 @@ function inheritablePropertyValuesOn(view: ViewBase): Array<{ property: Inherite
         const sourceKey = prop.sourceKey;
         const valueSource: number = view[sourceKey] || ValueSource.Default;
         if (valueSource !== ValueSource.Default) {
-            array.push({ property: prop, value: view[prop.key] });
+            // use prop.name as it will return value or default value.
+            // prop.key will return undefined if property is set t the same value as default one.
+            array.push({ property: prop, value: view[prop.name] });
         }
     }
 
@@ -810,7 +813,9 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
         const sourceKey = prop.sourceKey;
         const valueSource: number = style[sourceKey] || ValueSource.Default;
         if (valueSource !== ValueSource.Default) {
-            array.push({ property: prop, value: style[prop.key] });
+            // use prop.name as it will return value or default value.
+            // prop.key will return undefined if property is set t the same value as default one.
+            array.push({ property: prop, value: style[prop.name] });
         }
     }
 

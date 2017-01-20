@@ -29,6 +29,7 @@ export class TextBase extends TextBaseCommon {
     set [formattedTextProperty.native](value: FormattedString) {
         let spannableStringBuilder = createSpannableStringBuilder(value);
         this._nativeView.setText(<any>spannableStringBuilder);
+        textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
 
         if (spannableStringBuilder && this._nativeView instanceof android.widget.Button &&
             !(this._nativeView.getTransformationMethod() instanceof TextTransformation)) {
@@ -78,24 +79,11 @@ export class TextBase extends TextBaseCommon {
     }
 
     //FontInternal
-    get [fontInternalProperty.native](): { typeface: android.graphics.Typeface, fontSize: number } {
-        let textView = this._nativeView;
-        return {
-            typeface: textView.getTypeface(),
-            fontSize: textView.getTextSize()
-        };
+    get [fontInternalProperty.native](): android.graphics.Typeface {
+        return this._nativeView.getTypeface();
     }
-    set [fontInternalProperty.native](value: Font | { typeface: android.graphics.Typeface, fontSize: number }) {
-        let textView = this._nativeView;
-        if (value instanceof Font) {
-            // Set value. Note: Size is handled in fontSizeProperty.native
-            textView.setTypeface(value.getAndroidTypeface());
-        }
-        else {
-            // Reset value. Note: Resetting fontInternal will reset the size also.
-            textView.setTypeface(value.typeface);
-            textView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.fontSize);
-        }
+    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+        this._nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
     //TextAlignment

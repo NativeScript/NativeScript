@@ -47,7 +47,8 @@ export class TextBase extends TextBaseCommon {
     }
     set [formattedTextProperty.native](value: FormattedString) {
         const style = this.style;
-         setFormattedTextDecorationAndTransform(value, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing);
+        setFormattedTextDecorationAndTransform(value, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing);
+        textProperty.nativeValueChange(this, !value ? '' : value.toString());
     }
 
     //Color

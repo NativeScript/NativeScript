@@ -159,6 +159,6 @@ export class FormattedString extends ViewBase implements AddArrayFromBuilder, Ad
     }
 
     private onPropertyChange(data: PropertyChangeData) {
-        this.notifyPropertyChange(data.propertyName, data.value);
+        this.notifyPropertyChange(data.propertyName, this);
     }
 }

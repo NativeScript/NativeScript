@@ -523,13 +523,13 @@ export var test_WhenFormattedTextPropertyChanges_TextIsUpdated_TextBase = functi
         TKUnit.assertEqual(view.text, "");
 
         view.formattedText = formattedString1;
-        TKUnit.assertEqual(view.text, "", "text should not change when formattedText changes.");
+        TKUnit.assertEqual(view.text, "First");
 
         view.formattedText = formattedString2;
-        TKUnit.assertEqual(view.text, "", "text should not change when formattedText changes.");
+        TKUnit.assertEqual(view.text, "SecondThird");
 
         formattedString2.spans.getItem(0).text = "Mecond";
-        TKUnit.assertEqual(view.text, "", "text should not change when formattedText changes.");
+        TKUnit.assertEqual(view.text, "MecondThird");
 
         view.formattedText = null;
         TKUnit.assertEqual(view.text, "");
