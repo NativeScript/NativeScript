@@ -10,7 +10,7 @@ import * as frameModule from "ui/frame";
 import proxy = require("ui/core/proxy");
 import keyframeAnimation = require("ui/animation/keyframe-animation");
 import types = require("utils/types");
-import {Color} from "color";
+import { Color } from "color";
 
 let fs: typeof fileSystemModule;
 function ensureFS() {
@@ -47,7 +47,8 @@ const actionBarHiddenProperty = new Property("actionBarHidden", "Page", new prox
 function onActionBarHiddenPropertyChanged(data: PropertyChangeData) {
     const page = <Page>data.object;
     if (page.isLoaded) {
-        page._updateActionBar(data.newValue);
+        // Update with disabled animation when setting visibility
+        page._updateActionBar(true);
     }
 }
 
@@ -101,7 +102,7 @@ export class Page extends ContentView implements dts.Page {
         this._applyCss();
 
         if (this.actionBarHidden !== undefined) {
-            this._updateActionBar(this.actionBarHidden);
+            this._updateActionBar();
         }
 
         this._updateStatusBar();
@@ -148,7 +149,7 @@ export class Page extends ContentView implements dts.Page {
         this._setValue(Page.iosSwipeBackNavigationEnabledProperty, value);
     }
 
-    public _updateActionBar(hidden: boolean) {
+    public _updateActionBar(disableNavBarAnimation?: boolean) {
         //
     }
 

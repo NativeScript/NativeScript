@@ -145,9 +145,7 @@ class UIViewControllerImpl extends UIViewController {
         this.shown = false;
         let page = this._owner.get();
         if (trace.enabled) {
-            if (trace.enabled) {
-                trace.write(page + " viewWillAppear", trace.categories.Navigation);
-            }
+            trace.write(page + " viewWillAppear", trace.categories.Navigation);
         }
         if (!page) {
             return;
@@ -349,7 +347,7 @@ export class Page extends pageCommon.Page {
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
-        this._updateActionBar(false);
+        this._updateActionBar();
     }
 
     public onUnloaded() {
@@ -433,10 +431,10 @@ export class Page extends pageCommon.Page {
         super._hideNativeModalView(parent);
     }
 
-    public _updateActionBar(hidden: boolean) {
+    public _updateActionBar(disableNavBarAnimation: boolean = false) {
         const frame = this.frame;
         if (frame) {
-            frame._updateActionBar(this);
+            frame._updateActionBar(this, disableNavBarAnimation);
         }
     }
 
@@ -449,7 +447,7 @@ export class Page extends pageCommon.Page {
         if (this.frame && value) {
             let navigationController = frame.ios.controller;
             let navigationBar = navigationController.navigationBar;
-            
+
             navigationBar.barStyle = value === "dark" ? 1 : 0;
         }
     }
@@ -554,7 +552,7 @@ export class Page extends pageCommon.Page {
 
 export class PageStyler implements style.Styler {
     // statusBarStyle
-     private static setStatusBarStyleProperty(v: View, newValue: any) {
+    private static setStatusBarStyleProperty(v: View, newValue: any) {
         let page = <Page>v;
         page._updateStatusBarStyle(newValue);
     }
@@ -570,7 +568,7 @@ export class PageStyler implements style.Styler {
     }
 
     public static registerHandlers() {
-       style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
+        style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
             PageStyler.setStatusBarStyleProperty,
             PageStyler.resetStatusBarStyleProperty,
             PageStyler.getStatusBarStyleProperty), "Page");

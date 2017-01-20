@@ -187,7 +187,7 @@ export class Page extends pageCommon.Page {
         super._hideNativeModalView(parent);
     }
 
-    public _updateActionBar(hidden: boolean) {
+    public _updateActionBar() {
         this.actionBar.update();
     }
 
