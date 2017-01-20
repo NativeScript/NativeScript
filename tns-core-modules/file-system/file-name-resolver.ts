@@ -142,9 +142,6 @@ export class FileNameResolver implements definition.FileNameResolver {
         var candidates = this.getFileCandidatesFromFolder(path, ext);
         result = _findFileMatch(path, ext, candidates, this._context);
 
-        if (trace.enabled) {
-            trace.write("Resolved file name for \"" + path + ext + "\" result: " + (result ? result : "no match found"), trace.categories.Navigation);
-        }
         return result;
     }
 
@@ -179,9 +176,6 @@ export function _findFileMatch(path: string, ext: string, candidates: Array<stri
     var bestValue = -1
     var result: string = null;
 
-    if (trace.enabled) {
-        trace.write("Candidates for " + path + ext + ": " + candidates.join(", "), trace.categories.Navigation);
-    }
     for (var i = 0; i < candidates.length; i++) {
         var filePath = candidates[i];
         var qualifiersStr: string = filePath.substr(path.length, filePath.length - path.length - ext.length);
