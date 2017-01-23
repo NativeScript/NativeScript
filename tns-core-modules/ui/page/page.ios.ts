@@ -145,7 +145,7 @@ class UIViewControllerImpl extends UIViewController {
         this.shown = false;
         let page = this._owner.get();
         if (trace.enabled) {
-            trace.write(page + " viewWillAppear: " + page, trace.categories.Navigation);
+            trace.write(page + " viewWillAppear", trace.categories.Navigation);
         }
         if (!page) {
             return;
@@ -195,7 +195,7 @@ class UIViewControllerImpl extends UIViewController {
         this.shown = true;
         let page = this._owner.get();
         if (trace.enabled) {
-            trace.write(page + " viewDidAppear: " + page, trace.categories.Navigation);
+            trace.write(page + " viewDidAppear", trace.categories.Navigation);
         }
         if (!page) {
             return;
@@ -246,7 +246,7 @@ class UIViewControllerImpl extends UIViewController {
     public viewWillDisappear(animated: boolean): void {
         let page = this._owner.get();
         if (trace.enabled) {
-            trace.write(page + " viewWillDisappear: " + page, trace.categories.Navigation);
+            trace.write(page + " viewWillDisappear", trace.categories.Navigation);
         }
         if (!page) {
             return;
@@ -272,7 +272,7 @@ class UIViewControllerImpl extends UIViewController {
     public viewDidDisappear(animated: boolean): void {
         let page = this._owner.get();
         if (trace.enabled) {
-            trace.write(page + " viewDidDisappear: " + page, trace.categories.Navigation);
+            trace.write(page + " viewDidDisappear", trace.categories.Navigation);
         }
         // Exit if no page or page is hiding because it shows another page modally.
         if (!page || page.modal || page._presentedViewController) {
