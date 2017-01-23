@@ -368,5 +368,5 @@ export namespace GridUnitType {
     export const STAR: "star" = "star";
     export const AUTO: "auto" = "auto";
     export const isValid = makeValidator<GridUnitType>(PIXEL, STAR, AUTO);
-    export const parse = makeParser(isValid, undefined);
+    export const parse = makeParser<GridUnitType>(isValid);
 }

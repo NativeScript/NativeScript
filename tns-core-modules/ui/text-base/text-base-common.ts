@@ -152,7 +152,7 @@ export namespace TextAlignment {
     export const CENTER: "center" = "center";
     export const RIGHT: "right" = "right";
     export const isValid = makeValidator<TextAlignment>(LEFT, CENTER, RIGHT);
-    export const parse = makeParser(isValid, undefined);
+    export const parse = makeParser<TextAlignment>(isValid);
 }
 
 export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({
@@ -171,7 +171,7 @@ export namespace TextDecoration {
     export const UNDERLINE_LINE_THROUGH: "underline line-through" = "underline line-through";
 
     export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
-    export const parse = makeParser(isValid, NONE);
+    export const parse = makeParser<TextDecoration>(isValid);
 }
 export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
     name: "textDecoration",
@@ -189,7 +189,7 @@ export namespace TextTransform {
     export const UPPERCASE: "uppercase" = "uppercase";
     export const LOWERCASE: "lowercase" = "lowercase";
     export const isValid = makeValidator<TextTransform>(NONE, CAPITALIZE, UPPERCASE, LOWERCASE);
-    export const parse = makeParser(isValid, NONE);
+    export const parse = makeParser<TextTransform>(isValid);
 }
 export const textTransformProperty = new CssProperty<Style, TextTransform>({
     name: "textTransform",
@@ -205,7 +205,7 @@ export namespace WhiteSpace {
     export const NORMAL: "normal" = "normal";
     export const NO_WRAP: "nowrap" = "nowrap";
     export const isValid = makeValidator<WhiteSpace>(NORMAL, NO_WRAP);
-    export const parse = makeParser(isValid, NORMAL);
+    export const parse = makeParser<WhiteSpace>(isValid);
 }
 
 //NB: Default value is deferent for Android and IOS

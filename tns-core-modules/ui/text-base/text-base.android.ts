@@ -48,7 +48,7 @@ export class TextBase extends TextBaseCommon {
     }
     set [textTransformProperty.native](value: TextTransform | android.text.method.TransformationMethod) {
         if (typeof value === "string") {
-            this._nativeView.setTransformationMethod(new TextTransformation(this.text, this.formattedText, value));
+            this._nativeView.setTransformationMethod(new TextTransformation(this));
         } else {
             this._nativeView.setTransformationMethod(value);
         }
@@ -207,36 +207,39 @@ export class TextBase extends TextBaseCommon {
 
 @Interfaces([android.text.method.TransformationMethod])
 class TextTransformation extends android.text.method.ReplacementTransformationMethod {
-    constructor(public originalText: string, public formattedText: FormattedString, public textTransform: TextTransform) {
+    constructor(public textBase: TextBase) {
         super();
         return global.__native(this);
     }
 
     protected getOriginal(): native.Array<string> {
-        return convertStringToNativeCharArray(this.formattedText ? this.formattedText.toString() : this.originalText);
+        return convertStringToNativeCharArray(this.textBase.formattedText ? this.textBase.formattedText.toString() : this.textBase.text);
     }
 
     protected getReplacement(): native.Array<string> {
         let replacementString: string = "";
-        if (this.formattedText) {
-            for (let i = 0, length = this.formattedText.spans.length; i < length; i++) {
-                let span = this.formattedText.spans.getItem(i);
-                replacementString += getTransformedText(span.text, this.textTransform);
+        const formattedText = this.textBase.formattedText;
+        const textTransform = this.textBase.textTransform;
+        if (formattedText) {
+            for (let i = 0, length = formattedText.spans.length; i < length; i++) {
+                let span = formattedText.spans.getItem(i);
+                replacementString += getTransformedText(span.text, textTransform);
             }
         }
         else {
-            replacementString = getTransformedText(this.originalText, this.textTransform);
+            replacementString = getTransformedText(this.textBase.text, textTransform);
         }
 
         return convertStringToNativeCharArray(replacementString);
     }
 
     public getTransformation(charSeq: any, view: android.view.View): any {
-        if (this.formattedText) {
-            return createSpannableStringBuilder(this.formattedText);
+        const formattedText = this.textBase.formattedText;
+        if (formattedText) {
+            return createSpannableStringBuilder(formattedText);
         }
         else {
-            return getTransformedText(this.originalText, this.textTransform);
+            return getTransformedText(this.textBase.text, this.textBase.textTransform);
         }
     }
 }

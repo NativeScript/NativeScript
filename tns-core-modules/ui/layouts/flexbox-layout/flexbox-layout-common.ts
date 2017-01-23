@@ -35,7 +35,7 @@ export namespace FlexDirection {
     export const COLUMN_REVERSE: "column-reverse" = "column-reverse";
 
     export const isValid = makeValidator<FlexDirection>(ROW, ROW_REVERSE, COLUMN, COLUMN_REVERSE);
-    export const parse = makeParser(isValid, ROW);
+    export const parse = makeParser<FlexDirection>(isValid);
 }
 
 export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";
@@ -45,7 +45,7 @@ export namespace FlexWrap {
     export const WRAP_REVERSE: "wrap-reverse" = "wrap-reverse";
 
     export const isValid = makeValidator<FlexWrap>(NOWRAP, WRAP, WRAP_REVERSE);
-    export const parse = makeParser(isValid, NOWRAP);
+    export const parse = makeParser<FlexWrap>(isValid);
 }
 
 export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
@@ -57,7 +57,7 @@ export namespace JustifyContent {
     export const SPACE_AROUND: "space-around" = "space-around";
 
     export const isValid = makeValidator<JustifyContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND);
-    export const parse = makeParser(isValid, FLEX_START);
+    export const parse = makeParser<JustifyContent>(isValid);
 }
 
 export type FlexBasisPercent = number;
@@ -74,7 +74,7 @@ export namespace AlignItems {
     export const STRETCH: "stretch" = "stretch";
 
     export const isValid = makeValidator<AlignItems>(FLEX_START, FLEX_END, CENTER, BASELINE, STRETCH);
-    export const parse = makeParser(isValid, FLEX_START);
+    export const parse = makeParser<AlignItems>(isValid);
 }
 
 export type AlignContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
@@ -87,7 +87,7 @@ export namespace AlignContent {
     export const STRETCH: "stretch" = "stretch";
 
     export const isValid = makeValidator<AlignContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND, STRETCH);
-    export const parse = makeParser(isValid, FLEX_START);
+    export const parse = makeParser<AlignContent>(isValid);
 }
 
 export type Order = number;
@@ -143,7 +143,7 @@ export namespace AlignSelf {
     export const STRETCH: "stretch" = "stretch";
 
     export const isValid = makeValidator<AlignSelf>(AUTO, FLEX_START, FLEX_END, CENTER, BASELINE, STRETCH);
-    export const parse = makeParser(isValid, AUTO);
+    export const parse = makeParser<AlignSelf>(isValid);
 }
 
 function validateArgs(element: View): View {

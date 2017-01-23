@@ -1237,7 +1237,7 @@ export namespace HorizontalAlignment {
     export const RIGHT: "right" = "right";
     export const STRETCH: "stretch" = "stretch";
     export const isValid = makeValidator<HorizontalAlignment>(LEFT, CENTER, RIGHT, STRETCH);
-    export const parse = makeParser(isValid, STRETCH);
+    export const parse = makeParser<HorizontalAlignment>(isValid);
 }
 
 export const horizontalAlignmentProperty = new CssProperty<Style, HorizontalAlignment>({ name: "horizontalAlignment", cssName: "horizontal-align", defaultValue: HorizontalAlignment.STRETCH, affectsLayout: isIOS, valueConverter: HorizontalAlignment.parse });
@@ -1250,7 +1250,16 @@ export namespace VerticalAlignment {
     export const BOTTOM: "bottom" = "bottom";
     export const STRETCH: "stretch" = "stretch";
     export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH);
-    export const parse = makeParser(isValid, STRETCH);
+    export const parse = value => {
+        const lower = value && value.toLowerCase();
+        if (lower === "canter") {
+            return MIDDLE;
+        } else if (isValid(lower)) {
+            return lower;
+        } else {
+            throw new Error("Invalid value: " + value);
+        }
+    }
 }
 
 export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignment>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: VerticalAlignment.STRETCH, affectsLayout: isIOS, valueConverter: VerticalAlignment.parse });
@@ -1559,7 +1568,7 @@ export namespace BackgroundRepeat {
     export const REPEAT_Y: "repeat-y" = "repeat-y";
     export const NO_REPEAT: "no-repeat" = "no-repeat";
     export const isValid = makeValidator<BackgroundRepeat>(REPEAT, REPEAT_X, REPEAT_Y, NO_REPEAT);
-    export const parse = makeParser(isValid, undefined);
+    export const parse = makeParser<BackgroundRepeat>(isValid);
 }
 
 export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
@@ -2016,7 +2025,7 @@ export namespace Visibility {
     export const HIDDEN: "hidden" = "hidden";
     export const COLLAPSE: "collapse" = "collapse";
     export const isValid = makeValidator<Visibility>(VISIBLE, HIDDEN, COLLAPSE);
-    export const parse = makeParser(isValid, VISIBLE);
+    export const parse = makeParser<Visibility>(isValid);
 }
 
 export const visibilityProperty = new CssProperty<Style, Visibility>({

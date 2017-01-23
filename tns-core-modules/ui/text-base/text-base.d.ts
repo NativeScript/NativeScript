@@ -1,14 +1,14 @@
 ﻿declare module "ui/text-base" {
     import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "ui/core/view";
-    import { FormattedString, FormattedStringView } from "text/formatted-string";
+    import { FormattedString } from "text/formatted-string";
 
     export * from "ui/core/view";
-    export { FormattedString, FormattedStringView } from "text/formatted-string";
+    export { FormattedString } from "text/formatted-string";
 
     /**
      * Represents the base class for all text views.
      */
-    export class TextBase extends View implements AddChildFromBuilder, FormattedStringView {
+    export class TextBase extends View implements AddChildFromBuilder {
         /**
          * Gets or sets the text.
          */
