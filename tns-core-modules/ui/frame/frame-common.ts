@@ -1,9 +1,9 @@
 ﻿import * as definition from "ui/frame";
-import {View, CustomLayoutView} from "ui/core/view";
-import {Page} from "ui/page";
-import {isString, isFunction, isDefined} from "utils/types";
+import { View, CustomLayoutView } from "ui/core/view";
+import { Page } from "ui/page";
+import { isString, isFunction, isDefined } from "utils/types";
 import * as trace from "trace";
-import {resolveFileName} from "file-system/file-name-resolver";
+import { resolveFileName } from "file-system/file-name-resolver";
 import * as fs from "file-system";
 import * as builderModule from "ui/builder";
 import * as platform from "platform";
@@ -222,7 +222,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
     //     if (!this._currentEntry){
     //         return;
     //     }
-        
+
     //     let currentPage = this._currentEntry.resolvedPage;
     //     let currentNavigationEntry = this._currentEntry.entry; 
     //     if (currentPage["isBiOrientational"] && currentNavigationEntry.moduleName) {
@@ -321,7 +321,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         return !backstackHidden;
     }
 
-    public _updateActionBar(page?: Page) {
+    public _updateActionBar(page?: Page, disableNavBarAnimation?: boolean) {
         //trace.write("calling _updateActionBar on Frame", trace.categories.Navigation);
     }
 
@@ -408,7 +408,7 @@ export class Frame extends CustomLayoutView implements definition.Frame {
         if (this._currentEntry) {
             return this._currentEntry.entry;
         }
-        
+
         return null;
     }
 
