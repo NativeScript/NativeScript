@@ -44,12 +44,9 @@ export class Progress extends ProgressBase {
     get [backgroundColorProperty.native](): UIColor {
         return this._ios.trackTintColor;
     }
-    set [backgroundColorProperty.native](value: Color) {
-        if (value instanceof Color) {
-            this._ios.trackTintColor = value.ios;
-        } else {
-            this._ios.trackTintColor = value;
-        }
+    set [backgroundColorProperty.native](value: UIColor | Color) {
+        let color = value instanceof Color ? value.ios : value;
+        this._ios.trackTintColor = color;
     }
 
     get [backgroundInternalProperty.native](): UIColor {

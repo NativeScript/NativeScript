@@ -114,10 +114,10 @@ export class Frame extends FrameBase {
         backstackEntry[NAV_DEPTH] = navDepth;
         viewController[ENTRY] = backstackEntry;
 
-        this._updateActionBar(backstackEntry.resolvedPage);
-
         // First navigation.
         if (!this._currentEntry) {
+            // Update action-bar with disabled animations before the initial navigation.
+            this._updateActionBar(backstackEntry.resolvedPage, true);
             this._ios.controller.pushViewControllerAnimated(viewController, animated);
             if (traceEnabled()) {
                 traceWrite(`${this}.pushViewControllerAnimated(${viewController}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
@@ -194,16 +194,23 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _updateActionBar(page?: Page): void {
+    public _updateActionBar(page?: Page, disableNavBarAnimation: boolean = false): void {
+
         super._updateActionBar(page);
 
         page = page || this.currentPage;
         let newValue = this._getNavBarVisible(page);
+        let disableNavBarAnimationCache = this._ios._disableNavBarAnimation;
 
-        var disableNavBarAnimation = this._ios._disableNavBarAnimation;
-        this._ios._disableNavBarAnimation = true;
+        if (disableNavBarAnimation) {
+            this._ios._disableNavBarAnimation = true;
+        }
+
         this._ios.showNavigationBar = newValue;
-        this._ios._disableNavBarAnimation = disableNavBarAnimation;
+
+        if (disableNavBarAnimation) {
+            this._ios._disableNavBarAnimation = disableNavBarAnimationCache;
+        }
 
         if (this._ios.controller.navigationBar) {
             this._ios.controller.navigationBar.userInteractionEnabled = this.navigationQueueIsEmpty();
@@ -708,6 +715,7 @@ class iOSFrame implements iOSFrameDefinition {
         this._showNavigationBar = value;
 
         let animated = !this._frame._isInitialNavigation && !this._disableNavBarAnimation;
+
         this._controller.setNavigationBarHiddenAnimated(!value, animated);
 
         let currentPage = this._controller.owner.currentPage;

@@ -211,7 +211,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     //     if (!this._currentEntry){
     //         return;
     //     }
-        
+
     //     let currentPage = this._currentEntry.resolvedPage;
     //     let currentNavigationEntry = this._currentEntry.entry; 
     //     if (currentPage["isBiOrientational"] && currentNavigationEntry.moduleName) {
@@ -310,7 +310,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         return !backstackHidden;
     }
 
-    public _updateActionBar(page?: Page) {
+    public _updateActionBar(page?: Page, disableNavBarAnimation?: boolean) {
         //traceWrite("calling _updateActionBar on Frame", traceCategories.Navigation);
     }
 
