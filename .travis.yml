@@ -37,16 +37,17 @@ before_script:
   - adb shell input keyevent 82 &
 script:
   - jdk_switcher use oraclejdk8
-  - grunt default --verbose &&
-    FULL_PACKAGE_VERSION=`node -e 'console.log(require("./bin/dist/tns-core-modules/package.json").version);'` &&
-    (cd tns-platform-declarations && npm pack) &&
-    wget -O ./nativescript.tgz "https://s3.amazonaws.com/nativescript-ci/build_result/nativescript.tgz" && 
-    echo no | npm install -g nativescript.tgz --ignore-scripts > /dev/null && tns usage-reporting disable && tns error-reporting disable &&
-    grunt buildOnlyTestsApp --verbose --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --runtimeVersion=$RUNTIMEVERSION --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false > /dev/null &&
-    grunt runOnlyTestsApp --verbose --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false
+  - grunt default --verbose
+  - FULL_PACKAGE_VERSION=$(node build/version.js)
+  - (cd tns-platform-declarations && npm pack)
+  - wget -O ./nativescript.tgz "https://s3.amazonaws.com/nativescript-ci/build_result/nativescript.tgz"
+  - echo no | npm install -g nativescript.tgz --ignore-scripts
+  - tns usage-reporting disable && tns error-reporting disable
+  - grunt buildOnlyTestsApp --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --runtimeVersion=$RUNTIMEVERSION --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false
+  - grunt runOnlyTestsApp --verbose --platform=Android --modulesPath=./bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz --emuPId=.*emulator.* --avd=$AVD_NAME --showEmu=false
   - node ./build/travis-scripts/check-testrun-broken.js
-  - adb pull /storage/sdcard/Documents/test-results.xml &&
-    mv test-results.xml ~/test-run-results$PACKAGE_VERSION.xml
+  - adb pull /storage/sdcard/Documents/test-results.xml
+  - mv test-results.xml ~/test-run-results$PACKAGE_VERSION.xml
 before_deploy:
   - mv bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz ../.deploymentpackage
   - mv build ../

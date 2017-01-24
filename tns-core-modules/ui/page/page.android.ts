@@ -243,15 +243,19 @@ export class PageStyler implements style.Styler {
 
     // android-status-bar-background-property
     private static setAndroidStatusBarBackgroundProperty(v: view.View, newValue: any) {
-        let window = app.android.startActivity.getWindow();
-        let nativeColor = new colorModule.Color(newValue).android;
-        window.setStatusBarColor(nativeColor);
+        if (platform.device.sdkVersion >= "21") {
+            let window = app.android.startActivity.getWindow();
+            let nativeColor = new colorModule.Color(newValue).android;
+            window.setStatusBarColor(nativeColor);
+        }
     }
 
     private static resetAndroidStatusBarBackgroundProperty(v: view.View, nativeValue: any) {
-        let window = app.android.startActivity.getWindow();
-        let nativeColor = (nativeValue instanceof colorModule.Color) ? (<colorModule.Color>nativeValue).android : new colorModule.Color(nativeValue).android;
-        window.setStatusBarColor(nativeColor);
+        if (platform.device.sdkVersion >= "21") {
+            let window = app.android.startActivity.getWindow();
+            let nativeColor = (nativeValue instanceof colorModule.Color) ? (<colorModule.Color>nativeValue).android : new colorModule.Color(nativeValue).android;
+            window.setStatusBarColor(nativeColor);
+        }
     }
 
     private static getAndroidStatusBarBackgroundProperty(v: view.View): any {
