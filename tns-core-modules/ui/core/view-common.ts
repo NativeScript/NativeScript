@@ -1250,16 +1250,8 @@ export namespace VerticalAlignment {
     export const BOTTOM: "bottom" = "bottom";
     export const STRETCH: "stretch" = "stretch";
     export const isValid = makeValidator<VerticalAlignment>(TOP, MIDDLE, BOTTOM, STRETCH);
-    export const parse = value => {
-        const lower = value && value.toLowerCase();
-        if (lower === "canter") {
-            return MIDDLE;
-        } else if (isValid(lower)) {
-            return lower;
-        } else {
-            throw new Error("Invalid value: " + value);
-        }
-    }
+    export const parse = (value: string) => value.toLowerCase() === "center" ? MIDDLE : parseStrict(value);
+    const parseStrict = makeParser<VerticalAlignment>(isValid);
 }
 
 export const verticalAlignmentProperty = new CssProperty<Style, VerticalAlignment>({ name: "verticalAlignment", cssName: "vertical-align", defaultValue: VerticalAlignment.STRETCH, affectsLayout: isIOS, valueConverter: VerticalAlignment.parse });
@@ -2025,7 +2017,8 @@ export namespace Visibility {
     export const HIDDEN: "hidden" = "hidden";
     export const COLLAPSE: "collapse" = "collapse";
     export const isValid = makeValidator<Visibility>(VISIBLE, HIDDEN, COLLAPSE);
-    export const parse = makeParser<Visibility>(isValid);
+    export const parse = (value: string) => value.toLowerCase() === "collapsed" ? COLLAPSE : parseStrict(value);
+    const parseStrict = makeParser<Visibility>(isValid);
 }
 
 export const visibilityProperty = new CssProperty<Style, Visibility>({
