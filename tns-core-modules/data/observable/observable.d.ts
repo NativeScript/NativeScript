@@ -65,6 +65,13 @@ declare module "data/observable" {
      * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
      */
     class Observable {
+
+        /**
+         * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
+         * and you have to migrate to the "data/observable" `fromObject({})` or the `fromObjectRecursive({})` functions.
+         */
+        constructor();
+
         /**
          * String value used when hooking to propertyChange event.
          */

@@ -40,6 +40,12 @@
         <Button tag="views/list-picker" text="ListPicker" tap="itemTap" />
         <Button tag="views/segmented-bar" text="SegmentedBar" tap="itemTap" />
       </StackLayout>
+
+      <Label class="title" text="Animations" />
+      <StackLayout>
+        <Button tag="animations/configurable" text="configurable" tap="itemTap" />
+        <Button tag="animations/opacity" text="opacity" tap="itemTap" />
+      </StackLayout>
     </StackLayout>
   </ScrollView>
 </Page>
