@@ -147,11 +147,11 @@ class UIViewControllerImpl extends UIViewController {
         super.viewWillAppear(animated);
         this.shown = false;
         let page = this._owner.get();
-        if (traceEnabled()) {
-            if (traceEnabled()) {
-                traceWrite(page + " viewWillAppear", traceCategories.Navigation);
-            }
+
+        if (traceEnabled) {
+            traceWrite(page + " viewWillAppear", traceCategories.Navigation);
         }
+
         if (!page) {
             return;
         }
@@ -249,6 +249,8 @@ class UIViewControllerImpl extends UIViewController {
     };
 
     public viewWillDisappear(animated: boolean): void {
+        super.viewWillDisappear(animated);
+
         let page = this._owner.get();
         if (traceEnabled()) {
             traceWrite(page + " viewWillDisappear", traceCategories.Navigation);
@@ -275,6 +277,8 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     public viewDidDisappear(animated: boolean): void {
+        super.viewDidDisappear(animated);
+
         let page = this._owner.get();
         if (traceEnabled()) {
             traceWrite(page + " viewDidDisappear", traceCategories.Navigation);
@@ -362,9 +366,7 @@ export class Page extends PageBase {
             super.onLoaded();
         }
 
-        if (this.actionBarHidden !== undefined) {
-            this.updateActionBar(this.actionBarHidden);
-        }
+        this.updateActionBar();
     }
 
     public onUnloaded() {
@@ -448,10 +450,10 @@ export class Page extends PageBase {
         super._hideNativeModalView(parent);
     }
 
-    private updateActionBar(hidden: boolean) {
+    private updateActionBar(disableNavBarAnimation: boolean = false) {
         const frame = this.frame;
         if (frame) {
-            frame._updateActionBar(this);
+            frame._updateActionBar(this, disableNavBarAnimation);
         }
     }
 
@@ -585,7 +587,8 @@ export class Page extends PageBase {
     set [actionBarHiddenProperty.native](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
         if (this.isLoaded) {
-            this.updateActionBar(value);
+            // Update nav-bar visibility with disabled animations
+            this.updateActionBar(true);
         }
     }
 

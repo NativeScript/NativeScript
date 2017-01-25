@@ -9,7 +9,7 @@ export function applyTap(args) {
 
     let css = "#test-element { " + args.object.tag + " }";
     page.css = css;
- }
+}
 
 export function applyTapOnStyledActionBar(args) {
     let page = <Page>(<View>args.object).page;
@@ -17,8 +17,7 @@ export function applyTapOnStyledActionBar(args) {
     reset(page);
 
     page.actionBar.backgroundColor = new Color("#5DFC0A");
-    var css = "#test-element { " + args.object.tag + " }";
-    page.css = css;
+    page.css = "#test-element { " + args.object.tag + " }";
 }
 
 export function applyTapWithHiddenActionBar(args) {
@@ -27,8 +26,7 @@ export function applyTapWithHiddenActionBar(args) {
     reset(page);
 
     page.actionBarHidden = true;
-    var css = "#test-element { " + args.object.tag + " }";
-    page.css = css;
+    page.css = "#test-element { " + args.object.tag + " }";
 }
 
 export function applyTapWithSpan(args) {
@@ -37,8 +35,7 @@ export function applyTapWithSpan(args) {
     reset(page);
 
     page.backgroundSpanUnderStatusBar = true;
-    var css = "#test-element { " + args.object.tag + " }";
-    page.css = css;
+    page.css = "#test-element { " + args.object.tag + " }";
 }
 
 export function applyTapOnStyledActionBarAndSpan(args) {
@@ -48,8 +45,7 @@ export function applyTapOnStyledActionBarAndSpan(args) {
 
     page.backgroundSpanUnderStatusBar = true;
     page.actionBar.backgroundColor = new Color("#E0115F");
-    var css = "#test-element { " + args.object.tag + " }";
-    page.css = css;
+    page.css = "#test-element { " + args.object.tag + " }";
 }
 
 export function applyTapWithActionBarHiddenAndSpan(args) {
@@ -59,8 +55,7 @@ export function applyTapWithActionBarHiddenAndSpan(args) {
 
     page.backgroundSpanUnderStatusBar = true;
     page.actionBarHidden = true;
-    var css = "#test-element { " + args.object.tag + " }";
-    page.css = css;
+    page.css = "#test-element { " + args.object.tag + " }";
 }
 
 function reset(page: Page) {

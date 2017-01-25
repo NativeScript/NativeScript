@@ -261,7 +261,7 @@ export class ActionBar extends ActionBarBase {
         View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView && actionItem.actionView.ios) {
-                let measuredWidth = actionItem.actionView.getMeasuredWidth();
+                let measuredWidth = actionItem.actionView.getMeasuredWidth(); 
                 let measuredHeight = actionItem.actionView.getMeasuredHeight();
                 View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
             }
@@ -314,10 +314,11 @@ export class ActionBar extends ActionBarBase {
         }
         return null;
     }
-    set [backgroundColorProperty.native](value: UIColor) {
+    set [backgroundColorProperty.native](value: UIColor | Color) {
         let navBar = this.navBar;
-        if (navBar) {
-            navBar.barTintColor = value;
+        if (navBar && value) {
+            let color = value instanceof Color ? value.ios : value;
+            navBar.barTintColor = color;
         }
     }
 

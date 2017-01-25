@@ -42,11 +42,6 @@ export class PageBase extends ContentView implements PageDefinition {
         this.actionBar = new ActionBar();
     }
 
-    // public onLoaded() {
-    //     this._applyCss();
-    //     super.onLoaded();
-    // }
-
     get navigationContext(): any {
         return this._navigationContext;
     }

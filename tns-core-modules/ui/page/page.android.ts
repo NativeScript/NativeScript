@@ -122,7 +122,7 @@ export class Page extends PageBase {
     public onLoaded() {
         super.onLoaded();
         if (this.actionBarHidden !== undefined) {
-            this.updateActionBar(this.actionBarHidden);
+            this.updateActionBar();
         }
     }
 
@@ -170,7 +170,7 @@ export class Page extends PageBase {
         super._hideNativeModalView(parent);
     }
 
-    private updateActionBar(hidden: boolean) {
+    private updateActionBar() {
         this.actionBar.update();
     }
 
@@ -178,7 +178,7 @@ export class Page extends PageBase {
         return undefined;
     }
     set [actionBarHiddenProperty.native](value: boolean) {
-        this.updateActionBar(value);
+        this.updateActionBar();
     }
 
     get [statusBarStyleProperty.native](): { color: number, systemUiVisibility: number } {
