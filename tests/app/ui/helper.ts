@@ -20,11 +20,6 @@ export var MEMORY_ASYNC = 2;
 function clearPage(): void {
     let newPage = getCurrentPage();
     if (!newPage) {
-        TKUnit.waitUntilReady(() => getCurrentPage() !== null);
-        newPage = getCurrentPage();
-    }
-
-    if (!newPage) {
         throw new Error("NO CURRENT PAGE!!!!");
     }
 
@@ -183,10 +178,10 @@ export function forceGC() {
         /* tslint:disable:no-unused-expression */
         // Could cause GC on the next call.
         new ArrayBuffer(4 * 1024 * 1024);
-        TKUnit.wait(ASYNC);
     }
 
     utils.GC();
+    TKUnit.wait(0.001);
 }
 
 export function _generateFormattedString(): formattedStringModule.FormattedString {
