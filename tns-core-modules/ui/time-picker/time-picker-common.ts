@@ -53,15 +53,14 @@ function getMinutes(hour: number): number {
 }
 
 export function isDefined(value: any): boolean {
-    return typeof value !== "undefined";
+    return value !== undefined;
 }
 
 function isGreaterThanMinTime(picker: TimePickerDefinition, hour?: number, minute?: number): boolean {
-
-    if (typeof picker.minHour === undefined || typeof picker.minMinute === undefined) {
+    if (picker.minHour === undefined || picker.minMinute === undefined) {
         return true;
     }
-    return getMinutes(typeof hour !== "undefined" ? hour : picker.hour) + (typeof minute !== "undefined" ? minute : picker.minute) >= getMinutes(picker.minHour) + picker.minMinute;
+    return getMinutes(hour !== undefined ? hour : picker.hour) + (minute !== undefined ? minute : picker.minute) >= getMinutes(picker.minHour) + picker.minMinute;
 }
 
 function isLessThanMaxTime(picker: TimePickerDefinition, hour?: number, minute?: number): boolean {

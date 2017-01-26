@@ -151,7 +151,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         }
 
         for (let item in animationDefinition) {
-            if (typeof animationDefinition[item] === "undefined") {
+            if (animationDefinition[item] === undefined) {
                 continue;
             }
 

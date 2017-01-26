@@ -8,7 +8,7 @@ import { FontStyle, FontWeight } from "ui/styling/font";
 import { TextDecoration } from "ui/text-base";
 
 export { Span };
- 
+
 export module knownCollections {
     export const spans = "spans";
 }
@@ -158,5 +158,9 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
 
     private onPropertyChange(data: PropertyChangeData) {
         this.notifyPropertyChange(data.propertyName, this);
+    }
+
+    eachChild(callback: (child: ViewBase) => boolean): void {
+        this.spans.forEach((v, i, arr) => callback(v));
     }
 }

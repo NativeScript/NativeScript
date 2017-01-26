@@ -56,9 +56,9 @@ export class DatePicker extends DatePickerBase {
     }
 
     private updateNativeDate(): void {
-        let year = typeof this.year === "number" ? this.year : this.android.getYear();
-        let month = typeof this.month === "number" ? (this.month - 1) : this.android.getMonth();
-        let day = typeof this.day === "number" ? this.day : this.android.getDayOfMonth();
+        const year = typeof this.year === "number" ? this.year : this.android.getYear();
+        const month = typeof this.month === "number" ? (this.month - 1) : this.android.getMonth();
+        const day = typeof this.day === "number" ? this.day : this.android.getDayOfMonth();
         this.date = new Date(year, month, day);
     }
 

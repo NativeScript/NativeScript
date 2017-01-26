@@ -20,11 +20,6 @@ export var MEMORY_ASYNC = 2;
 function clearPage(): void {
     let newPage = getCurrentPage();
     if (!newPage) {
-        TKUnit.waitUntilReady(() => getCurrentPage() !== null);
-        newPage = getCurrentPage();
-    }
-
-    if (!newPage) {
         throw new Error("NO CURRENT PAGE!!!!");
     }
 
@@ -78,45 +73,30 @@ export function buildUIAndRunTest<T extends view.View>(controlToTest: T, testFun
 
 export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void, done?) {
     clearPage();
-    let newPage = getCurrentPage();
-    let sp = new stackLayoutModule.StackLayout();
-    let testFinished = false;
+    const page = getCurrentPage();
+    const weakRef = new WeakRef(createFunc());
+    page.content = weakRef.get();
+    if (interactWithViewFunc) {
+        interactWithViewFunc(weakRef.get());
+    }
+    page.content = null;
+    // Give a change for native cleanup (e.g. keyboard close, etc.).
+    TKUnit.wait(0.001);
+    if (page.ios) {
+        /* tslint:disable:no-unused-expression */
+        // Could cause GC on the next call.
+        // NOTE: Don't replace this with forceGC();
+        new ArrayBuffer(4 * 1024 * 1024);
+    }
+    utils.GC();
 
-    sp.on("loaded", () => {
-        let weakRef = new WeakRef(createFunc());
-        try {
-            sp.addChild(weakRef.get());
-
-            if (interactWithViewFunc) {
-                interactWithViewFunc(weakRef.get());
-            }
-
-            sp.removeChild(weakRef.get());
-
-            TKUnit.wait(1); // Wait for the TextField/TextView to close its keyboard so it can be released.
-
-            if (newPage.ios) {
-                /* tslint:disable:no-unused-expression */
-                // Could cause GC on the next call.
-                // NOTE: Don't replace this with forceGC();
-                new ArrayBuffer(4 * 1024 * 1024);
-            }
-            utils.GC();
-
-            TKUnit.waitUntilReady(() => { return weakRef.get() ? !(weakRef.get().isLoaded) : true; }, MEMORY_ASYNC);
-            TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
-            testFinished = true;
-        }
-        catch (e) {
-            done(e);
-        }
-    });
-
-    newPage.content = sp;
-
-    TKUnit.waitUntilReady(() => testFinished, MEMORY_ASYNC);
-    TKUnit.assertTrue(testFinished, "Test did not completed.");
-    done(null);
+    try {
+        TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
+        done(null);
+    }
+    catch (ex) {
+        done(ex);
+    }
 }
 
 export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
@@ -198,10 +178,10 @@ export function forceGC() {
         /* tslint:disable:no-unused-expression */
         // Could cause GC on the next call.
         new ArrayBuffer(4 * 1024 * 1024);
-        TKUnit.wait(ASYNC);
     }
 
     utils.GC();
+    TKUnit.wait(0.001);
 }
 
 export function _generateFormattedString(): formattedStringModule.FormattedString {

@@ -36,7 +36,7 @@ export function testFromUrl(done) {
         //completed = true;
         result = res;
         try {
-            TKUnit.assert(typeof result !== "undefined", "Image not downloaded");
+            TKUnit.assertNotEqual(result, undefined, "Image not downloaded");
             TKUnit.assert(result.height > 0, "Image not downloaded");
             done(null);
         }

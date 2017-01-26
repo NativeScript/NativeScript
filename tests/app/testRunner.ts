@@ -126,35 +126,39 @@ var testsQueue = new Array<TestInfo>();
 
 function printRunTestStats() {
     let testFileContent = new Array<string>();
-    let testCases = new Array<string>();
+    const testCases = new Array<string>();
 
-    var j;
     var failedTestCount = 0;
     var failedTestInfo = [];
+    const slowTests = new Array<string>();
 
     let allTests = testsQueue.filter(t => t.isTest);
 
     testFileContent.push("<testsuites>");
 
-    for (j = 0; j < allTests.length; j++) {
-        let testName = allTests[j].testName;
-        let duration = (allTests[j].duration / 1000).toFixed(2);
+    allTests.forEach((testCase, i, arr) => {
+        let testName = testCase.testName;
+        let duration = (testCase.duration / 1000).toFixed(2);
 
-        if (!allTests[j].isPassed) {
+        if (!testCase.isPassed) {
             failedTestCount++;
 
-            let errorMessage = allTests[j].errorMessage;
+            let errorMessage = testCase.errorMessage;
 
-            failedTestInfo.push(allTests[j].testName + " FAILED: " + allTests[j].errorMessage);
+            failedTestInfo.push(testCase.testName + " FAILED: " + testCase.errorMessage);
 
             testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
 
         } else {
             testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
-    }
 
-    var totalTime = (TKUnit.time() - startTime).toFixed(2);
+        if (testCase.duration > 500) {
+            slowTests.push(`${testCase.testName}: ${duration}s`);
+        }
+    });
+
+    const totalTime = (TKUnit.time() - startTime).toFixed(2);
 
     testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
 
@@ -165,11 +169,10 @@ function printRunTestStats() {
         `DURATION: ${totalTime} ms\n`;
     TKUnit.write(finalMessage, messageType.info);
 
-    for (j = 0; j < failedTestInfo.length; j++) {
-        let failureMessage = failedTestInfo[j];
-        TKUnit.write(failureMessage, messageType.error);
-        finalMessage += "\n" + failureMessage;
-    }
+    failedTestInfo.forEach((message, i, arr) => {
+        TKUnit.write(message, messageType.error);
+        finalMessage += "\n" + message;
+    });
 
     // DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
     TKUnit.write(`Tests EOF!`, messageType.info);
@@ -180,7 +183,7 @@ function printRunTestStats() {
     let testFilePath: string;
     let testResultsFileName = "test-results.xml";
     if (platform.isIOS) {
-        testFilePath = fs.path.join(fs.knownFolders.documents().path, testResultsFileName); 
+        testFilePath = fs.path.join(fs.knownFolders.documents().path, testResultsFileName);
     } else {
         testFilePath = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "Documents", testResultsFileName);
     }
@@ -189,6 +192,12 @@ function printRunTestStats() {
     testFile.writeTextSync(testFileContent.join(""));
 
     finalMessage += "\n" + "Test results: " + testFilePath;
+    finalMessage += "\n" + "----------------- ";
+    finalMessage += "\n" + "Slow tests: ";
+    slowTests.forEach((message, i, arr) => {
+        TKUnit.write(message, messageType.error);
+        finalMessage += "\n" + message;
+    });
 
     let stack = new StackLayout();
     let btn = new Button();
@@ -258,7 +267,6 @@ export var runAll = function (testSelector?: string) {
 
         var test = testModule.createTestCase ? testModule.createTestCase() : testModule;
         test.name = name;
-
 
         testsQueue.push(new TestInfo(startLog, test));
 
