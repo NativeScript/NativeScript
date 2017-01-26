@@ -27,7 +27,6 @@ export function pageLoaded(args: observable.EventData) {
     button2 = page.getViewById<buttonModule.Button>("button2");
     button3 = page.getViewById<buttonModule.Button>("button3");
 
-
     trace.enable();
     trace.addCategories(trace.categories.concat(trace.categories.Animation));
 }

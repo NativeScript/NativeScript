@@ -57,7 +57,7 @@ export var test_Transitions = function () {
         }
     }
     transitions = transitions.concat(["fade", "flip", "slide"]);
-    var durations = [undefined, 50];
+    var durations = [undefined, 10];
     var curves = [undefined, AnimationCurve.easeIn];
 
     // Built-in transitions
