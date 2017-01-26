@@ -8,7 +8,7 @@ import * as utils from "utils/utils";
 import { Label } from "ui/label";
 import * as helper from "../helper";
 import { Page } from "ui/page";
-import { View, KeyedTemplate } from "ui/core/view";
+import { View, KeyedTemplate, isIOS } from "ui/core/view";
 
 // >> article-require-listview-module
 import * as listViewModule from "ui/list-view";
@@ -100,42 +100,42 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_set_native_item_exposed() {
-        let listView = this.testView;
+        const listView = this.testView;
 
-        let indexes = {};
-        let colors = ["red", "green", "blue"];
-        listView.items = colors;
+        const indexes = [];
+        const colors = ["red", "green", "blue"];
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
-            if (platform.device.os === platform.platformNames.ios) {
-                indexes[args.index] = args.ios;
-            } else if (platform.device.os === platform.platformNames.android) {
-                indexes[args.index] = args.android;
-            }
+            indexes[args.index] = isIOS ? args.ios : args.android;
         });
-        this.waitUntilListViewReady();
+        listView.items = colors;
+        TKUnit.waitUntilReady(() => indexes.length === 3);
 
         for (var item in indexes) {
-            if (platform.device.os === platform.platformNames.ios) {
-                TKUnit.assert(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
+            if (isIOS) {
+                TKUnit.assertTrue(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
             } else if (platform.device.os === platform.platformNames.android) {
-                TKUnit.assert(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
+                TKUnit.assertTrue(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
             }
         }
     }
 
     public test_cell_selection_ios() {
-        if (platform.device.os === platform.platformNames.ios) {
-            let listView = this.testView;
+        if (isIOS) {
+            const listView = this.testView;
 
-            let colors = ["red", "green", "blue"];
+            const indexes = [];
+            const colors = ["red", "green", "blue"];
+            listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+                indexes[args.index] = isIOS ? args.ios : args.android;
+            });
             listView.items = colors;
-            this.waitUntilListViewReady();
+            TKUnit.waitUntilReady(() => indexes.length === 3);
 
-            var index = 1;
+            const index = 1;
             this.performNativeItemTap(listView, index);
-            var uiTableView = <UITableView>listView.ios;
-            var cellIndexPath = NSIndexPath.indexPathForItemInSection(index, 0);
-            var cell = uiTableView.cellForRowAtIndexPath(cellIndexPath);
+            const uiTableView = <UITableView>listView.ios;
+            const cellIndexPath = NSIndexPath.indexPathForItemInSection(index, 0);
+            const cell = uiTableView.cellForRowAtIndexPath(cellIndexPath);
             uiTableView.selectRowAtIndexPathAnimatedScrollPosition(cellIndexPath, false, 0);
 
             TKUnit.assertTrue(cell.selected, "cell is selected");
@@ -784,7 +784,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.wait(0.1);
 
         let firstNativeElementText = this.getTextFromNativeElementAt(listView, 0);
-        
+
         TKUnit.assertEqual(firstNativeElementText, "default", "first element text");
     }
 
@@ -819,19 +819,19 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     public test_ItemTemplateSelector_ItemTemplatesAreCorrectlyParsedFromString() {
         let listView = this.testView;
         listView.itemTemplates = this._itemTemplatesString;
-        
+
         let itemTemplatesArray = <any>listView.itemTemplates;
 
         TKUnit.assertEqual(itemTemplatesArray.length, 3, "itemTemplates array length");
-        
+
         let template0 = <KeyedTemplate>itemTemplatesArray[0];
         TKUnit.assertEqual(template0.key, "red", "template0.key");
         TKUnit.assertEqual((<Label>template0.createView()).text, "red", "template0 created view text");
-        
+
         let template1 = <KeyedTemplate>itemTemplatesArray[1];
         TKUnit.assertEqual(template1.key, "green", "template1.key");
         TKUnit.assertEqual((<Label>template1.createView()).text, "green", "template1 created view text");
-        
+
         let template2 = <KeyedTemplate>itemTemplatesArray[2];
         TKUnit.assertEqual(template2.key, "blue", "template2.key");
         TKUnit.assertEqual((<Label>template2.createView()).text, "blue", "template2 created view text");
@@ -848,7 +848,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         let firstNativeElementText = this.getTextFromNativeElementAt(listView, 0);
         let secondNativeElementText = this.getTextFromNativeElementAt(listView, 1);
-        
+
         TKUnit.assertEqual(firstNativeElementText, "red", "first element text");
         TKUnit.assertEqual(secondNativeElementText, "green", "second element text");
     }
@@ -860,26 +860,27 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.itemTemplates = this._itemTemplatesString;
         listView.itemTemplateSelector = "age % 2 === 0 ? 'red' : (age % 3 === 0 ? 'blue' : 'green')";
         listView.items = ListViewTest.generateItemsForMultipleTemplatesTests(10);
-        TKUnit.wait(0.05);
+        TKUnit.wait(0.01);
 
         // Forward
-        for(let i = 0, length = listView.items.length; i < length; i++){
+        listView.items.forEach((item, i, arr) => {
             listView.scrollToIndex(i);
-            TKUnit.wait(0.05);
-        }
-        
-        // Back
-        for(let i = listView.items.length - 1; i >= 0; i--){
-            listView.scrollToIndex(i);
-            TKUnit.wait(0.05);
-        }
+            TKUnit.wait(0.01);
+        });
 
-        if (listView.android){
+        // Back
+        const count = listView.items.length - 1;
+         listView.items.forEach((item, i, arr) => {
+            listView.scrollToIndex(count - i);
+            TKUnit.wait(0.01);
+        });
+
+        if (listView.android) {
             //(<any>listView)._dumpRealizedTemplates();
             let realizedItems = <Map<android.view.View, View>>(<any>listView)._realizedItems;
             TKUnit.assertTrue(realizedItems.size <= 6, 'Realized items must be 6 or less');
-            
-            let realizedTemplates = <Map<string, Map<android.view.View, View>>>(<any>listView)._realizedTemplates; 
+
+            let realizedTemplates = <Map<string, Map<android.view.View, View>>>(<any>listView)._realizedTemplates;
             TKUnit.assertEqual(realizedTemplates.size, 3, 'Realized templates');
             TKUnit.assertTrue(realizedTemplates.get("red").size <= 2, 'Red realized items must be 2 or less');
             TKUnit.assertTrue(realizedTemplates.get("green").size <= 2, 'Green realized items must be 2 or less');
@@ -898,7 +899,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             <Label text='blue' style.backgroundColor='blue' minHeight='100' maxHeight='100'/>
         </template>
         `;
-    
+
     private static generateItemsForMultipleTemplatesTests(count: number): Array<Item> {
         let items = new Array<Item>();
         for (let i = 0; i < count; i++) {

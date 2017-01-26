@@ -22,7 +22,11 @@ function print(map) {
     }
 }
 
-export function printUnregisteredProperties(): void {
+export function _isSet(cssProperty: CssProperty<any, any>, instance: Style): boolean {
+    return cssProperty.sourceKey in instance;
+}
+
+export function _printUnregisteredProperties(): void {
     print(symbolPropertyMap);
     print(cssSymbolPropertyMap)
 }

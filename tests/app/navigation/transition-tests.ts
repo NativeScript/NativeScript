@@ -2,10 +2,10 @@
 import * as helper from "../ui/helper";
 import * as platform from "platform";
 import * as trace from "trace";
-import {Color} from "color";
-import {NavigationEntry, NavigationTransition, topmost as topmostFrame, traceEnabled} from "ui/frame";
-import {Page} from "ui/page";
-import {AnimationCurve} from "ui/enums"
+import { Color } from "color";
+import { NavigationEntry, NavigationTransition, topmost as topmostFrame, traceEnabled } from "ui/frame";
+import { Page } from "ui/page";
+import { AnimationCurve } from "ui/enums"
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;
@@ -57,25 +57,17 @@ export var test_Transitions = function () {
         }
     }
     transitions = transitions.concat(["fade", "flip", "slide"]);
-    var durations = [undefined, 500];
+    var durations = [undefined, 50];
     var curves = [undefined, AnimationCurve.easeIn];
 
     // Built-in transitions
-    var t, d, c;
-    var tlen = transitions.length;
-    var dlen = durations.length;
-    var clen = curves.length;
-    for (t = 0; t < tlen; t++) {
-        for (d = 0; d < dlen; d++) {
-            for (c = 0; c < clen; c++) {
-                _testTransition({
-                    name: transitions[t],
-                    duration: durations[d],
-                    curve: curves[c]
-                });
-            }
-        }
-    }
+    transitions.forEach(name => {
+        durations.forEach(duration => {
+            curves.forEach(curve => {
+                _testTransition({ name, duration, curve });
+            });
+        });
+    });
 
     // Custom transition
     if (testCustomTransition) {

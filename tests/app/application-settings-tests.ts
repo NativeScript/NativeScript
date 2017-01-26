@@ -2,7 +2,7 @@
 var appSettings = require("application-settings");
 // << application-settings-require
 
-var TKUnit = require("./TKUnit");
+import * as TKUnit from "./TKUnit";
 
 var stringKey:string = "stringKey";
 var boolKey: string = "boolKey";
@@ -56,10 +56,10 @@ export var testDefaultsWithNoDefaultValueProvided = function () {
     var defaultValue = appSettings.getString("noStringKey");
     // will return undefined if there is no value for "noStringKey"
     // << application-settings-nodefault
-    TKUnit.assert("undefined" === typeof defaultValue, "Default string value is not undefined");
+    TKUnit.assertEqual(defaultValue, undefined, "Default string value is not undefined");
 
-    TKUnit.assert("undefined" === typeof appSettings.getBoolean(noBoolKey), "Default boolean value is not undefined");
-    TKUnit.assert("undefined" === typeof appSettings.getNumber(noNumberKey), "Default number value is not undefined");
+    TKUnit.assertEqual(appSettings.getBoolean(noBoolKey) , undefined, "Default boolean value is not undefined");
+    TKUnit.assertEqual(appSettings.getNumber(noNumberKey), undefined, "Default number value is not undefined");
 };
 
 // <snippet module="application-settings" title="application-settings">

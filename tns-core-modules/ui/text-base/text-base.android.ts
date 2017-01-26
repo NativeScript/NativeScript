@@ -6,6 +6,7 @@
     layout, Span
 } from "./text-base-common";
 
+import { _isSet as isSet } from "ui/core/properties";
 import { FontWeight, FontStyle } from "ui/styling/font";
 
 export * from "./text-base-common";
@@ -345,20 +346,34 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
         ssb.setSpan(new android.text.style.ForegroundColorSpan(color.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
+    // We don't use isSet function here because defaultValue for backgroundColor is null.
     const backgroundColor = style.backgroundColor || (<FormattedString>span.parent).backgroundColor || (<TextBase>(<FormattedString>span.parent).parent).backgroundColor;
     if (backgroundColor) {
         ssb.setSpan(new android.text.style.BackgroundColorSpan(backgroundColor.android), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
-    const textDecorations = style.textDecoration || (<FormattedString>span.parent).textDecoration || (<TextBase>(<FormattedString>span.parent).parent).textDecoration;
-    const underline = textDecorations.indexOf(TextDecoration.UNDERLINE) !== -1;
-    if (underline) {
-        ssb.setSpan(new android.text.style.UnderlineSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    let valueSource: typeof style;
+    if (isSet(textDecorationProperty, style)) {
+        valueSource = style;
+    } else if (isSet(textDecorationProperty, span.parent.style)) {
+        // span.parent is FormattedString
+        valueSource = span.parent.style;
+    } else if (isSet(textDecorationProperty, span.parent.parent.style)) {
+        // span.parent.parent is TextBase
+        valueSource = span.parent.parent.style;
     }
 
-    const strikethrough = textDecorations.indexOf(TextDecoration.LINE_THROUGH) !== -1;
-    if (strikethrough) {
-        ssb.setSpan(new android.text.style.StrikethroughSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    if (valueSource) {
+        const textDecorations = valueSource.textDecoration;
+        const underline = textDecorations.indexOf(TextDecoration.UNDERLINE) !== -1;
+        if (underline) {
+            ssb.setSpan(new android.text.style.UnderlineSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+
+        const strikethrough = textDecorations.indexOf(TextDecoration.LINE_THROUGH) !== -1;
+        if (strikethrough) {
+            ssb.setSpan(new android.text.style.StrikethroughSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
     }
 }
 

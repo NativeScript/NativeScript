@@ -96,8 +96,8 @@ export module ad {
         return app.getApplicationContext();
     }
 
-    var inputMethodManager: android.view.inputmethod.InputMethodManager;
-    export function getInputMethodManager() {
+    let inputMethodManager: android.view.inputmethod.InputMethodManager;
+    export function getInputMethodManager(): android.view.inputmethod.InputMethodManager {
         if (!inputMethodManager) {
             inputMethodManager = <android.view.inputmethod.InputMethodManager>getApplicationContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
         }
@@ -105,23 +105,23 @@ export module ad {
     }
 
     export function showSoftInput(nativeView: android.view.View): void {
-        var imm = getInputMethodManager();
-        if (imm && nativeView instanceof android.view.View) {
-            imm.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
+        const inputManager = getInputMethodManager();
+        if (inputManager && nativeView instanceof android.view.View) {
+            inputManager.showSoftInput(nativeView, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT);
         }
     }
 
     export function dismissSoftInput(nativeView: android.view.View): void {
-        var imm = getInputMethodManager();
-        if (imm && nativeView instanceof android.view.View) {
-            imm.hideSoftInputFromWindow(nativeView.getWindowToken(), 0);
+        const inputManager = getInputMethodManager();
+        if (inputManager && nativeView instanceof android.view.View && inputManager.isActive(nativeView)) {
+            inputManager.hideSoftInputFromWindow(nativeView.getWindowToken(), 0);
         }
     }
 
     export module collections {
         export function stringArrayToStringSet(str: string[]): java.util.HashSet<string> {
             var hashSet = new java.util.HashSet<string>();
-            if ("undefined" !== typeof str) {
+            if (str !== undefined) {
                 for (var element in str) {
                     hashSet.add('' + str[element]);
                 }
@@ -131,7 +131,7 @@ export module ad {
 
         export function stringSetToStringArray(stringSet: any): string[] {
             var arr = [];
-            if ("undefined" !== typeof stringSet) {
+            if (stringSet !== undefined) {
                 var it = stringSet.iterator();
                 while (it.hasNext()) {
                     var element = '' + it.next();

@@ -154,7 +154,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
     set [colorProperty.native](color: UIColor | Color) {
         let textView = this.nativeView;
-        let uiColor = typeof color === "UIColor" ? color : (<Color>color).ios;
+        let uiColor = color instanceof Color ? color.ios : color;
         if (this._isShowingHint && uiColor) {
             textView.textColor = uiColor.colorWithAlphaComponent(0.22);
         } else {

@@ -7,11 +7,11 @@ import * as xmlModule from "xml";
 import * as fs from "file-system";
 
 export var test_XmlParser_IsDefined = function () {
-    TKUnit.assert(typeof (xmlModule.XmlParser) !== "undefined", "Class XmlParser should be defined!");
+    TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, "Class XmlParser should be defined!");
 };
 
 export var test_ParserEventType_IsDefined = function () {
-    TKUnit.assert(typeof (xmlModule.ParserEventType) !== "undefined", "Class ParserEventType should be defined!");
+    TKUnit.assertNotEqual(xmlModule.ParserEventType, undefined, "Class ParserEventType should be defined!");
 };
 
 export var test_XmlParser_ElementsWithoutAttributesDoNotReportThem = function () {
@@ -24,7 +24,7 @@ export var test_XmlParser_ElementsWithoutAttributesDoNotReportThem = function ()
         }
     });
     xmlParser.parse("<element/>");
-    TKUnit.assert(attributes === undefined, "Expected result: undefined; Actual result: " + attributes + ";");
+    TKUnit.assertEqual(attributes, undefined, "Expected result: undefined; Actual result: " + attributes + ";");
 };
 
 export var test_XmlParser_EntityReferencesAreDecoded = function () {

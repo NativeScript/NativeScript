@@ -190,11 +190,15 @@ declare module "ui/core/properties" {
     import { ViewBase } from "ui/core/view-base";
     import { Style } from "ui/styling/style";
 
+    //@private
+    export function _isSet(cssProperty: CssProperty<any, any>, instance: Style): boolean;
+    //@endprivate
+
     /**
      * Value specifing that Property should be set to its initial value.
      */
     export const unsetValue: any;
-    
+
     export interface PropertyOptions<T, U> {
         readonly name: string;
         readonly defaultValue?: U;

@@ -1,5 +1,5 @@
 import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "ui/core/view";
+import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "ui/core/view";
 import { PropertyChangeData } from "data/observable";
 import { FormattedString, Span } from "text/formatted-string";
 
@@ -118,6 +118,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
 
     _requestLayoutOnTextChanged(): void {
         this.requestLayout();
+    }
+
+    eachChild(callback: (child: ViewBase) => boolean): void {
+        let text = this.formattedText;
+        if (text) {
+            callback(text);
+        }
     }
 }
 

@@ -47,7 +47,7 @@ export module ios {
 
         export function nsArrayToJSArray(a: NSArray<any>): Array<Object> {
             var arr = [];
-            if ("undefined" !== typeof a) {
+            if (a !== undefined) {
                 let count = a.count;
                 for (let i = 0; i < count; i++) {
                     arr.push(a.objectAtIndex(i));

@@ -8,19 +8,19 @@ import * as timer from "timer";
 // << timer-require
 
 export function test_setTimeout_isDefined() {
-    TKUnit.assert(typeof (timer.setTimeout) !== "undefined", "Method timer.setTimeout() should be defined!");
+    TKUnit.assertNotEqual(timer.setTimeout, undefined, "Method timer.setTimeout() should be defined!");
 };
 
 export function test_clearTimeout_isDefined() {
-    TKUnit.assert(typeof (timer.clearTimeout) !== "undefined", "Method timer.clearTimeout() should be defined!");
+    TKUnit.assertNotEqual(timer.clearTimeout, undefined, "Method timer.clearTimeout() should be defined!");
 };
 
-export function test_setInterval_isDefined() {
-    TKUnit.assert(typeof (timer.setInterval) !== "undefined", "Method timer.setInterval() should be defined!");
+export function test_setInsDefined() {
+    TKUnit.assertNotEqual(timer.setInterval, undefined, "Method timer.setInterval() should be defined!");
 };
 
-export function test_clearInterval_isDefined() {
-    TKUnit.assert(typeof (timer.clearInterval) !== "undefined", "Method timer.clearInterval() should be defined!");
+export function test_clear_isDefined() {
+    TKUnit.assertNotEqual(timer.clearInterval, undefined, "Method timer.clearInterval() should be defined!");
 };
 
 export function test_setTimeout() {
