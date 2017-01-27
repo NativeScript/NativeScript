@@ -39,7 +39,13 @@ function ensureDialogFragmentClass() {
             this._owner.verticalAlignment = this._fullscreen ? VerticalAlignment.STRETCH : VerticalAlignment.MIDDLE;
             this._owner.actionBarHidden = true;
 
-            dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());
+            const nativeView = <android.view.View>this._owner._nativeView;
+            let layoutParams = nativeView.getLayoutParams();
+            if (!layoutParams) {
+                layoutParams = new org.nativescript.widgets.CommonLayoutParams();
+                nativeView.setLayoutParams(layoutParams);
+            }
+            dialog.setContentView(this._owner._nativeView, layoutParams);
 
             const window = dialog.getWindow();
             window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
