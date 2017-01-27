@@ -573,12 +573,21 @@ export class Page extends PageBase {
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {
-        // ActionBar is added to the native visual tree by default
+        // ActionBar is handled by the UINavigationController
         if (view === this.actionBar) {
             return true;
         }
 
         return super._addViewToNativeVisualTree(view);
+    }
+
+    public _removeViewFromNativeVisualTree(view: View): void {
+        // ActionBar is handled by the UINavigationController
+        if (view === this.actionBar) {
+            return;
+        }
+
+        super._removeViewFromNativeVisualTree(view);
     }
 
     get [actionBarHiddenProperty.native](): boolean {
