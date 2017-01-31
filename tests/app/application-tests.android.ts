@@ -43,7 +43,7 @@ export var testAndroidApplicationInitialized = function () {
     TKUnit.assert(app.android.context, "Android context not initialized.");
     TKUnit.assert(app.android.currentContext, "Android currentContext not initialized.");
     TKUnit.assert(app.android.foregroundActivity, "Android foregroundActivity not initialized.");
-    TKUnit.assert(app.android.foregroundActivity.isNativeScriptActivity, "Andorid foregroundActivity.isNativeScriptActivity is true");
+    TKUnit.assert(app.android.foregroundActivity.isNativeScriptActivity, "Android foregroundActivity.isNativeScriptActivity is true");
     TKUnit.assert(app.android.startActivity, "Android startActivity not initialized.");
     TKUnit.assert(app.android.nativeApp, "Android nativeApp not initialized.");
     TKUnit.assert(app.android.packageName, "Android packageName not initialized.");
