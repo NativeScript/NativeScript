@@ -1,6 +1,76 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.5.0 (2017, February 1)
+
+### Fixed
+
+- [(#3270)](https://github.com/NativeScript/NativeScript/issues/3270) Android platform.screen.mainScreen props are not invalidated after orientation change
+
+- [(#3232)](https://github.com/NativeScript/NativeScript/issues/3232) CSS support for separatorColor property of ListView
+
+- [(#3220)](https://github.com/NativeScript/NativeScript/issues/3220) Background of the buttons inside dialog can be modified with CSS
+
+- [(#3218)](https://github.com/NativeScript/NativeScript/issues/3218) ListPicker foreground color doesnt change
+
+- [(#3215)](https://github.com/NativeScript/NativeScript/issues/3215) StackLayout isUserInteractionEnabled="false" value is not working
+
+- [(#3210)](https://github.com/NativeScript/NativeScript/issues/3210) Segmentedbar crash using a number as title
+
+- [(#3181)](https://github.com/NativeScript/NativeScript/issues/3181) Cursor position resets on toggling value of secure property of TextField on Android
+
+- [(#3175)](https://github.com/NativeScript/NativeScript/issues/3175) Invalid value 500 for property fontWeight in XML
+
+- [(#3172)](https://github.com/NativeScript/NativeScript/issues/3172) Pseudo selectors not applying when app resumes
+
+- [(#3163)](https://github.com/NativeScript/NativeScript/issues/3163) Issue with WHxxx calculations on android / wrong files loaded
+
+- [(#3147)](https://github.com/NativeScript/NativeScript/issues/3147) Setting `setTypeface()` to null object
+
+- [(#3137)](https://github.com/NativeScript/NativeScript/issues/3137) Ripple effect lost on Segmented-Bar with selectedBackgroundColor
+
+- [(#3129)](https://github.com/NativeScript/NativeScript/issues/3129) Modal dialogs don't have background color
+
+- [(#3113)](https://github.com/NativeScript/NativeScript/issues/3113) Transparent border rendered as black
+
+- [(#3111)](https://github.com/NativeScript/NativeScript/issues/3111) TextView new line closes virtual keyboard on Android
+
+- [(#3098)](https://github.com/NativeScript/NativeScript/issues/3098) Connectivity module always return undefined on android <= 4.4
+
+- [(#3064)](https://github.com/NativeScript/NativeScript/issues/3064) Setting automationText to a number crashes the app on Android
+
+- [(#3060)](https://github.com/NativeScript/NativeScript/issues/3060) CSS clip-path rect() shape function implemented incorrectly
+
+- [(#3007)](https://github.com/NativeScript/NativeScript/issues/3007) java.lang.NumberFormatException when applying clip-path with percentage values
+
+- [(#2980)](https://github.com/NativeScript/NativeScript/issues/2980) FlexboxLayout flex shrink factor is not multiplied by the flex base size
+
+- [(#2941)](https://github.com/NativeScript/NativeScript/issues/2941) Using IconFonts in ActionBar + navigation leeds to displaced icons
+
+- [(#2870)](https://github.com/NativeScript/NativeScript/issues/2870) [iOS] ActionBar w/translucent navigationBar set to false is creating whitish transition
+
+- [(#2815)](https://github.com/NativeScript/NativeScript/issues/2815) TabView.androidOffscreenTabLimit property
+
+- [(#2672)](https://github.com/NativeScript/NativeScript/issues/2672) Erratic action bar transition when using bound (or empty) title property
+
+- [(#2179)](https://github.com/NativeScript/NativeScript/issues/2179) iOS ActionBarItems overlapping before page load
+
+- [(#2116)](https://github.com/NativeScript/NativeScript/issues/2116) setInterval callback is not fired while touch events are being processed
+
+- [(#1869)](https://github.com/NativeScript/NativeScript/issues/1869) ActionBar icons in iOS (back, hamburger icon) with different height are "jumping" when changing the screens
+
+- [(#1799)](https://github.com/NativeScript/NativeScript/issues/1799) ActionBar drop shadow lost with background-color
+
+- [(#1639)](https://github.com/NativeScript/NativeScript/issues/1639) Custom components within other custom components: occasionally not loaded "in time" and ignoring css
+
+### New
+
+- [(#2736)](https://github.com/NativeScript/NativeScript/issues/2736) CSS support for styling status bar; backgroundColor added in ActionBarStyler
+
+- [(#2693)](https://github.com/NativeScript/NativeScript/issues/2693) CSS clip-path `inset` shape
+
+- [(#2689)](https://github.com/NativeScript/NativeScript/issues/2689) TabView.iosIconRenderingMode property
+
 ##2.4.3 (2016, December 15)
 
 - [(#3170)](https://github.com/NativeScript/NativeScript/pull/3170) Export set function for cssFile and resources
