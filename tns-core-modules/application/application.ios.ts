@@ -291,7 +291,7 @@ typedExports.start = function (entry?: NavigationEntry) {
             if(window) {
                 var rootController = window.rootViewController;
                 if(rootController) {
-                    rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
+                    rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, true, null);
                     uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
                 }
             }

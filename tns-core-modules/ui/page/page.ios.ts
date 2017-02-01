@@ -84,9 +84,12 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        if (owner._modalParent) {
-            let isTablet = device.deviceType === "Tablet";
-            let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
+        const modalParent = owner._modalParent;
+        if (modalParent) {
+            // if inside horizontally compact environment - fullScreen will be forced
+            let isFullScreen = !owner._UIModalPresentationFormSheet ||
+                (modalParent.nativeView.traitCollection.horizontalSizeClass === UIUserInterfaceSizeClass.Compact);
+
             let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
             let size = frame.size;
             let width = size.width;
@@ -97,12 +100,6 @@ class UIViewControllerImpl extends UIViewController {
             if (this.view.superview) {
                 let transform = this.view.superview.transform;
                 superViewRotationRadians = atan2f(transform.b, transform.a);
-            }
-
-            if (ios.MajorVersion < 8 && ios.isLandscape() && !superViewRotationRadians) {
-                // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
-                width = size.height;
-                height = size.width;
             }
 
             let bottom = height;
@@ -116,20 +113,9 @@ class UIViewControllerImpl extends UIViewController {
             let widthSpec = layout.makeMeasureSpec(width, mode);
             let heightSpec = layout.makeMeasureSpec(height, mode);
 
-            View.measureChild(owner._modalParent, owner, widthSpec, heightSpec);
-            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
-            View.layoutChild(owner._modalParent, owner, 0, top, width, bottom);
-
-            if (ios.MajorVersion < 8) {
-                if (!backgroundSpanUnderStatusBar && (!isTablet || isFullScreen)) {
-                    if (ios.isLandscape() && !superViewRotationRadians) {
-                        this.view.center = CGPointMake(this.view.center.x - statusBarHeight, this.view.center.y);
-                    }
-                    else {
-                        this.view.center = CGPointMake(this.view.center.x, this.view.center.y + statusBarHeight);
-                    }
-                }
-            }
+            View.measureChild(modalParent, owner, widthSpec, heightSpec);
+            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || !isFullScreen) ? 0 : statusBarHeight;
+            View.layoutChild(modalParent, owner, 0, top, width, bottom);
 
             if (traceEnabled()) {
                 traceWrite(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), traceCategories.Layout);
@@ -156,8 +142,9 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        let frame = this.navigationController ? (<any>this.navigationController).owner : null;
-        let newEntry = this[ENTRY];
+        const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const newEntry = this[ENTRY];
+        const modalParent = page._modalParent;
 
         // Don't raise event if currentPage was showing modal page.
         if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
@@ -166,6 +153,11 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         page._enableLoadedEvents = true;
+
+        // Add page to frame if showing modal page.
+        if (modalParent) {
+            modalParent.frame._addView(page);
+        }
 
         if (frame) {
             if (!page.parent) {
@@ -279,7 +271,7 @@ class UIViewControllerImpl extends UIViewController {
     public viewDidDisappear(animated: boolean): void {
         super.viewDidDisappear(animated);
 
-        let page = this._owner.get();
+        const page = this._owner.get();
         if (traceEnabled()) {
             traceWrite(page + " viewDidDisappear", traceCategories.Navigation);
         }
@@ -288,12 +280,13 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        let modalParent = page._modalParent;
+        const modalParent = page._modalParent;
         page._modalParent = undefined;
         page._UIModalPresentationFormSheet = false;
 
-        // Clear modal flag on parent page.
+        // Clear up after modal page has closed.
         if (modalParent) {
+            modalParent.frame._removeView(page);
             modalParent._modal = undefined;
         }
 
@@ -430,7 +423,7 @@ export class Page extends PageBase {
 
         super._raiseShowingModallyEvent();
 
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, ios.MajorVersion >= 7, null);
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, true, null);
         let transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
@@ -445,7 +438,7 @@ export class Page extends PageBase {
 
     protected _hideNativeModalView(parent: Page) {
         parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(ios.MajorVersion >= 7);
+        parent._ios.dismissModalViewControllerAnimated(true);
 
         super._hideNativeModalView(parent);
     }
@@ -520,7 +513,7 @@ export class Page extends PageBase {
             statusBarHeight = 0;
         }
 
-        if (this.frame && this.frame._getNavBarVisible(this)) {
+        if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height.
             let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
             actionBarWidth = actionBarSize.measuredWidth;

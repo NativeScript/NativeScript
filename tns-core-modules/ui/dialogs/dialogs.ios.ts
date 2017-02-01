@@ -8,6 +8,8 @@ import { isString, isDefined, isFunction } from "utils/types";
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 
+export * from "./dialogs-common";
+
 class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
     public static ObjCProtocols = [UIAlertViewDelegate];
 
