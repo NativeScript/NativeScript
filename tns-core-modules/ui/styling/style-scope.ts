@@ -8,7 +8,7 @@ import * as application from "application";
 import * as kam from "ui/animation/keyframe-animation";
 let keyframeAnimationModule: typeof kam;
 function ensureKeyframeAnimationModule() {
-    if (!keyframeAnimationModule){
+    if (!keyframeAnimationModule) {
         keyframeAnimationModule = require("ui/animation/keyframe-animation");
     }
 }
@@ -16,7 +16,7 @@ function ensureKeyframeAnimationModule() {
 import * as capm from "./css-animation-parser";
 let cssAnimationParserModule: typeof capm;
 function ensureCssAnimationParserModule() {
-    if (!cssAnimationParserModule){
+    if (!cssAnimationParserModule) {
         cssAnimationParserModule = require("./css-animation-parser");
     }
 }
@@ -48,15 +48,16 @@ export class CssState {
     private applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
         let style = view.style;
         ruleset.declarations.forEach(d => {
-            let name = `css-${d.property}`;
-            if (name in style) {
-                try {
-                    style[name] = d.value;
-                } catch (e) {
-                    traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error)
+            try {
+                // Use the "css-" prefixed name, so that CSS value source is set.
+                let cssPropName = `css-${d.property}`;
+                if (cssPropName in style) {
+                    style[cssPropName] = d.value;
+                } else {
+                    view[d.property] = d.value;
                 }
-            } else {
-                view[d.property] = d.value;
+            } catch (e) {
+                traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
             }
         });
 
@@ -228,7 +229,7 @@ export class StyleScope {
         (<Keyframes[]>nodes.filter(isKeyframe)).forEach(node => keyframes[node.name] = node);
 
         let rulesets = fromAstNodes(nodes);
-        if (rulesets && rulesets.length){
+        if (rulesets && rulesets.length) {
             ensureCssAnimationParserModule();
             rulesets.forEach(rule => rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations));
         }
@@ -262,7 +263,7 @@ export class StyleScope {
     }
 }
 
-export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (string) => boolean): string {
+export function resolveFileNameFromUrl(url: string, appDirectory: string, fileExists: (name: string) => boolean): string {
     let fileName: string = typeof url === "string" ? url.trim() : "";
 
     if (fileName.indexOf("~/") === 0) {
@@ -282,21 +283,24 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
     return null;
 }
 
-export function applyInlineStyle(view: ViewBase, style: string) {
-    try {
-        let localStyle = `local { ${style} }`;
-        let inlineRuleSet = StyleScope.createSelectorsFromCss(localStyle, null, {});
-        let inlineSelector = new InlineSelector(inlineRuleSet[0]);
-        view.inlineStyleSelector = inlineSelector;
-        if (view._cssState) {
-            view._cssState.apply();
-        } else {
-            let styleScope = new StyleScope();
-            styleScope.applySelectors(view);
+export function applyInlineStyle(view: ViewBase, styleStr: string) {
+    let localStyle = `local { ${styleStr} }`;
+    let inlineRuleSet = StyleScope.createSelectorsFromCss(localStyle, null, {});
+    const style = view.style;
+
+    inlineRuleSet[0].declarations.forEach(d => {
+        // Use the actual property name so that a local value is set.
+        let name = d.property;
+        try {
+            if (name in style) {
+                style[name] = d.value;
+            } else {
+                view[name] = d.value;
+            }
+        } catch (e) {
+            traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
         }
-    } catch (ex) {
-        traceWrite("Applying local style failed: " + ex, traceCategories.Error, traceMessageType.error);
-    }
+    });
 }
 
 function isKeyframe(node: Node): node is Keyframes {

@@ -28,7 +28,7 @@ export function _isSet(cssProperty: CssProperty<any, any>, instance: Style): boo
 
 export function _printUnregisteredProperties(): void {
     print(symbolPropertyMap);
-    print(cssSymbolPropertyMap)
+    print(cssSymbolPropertyMap);
 }
 
 const enum ValueSource {
@@ -132,11 +132,11 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor, defi
                     this.requestLayout();
                 }
             }
-        }
+        };
 
         this.get = function (this: T): U {
             return key in this ? this[key] : defaultValue;
-        }
+        };
 
         this.nativeValueChange = function (owner: T, value: U): void {
             const currentValue = key in owner ? owner[key] : defaultValue;
@@ -160,7 +160,7 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor, defi
                     owner.requestLayout();
                 }
             }
-        }
+        };
 
         symbolPropertyMap[key] = this;
     }
@@ -219,7 +219,7 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
             const originalValue: U = coerceKey in target ? target[coerceKey] : defaultValue;
             // need that to make coercing but also fire change events
             this.set.call(target, originalValue);
-        }
+        };
 
         this.set = function (this: T, value: U): void {
             const reset = value === unsetValue;
@@ -283,11 +283,11 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                     this.requestLayout();
                 }
             }
-        }
+        };
 
         this.get = function (): U {
             return key in this ? this[key] : defaultValue;
-        }
+        };
 
         this.nativeValueChange = function (owner: T, value: U): void {
             const currentValue = key in owner ? owner[key] : defaultValue;
@@ -312,7 +312,7 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                     owner.requestLayout();
                 }
             }
-        }
+        };
 
         symbolPropertyMap[key] = this;
     }
@@ -387,7 +387,7 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> imp
                     return true;
                 });
             }
-        }
+        };
 
         const setInheritedValue = setFunc(ValueSource.Inherited);
         this.setInheritedValue = setInheritedValue;
@@ -403,6 +403,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
     public readonly name: string;
     public readonly cssName: string;
+    public readonly cssLocalName: string;
 
     protected readonly cssValueDescriptor: PropertyDescriptor;
     protected readonly localValueDescriptor: PropertyDescriptor;
@@ -417,8 +418,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         const name = options.name;
         this.name = name;
 
-        const cssName = `css-${options.cssName}`;
-        this.cssName = cssName;
+        this.cssName = `css-${options.cssName}`;
+        this.cssLocalName = options.cssName;
 
         const key = Symbol(name + ":propertyKey");
         this.key = key;
@@ -593,6 +594,9 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
         Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
+        if (this.cssLocalName !== this.cssName) {
+            Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
+        }
     }
 }
 
@@ -634,7 +638,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
             if (reset) {
                 // If unsetValue - we want to reset this property.
                 let parent = view.parent;
-                let style = parent ? parent.style : null
+                let style = parent ? parent.style : null;
                 // If we have parent and it has non-default value we use as our inherited value.
                 if (style && style[sourceKey] > ValueSource.Default) {
                     newValue = style[name];
@@ -712,7 +716,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                     return true;
                 });
             }
-        }
+        };
 
         const setDefaultFunc = setFunc(ValueSource.Default);
         const setInheritedFunc = setFunc(ValueSource.Inherited);
@@ -731,6 +735,7 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
     public readonly key: symbol;
     public readonly name: string;
     public readonly cssName: string;
+    public readonly cssLocalName: string;
 
     protected readonly cssValueDescriptor: PropertyDescriptor;
     protected readonly localValueDescriptor: PropertyDescriptor;
@@ -739,14 +744,13 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
     public readonly sourceKey: symbol;
 
     constructor(options: definitions.ShorthandPropertyOptions<P>) {
-        const name = options.name;
-        this.name = name;
+        this.name = options.name;
 
-        const key = Symbol(name + ":propertyKey");
+        const key = Symbol(this.name + ":propertyKey");
         this.key = key;
 
-        const cssName = `css-${options.cssName}`;
-        this.cssName = cssName;
+        this.cssName = `css-${options.cssName}`;
+        this.cssLocalName = `${options.cssName}`;
 
         const converter = options.converter;
 
@@ -792,6 +796,9 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this.localValueDescriptor);
         Object.defineProperty(cls.prototype, this.cssName, this.cssValueDescriptor);
+        if (this.cssLocalName !== this.cssName) {
+            Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
+        }
     }
 }
 
@@ -958,5 +965,5 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
         } else {
             throw new Error("Invalid value: " + value);
         }
-    }
+    };
 }
