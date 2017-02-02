@@ -126,7 +126,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
                     throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
                 }
             } else {
-                throw new Error("Css file atribute is valid only for pages!");
+                throw new Error("Css file attribute is valid only for pages!");
             }
         }
     }

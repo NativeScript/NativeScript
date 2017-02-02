@@ -8,6 +8,7 @@ export * from "./segmented-bar-common";
 const R_ID_TABS = 0x01020013;
 const R_ID_TABCONTENT = 0x01020011;
 const R_ATTR_STATE_SELECTED = 0x010100a1;
+const TITLE_TEXT_VIEW_ID = 16908310; // http://developer.android.com/reference/android/R.id.html#title
 
 let apiLevel: number;
 // TODO: Move this into widgets.
@@ -56,9 +57,13 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         return this._textView;
     }
 
-    public setNativeView(textView: android.widget.TextView): void {
-        this._textView = textView;
-        if (textView) {
+    public setupNativeView(tabIndex: number): void {
+        // TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
+        // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android
+        const titleTextView = <android.widget.TextView>this.parent.android.getTabWidget().getChildAt(tabIndex).findViewById(TITLE_TEXT_VIEW_ID);
+
+        this._textView = titleTextView;
+        if (titleTextView) {
             applyNativeSetters(this);
             if (this.titleDirty) {
                 this._update();
@@ -68,15 +73,6 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
     private titleDirty: boolean;
     public _update(): void {
-        // if (this._parent && this._parent.android) {
-        //     // TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
-        //     // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android
-        //     const tabIndex = this._parent.items.indexOf(this);
-        //     const titleTextViewId = 16908310; // http://developer.android.com/reference/android/R.id.html#title
-        //     const titleTextView = <android.widget.TextView>this._parent.android.getTabWidget().getChildAt(tabIndex).findViewById(titleTextViewId);
-        //     titleTextView.setText(this.title || "");
-        // }
-
         const tv = this._textView;
         if (tv) {
             let title = this.title;
@@ -168,15 +164,12 @@ class TabContentFactory extends java.lang.Object implements android.widget.TabHo
         let owner = this.owner.get();
         if (owner) {
             let tv = new android.widget.TextView(owner._context);
-            let index = parseInt(tag);
-            // This is collapsed by default and made visibile 
+            // This is collapsed by default and made visible 
             // by android when TabItem becomes visible/selected.
-            // TODO: Try commenting visigility change.
+            // TODO: Try commenting visibility change.
             tv.setVisibility(android.view.View.GONE);
             tv.setMaxLines(1);
             tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
-
-            (<SegmentedBarItem>owner.items[index]).setNativeView(tv);
             return tv;
         } else {
             throw new Error(`Invalid owner: ${this.owner}`);
@@ -233,6 +226,7 @@ export class SegmentedBar extends SegmentedBarBase {
         let tabHost = this.android;
         this._addingTab = true;
         tabHost.addTab(tab);
+        tabItem.setupNativeView(index);
         this._addingTab = false;
     }
 

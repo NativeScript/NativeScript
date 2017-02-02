@@ -1,10 +1,10 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as segmentedBarTestsNative from "./segmented-bar-tests-native";
-import {buildUIAndRunTest} from "../helper";
-import {View} from "ui/core/view";
-import {BindingOptions} from "ui/core/bindable";
-import {Observable} from "data/observable";
-import {Color} from "color";
+import { buildUIAndRunTest } from "../helper";
+import { View } from "ui/core/view";
+import { BindingOptions } from "ui/core/bindable";
+import { Observable } from "data/observable";
+import { Color } from "color";
 
 // >> article-require-segmentedbar-module
 import * as segmentedBarModule from "ui/segmented-bar";
@@ -77,7 +77,7 @@ export var testWhenItemsAreBoundTheTextColorIsPreserved = function () {
         }
 
         segmentedBar.bind(options, model);
-        
+
         TKUnit.assert(segmentedBarTestsNative.checkNativeItemsTextColor(segmentedBar), "Items text color not preserved" + "; Expected: " + segmentedBar.color);
     });
 }
@@ -181,13 +181,13 @@ export var testSelectedIndexChangedIsReisedCorrectlyIfSelectedIndexIsSet = funct
     var newIndex;
     var segmentedBar = _createSegmentedBar();
 
-    segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, (args : segmentedBarModule.SelectedIndexChangedEventData) => {
+    segmentedBar.on(segmentedBarModule.SegmentedBar.selectedIndexChangedEvent, (args: segmentedBarModule.SelectedIndexChangedEventData) => {
         oldIndex = args.oldIndex;
         newIndex = args.newIndex;
     });
 
     segmentedBar.items = _createItems(10);
-    
+
     buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
         var segmentedBar = <segmentedBarModule.SegmentedBar>views[0];
 
@@ -262,7 +262,7 @@ export function test_SettingNumberAsTitleFromXML_DoesNotThrow() {
     let item = new segmentedBarModule.SegmentedBarItem();
     (<any>item).title = 1;
     segmentedBar.items = [item];
-    
+
     buildUIAndRunTest(segmentedBar, function (views: Array<View>) {
         TKUnit.assertEqual(item.title, "1");
     });

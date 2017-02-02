@@ -1,7 +1,7 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from "ui/segmented-bar";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, CssProperty, Color, Style
+    Property, CoercibleProperty, InheritedCssProperty, Color, Style
 } from "ui/core/view";
 
 export * from "ui/core/view";
@@ -45,7 +45,9 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
             if (!this.items) {
                 this.items = new Array<SegmentedBarItemBase>();
             }
-            this.items.push(<SegmentedBarItemBase>value);
+            let item = <SegmentedBarItemBase>value;
+            this.items.push(item);
+            this._addView(item);
             selectedIndexProperty.coerce(this);
         }
     }
@@ -111,5 +113,5 @@ export const itemsProperty = new Property<SegmentedBarBase, SegmentedBarItemDefi
 });
 itemsProperty.register(SegmentedBarBase);
 
-export const selectedBackgroundColorProperty = new CssProperty<Style, Color>({ name: "selectedBackgroundColor", cssName: "selected-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) })
+export const selectedBackgroundColorProperty = new InheritedCssProperty<Style, Color>({ name: "selectedBackgroundColor", cssName: "selected-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 selectedBackgroundColorProperty.register(Style);
