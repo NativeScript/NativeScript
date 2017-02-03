@@ -17,6 +17,7 @@ export function pageLoaded(args: EventData) {
     examples.set("actView", "action-bar/action-view");
     examples.set("actionItemPosition", "action-bar/action-item-position");
     examples.set("actBGCss", "action-bar/background-css");
+    examples.set("actTransparentBgCss", "action-bar/transparent-bg-css");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
