@@ -62,9 +62,9 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: [page.Page, 
 export function buildUIAndRunTest<T extends view.View>(controlToTest: T, testFunction: (views: [T, page.Page]) => void, pageCss?) {
     clearPage();
     let newPage = getCurrentPage();
-    newPage.content = controlToTest;
 
     newPage.css = pageCss;
+    newPage.content = controlToTest;
 
     testFunction([controlToTest, newPage]);
     newPage.content = null;
