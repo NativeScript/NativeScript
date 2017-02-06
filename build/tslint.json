@@ -10,7 +10,6 @@
         "no-consecutive-blank-lines": true,
         "no-construct": true,
         "no-debugger": true,
-        "no-duplicate-key": true,
         "triple-equals": [true, "allow-null-check"],
         "variable-name": [false, "allow-leading-underscore"],
         "no-empty": true,
@@ -21,7 +20,6 @@
         "no-bitwise": false,
         "no-string-literal": false,
         "no-trailing-whitespace": false,
-        "no-unreachable": false,
         "no-unused-expression": true,
         "no-use-before-declare": false,
         "no-var-requires": false,
@@ -46,10 +44,6 @@
             "callSignature",
             "catchClause",
             "indexSignature"
-        ],
-        "use-strict": [false,
-            "check-module",
-            "check-function"
         ],
         "whitespace": [false,
             "check-branch",
