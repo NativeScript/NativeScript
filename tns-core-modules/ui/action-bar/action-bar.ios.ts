@@ -61,6 +61,9 @@ export class ActionBar extends common.ActionBar {
         if (this.titleView && this.titleView.ios) {
             navigationItem.titleView = this.titleView.ios;
         }
+        else {
+            navigationItem.titleView = null;
+        }
 
         // Find previous ViewController in the navigation stack
         var indexOfViewController = navController.viewControllers.indexOfObject(viewController);
@@ -86,7 +89,7 @@ export class ActionBar extends common.ActionBar {
             img = imageSource.fromFileOrResource(this.navigationButton.icon);
         }
 
-        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to 
+        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
         // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
         // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
         if (img && img.ios) {
@@ -99,7 +102,7 @@ export class ActionBar extends common.ActionBar {
             navigationBar.backIndicatorTransitionMaskImage = null;
         }
 
-        // Set back button visibility 
+        // Set back button visibility
         if (this.navigationButton) {
             navigationItem.setHidesBackButtonAnimated(!common.isVisible(this.navigationButton), true);
         }
