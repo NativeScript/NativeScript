@@ -20,12 +20,7 @@ export class TextBase extends TextBaseCommon {
 
     //Text
     get [textProperty.native](): string {
-        let nativeView = this.nativeView;
-        if (nativeView instanceof UIButton) {
-            return nativeView.titleForState(UIControlState.Normal);
-        } else {
-            return nativeView.text;
-        }
+        return '';
     }
     set [textProperty.native](value: string) {
         const newValue = (value === undefined || value === null) ? '' : value.toString();
@@ -54,21 +49,22 @@ export class TextBase extends TextBaseCommon {
     }
 
     //Color
-    get [colorProperty.native](): Color {
+    get [colorProperty.native](): UIColor {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
-            return utils.ios.getColor(nativeView.titleColorForState(UIControlState.Normal));
+            return nativeView.titleColorForState(UIControlState.Normal);
         } else {
-            return utils.ios.getColor(nativeView.textColor);
+            return nativeView.textColor;
         }
     }
-    set [colorProperty.native](value: Color) {
+    set [colorProperty.native](value: Color | UIColor) {
+        const color = value instanceof Color ? value.ios : value;
         if (!this.formattedText) {
             let nativeView = this.nativeView;
             if (nativeView instanceof UIButton) {
-                nativeView.setTitleColorForState(value.ios, UIControlState.Normal);
+                nativeView.setTitleColorForState(color, UIControlState.Normal);
             } else {
-                nativeView.textColor = value.ios;
+                nativeView.textColor = color;
             }
         }
     }

@@ -3,8 +3,7 @@ import {
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
     fontSizeProperty, fontInternalProperty, View, layout, Color, Font,
-    traceCategory, traceEnabled, traceWrite,
-    applyNativeSetters
+    traceCategory, traceEnabled, traceWrite, initNativeView
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
@@ -25,7 +24,7 @@ export class TabViewItem extends TabViewItemBase {
     public setNativeView(textView: android.widget.TextView): void {
         this.nativeView = textView;
         if (textView) {
-            applyNativeSetters(this);
+            initNativeView(this);
         }
     }
 

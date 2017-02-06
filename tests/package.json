@@ -6,14 +6,14 @@
   "nativescript": {
     "id": "org.nativescript.tests",
     "tns-ios": {
-      "version": "2.4.0"
+      "version": "2.5.0"
     },
     "tns-android": {
-      "version": "2.4.1"
+      "version": "2.5.0"
     }
   },
   "dependencies": {
-    "tns-core-modules": "2.4.0"
+    "tns-core-modules": "2.5.0"
   },
   "devDependencies": {
     "tns-platform-declarations": "*",

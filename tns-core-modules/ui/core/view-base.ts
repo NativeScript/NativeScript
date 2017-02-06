@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData, PropertyChangeData } from "data/observable";
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, applyNativeSetters, resetStyleProperties } from "./properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, initNativeView, resetNativeView } from "./properties";
 import { Binding, BindingOptions } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -15,7 +15,7 @@ import * as types from "utils/types";
 import * as ssm from "ui/styling/style-scope";
 let styleScopeModule: typeof ssm;
 function ensureStyleScopeModule() {
-    if (!styleScopeModule){
+    if (!styleScopeModule) {
         styleScopeModule = require("ui/styling/style-scope");
     }
 }
@@ -107,6 +107,8 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
 let viewIdCounter = 0;
 
 export class ViewBase extends Observable implements ViewBaseDefinition {
+    public recycleNativeView: boolean;
+
     private _style: Style;
     private _isLoaded: boolean;
     private _registeredAnimations: Array<KeyframeAnimation>;
@@ -505,7 +507,9 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _resetNativeView(): void {
-        //
+        if (this.nativeView && this.recycleNativeView) {
+            resetNativeView(this);
+        }
     }
 
     public _setupUI(context: android.content.Context, atIndex?: number) {
@@ -533,7 +537,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
 
         if (this.nativeView) {
-            applyNativeSetters(this);
+            initNativeView(this);
         }
 
         this.eachChild((child) => {
@@ -551,11 +555,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             child._tearDownUI(force);
             return true;
         });
-
-        if (this.nativeView) {
-            // TODO: rename and implement this as resetNativeSetters
-            resetStyleProperties(this.style);
-        }
 
         if (this.parent) {
             this.parent._removeViewFromNativeVisualTree(this);

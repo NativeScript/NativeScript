@@ -54,6 +54,7 @@ declare module "ui/core/view-base" {
         public android: any;
         public nativeView: any;
         public bindingContext: any;
+        public recycleNativeView: boolean;
 
         /**
          * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
@@ -225,14 +226,10 @@ declare module "ui/core/properties" {
         public nativeValueChange(T, U): void;
     }
 
-    export class CoercibleProperty<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
+    export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements TypedPropertyDescriptor<U> {
         constructor(options: CoerciblePropertyOptions<T, U>);
 
-        public readonly native: symbol;
-        public readonly defaultValue: U;
         public readonly coerce: (target: T) => void;
-        public register(cls: { prototype: T }): void;
-        public nativeValueChange(T, U): void;
     }
 
     export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
@@ -269,8 +266,8 @@ declare module "ui/core/properties" {
         public register(cls: { prototype: T }): void;
     }
 
-    export function applyNativeSetters(view: ViewBase): void;
-    export function resetStyleProperties(style: Style): void;
+    export function initNativeView(view: ViewBase): void;
+    export function resetNativeView(view: ViewBase): void;
     export function resetCSSProperties(style: Style): void;
 
     export function makeValidator<T>(...values: T[]): (value: any) => value is T;

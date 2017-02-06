@@ -64,7 +64,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         if (nativeView) {
             let width = layout.getMeasureSpecSize(widthMeasureSpec);
             let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -119,33 +119,23 @@ export class Label extends TextBase implements LabelDefinition {
         }
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
-        let nativeView = this._nativeView;
-        if (nativeView.layer && nativeView.layer.backgroundColor) {
-            return UIColor.colorWithCGColor(nativeView.layer.backgroundColor);
-        }
-
-        return undefined;
+    get [backgroundInternalProperty.native](): any /* CGColor */ {
+        return this.nativeView.layer.backgroundColor;
     }
-    set [backgroundInternalProperty.native](value: UIColor | Background) {
-        let nativeView = this._nativeView;
-
-        let cgColor = null;
-        if (value instanceof UIColor) {
-            cgColor = value.CGColor;
-        } else {
-            let uiColor = <UIColor>ios.createBackgroundUIColor(this, true);
-            cgColor = uiColor ? uiColor.CGColor : null;
+    set [backgroundInternalProperty.native](value: Background) {
+        if (value instanceof Background) {
+            const uiColor = <UIColor>ios.createBackgroundUIColor(this, true);
+            value = uiColor ? uiColor.CGColor : null;
         }
 
-        nativeView.layer.backgroundColor = cgColor;
+        this.nativeView.layer.backgroundColor = value;
     }
 
     get [borderTopWidthProperty.native](): Length {
         return zeroLength;
     }
     set [borderTopWidthProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: this.effectiveBorderTopWidth,
@@ -159,7 +149,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [borderRightWidthProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
@@ -173,7 +163,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [borderBottomWidthProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
@@ -187,7 +177,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [borderLeftWidthProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
@@ -201,7 +191,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [paddingTopProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: this.effectivePaddingTop,
@@ -215,7 +205,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [paddingRightProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
@@ -229,7 +219,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [paddingBottomProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
@@ -243,7 +233,7 @@ export class Label extends TextBase implements LabelDefinition {
         return zeroLength;
     }
     set [paddingLeftProperty.native](value: Length) {
-        let nativeView = this._nativeView;
+        let nativeView = this.nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
