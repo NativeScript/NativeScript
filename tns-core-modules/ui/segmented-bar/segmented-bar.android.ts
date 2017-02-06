@@ -1,6 +1,6 @@
 ﻿import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, fontSizeProperty, Color, Font, applyNativeSetters
+    colorProperty, fontInternalProperty, fontSizeProperty, Color, Font, initNativeView
 } from "./segmented-bar-common";
 
 export * from "./segmented-bar-common";
@@ -64,7 +64,7 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
 
         this._textView = titleTextView;
         if (titleTextView) {
-            applyNativeSetters(this);
+            initNativeView(this);
             if (this.titleDirty) {
                 this._update();
             }

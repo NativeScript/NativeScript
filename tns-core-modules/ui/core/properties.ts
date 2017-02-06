@@ -38,7 +38,7 @@ const enum ValueSource {
     Local = 3
 }
 
-export class Property<T extends ViewBase, U> implements PropertyDescriptor, definitions.Property<T, U> {
+export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, definitions.Property<T, U> {
     private registered: boolean;
 
     public readonly name: string;
@@ -174,39 +174,19 @@ export class Property<T extends ViewBase, U> implements PropertyDescriptor, defi
     }
 }
 
-export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescriptor, definitions.CoercibleProperty<T, U> {
-    private registered: boolean;
-    private readonly name: string;
-    public readonly key: symbol;
-    public readonly native: symbol;
-    public readonly defaultValueKey: symbol;
-    public readonly defaultValue: U;
-    public readonly nativeValueChange: (owner: T, value: U) => void;
-
-    public readonly get: () => U;
-    public readonly set: (value: U) => void;
-    public readonly enumerable: boolean = true;
-    public readonly configurable: boolean = true;
-
+export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements definitions.CoercibleProperty<T, U> {
     public readonly coerce: (target: T) => void;
 
     constructor(options: definitions.CoerciblePropertyOptions<T, U>) {
+        super(options);
+
         const name = options.name;
-        this.name = name;
-
-        const key = Symbol(name + ":propertyKey");
-        this.key = key;
-
-        const native: symbol = Symbol(name + ":nativeKey");
-        this.native = native;
-
-        const defaultValueKey = Symbol(name + ":nativeDefaultValue");
-        this.defaultValueKey = defaultValueKey;
+        const key = this.key;
+        const native: symbol = this.native;
+        const defaultValueKey = this.defaultValueKey;
+        const defaultValue: U = this.defaultValue;
 
         const coerceKey = Symbol(name + ":coerceKey");
-
-        const defaultValue: U = options.defaultValue;
-        this.defaultValue = defaultValue;
 
         const eventName = name + "Change";
         const affectsLayout: boolean = options.affectsLayout;
@@ -218,8 +198,8 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
         this.coerce = function (target: T): void {
             const originalValue: U = coerceKey in target ? target[coerceKey] : defaultValue;
             // need that to make coercing but also fire change events
-            this.set.call(target, originalValue);
-        };
+            target[name] = originalValue;
+        }
 
         this.set = function (this: T, value: U): void {
             const reset = value === unsetValue;
@@ -283,46 +263,7 @@ export class CoercibleProperty<T extends ViewBase, U> implements PropertyDescrip
                     this.requestLayout();
                 }
             }
-        };
-
-        this.get = function (): U {
-            return key in this ? this[key] : defaultValue;
-        };
-
-        this.nativeValueChange = function (owner: T, value: U): void {
-            const currentValue = key in owner ? owner[key] : defaultValue;
-            const changed = equalityComparer ? !equalityComparer(currentValue, value) : currentValue !== value;
-            if (changed) {
-                owner[key] = value;
-                owner[coerceKey] = value;
-                if (valueChanged) {
-                    valueChanged(owner, currentValue, value);
-                }
-
-                if (owner.hasListeners(eventName)) {
-                    owner.notify({
-                        eventName: eventName,
-                        propertyName: name,
-                        object: owner,
-                        value: value
-                    });
-                }
-
-                if (affectsLayout) {
-                    owner.requestLayout();
-                }
-            }
-        };
-
-        symbolPropertyMap[key] = this;
-    }
-
-    public register(cls: { prototype: T }): void {
-        if (this.registered) {
-            throw new Error(`Property ${this.name} already registered.`);
         }
-        this.registered = true;
-        Object.defineProperty(cls.prototype, this.name, this);
     }
 }
 
@@ -832,7 +773,7 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
     return array;
 }
 
-export function applyNativeSetters(view: ViewBase): void {
+export function initNativeView(view: ViewBase): void {
     let symbols = (<any>Object).getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         const property: Property<any, any> = symbolPropertyMap[symbol];
@@ -873,6 +814,44 @@ export function applyNativeSetters(view: ViewBase): void {
     }
 }
 
+export function resetNativeView(view: ViewBase): void {
+    let symbols = (<any>Object).getOwnPropertySymbols(view);
+    for (let symbol of symbols) {
+        const property: Property<any, any> = symbolPropertyMap[symbol];
+        if (!property) {
+            continue;
+        }
+
+        const native = property.native;
+        if (native in view) {
+            view[native] = view[property.defaultValueKey];
+            delete view[property.defaultValueKey];
+        }
+
+        // This will not call propertyChange!!!
+        delete view[property.key];
+    }
+
+    const style = view.style;
+
+    symbols = (<any>Object).getOwnPropertySymbols(style);
+    for (let symbol of symbols) {
+        const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
+        if (!property) {
+            continue;
+        }
+
+        const native = property.native;
+        if (native in view) {
+            view[native] = style[property.defaultValueKey];
+            delete style[property.defaultValueKey];
+        }
+
+        // This will not call propertyChange!!!
+        delete style[property.key];
+    }
+}
+
 export function clearInheritedProperties(view: ViewBase): void {
     for (let prop of inheritableProperties) {
         const sourceKey = prop.sourceKey;
@@ -899,26 +878,6 @@ export function resetCSSProperties(style: Style): void {
         }
 
         style[cssProperty.cssName] = unsetValue;
-    }
-}
-
-export function resetStyleProperties(style: Style): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(style);
-    const view = style.view;
-    for (let symbol of symbols) {
-        const property: CssProperty<any, any> = symbolPropertyMap[symbol];
-        if (!property) {
-            continue;
-        }
-
-        const native = property.native;
-        if (native in view) {
-            view[native] = style[property.defaultValueKey];
-            delete style[property.defaultValueKey];
-        }
-
-        // This will not call propertyChange!!!
-        delete style[property.key];
     }
 }
 
