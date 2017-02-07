@@ -499,7 +499,7 @@ export class TabViewStyler implements style.Styler {
         var tabBar = <UITabBar>v.ios.tabBar;
         let currentFont;
 
-        if (tabBar && tabBar.items && tabBar.items.count > 0) {
+        if (tabBar.items && tabBar.items.count > 0) {
             let currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
             if (currentAttrs) {
                 currentFont = currentAttrs.objectForKey(NSFontAttributeName);
