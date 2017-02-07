@@ -1,5 +1,5 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import { View, eachDescendant, getViewById, InheritedProperty } from "ui/core/view";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, Property, Style } from "ui/core/view";
 import { topmost } from "ui/frame";
 import { Page } from "ui/page";
 import { Button } from "ui/button";
@@ -15,7 +15,7 @@ import * as observable from "data/observable";
 import * as bindable from "ui/core/bindable";
 import * as definition from "./view-tests";
 
-export const test_eachDescendant = function () {
+export function test_eachDescendant() {
     const test = function (views: Array<View>) {
 
         // traverse the visual tree and verify the hierarchy
@@ -34,7 +34,7 @@ export const test_eachDescendant = function () {
     helper.do_PageTest_WithButton(test);
 };
 
-export const test_getViewById_Static = function () {
+export function test_getViewById_Static() {
     const test = function (views: Array<View>) {
         views[1].id = "myLayout";
 
@@ -47,7 +47,7 @@ export const test_getViewById_Static = function () {
     helper.do_PageTest_WithButton(test);
 };
 
-export const test_getViewById_Instance = function () {
+export function test_getViewById_Instance() {
     const test = function (views: Array<View>) {
         views[1].id = "myLayout";
 
@@ -60,7 +60,7 @@ export const test_getViewById_Instance = function () {
     helper.do_PageTest_WithButton(test);
 };
 
-export const test_eachDescendant_Break_Iteration = function () {
+export function test_eachDescendant_Break_Iteration() {
     const test = function (views: Array<View>) {
         // traverse the visual tree and verify the hierarchy
         let counter = 0;
@@ -77,7 +77,7 @@ export const test_eachDescendant_Break_Iteration = function () {
     helper.do_PageTest_WithButton(test);
 };
 
-export const test_parent_IsValid_WhenAttached_ToVisualTree = function () {
+export function test_parent_IsValid_WhenAttached_ToVisualTree() {
     const test = function (views: Array<View>) {
         // views[0] is a Page instance, its parent should be the topmost frame
         TKUnit.assert(types.isDefined(views[0].parent));
@@ -91,7 +91,7 @@ export const test_parent_IsValid_WhenAttached_ToVisualTree = function () {
     helper.do_PageTest_WithButton(test);
 };
 
-export const test_parent_IsReset_WhenDetached_FromVisualTree = function () {
+export function test_parent_IsReset_WhenDetached_FromVisualTree() {
     let cachedViews: Array<View>;
 
     const test = function (views: Array<View>) {
@@ -105,20 +105,20 @@ export const test_parent_IsReset_WhenDetached_FromVisualTree = function () {
     TKUnit.assert(cachedViews[2].parent === cachedViews[1]);
 };
 
-export const test_domId_IsUnique = function () {
+export function test_domId_IsUnique() {
     const btn = new Button();
     const topframe = topmost();
     TKUnit.assert(btn._domId !== topframe._domId);
     TKUnit.assert(btn._domId !== topframe.currentPage._domId);
 };
 
-export const test_Id_WillNotCrash_WhenSetToNumber = function () {
+export function test_Id_WillNotCrash_WhenSetToNumber() {
     const btn = new Button();
     btn.id = "1";
     TKUnit.assert(btn.id === "1");
 };
 
-export const test_event_LoadedUnloaded_IsRaised = function () {
+export function test_event_LoadedUnloaded_IsRaised() {
     const test = function (views: Array<View>) {
         let i;
         for (i = 0; i < views.length; i++) {
@@ -166,7 +166,7 @@ export function test_bindingContext_IsInherited() {
     topmost().bindingContext = undefined;
 }
 
-export const test_isAddedToNativeVisualTree_IsUpdated = function () {
+export function test_isAddedToNativeVisualTree_IsUpdated() {
     const test = function (views: Array<View>) {
 
         for (let i = 0; i < views.length; i++) {
@@ -185,7 +185,7 @@ export const test_isAddedToNativeVisualTree_IsUpdated = function () {
     helper.do_PageTest_WithStackLayout_AndButton(test);
 };
 
-export const test_addView_WillThrow_IfView_IsAlreadyAdded = function () {
+export function test_addView_WillThrow_IfView_IsAlreadyAdded() {
     const test = function (views: Array<View>) {
         const newButton = new Button();
         views[1]._addView(newButton);
@@ -204,7 +204,7 @@ export const test_addView_WillThrow_IfView_IsAlreadyAdded = function () {
     helper.do_PageTest_WithStackLayout_AndButton(test);
 };
 
-export const test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded = function () {
+export function test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded() {
     const test = function (views: [Page, StackLayout, View, View]) {
         const newButton = new Button();
         views[1]._addView(newButton);
@@ -223,7 +223,7 @@ export const test_addToNativeVisualTree_WillThrow_IfView_IsAlreadyAdded = functi
     helper.do_PageTest_WithStackLayout_AndButton(test);
 };
 
-export const test_InheritableStyleProperties_AreInherited = function () {
+export function test_InheritableStyleProperties_AreInherited() {
     helper.do_PageTest_WithStackLayout_AndButton((views) => {
         const redColor = new Color("red");
         views[0].style.color = redColor;
@@ -239,7 +239,7 @@ export class TestButton extends Button {
 
 }
 
-export const test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherited = function () {
+export function test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherited() {
     let page = topmost().currentPage;
     let redColor = new Color("red");
     page.style.color = redColor;
@@ -250,15 +250,32 @@ export const test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInherit
     TKUnit.assertEqual(newButton.style.color, redColor);
 };
 
+// TestView definition START
+const customCssProperty = new CssProperty<Style, string>({ name: "customCssProperty", cssName: "custom-css-property" });
+const customViewProperty = new Property<TestView, string>({ name: "custom" });
+
 class TestView extends Layout {
+    public inheritanceTest: number;
+    public booleanInheritanceTest: boolean;
+    public dummy: number;
+
+    public cssPropCounter: number = 0;
+    public cssPropNativeValue: string;
+
+    public viewPropCounter: number = 0;
+    public viewPropNativeValue: string;
+
+    public custom: string;
+    get customCssProperty(): string {
+        return this.style["customCssProperty"];
+    }
+    set customCssProperty(value: string) {
+        this.style["customCssProperty"] = value;
+    }
 
     constructor(public name: string) {
         super();
     }
-
-    public inheritanceTest: number;
-    public booleanInheritanceTest: boolean;
-    public dummy: number;
 
     public toString() {
         return super.toString() + "." + this.name;
@@ -267,7 +284,26 @@ class TestView extends Layout {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         this.setMeasuredDimension(100, 100);
     }
+
+    get [customCssProperty.native](): string {
+        return "customCssPropertyDefaultValue";
+    }
+    set [customCssProperty.native](value: string) {
+        this.cssPropCounter++;
+        this.cssPropNativeValue = value;
+    }
+
+    get [customViewProperty.native](): string {
+        return "customViewPropertyDefaultValue";
+    }
+    set [customViewProperty.native](value: string) {
+        this.viewPropCounter++;
+        this.viewPropNativeValue = value;
+    }
 }
+
+customCssProperty.register(Style);
+customViewProperty.register(TestView);
 
 const inheritanceTestDefaultValue = 42;
 const inheritanceTestProperty = new InheritedProperty<TestView, number>({ name: "inheritanceTest", defaultValue: inheritanceTestDefaultValue });
@@ -280,7 +316,120 @@ booleanInheritanceTestProperty.register(TestView);
 const dummyProperty = new InheritedProperty<TestView, number>({ name: "dummy", defaultValue: 0 });
 dummyProperty.register(TestView);
 
-export const test_InheritableProperties_getValuesFromParent = function () {
+/////// TestView definition END
+
+export function test_NativeSetter_not_called_when_property_is_not_set() {
+    const testView = new TestView("view");
+
+    helper.buildUIAndRunTest(testView, () => {
+        TKUnit.assertEqual(testView.viewPropCounter, 0, "Native setter should not be called if value is not set.");
+        TKUnit.assertEqual(testView.cssPropCounter, 0, "Native setter should not be called if value is not set.");
+    });
+};
+
+export function test_NativeSetter_called_only_once_with_localValue() {
+    const testView = new TestView("view");
+    testView.customCssProperty = "testCssValue";
+    testView.custom = "testViewValue";
+
+    helper.buildUIAndRunTest(testView, () => {
+        TKUnit.assertEqual(testView.cssPropNativeValue, "testCssValue", "Native value");
+        TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue", "Native value");
+
+        TKUnit.assertEqual(testView.cssPropCounter, 1, "NativeSetter count called once");
+        TKUnit.assertEqual(testView.viewPropCounter, 1, "NativeSetter count called once");
+    });
+};
+
+export function test_NativeSetter_called_only_once_with_cssValue() {
+    const testView = new TestView("view");
+    testView.id = "myID";
+    const pageCSS = `
+    #myID { 
+        custom: testViewValue; 
+        custom-css-property: testCssValue; 
+    }`;
+
+    helper.buildUIAndRunTest(testView, () => {
+        TKUnit.assertEqual(testView.cssPropCounter, 1, "CssNativeSetter count called once");
+        TKUnit.assertEqual(testView.viewPropCounter, 1, "ViewNativeSetter count called once");
+
+        TKUnit.assertEqual(testView.cssPropNativeValue, "testCssValue", "Native value");
+        TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue", "Native value");
+    }, pageCSS);
+};
+
+export function test_NativeSetter_called_only_once_with_cssValue_and_localValue() {
+    const testView = new TestView("view");
+    testView.id = "myID";
+    testView.customCssProperty = "testCssValueLocal";
+    testView.custom = "testViewValueLocal";
+    const pageCSS = `
+    #myID { 
+        custom-css-property: testCssValueCSS; 
+        custom: testViewValueCSS; 
+    }`;
+
+    helper.buildUIAndRunTest(testView, () => {
+        TKUnit.assertEqual(testView.cssPropCounter, 1, "CssNativeSetter count called once");
+        TKUnit.assertEqual(testView.viewPropCounter, 1, "ViewNativeSetter count called once");
+
+        // CSS property set form css has CSS value source, which is weaker than local value
+        TKUnit.assertEqual(testView.cssPropNativeValue, "testCssValueLocal", "Native value");
+        // View property set from CSS sets local value
+        TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValueCSS", "Native value");
+    }, pageCSS);
+};
+
+export function test_NativeSetter_called_only_once_with_multiple_sets() {
+    const testView = new TestView("view");
+    testView.custom = "testViewValue1";
+    testView.custom = "testViewValue2";
+    testView.customCssProperty = "testCssValue1";
+    testView.customCssProperty = "testCssValue2";
+
+    helper.buildUIAndRunTest(testView, () => {
+        TKUnit.assertEqual(testView.cssPropCounter, 1, "NativeSetter count called once");
+        TKUnit.assertEqual(testView.viewPropCounter, 1, "NativeSetter count called once");
+
+        TKUnit.assertEqual(testView.cssPropNativeValue, "testCssValue2", "Native value");
+        TKUnit.assertEqual(testView.viewPropNativeValue, "testViewValue2", "Native value");
+    });
+};
+
+export function test_NativeSetter_called_when_add_and_remove() {
+    const firstView = new TestView("firstView");
+    const secondView = new TestView("secondView");
+    secondView.customCssProperty = "testCssValue";
+    secondView.custom = "testViewValue";
+
+    helper.buildUIAndRunTest(firstView, () => {
+        TKUnit.assertEqual(secondView.cssPropCounter, 0);
+        TKUnit.assertEqual(secondView.viewPropCounter, 0);
+
+        // Add to visual tree
+        firstView.addChild(secondView);
+        TKUnit.assertEqual(secondView.cssPropCounter, 1);
+        TKUnit.assertEqual(secondView.viewPropCounter, 1);
+        secondView.cssPropCounter = 0;
+        secondView.viewPropCounter = 0;
+
+        // Set new value
+        secondView.customCssProperty = "test2";
+        secondView.custom = "test2";
+        TKUnit.assertEqual(secondView.cssPropCounter, 1);
+        TKUnit.assertEqual(secondView.viewPropCounter, 1);
+        secondView.cssPropCounter = 0;
+        secondView.viewPropCounter = 0;
+
+        // Remove from visual tree
+        firstView.removeChild(secondView);
+        TKUnit.assertEqual(secondView.cssPropCounter, 0);
+        TKUnit.assertEqual(secondView.viewPropCounter, 0);
+    });
+};
+
+export function test_InheritableProperties_getValuesFromParent() {
     const testValue = 35;
     const test = function (views: Array<View>) {
         const bottomView = <TestView>views[3];
@@ -299,7 +448,7 @@ export const test_InheritableProperties_getValuesFromParent = function () {
     helper.do_PageTest(test, firstView, secondView, thirdView);
 };
 
-export const test_BooleanInheritableProperties_getValuesFromParent = function () {
+export function test_BooleanInheritableProperties_getValuesFromParent() {
     const testValue = false;
     const test = function (views: Array<View>) {
         const bottomView = <TestView>views[3];
@@ -318,7 +467,7 @@ export const test_BooleanInheritableProperties_getValuesFromParent = function ()
     helper.do_PageTest(test, firstView, secondView, thirdView);
 };
 
-export const test_InheritableProperties_resetValuesOnRemoveFromVisualTree = function () {
+export function test_InheritableProperties_resetValuesOnRemoveFromVisualTree() {
     const testValue = 35;
     const test = function (views: Array<View>) {
         const bottomView = <TestView>views[3];
@@ -341,7 +490,7 @@ export const test_InheritableProperties_resetValuesOnRemoveFromVisualTree = func
     helper.do_PageTest(test, firstView, secondView, thirdView);
 };
 
-export const test_InheritableProperties_DefaultValue = function () {
+export function test_InheritableProperties_DefaultValue() {
     const test = function (views: Array<View>) {
         const bottomView = <TestView>views[3];
 
@@ -358,7 +507,7 @@ export const test_InheritableProperties_DefaultValue = function () {
     helper.do_PageTest(test, firstView, secondView, thirdView);
 };
 
-export const test_InheritableProperties_ChangeNotification = function () {
+export function test_InheritableProperties_ChangeNotification() {
     const testValue = 35;
     const test = function (views: Array<View>) {
         const topView = <TestView>views[1];
@@ -428,155 +577,155 @@ function property_binding_style_test(propName: string, firstValue: any, secondVa
     TKUnit.assertEqual(actualResult, secondValue);
 }
 
-export const test_binding_width = function () {
+export function test_binding_width() {
     property_binding_test("width", 42, 43);
 };
 
-export const test_binding_height = function () {
+export function test_binding_height() {
     property_binding_test("height", 42, 43);
 };
 
-export const test_binding_minWidth = function () {
+export function test_binding_minWidth() {
     property_binding_test("minWidth", 42, 43);
 };
 
-export const test_binding_minHeight = function () {
+export function test_binding_minHeight() {
     property_binding_test("minHeight", 42, 43);
 };
 
-export const test_binding_horizontalAlignment = function () {
+export function test_binding_horizontalAlignment() {
     property_binding_test("horizontalAlignment", "left", "right");
 };
 
-export const test_binding_verticalAlignment = function () {
+export function test_binding_verticalAlignment() {
     property_binding_test("verticalAlignment", "top", "bottom");
 };
 
-export const test_binding_marginLeft = function () {
+export function test_binding_marginLeft() {
     property_binding_test("marginLeft", 42, 43);
 };
 
-export const test_binding_marginTop = function () {
+export function test_binding_marginTop() {
     property_binding_test("marginTop", 42, 43);
 };
 
-export const test_binding_marginRight = function () {
+export function test_binding_marginRight() {
     property_binding_test("marginRight", 42, 43);
 };
 
-export const test_binding_marginBottom = function () {
+export function test_binding_marginBottom() {
     property_binding_test("marginBottom", 42, 43);
 };
 
-export const test_binding_visibility = function () {
+export function test_binding_visibility() {
     property_binding_test("visibility", "collapse", "visible");
 };
 
-export const test_binding_isEnabled = function () {
+export function test_binding_isEnabled() {
     property_binding_test("isEnabled", false, true);
 };
 
-export const test_binding_isUserInteractionEnabled = function () {
+export function test_binding_isUserInteractionEnabled() {
     property_binding_test("isUserInteractionEnabled", false, true);
 };
 
-export const test_binding_id = function () {
+export function test_binding_id() {
     property_binding_test("id", "id1", "id2");
 };
 
-export const test_binding_cssClass = function () {
+export function test_binding_cssClass() {
     property_binding_test("cssClass", "class1", "class2");
 };
 
-export const test_binding_className = function () {
+export function test_binding_className() {
     property_binding_test("className", "class1", "class2");
 };
 
-export const test_binding_style_color = function () {
+export function test_binding_style_color() {
     property_binding_style_test("color", new Color("#FF0000"), new Color("#00FF00"));
 };
 
-export const test_binding_style_backgroundColor = function () {
+export function test_binding_style_backgroundColor() {
     property_binding_style_test("backgroundColor", new Color("#FF0000"), new Color("#00FF00"));
 };
 
-export const test_binding_style_fontSize = function () {
+export function test_binding_style_fontSize() {
     property_binding_style_test("fontSize", 5, 10);
 };
 
-export const test_binding_style_textAlignment = function () {
+export function test_binding_style_textAlignment() {
     property_binding_style_test("textAlignment", "right", "center");
 };
 
-export const test_binding_style_width = function () {
+export function test_binding_style_width() {
     property_binding_style_test("width", 42, 43);
 };
 
-export const test_binding_style_height = function () {
+export function test_binding_style_height() {
     property_binding_style_test("height", 42, 43);
 };
 
-export const test_binding_style_minWidth = function () {
+export function test_binding_style_minWidth() {
     property_binding_style_test("minWidth", 42, 43);
 };
 
-export const test_binding_style_minHeight = function () {
+export function test_binding_style_minHeight() {
     property_binding_style_test("minHeight", 42, 43);
 };
 
-export const test_binding_style_margin = function () {
+export function test_binding_style_margin() {
     property_binding_style_test("margin", "1dip 2dip 3dip 4dip", "2dip 3dip 2dip 3dip");
 };
 
-export const test_binding_style_marginLeft = function () {
+export function test_binding_style_marginLeft() {
     property_binding_style_test("marginLeft", 42, 43);
 };
 
-export const test_binding_style_marginTop = function () {
+export function test_binding_style_marginTop() {
     property_binding_style_test("marginTop", 42, 43);
 };
 
-export const test_binding_style_marginRight = function () {
+export function test_binding_style_marginRight() {
     property_binding_style_test("marginRight", 42, 43);
 };
 
-export const test_binding_style_marginBottom = function () {
+export function test_binding_style_marginBottom() {
     property_binding_style_test("marginBottom", 42, 43);
 };
 
-export const test_binding_style_padding = function () {
+export function test_binding_style_padding() {
     property_binding_style_test("padding", "1dip 2dip 3dip 4dip", "2dip 3dip 2dip 3dip");
 };
 
-export const test_binding_style_paddingLeft = function () {
+export function test_binding_style_paddingLeft() {
     property_binding_style_test("paddingLeft", 42, 43);
 };
 
-export const test_binding_style_paddingTop = function () {
+export function test_binding_style_paddingTop() {
     property_binding_style_test("paddingTop", 42, 43);
 };
 
-export const test_binding_style_paddingRight = function () {
+export function test_binding_style_paddingRight() {
     property_binding_style_test("paddingRight", 42, 43);
 };
 
-export const test_binding_style_paddingBottom = function () {
+export function test_binding_style_paddingBottom() {
     property_binding_style_test("paddingBottom", 42, 43);
 };
 
-export const test_binding_style_horizontalAlignment = function () {
+export function test_binding_style_horizontalAlignment() {
     property_binding_style_test("horizontalAlignment", "left", "right");
 };
 
-export const test_binding_style_verticalAlignment = function () {
+export function test_binding_style_verticalAlignment() {
     property_binding_style_test("verticalAlignment", "top", "bottom");
 };
 
-export const test_binding_style_visibility = function () {
+export function test_binding_style_visibility() {
     property_binding_style_test("visibility", "collapse", "visible");
 };
 
-export const test_binding_style_opacity = function () {
+export function test_binding_style_opacity() {
     property_binding_style_test("opacity", 0.5, 0.6);
 };
 
@@ -590,7 +739,7 @@ function _createLabelWithBorder(): View {
     return lbl;
 }
 
-export const testIsVisible = function () {
+export function testIsVisible() {
     const lbl = new Label();
 
     helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
@@ -603,7 +752,7 @@ export const testIsVisible = function () {
     });
 };
 
-export const testSetInlineStyle = function () {
+export function testSetInlineStyle() {
     const lbl = new Label();
 
     const expectedColor = "#ff0000";
@@ -617,7 +766,7 @@ export const testSetInlineStyle = function () {
     });
 };
 
-export const testBorderWidth = function () {
+export function testBorderWidth() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
         const expectedValue = <number>lbl.borderWidth * utils.layout.getDisplayDensity();
@@ -626,30 +775,30 @@ export const testBorderWidth = function () {
     });
 };
 
-export const testCornerRadius = function () {
+export function testCornerRadius() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
-        const expectedValue =  <number>lbl.borderRadius * utils.layout.getDisplayDensity();
+        const expectedValue = <number>lbl.borderRadius * utils.layout.getDisplayDensity();
         const actualValue = definition.getUniformNativeCornerRadius(lbl);
         TKUnit.assertAreClose(actualValue, expectedValue, 0.01, "borderRadius");
     });
 };
 
-export const testBorderColor = function () {
+export function testBorderColor() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
         TKUnit.assertEqual(definition.checkUniformNativeBorderColor(lbl), true, "BorderColor not applied correctly!");
     });
 };
 
-export const testBackgroundColor = function () {
+export function testBackgroundColor() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
         TKUnit.assertEqual(definition.checkNativeBackgroundColor(lbl), true, "BackgroundColor not applied correctly!");
     });
 };
 
-export const testBackgroundImage = function () {
+export function testBackgroundImage() {
     const lbl = _createLabelWithBorder();
     lbl.className = "myClass";
     helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
@@ -664,18 +813,18 @@ export function test_automation_text_default_value() {
     TKUnit.assertTrue(view.automationText === undefined, "AutomationText default value should be UNDEFINED.");
 }
 
-export const test_getLocationInWindow_IsUndefinedWhenNotInTheVisualTree = function () {
+export function test_getLocationInWindow_IsUndefinedWhenNotInTheVisualTree() {
     const label = new Label();
     TKUnit.assertNull(label.getLocationInWindow());
 };
 
-export const test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree = function () {
+export function test_getLocationOnScreen_IsUndefinedWhenNotInTheVisualTree() {
     const label = new Label();
     TKUnit.assertNull(label.getLocationOnScreen());
 };
 
 const delta = 1;
-export const test_getLocationRelativeToOtherView = function () {
+export function test_getLocationRelativeToOtherView() {
     const a1 = new AbsoluteLayout();
     a1.width = 200;
     a1.height = 200;
@@ -718,7 +867,7 @@ export const test_getLocationRelativeToOtherView = function () {
     });
 };
 
-export const test_getActualSize = function () {
+export function test_getActualSize() {
     const label = new Label();
     label.width = 100;
     label.height = 200;

@@ -125,9 +125,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public _domId: number;
     public _context: any;
-    public _isAddedToNativeVisualTree: any;
-
+    public _isAddedToNativeVisualTree: boolean;
+    public _isCssApplied: boolean;
     public _cssState: ssm.CssState;
+
     constructor() {
         super();
         this._domId = viewIdCounter++;
@@ -187,7 +188,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public onLoaded() {
         this._isLoaded = true;
         this._loadEachChild();
-        this._applyStyleFromScope();
         this._emit("loaded");
     }
 
@@ -217,11 +217,13 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public _applyStyleFromScope() {
         let rootPage = this.page;
-        if (!rootPage || !rootPage.isLoaded) {
+        if (!rootPage || this._isCssApplied) {
             return;
         }
+
         let scope: ssm.StyleScope = (<any>rootPage)._getStyleScope();
         scope.applySelectors(this);
+        this._isCssApplied = true;
     }
 
     // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
@@ -448,12 +450,14 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     protected _addViewCore(view: ViewBase, atIndex?: number) {
-        if (this._context) {
-            view._setupUI(this._context, atIndex);
-        }
+        this._applyStyleFromScope();
 
         // TODO: Split this method - we want binding context before loaded.
         propagateInheritedProperties(this);
+
+        if (this._context) {
+            view._setupUI(this._context, atIndex);
+        }
 
         // TODO: Discuss this.
         if (this._isLoaded) {
@@ -513,6 +517,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _setupUI(context: android.content.Context, atIndex?: number) {
+        this._applyStyleFromScope();
+
         traceNotifyEvent(this, "_setupUI");
         if (traceEnabled()) {
             traceWrite(`${this}._setupUI(${context})`, traceCategories.VisualTreeEvents);
@@ -680,6 +686,7 @@ export const classNameProperty = new Property<ViewBase, string>({
 classNameProperty.register(ViewBase);
 
 function resetStyles(view: ViewBase): void {
+    view._isCssApplied = false;
     view._cancelAllAnimations();
     resetCSSProperties(view.style);
     view._applyStyleFromScope();
