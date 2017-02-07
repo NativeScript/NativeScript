@@ -1,0 +1,58 @@
+@keyframes intro {
+    0% {
+        opacity: 0;
+        transform: translate(-100, 0);
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+}
+@keyframes outro {
+    0% {
+        opacity: 1;
+        transform: translate(0, 0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-100, 0);
+    }
+}
+
+.intro {
+    animation-name: intro;
+    animation-duration: 3.0;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.outro {
+    animation-name: outro;
+    animation-duration: 3.0;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+.gone {
+    opacity: 0;
+    transform: translate(-100, 0);
+}
+
+@keyframes play {
+    0% { transform: translate(0, 0); }
+    33% { transform: translate(100, 0); }
+    66% { transform: translate(100, 100); }
+    100% { transform: translate(0, 100); }
+}
+
+.idle {
+    transform: translate(0, 0);
+}
+.play {
+    animation-name: play;
+    animation-duration: 3.0;
+    animation-fill-mode: forwards;
+    animation-iteration-count: 1;
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
+}

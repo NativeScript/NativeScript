@@ -113,7 +113,7 @@ imageSourceProperty.register(ImageBase);
 export const srcProperty = new Property<ImageBase, any>({ name: "src"});
 srcProperty.register(ImageBase);
 
-export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "async" });
+export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "sync" });
 loadModeProperty.register(ImageBase);
 
 export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false, valueConverter: booleanConverter });

@@ -389,18 +389,18 @@ export class View extends ViewCommon {
         org.nativescript.widgets.ViewHelper.setScaleY(this.nativeView, float(value));
     }
 
-    get [translateXProperty.native](): number {
+    get [translateXProperty.native](): Length | number {
         return org.nativescript.widgets.ViewHelper.getTranslateX(this.nativeView);
     }
-    set [translateXProperty.native](value: number) {
-        org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, float(value));
+    set [translateXProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, Length.toDevicePixels(value, 0));
     }
 
-    get [translateYProperty.native](): number {
+    get [translateYProperty.native](): Length | number {
         return org.nativescript.widgets.ViewHelper.getTranslateY(this.nativeView);
     }
-    set [translateYProperty.native](value: number) {
-        org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, float(value));
+    set [translateYProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, Length.toDevicePixels(value, 0));
     }
 
     get [zIndexProperty.native](): number {

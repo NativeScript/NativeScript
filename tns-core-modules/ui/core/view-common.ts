@@ -4,7 +4,7 @@ import { Source } from "utils/debug";
 import { Background } from "ui/styling/background";
 import {
     ViewBase, getEventOrGestureName, EventData, Style, unsetValue,
-    Property, CssProperty, ShorthandProperty, InheritedCssProperty,
+    Property, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty,
     gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, makeParser, makeValidator
 } from "./view-base";
 import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
@@ -426,17 +426,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.rotate = value;
     }
 
-    get translateX(): number {
+    get translateX(): Length {
         return this.style.translateX;
     }
-    set translateX(value: number) {
+    set translateX(value: Length) {
         this.style.translateX = value;
     }
 
-    get translateY(): number {
+    get translateY(): Length {
         return this.style.translateY;
     }
-    set translateY(value: number) {
+    set translateY(value: Length) {
         this.style.translateY = value;
     }
 
@@ -1352,19 +1352,19 @@ function convertToPaddings(this: void, value: string | Length): [CssProperty<any
     }
 }
 
-export const rotateProperty = new CssProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
+export const rotateProperty = new CssAnimationProperty<Style, number>({ name: "rotate", cssName: "rotate", defaultValue: 0, valueConverter: parseFloat });
 rotateProperty.register(Style);
 
-export const scaleXProperty = new CssProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1, valueConverter: (v) => parseFloat(v) });
+export const scaleXProperty = new CssAnimationProperty<Style, number>({ name: "scaleX", cssName: "scaleX", defaultValue: 1, valueConverter: parseFloat });
 scaleXProperty.register(Style);
 
-export const scaleYProperty = new CssProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1, valueConverter: (v) => parseFloat(v) });
+export const scaleYProperty = new CssAnimationProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1, valueConverter: parseFloat });
 scaleYProperty.register(Style);
 
-export const translateXProperty = new CssProperty<Style, number>({ name: "translateX", cssName: "translateX", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
+export const translateXProperty = new CssAnimationProperty<Style, Length>({ name: "translateX", cssName: "translateX", defaultValue: 0, valueConverter: Length.parse, equalityComparer: Length.equals });
 translateXProperty.register(Style);
 
-export const translateYProperty = new CssProperty<Style, number>({ name: "translateY", cssName: "translateY", defaultValue: 0, valueConverter: (v) => parseFloat(v) });
+export const translateYProperty = new CssAnimationProperty<Style, Length>({ name: "translateY", cssName: "translateY", defaultValue: 0, valueConverter: Length.parse, equalityComparer: Length.equals });
 translateYProperty.register(Style);
 
 const transformProperty = new ShorthandProperty<Style, string>({
@@ -1545,7 +1545,7 @@ export const backgroundImageProperty = new CssProperty<Style, string>({
 });
 backgroundImageProperty.register(Style);
 
-export const backgroundColorProperty = new CssProperty<Style, Color>({
+export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
         let background = target.backgroundInternal;
         target.backgroundInternal = background.withColor(newValue);
@@ -1929,7 +1929,7 @@ function opacityConverter(value: any): number {
     throw new Error(`Opacity should be between [0, 1]. Value: ${newValue}`);
 }
 
-export const opacityProperty = new CssProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
+export const opacityProperty = new CssAnimationProperty<Style, number>({ name: "opacity", cssName: "opacity", defaultValue: 1, valueConverter: opacityConverter });
 opacityProperty.register(Style);
 
 export const colorProperty = new InheritedCssProperty<Style, Color>({ name: "color", cssName: "color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });

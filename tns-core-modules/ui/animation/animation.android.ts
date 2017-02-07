@@ -3,7 +3,7 @@ import {
     AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise,
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, Color, traceWrite, traceEnabled, traceCategories
+    scaleXProperty, scaleYProperty, Color, traceWrite, traceEnabled, traceCategories, unsetValue
 } from "./animation-common";
 
 import { CacheLayerType, layout } from "utils/utils";
@@ -12,7 +12,7 @@ import lazy from "utils/lazy";
 export * from "./animation-common";
 
 interface AnimationDefinitionInternal extends AnimationDefinition {
-    valueSource?: number;
+    valueSource?: "animation" | "keyframe";
 }
 
 let argbEvaluator: android.animation.ArgbEvaluator;
@@ -88,7 +88,7 @@ export class Animation extends AnimationBase {
     private _animators: Array<android.animation.Animator>;
     private _propertyUpdateCallbacks: Array<Function>;
     private _propertyResetCallbacks: Array<Function>;
-    private _valueSource: number;
+    private _valueSource: "animation" | "keyframe";
 
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
@@ -243,7 +243,7 @@ export class Animation extends AnimationBase {
             }
         }
 
-        // let valueSource = this._valueSource !== undefined ? this._valueSource : dependencyObservable.ValueSource.Local;
+        let setLocal = this._valueSource === "animation";
 
         switch (propertyAnimation.property) {
             case Properties.opacity:
@@ -251,10 +251,17 @@ export class Animation extends AnimationBase {
                 nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[opacityProperty.cssName] = propertyAnimation.value;
+                    propertyAnimation.target.style[setLocal ? opacityProperty.name : opacityProperty.keyframe] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[opacityProperty.cssName] = originalValue1;
+                    if (setLocal) {
+                        propertyAnimation.target.style[opacityProperty.name] = originalValue1;
+                    } else {
+                        propertyAnimation.target.style[opacityProperty.keyframe] = originalValue1;
+                    }
+                    if (propertyAnimation.target.nativeView) {
+                        propertyAnimation.target[opacityProperty.native] = propertyAnimation.target.style.opacity;
+                    }
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
                 break;
@@ -274,10 +281,17 @@ export class Animation extends AnimationBase {
                 }));
 
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[backgroundColorProperty.cssName] = propertyAnimation.value;
+                    propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[backgroundColorProperty.cssName] = originalValue1;
+                    if (setLocal) {
+                        propertyAnimation.target.style[backgroundColorProperty.name] = originalValue1;
+                    } else {
+                        propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
+                        if (propertyAnimation.target.nativeView) {
+                            propertyAnimation.target[backgroundColorProperty.native] = propertyAnimation.target.style.backgroundColor;
+                        }
+                    }
                 }));
                 animators.push(animator);
                 break;
@@ -295,17 +309,26 @@ export class Animation extends AnimationBase {
                 xyObjectAnimators[1] = android.animation.ObjectAnimator.ofFloat(nativeView, "translationY", nativeArray);
                 xyObjectAnimators[1].setRepeatCount(Animation._getAndroidRepeatCount(propertyAnimation.iterations));
 
-                originalValue1 = nativeView.getTranslationX();
-                originalValue2 = nativeView.getTranslationY();
+                originalValue1 = nativeView.getTranslationX() / density;
+                originalValue2 = nativeView.getTranslationY() / density;
 
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[translateXProperty.cssName] = propertyAnimation.value.x;
-                    propertyAnimation.target.style[translateYProperty.cssName] = propertyAnimation.value.y;
+                    propertyAnimation.target.style[setLocal ? translateXProperty.name : translateXProperty.keyframe] = propertyAnimation.value.x;
+                    propertyAnimation.target.style[setLocal ? translateYProperty.name : translateYProperty.keyframe] = propertyAnimation.value.y;
                 }));
 
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[translateXProperty.cssName] = originalValue1;
-                    propertyAnimation.target.style[translateYProperty.cssName] = originalValue2;
+                    if (setLocal) {
+                        propertyAnimation.target.style[translateXProperty.name] = originalValue1;
+                        propertyAnimation.target.style[translateYProperty.name] = originalValue2;
+                    } else {
+                        propertyAnimation.target.style[translateXProperty.keyframe] = originalValue1;
+                        propertyAnimation.target.style[translateYProperty.keyframe] = originalValue2;
+                        if (propertyAnimation.target.nativeView) {
+                            propertyAnimation.target[translateXProperty.native] = propertyAnimation.target.style.translateX;
+                            propertyAnimation.target[translateYProperty.native] = propertyAnimation.target.style.translateY;
+                        }
+                    }
                 }));
 
                 animatorSet = new android.animation.AnimatorSet();
@@ -331,13 +354,22 @@ export class Animation extends AnimationBase {
                 originalValue2 = nativeView.getScaleY();
 
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[scaleXProperty.cssName] = propertyAnimation.value.x;
-                    propertyAnimation.target.style[scaleYProperty.cssName] = propertyAnimation.value.y;
+                    propertyAnimation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = propertyAnimation.value.x;
+                    propertyAnimation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = propertyAnimation.value.y;
                 }));
 
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[scaleXProperty.cssName] = originalValue1;
-                    propertyAnimation.target.style[scaleYProperty.cssName] = originalValue2;
+                    if (setLocal) {
+                        propertyAnimation.target.style[scaleXProperty.name] = originalValue1;
+                        propertyAnimation.target.style[scaleYProperty.name] = originalValue2;
+                    } else {
+                        propertyAnimation.target.style[scaleXProperty.keyframe] = originalValue1;
+                        propertyAnimation.target.style[scaleYProperty.keyframe] = originalValue2;
+                        if (propertyAnimation.target.nativeView) {
+                            propertyAnimation.target[scaleXProperty.native] = propertyAnimation.target.style.scaleX;
+                            propertyAnimation.target[scaleYProperty.native] = propertyAnimation.target.style.scaleY;
+                        }
+                    }
                 }));
 
                 animatorSet = new android.animation.AnimatorSet();
@@ -351,10 +383,17 @@ export class Animation extends AnimationBase {
                 nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
                 propertyUpdateCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[rotateProperty.cssName] = propertyAnimation.value;
+                    propertyAnimation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = propertyAnimation.value;
                 }));
                 propertyResetCallbacks.push(checkAnimation(() => {
-                    propertyAnimation.target.style[rotateProperty.cssName] = originalValue1;
+                    if (setLocal) {
+                        propertyAnimation.target.style[rotateProperty.name] = originalValue1;
+                    } else {
+                        propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
+                        if (propertyAnimation.target.nativeView) {
+                            propertyAnimation.target[rotateProperty.native] = propertyAnimation.target.style.rotate;
+                        }
+                    }
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));
                 break;

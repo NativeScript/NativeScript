@@ -43,8 +43,9 @@
 
       <Label class="title" text="Animations" />
       <StackLayout>
-        <Button tag="animations/configurable" text="configurable" tap="itemTap" />
-        <Button tag="animations/opacity" text="opacity" tap="itemTap" />
+        <Button tag="animations/js-configurable" text="js-configurable" tap="itemTap" />
+        <Button tag="animations/js-opacity" text="js-opacity" tap="itemTap" />
+        <Button tag="animations/css-keyframes" text="css-keyframes" tap="itemTap" />
       </StackLayout>
     </StackLayout>
   </ScrollView>

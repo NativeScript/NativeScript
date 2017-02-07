@@ -4,12 +4,47 @@ import * as buttonModule from "ui/button";
 import * as abs from "ui/layouts/absolute-layout";
 import * as animationModule from "ui/animation";
 import * as colorModule from "color";
-import * as model from "./model";
 import * as enums from "ui/enums";
 import * as frame from "ui/frame";
 import * as trace from "trace";
 
-var vm = new model.ViewModel();
+export class ViewModel extends observable.Observable {
+    constructor() {
+        super();
+
+        this._duration = 3000;
+        this._iterations = 1;
+    }
+
+    private _playSequentially: boolean;
+    get playSequentially(): boolean {
+        return this._playSequentially;
+    }
+    set playSequentially(value: boolean) {
+        this._playSequentially = value;
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "playSequentially", value: value });
+    }
+
+    private _duration: number;
+    get duration(): number {
+        return this._duration;
+    }
+    set duration(value: number) {
+        this._duration = value;
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "duration", value: value });
+    }
+
+    private _iterations: number;
+    get iterations(): number {
+        return this._iterations;
+    }
+    set iterations(value: number) {
+        this._iterations = value;
+        this.notify({ object: this, eventName: observable.Observable.propertyChangeEvent, propertyName: "iterations", value: value });
+    }
+}
+
+var vm = new ViewModel();
 
 var page: pages.Page;
 var panel: abs.AbsoluteLayout;
@@ -27,8 +62,8 @@ export function pageLoaded(args: observable.EventData) {
     button2 = page.getViewById<buttonModule.Button>("button2");
     button3 = page.getViewById<buttonModule.Button>("button3");
 
-    trace.enable();
-    trace.addCategories(trace.categories.concat(trace.categories.Animation));
+    // trace.enable();
+    // trace.addCategories(trace.categories.concat(trace.categories.Animation));
 }
 
 export function onSlideOut(args: observable.EventData) {

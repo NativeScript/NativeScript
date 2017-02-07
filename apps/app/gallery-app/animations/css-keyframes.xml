@@ -1,0 +1,18 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" loaded="pageLoaded" id="mainPage">
+  <StackLayout orientation="vertical">
+    <Button text="class: gone" tag="gone" tap="setClass" />
+    <Button text="class: intro" tag="intro" tap="setClass" />
+    <Button text="class: outro" tag="outro" tap="setClass" />
+    <Button text="clear class" tag="none" tap="setClass" />
+
+    <GridLayout horizontalAlignment="center" verticalAlignment="middle" backgroundColor="blue" width="150" height="50">
+      <GridLayout id="img" class="gone" backgroundColor="green" width="50" height="50" horizontalAlignment="right" />
+    </GridLayout>
+
+    <Button text="class: idle" tag="idle" tap="setImg2Class" />
+    <Button text="class: play" tag="play" tap="setImg2Class" />
+    <GridLayout horizontalAlignment="center" verticalAlignment="middle" backgroundColor="gray" width="150" height="150">
+      <GridLayout id="img2" class="idle" backgroundColor="green" width="50" height="50" horizontalAlignment="left" verticalAlignment="top" />
+    </GridLayout>
+  </StackLayout>
+</Page>

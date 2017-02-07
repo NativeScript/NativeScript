@@ -217,6 +217,27 @@ declare module "ui/core/properties" {
         readonly cssName: string;
     }
 
+    export interface CssAnimationPropertyOptions<T, U> {
+        readonly name: string;
+        readonly cssName?: string;
+        readonly defaultValue?: U;
+        readonly equalityComparer?: (x: U, y: U) => boolean;
+        readonly valueChanged?: (target: T, oldValue: U, newValue: U) => void;
+        readonly valueConverter?: (value: string) => U;
+    }
+
+    export class CssAnimationProperty<T extends Style, U> {
+        constructor(options: CssAnimationPropertyOptions<T, U>);
+
+        public readonly name: string;
+        public readonly cssName: string;
+        public readonly native: symbol;
+
+        readonly keyframe: string;
+
+        public register(cls: { prototype: T }): void;
+    }
+
     export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
         constructor(options: PropertyOptions<T, U>);
 
