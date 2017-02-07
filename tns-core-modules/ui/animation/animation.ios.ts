@@ -41,7 +41,7 @@ interface IOSView extends viewModule.View {
     _isPresentationLayerUpdateSuspeneded();
 }
 
-class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
+export class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 
     public nextAnimation: Function;
 

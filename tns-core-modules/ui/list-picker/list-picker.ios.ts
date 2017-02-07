@@ -49,7 +49,7 @@ export class ListPicker extends common.ListPicker {
     }
 }
 
-class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
+export class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
     public static ObjCProtocols = [UIPickerViewDataSource];
 
     private _owner: WeakRef<ListPicker>;
@@ -70,7 +70,7 @@ class ListPickerDataSource extends NSObject implements UIPickerViewDataSource {
     }
 }
 
-class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
+export class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
     public static ObjCProtocols = [UIPickerViewDelegate];
 
     private _owner: WeakRef<ListPicker>;

@@ -15,7 +15,7 @@ function onSecurePropertyChanged(data: PropertyChangeData) {
 
 global.moduleMerge(common, exports);
 
-class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
+export class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public static ObjCProtocols = [UITextFieldDelegate];
 
     private _owner: WeakRef<TextField>;
@@ -97,7 +97,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     }
 }
 
-class UITextFieldImpl extends UITextField {
+export class UITextFieldImpl extends UITextField {
 
     private _owner: WeakRef<TextField>;
 

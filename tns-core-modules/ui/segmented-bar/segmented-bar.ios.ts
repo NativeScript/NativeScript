@@ -92,7 +92,7 @@ export class SegmentedBar extends common.SegmentedBar {
     }
 }
 
-class SelectionHandlerImpl extends NSObject {
+export class SelectionHandlerImpl extends NSObject {
 
     private _owner: WeakRef<SegmentedBar>;
 

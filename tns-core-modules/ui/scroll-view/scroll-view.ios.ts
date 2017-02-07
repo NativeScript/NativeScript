@@ -6,7 +6,7 @@ import utils = require("utils/utils");
 
 global.moduleMerge(common, exports);
 
-class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
+export class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
     private _owner: WeakRef<ScrollView>;
 
     public static initWithOwner(owner: WeakRef<ScrollView>): UIScrollViewDelegateImpl {

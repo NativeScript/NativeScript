@@ -9,7 +9,7 @@ import getter = utils.ios.getter;
 
 global.moduleMerge(common, exports);
 
-class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
+export class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecognizerDelegate {
     public static ObjCProtocols = [UIGestureRecognizerDelegate];
     public gestureRecognizerShouldRecognizeSimultaneouslyWithGestureRecognizer(gestureRecognizer: UIGestureRecognizer, otherGestureRecognizer: UIGestureRecognizer): boolean {
         return true;
@@ -17,7 +17,7 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
 }
 var recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
 
-class UIGestureRecognizerImpl extends NSObject {
+export class UIGestureRecognizerImpl extends NSObject {
 
     private _owner: WeakRef<GesturesObserver>;
     private _type: any;
@@ -350,7 +350,7 @@ function _getRotationData(args: definition.GestureEventData): definition.Rotatio
     };
 }
 
-class TouchGestureRecognizer extends UIGestureRecognizer {
+export class TouchGestureRecognizer extends UIGestureRecognizer {
     public observer: GesturesObserver;
     private _eventData: TouchGestureEventData;
 

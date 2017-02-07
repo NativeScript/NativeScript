@@ -99,7 +99,7 @@ export class DatePicker extends common.DatePicker {
     }
 }
 
-class UIDatePickerChangeHandlerImpl extends NSObject {
+export class UIDatePickerChangeHandlerImpl extends NSObject {
 
     private _owner: WeakRef<DatePicker>;
 

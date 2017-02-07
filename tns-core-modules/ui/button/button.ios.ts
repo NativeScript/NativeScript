@@ -9,7 +9,7 @@ import dependencyObservable = require("ui/core/dependency-observable");
 import types = require("utils/types");
 import {PseudoClassHandler} from "ui/core/view";
 
-class TapHandlerImpl extends NSObject {
+export class TapHandlerImpl extends NSObject {
     private _owner: WeakRef<Button>;
 
     public static initWithOwner(owner: WeakRef<Button>): TapHandlerImpl {
