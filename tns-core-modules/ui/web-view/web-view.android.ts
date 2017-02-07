@@ -111,6 +111,7 @@ export class WebView extends common.WebView {
     public _createUI() {
         this._android = new android.webkit.WebView(this._context);
         this._android.getSettings().setJavaScriptEnabled(true);
+        this._android.getSettings().setDomStorageEnabled(true);
         this._android.getSettings().setBuiltInZoomControls(true);
         this._android.setWebViewClient(this._webViewClient);
     }
