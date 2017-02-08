@@ -4,6 +4,7 @@ import {Color} from "color";
 import enums = require("ui/enums");
 import * as fsModule from "file-system";
 import * as traceModule from "trace";
+import {Observable, EventData} from "data/observable";
 
 global.moduleMerge(common, exports);
 
@@ -147,13 +148,19 @@ export module ios {
 
     export var MajorVersion = NSString.stringWithString(getter(UIDevice, UIDevice.currentDevice).systemVersion).intValue;
 
-    export function openFile(filePath: string): boolean {
+    export function openFile(filePath: string, callback?: Function): boolean {
         try {
             var fs: typeof fsModule = require("file-system");
             var path = filePath.replace("~", fs.knownFolders.currentApp().path)
 
             var controller = UIDocumentInteractionController.interactionControllerWithURL(NSURL.fileURLWithPath(path));
             controller.delegate = new UIDocumentInteractionControllerDelegateImpl();
+            if (callback) {
+                UIDocumentInteractionControllerDelegateImpl.didEndPreview.on('didEndPreviewEventName', () => {
+                    UIDocumentInteractionControllerDelegateImpl.didEndPreview.off('didEndPreviewEventName');
+                    callback();
+                });
+            }
             return controller.presentPreviewAnimated(true);
         }
         catch (e) {
@@ -185,6 +192,7 @@ export function openUrl(location: string): boolean {
 
 class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UIDocumentInteractionControllerDelegate {
     public static ObjCProtocols = [UIDocumentInteractionControllerDelegate];
+    public static didEndPreview = new Observable();
 
     public getViewController(): UIViewController {
         var frame = require("ui/frame");
@@ -201,5 +209,13 @@ class UIDocumentInteractionControllerDelegateImpl extends NSObject implements UI
 
     public documentInteractionControllerRectForPreview(controller: UIDocumentInteractionController): CGRect {
         return this.getViewController().view.frame;
+    }
+
+    public documentInteractionControllerDidEndPreview(controller: UIDocumentInteractionController) {
+        let eventData: EventData = {
+            eventName: "didEndPreviewEventName",
+            object: UIDocumentInteractionControllerDelegateImpl.didEndPreview
+        };
+        UIDocumentInteractionControllerDelegateImpl.didEndPreview.notify(eventData);
     }
 }
