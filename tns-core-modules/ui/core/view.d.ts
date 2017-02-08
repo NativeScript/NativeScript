@@ -1,7 +1,7 @@
 declare module "ui/core/view" {
     import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
     import {
-        ViewBase, Property, CssProperty, InheritedCssProperty, Style, EventData, ShorthandProperty
+        ViewBase, Property, CssProperty, CssAnimationProperty, InheritedCssProperty, Style, EventData, ShorthandProperty
     } from "ui/core/view-base";
     import { Background } from "ui/styling/background";
     import { Font, FontWeight, FontStyle } from "ui/styling/font";
@@ -293,12 +293,12 @@ declare module "ui/core/view" {
         /**
          * Gets or sets the translateX affine transform of the view.
          */
-        translateX: number;
+        translateX: Length;
 
         /**
          * Gets or sets the translateY affine transform of the view.
          */
-        translateY: number;
+        translateY: Length;
 
         /**
          * Gets or sets the scaleX affine transform of the view.
@@ -702,16 +702,16 @@ declare module "ui/core/view" {
     export const isEnabledProperty: Property<View, boolean>;
     export const isUserInteractionEnabledProperty: Property<View, boolean>;
 
-    export const rotateProperty: CssProperty<Style, number>;
-    export const scaleXProperty: CssProperty<Style, number>;
-    export const scaleYProperty: CssProperty<Style, number>;
-    export const translateXProperty: CssProperty<Style, number>;
-    export const translateYProperty: CssProperty<Style, number>;
+    export const rotateProperty: CssAnimationProperty<Style, number>;
+    export const scaleXProperty: CssAnimationProperty<Style, number>;
+    export const scaleYProperty: CssAnimationProperty<Style, number>;
+    export const translateXProperty: CssAnimationProperty<Style, Length>;
+    export const translateYProperty: CssAnimationProperty<Style, Length>;
 
     export const clipPathProperty: CssProperty<Style, string>;
     export const colorProperty: InheritedCssProperty<Style, Color>;
 
-    export const backgroundColorProperty: CssProperty<Style, Color>;
+    export const backgroundColorProperty: CssAnimationProperty<Style, Color>;
     export const backgroundImageProperty: CssProperty<Style, string>;
     export const backgroundRepeatProperty: CssProperty<Style, BackgroundRepeat>;
     export const backgroundSizeProperty: CssProperty<Style, string>;
@@ -737,7 +737,7 @@ declare module "ui/core/view" {
 
     export const zIndexProperty: CssProperty<Style, number>;
     export const visibilityProperty: CssProperty<Style, Visibility>;
-    export const opacityProperty: CssProperty<Style, number>;
+    export const opacityProperty: CssAnimationProperty<Style, number>;
 
     export const minWidthProperty: CssProperty<Style, Length>;
     export const minHeightProperty: CssProperty<Style, Length>;

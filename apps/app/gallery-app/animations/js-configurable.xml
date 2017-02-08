@@ -18,7 +18,6 @@
         <Button text="In" tap="onSlideIn" width="40" marginLeft="5" marginRight="5" />
         <Button text="Single" tap="onSingle" width="70" marginLeft="5" marginRight="5" />
         <Button text="Cancel" tap="onCancel" width="70" marginLeft="5" marginRight="5" />
-        <Button text="Opacity" tap="onOpacity" width="70" marginLeft="5" marginRight="5" />
       </StackLayout>
       
       <StackLayout orientation="horizontal" marginTop="5" marginBottom="5" horizontalAlignment="center" paddingLeft="5" paddingRight="5">>

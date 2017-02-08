@@ -2,7 +2,7 @@ import { AnimationDefinition } from "ui/animation";
 import {
     AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, View, opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, traceEnabled, traceWrite, traceCategories
+    scaleXProperty, scaleYProperty, traceEnabled, traceWrite, traceCategories, Length
 } from "./animation-common";
 
 import { ios } from "utils/utils";
@@ -33,7 +33,7 @@ interface PropertyAnimationInfo extends PropertyAnimation {
 }
 
 interface AnimationDefinitionInternal extends AnimationDefinition {
-    valueSource?: number;
+    valueSource?: "animation" | "keyframe";
 }
 
 interface IOSView extends View {
@@ -51,9 +51,9 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 
     private _finishedCallback: Function;
     private _propertyAnimation: PropertyAnimationInfo;
-    private _valueSource: number;
+    private _valueSource: "animation" | "keyframe";
 
-    public static initWithFinishedCallback(finishedCallback: Function, propertyAnimation: PropertyAnimationInfo, valueSource: number): AnimationDelegateImpl {
+    public static initWithFinishedCallback(finishedCallback: Function, propertyAnimation: PropertyAnimationInfo, valueSource: "animation" | "keyframe"): AnimationDelegateImpl {
         let delegate = <AnimationDelegateImpl>AnimationDelegateImpl.new();
         delegate._finishedCallback = finishedCallback;
         delegate._propertyAnimation = propertyAnimation;
@@ -63,40 +63,39 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
 
     animationDidStart(anim: CAAnimation): void {
         let value = this._propertyAnimation.value;
-        // let valueSource = this._valueSource || dependencyObservable.ValueSource.Local;
-        let setLocal = true;
+        let setLocal = this._valueSource === "animation";
         let targetStyle = this._propertyAnimation.target.style;
 
         (<IOSView>this._propertyAnimation.target)._suspendPresentationLayerUpdates();
 
         switch (this._propertyAnimation.property) {
             case Properties.backgroundColor:
-                targetStyle[setLocal ? backgroundColorProperty.name : backgroundColorProperty.cssName] = value;
+                targetStyle[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = value;
                 break;
             case Properties.opacity:
-                targetStyle[setLocal ? opacityProperty.name : opacityProperty.cssName] = value;
+                targetStyle[setLocal ? opacityProperty.name : opacityProperty.keyframe] = value;
                 break;
             case Properties.rotate:
-                targetStyle[setLocal ? rotateProperty.name : rotateProperty.cssName] = value;
+                targetStyle[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value;
                 break;
             case Properties.translate:
-                targetStyle[setLocal ? translateXProperty.name : translateXProperty.cssName] = value;
-                targetStyle[setLocal ? translateYProperty.name : translateYProperty.cssName] = value;
+                targetStyle[setLocal ? translateXProperty.name : translateXProperty.keyframe] = value;
+                targetStyle[setLocal ? translateYProperty.name : translateYProperty.keyframe] = value;
                 break;
             case Properties.scale:
-                targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.cssName] = value.x === 0 ? 0.001 : value.x;
-                targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.cssName] = value.y === 0 ? 0.001 : value.y;
+                targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x === 0 ? 0.001 : value.x;
+                targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y === 0 ? 0.001 : value.y;
                 break;
             case _transform:
                 if (value[Properties.translate] !== undefined) {
-                    targetStyle[setLocal ? translateXProperty.name : translateXProperty.cssName] = value[Properties.translate].x;
-                    targetStyle[setLocal ? translateYProperty.name : translateYProperty.cssName] = value[Properties.translate].y;
+                    targetStyle[setLocal ? translateXProperty.name : translateXProperty.keyframe] = value[Properties.translate].x;
+                    targetStyle[setLocal ? translateYProperty.name : translateYProperty.keyframe] = value[Properties.translate].y;
                 }
                 if (value[Properties.scale] !== undefined) {
                     let x = value[Properties.scale].x;
                     let y = value[Properties.scale].y;
-                    targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.cssName] = x === 0 ? 0.001 : x;
-                    targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.cssName] = y === 0 ? 0.001 : y;
+                    targetStyle[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = x === 0 ? 0.001 : x;
+                    targetStyle[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = y === 0 ? 0.001 : y;
                 }
                 break;
         }
@@ -147,7 +146,7 @@ export class Animation extends AnimationBase {
     private _finishedAnimations: number;
     private _cancelledAnimations: number;
     private _mergedPropertyAnimations: Array<PropertyAnimationInfo>;
-    private _valueSource: number;
+    private _valueSource: "animation" | "keyframe";
 
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
@@ -233,7 +232,7 @@ export class Animation extends AnimationBase {
         return _resolveAnimationCurve(curve);
     }
 
-    private static _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, valueSource: number, finishedCallback: (cancelled?: boolean) => void): Function {
+    private static _createiOSAnimationFunction(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, valueSource: "animation" | "keyframe", finishedCallback: (cancelled?: boolean) => void): Function {
         return (cancelled?: boolean) => {
 
             if (cancelled && finishedCallback) {
@@ -256,7 +255,7 @@ export class Animation extends AnimationBase {
         }
     }
 
-    private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: number): AnimationInfo {
+    private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe"): AnimationInfo {
 
         let nativeView = <UIView>animation.target._nativeView;
         let propertyNameToAnimate = animation.property;
@@ -266,16 +265,13 @@ export class Animation extends AnimationBase {
         let tempRotate = (animation.target.rotate || 0) * Math.PI / 180;
         let abs;
 
-        let setLocal = true;
-        // if (valueSource === undefined) {
-        //     valueSource = dependencyObservable.ValueSource.Local;
-        // }
+        let setLocal = valueSource === "animation";
 
         switch (animation.property) {
             case Properties.backgroundColor:
                 animation._originalValue = animation.target.backgroundColor;
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.cssName] = value;
+                    animation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = value;
                 };
                 originalValue = nativeView.layer.backgroundColor;
                 if (nativeView instanceof UILabel) {
@@ -286,14 +282,14 @@ export class Animation extends AnimationBase {
             case Properties.opacity:
                 animation._originalValue = animation.target.opacity;
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? opacityProperty.name : opacityProperty.cssName] = value;
+                    animation.target.style[setLocal ? opacityProperty.name : opacityProperty.keyframe] = value;
                 };
                 originalValue = nativeView.layer.opacity;
                 break;
             case Properties.rotate:
                 animation._originalValue = animation.target.rotate !== undefined ? animation.target.rotate : 0;
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? rotateProperty.name : rotateProperty.cssName] = value;
+                    animation.target.style[setLocal ? rotateProperty.name : rotateProperty.keyframe] = value;
                 };
                 propertyNameToAnimate = "transform.rotation";
                 originalValue = nativeView.layer.valueForKeyPath("transform.rotation");
@@ -309,8 +305,8 @@ export class Animation extends AnimationBase {
             case Properties.translate:
                 animation._originalValue = { x: animation.target.translateX, y: animation.target.translateY };
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? translateXProperty.name : translateXProperty.cssName] = value.x;
-                    animation.target.style[setLocal ? translateYProperty.name : translateYProperty.cssName] = value.y;
+                    animation.target.style[setLocal ? translateXProperty.name : translateXProperty.keyframe] = value.x;
+                    animation.target.style[setLocal ? translateYProperty.name : translateYProperty.keyframe] = value.y;
                 };
                 propertyNameToAnimate = "transform";
                 originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
@@ -325,8 +321,8 @@ export class Animation extends AnimationBase {
                 }
                 animation._originalValue = { x: animation.target.scaleX, y: animation.target.scaleY };
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.cssName] = value.x;
-                    animation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.cssName] = value.y;
+                    animation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.x;
+                    animation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.y;
                 };
                 propertyNameToAnimate = "transform";
                 originalValue = NSValue.valueWithCATransform3D(nativeView.layer.transform);
@@ -339,10 +335,10 @@ export class Animation extends AnimationBase {
                     xt: animation.target.translateX, yt: animation.target.translateY
                 };
                 animation._propertyResetCallback = (value, valueSource) => {
-                    animation.target.style[setLocal ? translateXProperty.name : translateXProperty.cssName] = value.xt;
-                    animation.target.style[setLocal ? translateYProperty.name : translateYProperty.cssName] = value.yt;
-                    animation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.cssName] = value.xs;
-                    animation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.cssName] = value.ys;
+                    animation.target.style[setLocal ? translateXProperty.name : translateXProperty.keyframe] = value.xt;
+                    animation.target.style[setLocal ? translateYProperty.name : translateYProperty.keyframe] = value.yt;
+                    animation.target.style[setLocal ? scaleXProperty.name : scaleXProperty.keyframe] = value.xs;
+                    animation.target.style[setLocal ? scaleYProperty.name : scaleYProperty.keyframe] = value.ys;
                 };
                 propertyNameToAnimate = "transform";
                 value = NSValue.valueWithCATransform3D(Animation._createNativeAffineTransform(animation));
@@ -381,7 +377,7 @@ export class Animation extends AnimationBase {
         };
     }
 
-    private static _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimation, valueSource: number, finishedCallback: (cancelled?: boolean) => void) {
+    private static _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimation, valueSource: "animation" | "keyframe", finishedCallback: (cancelled?: boolean) => void) {
 
         let nativeView = <UIView>animation.target._nativeView;
         let nativeAnimation = CABasicAnimation.animationWithKeyPath(args.propertyNameToAnimate);
@@ -415,7 +411,7 @@ export class Animation extends AnimationBase {
         }
     }
 
-    private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: number, finishedCallback: (cancelled?: boolean) => void) {
+    private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe", finishedCallback: (cancelled?: boolean) => void) {
 
         let nativeView = <UIView>animation.target._nativeView;
 
@@ -591,7 +587,7 @@ export class Animation extends AnimationBase {
 export function _getTransformMismatchErrorMessage(view: View): string {
     // Order is important: translate, rotate, scale
     let result: CGAffineTransform = CGAffineTransformIdentity;
-    result = CGAffineTransformTranslate(result, view.translateX || 0, view.translateY || 0);
+    result = CGAffineTransformTranslate(result, Length.toDevicePixels(view.translateX || 0, 0), Length.toDevicePixels(view.translateY || 0, 0));
     result = CGAffineTransformRotate(result, (view.rotate || 0) * Math.PI / 180);
     result = CGAffineTransformScale(result, view.scaleX || 1, view.scaleY || 1);
     let viewTransform = NSStringFromCGAffineTransform(result);

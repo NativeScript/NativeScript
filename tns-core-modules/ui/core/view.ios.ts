@@ -4,7 +4,7 @@ import {
     ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background, Visibility
+    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background, Visibility, Length
 } from "./view-common";
 
 export * from "./view-common";
@@ -232,8 +232,8 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-        let translateX = this.translateX || 0;
-        let translateY = this.translateY || 0;
+        let translateX = Length.toDevicePixels(this.translateX || 0, 0);
+        let translateY = Length.toDevicePixels(this.translateY || 0, 0);
         let scaleX = this.scaleX || 1;
         let scaleY = this.scaleY || 1;
         let rotate = this.rotate || 0;
@@ -363,17 +363,17 @@ export class View extends ViewCommon {
         this.updateNativeTransform();
     }
 
-    get [translateXProperty.native](): number {
+    get [translateXProperty.native](): Length | number {
         return 0;
     }
-    set [translateXProperty.native](value: number) {
+    set [translateXProperty.native](value: Length) {
         this.updateNativeTransform();
     }
 
-    get [translateYProperty.native](): number {
+    get [translateYProperty.native](): Length | number {
         return 0;
     }
-    set [translateYProperty.native](value: number) {
+    set [translateYProperty.native](value: Length) {
         this.updateNativeTransform();
     }
 

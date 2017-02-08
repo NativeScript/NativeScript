@@ -49,8 +49,8 @@ export class CssState {
         let style = view.style;
         ruleset.declarations.forEach(d => {
             try {
-                // Use the "css-" prefixed name, so that CSS value source is set.
-                let cssPropName = `css-${d.property}`;
+                // Use the "css:" prefixed name, so that CSS value source is set.
+                let cssPropName = `css:${d.property}`;
                 if (cssPropName in style) {
                     style[cssPropName] = d.value;
                 } else {

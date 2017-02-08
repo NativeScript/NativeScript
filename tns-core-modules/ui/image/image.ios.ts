@@ -25,9 +25,12 @@ export class Image extends ImageBase {
     }
 
     private setTintColor(value: Color) {
-        if (value !== null && this._ios.image && !this._templateImageWasCreated) {
+        if (value && this._ios.image && !this._templateImageWasCreated) {
             this._ios.image = this._ios.image.imageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
             this._templateImageWasCreated = true;
+        } else if (this._ios.image && this._templateImageWasCreated) {
+            this._templateImageWasCreated = false;
+            this._ios.image = this._ios.image.imageWithRenderingMode(UIImageRenderingMode.Automatic);
         }
         this._ios.tintColor = value ? value.ios : null;
     }
