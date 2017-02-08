@@ -10,8 +10,6 @@ export const unsetValue: any = new Object();
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
 
-let cssSymbolResetMap = {};
-
 let inheritableProperties = new Array<InheritedProperty<any, any>>();
 let inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
 
@@ -559,9 +557,10 @@ export class CssAnimationProperty<T extends Style, U> {
         const { valueConverter, equalityComparer, valueChanged, defaultValue } = options;
         const propertyName = options.name;
         this.name = propertyName;
-        this.cssName = (options.cssName || propertyName);
 
         const cssName = "css:" + (options.cssName || propertyName);
+        this.cssName = cssName;
+
         const keyframeName = "keyframe:" + propertyName;
         this.keyframe = keyframeName;
         const defaultName = "default:" + propertyName;
@@ -623,10 +622,8 @@ export class CssAnimationProperty<T extends Style, U> {
         const stylePropertyDescriptor = descriptor(styleValue, ValueSource.Local, true, true, true);
         const keyframePropertyDescriptor = descriptor(keyframeValue, ValueSource.Keyframe, false, false, false);
 
-        cssSymbolResetMap[cssValue] = cssName;
-        cssSymbolResetMap[keyframeValue] = keyframeName;
-
         symbolPropertyMap[computedValue] = this;
+        cssSymbolPropertyMap[computedValue] = this;
 
         this.register = (cls: { prototype: T }) => {
             cls.prototype[defaultValueKey] = options.defaultValue;
@@ -640,6 +637,9 @@ export class CssAnimationProperty<T extends Style, U> {
             Object.defineProperty(cls.prototype, defaultName, defaultPropertyDescriptor);
             Object.defineProperty(cls.prototype, cssName, cssPropertyDescriptor);
             Object.defineProperty(cls.prototype, propertyName, stylePropertyDescriptor);
+            if (options.cssName && options.cssName != options.name) {
+                Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
+            }
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
         }
     }
@@ -979,8 +979,9 @@ export function resetCSSProperties(style: Style): void {
         let cssProperty;
         if (cssProperty = cssSymbolPropertyMap[symbol]) {
             style[cssProperty.cssName] = unsetValue;
-        } else if (cssProperty = cssSymbolResetMap[symbol]) {
-            style[cssProperty] = unsetValue;
+            if (cssProperty instanceof CssAnimationProperty) {
+                style[cssProperty.keyframe] = unsetValue;
+            }
         }
     }
 }
