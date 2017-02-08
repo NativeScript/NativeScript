@@ -42,15 +42,6 @@ declare class Headers {
     set(name: string, value: string): void;
 }
 
-interface FormData {
-    append(name: any, value: any, blobName?: string): void;
-}
-
-declare var FormData: {
-    prototype: FormData;
-    new (form?: any /*HTMLFormElement*/): FormData;
-}
-
 interface Blob {
     readonly size: number;
     readonly type: string;
