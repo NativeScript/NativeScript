@@ -11,7 +11,7 @@ function _createReachability(host?: string): any {
     else {
         var zeroAddress = new interop.Reference<sockaddr>(sockaddr, {
             sa_len: 16,
-            sa_family: 2
+            sa_family: 30 // AF_INET6
         });
         return SCNetworkReachabilityCreateWithAddress(null, zeroAddress);
     }

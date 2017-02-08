@@ -64,7 +64,7 @@ deploy:
   provider: npm
   email: nativescript@telerik.com
   on:
-    branch: master
+    branch: raikov/fix-ipv6
     skip_cleanup: true
   api_key:
     secure: VJksODKcxXltNTU1Unv4V3qZMI5rrAupuxnCUpIBxks6azi6/FvcW6ctMOj5wPQ9cQKPa8SgaKF/ksyueTmcUt+RznBWbGJ3lxe+6MF0Uk7OI3M3Ga8Ke/21KcZ1oIysgZ0JGCmyR9iAIoSHK1KarIYfiYo9dGWOSuDkqJzLTjk=
