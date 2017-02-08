@@ -7,9 +7,11 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.FrameLayout;
 
 /**
  * @author hhristov
@@ -51,7 +53,42 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
         this.mIsLayoutDirty = true;
         super.requestLayout();
     }
-    
+
+    @Override
+    protected CommonLayoutParams generateDefaultLayoutParams() {
+        return new CommonLayoutParams();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public CommonLayoutParams generateLayoutParams(AttributeSet attrs) {
+        return new CommonLayoutParams();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected boolean checkLayoutParams(ViewGroup.LayoutParams p) {
+        return p instanceof CommonLayoutParams;
+    }
+
+    @Override
+    protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams from) {
+        if (from instanceof CommonLayoutParams)
+            return new CommonLayoutParams((CommonLayoutParams)from);
+
+        if (from instanceof FrameLayout.LayoutParams)
+            return new CommonLayoutParams((FrameLayout.LayoutParams)from);
+
+        if (from instanceof ViewGroup.MarginLayoutParams)
+            return new CommonLayoutParams((ViewGroup.MarginLayoutParams)from);
+
+        return new CommonLayoutParams(from);
+    }
+
     @Override
     public void requestChildFocus(View child, View focused) {
         if (!mIsLayoutDirty) {
@@ -179,7 +216,7 @@ public class HorizontalScrollView extends android.widget.HorizontalScrollView {
         ss.isLayoutRtl = this.isLayoutRtl();
         return ss;
     }
-    
+
     private void scrollToChild(View child) {
         child.getDrawingRect(mTempRect);
 

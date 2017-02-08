@@ -27,6 +27,7 @@ import android.util.AttributeSet;
 import android.util.SparseIntArray;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -2221,8 +2222,20 @@ public class FlexboxLayout extends ViewGroup {
     }
 
     @Override
-    protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams p) {
-        return new FlexboxLayout.LayoutParams();
+    protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams from) {
+        if (from instanceof FlexboxLayout.LayoutParams)
+            return new FlexboxLayout.LayoutParams((FlexboxLayout.LayoutParams)from);
+
+        if (from instanceof CommonLayoutParams)
+            return new FlexboxLayout.LayoutParams((CommonLayoutParams)from);
+
+        if (from instanceof FrameLayout.LayoutParams)
+            return new FlexboxLayout.LayoutParams((FrameLayout.LayoutParams)from);
+
+        if (from instanceof ViewGroup.MarginLayoutParams)
+            return new FlexboxLayout.LayoutParams((ViewGroup.MarginLayoutParams)from);
+
+        return new FlexboxLayout.LayoutParams(from);
     }
 
     @FlexDirection
@@ -2630,6 +2643,32 @@ public class FlexboxLayout extends ViewGroup {
 
         public LayoutParams() {
             super();
+        }
+
+        public LayoutParams(ViewGroup.LayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParams(ViewGroup.MarginLayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParams(FrameLayout.LayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParams(CommonLayoutParams source) {
+            super(source);
+        }
+
+        public LayoutParams(LayoutParams source) {
+            super(source);
+
+            this.order = source.order;
+            this.flexGrow = source.flexGrow;
+            this.flexShrink = source.flexShrink;
+            this.wrapBefore = source.wrapBefore;
+            this.alignSelf = source.alignSelf;
         }
     }
 

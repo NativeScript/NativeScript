@@ -51,8 +51,8 @@ class TabStrip extends LinearLayout {
     private final SimpleTabColorizer mDefaultTabColorizer;
 
     private int mDefaultTabTextColor;
-    private Integer mTabTextColor;
-    private Integer mSelectedTabTextColor;
+    private int mTabTextColor = -1;
+    private int mSelectedTabTextColor = -1;
 
     TabStrip(Context context) {
         this(context, null);
@@ -98,21 +98,21 @@ class TabStrip extends LinearLayout {
         invalidate();
     }
 
-    void setTabTextColor(Integer color){
+    void setTabTextColor(int color){
         mTabTextColor = color;
         updateTabsTextColor();
     }
 
-    Integer getTabTextColor(){
+    int getTabTextColor(){
         return mTabTextColor;
     }
 
-    void setSelectedTabTextColor(Integer color){
+    void setSelectedTabTextColor(int color){
         mSelectedTabTextColor = color;
         updateTabsTextColor();
     }
 
-    Integer getSelectedTabTextColor(){
+    int getSelectedTabTextColor(){
         return mSelectedTabTextColor;
     }
 
@@ -122,7 +122,7 @@ class TabStrip extends LinearLayout {
             LinearLayout linearLayout = (LinearLayout)getChildAt(i);
             TextView textView = (TextView)linearLayout.getChildAt(1);
             if (i == mSelectedPosition){
-                if (mSelectedTabTextColor != null){
+                if (mSelectedTabTextColor >= 0){
                     textView.setTextColor(mSelectedTabTextColor);
                 }
                 else {
@@ -130,7 +130,7 @@ class TabStrip extends LinearLayout {
                 }
             }
             else {
-                if (mTabTextColor != null){
+                if (mTabTextColor >= 0){
                     textView.setTextColor(mTabTextColor);
                 }
                 else {

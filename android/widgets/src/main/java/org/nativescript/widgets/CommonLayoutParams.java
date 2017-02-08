@@ -26,7 +26,40 @@ public class CommonLayoutParams extends FrameLayout.LayoutParams {
     private static final StringBuilder sb = new StringBuilder();
 
     public CommonLayoutParams() {
-        super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        super(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT, Gravity.FILL);
+    }
+
+    public CommonLayoutParams(ViewGroup.LayoutParams source) {
+        super(source);
+    }
+
+    public CommonLayoutParams(ViewGroup.MarginLayoutParams source) {
+        super(source);
+    }
+
+    public CommonLayoutParams(FrameLayout.LayoutParams source) {
+        super((ViewGroup.MarginLayoutParams) source);
+        this.gravity = source.gravity;
+    }
+
+    public CommonLayoutParams(CommonLayoutParams source) {
+        this((FrameLayout.LayoutParams) source);
+
+        this.widthPercent = source.widthPercent;
+        this.heightPercent = source.heightPercent;
+
+        this.topMargin = source.topMargin;
+        this.leftMargin = source.leftMargin;
+        this.bottomMargin = source.bottomMargin;
+        this.rightMargin = source.rightMargin;
+
+        this.left = source.left;
+        this.top = source.top;
+        this.row = source.row;
+        this.column = source.column;
+        this.rowSpan = source.rowSpan;
+        this.columnSpan = source.columnSpan;
+        this.dock = source.dock;
     }
 
     public float widthPercent = 0;

@@ -175,12 +175,12 @@ public class BorderDrawable extends ColorDrawable {
 
     public BorderDrawable(float density){
         super();
-        this.density = density;
+        this.density = 1f;
     }
 
     public BorderDrawable(float density, String id){
         super();
-        this.density = density;
+        this.density = 1f;
         this.id = id;
     }
 

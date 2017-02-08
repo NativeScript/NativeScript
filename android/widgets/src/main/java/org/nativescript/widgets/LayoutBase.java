@@ -42,8 +42,17 @@ public abstract class LayoutBase extends ViewGroup {
     }
 
     @Override
-    protected LayoutParams generateLayoutParams(LayoutParams p) {
-        return new CommonLayoutParams();
+    protected ViewGroup.LayoutParams generateLayoutParams(ViewGroup.LayoutParams from) {
+        if (from instanceof CommonLayoutParams)
+            return new CommonLayoutParams((CommonLayoutParams)from);
+
+        if (from instanceof FrameLayout.LayoutParams)
+            return new CommonLayoutParams((FrameLayout.LayoutParams)from);
+
+        if (from instanceof ViewGroup.MarginLayoutParams)
+            return new CommonLayoutParams((ViewGroup.MarginLayoutParams)from);
+
+        return new CommonLayoutParams(from);
     }
 
 	@Override
