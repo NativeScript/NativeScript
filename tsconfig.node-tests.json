@@ -12,7 +12,7 @@
         "jsx": "react",
         "reactNamespace": "UIBuilder",
         "lib": [
-            "es2016"
+            "es2016", "dom"
         ]
     },
     "include": [

@@ -11,7 +11,10 @@
         "experimentalDecorators": true,
         "sourceMap": true,
         "jsx": "react",
-        "reactNamespace": "UIBuilder"
+        "reactNamespace": "UIBuilder",
+        "lib": [
+            "es6", "dom"
+        ]
     },
     "include": [
         "bin/dist/tns-core-modules/tns-core-modules.d.ts"
