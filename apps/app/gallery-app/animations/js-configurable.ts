@@ -6,7 +6,6 @@ import * as animationModule from "ui/animation";
 import * as colorModule from "color";
 import * as enums from "ui/enums";
 import * as frame from "ui/frame";
-import * as trace from "trace";
 
 export class ViewModel extends observable.Observable {
     constructor() {

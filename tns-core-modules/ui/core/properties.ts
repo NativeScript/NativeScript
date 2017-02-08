@@ -584,7 +584,7 @@ export class CssAnimationProperty<T extends Style, U> {
                     let prev = this[computedValue];
                     if (value === unsetValue) {
                         this[symbol] = unsetValue;
-                        if (this[computedSource] == propertySource) {
+                        if (this[computedSource] === propertySource) {
                             // Fallback to lower value source.
                             if (this[styleValue] !== unsetValue) {
                                 this[computedSource] = ValueSource.Local;
@@ -609,9 +609,15 @@ export class CssAnimationProperty<T extends Style, U> {
                     }
                     let next = this[computedValue];
                     if (prev !== next && (!equalityComparer || !equalityComparer(prev, next))) {
-                        valueChanged && valueChanged(this, prev, next);
-                        this.view.nativeView && (this.view[native] = next);
-                        this.hasListeners(eventName) && this.notify({ eventName, object: this, propertyName, value });
+                        if (valueChanged) {
+                            valueChanged(this, prev, next);
+                        }
+                        if (this.view.nativeView) {
+                            this.view[native] = next;
+                        }
+                        if (this.hasListeners(eventName)) {
+                            this.notify({ eventName, object: this, propertyName, value });
+                        }
                     }
                 }
             }
@@ -637,7 +643,7 @@ export class CssAnimationProperty<T extends Style, U> {
             Object.defineProperty(cls.prototype, defaultName, defaultPropertyDescriptor);
             Object.defineProperty(cls.prototype, cssName, cssPropertyDescriptor);
             Object.defineProperty(cls.prototype, propertyName, stylePropertyDescriptor);
-            if (options.cssName && options.cssName != options.name) {
+            if (options.cssName && options.cssName !== options.name) {
                 Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
             }
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);

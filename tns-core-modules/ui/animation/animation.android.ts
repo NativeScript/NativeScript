@@ -3,7 +3,7 @@ import {
     AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise,
     opacityProperty, backgroundColorProperty, rotateProperty,
     translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, Color, traceWrite, traceEnabled, traceCategories, unsetValue
+    scaleXProperty, scaleYProperty, Color, traceWrite, traceEnabled, traceCategories
 } from "./animation-common";
 
 import { CacheLayerType, layout } from "utils/utils";
