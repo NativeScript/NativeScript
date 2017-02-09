@@ -236,6 +236,9 @@ declare module "ui/core/properties" {
         readonly keyframe: string;
 
         public register(cls: { prototype: T }): void;
+
+        public _valueConverter?: (value: string) => any;
+        public static _getByCssName(name: string): CssAnimationProperty<any, any>;
     }
 
     export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {

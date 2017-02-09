@@ -553,10 +553,17 @@ export class CssAnimationProperty<T extends Style, U> {
     public readonly keyframe: string;
     public readonly defaultValueKey: symbol;
 
+    private static properties: { [cssName: string]: CssAnimationProperty<any, any> } = {};
+
+    public _valueConverter?: (value: string) => any;
+
     constructor(private options: definitions.CssAnimationPropertyOptions<T, U>) {
         const { valueConverter, equalityComparer, valueChanged, defaultValue } = options;
         const propertyName = options.name;
         this.name = propertyName;
+
+        CssAnimationProperty.properties[options.cssName || propertyName] = this;
+        this._valueConverter = options.valueConverter;
 
         const cssName = "css:" + (options.cssName || propertyName);
         this.cssName = cssName;
