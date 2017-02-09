@@ -82,14 +82,16 @@
         y: number;
     }
 
-    export interface Cancelable {
-        cancel(): void;
-    }
-
     /**
-     * A Promise that can cancel the animation.
+     * Create Promise that can cancel the animation, we have to pretend our returns itself along with the cancel
      */
-    export type AnimationPromise = Promise<void> & Cancelable;
+    export class AnimationPromise extends Promise<void> {
+        cancel(): void;
+        then(onFulfilled?: (value?: any) => PromiseLike<void>, onRejected?: (error?: any) => PromiseLike<void>): AnimationPromise;
+        then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise;
+        catch(onRejected?: (error?: any) => PromiseLike<void>): AnimationPromise;
+        catch(onRejected?: (error?: any) => void): AnimationPromise;
+    }
 
     /**
      * Defines a animation set.

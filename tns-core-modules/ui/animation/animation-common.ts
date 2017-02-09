@@ -44,6 +44,14 @@ export class CubicBezierAnimationCurve implements definition.CubicBezierAnimatio
     }
 }
 
+// This is a BOGUS Class to make TypeScript happy - This is not needed other than to make TS happy.
+// We didn't want to actually modify Promise; as the cancel() is ONLY valid for animations "Promise"
+export class AnimationPromise implements definition.AnimationPromise {
+    public cancel(): void { /* Do Nothing */ }
+    public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
+    public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
+}
+
 export class Animation implements definition.Animation {
     public _propertyAnimations: Array<PropertyAnimation>;
     public _playSequentially: boolean;
@@ -51,14 +59,14 @@ export class Animation implements definition.Animation {
     private _resolve;
     private _reject;
 
-    public play(): definition.AnimationPromise {
+    public play(): AnimationPromise {
         if (this.isPlaying) {
             throw new Error("Animation is already playing.");
         }
 
         // We have to actually create a "Promise" due to a bug in the v8 engine and decedent promises
         // We just cast it to a animationPromise so that all the rest of the code works fine
-        var animationFinishedPromise = <definition.AnimationPromise>new Promise<void>((resolve, reject) => {
+        var animationFinishedPromise = <AnimationPromise>new Promise<void>((resolve, reject) => {
             this._resolve = resolve;
             this._reject = reject;
         });
@@ -69,7 +77,7 @@ export class Animation implements definition.Animation {
         return animationFinishedPromise;
     }
 
-    private fixupAnimationPromise(promise: definition.AnimationPromise): void {
+    private fixupAnimationPromise(promise: AnimationPromise): void {
         // Since we are using function() below because of arguments, TS won't automatically do a _this for those functions.
         var _this = this;
         promise.cancel = () => {

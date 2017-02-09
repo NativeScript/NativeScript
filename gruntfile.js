@@ -91,6 +91,15 @@ module.exports = function(grunt) {
         var angularExcludes = angularConflicts.map(function(file) {
             return '!' + file;
         });
+        var nonES6Files = [
+            'es-collections.d.ts',
+           'es6-promise.d.ts',
+           'es6.d.ts',
+           'weakmap.d.ts',
+        ];
+        var es6Excludes = nonES6Files.map(function(file) {
+            return '!' + file;
+        });
         var dtsFiles = grunt.file.expand({cwd: srcDir }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
@@ -108,13 +117,13 @@ module.exports = function(grunt) {
             "!tns-core-modules.base.d.ts",
             "!references.d.ts",
             "!webworker.es2016.d.ts"
-        ].concat(localCfg.defaultExcludes).concat(angularExcludes));
+        ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
         dtsFiles.sort();
 
         writeDtsFile(dtsFiles, outDir, 'tns-core-modules/tns-core-modules.base.d.ts');
         var es6Files = angularConflicts.concat(['tns-core-modules.base.d.ts']);
         writeDtsFile(es6Files, outDir, 'tns-core-modules/tns-core-modules.es6.d.ts');
-        var allFiles = angularConflicts.concat(['tns-core-modules.base.d.ts']);
+        var allFiles = angularConflicts.concat(nonES6Files).concat(['tns-core-modules.base.d.ts']);
         writeDtsFile(allFiles, outDir, 'tns-core-modules/tns-core-modules.d.ts');
     }
 

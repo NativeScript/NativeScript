@@ -1,11 +1,10 @@
 
-// // Clashes with the JavaScript dom AudioBuffer
-// interface AudioBuffer {
-// 	mNumberChannels: number;
-// 	mDataByteSize: number;
-// 	mData: interop.Pointer | interop.Reference<any>;
-// }
-// declare var AudioBuffer: interop.StructType<AudioBuffer>;
+interface AudioBuffer {
+	mNumberChannels: number;
+	mDataByteSize: number;
+	mData: interop.Pointer | interop.Reference<any>;
+}
+declare var AudioBuffer: interop.StructType<AudioBuffer>;
 
 interface AudioBufferList {
 	mNumberBuffers: number;

@@ -5,7 +5,6 @@ import {Label} from "ui/label";
 import {StackLayout} from "ui/layouts/stack-layout";
 import colorModule = require("color");
 import enums = require("ui/enums");
-import { AnimationPromise } from "ui/animation";
 
 // >> animation-require
 import animation = require("ui/animation");
@@ -106,7 +105,7 @@ export function test_CancellingAnimate(done) {
             }
             // << (hide)
         });
-    (<AnimationPromise>animation1).cancel();
+    animation1.cancel();
     // << animation-cancel2
 }
 
