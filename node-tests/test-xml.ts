@@ -1,6 +1,6 @@
 import {assert} from "chai";
-import * as xmlModule from "xml";
-var xml: typeof xmlModule = require("../tns-core-modules/xml");
+//TODO: use a path mapping to the "xml" module after upgrading to TS 2.1
+var xml = require("../tns-core-modules/xml");
 
 describe("xml parser", () => {
     let last_element = null;
@@ -9,7 +9,7 @@ describe("xml parser", () => {
     let parser = null;
 
     beforeEach(() => {
-        parser = new xml.XmlParser(function (event: xmlModule.ParserEvent) {
+        parser = new xml.XmlParser(function (event) {
             switch (event.eventType) {
                 case xml.ParserEventType.StartElement:
                     last_element = event.elementName;

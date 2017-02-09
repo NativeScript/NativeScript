@@ -1,15 +1,14 @@
 {
     "compilerOptions": {
-        "noEmitOnError": false,
+        "noEmit": true,
+        "noEmitOnError": true,
         "noEmitHelpers": true,
         "target": "es5",
         "module": "commonjs",
         "declaration": false,
         "noImplicitAny": false,
         "noImplicitUseStrict": true,
-        "removeComments": true,
         "experimentalDecorators": true,
-        "diagnostics": true,
         "sourceMap": true,
         "jsx": "react",
         "reactNamespace": "UIBuilder",
@@ -17,6 +16,9 @@
             "es2016"
         ]
     },
+    "include": [
+        "tns-core-modules/**/*.d.ts"
+    ],
     "exclude": [
         "tns-platform-declarations/node_modules/",
         "tns-platform-declarations/package/",
@@ -37,6 +39,7 @@
         "obj",
         "tns-platform-declarations/references.d.ts",
         "tns-core-modules/references.d.ts",
-        "tns-platform-declarations/ios/objc-x86_64/"
+        "tns-platform-declarations/ios/objc-x86_64/",
+        "tns-platform-declarations/android/"
     ]
 }
