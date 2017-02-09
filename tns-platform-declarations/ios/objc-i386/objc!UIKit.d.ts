@@ -1978,9 +1978,9 @@ declare class UIApplication extends UIResponder {
 
 	scheduleLocalNotification(notification: UILocalNotification): void;
 
-	sendActionToFromForEvent(action: string, target: any, sender: any, event: _UIEvent): boolean;
+	sendActionToFromForEvent(action: string, target: any, sender: any, event: UIEvent): boolean;
 
-	sendEvent(event: _UIEvent): void;
+	sendEvent(event: UIEvent): void;
 
 	setKeepAliveTimeoutHandler(timeout: number, keepAliveHandler: () => void): boolean;
 
@@ -4009,17 +4009,17 @@ declare class UIControl extends UIView {
 
 	addTargetActionForControlEvents(target: any, action: string, controlEvents: UIControlEvents): void;
 
-	beginTrackingWithTouchWithEvent(touch: UITouch, event: _UIEvent): boolean;
+	beginTrackingWithTouchWithEvent(touch: UITouch, event: UIEvent): boolean;
 
-	cancelTrackingWithEvent(event: _UIEvent): void;
+	cancelTrackingWithEvent(event: UIEvent): void;
 
-	continueTrackingWithTouchWithEvent(touch: UITouch, event: _UIEvent): boolean;
+	continueTrackingWithTouchWithEvent(touch: UITouch, event: UIEvent): boolean;
 
-	endTrackingWithTouchWithEvent(touch: UITouch, event: _UIEvent): void;
+	endTrackingWithTouchWithEvent(touch: UITouch, event: UIEvent): void;
 
 	removeTargetActionForControlEvents(target: any, action: string, controlEvents: UIControlEvents): void;
 
-	sendActionToForEvent(action: string, target: any, event: _UIEvent): void;
+	sendActionToForEvent(action: string, target: any, event: UIEvent): void;
 
 	sendActionsForControlEvents(controlEvents: UIControlEvents): void;
 }
@@ -4951,14 +4951,11 @@ declare function UIEdgeInsetsFromString(string: string): UIEdgeInsets;
 
 declare var UIEdgeInsetsZero: UIEdgeInsets;
 
-/**
- * Note this is renamed from UIEvent, but UIEvent clashes with the JavaScript DOM UIEvent.
- */
-declare class _UIEvent extends NSObject {
+declare class UIEvent extends NSObject {
 
-	static alloc(): _UIEvent; // inherited from NSObject
+	static alloc(): UIEvent; // inherited from NSObject
 
-	static new(): _UIEvent; // inherited from NSObject
+	static new(): UIEvent; // inherited from NSObject
 
 	readonly allTouches: NSSet<UITouch>;
 
@@ -5459,7 +5456,7 @@ declare class UIGestureRecognizer extends NSObject {
 
 	ignorePressForEvent(button: UIPress, event: UIPressesEvent): void;
 
-	ignoreTouchForEvent(touch: UITouch, event: _UIEvent): void;
+	ignoreTouchForEvent(touch: UITouch, event: UIEvent): void;
 
 	initWithTargetAction(target: any, action: string): this;
 
@@ -5485,15 +5482,15 @@ declare class UIGestureRecognizer extends NSObject {
 
 	shouldRequireFailureOfGestureRecognizer(otherGestureRecognizer: UIGestureRecognizer): boolean;
 
-	touchesBeganWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesBeganWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
-	touchesCancelledWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesCancelledWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
-	touchesEndedWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesEndedWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
 	touchesEstimatedPropertiesUpdated(touches: NSSet<UITouch>): void;
 
-	touchesMovedWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesMovedWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 }
 
 interface UIGestureRecognizerDelegate extends NSObjectProtocol {
@@ -6269,7 +6266,7 @@ declare class UIInputViewController extends UIViewController implements UITextIn
 
 	dismissKeyboard(): void;
 
-	handleInputModeListFromViewWithEvent(view: UIView, event: _UIEvent): void;
+	handleInputModeListFromViewWithEvent(view: UIView, event: UIEvent): void;
 
 	isEqual(object: any): boolean;
 
@@ -8075,7 +8072,7 @@ declare const enum UIPressType {
 	PlayPause = 6
 }
 
-declare class UIPressesEvent extends _UIEvent {
+declare class UIPressesEvent extends UIEvent {
 
 	static alloc(): UIPressesEvent; // inherited from NSObject
 
@@ -8848,11 +8845,11 @@ declare class UIResponder extends NSObject implements UIResponderStandardEditAct
 
 	makeTextWritingDirectionRightToLeft(sender: any): void;
 
-	motionBeganWithEvent(motion: UIEventSubtype, event: _UIEvent): void;
+	motionBeganWithEvent(motion: UIEventSubtype, event: UIEvent): void;
 
-	motionCancelledWithEvent(motion: UIEventSubtype, event: _UIEvent): void;
+	motionCancelledWithEvent(motion: UIEventSubtype, event: UIEvent): void;
 
-	motionEndedWithEvent(motion: UIEventSubtype, event: _UIEvent): void;
+	motionEndedWithEvent(motion: UIEventSubtype, event: UIEvent): void;
 
 	paste(sender: any): void;
 
@@ -8872,7 +8869,7 @@ declare class UIResponder extends NSObject implements UIResponderStandardEditAct
 
 	reloadInputViews(): void;
 
-	remoteControlReceivedWithEvent(event: _UIEvent): void;
+	remoteControlReceivedWithEvent(event: UIEvent): void;
 
 	resignFirstResponder(): boolean;
 
@@ -8896,15 +8893,15 @@ declare class UIResponder extends NSObject implements UIResponderStandardEditAct
 
 	toggleUnderline(sender: any): void;
 
-	touchesBeganWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesBeganWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
-	touchesCancelledWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesCancelledWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
-	touchesEndedWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesEndedWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
 	touchesEstimatedPropertiesUpdated(touches: NSSet<UITouch>): void;
 
-	touchesMovedWithEvent(touches: NSSet<UITouch>, event: _UIEvent): void;
+	touchesMovedWithEvent(touches: NSSet<UITouch>, event: UIEvent): void;
 
 	updateUserActivityState(activity: NSUserActivity): void;
 }
@@ -9202,7 +9199,7 @@ declare class UIScrollView extends UIView implements NSCoding {
 
 	setZoomScaleAnimated(scale: number, animated: boolean): void;
 
-	touchesShouldBeginWithEventInContentView(touches: NSSet<UITouch>, event: _UIEvent, view: UIView): boolean;
+	touchesShouldBeginWithEventInContentView(touches: NSSet<UITouch>, event: UIEvent, view: UIView): boolean;
 
 	touchesShouldCancelInContentView(view: UIView): boolean;
 
@@ -13116,7 +13113,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	gestureRecognizerShouldBegin(gestureRecognizer: UIGestureRecognizer): boolean;
 
-	hitTestWithEvent(point: CGPoint, event: _UIEvent): UIView;
+	hitTestWithEvent(point: CGPoint, event: UIEvent): UIView;
 
 	initWithCoder(aDecoder: NSCoder): this;
 
@@ -13156,7 +13153,7 @@ declare class UIView extends UIResponder implements CALayerDelegate, NSCoding, U
 
 	performSelectorWithObjectWithObject(aSelector: string, object1: any, object2: any): any;
 
-	pointInsideWithEvent(point: CGPoint, event: _UIEvent): boolean;
+	pointInsideWithEvent(point: CGPoint, event: UIEvent): boolean;
 
 	removeConstraint(constraint: NSLayoutConstraint): void;
 
@@ -14357,7 +14354,7 @@ declare class UIWindow extends UIView {
 
 	resignKeyWindow(): void;
 
-	sendEvent(event: _UIEvent): void;
+	sendEvent(event: UIEvent): void;
 }
 
 declare var UIWindowDidBecomeHiddenNotification: string;

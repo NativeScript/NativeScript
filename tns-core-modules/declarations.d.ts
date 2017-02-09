@@ -42,24 +42,6 @@ declare class Headers {
     set(name: string, value: string): void;
 }
 
-interface Blob {
-    readonly size: number;
-    readonly type: string;
-    msClose(): void;
-    msDetachStream(): any;
-    slice(start?: number, end?: number, contentType?: string): Blob;
-}
-
-declare var Blob: {
-    prototype: Blob;
-    new (blobParts?: any[], options?: BlobPropertyBag): Blob;
-}
-
-interface BlobPropertyBag {
-    type?: string;
-    endings?: string;
-}
-
 declare class Body {
     bodyUsed: boolean;
     /*
@@ -97,6 +79,10 @@ declare type BodyInit = Blob|FormData|string;
 declare type RequestInfo = Request|string;
 
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
+
+interface XMLHttpRequest {
+    send(data?: FormData): void;
+}
 
 interface Console {
     time(reportName: string): void;
@@ -180,7 +166,3 @@ declare var exports: any;
 interface Array<T> {
     filter<U extends T>(pred: (a: T) => a is U): U[];
 }
-
-//Dialogs
-declare function alert(message?: any): void;
-declare function confirm(message?: string): boolean;

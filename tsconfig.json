@@ -13,7 +13,7 @@
         "jsx": "react",
         "reactNamespace": "UIBuilder",
         "lib": [
-            "dom", "es6"
+            "es2016"
         ]
     },
     "exclude": [
