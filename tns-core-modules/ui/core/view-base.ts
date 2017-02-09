@@ -422,7 +422,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public requestLayout(): void {
-        //
+        let parent = this.parent;
+        if (parent) {
+            parent.requestLayout();
+        }
     }
 
     public eachChild(callback: (child: ViewBase) => boolean) {
@@ -450,7 +453,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     protected _addViewCore(view: ViewBase, atIndex?: number) {
-        this._applyStyleFromScope();
+        view._applyStyleFromScope();
 
         // TODO: Split this method - we want binding context before loaded.
         propagateInheritedProperties(this);
