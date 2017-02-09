@@ -36,7 +36,7 @@ export class ActionItem extends ActionItemBase {
         return this._ios;
     }
     public set ios(value: IOSActionItemSettings) {
-        throw new Error("ActionItem.android is read-only");
+        throw new Error("ActionItem.ios is read-only");
     }
 }
 
@@ -161,8 +161,12 @@ export class ActionBar extends ActionBarBase {
             item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
         }
-        else if (typeof item.ios.systemIcon === "number") {
-            barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
+        else if (item.ios.systemIcon !== undefined) {
+            let id: number = item.ios.systemIcon;
+            if (typeof id === "string") {
+                id = parseInt(id);
+            }
+            barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
         }
         else if (item.icon) {
             let img = fromFileOrResource(item.icon);
