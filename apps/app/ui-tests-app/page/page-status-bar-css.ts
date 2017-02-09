@@ -1,9 +1,11 @@
-import { Color } from "color";
-import { Page } from "ui/page";
-import { View, unsetValue } from "ui/core/view";
+import color = require("color");
+import page = require("ui/page");
+import style = require("ui/styling/style");
+import view = require("ui/core/view");
+import { unsetValue } from "ui/core/properties";
 
 export function applyTap(args) {
-    let page = <Page>(<View>args.object).page;
+    let page = <page.Page>(<view.View>args.object).page;
 
     reset(page);
 
@@ -12,16 +14,16 @@ export function applyTap(args) {
 }
 
 export function applyTapOnStyledActionBar(args) {
-    let page = <Page>(<View>args.object).page;
+    let page = <page.Page>(<view.View>args.object).page;
 
     reset(page);
 
-    page.actionBar.backgroundColor = new Color("#5DFC0A");
+    page.actionBar.backgroundColor = new color.Color("#5DFC0A");
     page.css = "#test-element { " + args.object.tag + " }";
 }
 
 export function applyTapWithHiddenActionBar(args) {
-    let page = <Page>(<View>args.object).page;
+    let page = <page.Page>(<view.View>args.object).page;
 
     reset(page);
 
@@ -30,7 +32,7 @@ export function applyTapWithHiddenActionBar(args) {
 }
 
 export function applyTapWithSpan(args) {
-    let page = <Page>(<View>args.object).page;
+    let page = <page.Page>(<view.View>args.object).page;
 
     reset(page);
 
@@ -39,17 +41,17 @@ export function applyTapWithSpan(args) {
 }
 
 export function applyTapOnStyledActionBarAndSpan(args) {
-    let page = <Page>(<View>args.object).page;
+    let page = <page.Page>(<view.View>args.object).page;
 
     reset(page);
 
     page.backgroundSpanUnderStatusBar = true;
-    page.actionBar.backgroundColor = new Color("#E0115F");
+    page.actionBar.backgroundColor = new color.Color("#E0115F");
     page.css = "#test-element { " + args.object.tag + " }";
 }
 
 export function applyTapWithActionBarHiddenAndSpan(args) {
-    let page = <Page>(<View>args.object).page;
+    let page = <page.Page>(<view.View>args.object).page;
 
     reset(page);
 
@@ -58,7 +60,7 @@ export function applyTapWithActionBarHiddenAndSpan(args) {
     page.css = "#test-element { " + args.object.tag + " }";
 }
 
-function reset(page: Page) {
+function reset(page: page.Page) {
     page.css = "";
     page.actionBarHidden = false;
     page.backgroundSpanUnderStatusBar = false;
