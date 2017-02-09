@@ -36,6 +36,10 @@
   "scripts": {
     "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps",
     "tsc": "tsc",
+    "compile-all": "tsc -p tsconfig.json --outDir bin/dist",
+    "compile-check-base-dts": "tsc -p tsconfig.base-dts.json",
+    "compile-node-tests": "tsc -p tsconfig.node-tests.json --outDir bin/dist/node-tests",
+    "compile-check-combined-dts": "tsc -p tsconfig.combined-dts.json",
     "tsc-w": "tsc --skipLibCheck -w",
     "dev-tsc-tns-platform-declarations": "tsc -p tns-platform-declarations",
     "dev-tsc-tests": "tsc -p tests",
