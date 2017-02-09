@@ -1,8 +1,8 @@
-﻿import {Observable} from "data/observable";
-import {ImageSource, fromFile as imageSourceFromFile, fromUrl as imageSourceFromUrl} from "image-source";
+﻿import { Observable } from "data/observable";
+import { ImageSource, fromFile as imageSourceFromFile, fromUrl as imageSourceFromUrl } from "image-source";
 
-import {ItemData} from "./reddit-model";
-import {defaultThumbnailImageSource, defaultNoThumbnailImageSource, cache} from "./reddit-app-view-model";
+import { ItemData } from "./reddit-model";
+import { defaultThumbnailImageSource, defaultNoThumbnailImageSource, cache } from "./reddit-app-view-model";
 
 var firstThumbnailImageSource = imageSourceFromFile("~/cuteness.io/res/first-image.png");
 var defaultImageSource = imageSourceFromFile("~/cuteness.io/res/reddit-logo-transparent.png");
