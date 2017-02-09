@@ -321,59 +321,6 @@ module.exports = function(grunt) {
                 dest: "<%= grunt.option('path') %>/node_modules/tns-core-modules/",
             }
         },
-        ts: {
-            build: {
-                tsconfig: {
-                    tsconfig: 'tsconfig.json',
-                    passThrough: true,
-                },
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: tsOptions
-            },
-            buildNodeTests: {
-                src: [
-                    'tns-core-modules/js-libs/easysax/**/*.ts',
-                    'tns-core-modules/module.d.ts',
-                    'tns-core-modules/xml/**/*.ts',
-                    'tns-core-modules/lib.core.d.ts',
-                    'tns-core-modules/lib.dom.d.ts',
-                    'tns-core-modules/es-collections.d.ts',
-                    'tns-core-modules/declarations.d.ts',
-                    'tns-core-modules/es6-promise.d.ts',
-                    'node-tests/**/*.ts'
-                ],
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: tsOptions
-            },
-            buildDts: {
-                src: [
-                    'tns-core-modules/**/*.d.ts',
-                    '!org.nativescript.widgets.d.ts',
-                    '!**/*.android.d.ts',
-                    '!**/node_modules/**/*',
-                    '!**/platforms/**/*',
-                    '!bin/**/*',
-                    '!**/references.d.ts',
-                    '!tns-core-modules/references.d.ts',
-                    '!tns-core-modules/android17.d.ts',
-                    '!tns-core-modules/ios/**/*',
-                    '!tns-core-modules/org.nativescript.widgets.d.ts',
-                ],
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: tsOptions
-            },
-            testCombinedDts: {
-                src: [
-                    path.join(localCfg.outTnsCoreModules, 'tns-core-modules.d.ts'),
-                ],
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: Object.assign({}, tsOptions, { noLib: false })
-            }
-        },
         tslint: {
             build: {
                 files: {
@@ -400,6 +347,10 @@ module.exports = function(grunt) {
                     callback: assignGitSHA
                 }
             },
+            compileAll: "npm run compile-all",
+            compileNodeTests: "npm run compile-node-tests",
+            compileCheckBaseDts: "npm run compile-check-base-dts",
+            compileCheckCombinedDts: "npm run compile-check-combined-dts",
         },
         simplemocha: {
             node: {
@@ -431,7 +382,6 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-ts");
     grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-shell");
@@ -446,8 +396,8 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask("compile-ts", [
-        "ts:buildDts",
-        "ts:build",
+        "shell:compileCheckBaseDts",
+        "shell:compileAll",
         "clean:typeScriptLeftovers",
         "copy:childPackageFiles"
     ]);
@@ -508,12 +458,12 @@ module.exports = function(grunt) {
         "copy:definitionFiles",
         "copy:jsLibs",
         "generate-tns-core-modules-dts",
-        "ts:testCombinedDts",
+        "shell:compileCheckCombinedDts",
     ]);
 
     grunt.registerTask("node-tests", [
         "clean:nodeTests",
-        "ts:buildNodeTests",
+        "shell:compileNodeTests",
         "copy:childPackageFiles",
         "copy:jsLibs",
         "env:nodeTests",

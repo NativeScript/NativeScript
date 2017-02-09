@@ -1,0 +1,28 @@
+{
+    "compilerOptions": {
+        "noEmitOnError": true,
+        "noEmitHelpers": true,
+        "target": "es5",
+        "module": "commonjs",
+        "declaration": false,
+        "noImplicitAny": false,
+        "noImplicitUseStrict": true,
+        "experimentalDecorators": true,
+        "sourceMap": true,
+        "jsx": "react",
+        "reactNamespace": "UIBuilder",
+        "lib": [
+            "es2016"
+        ]
+    },
+    "include": [
+        "tns-core-modules/js-libs/easysax/**/*.ts",
+        "tns-core-modules/module.d.ts",
+        "tns-core-modules/lib.core.d.ts",
+        "tns-core-modules/lib.dom.d.ts",
+        "tns-core-modules/es-collections.d.ts",
+        "tns-core-modules/declarations.d.ts",
+        "tns-core-modules/es6-promise.d.ts",
+        "node-tests/**/*.ts"
+    ]
+}
