@@ -11,14 +11,14 @@ install:
 before_script:
   - export ANDROID_HOME=/usr/local/opt/android-sdk
 script: ./build.sh $PACKAGE_VERSION
-# before_deploy:
-#   - cd ./dist/package/
-#   - node ../../.travis/add-publishConfig.js next
-# deploy:
-#   skip_cleanup: true
-#   provider: npm
-#   email: nativescript@telerik.com
-#   on:
-#     branch: master
-#   api_key:
-#     secure: HXy938ACb/U2idHgqhSTO802NncaCRbVWw8D1AtaGYVl2fJf3B0gAA7BIjg+A/vzFgxirNVrFYAGOcFfMAvX+JJm46NOPh+AQGvcCzQPYvuM4dP1e7W4A1R0SasAR1CfH87MMvCkgUWDhLtMhYCCiKo053hMpE71xeG54mneomPdX5X74odIRYvSFxTVFHB7s7LhDKdJdAPi9h5RMkEIH7uCDQm5K8GUIWBVbsbZ+DEbwiWpcfESL7rp16wlCILunXSwiwvxYycuZVYBSCsPwp/Urf0YaVqs05K1H+Ynl7l1SIvIJ/BMFO0U/Kj4C/YYNYQj9uF1CQ9CNRD2n0mZ57waFR+EGwdOR2U1iReyqd1zMKbQ8pIi0C6sZ8qhS3R6Hg+Y7Vto4wzNsHb53dvtogUGxhhmhRCopb/LHlqFnOApd6UEW4ElGOV+oSD08rLSknEX9X7IRcyBWDRfYRc7Plh2xFHAkWLFxihB7VHq+pWO6nKZLbvrvKmi8kEq7DFPBdGAvwKDviC8wMnymXP9rG9+f0lDCYsvjAQpCJUzngHmM33nf83Q5piL6FLY1CBSO1QCqWnWX9SPHzvxK1/WhEqi2p7sSjmJQ7CfOH1LxBUn+iaLGh7oAV0l3AwQTn3D1I+M/YH+ROAUp6f84MdMDcaw++kZbXJnf8M6Pk16sQY=
+before_deploy:
+  - cd ./dist/package/
+  - node ../../.travis/add-publishConfig.js rc
+deploy:
+  skip_cleanup: true
+  provider: npm
+  email: nativescript@telerik.com
+  on:
+    branch: master
+  api_key:
+    secure: HXy938ACb/U2idHgqhSTO802NncaCRbVWw8D1AtaGYVl2fJf3B0gAA7BIjg+A/vzFgxirNVrFYAGOcFfMAvX+JJm46NOPh+AQGvcCzQPYvuM4dP1e7W4A1R0SasAR1CfH87MMvCkgUWDhLtMhYCCiKo053hMpE71xeG54mneomPdX5X74odIRYvSFxTVFHB7s7LhDKdJdAPi9h5RMkEIH7uCDQm5K8GUIWBVbsbZ+DEbwiWpcfESL7rp16wlCILunXSwiwvxYycuZVYBSCsPwp/Urf0YaVqs05K1H+Ynl7l1SIvIJ/BMFO0U/Kj4C/YYNYQj9uF1CQ9CNRD2n0mZ57waFR+EGwdOR2U1iReyqd1zMKbQ8pIi0C6sZ8qhS3R6Hg+Y7Vto4wzNsHb53dvtogUGxhhmhRCopb/LHlqFnOApd6UEW4ElGOV+oSD08rLSknEX9X7IRcyBWDRfYRc7Plh2xFHAkWLFxihB7VHq+pWO6nKZLbvrvKmi8kEq7DFPBdGAvwKDviC8wMnymXP9rG9+f0lDCYsvjAQpCJUzngHmM33nf83Q5piL6FLY1CBSO1QCqWnWX9SPHzvxK1/WhEqi2p7sSjmJQ7CfOH1LxBUn+iaLGh7oAV0l3AwQTn3D1I+M/YH+ROAUp6f84MdMDcaw++kZbXJnf8M6Pk16sQY=
