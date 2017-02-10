@@ -1,10 +1,10 @@
-﻿import {ImageSource, fromFile as imageSourceFromFile} from "image-source";
-import {VirtualArray, ItemsLoading as virtualArrayItemsLoadingData} from "data/virtual-array";
-import {Observable} from "data/observable";
-import {Cache as ImageCache} from "ui/image-cache";
+﻿import { ImageSource, fromFile as imageSourceFromFile } from "image-source";
+import { VirtualArray, ItemsLoading as virtualArrayItemsLoadingData } from "data/virtual-array";
+import { Observable } from "data/observable";
+import { Cache as ImageCache } from "ui/image-cache";
 
-import {Data as RedditData} from "./reddit-model";
-import {RedditViewModel} from "./reddit-item-view-model";
+import { Data as RedditData } from "./reddit-model";
+import { RedditViewModel } from "./reddit-item-view-model";
 
 var aboutText = "Cuteness is a proof of concept app demonstrating the Telerik's NativeScript for writing native mobile applications using JavaScript.";
 export var defaultThumbnailImageSource = imageSourceFromFile("~/cuteness.io/res/reddit-logo.png");
@@ -28,9 +28,9 @@ export class AppViewModel extends Observable {
             this._redditItems.loadSize = 50;
             this._redditItems.on(VirtualArray.itemsLoadingEvent, (args: virtualArrayItemsLoadingData) => {
 
-                fetch(redditUrl + args.count + (after ? "&after=" + after : "")).then<RedditData>(response=> response.json()).then(result => {
+                fetch(redditUrl + args.count + (after ? "&after=" + after : "")).then<RedditData>(response => response.json()).then(result => {
 
-                    var itemsToLoad = result.data.children.map(i=> {
+                    var itemsToLoad = result.data.children.map(i => {
                         return new RedditViewModel(i.data);
                     });
 

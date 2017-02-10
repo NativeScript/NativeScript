@@ -21,10 +21,6 @@ export abstract class ImageBase extends View implements ImageDefinition {
         this.style.tintColor = value;
     }
 
-    public _setNativeImage(nativeImage: any) {
-        //
-    }
-
     /**
      * @internal
      */
@@ -110,7 +106,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
 export const imageSourceProperty = new Property<ImageBase, ImageSource>({ name: "imageSource" });
 imageSourceProperty.register(ImageBase);
 
-export const srcProperty = new Property<ImageBase, any>({ name: "src"});
+export const srcProperty = new Property<ImageBase, any>({ name: "src" });
 srcProperty.register(ImageBase);
 
 export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "sync" });

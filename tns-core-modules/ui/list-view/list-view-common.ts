@@ -1,5 +1,5 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, lengthComparer } from "ui/core/view";
+import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, lengthComparer, Observable } from "ui/core/view";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
 import { ObservableArray, ChangedData } from "data/observable-array";
@@ -129,11 +129,11 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
  */
 export const itemsProperty = new Property<ListViewBase, any[] | ItemsSource>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
-        if (oldValue instanceof ObservableArray) {
+        if (oldValue instanceof Observable) {
             removeWeakEventListener(oldValue, ObservableArray.changeEvent, target._onItemsChanged, target);
         }
 
-        if (newValue instanceof ObservableArray) {
+        if (newValue instanceof Observable) {
             addWeakEventListener(newValue, ObservableArray.changeEvent, target._onItemsChanged, target);
         }
 

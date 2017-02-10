@@ -67,16 +67,6 @@ export class Image extends ImageBase {
         this._android = new org.nativescript.widgets.ImageView(this._context);
     }
 
-    public _setNativeImage(nativeImage: any) {
-        if (!nativeImage) {
-            return;
-        }
-
-        let rotation = nativeImage.rotationAngle ? nativeImage.rotationAngle : 0;
-        this.android.setRotationAngle(rotation);
-        this.android.setImageBitmap(nativeImage.android);
-    }
-
     public _createImageSourceFromSrc() {
         let imageView = this._android;
         this.imageSource = <any>unsetValue;
@@ -155,7 +145,14 @@ export class Image extends ImageBase {
         return undefined;
     }
     set [imageSourceProperty.native](value: ImageSource) {
-        this._setNativeImage(value ? value.android : null);
+        if (value && value.android) {
+            let rotation = value.rotationAngle ? value.rotationAngle : 0;
+            this.android.setRotationAngle(rotation);
+            this.android.setImageBitmap(value.android);
+        } else {
+            this.android.setRotationAngle(0);
+            this.android.setImageBitmap(null);
+        }
     }
 
     get [srcProperty.native](): any {
