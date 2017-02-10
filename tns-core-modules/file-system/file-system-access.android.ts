@@ -1,5 +1,5 @@
-﻿import textModule = require("text");
-import utils = require("utils/utils");
+﻿import * as textModule from "text";
+import * as utils from "utils/utils";
 import * as typesModule from "utils/types";
 
 export class FileSystemAccess {

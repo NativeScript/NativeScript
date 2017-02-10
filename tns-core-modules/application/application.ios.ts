@@ -1,10 +1,8 @@
-﻿import common = require("./application-common");
+﻿import * as common from "./application-common";
 import {Frame, NavigationEntry} from "ui/frame";
-import definition = require("application");
+import * as definition from "application";
 import * as uiUtils from "ui/utils";
 import * as typesModule from "utils/types";
-import * as enumsModule from "ui/enums";
-
 import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
@@ -87,7 +85,7 @@ class IOSApplication implements definition.iOSApplication {
 
     get window(): Window {
         return this._window;
-    }
+    }    
 
     get delegate(): typeof UIApplicationDelegate {
         return this._delegate;
@@ -188,20 +186,18 @@ class IOSApplication implements definition.iOSApplication {
         if (this._currentOrientation !== orientation) {
             this._currentOrientation = orientation;
 
-            var enums: typeof enumsModule = require("ui/enums");
-
-            var newValue;
+            let newValue: "portrait" | "landscape" | "unknown";
             switch (orientation) {
                 case UIDeviceOrientation.LandscapeRight:
                 case UIDeviceOrientation.LandscapeLeft:
-                    newValue = enums.DeviceOrientation.landscape;
+                    newValue = "landscape";
                     break;
                 case UIDeviceOrientation.Portrait:
                 case UIDeviceOrientation.PortraitUpsideDown:
-                    newValue = enums.DeviceOrientation.portrait;
+                    newValue = "portrait";
                     break;
                 default:
-                    newValue = enums.DeviceOrientation.unknown;
+                    newValue = "unknown";
                     break;
             }
 
@@ -226,8 +222,8 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
     if (types.isFunction(typedExports.onUncaughtError)) {
         typedExports.onUncaughtError(error);
     }
-
-    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error });
+    
+    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error, error });
 }
 
 function loadCss() {
@@ -236,6 +232,10 @@ function loadCss() {
     if (typedExports.appSelectors.length > 0) {
         typedExports.mergeCssSelectors(typedExports);
     }
+}
+
+export function setCssFileName(cssFileName: string) {
+    typedExports.cssFile = cssFileName;
 }
 
 export function addCss(cssText: string) {
@@ -277,11 +277,11 @@ typedExports.start = function (entry?: NavigationEntry) {
     if (entry) {
         exports.mainEntry = entry;
     }
-    started = true;
+
     loadCss();
 
     if(!iosApp.nativeApp) {
-        // Normal NativeScript app will need UIApplicationMain.
+        // Normal NativeScript app will need UIApplicationMain. 
         UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
     } else {
         let rootView = createRootView();
@@ -291,7 +291,7 @@ typedExports.start = function (entry?: NavigationEntry) {
             if(window) {
                 var rootController = window.rootViewController;
                 if(rootController) {
-                    rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, utils.ios.MajorVersion >= 7, null);
+                    rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, true, null);
                     uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
                 }
             }

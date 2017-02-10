@@ -1,5 +1,5 @@
 ﻿//@private
-import view = require("ui/core/view");
+import * as view from "ui/core/view";
 
 export declare function getUniformNativeBorderWidth(v: view.View): number;
 

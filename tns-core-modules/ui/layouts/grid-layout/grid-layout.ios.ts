@@ -1,11 +1,10 @@
-﻿import utils = require("utils/utils");
-import common = require("./grid-layout-common");
-import {View} from "ui/core/view";
-import {HorizontalAlignment, VerticalAlignment} from "ui/enums";
+﻿import {
+    GridLayoutBase, ItemSpec, View, layout
+} from "./grid-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./grid-layout-common";
 
-export class GridLayout extends common.GridLayout {
+export class GridLayout extends GridLayoutBase {
     private helper: MeasureHelper;
     private columnOffsets = new Array<number>();
     private rowOffsets = new Array<number>();
@@ -16,20 +15,20 @@ export class GridLayout extends common.GridLayout {
         this.helper = new MeasureHelper(this);
     }
 
-    public _onRowAdded(itemSpec: common.ItemSpec) {
+    public _onRowAdded(itemSpec: ItemSpec) {
         this.helper.rows.push(new ItemGroup(itemSpec));
     }
 
-    public _onColumnAdded(itemSpec: common.ItemSpec) {
+    public _onColumnAdded(itemSpec: ItemSpec) {
         this.helper.columns.push(new ItemGroup(itemSpec));
     }
 
-    public _onRowRemoved(itemSpec: common.ItemSpec, index: number) {
+    public _onRowRemoved(itemSpec: ItemSpec, index: number) {
         this.helper.rows[index].children.length = 0;
         this.helper.rows.splice(index, 1);
     }
 
-    public _onColumnRemoved(itemSpec: common.ItemSpec, index: number) {
+    public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
         this.helper.columns[index].children.length = 0;
         this.helper.columns.splice(index, 1);
     }
@@ -58,11 +57,11 @@ export class GridLayout extends common.GridLayout {
         return Math.max(1, Math.min(GridLayout.getRowSpan(view), this.rowsInternal.length - rowIndex));
     }
 
-    private getColumnSpec(view: View): common.ItemSpec {
+    private getColumnSpec(view: View): ItemSpec {
         return this.columnsInternal[this.getColumnIndex(view)] || this.helper.singleColumn;
     }
 
-    private getRowSpec(view: View): common.ItemSpec {
+    private getRowSpec(view: View): ItemSpec {
         return this.rowsInternal[this.getRowIndex(view)] || this.helper.singleRow;
     }
 
@@ -101,30 +100,28 @@ export class GridLayout extends common.GridLayout {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        GridLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         let measureWidth = 0;
         let measureHeight = 0;
 
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let density = utils.layout.getDisplayDensity();
-        let verticalPadding = (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
-        let horizontalPadding = (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
+        const horizontalPaddingsAndMargins = this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalPaddingsAndMargins = this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
-        let infinityWidth = widthMode === utils.layout.UNSPECIFIED;
-        let infinityHeight = heightMode === utils.layout.UNSPECIFIED;
+        let infinityWidth = widthMode === layout.UNSPECIFIED;
+        let infinityHeight = heightMode === layout.UNSPECIFIED;
 
-        this.helper.width = Math.max(0, width - horizontalPadding);
-        this.helper.height = Math.max(0, height - verticalPadding);
+        this.helper.width = Math.max(0, width - horizontalPaddingsAndMargins);
+        this.helper.height = Math.max(0, height - verticalPaddingsAndMargins);
 
-        this.helper.stretchedHorizontally = widthMode === utils.layout.EXACTLY || (this.horizontalAlignment === HorizontalAlignment.stretch && !infinityWidth);
-        this.helper.stretchedVertically = heightMode === utils.layout.EXACTLY || (this.verticalAlignment === VerticalAlignment.stretch && !infinityHeight);
+        this.helper.stretchedHorizontally = widthMode === layout.EXACTLY || (this.horizontalAlignment === "stretch" && !infinityWidth);
+        this.helper.stretchedVertically = heightMode === layout.EXACTLY || (this.verticalAlignment === "stretch" && !infinityHeight);
 
         this.helper.setInfinityWidth(infinityWidth);
         this.helper.setInfinityHeight(infinityHeight);
@@ -141,15 +138,15 @@ export class GridLayout extends common.GridLayout {
         this.helper.measure();
 
         // Add in our padding
-        measureWidth = this.helper.measuredWidth + horizontalPadding;
-        measureHeight = this.helper.measuredHeight + verticalPadding;
+        measureWidth = this.helper.measuredWidth + horizontalPaddingsAndMargins;
+        measureHeight = this.helper.measuredHeight + verticalPaddingsAndMargins;
 
         // Check against our minimum sizes
-        measureWidth = Math.max(measureWidth, this.minWidth * density);
-        measureHeight = Math.max(measureHeight, this.minHeight * density);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
-        let widthSizeAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightSizeAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthSizeAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightSizeAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthSizeAndState, heightSizeAndState);
     }
@@ -157,10 +154,8 @@ export class GridLayout extends common.GridLayout {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        let density = utils.layout.getDisplayDensity();
-
-        let paddingLeft = (this.borderLeftWidth + this.paddingLeft) * density;
-        let paddingTop = (this.borderTopWidth + this.paddingTop) * density;
+        let paddingLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft;
+        let paddingTop = this.effectiveBorderTopWidth + this.effectivePaddingTop;
 
         this.columnOffsets.length = 0;
         this.rowOffsets.length = 0;
@@ -211,13 +206,11 @@ export class GridLayout extends common.GridLayout {
                 let childRight = this.columnOffsets[measureSpec.getColumnIndex() + measureSpec.getColumnSpan()];
                 let childTop = this.rowOffsets[measureSpec.getRowIndex()];
                 let childBottom = this.rowOffsets[measureSpec.getRowIndex() + measureSpec.getRowSpan()];
-	
+
                 // No need to include margins in the width, height
                 View.layoutChild(this, measureSpec.child, childLeft, childTop, childRight, childBottom);
             }
         }
-
-        GridLayout.restoreOriginalParams(this);
     }
 }
 
@@ -237,8 +230,8 @@ class MeasureSpecs {
     public measured = false;
 
     public child: View;
-    private column: common.ItemSpec;
-    private row: common.ItemSpec
+    private column: ItemSpec;
+    private row: ItemSpec
     private columnIndex: number = 0;
     private rowIndex: number = 0;
 
@@ -288,19 +281,19 @@ class MeasureSpecs {
         this.columnIndex = value;
     }
 
-    public getRow(): common.ItemSpec {
+    public getRow(): ItemSpec {
         return this.row;
     }
 
-    public getColumn(): common.ItemSpec {
+    public getColumn(): ItemSpec {
         return this.column;
     }
 
-    public setRow(value: common.ItemSpec): void {
+    public setRow(value: ItemSpec): void {
         this.row = value;
     }
 
-    public setColumn(value: common.ItemSpec): void {
+    public setColumn(value: ItemSpec): void {
         this.column = value;
     }
 }
@@ -308,14 +301,14 @@ class MeasureSpecs {
 class ItemGroup {
     public length = 0;
     public measuredCount = 0;
-    public rowOrColumn: common.ItemSpec;
+    public rowOrColumn: ItemSpec;
     public children: Array<MeasureSpecs> = new Array<MeasureSpecs>();
 
     public measureToFix = 0;
     public currentMeasureToFixCount = 0;
     private infinityLength = false;
 
-    constructor(spec: common.ItemSpec) {
+    constructor(spec: ItemSpec) {
         this.rowOrColumn = spec;
     }
 
@@ -351,11 +344,11 @@ class ItemGroup {
 }
 
 class MeasureHelper {
-    singleRow: common.ItemSpec;
-    singleColumn: common.ItemSpec;
+    singleRow: ItemSpec;
+    singleColumn: ItemSpec;
     grid: GridLayout;
 
-    infinity: number = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
+    infinity: number = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
     rows: Array<ItemGroup> = new Array<ItemGroup>();
     columns: Array<ItemGroup> = new Array<ItemGroup>();
 
@@ -384,8 +377,8 @@ class MeasureHelper {
 
     constructor(grid: GridLayout) {
         this.grid = grid;
-        this.singleRow = new common.ItemSpec();
-        this.singleColumn = new common.ItemSpec();
+        this.singleRow = new ItemSpec();
+        this.singleColumn = new ItemSpec();
         this.singleRowGroup = new ItemGroup(this.singleRow);
         this.singleColumnGroup = new ItemGroup(this.singleColumn);
     }
@@ -478,7 +471,7 @@ class MeasureHelper {
     }
 
     private static initList(list: Array<ItemGroup>): void {
-        let density = utils.layout.getDisplayDensity();
+        let density = layout.getDisplayDensity();
         for (let i = 0, size = list.length; i < size; i++) {
             let item: ItemGroup = list[i];
             item.init(density);
@@ -667,7 +660,7 @@ class MeasureHelper {
         return result;
     }
 
-    public measure(): void {		
+    public measure(): void {
         // Measure auto & pixel columns and rows (no spans).
         let size = this.columns.length;
         for (let i = 0; i < size; i++) {
@@ -763,10 +756,10 @@ class MeasureHelper {
     }
 
     private measureChild(measureSpec: MeasureSpecs, isFakeMeasure: boolean): void {
-        let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelWidth, utils.layout.EXACTLY);
-        let heightMeasureSpec = (isFakeMeasure || measureSpec.autoRowsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelHeight, utils.layout.EXACTLY);
+        let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
+        let heightMeasureSpec = (isFakeMeasure || measureSpec.autoRowsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth: number = childSize.measuredWidth;
         let childMeasuredHeight: number = childSize.measuredHeight;
 
@@ -828,10 +821,10 @@ class MeasureHelper {
             measureWidth += columnGroup.length;
         }
 
-        let widthMeasureSpec = utils.layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? utils.layout.EXACTLY : utils.layout.AT_MOST);
-        let heightMeasureSpec = (measureSpec.autoRowsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelHeight, utils.layout.EXACTLY);
+        let widthMeasureSpec = layout.makeMeasureSpec(measureWidth, this.stretchedHorizontally ? layout.EXACTLY : layout.AT_MOST);
+        let heightMeasureSpec = (measureSpec.autoRowsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelHeight, layout.EXACTLY);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 
@@ -872,10 +865,10 @@ class MeasureHelper {
             measureHeight += rowGroup.length;
         }
 
-        let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : utils.layout.makeMeasureSpec(measureSpec.pixelWidth, utils.layout.EXACTLY);
-        let heightMeasureSpec = utils.layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? utils.layout.EXACTLY : utils.layout.AT_MOST);
+        let widthMeasureSpec = (measureSpec.autoColumnsCount > 0) ? this.infinity : layout.makeMeasureSpec(measureSpec.pixelWidth, layout.EXACTLY);
+        let heightMeasureSpec = layout.makeMeasureSpec(measureHeight, this.stretchedVertically ? layout.EXACTLY : layout.AT_MOST);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 
@@ -926,13 +919,13 @@ class MeasureHelper {
         }
 
         // if (have stars) & (not stretch) - at most
-        let widthMeasureSpec = utils.layout.makeMeasureSpec(measureWidth,
-            (measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally) ? utils.layout.AT_MOST : utils.layout.EXACTLY);
+        let widthMeasureSpec = layout.makeMeasureSpec(measureWidth,
+            (measureSpec.starColumnsCount > 0 && !this.stretchedHorizontally) ? layout.AT_MOST : layout.EXACTLY);
 
-        let heightMeasureSpec = utils.layout.makeMeasureSpec(measureHeight,
-            (measureSpec.starRowsCount > 0 && !this.stretchedVertically) ? utils.layout.AT_MOST : utils.layout.EXACTLY);
+        let heightMeasureSpec = layout.makeMeasureSpec(measureHeight,
+            (measureSpec.starRowsCount > 0 && !this.stretchedVertically) ? layout.AT_MOST : layout.EXACTLY);
 
-        let childSize = View.measureChild(null, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
+        let childSize = View.measureChild(this.grid, measureSpec.child, widthMeasureSpec, heightMeasureSpec);
         let childMeasuredWidth = childSize.measuredWidth;
         let childMeasuredHeight = childSize.measuredHeight;
 

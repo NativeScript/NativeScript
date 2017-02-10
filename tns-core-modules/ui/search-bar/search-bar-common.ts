@@ -1,53 +1,27 @@
-﻿import definition = require("ui/search-bar");
-import {View} from "ui/core/view";
-import {Property, PropertyMetadataSettings} from "ui/core/dependency-observable";
-import {PropertyMetadata} from "ui/core/proxy";
-import {Color} from "color";
-import {isAndroid} from "platform";
+﻿import { SearchBar as SearchBarDefinition } from "ui/search-bar";
+import { View, Property, Color, isIOS } from "ui/core/view";
 
-// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+export * from "ui/core/view";
 
-export class SearchBar extends View implements definition.SearchBar {
+export abstract class SearchBarBase extends View implements SearchBarDefinition {
     public static submitEvent = "submit";
     public static clearEvent = "clear";
+    public text: string;
+    public hint: string;
+    public textFieldBackgroundColor: Color;
+    public textFieldHintColor: Color;
 
-    public static textFieldBackgroundColorProperty = new Property("textFieldBackgroundColor", "SearchBar", new PropertyMetadata(undefined));
-    public static textFieldHintColorProperty = new Property("textFieldHintColor", "SearchBar", new PropertyMetadata(undefined));
-    public static hintProperty = new Property("hint", "SearchBar", new PropertyMetadata(""));
-    public static textProperty = new Property("text", "SearchBar", new PropertyMetadata("", AffectsLayout));
+    public abstract dismissSoftInput();
+}
 
-    get text(): string {
-        return this._getValue(SearchBar.textProperty);
-    }
-    set text(value: string) {
-        this._setValue(SearchBar.textProperty, value);
-    }
+export const textProperty = new Property<SearchBarBase, string>({ name: "text", defaultValue: "", affectsLayout: isIOS });
+textProperty.register(SearchBarBase);
 
-    get hint(): string {
-        return this._getValue(SearchBar.hintProperty);
-    }
-    set hint(value: string) {
-        this._setValue(SearchBar.hintProperty, value);
-    }
+export const hintProperty = new Property<SearchBarBase, string>({ name: "hint", defaultValue: "" });
+hintProperty.register(SearchBarBase);
 
-    get textFieldBackgroundColor(): Color {
-        return this._getValue(SearchBar.textFieldBackgroundColorProperty);
-    }
-    set textFieldBackgroundColor(value: Color) {
-        this._setValue(SearchBar.textFieldBackgroundColorProperty,
-            value instanceof Color ? value : new Color(<any>value));
-    }
+export const textFieldHintColorProperty = new Property<SearchBarBase, Color>({ name: "textFieldHintColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+textFieldHintColorProperty.register(SearchBarBase);
 
-    get textFieldHintColor(): Color {
-        return this._getValue(SearchBar.textFieldHintColorProperty);
-    }
-    set textFieldHintColor(value: Color) {
-        this._setValue(SearchBar.textFieldHintColorProperty,
-            value instanceof Color ? value : new Color(<any>value));
-    }
-
-    public dismissSoftInput() {
-        //
-    }
-} 
+export const textFieldBackgroundColorProperty = new Property<SearchBarBase, Color>({ name: "textFieldBackgroundColor", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+textFieldBackgroundColorProperty.register(SearchBarBase);

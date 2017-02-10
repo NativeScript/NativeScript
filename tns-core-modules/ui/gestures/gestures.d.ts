@@ -2,9 +2,8 @@
  * Contains the GesturesObserver class, which lets you observe and respond to user gestures
  */
 declare module "ui/gestures" {
-    import view = require("ui/core/view");
-    import observable = require("data/observable");
-
+    import { View, EventData } from "ui/core/view";
+    
     /**
      * Defines an enum with supported gesture types.
      */
@@ -115,7 +114,7 @@ declare module "ui/gestures" {
     /**
      * Provides gesture event data.
      */
-    export interface GestureEventData extends observable.EventData {
+    export interface GestureEventData extends EventData {
         /**
          * Gets the type of the gesture.
          */
@@ -123,7 +122,7 @@ declare module "ui/gestures" {
         /**
          * Gets the view which originates the gesture.
          */
-        view: view.View;
+        view: View;
         /**
          * Gets the underlying native iOS specific [UIGestureRecognizer](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIGestureRecognizer_Class/).
          */
@@ -141,7 +140,7 @@ declare module "ui/gestures" {
         /**
          * Gets action of the touch. Possible values: 'up', 'move', 'down', 'cancel'
          */
-        action: string;
+        action: 'up' | 'move' | 'down' | 'cancel';
 
         /**
          * Gets the X coordinate of this event inside the view that triggered the event.
@@ -244,7 +243,7 @@ declare module "ui/gestures" {
          * @param callback - A function that will be executed when a gesture is received.
          * @param context - default this argument for the callbacks.
          */
-        constructor(target: view.View, callback: (args: GestureEventData) => void, context: any);
+        constructor(target: View, callback: (args: GestureEventData) => void, context: any);
 
         /**
          * Registers a gesture observer to a view and gesture.
@@ -285,7 +284,7 @@ declare module "ui/gestures" {
      * @param callback - A function that will be executed when a gesture is received.
      * @param context - this argument for the callback.
      */
-    export function observe(target: view.View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
+    export function observe(target: View, type: GestureTypes, callback: (args: GestureEventData) => void, context?: any): GesturesObserver;
 
     /**
      * Returns a string representation of a gesture type.

@@ -1,12 +1,12 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import observable = require("data/observable");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as observable from "data/observable";
+import * as color from "color";
+import * as platform from "platform";
 
 // >> article-require-progress-module
-import progressModule = require("ui/progress");
+import * as progressModule from "ui/progress";
 // << article-require-progress-module
 
 export function test_default_TNS_values() {
@@ -103,18 +103,24 @@ export function test_property_changed_event_when_setting_maxValue_with_adjust() 
     function testAction(views: Array<viewModule.View>) {
         var changedProperties = {};
         var allChanges = 0;
-        progress.on(observable.Observable.propertyChangeEvent, function (data: observable.EventData) {
+        progress.on("valueChange", function (data: observable.EventData) {
+            allChanges++;
+            changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
+        });
+
+        progress.on("maxValueChange", function (data: observable.EventData) {
             allChanges++;
             changedProperties[(<observable.PropertyChangeData>data).propertyName] = true;
         });
 
         // Act
         progress.maxValue = 40;
-        progress.off(observable.Observable.propertyChangeEvent);
+        progress.off("valueChange");
+        progress.off("maxValueChange");
 
         // Assert
-        TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assert(changedProperties["maxValue"], "Property changed for 'maxValue' not called.");
+        TKUnit.assert(changedProperties["value"], "Property changed for 'value' not called.");
         TKUnit.assertEqual(allChanges, 2, "Property changed callbacks.");
     };
 

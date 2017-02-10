@@ -1,22 +1,22 @@
-﻿import TKUnit = require("../../TKUnit");
-import app = require("application");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import wrapLayoutModule = require("ui/layouts/wrap-layout");
-import layoutBaseModule = require("ui/layouts/layout-base");
-import fs = require("file-system");
-import pageModule = require("ui/page");
-import gestureModule = require("ui/gestures");
+﻿import * as TKUnit from "../../TKUnit";
+import * as app from "application";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as wrapLayoutModule from "ui/layouts/wrap-layout";
+import * as layoutBaseModule from "ui/layouts/layout-base";
+import * as fs from "file-system";
+import * as pageModule from "ui/page";
+import * as gestureModule from "ui/gestures";
 import { Label } from "ui/label";
 
 // >> article-require-repeater-module
-import repeaterModule = require("ui/repeater");
+import * as repeaterModule from "ui/repeater";
 // << article-require-repeater-module
 
 // >> article-require-modules-repeater
-import observableArray = require("data/observable-array");
-import labelModule = require("ui/label");
+import * as observableArray from "data/observable-array";
+import * as labelModule from "ui/label";
 // << article-require-modules-repeater
 
 var ASYNC = 0.2;
@@ -353,12 +353,12 @@ export var test_RepeaterItemsGestureBindings = function () {
                 hasObservers = gestureObservers ? gestureObservers.length > 0 : false;
             }
             else if (childItem instanceof layoutBaseModule.LayoutBase) {
-                childItem._eachChildView(eachChildCallback);
+                childItem.eachChildView(eachChildCallback);
             }
             return true;
         }
 
-        repeater._eachChildView(eachChildCallback);
+        repeater.eachChildView(eachChildCallback);
 
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
     }
@@ -380,12 +380,12 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
                 }
             }
             else if (childItem instanceof layoutBaseModule.LayoutBase) {
-                childItem._eachChildView(eachChildCallback);
+                childItem.eachChildView(eachChildCallback);
             }
             return true;
         }
 
-        repeater._eachChildView(eachChildCallback);
+        repeater.eachChildView(eachChildCallback);
 
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
     }

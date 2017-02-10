@@ -1,15 +1,15 @@
-﻿import TKUnit = require("../../TKUnit");
-import styleScope = require("ui/styling/style-scope");
-import keyframeAnimation = require("ui/animation/keyframe-animation");
-import enums = require("ui/enums");
-import helper = require("../../ui/helper");
-import stackModule = require("ui/layouts/stack-layout");
-import labelModule = require("ui/label");
-import color = require("color");
+﻿import * as TKUnit from "../../TKUnit";
+import * as styleScope from "ui/styling/style-scope";
+import * as keyframeAnimation from "ui/animation/keyframe-animation";
+import * as enums from "ui/enums";
+import * as helper from "../../ui/helper";
+import * as stackModule from "ui/layouts/stack-layout";
+import * as labelModule from "ui/label";
+import * as color from "color";
 
 import {SelectorCore} from "ui/styling/css-selector";
 
-//import styling = require("ui/styling");
+//import * as styling from "ui/styling";
 
 function createAnimationFromCSS(css: string, name: string): keyframeAnimation.KeyframeAnimationInfo {
     let scope = new styleScope.StyleScope();
@@ -260,11 +260,11 @@ export function test_ExecuteCSSAnimation() {
 
 //export function test_ExecuteFillMode() {
 //    let mainPage = helper.getCurrentPage();
-//    mainPage.style._resetValue(styling.properties.backgroundColorProperty);
-//    mainPage.style._resetValue(styling.properties.colorProperty);
-//    mainPage._resetValue(labelModule.Label.bindingContextProperty);
-//    mainPage._resetValue(labelModule.Label.cssClassProperty);
-//    mainPage._resetValue(labelModule.Label.idProperty);
+//    mainPage.style.backgroundColor = unsetValue;
+//    mainpage.style.color = unsetValue;
+//    mainPage.bindingContext = unsetValue;
+//    mainPage.cssClass = unsetValue;
+//    mainPage.id = unsetValue;
 //    mainPage.css = null;
 
 //    let label = new labelModule.Label({ text: "label" });
@@ -307,7 +307,7 @@ export function test_AnimationCurveInKeyframes() {
     TKUnit.assertEqual(animation.keyframes[0].curve, enums.AnimationCurve.linear);
     TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
     TKUnit.assertEqual(animation.keyframes[1].curve, undefined);
-    let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation, 2);
+    let realAnimation = keyframeAnimation.KeyframeAnimation.keyframeAnimationFromInfo(animation);
     TKUnit.assertEqual(realAnimation.animations[1].curve, enums.AnimationCurve.linear);
     TKUnit.assertEqual(realAnimation.animations[2].curve, enums.AnimationCurve.easeIn);
 }

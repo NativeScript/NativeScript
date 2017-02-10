@@ -2,15 +2,10 @@
  * Contains the DependencyObservable class, which represents an extended Observable object that uses Property instances for value backing mechanism.
  */
 declare module "ui/core/dependency-observable" {
-    import observable = require("data/observable");
+    import { Observable, EventData } from "data/observable";
 
     /**
-     * Value specifing that Property value should be reset. Used when bindingContext on bound property is creared/null.
-     */
-    export let unsetValue: Object;
-    /**
-     * Interface used by Propery 'defaultValueGetter' function to specify if the default value returned by the native instance can be cached or not.
-     * One example is - android.widget.Button background. It is state drawable so it cannot be reused/cached.
+     * @deprecated
      */
     export interface NativeValueResult {
         result: any;
@@ -18,7 +13,7 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * Represents a special Property which supports changed callback, metadata and value validation.
+     * @deprecated use 'ui/core/properties' module instead.
      */
     export class Property {
 
@@ -67,7 +62,7 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * Represents an Object that describes a Property instance.
+     * @deprecated use 'ui/core/properties' module instead.
      */
     export class PropertyMetadata {
         /**
@@ -120,9 +115,9 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * The data for the event raised when a value of a Property changes for a DependencyObservable instance.
+     * @deprecated use 'ui/core/properties' module instead.
      */
-    export interface PropertyChangeData extends observable.EventData {
+    export interface PropertyChangeData extends EventData {
         /**
          * The Property associated with the change.
          */
@@ -138,28 +133,28 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * Defines the signature of the function that handles the propertyChanged event.
+     * @deprecated use 'ui/core/properties' module instead.
      */
     export interface PropertyChangedCallback {
         (data: PropertyChangeData): void;
     }
 
     /**
-     * Defines the signature of the function that handles the validateValue event.
+     * @deprecated use 'ui/core/properties' module instead.
      */
     export interface PropertyValidationCallback {
         (value: any): boolean;
     }
 
     /**
-     * Defines the signature of the function that compares if two property values are equal.
+     * @deprecated use 'ui/core/properties' module instead.
      */
     export interface PropertyEqualityComparer {
         (x: any, y: any): boolean;
     }
 
     /**
-     * Represents an Object that is used to back a value for a Property in a DependencyObservable Object instance.
+     * @deprecated
      */
     export class PropertyEntry {
         /**
@@ -200,10 +195,9 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * Represents an extended Observable Object that uses Property instances for value backing mechanism.
-     * This routine allows for various value modifiers per Property, which is used for inheritance, data-binding and styling purposes.
+     * @deprecated use 'ui/core/view' as base class.
      */
-    export class DependencyObservable extends observable.Observable {
+    export class DependencyObservable extends Observable {
         // TODO: Do we want to expose the get/setValue methods as public?
         /**
          * Gets a value for the property.
@@ -250,7 +244,7 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * Lists the possible values for the PropertyMetadata.options property. Each actual numeric value is a power of two allowing for bitwise operations.
+     * @deprecated use 'ui/core/properties' module instead.
      */
     export module PropertyMetadataSettings {
         /**
@@ -272,7 +266,7 @@ declare module "ui/core/dependency-observable" {
     }
 
     /**
-     * Lists the possible values for the PropertyEntry.valueSource property.
+     * @deprecated
      */
     export module ValueSource {
         /**

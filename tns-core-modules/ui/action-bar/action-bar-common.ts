@@ -1,51 +1,34 @@
-﻿import dts = require("ui/action-bar");
-import pages = require("ui/page");
-import bindable = require("ui/core/bindable");
-import dependencyObservable = require("ui/core/dependency-observable");
-import enums = require("ui/enums");
-import proxy = require("ui/core/proxy");
-import view = require("ui/core/view");
-import * as styleModule from "../styling/style";
+﻿import {
+    ActionBar as ActionBarDefinition,
+    ActionItems as ActionItemsDefinition,
+    ActionItem as ActionItemDefinition,
+    IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings,
+    NavigationButton
+} from "ui/action-bar";
+import { Page } from "ui/page";
+import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 
-var ACTION_ITEMS = "actionItems";
-
-var style: typeof styleModule;
-function ensureStyle() {
-    if (!style) {
-        style = require("../styling/style");
-    }
-}
+export * from "ui/core/view";
 
 export module knownCollections {
     export var actionItems = "actionItems";
 }
 
-function onTitlePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var actionBar = <ActionBar>data.object;
-    actionBar._onTitlePropertyChanged();
-}
-
-export class ActionBar extends view.View implements dts.ActionBar {
-    public static titleProperty = new dependencyObservable.Property("title", "ActionBar", new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onTitlePropertyChanged));
-
+export class ActionBarBase extends View implements ActionBarDefinition {
     private _actionItems: ActionItems;
-    private _navigationButton: dts.NavigationButton;
-    private _page: pages.Page;
-    private _titleView: view.View;
+    private _navigationButton: NavigationButton;
+    private _page: Page;
+    private _titleView: View;
 
-    get title(): string {
-        return this._getValue(ActionBar.titleProperty);
-    }
-    set title(value: string) {
-        this._setValue(ActionBar.titleProperty, value);
-    }
+    public title: string;
 
-    get navigationButton(): dts.NavigationButton {
+    get navigationButton(): NavigationButton {
         return this._navigationButton;
     }
-    set navigationButton(value: dts.NavigationButton) {
+    set navigationButton(value: NavigationButton) {
         if (this._navigationButton !== value) {
             if (this._navigationButton) {
+                this._removeView(this._navigationButton);
                 this._navigationButton.actionBar = undefined;
             }
 
@@ -53,6 +36,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
 
             if (this._navigationButton) {
                 this._navigationButton.actionBar = this;
+                this._addView(this._navigationButton);
             }
 
             this.update();
@@ -66,23 +50,22 @@ export class ActionBar extends view.View implements dts.ActionBar {
         throw new Error("actionItems property is read-only");
     }
 
-    get titleView(): view.View {
+    get titleView(): View {
         return this._titleView;
     }
-    set titleView(value: view.View) {
+    set titleView(value: View) {
         if (this._titleView !== value) {
-            ensureStyle();
             if (this._titleView) {
                 this._removeView(this._titleView);
-                this._titleView.style._resetValue(style.horizontalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
-                this._titleView.style._resetValue(style.verticalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
+                this._titleView.style[horizontalAlignmentProperty.cssName] = unsetValue;
+                this._titleView.style[verticalAlignmentProperty.cssName] = unsetValue;
             }
 
             this._titleView = value;
 
             if (this._titleView) {
-                this._titleView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, dependencyObservable.ValueSource.Inherited);
-                this._titleView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, dependencyObservable.ValueSource.Inherited);
+                this._titleView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.CENTER;
+                this._titleView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.MIDDLE;
                 this._addView(this._titleView);
             }
 
@@ -90,20 +73,14 @@ export class ActionBar extends view.View implements dts.ActionBar {
         }
     }
 
-    get page(): pages.Page {
+    get page(): Page {
         return this._page;
     }
-    set page(value: pages.Page) {
+    set page(value: Page) {
         this._page = value;
-
-        this.unbind("bindingContext");
-        this.bind({
-            sourceProperty: "bindingContext",
-            targetProperty: "bindingContext"
-        }, this._page);
     }
 
-    get android(): dts.AndroidActionBarSettings {
+    get android(): AndroidActionBarSettings {
         return undefined;
     }
 
@@ -123,7 +100,7 @@ export class ActionBar extends view.View implements dts.ActionBar {
         this._actionItems = new ActionItems(this);
     }
 
-    public static onTitleChanged
+    public static onTitleChanged;
 
     public update() {
         // 
@@ -134,41 +111,43 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
-        if (name === ACTION_ITEMS) {
+        if (name === "actionItems") {
             this.actionItems.setItems(value);
         }
     }
 
     public _addChildFromBuilder(name: string, value: any) {
-        if (value instanceof dts.NavigationButton) {
+        if (value instanceof NavigationButton) {
             this.navigationButton = value;
         }
-        else if (value instanceof dts.ActionItem) {
+        else if (value instanceof ActionItemDefinition) {
             this.actionItems.addItem(value);
         }
-        else if (value instanceof view.View) {
+        else if (value instanceof View) {
             this.titleView = value;
         }
     }
 
-    public _onBindingContextChanged(oldValue: any, newValue: any) {
-        super._onBindingContextChanged(oldValue, newValue);
-        if (this._navigationButton) {
-            this._navigationButton.bindingContext = newValue;
+    public eachChildView(callback: (child: View) => boolean) {
+        const titleView = this.titleView;
+        if (titleView) {
+            callback(titleView);
         }
-
-        this._actionItems.getItems().forEach((item, i, arr) => { item.bindingContext = newValue; });
     }
 
-    public _eachChildView(callback: (child: view.View) => boolean) {
-        if (this.titleView) {
-            callback(this.titleView);
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        const titleView = this.titleView;
+        if (titleView) {
+            callback(titleView);
+        }
+
+        const navigationButton = this._navigationButton;
+        if (navigationButton) {
+            callback(navigationButton);
         }
 
         this.actionItems.getItems().forEach((actionItem) => {
-            if (actionItem.actionView) {
-                callback(actionItem.actionView);
-            }
+            callback(actionItem);
         });
     }
 
@@ -186,45 +165,50 @@ export class ActionBar extends view.View implements dts.ActionBar {
     }
 }
 
-export class ActionItems implements dts.ActionItems {
-    private _items: Array<dts.ActionItem> = new Array<dts.ActionItem>();
-    private _actionBar: ActionBar;
+export class ActionItems implements ActionItemsDefinition {
+    private _items = new Array<ActionItemDefinition>();
+    private _actionBar: ActionBarDefinition;
 
-    constructor(actionBar: ActionBar) {
+    constructor(actionBar: ActionBarDefinition) {
         this._actionBar = actionBar;
     }
 
-    public addItem(item: dts.ActionItem): void {
+    public addItem(item: ActionItemDefinition): void {
         if (!item) {
             throw new Error("Cannot add empty item");
         }
 
         this._items.push(item);
         item.actionBar = this._actionBar;
+
+        this._actionBar._addView(item);
+
         this.invalidate();
     }
 
-    public removeItem(item: dts.ActionItem): void {
+    public removeItem(item: ActionItemDefinition): void {
         if (!item) {
             throw new Error("Cannot remove empty item");
         }
 
-        var itemIndex = this._items.indexOf(item);
+        const itemIndex = this._items.indexOf(item);
         if (itemIndex < 0) {
             throw new Error("Cannot find item to remove");
         }
 
         this._items.splice(itemIndex, 1);
+        this._actionBar._removeView(item);
+
         item.actionBar = undefined;
         this.invalidate();
     }
 
-    public getItems(): Array<dts.ActionItem> {
+    public getItems(): Array<ActionItemDefinition> {
         return this._items.slice();
     }
 
-    public getVisibleItems(): Array<dts.ActionItem> {
-        var visibleItems = [];
+    public getVisibleItems(): Array<ActionItemDefinition> {
+        const visibleItems = [];
         this._items.forEach((item) => {
             if (isVisible(item)) {
                 visibleItems.push(item);
@@ -234,7 +218,7 @@ export class ActionItems implements dts.ActionItems {
         return visibleItems;
     }
 
-    public getItemAt(index: number): dts.ActionItem {
+    public getItemAt(index: number): ActionItemDefinition {
         if (index < 0 || index >= this._items.length) {
             return undefined;
         }
@@ -242,7 +226,7 @@ export class ActionItems implements dts.ActionItems {
         return this._items[index];
     }
 
-    public setItems(items: Array<dts.ActionItem>) {
+    public setItems(items: Array<ActionItemDefinition>) {
         // Remove all existing items
         while (this._items.length > 0) {
             this.removeItem(this._items[this._items.length - 1]);
@@ -263,112 +247,94 @@ export class ActionItems implements dts.ActionItems {
     }
 }
 
-export class ActionItem extends bindable.Bindable implements dts.ActionItem {
+export class ActionItemBase extends ViewBase implements ActionItemDefinition {
     public static tapEvent = "tap";
 
-    public static textProperty = new dependencyObservable.Property(
-        "text", "ActionItem", new dependencyObservable.PropertyMetadata("", null, ActionItem.onItemChanged));
+    private _actionBar: ActionBarDefinition;
+    private _actionView: View;
 
-    public static iconProperty = new dependencyObservable.Property(
-        "icon", "ActionItem", new dependencyObservable.PropertyMetadata(null, null, ActionItem.onItemChanged));
+    public ios: IOSActionItemSettings;
+    public android: AndroidActionItemSettings;
 
-    public static visibilityProperty = new dependencyObservable.Property(
-        "visibility", "ActionItem", new dependencyObservable.PropertyMetadata(enums.Visibility.visible, null, ActionItem.onItemChanged));
+    public text: string;
+    public icon: string;
+    public visibility: string;
 
-    private _actionBar: ActionBar;
-    private _actionView: view.View;
-
-    get actionView(): view.View {
+    get actionView(): View {
         return this._actionView;
     }
-    set actionView(value: view.View) {
+    set actionView(value: View) {
         if (this._actionView !== value) {
-            ensureStyle();
-            if (this._actionView && this._actionBar) {
-                this._actionBar._removeView(this._actionView);
-                this._actionView.style._resetValue(style.horizontalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
-                this._actionView.style._resetValue(style.verticalAlignmentProperty, dependencyObservable.ValueSource.Inherited);
+            if (this._actionView) {
+                this._actionView.style[horizontalAlignmentProperty.cssName] = unsetValue;
+                this._actionView.style[verticalAlignmentProperty.cssName] = unsetValue;
+                this._removeView(this._actionView);
             }
 
             this._actionView = value;
 
-            this._addActionViewToActionBar();
-            
+            if (this._actionView) {
+                this._addView(this._actionView);
+                this._actionView.style[horizontalAlignmentProperty.cssName] = HorizontalAlignment.CENTER;
+                this._actionView.style[verticalAlignmentProperty.cssName] = VerticalAlignment.MIDDLE;
+            }
+
             if (this._actionBar) {
                 this._actionBar.update();
             }
         }
     }
-    get text(): string {
-        return this._getValue(ActionItem.textProperty);
-    }
 
-    set text(value: string) {
-        this._setValue(ActionItem.textProperty, value);
-    }
-
-    get icon(): string {
-        return this._getValue(ActionItem.iconProperty);
-    }
-
-    set icon(value: string) {
-        this._setValue(ActionItem.iconProperty, value);
-    }
-
-    get visibility(): string {
-        return this._getValue(ActionItem.visibilityProperty);
-    }
-
-    set visibility(value: string) {
-        this._setValue(ActionItem.visibilityProperty, value);
-    }
-
-    get actionBar(): ActionBar {
+    get actionBar(): ActionBarDefinition {
         return this._actionBar;
     }
-
-    set actionBar(value: ActionBar) {
+    set actionBar(value: ActionBarDefinition) {
         if (value !== this._actionBar) {
             this._actionBar = value;
-            if (this._actionBar) {
-                this.bindingContext = this._actionBar.bindingContext;
-                this._addActionViewToActionBar();
-            }
         }
     }
 
-    get page(): pages.Page {
+    get page(): Page {
         return this.actionBar ? this.actionBar.page : undefined;
     }
 
     public _raiseTap() {
-        this._emit(ActionItem.tapEvent);
-    }
-
-    public ios: dts.IOSActionItemSettings;
-
-    public android: dts.AndroidActionItemSettings;
-    private static onItemChanged(data: dependencyObservable.PropertyChangeData) {
-        var menuItem = <ActionItem>data.object;
-        if (menuItem.actionBar) {
-            menuItem.actionBar.update();
-        }
-    }
-
-    private _addActionViewToActionBar() {
-        if (this._actionView && !this._actionView._isAddedToNativeVisualTree && this._actionBar) {
-            ensureStyle();
-            this._actionView.style._setValue(style.horizontalAlignmentProperty, enums.HorizontalAlignment.center, dependencyObservable.ValueSource.Inherited);
-            this._actionView.style._setValue(style.verticalAlignmentProperty, enums.VerticalAlignment.center, dependencyObservable.ValueSource.Inherited);
-            this._actionBar._addView(this._actionView);
-        }
+        this._emit(ActionItemBase.tapEvent);
     }
 
     public _addChildFromBuilder(name: string, value: any) {
         this.actionView = value;
     }
+
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        if (this._actionView) {
+            callback(this._actionView);
+        }
+    }
 }
 
-export function isVisible(item: dts.ActionItem) {
-    return item.visibility === enums.Visibility.visible;
+export function isVisible(item: ActionItemDefinition) {
+    return item.visibility === "visible";
 }
+
+function onTitlePropertyChanged(actionBar: ActionBarBase, oldValue: string, newValue: string) {
+    actionBar._onTitlePropertyChanged();
+}
+
+let titleProperty = new Property<ActionBarBase, string>({ name: "title", valueChanged: onTitlePropertyChanged });
+titleProperty.register(ActionBarBase);
+
+function onItemChanged(item: ActionItemBase, oldValue: string, newValue: string) {
+    if (item.actionBar) {
+        item.actionBar.update();
+    }
+}
+
+let textProperty = new Property<ActionItemBase, string>({ name: "text", defaultValue: "", valueChanged: onItemChanged });
+textProperty.register(ActionItemBase);
+
+let iconProperty = new Property<ActionItemBase, string>({ name: "icon", valueChanged: onItemChanged });
+iconProperty.register(ActionItemBase);
+
+let visibilityProperty = new Property({ name: "visibility", defaultValue: "visible", valueChanged: onItemChanged });
+visibilityProperty.register(ActionItemBase);

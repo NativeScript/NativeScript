@@ -1,4 +1,4 @@
-﻿import common = require("./connectivity-common");
+﻿import * as common from "./connectivity-common";
 
 global.moduleMerge(common, exports);
 
@@ -80,6 +80,6 @@ export function stopMonitoring(): void {
     if (_monitorReachabilityRef) {
         SCNetworkReachabilityUnscheduleFromRunLoop(_monitorReachabilityRef, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
         _monitorReachabilityRef = undefined;
-        _connectionTypeChangedCallback = undefined;;
+        _connectionTypeChangedCallback = undefined;
     }
 }

@@ -1,85 +1,56 @@
-﻿import common = require("./button-common");
-import utils = require("utils/utils")
-import dependencyObservable = require("ui/core/dependency-observable");
-import style = require("ui/styling/style");
-import { TextBaseStyler as TBS } from "ui/text-base/text-base-styler";
-import {device} from "platform";
-import {GestureTypes, TouchGestureEventData, TouchAction} from "ui/gestures";
-import {PseudoClassHandler} from "ui/core/view";
+﻿import {
+    ButtonBase, TouchGestureEventData, GestureTypes, TouchAction,
+    PseudoClassHandler,
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty
+} from "./button-common";
 
-let styleHandlersInitialized: boolean;
+export * from "./button-common";
 
-global.moduleMerge(common, exports);
-
-export class Button extends common.Button {
-    private _android: android.widget.Button;
-    private _isPressed: boolean;
-    private _highlightedHandler: (args: TouchGestureEventData) => void;
-
-    constructor() {
+@Interfaces([android.view.View.OnClickListener])
+class ClickListener extends java.lang.Object implements android.view.View.OnClickListener {
+    constructor(public owner: WeakRef<Button>) {
         super();
-
-        this._isPressed = false;
-        if(!styleHandlersInitialized) {
-            styleHandlersInitialized = true;
-            ButtonStyler.registerHandlers();
-        }
+        return global.__native(this);
     }
 
+    public onClick(v: android.view.View): void {
+        let btn = this.owner.get();
+        if (btn) {
+            btn._emit(ButtonBase.tapEvent);
+        }
+    }
+}
+
+export class Button extends ButtonBase {
+    _button: android.widget.Button;
+    private _highlightedHandler: (args: TouchGestureEventData) => void;
+    private _defaultNativePadding: android.graphics.Rect;
+    
     get android(): android.widget.Button {
-        return this._android;
+        return this._button;
     }
 
-    public _createUI() {
+    public _createNativeView() {
+        let weakRef = new WeakRef(this);
+        this._button = new android.widget.Button(this._context);
+        this._button.setOnClickListener(new ClickListener(weakRef));
 
-        var that = new WeakRef(this);
+        // Unlike all other widgets, the Button has padding 30 36 30 36 in device pixels.
+        let result = new android.graphics.Rect();
+        this._button.getBackground().getPadding(result);
+        this._defaultNativePadding = result;
 
-        this._android = new android.widget.Button(this._context);
-
-        this._android.setOnClickListener(new android.view.View.OnClickListener(
-            <utils.Owned & android.view.View.IOnClickListener>{
-                get owner() {
-                    return that.get();
-                },
-
-                onClick: function (v) {
-                    if (this.owner) {
-                        this.owner._emit(common.Button.tapEvent);
-                    }
-                }
-            }));
-    }
-
-    public _onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.android) {
-            this.android.setText(data.newValue + "");
-        }
-    }
-
-    private _transformationMethod;
-    public _setFormattedTextPropertyToNative(value) {
-        var newText = value ? value._formattedText : null;
-        if (this.android) {
-            if (newText) {
-                if (!this._transformationMethod) {
-                    this._transformationMethod = this.android.getTransformationMethod();
-                }
-                this.android.setTransformationMethod(null);
-            } else {
-                if (this._transformationMethod && !this.android.getTransformationMethod()) {
-                    this.android.setTransformationMethod(this._transformationMethod);
-                }
-            }
-
-            this.android.setText(newText);
-        }
+        this.effectivePaddingTop = this._defaultNativePadding.top;
+        this.effectivePaddingRight = this._defaultNativePadding.right;
+        this.effectivePaddingBottom = this._defaultNativePadding.bottom;
+        this.effectivePaddingLeft = this._defaultNativePadding.left;
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
     _updateHandler(subscribe: boolean) {
         if (subscribe) {
             this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
-                switch(args.action) {
+                switch (args.action) {
                     case TouchAction.up:
                         this._goToVisualState("normal");
                         break;
@@ -93,49 +64,47 @@ export class Button extends common.Button {
             this.off(GestureTypes.touch, this._highlightedHandler);
         }
     }
-}
 
-export class ButtonStyler implements style.Styler {
-    public static registerHandlers() {
-        // !!! IMPORTANT !!! This was moved here because of the following bug: https://github.com/NativeScript/NativeScript/issues/1902
-        // If there is no TextBase on the Page, the TextBaseStyler.registerHandlers
-        // method was never called because the file it is called from was never required.
+    //PaddingTop
+    get [paddingTopProperty.native](): Length {
+        return { value: this._defaultNativePadding.top, unit: "px" }    
+    }
+    set [paddingTopProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
+    }
 
-        // Register the same stylers for Button.
-        // It also derives from TextView but is not under TextBase in our View hierarchy.
-        var TextBaseStyler = <any>TBS;
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setColorProperty,
-            TextBaseStyler.resetColorProperty,
-            TextBaseStyler.getNativeColorValue), "Button");
+    //PaddingRight
+    get [paddingRightProperty.native](): Length {
+        return { value: this._defaultNativePadding.right, unit: "px" }    
+    }
+    set [paddingRightProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
+    }
 
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setFontInternalProperty,
-            TextBaseStyler.resetFontInternalProperty,
-            TextBaseStyler.getNativeFontInternalValue), "Button");
+    //PaddingBottom
+    get [paddingBottomProperty.native](): Length {
+        return { value: this._defaultNativePadding.bottom, unit: "px" }    
+    }
+    set [paddingBottomProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
+    }
 
-        style.registerHandler(style.textAlignmentProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextAlignmentProperty,
-            TextBaseStyler.resetTextAlignmentProperty,
-            TextBaseStyler.getNativeTextAlignmentValue), "Button");
+    //PaddingLeft
+    get [paddingLeftProperty.native](): Length {
+        return { value: this._defaultNativePadding.left, unit: "px" }    
+    }
+    set [paddingLeftProperty.native](value: Length) {
+        org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
+    }
 
-        style.registerHandler(style.textDecorationProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextDecorationProperty,
-            TextBaseStyler.resetTextDecorationProperty), "Button");
-
-        style.registerHandler(style.textTransformProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setTextTransformProperty,
-            TextBaseStyler.resetTextTransformProperty), "Button");
-
-        style.registerHandler(style.whiteSpaceProperty, new style.StylePropertyChangedHandler(
-            TextBaseStyler.setWhiteSpaceProperty,
-            TextBaseStyler.resetWhiteSpaceProperty), "Button");
-
-        if (parseInt(device.sdkVersion, 10) >= 21) {
-            style.registerHandler(style.letterSpacingProperty, new style.StylePropertyChangedHandler(
-                TextBaseStyler.setLetterSpacingProperty,
-                TextBaseStyler.resetLetterSpacingProperty,
-                TextBaseStyler.getLetterSpacingProperty), "Button");
+    get [zIndexProperty.native](): number {
+        return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
+    }
+    set [zIndexProperty.native](value: number) {
+        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
+        // API >= 21
+        if (this.nativeView.setStateListAnimator){
+            this.nativeView.setStateListAnimator(null);
         }
     }
 }

@@ -2,7 +2,7 @@
 import {Page, NavigatedData} from "ui/page";
 import {topmost as topmostFrame, NavigationTransition} from "ui/frame";
 import {Color} from "color";
-import helper = require("../ui/helper");
+import * as helper from "../ui/helper";
 
 // Creates a random colorful page full of meaningless stuff.
 let id = 0;

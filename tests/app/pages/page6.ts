@@ -1,5 +1,5 @@
-﻿import pages = require("ui/page");
-import fpsModule = require("fps-meter");
+﻿import * as pages from "ui/page";
+import * as fpsModule from "fps-meter";
 
 export function createPage() {
     var startTime;

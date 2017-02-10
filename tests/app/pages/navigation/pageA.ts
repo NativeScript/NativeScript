@@ -1,10 +1,10 @@
-﻿import pages = require("ui/page");
-import frame = require("ui/frame");
-import stackModule = require("ui/layouts/stack-layout");
-import button = require("ui/button");
-import text = require("ui/text-field");
-import color = require("color");
-import list = require("ui/list-view");
+﻿import * as pages from "ui/page";
+import * as frame from "ui/frame";
+import * as stackModule from "ui/layouts/stack-layout";
+import * as button from "ui/button";
+import * as text from "ui/text-field";
+import * as color from "color";
+import * as list from "ui/list-view";
 
 //// Enable page caching
 //frame.topmost().android.cachePagesOnNavigate = true;

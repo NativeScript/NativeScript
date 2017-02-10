@@ -29,7 +29,7 @@ declare module "data/observable" {
          */
         value: any;
     }
-    
+
     /**
      * Helper class that is used to fire property change even when real object is the same.
      * By default property change will not be fired for a same object.
@@ -40,45 +40,42 @@ declare module "data/observable" {
          * Property which holds the real value.
          */
         wrapped: any;
-        
+
         /**
          * Creates an instance of WrappedValue object.
          * @param value - the real value which should be wrapped.
          */
         constructor(value: any);
-        
+
         /**
          * Gets the real value of previously wrappedValue.
          * @param value - Value that should be unwraped. If there is no wrappedValue property of the value object then value will be returned.
          */
         static unwrap(value: any): any;
-        
+
         /**
          * Returns an instance of WrappedValue. The actual instance is get from a WrappedValues pool.
          * @param value - Value that should be wrapped. 
          */
         static wrap(value: any): WrappedValue
 
-    } 
+    }
 
     /**
      * Observable is used when you want to be notified when a change occurs. Use on/off methods to add/remove listener.
      */
     class Observable {
+
+        /**
+         * Please note that should you be using the `new Observable({})` constructor, it is **obsolete** since v3.0,
+         * and you have to migrate to the "data/observable" `fromObject({})` or the `fromObjectRecursive({})` functions.
+         */
+        constructor();
+
         /**
          * String value used when hooking to propertyChange event.
          */
         public static propertyChangeEvent: string;
-
-        /**
-         * [Deprecated please use static functions fromJSON or fromJSONRecursive instead] Creates an Observable instance and sets its properties according to the supplied JSON object.
-         */
-        constructor(json?: any);
-
-        /**
-         * Gets the name of the constructor function for this instance. E.g. for a Button class this will return "Button".
-         */
-        typeName: string;
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -145,7 +142,6 @@ declare module "data/observable" {
         /**
          * This method is intended to be overriden by inheritors to provide additional implementation.
          */
-        _setCore(data: PropertyChangeData);
         _createPropertyChangeData(name: string, value: any): PropertyChangeData;
         _emit(eventNames: string);
         //@endprivate

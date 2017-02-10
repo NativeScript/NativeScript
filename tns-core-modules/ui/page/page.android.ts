@@ -1,41 +1,21 @@
-﻿import app = require("application");
-import enums = require("ui/enums");
-import pageCommon = require("./page-common");
-import platform = require("platform");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
-import * as actionBar from "ui/action-bar";
-import * as gridLayout from "ui/layouts/grid-layout";
-import * as traceModule from "trace";
-import * as colorModule from "color";
+﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty, HorizontalAlignment, VerticalAlignment } from "./page-common";
+import { ActionBar } from "ui/action-bar";
+import { GridLayout } from "ui/layouts/grid-layout";
+import { DIALOG_FRAGMENT_TAG } from "./constants";
+import { device } from "platform";
 
-global.moduleMerge(pageCommon, exports);
+export * from "./page-common";
 
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
-
-var color: typeof colorModule;
-function ensureColor() {
-    if (!color) {
-        color = require("color");
-    }
-}
-
-export var DIALOG_FRAGMENT_TAG = "dialog";
 const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
-const STATUS_BAR_LIGHT_BCKG = "#F5F5F5";
-const STATUS_BAR_DARK_BCKG = "#66000000";
+const STATUS_BAR_LIGHT_BCKG = -657931;
+const STATUS_BAR_DARK_BCKG = 1711276032;
 
 interface DialogFragmentClass {
-new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
+    new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
 }
-var DialogFragmentClass: DialogFragmentClass;
-    
-function ensureDialogFragmentClass() { 
+let DialogFragmentClass: DialogFragmentClass;
+
+function ensureDialogFragmentClass() {
     if (DialogFragmentClass) {
         return;
     }
@@ -51,17 +31,23 @@ function ensureDialogFragmentClass() {
         }
 
         public onCreateDialog(savedInstanceState: android.os.Bundle): android.app.Dialog {
-            var dialog = new android.app.Dialog(this._owner._context);
+            const dialog = new android.app.Dialog(this._owner._context);
             dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
 
             // Hide actionBar and adjust alignment based on _fullscreen value.
-            this._owner.horizontalAlignment = this._fullscreen ? enums.HorizontalAlignment.stretch : enums.HorizontalAlignment.center;
-            this._owner.verticalAlignment = this._fullscreen ? enums.VerticalAlignment.stretch : enums.VerticalAlignment.center;
+            this._owner.horizontalAlignment = this._fullscreen ? HorizontalAlignment.STRETCH : HorizontalAlignment.CENTER;
+            this._owner.verticalAlignment = this._fullscreen ? VerticalAlignment.STRETCH : VerticalAlignment.MIDDLE;
             this._owner.actionBarHidden = true;
 
-            dialog.setContentView(this._owner._nativeView, this._owner._nativeView.getLayoutParams());
+            const nativeView = <android.view.View>this._owner._nativeView;
+            let layoutParams = nativeView.getLayoutParams();
+            if (!layoutParams) {
+                layoutParams = new org.nativescript.widgets.CommonLayoutParams();
+                nativeView.setLayoutParams(layoutParams);
+            }
+            dialog.setContentView(this._owner._nativeView, layoutParams);
 
-            var window = dialog.getWindow();
+            const window = dialog.getWindow();
             window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
 
             if (this._fullscreen) {
@@ -75,10 +61,10 @@ function ensureDialogFragmentClass() {
             super.onStart();
             if (!this._owner.isLoaded) {
                 this._owner.onLoaded();
-    }
+            }
             this._shownCallback();
         }
-        
+
         public onDestroyView() {
             super.onDestroyView();
 
@@ -87,8 +73,7 @@ function ensureDialogFragmentClass() {
             }
 
             this._owner._isAddedToNativeVisualTree = false;
-            this._owner._onDetached(true);
-
+            this._owner._tearDownUI(true);
         }
 
         public onDismiss(dialog: android.content.IDialogInterface) {
@@ -101,7 +86,7 @@ function ensureDialogFragmentClass() {
     DialogFragmentClass = DialogFragmentClassInner;
 }
 
-export class Page extends pageCommon.Page {
+export class Page extends PageBase {
     private _isBackNavigation = false;
     private _grid: org.nativescript.widgets.GridLayout;
 
@@ -113,40 +98,46 @@ export class Page extends pageCommon.Page {
         return this._grid;
     }
 
-    public _createUI() {
+    get nativeView(): android.view.ViewGroup {
+        return this._grid;
+    }
+
+    public _createNativeView() {
         this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        this.nativeView.setBackgroundColor(new Color("white").android);
     }
 
-    public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         // Set the row property for the child 
         if (this._nativeView && child._nativeView) {
-            if (child instanceof actionBar.ActionBar) {
-                gridLayout.GridLayout.setRow(child, 0);
-                child.horizontalAlignment = enums.HorizontalAlignment.stretch;
-                child.verticalAlignment = enums.VerticalAlignment.top;
+            if (child instanceof ActionBar) {
+                GridLayout.setRow(child, 0);
+                child.horizontalAlignment = "stretch";
+                child.verticalAlignment = "top";
             }
             else {
-                gridLayout.GridLayout.setRow(child, 1);
+                GridLayout.setRow(child, 1);
             }
         }
 
         return super._addViewToNativeVisualTree(child, atIndex);
     }
 
-    public _onDetached(force?: boolean) {
-        var skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
-
-        if (skipDetached) {
-            ensureTrace();
-            // Do not detach the context and android reference.
-            if (trace.enabled) {
-                trace.write(`Caching ${this}`, trace.categories.NativeLifecycle);
-            }
+    public onLoaded() {
+        super.onLoaded();
+        if (this.actionBarHidden !== undefined) {
+            this.updateActionBar();
         }
-        else {
-            super._onDetached();
+    }
+
+    public _tearDownUI(force?: boolean) {
+        const skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
+
+        if (!skipDetached) {
+            super._tearDownUI();
+            this._isAddedToNativeVisualTree = false;
         }
     }
 
@@ -161,13 +152,11 @@ export class Page extends pageCommon.Page {
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
         super._showNativeModalView(parent, context, closeCallback, fullscreen);
         if (!this.backgroundColor) {
-            ensureColor();
-            this.backgroundColor = new color.Color("White");
+            this.backgroundColor = new Color("White");
         }
 
-        this._onAttached(parent._context);
+        this._setupUI(parent._context);
         this._isAddedToNativeVisualTree = true;
-        this._syncNativeProperties();
 
         ensureDialogFragmentClass();
 
@@ -175,7 +164,7 @@ export class Page extends pageCommon.Page {
 
         super._raiseShowingModallyEvent();
 
-    this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
+        this._dialogFragment.show(parent.frame.android.activity.getFragmentManager(), DIALOG_FRAGMENT_TAG);
     }
 
     protected _hideNativeModalView(parent: Page) {
@@ -187,93 +176,62 @@ export class Page extends pageCommon.Page {
         super._hideNativeModalView(parent);
     }
 
-    public _updateActionBar() {
+    private updateActionBar() {
         this.actionBar.update();
     }
 
-    public _updateStatusBar () {
-        this._updateStatusBarStyle(this.statusBarStyle);
-        this._updateStatusBarBackground();
+    get [actionBarHiddenProperty.native](): boolean {
+        return undefined;
+    }
+    set [actionBarHiddenProperty.native](value: boolean) {
+        this.updateActionBar();
     }
 
-    public _updateStatusBarStyle(value?: string) {
-        if (value && platform.device.sdkVersion >= "23") {
-            let window = app.android.startActivity.getWindow();
+    get [statusBarStyleProperty.native](): { color: number, systemUiVisibility: number } {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
             let decorView = window.getDecorView();
-            if (value === enums.StatusBarStyle.light) {
-                let nativeColor = new colorModule.Color(STATUS_BAR_LIGHT_BCKG).android;
-                window.setStatusBarColor(nativeColor);
+
+            return {
+                color: (<any>window).getStatusBarColor(),
+                systemUiVisibility: decorView.getSystemUiVisibility()
+            };
+        }
+
+        return null;
+    }
+    set [statusBarStyleProperty.native](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            let decorView = window.getDecorView();
+
+            if (value === "light") {
+                (<any>window).setStatusBarColor(STATUS_BAR_LIGHT_BCKG);
                 decorView.setSystemUiVisibility(SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 
-            } else {
-                let nativeColor = new colorModule.Color(STATUS_BAR_DARK_BCKG).android;
-                window.setStatusBarColor(nativeColor);
+            } else if (value === "dark") {
+                (<any>window).setStatusBarColor(STATUS_BAR_DARK_BCKG);
                 decorView.setSystemUiVisibility(0);
+            } else {
+                (<any>window).setStatusBarColor(value.color);
+                decorView.setSystemUiVisibility(value.systemUiVisibility);
             }
         }
     }
 
-    private _updateStatusBarBackground() {
-         if (this.androidStatusBarBackground && platform.device.sdkVersion >= "23") {
-            let window = app.android.startActivity.getWindow();
-            
-            let nativeColor = this.androidStatusBarBackground.android;
+    get [androidStatusBarBackgroundProperty.native](): number {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            return (<any>window).getStatusBarColor();
+        }
 
-            window.setStatusBarColor(nativeColor);
-         }
+        return null;
     }
-}
-
-export class PageStyler implements style.Styler {
-    // statusBarStyle
-     private static setStatusBarStyleProperty(v: view.View, newValue: any) {
-        let page = <Page>v;
-        page._updateStatusBarStyle(newValue);
-    }
-
-    private static resetStatusBarStyleProperty(v: view.View, nativeValue: any) {
-        let page = <Page>v;
-        page._updateStatusBarStyle(nativeValue);
-    }
-
-    private static getStatusBarStyleProperty(v: view.View): any {
-        let page = <Page>v;
-        return page.statusBarStyle;
-    }
-
-    // android-status-bar-background-property
-    private static setAndroidStatusBarBackgroundProperty(v: view.View, newValue: any) {
-        if (platform.device.sdkVersion >= "21") {
-            let window = app.android.startActivity.getWindow();
-            let nativeColor = new colorModule.Color(newValue).android;
-            window.setStatusBarColor(nativeColor);
+    set [androidStatusBarBackgroundProperty.native](value: number | Color) {
+        if (device.sdkVersion >= "21") {
+            let window = (<android.app.Activity>this._context).getWindow();
+            let color = value instanceof Color ? value.android : value;
+            (<any>window).setStatusBarColor(color);
         }
     }
-
-    private static resetAndroidStatusBarBackgroundProperty(v: view.View, nativeValue: any) {
-        if (platform.device.sdkVersion >= "21") {
-            let window = app.android.startActivity.getWindow();
-            let nativeColor = (nativeValue instanceof colorModule.Color) ? (<colorModule.Color>nativeValue).android : new colorModule.Color(nativeValue).android;
-            window.setStatusBarColor(nativeColor);
-        }
-    }
-
-    private static getAndroidStatusBarBackgroundProperty(v: view.View): any {
-        let page = <Page>v;
-        return page.androidStatusBarBackground;
-    }
-
-    public static registerHandlers() {
-       style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
-            PageStyler.setStatusBarStyleProperty,
-            PageStyler.resetStatusBarStyleProperty,
-            PageStyler.getStatusBarStyleProperty), "Page");
-
-        style.registerHandler(style.androidStatusBarBackgroundProperty, new style.StylePropertyChangedHandler(
-            PageStyler.setAndroidStatusBarBackgroundProperty,
-            PageStyler.resetAndroidStatusBarBackgroundProperty,
-            PageStyler.getAndroidStatusBarBackgroundProperty), "Page");
-    }
 }
-
-PageStyler.registerHandlers();

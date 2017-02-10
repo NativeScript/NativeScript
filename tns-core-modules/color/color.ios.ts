@@ -1,4 +1,4 @@
-﻿import common = require("./color-common");
+﻿import * as common from "./color-common";
 
 var AMP = "#";
 
@@ -26,4 +26,4 @@ export class Color extends common.Color {
 
         return intVal;
     }
-} 
+}

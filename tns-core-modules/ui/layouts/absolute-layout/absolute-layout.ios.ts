@@ -1,49 +1,45 @@
-﻿import utils = require("utils/utils");
-import common = require("./absolute-layout-common");
-import {View} from "ui/core/view";
-import {CommonLayoutParams, nativeLayoutParamsProperty} from "ui/styling/style";
+﻿import { AbsoluteLayoutBase, View, layout, Length } from "./absolute-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./absolute-layout-common";
 
-export class AbsoluteLayout extends common.AbsoluteLayout {
-    protected onLeftChanged(view: View, oldValue: number, newValue: number) {
+export class AbsoluteLayout extends AbsoluteLayoutBase {
+
+    onLeftChanged(view: View, oldValue: Length, newValue: Length) {
         this.requestLayout();
     }
 
-    protected onTopChanged(view: View, oldValue: number, newValue: number) {
+    onTopChanged(view: View, oldValue: Length, newValue: Length) {
         this.requestLayout();
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        AbsoluteLayout.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
         let measureWidth = 0;
         let measureHeight = 0;
-        
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-        
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-        
-        let childMeasureSpec = utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED);
-        let density = utils.layout.getDisplayDensity();
+
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
+        const childMeasureSpec = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
         this.eachLayoutChild((child, last) => {
             let childSize = View.measureChild(this, child, childMeasureSpec, childMeasureSpec);
-            measureWidth = Math.max(measureWidth, AbsoluteLayout.getLeft(child) * density + childSize.measuredWidth);
-            measureHeight = Math.max(measureHeight, AbsoluteLayout.getTop(child) * density + childSize.measuredHeight);
+            measureWidth = Math.max(measureWidth, child.effectiveLeft + childSize.measuredWidth);
+            measureHeight = Math.max(measureHeight, child.effectiveTop + childSize.measuredHeight);
         });
 
-        measureWidth += (this.borderLeftWidth + this.paddingLeft + this.paddingRight + this.borderRightWidth) * density;
-        measureHeight += (this.borderTopWidth + this.paddingTop + this.paddingBottom + this.borderBottomWidth) * density;
+        measureWidth += this.effectiveBorderLeftWidth + this.effectivePaddingLeft + this.effectivePaddingRight + this.effectiveBorderRightWidth;
+        measureHeight += this.effectiveBorderTopWidth + this.effectivePaddingTop + this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
 
-        measureWidth = Math.max(measureWidth, this.minWidth * density);
-        measureHeight = Math.max(measureHeight, this.minHeight * density);
+        measureWidth = Math.max(measureWidth, this.effectiveMinWidth);
+        measureHeight = Math.max(measureHeight, this.effectiveMinHeight);
 
-        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -51,21 +47,17 @@ export class AbsoluteLayout extends common.AbsoluteLayout {
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         super.onLayout(left, top, right, bottom);
 
-        let density = utils.layout.getDisplayDensity();
         this.eachLayoutChild((child, last) => {
-            let lp: CommonLayoutParams = child.style._getValue(nativeLayoutParamsProperty);
 
-            let childWidth = child.getMeasuredWidth();
-            let childHeight = child.getMeasuredHeight();
+            const childWidth = child.getMeasuredWidth();
+            const childHeight = child.getMeasuredHeight();
 
-            let childLeft = (this.borderLeftWidth + this.paddingLeft + AbsoluteLayout.getLeft(child)) * density;
-            let childTop = (this.borderTopWidth + this.paddingTop + AbsoluteLayout.getTop(child)) * density;
-            let childRight = childLeft + childWidth + (lp.leftMargin + lp.rightMargin) * density;
-            let childBottom = childTop + childHeight + (lp.topMargin + lp.bottomMargin) * density;
+            const childLeft = this.effectiveBorderLeftWidth + this.effectivePaddingLeft + child.effectiveLeft;
+            const childTop = this.effectiveBorderTopWidth + this.effectivePaddingTop + child.effectiveTop;
+            const childRight = childLeft + childWidth + child.effectiveMarginLeft + child.effectiveMarginRight;
+            const childBottom = childTop + childHeight + child.effectiveMarginTop + child.effectiveMarginBottom;
 
             View.layoutChild(this, child, childLeft, childTop, childRight, childBottom);
         });
-
-        AbsoluteLayout.restoreOriginalParams(this);
     }
 }

@@ -1,6 +1,6 @@
-import observable = require("data/observable");
-import gestures = require("ui/gestures");
-import pages = require("ui/page");
+import * as observable from "data/observable";
+import * as gestures from "ui/gestures";
+import * as pages from "ui/page";
 
 export function pageLoaded(args: observable.EventData) {
     var page = <pages.Page>args.object;

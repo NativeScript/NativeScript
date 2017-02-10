@@ -1,6 +1,6 @@
-﻿import {Node, Declaration, Changes, ChangeMap} from "ui/styling/css-selector";
-import {isNullOrUndefined} from "utils/types";
-import {escapeRegexSymbols} from "utils/utils";
+﻿import { Node, Declaration, Changes, ChangeMap } from "ui/styling/css-selector";
+import { isNullOrUndefined } from "utils/types";
+import { escapeRegexSymbols } from "utils/utils";
 
 import * as cssParser from "css";
 import * as selectorParser from "./css-selector-parser";

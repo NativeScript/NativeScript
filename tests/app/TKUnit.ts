@@ -10,11 +10,11 @@
  
 */
 
-import Application = require("application");
-import timer = require("timer");
-import trace = require("trace");
-import types = require("utils/types");
-import platform = require("platform");
+import * as Application from "application";
+import * as timer from "timer";
+import * as trace from "trace";
+import * as types from "utils/types";
+import * as platform from "platform";
 
 import * as utils from "utils/utils";
 
@@ -61,7 +61,7 @@ var runTest = function (testInfo: TestInfoEntry) {
         if (testInfo.isTest) {
             duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] OK, duration: ${duration}`, trace.messageType.info);
+            write(`--- [${testInfo.testName}] OK, duration: ${duration.toFixed(2)}`, trace.messageType.info);
             testInfo.isPassed = true;
         }
     }
@@ -69,7 +69,7 @@ var runTest = function (testInfo: TestInfoEntry) {
         if (testInfo.isTest) {
             duration = time() - start;
             testInfo.duration = duration;
-            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration}`, trace.messageType.error);
+            write(`--- [${testInfo.testName}] FAILED: ${e.message}, Stack: ${e.stack}, duration: ${duration.toFixed(2)}`, trace.messageType.error);
             testInfo.isPassed = false;
             testInfo.errorMessage = e.message;
         }
@@ -363,17 +363,12 @@ export function assertThrows(testFunc: () => void, assertMessage?: string, expec
 export var wait = function (seconds: number) {
     waitUntilReady(function () {
         return false;
-    }, seconds);
+    }, seconds, false);
 };
 
-export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: number) {
+export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 20, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
-    }
-
-    if (!timeoutSec) {
-        // TODO: How much should be the default timeout in seconds?
-        timeoutSec = 20;
     }
 
     if (Application.ios) {
@@ -388,11 +383,15 @@ export var waitUntilReady = function (isReady: () => boolean, timeoutSec?: numbe
 
             totalWaitTime += waitTime;
             if (timeoutSec && totalWaitTime >= timeoutSec) {
-                break;
+                if (shouldThrow) {
+                    throw new Error("waitUntilReady Timeout.");
+                } else {
+                    break;
+                }
             }
         }
     } else if (Application.android) {
-        doModalAndroid(isReady, timeoutSec);
+        doModalAndroid(isReady, timeoutSec, shouldThrow);
     }
 };
 
@@ -434,7 +433,7 @@ var prepareModal = function () {
     prepared = true;
 }
 
-var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
+var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number, shouldThrow: boolean = true) {
     if (!quitLoop) {
         return;
     }
@@ -443,9 +442,11 @@ var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
 
     var queue = android.os.Looper.myQueue();
 
-    var quit = false;
+    let quit = false;
+    let timeout = false;
     timer.setTimeout(function () {
         quit = true;
+        timeout = true;
     }, timeoutSec * 1000);
 
     var msg;
@@ -463,6 +464,10 @@ var doModalAndroid = function (quitLoop: () => boolean, timeoutSec: number) {
             if (sdkVersion < 21) {//https://code.google.com/p/android-test-kit/issues/detail?id=84
                 msg.recycle();
             }
+        }
+
+        if (shouldThrow && timeout) {
+            throw new Error("waitUntilReady Timeout.");
         }
 
         if (!quit && quitLoop()) {

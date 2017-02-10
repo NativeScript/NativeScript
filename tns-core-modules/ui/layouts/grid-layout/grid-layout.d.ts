@@ -1,25 +1,5 @@
 ﻿declare module "ui/layouts/grid-layout" {
-    import {LayoutBase} from "ui/layouts/layout-base";
-    import {View} from "ui/core/view";
-    import {Property} from "ui/core/dependency-observable";
-
-    /**
-     * GridUnitType enum is used to indicate what kind of value the ItemSpec is holding.
-     */
-    module GridUnitType {
-        /**
-         * The value indicates that content should be calculated without constraints.
-         */
-        export var auto: string;
-        /**
-         * The value is expressed as a pixel.
-         */
-        export var pixel: string;
-        /**
-         * The value is expressed as a weighted proportion of available space.
-         */
-        export var star: string;
-    }
+    import { LayoutBase, Property, View } from "ui/layouts/layout-base";
 
     /**
      * Defines row/column specific properties that apply to GridLayout elements.
@@ -27,10 +7,7 @@
     export class ItemSpec {
 
         constructor();
-        constructor(value: number, type: string);
-        constructor(value: number, type: "pixel");
-        constructor(value: number, type: "star");
-        constructor(value: number, type: "auto");
+        constructor(value: number, type: GridUnitType);
 
         /**
          * Gets the actual length of an ItemSpec.
@@ -40,7 +17,7 @@
         /**
          * Returns unit type of this ItemSpec instance.
          */
-        gridUnitType: string;
+        gridUnitType: GridUnitType;
 
         /** 
          * Returns true if this ItemSpec instance holds
@@ -71,31 +48,6 @@
      */
     export class GridLayout extends LayoutBase {
 
-        ///**
-        // * Initializes a new instance of GridLayout.
-        // * @param options Options to configure this GridLayout instance.
-        // */
-        //constructor(options?: Options);
-
-        /**
-         * Represents the observable property backing the column property.
-         */
-        public static columnProperty: Property;
-
-        /**
-         * Represents the observable property backing the columnSpan property.
-         */
-        public static columnSpanProperty: Property;
-
-        /**
-         * Represents the observable property backing the row property.
-         */
-        public static rowProperty: Property;
-
-        /**
-         * Represents the observable property backing the rowSpan property.
-         */
-        public static rowSpanProperty: Property;
         /**
          * Gets the value of the Column attached property from a given View.
          */
@@ -182,5 +134,34 @@
         public _onRowRemoved(itemSpec: ItemSpec, index: number): void;
         public _onColumnRemoved(itemSpec: ItemSpec, index: number): void;
         //@endprivate
+    }
+
+    /**
+     * Represents the observable property backing the column property.
+     */
+    export const columnProperty: Property<GridLayout, number>;
+
+    /**
+     * Represents the observable property backing the columnSpan property.
+     */
+    export const columnSpanProperty: Property<GridLayout, number>;
+
+    /**
+     * Represents the observable property backing the row property.
+     */
+    export const rowProperty: Property<GridLayout, number>;
+
+    /**
+     * Represents the observable property backing the rowSpan property.
+     */
+    export const rowSpanProperty: Property<GridLayout, number>;
+
+    export type GridUnitType = "pixel" | "star" | "auto";
+    export namespace GridUnitType {
+        export const PIXEL: "pixel";
+        export const STAR: "star";
+        export const AUTO: "auto";
+        export function isValid(value: any): boolean;
+        export function parse(value: string): GridUnitType;
     }
 }

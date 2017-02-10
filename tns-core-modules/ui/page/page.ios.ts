@@ -1,15 +1,18 @@
-﻿import application = require("application");
-import pageCommon = require("./page-common");
-import { View } from "ui/core/view";
-import trace = require("trace");
-import uiUtils = require("ui/utils");
+﻿import {
+    PageBase, View, layout,
+    actionBarHiddenProperty, statusBarStyleProperty,
+    traceEnabled, traceWrite, traceCategories, PercentLength
+} from "./page-common";
+import { ios as iosApp } from "application";
 import { device } from "platform";
-import { DeviceType } from "ui/enums";
-import style = require("ui/styling/style");
-import * as utils from "utils/utils";
-import getter = utils.ios.getter;
+import { Color } from "color";
+import * as uiUtils from "ui/utils";
 
-global.moduleMerge(pageCommon, exports);
+export * from "./page-common";
+
+import { ios } from "utils/utils";
+import getter = ios.getter;
+
 const ENTRY = "_entry";
 const DELEGATE = "_delegate";
 
@@ -73,33 +76,30 @@ class UIViewControllerImpl extends UIViewController {
             return;
         }
 
-        if (trace.enabled) {
-            trace.write(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, trace.categories.ViewHierarchy);
+        if (traceEnabled()) {
+            traceWrite(owner + " viewDidLayoutSubviews, isLoaded = " + owner.isLoaded, traceCategories.ViewHierarchy);
         }
 
         if (!owner.isLoaded) {
             return;
         }
 
-        if (owner._modalParent) {
-            let isTablet = device.deviceType === DeviceType.Tablet;
-            let isFullScreen = !owner._UIModalPresentationFormSheet || !isTablet;
+        const modalParent = owner._modalParent;
+        if (modalParent) {
+            // if inside horizontally compact environment - fullScreen will be forced
+            let isFullScreen = !owner._UIModalPresentationFormSheet ||
+                (modalParent.nativeView.traitCollection.horizontalSizeClass === UIUserInterfaceSizeClass.Compact);
+
             let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
             let size = frame.size;
             let width = size.width;
             let height = size.height;
-            let mode: number = utils.layout.EXACTLY;
+            let mode: number = layout.EXACTLY;
 
             let superViewRotationRadians;
             if (this.view.superview) {
                 let transform = this.view.superview.transform;
                 superViewRotationRadians = atan2f(transform.b, transform.a);
-            }
-
-            if (utils.ios.MajorVersion < 8 && utils.ios.isLandscape() && !superViewRotationRadians) {
-                // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
-                width = size.height;
-                height = size.width;
             }
 
             let bottom = height;
@@ -110,31 +110,20 @@ class UIViewControllerImpl extends UIViewController {
                 height -= statusBarHeight;
             }
 
-            let widthSpec = utils.layout.makeMeasureSpec(width, mode);
-            let heightSpec = utils.layout.makeMeasureSpec(height, mode);
+            let widthSpec = layout.makeMeasureSpec(width, mode);
+            let heightSpec = layout.makeMeasureSpec(height, mode);
 
-            View.measureChild(null, owner, widthSpec, heightSpec);
-            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || utils.ios.MajorVersion < 8 || !isFullScreen) ? 0 : statusBarHeight;
-            View.layoutChild(null, owner, 0, top, width, bottom);
+            View.measureChild(modalParent, owner, widthSpec, heightSpec);
+            let top = ((backgroundSpanUnderStatusBar && isFullScreen) || !isFullScreen) ? 0 : statusBarHeight;
+            View.layoutChild(modalParent, owner, 0, top, width, bottom);
 
-            if (utils.ios.MajorVersion < 8) {
-                if (!backgroundSpanUnderStatusBar && (!isTablet || isFullScreen)) {
-                    if (utils.ios.isLandscape() && !superViewRotationRadians) {
-                        this.view.center = CGPointMake(this.view.center.x - statusBarHeight, this.view.center.y);
-                    }
-                    else {
-                        this.view.center = CGPointMake(this.view.center.x, this.view.center.y + statusBarHeight);
-                    }
-                }
-            }
-
-            if (trace.enabled) {
-                trace.write(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), trace.categories.Layout);
+            if (traceEnabled()) {
+                traceWrite(owner + ", native frame = " + NSStringFromCGRect(this.view.frame), traceCategories.Layout);
             }
         }
         else {
-            if (!application.ios.window) {
-                uiUtils.ios._layoutRootView(owner, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+            if (!iosApp.window) {
+                uiUtils.ios._layoutRootView(owner, getter(UIScreen, UIScreen.mainScreen).bounds);
             }
             owner._updateLayout();
         }
@@ -144,15 +133,18 @@ class UIViewControllerImpl extends UIViewController {
         super.viewWillAppear(animated);
         this.shown = false;
         let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewWillAppear", trace.categories.Navigation);
+
+        if (traceEnabled) {
+            traceWrite(page + " viewWillAppear", traceCategories.Navigation);
         }
+
         if (!page) {
             return;
         }
 
-        let frame = this.navigationController ? (<any>this.navigationController).owner : null;
-        let newEntry = this[ENTRY];
+        const frame = this.navigationController ? (<any>this.navigationController).owner : null;
+        const newEntry = this[ENTRY];
+        const modalParent = page._modalParent;
 
         // Don't raise event if currentPage was showing modal page.
         if (!page._presentedViewController && newEntry && (!frame || frame.currentPage !== page)) {
@@ -161,6 +153,11 @@ class UIViewControllerImpl extends UIViewController {
         }
 
         page._enableLoadedEvents = true;
+
+        // Add page to frame if showing modal page.
+        if (modalParent) {
+            modalParent.frame._addView(page);
+        }
 
         if (frame) {
             if (!page.parent) {
@@ -194,8 +191,8 @@ class UIViewControllerImpl extends UIViewController {
         super.viewDidAppear(animated);
         this.shown = true;
         let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewDidAppear", trace.categories.Navigation);
+        if (traceEnabled()) {
+            traceWrite(page + " viewDidAppear", traceCategories.Navigation);
         }
         if (!page) {
             return;
@@ -244,9 +241,11 @@ class UIViewControllerImpl extends UIViewController {
     };
 
     public viewWillDisappear(animated: boolean): void {
+        super.viewWillDisappear(animated);
+
         let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewWillDisappear", trace.categories.Navigation);
+        if (traceEnabled()) {
+            traceWrite(page + " viewWillDisappear", traceCategories.Navigation);
         }
         if (!page) {
             return;
@@ -270,21 +269,24 @@ class UIViewControllerImpl extends UIViewController {
     }
 
     public viewDidDisappear(animated: boolean): void {
-        let page = this._owner.get();
-        if (trace.enabled) {
-            trace.write(page + " viewDidDisappear", trace.categories.Navigation);
+        super.viewDidDisappear(animated);
+
+        const page = this._owner.get();
+        if (traceEnabled()) {
+            traceWrite(page + " viewDidDisappear", traceCategories.Navigation);
         }
         // Exit if no page or page is hiding because it shows another page modally.
         if (!page || page.modal || page._presentedViewController) {
             return;
         }
 
-        let modalParent = page._modalParent;
+        const modalParent = page._modalParent;
         page._modalParent = undefined;
         page._UIModalPresentationFormSheet = false;
 
-        // Clear modal flag on parent page.
+        // Clear up after modal page has closed.
         if (modalParent) {
+            modalParent.frame._removeView(page);
             modalParent._modal = undefined;
         }
 
@@ -321,13 +323,22 @@ class UIViewControllerImpl extends UIViewController {
     }
 }
 
-export class Page extends pageCommon.Page {
-    private _ios: UIViewControllerImpl = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+export class Page extends PageBase {
+    public nativeView: UIView;
+
+    private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
     public _modalParent: Page;
     public _UIModalPresentationFormSheet: boolean;
     public _viewWillDisappear: boolean;
     public _presentedViewController: UIViewController; // used when our page present native viewController without going through our abstraction.
+
+    constructor() {
+        super();
+        this._ios = UIViewControllerImpl.initWithOwner(new WeakRef(this));
+        this.nativeView = this._ios.view;
+        this.nativeView.backgroundColor = new Color("white").ios;
+    }
 
     public requestLayout(): void {
         super.requestLayout();
@@ -347,7 +358,8 @@ export class Page extends pageCommon.Page {
         if (this._enableLoadedEvents) {
             super.onLoaded();
         }
-        this._updateActionBar();
+
+        this.updateActionBar();
     }
 
     public onUnloaded() {
@@ -359,8 +371,8 @@ export class Page extends pageCommon.Page {
 
     private _addNativeView(view: View) {
         if (view) {
-            if (trace.enabled) {
-                trace.write("Native: Adding " + view + " to " + this, trace.categories.ViewHierarchy);
+            if (traceEnabled()) {
+                traceWrite("Native: Adding " + view + " to " + this, traceCategories.ViewHierarchy);
             }
             if (view.ios instanceof UIView) {
                 this._ios.view.addSubview(view.ios);
@@ -373,8 +385,8 @@ export class Page extends pageCommon.Page {
 
     private _removeNativeView(view: View) {
         if (view) {
-            if (trace.enabled) {
-                trace.write("Native: Removing " + view + " from " + this, trace.categories.ViewHierarchy);
+            if (traceEnabled()) {
+                traceWrite("Native: Removing " + view + " from " + this, traceCategories.ViewHierarchy);
             }
             if (view.ios instanceof UIView) {
                 (<UIView>view.ios).removeFromSuperview();
@@ -411,7 +423,7 @@ export class Page extends pageCommon.Page {
 
         super._raiseShowingModallyEvent();
 
-        parent.ios.presentViewControllerAnimatedCompletion(this._ios, utils.ios.MajorVersion >= 7, null);
+        parent.ios.presentViewControllerAnimatedCompletion(this._ios, true, null);
         let transitionCoordinator = getter(parent.ios, parent.ios.transitionCoordinator);
         if (transitionCoordinator) {
             UIViewControllerTransitionCoordinator.prototype.animateAlongsideTransitionCompletion.call(transitionCoordinator, null, () => this._raiseShownModallyEvent());
@@ -426,12 +438,12 @@ export class Page extends pageCommon.Page {
 
     protected _hideNativeModalView(parent: Page) {
         parent.requestLayout();
-        parent._ios.dismissModalViewControllerAnimated(utils.ios.MajorVersion >= 7);
+        parent._ios.dismissModalViewControllerAnimated(true);
 
         super._hideNativeModalView(parent);
     }
 
-    public _updateActionBar(disableNavBarAnimation: boolean = false) {
+    private updateActionBar(disableNavBarAnimation: boolean = false) {
         const frame = this.frame;
         if (frame) {
             frame._updateActionBar(this, disableNavBarAnimation);
@@ -461,14 +473,29 @@ export class Page extends pageCommon.Page {
         }
     }
 
+    public _updateEffectiveLayoutValues(parent: View): void {
+        super._updateEffectiveLayoutValues(parent);
+
+        // Patch vertical margins to respect status bar height
+        if (!this.backgroundSpanUnderStatusBar) {
+            const style = this.style;
+
+            let parentHeightMeasureSpec = parent._currentHeightMeasureSpec;
+            let parentHeightMeasureSize = layout.getMeasureSpecSize(parentHeightMeasureSpec) - uiUtils.ios.getStatusBarHeight();
+            let parentHeightMeasureMode = layout.getMeasureSpecMode(parentHeightMeasureSpec);
+            let parentAvailableHeight = parentHeightMeasureMode === layout.UNSPECIFIED ? -1 : parentHeightMeasureSize;
+
+            this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
+            this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
+        }
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        View.adjustChildLayoutParams(this.layoutView, widthMeasureSpec, heightMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let actionBarWidth: number = 0;
         let actionBarHeight: number = 0;
@@ -482,24 +509,24 @@ export class Page extends pageCommon.Page {
         }
 
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === "Tablet") {
             statusBarHeight = 0;
         }
 
-        if (this.frame && this.frame._getNavBarVisible(this)) {
+        if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height.
             let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
             actionBarWidth = actionBarSize.measuredWidth;
             actionBarHeight = actionBarSize.measuredHeight;
         }
 
-        let heightSpec = utils.layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
+        let heightSpec = layout.makeMeasureSpec(height - actionBarHeight - statusBarHeight, heightMode);
 
         // Measure content with height - navigationBarHeight. Here we could use actionBarSize.measuredHeight probably.
         let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightSpec);
 
-        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.minWidth);
-        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.minHeight);
+        let measureWidth = Math.max(actionBarWidth, result.measuredWidth, this.effectiveMinWidth);
+        let measureHeight = Math.max(result.measuredHeight + actionBarHeight, this.effectiveMinHeight);
 
         let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
         let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
@@ -531,48 +558,54 @@ export class Page extends pageCommon.Page {
         }
 
         // Phones does not support fullScreen=false for modal pages so we reduce statusbar only when on tablet and not in fullscreen
-        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === DeviceType.Tablet) {
+        if (this._modalParent && this._UIModalPresentationFormSheet && device.deviceType === "Tablet") {
             statusBarHeight = 0;
         }
 
         View.layoutChild(this, this.layoutView, 0, navigationBarHeight + statusBarHeight, right - left, bottom - top);
-
-        View.restoreChildOriginalParams(this.layoutView);
     }
 
     public _addViewToNativeVisualTree(view: View): boolean {
-        // ActionBar is added to the native visual tree by default
+        // ActionBar is handled by the UINavigationController
         if (view === this.actionBar) {
             return true;
         }
 
         return super._addViewToNativeVisualTree(view);
     }
+
+    public _removeViewFromNativeVisualTree(view: View): void {
+        // ActionBar is handled by the UINavigationController
+        if (view === this.actionBar) {
+            return;
+        }
+
+        super._removeViewFromNativeVisualTree(view);
+    }
+
+    get [actionBarHiddenProperty.native](): boolean {
+        return undefined;
+    }
+    set [actionBarHiddenProperty.native](value: boolean) {
+        this._updateEnableSwipeBackNavigation(value);
+        if (this.isLoaded) {
+            // Update nav-bar visibility with disabled animations
+            this.updateActionBar(true);
+        }
+    }
+
+    get [statusBarStyleProperty.native](): UIBarStyle {
+        return UIBarStyle.Default;
+    }
+    set [statusBarStyleProperty.native](value: string | UIBarStyle) {
+        let frame = this.frame;
+        if (frame) {
+            let navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;
+            if (typeof value === "string") {
+                navigationBar.barStyle = value === "dark" ? UIBarStyle.Black : UIBarStyle.Default;
+            } else {
+                navigationBar.barStyle = value;
+            }
+        }
+    }
 }
-
-export class PageStyler implements style.Styler {
-    // statusBarStyle
-    private static setStatusBarStyleProperty(v: View, newValue: any) {
-        let page = <Page>v;
-        page._updateStatusBarStyle(newValue);
-    }
-
-    private static resetStatusBarStyleProperty(v: View, nativeValue: any) {
-        let page = <Page>v;
-        page._updateStatusBarStyle(nativeValue);
-    }
-
-    private static getStatusBarStyleProperty(v: View): any {
-        let page = <Page>v;
-        return page.statusBarStyle;
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.statusBarStyleProperty, new style.StylePropertyChangedHandler(
-            PageStyler.setStatusBarStyleProperty,
-            PageStyler.resetStatusBarStyleProperty,
-            PageStyler.getStatusBarStyleProperty), "Page");
-    }
-}
-
-PageStyler.registerHandlers();

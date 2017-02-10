@@ -1,6 +1,6 @@
-import pages = require("ui/page");
-import labelModule = require("ui/label");
-import observable = require("data/observable");
+import * as pages from "ui/page";
+import * as labelModule from "ui/label";
+import * as observable from "data/observable";
 
 var page: pages.Page;
 var label: labelModule.Label;

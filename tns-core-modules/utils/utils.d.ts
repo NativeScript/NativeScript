@@ -1,5 +1,5 @@
 ﻿declare module "utils/utils" {
-    import colorModule = require("color");
+    import * as colorModule from "color";
 
     export var RESOURCE_PREFIX: string;
 
@@ -78,11 +78,6 @@
      * Module with android specific utilities.
      */
     module ad {
-        export function setTextTransform(view, value: string);
-        export function setWhiteSpace(view, value: string);
-        export function setTextDecoration(view, value: string);
-        export function getTransformedString(textTransform: string, view, stringToTransform: string): string;
-
         /**
          * Gets the native Android application instance.
          */
@@ -163,9 +158,6 @@
          * Example: getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(NSDate.dateWithTimeIntervalSinceNow(waitTime));
          */
         export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
-        export function getTransformedText(view, source: string, transform: string): string;
-        export function setWhiteSpace(view, value: string, parentView?: any);
-        export function setTextAlignment(view, value: string);
 
         // Common properties between UILabel, UITextView and UITextField 
         export interface TextUIView {

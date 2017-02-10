@@ -2,9 +2,9 @@
 import {StackLayout} from "ui/layouts/stack-layout";
 import {GridLayout} from "ui/layouts/grid-layout";
 
-import utils = require("utils/utils");
-import TKUnit = require("../../TKUnit");
-import def = require("./layout-helper");
+import * as utils from "utils/utils";
+import * as TKUnit from "../../TKUnit";
+import * as def from "./layout-helper";
 
 var DELTA = 0.1;
 
@@ -85,7 +85,7 @@ export class MyButton extends Button implements def.MyButton {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new NativeButton(this._context, this);
     }
 
@@ -138,7 +138,7 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new NativeStackLayout(this._context, this);
     }
 
@@ -191,7 +191,7 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new NativeGridLayout(this._context, this);
     }
 

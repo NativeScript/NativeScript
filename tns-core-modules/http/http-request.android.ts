@@ -1,14 +1,14 @@
 ﻿/**
  * Android specific http request implementation.
  */
-import types = require("utils/types");
+import * as types from "utils/types";
 import * as utilsModule from "utils/utils";
 import * as imageSourceModule from "image-source";
 import * as platformModule from "platform";
 import * as fsModule from "file-system";
 
 // this is imported for definition purposes only
-import http = require("http");
+import * as http from "http";
 
 var requestIdCounter = 0;
 var pendingRequests = {};

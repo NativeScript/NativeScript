@@ -1,19 +1,11 @@
-﻿import view = require("ui/core/view");
-import definition = require("ui/switch");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
+﻿import { Switch as SwitchDefinition } from "ui/switch";
+import { View, Property, booleanConverter } from "ui/core/view";
 
-export class Switch extends view.View implements definition.Switch {
-    public static checkedProperty = new dependencyObservable.Property(
-        "checked",
-        "Switch",
-        new proxy.PropertyMetadata(false)
-        );
+export * from "ui/core/view";
 
-    get checked(): boolean {
-        return this._getValue(Switch.checkedProperty);
-    }
-    set checked(value: boolean) {
-        this._setValue(Switch.checkedProperty, value);
-    }
+export class SwitchBase extends View implements SwitchDefinition {
+    public checked: boolean;
 }
+
+export const checkedProperty = new Property<SwitchBase, boolean>({ name: "checked", defaultValue: false, valueConverter: booleanConverter });
+checkedProperty.register(SwitchBase);

@@ -1,6 +1,6 @@
-import definition = require("console");
-import trace = require("trace");
-import platform = require("platform");
+import * as definition from "console";
+import * as trace from "trace";
+import * as platform from "platform";
 
 export class Console implements definition.Console {
     private TAG: string = "JS";
@@ -222,22 +222,21 @@ export class Console implements definition.Console {
     }
 
     public time(reportName: string): void {
-        var name = reportName ? '__' + reportName : '__internal_console_time__';
-        if (('undefined' === typeof (this._timers[name])) || (this._timers.hasOwnProperty(name))) {
+        const name = reportName ? '__' + reportName : '__internal_console_time__';
+        if (this._timers[name] === undefined || this._timers.hasOwnProperty(name)) {
             this._timers[name] = this.timeMillis();
-        }
-        else {
+        } else {
             this.warn('invalid name for timer console.time(' + reportName + ')');
         }
     }
 
     public timeEnd(reportName: string): void {
-        var name = reportName ? '__' + reportName : '__internal_console_time__';
+        const name = reportName ? '__' + reportName : '__internal_console_time__';
         if (this._timers.hasOwnProperty(name)) {
-            var val = this._timers[name];
+            const val = this._timers[name];
             if (val) {
                 var time = this.timeMillis();
-                this.info('console.time(' + reportName + '): %.6f ms',(time - val));
+                this.info('console.time(' + reportName + '): %.6f ms', (time - val));
                 this._timers[name] = undefined;
             }
             else {
@@ -284,7 +283,7 @@ export class Console implements definition.Console {
             global.__consoleMessage(formatedMessage, "log")
         }
     }
-    
+
     private logMessage(message: string, messageType: number): void {
         if (!global.android) {
             // This case may be entered during heap snapshot where the global.android is not present
@@ -337,7 +336,7 @@ export class Console implements definition.Console {
             result.push("=== dump(): object is 'null' ===");
             return result.join('');
         }
-        if ("undefined" === typeof obj) {
+        if (obj === undefined) {
             result.push("=== dump(): object is 'undefined' ===");
             return result.join('');
         }

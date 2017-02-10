@@ -1,10 +1,7 @@
-﻿import view = require("ui/core/view");
-import definition = require("ui/scroll-view");
-import common = require("./scroll-view-common");
-import enums = require("ui/enums");
-import utils = require("utils/utils");
+﻿import { ScrollEventData } from "ui/scroll-view";
+import { View, layout, ScrollViewBase } from "./scroll-view-common";
 
-global.moduleMerge(common, exports);
+export * from "./scroll-view-common";
 
 class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate {
     private _owner: WeakRef<ScrollView>;
@@ -17,16 +14,12 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
 
     public scrollViewDidScroll(sv: UIScrollView): void {
         let owner = this._owner.get();
-        if (!owner) {
-            return;
-        }
-
         if (owner) {
-            owner.notify(<definition.ScrollEventData>{
+            owner.notify(<ScrollEventData>{
                 object: owner,
-                eventName: definition.ScrollView.scrollEvent,
-                scrollX: owner.horizontalOffset,
-                scrollY: owner.verticalOffset
+                eventName: ScrollViewBase.scrollEvent,
+                scrollX: owner.horizontalOffset / layout.getDisplayDensity(),
+                scrollY: owner.verticalOffset / layout.getDisplayDensity()
             });
         }
     }
@@ -34,116 +27,120 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
     public static ObjCProtocols = [UIScrollViewDelegate];
 }
 
-export class ScrollView extends common.ScrollView implements definition.ScrollView {
-    private _scroll: UIScrollView;
+export class ScrollView extends ScrollViewBase {
+    public nativeView: UIScrollView;
     private _contentMeasuredWidth: number = 0;
     private _contentMeasuredHeight: number = 0;
     private _delegate: UIScrollViewDelegateImpl;
 
     constructor() {
         super();
-        this._scroll = UIScrollView.new();
+        this.nativeView = UIScrollView.new();
     }
 
     protected attachNative() {
         this._delegate = UIScrollViewDelegateImpl.initWithOwner(new WeakRef(this));
-        this._scroll.delegate = this._delegate;
+        this.nativeView.delegate = this._delegate;
     }
 
     protected dettachNative() {
-        this._scroll.delegate = null;
+        this.nativeView.delegate = null;
     }
 
     get horizontalOffset(): number {
-        return this._scroll.contentOffset.x;
+        return this.nativeView.contentOffset.x;
     }
 
     get verticalOffset(): number {
-        return this._scroll.contentOffset.y;
+        return this.nativeView.contentOffset.y;
     }
 
     get scrollableWidth(): number {
-        if (this.orientation !== enums.Orientation.horizontal) {
+        if (this.orientation !== "horizontal") {
             return 0;
         }
 
-        return Math.max(0, this._scroll.contentSize.width - this._scroll.bounds.size.width);
+        return Math.max(0, this.nativeView.contentSize.width - this.nativeView.bounds.size.width) / layout.getDisplayDensity();
     }
 
     get scrollableHeight(): number {
-        if (this.orientation !== enums.Orientation.vertical) {
+        if (this.orientation !== "vertical") {
             return 0;
         }
 
-        return Math.max(0, this._scroll.contentSize.height - this._scroll.bounds.size.height);
+        return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height) / layout.getDisplayDensity();
     }
 
     get ios(): UIView {
-        return this._scroll;
+        return this.nativeView;
     }
 
     get _nativeView(): UIView {
-        return this._scroll;
+        return this.nativeView;
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {
-        if (this.orientation === enums.Orientation.vertical) {
-            var bounds = this._scroll.bounds.size;
-            this._scroll.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
+        if (this.orientation === "vertical") {
+            const bounds = this.nativeView.bounds.size;
+            this.nativeView.scrollRectToVisibleAnimated(CGRectMake(0, value, bounds.width, bounds.height), animated);
         }
     }
 
     public scrollToHorizontalOffset(value: number, animated: boolean) {
-        if (this.orientation === enums.Orientation.horizontal) {
-            var bounds = this._scroll.bounds.size;
-            this._scroll.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
+        if (this.orientation === "horizontal") {
+            const bounds = this.nativeView.bounds.size;
+            this.nativeView.scrollRectToVisibleAnimated(CGRectMake(value, 0, bounds.width, bounds.height), animated);
         }
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // Don't call measure because it will measure content twice.
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var density = utils.layout.getDisplayDensity();
-        var child = this.layoutView;
+        const density = layout.getDisplayDensity();
+        const child = this.layoutView;
         if (!child) {
-            this._contentMeasuredWidth = this.minWidth * density;
-            this._contentMeasuredHeight = this.minHeight * density;
+            this._contentMeasuredWidth = this.effectiveMinWidth * density;
+            this._contentMeasuredHeight = this.effectiveMinHeight * density;
         }
         else {
-            var childSize: { measuredWidth: number; measuredHeight: number };
-            if (this.orientation === enums.Orientation.vertical) {
-                childSize = view.View.measureChild(this, child, widthMeasureSpec, utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED));
+            let childSize: { measuredWidth: number; measuredHeight: number };
+            if (this.orientation === "vertical") {
+                childSize = View.measureChild(this, child, widthMeasureSpec, layout.makeMeasureSpec(0, layout.UNSPECIFIED));
             }
             else {
-                childSize = view.View.measureChild(this, child, utils.layout.makeMeasureSpec(0, utils.layout.UNSPECIFIED), heightMeasureSpec);
+                childSize = View.measureChild(this, child, layout.makeMeasureSpec(0, layout.UNSPECIFIED), heightMeasureSpec);
             }
 
-            this._scroll.contentSize = CGSizeMake(childSize.measuredWidth, childSize.measuredHeight);
-            this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.minWidth * density);
-            this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.minHeight * density);
+            this.nativeView.contentSize = CGSizeMake(childSize.measuredWidth, childSize.measuredHeight);
+            this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth * density);
+            this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight * density);
         }
 
-        var widthAndState = view.View.resolveSizeAndState(this._contentMeasuredWidth, width, widthMode, 0);
-        var heightAndState = view.View.resolveSizeAndState(this._contentMeasuredHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(this._contentMeasuredWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(this._contentMeasuredHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
 
-        var width = (right - left);
-        var height = (bottom - top);
+        const width = (right - left);
+        const height = (bottom - top);
 
-        if (this.orientation === enums.Orientation.horizontal) {
-            view.View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height);
+        if (this.orientation === "horizontal") {
+            View.layoutChild(this, this.layoutView, 0, 0, Math.max(this._contentMeasuredWidth, width), height);
         }
         else {
-            view.View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
+            View.layoutChild(this, this.layoutView, 0, 0, width, Math.max(this._contentMeasuredHeight, height));
         }
+    }
+
+    public _onOrientationChanged() {
+        // NOOP
     }
 }

@@ -1,5 +1,5 @@
 ﻿declare module "ui/core/bindable" {
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import { ViewBase } from "ui/core/view-base";
 
     /**
      * The options object used in the Bindable.bind method.
@@ -40,35 +40,11 @@
         toView: (...params: any[]) => any;
     }
 
-    /**
-     * Represents an extended DependencyObservable object that supports data-binding.
-     */
-    export class Bindable extends dependencyObservable.DependencyObservable {
-        /**
-         * Represents the dependency Property used to back the bindingContext value.
-         */
-        public static bindingContextProperty: dependencyObservable.Property;
-
-        /**
-         * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
-         */
-        bindingContext: any;
-        /**
-         * Establishes a binding between the source object and this Bindable instance.
-         * @param options The options for the binding.
-         * @param source An optional parameter, specifying the source object to bind to. If no source is specified the bindingContext value (if any) will be used as a source.
-         */
-        bind(options: BindingOptions, source?: Object);
-        /**
-         * Removes the existing binding (if any) for the specified property.
-         * @param property The name of the property to unbind.
-         */
-        unbind(property: string);
-
-        _onBindingContextChanged(oldValue: any, newValue: any);
-
-        //@private
-        _updateTwoWayBinding(propertyName: string, value: any);
-        //@endprivate
+    export class Binding {
+        constructor(target: ViewBase, options: BindingOptions);
+        public bind(source: Object): void;
+        public unbind();
+        public sourceIsBindingContext: boolean;
+        public updateTwoWay(value: any);
     }
 }

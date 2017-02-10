@@ -1,22 +1,22 @@
-﻿import application = require("application");
-import trace = require("trace");
+﻿import * as application from "application";
+import * as trace from "trace";
 trace.enable();
 trace.setCategories(trace.categories.concat(
     trace.categories.NativeLifecycle,
     trace.categories.Navigation,
-    //trace.categories.Animation,
     trace.categories.Transition
     ));
 
 var countResume = 0;
 var countSuspend = 0;
 
-application.onUncaughtError = function (error: application.NativeScriptError) {
+application.on("uncaughtError", args => {
+    const error = args.error;
     console.warn(error.message);
     if (error.nativeError) {
         console.warn("native error: " + error.nativeError);
     }
-}
+});
 
 application.on(application.launchEvent, function (args: application.ApplicationEventData) {
     if (args.android) {
@@ -68,7 +68,7 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
     }
 });
 
-application.on(application.uncaughtErrorEvent, function (args: application.ApplicationEventData) {
+application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
     if (args.android) {
         // For Android applications, args.android is NativeScriptError.
         console.log("### NativeScriptError: " + args.android);
@@ -78,5 +78,5 @@ application.on(application.uncaughtErrorEvent, function (args: application.Appli
     }
 });
 
-application.cssFile = "ui-tests-app/app.css";
+application.setCssFileName("ui-tests-app/app.css");
 application.start({ moduleName: "ui-tests-app/mainPage" });

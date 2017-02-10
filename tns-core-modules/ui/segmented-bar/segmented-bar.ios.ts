@@ -1,75 +1,25 @@
-﻿import definition = require("ui/segmented-bar");
-import common = require("./segmented-bar-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import types = require("utils/types");
-import style = require("ui/styling/style");
-import font = require("ui/styling/font");
-import view = require("ui/core/view");
+﻿import {
+    SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
+    colorProperty, fontInternalProperty, Color, Font
+} from "./segmented-bar-common";
 
-import * as utils from "utils/utils";
+import { ios } from "utils/utils";
 
-global.moduleMerge(common, exports);
+export * from "./segmented-bar-common";
 
-function onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <SegmentedBar>data.object;
-    if (!view.ios || !view.items) {
-        return;
-    }
-
-    var index = <number>data.newValue;
-    if (types.isNumber(index)) {
-        if (index >= 0 && index <= view.items.length - 1) {
-            view.ios.selectedSegmentIndex = index;
-        } else {
-            view.selectedIndex = undefined;
-            throw new Error("selectedIndex should be between [0, items.length - 1]");
-        }
-
-        var args = { eventName: SegmentedBar.selectedIndexChangedEvent, object: view, oldIndex: data.oldValue, newIndex: data.newValue };
-        view.notify(args);
-    }
-}
-(<proxy.PropertyMetadata>common.SegmentedBar.selectedIndexProperty.metadata).onSetNativeValue = onSelectedIndexPropertyChanged;
-
-function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <SegmentedBar>data.object;
-    if (!view.ios) {
-        return;
-    }
-
-    var oldItems = <Array<definition.SegmentedBarItem>>data.oldValue;
-    if (oldItems && oldItems.length) {
-        for (var i = 0; i < oldItems.length; i++) {
-            (<SegmentedBarItem>oldItems[i])._parent = null;
-        }
-    }
-    view._adjustSelectedIndex(newItems);
-    view.ios.removeAllSegments();
-
-    var newItems = <Array<definition.SegmentedBarItem>>data.newValue;
-    if (newItems && newItems.length) {
-        for (var i = 0; i < newItems.length; i++) {
-            view.insertTab(<SegmentedBarItem>(newItems[i]), i);
-        }
-
-        if (view.ios.selectedSegmentIndex !== view.selectedIndex) {
-            view.ios.selectedSegmentIndex = view.selectedIndex;
-        }
-    }
-}
-(<proxy.PropertyMetadata>common.SegmentedBar.itemsProperty.metadata).onSetNativeValue = onItemsPropertyChanged;
-
-export class SegmentedBarItem extends common.SegmentedBarItem {
+export class SegmentedBarItem extends SegmentedBarItemBase {
     public _update() {
-        if (this._parent) {
-            var tabIndex = this._parent.items.indexOf(this);
-            this._parent.ios.setTitleForSegmentAtIndex(this.title || "", tabIndex);
+        const parent = <SegmentedBar>this.parent;
+        if (parent) {
+            let tabIndex = parent.items.indexOf(this);
+            let title = this.title;
+            title = (title === null || title === undefined) ? "" : title;
+            parent.ios.setTitleForSegmentAtIndex(title, tabIndex);
         }
     }
 }
 
-export class SegmentedBar extends common.SegmentedBar {
+export class SegmentedBar extends SegmentedBarBase {
     private _ios: UISegmentedControl;
     private _selectionHandler: NSObject;
 
@@ -84,11 +34,61 @@ export class SegmentedBar extends common.SegmentedBar {
     get ios(): UISegmentedControl {
         return this._ios;
     }
-    
-    public insertTab(tabItem: SegmentedBarItem, index?: number): void {
-        super.insertTab(tabItem, index);
-        tabItem._parent = this;
-        this.ios.insertSegmentWithTitleAtIndexAnimated(tabItem.title || "", this.getValidIndex(index), false);
+
+    get [selectedIndexProperty.native](): number {
+        return -1;
+    }
+    set [selectedIndexProperty.native](value: number) {
+        this._ios.selectedSegmentIndex = value;
+    }
+
+    get [itemsProperty.native](): SegmentedBarItem[] {
+        return null;
+    }
+    set [itemsProperty.native](value: SegmentedBarItem[]) {
+        const segmentedControl = this._ios;
+        segmentedControl.removeAllSegments();
+        const newItems = value;
+
+        if (newItems && newItems.length) {
+            newItems.forEach((item, index, arr) => {
+                let title = item.title;
+                title = (title === null || title === undefined) ? "" : title;
+                segmentedControl.insertSegmentWithTitleAtIndexAnimated(title, index, false);
+            })
+        }
+    }
+
+    get [selectedBackgroundColorProperty.native](): UIColor {
+        return this._ios.tintColor;
+    }
+    set [selectedBackgroundColorProperty.native](value: UIColor | Color) {
+        let color = value instanceof Color ? value.ios : value;
+        this._ios.tintColor = color;
+    }
+
+    get [colorProperty.native](): UIColor {
+        return null;
+    }
+    set [colorProperty.native](value: Color | UIColor) {
+        let color = value instanceof Color ? value.ios : value;
+        let bar = this._ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
+        let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
+        attrs.setValueForKey(color, NSForegroundColorAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
+    }
+
+    get [fontInternalProperty.native](): Font {
+        return null
+    }
+    set [fontInternalProperty.native](value: Font) {
+        let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(ios.getter(UIFont, UIFont.labelFontSize))) : null;
+        let bar = this._ios;
+        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
+        let attrs = currentAttrs ? currentAttrs.mutableCopy() : NSMutableDictionary.new();
+        attrs.setValueForKey(font, NSFontAttributeName);
+        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
 }
 
@@ -113,116 +113,3 @@ class SelectionHandlerImpl extends NSObject {
         "selected": { returns: interop.types.void, params: [UISegmentedControl] }
     };
 }
-
-export class SegmentedBarStyler implements style.Styler {
-    //Text color methods
-    private static setColorProperty(v: view.View, newValue: any) {
-        let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-        let attrs;
-        if (currentAttrs) {
-            attrs = currentAttrs.mutableCopy();
-        }
-        else {
-            attrs = NSMutableDictionary.new();
-        }
-        attrs.setValueForKey(newValue, NSForegroundColorAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
-    }
-
-    private static resetColorProperty(v: view.View, nativeValue: any) {
-        let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-        let attrs;
-        if (currentAttrs) {
-            attrs = currentAttrs.mutableCopy();
-        }
-        else {
-            attrs = NSMutableDictionary.new();
-        }
-        attrs.setValueForKey(nativeValue, NSForegroundColorAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
-    }
-
-    //Text fonts methods
-    private static setFontInternalProperty(v: view.View, newValue: any) {
-        let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-        let attrs;
-        if (currentAttrs) {
-            attrs = currentAttrs.mutableCopy();
-        }
-        else {
-            attrs = NSMutableDictionary.new();
-        }
-        let newFont = (<font.Font>newValue).getUIFont(UIFont.systemFontOfSize(utils.ios.getter(UIFont, UIFont.labelFontSize)));
-        attrs.setValueForKey(newFont, NSFontAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
-    }
-
-    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
-        let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-        let attrs;
-        if (currentAttrs) {
-            attrs = currentAttrs.mutableCopy();
-        }
-        else {
-            attrs = NSMutableDictionary.new();
-        }
-        attrs.setValueForKey(nativeValue, NSFontAttributeName);
-        bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
-    }
-
-    private static getNativeFontValue(v: view.View) {
-        let bar = <UISegmentedControl>v.ios;
-        let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
-        let currentFont;
-        if (currentAttrs) {
-            currentFont = currentAttrs.objectForKey(NSFontAttributeName);
-        }
-        if (!currentFont) {
-            currentFont = UIFont.systemFontOfSize(utils.ios.getter(UIFont, UIFont.labelFontSize));
-        }
-        return currentFont;
-    }
-
-    //Selected background color methods
-    private static setSelectedBackgroundColorProperty(v: view.View, newValue: any) {
-        if (!v.ios) {
-            return;
-        }
-        v.ios.tintColor = newValue;
-    }
-
-    private static resetSelectedBackgroundColorProperty(v: view.View, nativeValue: any) {
-        if (!v.ios) {
-            return;
-        }
-        v.ios.tintColor = nativeValue;
-    }
-
-    private static getSelectedBackgroundColorProperty(v: view.View): any {
-        if (!v.ios) {
-            return;
-        }
-
-        return v.ios.tintColor; 
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SegmentedBarStyler.setColorProperty,
-            SegmentedBarStyler.resetColorProperty), "SegmentedBar");
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            SegmentedBarStyler.setFontInternalProperty,
-            SegmentedBarStyler.resetFontInternalProperty,
-            SegmentedBarStyler.getNativeFontValue), "SegmentedBar");
-        style.registerHandler(style.selectedBackgroundColorProperty, new style.StylePropertyChangedHandler(
-            SegmentedBarStyler.setSelectedBackgroundColorProperty,
-            SegmentedBarStyler.resetSelectedBackgroundColorProperty,
-            SegmentedBarStyler.getSelectedBackgroundColorProperty), "SegmentedBar");
-    }
-}
-
-SegmentedBarStyler.registerHandlers();

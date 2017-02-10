@@ -1,38 +1,31 @@
-import {LayoutBase} from "ui/layouts/layout-base";
-import {View} from "ui/core/view";
-import {PropertyMetadata} from "ui/core/proxy";
-import {Property, PropertyMetadataSettings} from "ui/core/dependency-observable";
-import {registerSpecialProperty} from "ui/builder/special-properties";
-import {isAndroid} from "platform";
-import {isString, isBoolean} from "utils/types";
-import styleProperty = require("ui/styling/style-property");
-import * as style from "ui/styling/style";
-import * as flexbox from "ui/layouts/flexbox-layout";
+import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "ui/layouts/layout-base";
 
-declare module "ui/layouts/flexbox-layout" {
-    export function _onNativeOrderPropertyChanged(view: View, newValue: number): void;
-    export function _onNativeFlexGrowPropertyChanged(view: View, newValue: number): void;
-    export function _onNativeFlexShrinkPropertyChanged(view: View, newValue: number): void;
-    export function _onNativeAlignSelfPropertyChanged(view: View, newValue: AlignSelf): void;
-    export function _onNativeFlexWrapBeforePropertyChanged(view: View, newValue: boolean): void;
-}
+export * from "ui/layouts/layout-base";
+
+// declare module "ui/layouts/flexbox-layout" {
+//     export function _onNativeOrderPropertyChanged(view: View, newValue: number): void;
+//     export function _onNativeFlexGrowPropertyChanged(view: View, newValue: number): void;
+//     export function _onNativeFlexShrinkPropertyChanged(view: View, newValue: number): void;
+//     export function _onNativeAlignSelfPropertyChanged(view: View, newValue: AlignSelf): void;
+//     export function _onNativeFlexWrapBeforePropertyChanged(view: View, newValue: boolean): void;
+// }
 
 export type Basis = "auto" | number;
 
-const ORDER_DEFAULT = 1;
-const FLEX_GROW_DEFAULT = 0.0;
-const FLEX_SHRINK_DEFAULT = 1.0;
+export const ORDER_DEFAULT = 1;
+export const FLEX_GROW_DEFAULT = 0.0;
+export const FLEX_SHRINK_DEFAULT = 1.0;
 
-function makeValidator<T>(... values: T[]): (value: any) => value is T {
-    const set = new Set(values);
-    return (value: any): value is T => set.has(value);
-}
-function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
-    return value => {
-        const lower = value && value.toLowerCase();
-        return isValid(lower) ? lower : def;
-    }
-}
+// function makeValidator<T>(...values: T[]): (value: any) => value is T {
+//     const set = new Set(values);
+//     return (value: any): value is T => set.has(value);
+// }
+// function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
+//     return value => {
+//         const lower = value && value.toLowerCase();
+//         return isValid(lower) ? lower : def;
+//     }
+// }
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export namespace FlexDirection {
@@ -42,7 +35,7 @@ export namespace FlexDirection {
     export const COLUMN_REVERSE: "column-reverse" = "column-reverse";
 
     export const isValid = makeValidator<FlexDirection>(ROW, ROW_REVERSE, COLUMN, COLUMN_REVERSE);
-    export const parse = makeParser(isValid, ROW);
+    export const parse = makeParser<FlexDirection>(isValid);
 }
 
 export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";
@@ -52,7 +45,7 @@ export namespace FlexWrap {
     export const WRAP_REVERSE: "wrap-reverse" = "wrap-reverse";
 
     export const isValid = makeValidator<FlexWrap>(NOWRAP, WRAP, WRAP_REVERSE);
-    export const parse = makeParser(isValid, NOWRAP);
+    export const parse = makeParser<FlexWrap>(isValid);
 }
 
 export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
@@ -64,7 +57,7 @@ export namespace JustifyContent {
     export const SPACE_AROUND: "space-around" = "space-around";
 
     export const isValid = makeValidator<JustifyContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND);
-    export const parse = makeParser(isValid, FLEX_START);
+    export const parse = makeParser<JustifyContent>(isValid);
 }
 
 export type FlexBasisPercent = number;
@@ -81,7 +74,7 @@ export namespace AlignItems {
     export const STRETCH: "stretch" = "stretch";
 
     export const isValid = makeValidator<AlignItems>(FLEX_START, FLEX_END, CENTER, BASELINE, STRETCH);
-    export const parse = makeParser(isValid, FLEX_START);
+    export const parse = makeParser<AlignItems>(isValid);
 }
 
 export type AlignContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
@@ -94,13 +87,13 @@ export namespace AlignContent {
     export const STRETCH: "stretch" = "stretch";
 
     export const isValid = makeValidator<AlignContent>(FLEX_START, FLEX_END, CENTER, SPACE_BETWEEN, SPACE_AROUND, STRETCH);
-    export const parse = makeParser(isValid, FLEX_START);
+    export const parse = makeParser<AlignContent>(isValid);
 }
 
 export type Order = number;
 export namespace Order {
     export function isValid(value): boolean {
-         return isFinite(parseInt(value));
+        return isFinite(parseInt(value));
     }
     export const parse = parseInt;
 }
@@ -126,10 +119,10 @@ export namespace FlexShrink {
 export type FlexWrapBefore = boolean;
 export namespace FlexWrapBefore {
     export function isValid(value) {
-        if (isBoolean(value)) {
+        if (typeof value === "boolean") {
             return true;
         }
-        if (isString(value)) {
+        if (typeof value === "string") {
             const str = value.trim().toLowerCase();
             return str === "true" || str === "false";
         }
@@ -150,7 +143,7 @@ export namespace AlignSelf {
     export const STRETCH: "stretch" = "stretch";
 
     export const isValid = makeValidator<AlignSelf>(AUTO, FLEX_START, FLEX_END, CENTER, BASELINE, STRETCH);
-    export const parse = makeParser(isValid, AUTO);
+    export const parse = makeParser<AlignSelf>(isValid);
 }
 
 function validateArgs(element: View): View {
@@ -164,211 +157,251 @@ function validateArgs(element: View): View {
  * A common base class for all cross platform flexbox layout implementations.
  */
 export abstract class FlexboxLayoutBase extends LayoutBase {
-
-    constructor() {
-        super();
-    }
-
     get flexDirection(): FlexDirection {
-        return this.style._getValue(flexDirectionProperty);
+        return this.style.flexDirection;
     }
     set flexDirection(value: FlexDirection) {
-        this.style._setValue(flexDirectionProperty, value);
+        this.style.flexDirection = value;
     }
 
     get flexWrap(): FlexWrap {
-        return this.style._getValue(flexWrapProperty);
+        return this.style.flexWrap;
     }
     set flexWrap(value: FlexWrap) {
-        this.style._setValue(flexWrapProperty, value);
+        this.style.flexWrap = value;
     }
 
     get justifyContent(): JustifyContent {
-        return this.style._getValue(justifyContentProperty);
+        return this.style.justifyContent;
     }
     set justifyContent(value: JustifyContent) {
-        this.style._setValue(justifyContentProperty, value);
+        this.style.justifyContent = value;
     }
 
     get alignItems(): AlignItems {
-        return this.style._getValue(alignItemsProperty);
+        return this.style.alignItems;
     }
     set alignItems(value: AlignItems) {
-        this.style._setValue(alignItemsProperty, value);
+        this.style.alignItems = value;
     }
 
     get alignContent(): AlignContent {
-        return this.style._getValue(alignContentProperty);
+        return this.style.alignContent;
     }
     set alignContent(value: AlignContent) {
-        this.style._setValue(alignContentProperty, value);
+        this.style.alignContent = value;
     }
 
     public static setOrder(view: View, order: number) {
-        validateArgs(view).style._setValue(orderProperty, order);
+        validateArgs(view).style.order = order;
     }
     public static getOrder(view: View): number {
-        return validateArgs(view).style._getValue(orderProperty);
+        return validateArgs(view).style.order;
     }
 
     public static setFlexGrow(view: View, grow: number) {
-        validateArgs(view).style._setValue(flexGrowProperty, grow);
+        validateArgs(view).style.flexGrow = grow;
     }
     public static getFlexGrow(view: View) {
-        return validateArgs(view).style._getValue(flexGrowProperty);
+        return validateArgs(view).style.flexGrow;
     }
 
     public static setFlexShrink(view: View, shrink: number) {
-        validateArgs(view).style._setValue(flexShrinkProperty, shrink);
+        validateArgs(view).style.flexShrink = shrink;
     }
     public static getFlexShrink(view: View): number {
-        return validateArgs(view).style._getValue(flexShrinkProperty);
+        return validateArgs(view).style.flexShrink;
     }
 
     public static setAlignSelf(view: View, align: AlignSelf) {
-        validateArgs(view).style._setValue(alignSelfProperty, align);
+        validateArgs(view).style.alignSelf = align;
     }
     public static getAlignSelf(view: View): AlignSelf {
-        return validateArgs(view).style._getValue(alignSelfProperty);
+        return validateArgs(view).style.alignSelf;
     }
 
     public static setFlexWrapBefore(view: View, wrap: boolean) {
-        validateArgs(view).style._setValue(flexWrapBeforeProperty, wrap);
+        validateArgs(view).style.flexWrapBefore = wrap;
     }
     public static getFlexWrapBefore(view: View): boolean {
-        return validateArgs(view).style._getValue(flexWrapBeforeProperty);
+        return validateArgs(view).style.flexWrapBefore;
     }
-
-    abstract _setNativeFlexDirection(flexDirection: FlexDirection);
-    abstract _setNativeFlexWrap(flexWrap: FlexWrap);
-    abstract _setNativeJustifyContent(justifyContent: JustifyContent);
-    abstract _setNativeAlignItems(alignItems: AlignItems);
-    abstract _setNativeAlignContent(alignContent: AlignContent);
-
-    abstract _invalidateOrdersCache();
 }
 
-const flexboxAffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({ name: "flexDirection", cssName: "flex-direction", defaultValue: FlexDirection.ROW, affectsLayout: isIOS, valueConverter: FlexDirection.parse });
+flexDirectionProperty.register(Style);
 
-export const flexDirectionProperty = new styleProperty.Property("flexDirection", "flex-direction", new PropertyMetadata(FlexDirection.ROW, flexboxAffectsLayout, undefined, FlexDirection.isValid), FlexDirection.parse);
-export const flexWrapProperty = new styleProperty.Property("flexWrap", "flex-wrap", new PropertyMetadata(FlexWrap.NOWRAP, flexboxAffectsLayout, undefined, FlexWrap.isValid), FlexWrap.parse);
-export const justifyContentProperty = new styleProperty.Property("justifyContent", "justify-content", new PropertyMetadata(JustifyContent.FLEX_START, flexboxAffectsLayout, undefined, JustifyContent.isValid), JustifyContent.parse);
-export const alignItemsProperty = new styleProperty.Property("alignItems", "align-items", new PropertyMetadata(AlignItems.STRETCH, flexboxAffectsLayout, undefined, AlignItems.isValid), AlignItems.parse);
-export const alignContentProperty = new styleProperty.Property("alignContent", "align-content", new PropertyMetadata(AlignContent.STRETCH, flexboxAffectsLayout, undefined, AlignContent.isValid), AlignContent.parse);
+export const flexWrapProperty = new CssProperty<Style, FlexWrap>({ name: "flexWrap", cssName: "flex-wrap", defaultValue: "nowrap", affectsLayout: isIOS, valueConverter: FlexWrap.parse });
+flexWrapProperty.register(Style);
 
-export const orderProperty = new styleProperty.Property("order", "order", new PropertyMetadata(ORDER_DEFAULT, PropertyMetadataSettings.None, undefined, Order.isValid), Order.parse);
-export const flexGrowProperty = new styleProperty.Property("flexGrow", "flex-grow", new PropertyMetadata(FLEX_GROW_DEFAULT, PropertyMetadataSettings.None, undefined, FlexGrow.isValid), FlexGrow.parse);
-export const flexShrinkProperty = new styleProperty.Property("flexShrink", "flex-shrink", new PropertyMetadata(FLEX_SHRINK_DEFAULT, PropertyMetadataSettings.None, undefined, FlexShrink.isValid), FlexShrink.parse);
-export const flexWrapBeforeProperty = new styleProperty.Property("flexWrapBefore", "flex-wrap-before", new PropertyMetadata(false, PropertyMetadataSettings.None, undefined, FlexWrapBefore.isValid), FlexWrapBefore.parse);
-export const alignSelfProperty = new styleProperty.Property("alignSelf", "align-self", new PropertyMetadata(AlignSelf.AUTO, PropertyMetadataSettings.None, undefined, AlignSelf.isValid), AlignSelf.parse);
+export const justifyContentProperty = new CssProperty<Style, JustifyContent>({ name: "justifyContent", cssName: "justify-content", defaultValue: JustifyContent.FLEX_START, affectsLayout: isIOS, valueConverter: JustifyContent.parse });
+justifyContentProperty.register(Style);
 
-registerSpecialProperty("order", (instance, propertyValue) => {
-    FlexboxLayoutBase.setOrder(instance, !isNaN(+propertyValue) && +propertyValue);
-});
-registerSpecialProperty("flexGrow", (instance, propertyValue) => {
-    FlexboxLayoutBase.setFlexGrow(instance, !isNaN(+propertyValue) && +propertyValue);
-});
-registerSpecialProperty("flexShrink", (instance, propertyValue) => {
-    FlexboxLayoutBase.setFlexShrink(instance, !isNaN(+propertyValue) && +propertyValue);
-});
-registerSpecialProperty("alignSelf", (instance, propertyValue) => {
-    FlexboxLayoutBase.setAlignSelf(instance, propertyValue);
-});
-registerSpecialProperty("flexWrapBefore", (instance, propertyValue) => {
-    FlexboxLayoutBase.setFlexWrapBefore(instance, isString(propertyValue) ? FlexWrapBefore.parse(propertyValue) : propertyValue);
+export const alignItemsProperty = new CssProperty<Style, AlignItems>({ name: "alignItems", cssName: "align-items", defaultValue: AlignItems.STRETCH, affectsLayout: isIOS, valueConverter: AlignItems.parse });
+alignItemsProperty.register(Style);
+
+export const alignContentProperty = new CssProperty<Style, AlignContent>({ name: "alignContent", cssName: "align-content", defaultValue: AlignContent.STRETCH, affectsLayout: isIOS, valueConverter: AlignContent.parse });
+alignContentProperty.register(Style);
+
+export const orderProperty = new CssProperty<Style, Order>({ name: "order", cssName: "order", defaultValue: ORDER_DEFAULT, valueConverter: Order.parse });
+orderProperty.register(Style);
+Object.defineProperty(View.prototype, "order", {
+    get(this: View): Order {
+        return this.style.order;
+    },
+    set(this: View, value: Order) {
+        this.style.order = value;
+    },
+    enumerable: true,
+    configurable: true
 });
 
-const flexboxGuard = <T>(handler: (flexbox: FlexboxLayoutBase, newValue: any) => void) => (view: View, newValue: any) => view instanceof FlexboxLayoutBase ? handler(view, newValue) : void 0;
-style.registerHandler(flexDirectionProperty, new style.StylePropertyChangedHandler(
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexDirection(newValue)),
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexDirection(FlexDirection.ROW))), "FlexboxLayout");
-style.registerHandler(flexWrapProperty, new style.StylePropertyChangedHandler(
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexWrap(newValue)),
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeFlexWrap(FlexWrap.NOWRAP))), "FlexboxLayout");
-style.registerHandler(justifyContentProperty, new style.StylePropertyChangedHandler(
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeJustifyContent(newValue)),
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeJustifyContent(JustifyContent.FLEX_START))), "FlexboxLayout");
-style.registerHandler(alignItemsProperty, new style.StylePropertyChangedHandler(
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignItems(newValue)),
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignItems(AlignItems.STRETCH))), "FlexboxLayout");
-style.registerHandler(alignContentProperty, new style.StylePropertyChangedHandler(
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignContent(newValue)),
-    flexboxGuard((flexbox, newValue) => flexbox._setNativeAlignContent(AlignContent.STRETCH))), "FlexboxLayout");
+export const flexGrowProperty = new CssProperty<Style, FlexGrow>({ name: "flexGrow", cssName: "flex-grow", defaultValue: FLEX_GROW_DEFAULT, valueConverter: FlexGrow.parse });
+flexGrowProperty.register(Style);
+Object.defineProperty(View.prototype, "flexGrow", {
+    get(this: View): FlexGrow {
+        return this.style.flexGrow;
+    },
+    set(this: View, value: FlexGrow) {
+        this.style.flexGrow = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
-style.registerHandler(orderProperty, new style.StylePropertyChangedHandler(
-    (view, value) => flexbox._onNativeOrderPropertyChanged(view, value),
-    (view, value) => flexbox._onNativeOrderPropertyChanged(view, 1)), "View");
-style.registerHandler(flexGrowProperty, new style.StylePropertyChangedHandler(
-    (view, value) => flexbox._onNativeFlexGrowPropertyChanged(view, value),
-    (view, value) => flexbox._onNativeFlexGrowPropertyChanged(view, 0)), "View");
-style.registerHandler(flexShrinkProperty, new style.StylePropertyChangedHandler(
-    (view, value) => flexbox._onNativeFlexShrinkPropertyChanged(view, value),
-    (view, value) => flexbox._onNativeFlexShrinkPropertyChanged(view, 1)), "View");
-style.registerHandler(flexWrapBeforeProperty, new style.StylePropertyChangedHandler(
-    (view, value) => flexbox._onNativeFlexWrapBeforePropertyChanged(view, value),
-    (view, value) => flexbox._onNativeFlexWrapBeforePropertyChanged(view, false)), "View");
-style.registerHandler(alignSelfProperty, new style.StylePropertyChangedHandler(
-    (view, value) => flexbox._onNativeAlignSelfPropertyChanged(view, value),
-    (view, value) => flexbox._onNativeAlignSelfPropertyChanged(view, AlignSelf.AUTO)), "View");
+export const flexShrinkProperty = new CssProperty<Style, FlexShrink>({ name: "flexShrink", cssName: "flex-shrink", defaultValue: FLEX_SHRINK_DEFAULT, valueConverter: FlexShrink.parse });
+flexShrinkProperty.register(Style);
+Object.defineProperty(View.prototype, "flexShrink", {
+    get(this: View): FlexShrink {
+        return this.style.flexShrink;
+    },
+    set(this: View, value: FlexShrink) {
+        this.style.flexShrink = value;
+    },
+    enumerable: true,
+    configurable: true
+});
+
+export const flexWrapBeforeProperty = new CssProperty<Style, FlexWrapBefore>({ name: "flexWrapBefore", cssName: "flex-wrap-before", defaultValue: false, valueConverter: FlexWrapBefore.parse });
+flexWrapBeforeProperty.register(Style);
+Object.defineProperty(View.prototype, "flexWrapBefore", {
+    get(this: View): FlexWrapBefore {
+        return this.style.flexWrapBefore;
+    },
+    set(this: View, value: FlexWrapBefore) {
+        this.style.flexWrapBefore = value;
+    },
+    enumerable: true,
+    configurable: true
+});
+
+export const alignSelfProperty = new CssProperty<Style, AlignSelf>({ name: "alignSelf", cssName: "align-self", defaultValue: AlignSelf.AUTO, valueConverter: AlignSelf.parse });
+alignSelfProperty.register(Style);
+Object.defineProperty(View.prototype, "alignSelf", {
+    get(this: View): AlignSelf {
+        return this.style.alignSelf;
+    },
+    set(this: View, value: AlignSelf) {
+        this.style.alignSelf = value;
+    },
+    enumerable: true,
+    configurable: true
+});
 
 // flex-flow: <flex-direction> || <flex-wrap>
-styleProperty.registerShorthandCallback("flex-flow", value => {
-    const properties: styleProperty.KeyValuePair<styleProperty.Property, any>[] = [];
-    const trimmed = value && value.trim();
-    if (trimmed) {
-        let values = trimmed.split(/\s+/);
-        if (values.length >= 1 && FlexDirection.isValid(values[0])) {
-            properties.push({ property: flexDirectionProperty, value: FlexDirection.parse(values[0]) });
+const flexFlowProperty = new ShorthandProperty<Style, string>({
+    name: "flex-flow", cssName: "flex-flow",
+    getter: function (this: Style) {
+        return `${this.flexDirection} ${this.flexWrap}`;
+    },
+    converter: function (value: string) {
+        const properties: [CssProperty<any, any>, any][] = [];
+        if (value === unsetValue) {
+            properties.push([flexDirectionProperty, value]);
+            properties.push([flexWrapProperty, value]);
+        } else {
+            const trimmed = value && value.trim();
+            if (trimmed) {
+                const values = trimmed.split(/\s+/);
+                if (values.length >= 1 && FlexDirection.isValid(values[0])) {
+                    properties.push([flexDirectionProperty, FlexDirection.parse(values[0])]);
+                }
+                if (value.length >= 2 && FlexWrap.isValid(values[1])) {
+                    properties.push([flexWrapProperty, FlexWrap.parse(values[1])]);
+                }
+            }
         }
-        if (value.length >= 2 && FlexWrap.isValid(values[1])) {
-            properties.push({ property: flexWrapProperty, value: FlexWrap.parse(values[1]) });
-        }
+        return properties;
     }
-    return properties;
-});
+})
+flexFlowProperty.register(Style);
 
 // flex: inital | auto | none | <flex-grow> <flex-shrink> || <flex-basis>
-styleProperty.registerShorthandCallback("flex", value => {
-    const properties: styleProperty.KeyValuePair<styleProperty.Property, any>[] = [];
-    const trimmed = value && value.trim();
-    if (trimmed) {
-        let values = trimmed.split(/\s+/);
-        if (values.length === 1) {
-            switch(values[0]) {
-                case "inital":
-                    properties.push({ property: flexGrowProperty, value: 0});
-                    properties.push({ property: flexShrinkProperty, value: 1});
-                    // properties.push({ property: flexBasisProperty, value: FlexBasis.AUTO})
-                    break;
-                case "auto":
-                    properties.push({ property: flexGrowProperty, value: 1});
-                    properties.push({ property: flexShrinkProperty, value: 1});
-                    // properties.push({ property: flexBasisProperty, value: FlexBasis.AUTO})
-                    break;
-                case "none":
-                    properties.push({ property: flexGrowProperty, value: 0});
-                    properties.push({ property: flexShrinkProperty, value: 0});
-                    // properties.push({ property: flexBasisProperty, value: FlexBasis.AUTO})
-                    break;
-                default:
-                    if (FlexGrow.isValid(values[0])) {
-                        properties.push({ property: flexGrowProperty, value: FlexGrow.parse(values[0])});
-                        properties.push({ property: flexShrinkProperty, value: 1});
-                        // properties.push({ property: flexBasisProperty, value: 0})
+const flexProperty = new ShorthandProperty<Style, string>({
+    name: "flex", cssName: "flex",
+    getter: function (this: Style) {
+        return `${this.flexGrow} ${this.flexShrink}`;
+    },
+    converter: function (value: string) {
+        const properties: [CssProperty<any, any>, any][] = [];
+        if (value === unsetValue) {
+            properties.push([flexGrowProperty, value]);
+            properties.push([flexShrinkProperty, value]);
+        } else {
+            const trimmed = value && value.trim();
+            if (trimmed) {
+                const values = trimmed.split(/\s+/);
+                if (values.length === 1) {
+                    switch (values[0]) {
+                        case "inital":
+                            properties.push([flexGrowProperty, 0]);
+                            properties.push([flexShrinkProperty, 1]);
+                            // properties.push([flexBasisProperty, FlexBasis.AUTO])
+                            break;
+                        case "auto":
+                            properties.push([flexGrowProperty, 1]);
+                            properties.push([flexShrinkProperty, 1]);
+                            // properties.push([flexBasisProperty, FlexBasis.AUTO])
+                            break;
+                        case "none":
+                            properties.push([flexGrowProperty, 0]);
+                            properties.push([flexShrinkProperty, 0]);
+                            // properties.push([flexBasisProperty, FlexBasis.AUTO])
+                            break;
+                        default:
+                            if (FlexGrow.isValid(values[0])) {
+                                properties.push([flexGrowProperty, FlexGrow.parse(values[0])]);
+                                properties.push([flexShrinkProperty, 1]);
+                                // properties.push([flexBasisProperty, 0])
+                            }
                     }
+                }
+                if (values.length >= 2) {
+                    if (FlexGrow.isValid(values[0]) && FlexShrink.isValid(values[1])) {
+                        properties.push([flexGrowProperty, FlexGrow.parse(values[0])]);
+                        properties.push([flexShrinkProperty, FlexShrink.parse(values[1])]);
+                    }
+                }
+                // if (value.length >= 3) {
+                //     properties.push({ property: flexBasisProperty, value: FlexBasis.parse(values[2])})
+                // }
             }
         }
-        if (values.length >= 2) {
-            if (FlexGrow.isValid(values[0]) && FlexShrink.isValid(values[1])) {
-                properties.push({ property: flexGrowProperty, value: FlexGrow.parse(values[0])});
-                properties.push({ property: flexShrinkProperty, value: FlexShrink.parse(values[1])});
-            }
-        }
-        // if (value.length >= 3) {
-        //     properties.push({ property: flexBasisProperty, value: FlexBasis.parse(values[2])})
-        // }
+        return properties;
+
     }
-    return properties;
-});
+})
+flexProperty.register(Style);
+
+Style.prototype.flexDirection = flexDirectionProperty.defaultValue;
+Style.prototype.flexWrap = flexWrapProperty.defaultValue;
+Style.prototype.justifyContent = justifyContentProperty.defaultValue;
+Style.prototype.alignItems = alignItemsProperty.defaultValue;
+Style.prototype.alignContent = alignContentProperty.defaultValue;
+Style.prototype.order = orderProperty.defaultValue;
+Style.prototype.flexGrow = flexGrowProperty.defaultValue;
+Style.prototype.flexShrink = flexShrinkProperty.defaultValue;
+Style.prototype.flexWrapBefore = flexWrapBeforeProperty.defaultValue;
+Style.prototype.alignSelf = alignSelfProperty.defaultValue;
 
 // No flex-basis in our implementation.

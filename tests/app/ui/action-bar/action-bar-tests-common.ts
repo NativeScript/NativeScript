@@ -1,26 +1,26 @@
-﻿import TKUnit = require("../../TKUnit");
-import LabelModule = require("ui/label");
-import helper = require("../helper");
-import builder = require("ui/builder");
-import button = require("ui/button");
-import PageModule = require("ui/page");
-import viewModule = require("ui/core/view");
-import fs = require("file-system");
-import { Observable } from "data/observable";
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as builder from "ui/builder";
+import * as fs from "file-system";
+import { Label } from "ui/label";
+import { Button } from "ui/button";
+import { Page } from "ui/page";
+import { View } from "ui/core/view";
+import { fromObject } from "data/observable";
 
 // >> actionbar-common-require
-import actionBarModule = require("ui/action-bar");
+import * as actionBarModule from "ui/action-bar";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {
-    var page: PageModule.Page;
-    var label: LabelModule.Label;
-    var context = { text: "item" };
+    let page: Page;
+    let label: Label;
+    const context = { text: "item" };
 
-    var pageFactory = function (): PageModule.Page {
-        page = new PageModule.Page();
+    const pageFactory = function (): Page {
+        page = new Page();
         page.bindingContext = context;
-        var actionItem = new actionBarModule.ActionItem();
+        const actionItem = new actionBarModule.ActionItem();
 
         actionItem.bind({
             sourceProperty: "text",
@@ -29,7 +29,7 @@ export function test_actionItem_inherit_bindingContext() {
 
         page.actionBar.actionItems.addItem(actionItem);
 
-        label = new LabelModule.Label();
+        label = new Label();
         label.text = "Text";
         page.content = label;
         return page;
@@ -41,7 +41,7 @@ export function test_actionItem_inherit_bindingContext() {
 }
 
 export function test_actionBar_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar title=\"{{ myProp }} \" /> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
@@ -49,52 +49,52 @@ export function test_actionBar_inherit_bindingContext_inXML() {
 };
 
 export function test_actionItem_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.actionItems>" +
         "<ActionItem text=\"{{ myProp }} \" />" +
         "</ActionBar.actionItems> </ActionBar> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
-    var actionItem = p.actionBar.actionItems.getItemAt(0);
+    const actionItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(actionItem.text, "success", "actionItem.text");
 };
 
 export function test_actionItem_page_property_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.actionItems>" +
         "<ActionItem text=\"test\" />" +
         "</ActionBar.actionItems> </ActionBar> </Page.actionBar> </Page>");
 
-    var actionItem = p.actionBar.actionItems.getItemAt(0);
+    const actionItem = p.actionBar.actionItems.getItemAt(0);
 
     TKUnit.assertEqual(actionItem.page, p, "actionItem.page");
 };
 
 export function test_actionItem_actionView_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
         "<Label/>" +
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
 
-    var label = <LabelModule.Label>p.actionBar.actionItems.getItemAt(0).actionView;
-    TKUnit.assert(label instanceof LabelModule.Label, "ActionItem.actionView not loaded correctly");
+    const label = <Label>p.actionBar.actionItems.getItemAt(0).actionView;
+    TKUnit.assert(label instanceof Label, "ActionItem.actionView not loaded correctly");
 };
 
 export function test_actionItem_actionView_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
         "<Label text=\"{{ myProp }} \" />" +
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
-    var label = <LabelModule.Label>p.actionBar.actionItems.getItemAt(0).actionView;
-    TKUnit.assert(label instanceof LabelModule.Label, "ActionItem.actionView not loaded correctly");
+    const label = <Label>p.actionBar.actionItems.getItemAt(0).actionView;
+    TKUnit.assert(label instanceof Label, "ActionItem.actionView not loaded correctly");
     TKUnit.assertEqual(label.text, "success", "ActionItem.actionView");
 };
 
 export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionItem> <ActionItem.actionView>" +
         "<Label text=\"test\" />" +
         "</ActionItem.actionView> </ActionItem> </ActionBar> </Page.actionBar> </Page>");
@@ -103,50 +103,50 @@ export function test_ActionBar_is_not_empty_when_actionItem_actionView_is_set() 
 };
 
 export function test_navigationButton_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar>" +
         "<NavigationButton text=\"{{ myProp }} \" />" +
         "</ActionBar> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
-    var navButton = p.actionBar.navigationButton;
+    const navButton = p.actionBar.navigationButton;
     TKUnit.assertEqual(navButton.text, "success", "actionItem.text");
 };
 
 export function test_titleView_inherit_bindingContext_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button text=\"{{ myProp }} \" />" +
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
     p.bindingContext = { myProp: "success" };
 
-    var centerBtn = <button.Button>p.actionBar.titleView;
-    TKUnit.assert(centerBtn instanceof button.Button, "titleView not loaded correctly");
+    const centerBtn = <Button>p.actionBar.titleView;
+    TKUnit.assert(centerBtn instanceof Button, "titleView not loaded correctly");
     TKUnit.assertEqual(centerBtn.text, "success", "actionItem.text");
 };
 
 export function test_titleView_inXML() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button/>" +
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
 
-    var centerBtn = <button.Button>p.actionBar.titleView;
-    TKUnit.assert(centerBtn instanceof button.Button, "titleView not loaded correctly");
+    const centerBtn = <Button>p.actionBar.titleView;
+    TKUnit.assert(centerBtn instanceof Button, "titleView not loaded correctly");
 };
 
 export function test_titleView_inXML_short_definition() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar>" +
         "<Button/>" +
         "</ActionBar> </Page.actionBar> </Page>");
 
-    var centerBtn = <button.Button>p.actionBar.titleView;
-    TKUnit.assert(centerBtn instanceof button.Button, "titleView not loaded correctly");
+    const centerBtn = <Button>p.actionBar.titleView;
+    TKUnit.assert(centerBtn instanceof Button, "titleView not loaded correctly");
 };
 
 export function test_ActionBar_is_not_empty_when_titleView_is_set() {
-    var p = <PageModule.Page>builder.parse(
+    const p = <Page>builder.parse(
         "<Page> <Page.actionBar> <ActionBar> <ActionBar.titleView>" +
         "<Button text=\"test\" />" +
         "</ActionBar.titleView> </ActionBar> </Page.actionBar> </Page>");
@@ -155,18 +155,18 @@ export function test_ActionBar_is_not_empty_when_titleView_is_set() {
 };
 
 export function test_ActionBarItemBindingToEvent() {
-    var p = <PageModule.Page>builder.parse('<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap="{{ test }}"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>');
+    const p = <Page>builder.parse('<Page><Page.actionBar><ActionBar><ActionBar.actionItems><ActionItem tap="{{ test }}"/></ActionBar.actionItems></ActionBar></Page.actionBar></Page>');
 
-    var testAction = function (views: Array<viewModule.View>) {
-        var page = <PageModule.Page>views[0];
-        var firstHandlerCallCounter = 0;
-        var secondHandlerCallCounter = 0;
-        var firstHandler = function () { firstHandlerCallCounter++; };
-        var secondHandler = function () { secondHandlerCallCounter++; };
+    const testAction = function (views: Array<View>) {
+        const page = <Page>views[0];
+        let firstHandlerCallCounter = 0;
+        let secondHandlerCallCounter = 0;
+        const firstHandler = function () { firstHandlerCallCounter++; };
+        const secondHandler = function () { secondHandlerCallCounter++; };
 
-        page.bindingContext = new Observable({ "test": firstHandler });
+        page.bindingContext = fromObject({ "test": firstHandler });
 
-        var actionBarItem = page.actionBar.actionItems.getItemAt(0);
+        const actionBarItem = page.actionBar.actionItems.getItemAt(0);
 
         TKUnit.assertEqual((<any>actionBarItem)._observers["tap"].length, 1, "There should be only one listener");
         TKUnit.assertEqual((<any>actionBarItem)._observers["tap"][0].callback + "", "function () { firstHandlerCallCounter++; }", "First handler is not equal");
@@ -175,25 +175,24 @@ export function test_ActionBarItemBindingToEvent() {
 
         TKUnit.assertEqual((<any>actionBarItem)._observers["tap"].length, 1, "There should be only one listener");
         TKUnit.assertEqual((<any>actionBarItem)._observers["tap"][0].callback + "", "function () { secondHandlerCallCounter++; }", "Second handler is not equal");
-    }
+    };
 
     helper.navigate(function () { return p; });
     testAction([p]);
 }
 
 export function test_Setting_ActionItems_doesnt_thrown() {
+    let page: Page;
+    let label: Label;
+    let gotException = false;
 
-    var page: PageModule.Page;
-    var label: LabelModule.Label;
-    var gotException = false;
-
-    var pageFactory = function (): PageModule.Page {
-        page = new PageModule.Page();
-        var actionItem = new actionBarModule.ActionItem();
+    const pageFactory = function (): Page {
+        page = new Page();
+        const actionItem = new actionBarModule.ActionItem();
         actionItem.text = "Item";
         page.actionBar.actionItems.addItem(actionItem);
 
-        label = new LabelModule.Label();
+        label = new Label();
         label.text = "Text";
         page.content = label;
         return page;
@@ -211,9 +210,9 @@ export function test_Setting_ActionItems_doesnt_thrown() {
 
 export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
 
-    var gotException = false;
+    let gotException = false;
 
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
 
     try {
         helper.navigateToModule(moduleName + "/ActionBar_NumberAsText");
@@ -226,19 +225,19 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
 }
 
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(moduleName + "/ActionBar_BetweenTags", undefined, (page: PageModule.Page) => {
+    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+    helper.navigateToModuleAndRunTest(moduleName + "/ActionBar_BetweenTags", undefined, (page: Page) => {
 
         TKUnit.assertNotNull(page.actionBar.navigationButton);
         TKUnit.assertEqual(page.actionBar.navigationButton.text, "nb");
 
         TKUnit.assertNull(page.actionBar.title);
         TKUnit.assertNotNull(page.actionBar.titleView);
-        TKUnit.assertTrue(page.actionBar.titleView instanceof LabelModule.Label);
-        TKUnit.assertEqual((<LabelModule.Label>page.actionBar.titleView).text, "tv");
+        TKUnit.assertTrue(page.actionBar.titleView instanceof Label);
+        TKUnit.assertEqual((<Label>page.actionBar.titleView).text, "tv");
 
         TKUnit.assertNotNull(page.actionBar.actionItems);
-        var items = page.actionBar.actionItems.getItems();
+        const items = page.actionBar.actionItems.getItems();
         TKUnit.assertEqual(items.length, 3);
 
         TKUnit.assertEqual(items[0].text, "i1");
@@ -248,19 +247,19 @@ export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
 }
 
 export function test_LoadedEventsOrder() {
-    var loadedEvents = new Array<string>();
-    var pageFactory = function (): PageModule.Page {
-        var page = new PageModule.Page();
-        page.on(viewModule.View.loadedEvent, () => {
+    const loadedEvents = new Array<string>();
+    const pageFactory = function (): Page {
+        const page = new Page();
+        page.on(View.loadedEvent, () => {
             loadedEvents.push("page");
         });
 
-        page.actionBar.on(viewModule.View.loadedEvent, () => {
+        page.actionBar.on(View.loadedEvent, () => {
             loadedEvents.push("action-bar");
         });
 
-        var content = new LabelModule.Label();
-        content.on(viewModule.View.loadedEvent, () => {
+        const content = new Label();
+        content.on(View.loadedEvent, () => {
             loadedEvents.push("content");
         });
         page.content = content;
@@ -274,14 +273,14 @@ export function test_LoadedEventsOrder() {
 }
 
 export function test_LoadedEventsOrder_WithoutPageContent() {
-    var loadedEvents = new Array<string>();
-    var pageFactory = function (): PageModule.Page {
-        var page = new PageModule.Page();
-        page.on(viewModule.View.loadedEvent, () => {
+    const loadedEvents = new Array<string>();
+    const pageFactory = function (): Page {
+        const page = new Page();
+        page.on(View.loadedEvent, () => {
             loadedEvents.push("page");
         });
 
-        page.actionBar.on(viewModule.View.loadedEvent, () => {
+        page.actionBar.on(View.loadedEvent, () => {
             loadedEvents.push("action-bar");
         });
 
@@ -294,8 +293,8 @@ export function test_LoadedEventsOrder_WithoutPageContent() {
 }
 
 export function test_setId() {
-    var pageFactory = function (): PageModule.Page {
-        var page = new PageModule.Page();
+    const pageFactory = function (): Page {
+        const page = new Page();
         page.actionBar.id = "myId";
 
         return page;
@@ -310,11 +309,11 @@ export function test_setId() {
 }
 
 export function createPageAndNavigate() {
-    var page: PageModule.Page;
-    var pageFactory = function (): PageModule.Page {
-        page = new PageModule.Page();
+    let page: Page;
+    const pageFactory = function (): Page {
+        page = new Page();
 
-        var label = new LabelModule.Label();
+        const label = new Label();
         label.text = "Text";
         page.content = label;
         return page;

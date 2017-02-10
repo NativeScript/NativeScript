@@ -1,6 +1,6 @@
 /* tslint:disable:no-unused-variable */
-import TKUnit = require("./TKUnit");
-import types = require("utils/types");
+import * as TKUnit from "./TKUnit";
+import * as types from "utils/types";
 
 export var test_XMLHttpRequest_isDefined = function () {
     TKUnit.assert(types.isDefined(global["XMLHttpRequest"]), "XMLHttpRequest should be defined!");

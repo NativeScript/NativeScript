@@ -1,6 +1,6 @@
 ﻿declare module "ui/enums" {
 
-    import animationModule = require("ui/animation");
+    import * as animationModule from "ui/animation";
 
     /**
      * Represents a soft keyboard flavor.
@@ -216,14 +216,14 @@
         export var visible: string;
 
         /**
-         * Obsolete. Please use 'collapse' instead!
-         */
-        export var collapsed: string;
-
-        /**
          * The view is not visible and won't take place in the layout.
          */
         export var collapse: string;
+
+        /**
+         * The view is not visible but will take place in the layout.
+         */
+        export var hidden: string;
     }
 
     /**
@@ -595,24 +595,24 @@
          */
         export var spring: string;
 
-        /**
-         * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
-         */
-        export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
-    }
+       /**
+        * A custom cubic bezier function defined by its two control points. Possible values are numeric values from 0 to 1
+        */
+       export function cubicBezier(x1: number, y1: number, x2: number, y2: number): animationModule.CubicBezierAnimationCurve;
+   }
 
-    /**
-     * Specifies the types of the status bar style.
-     */
-    export module StatusBarStyle {
-        /**
-         * The light style of the status bar - light background with dark letters.
-         */
-        export var light: string;
+   /**
+    * Specifies the types of the status bar style.
+    */
+   export module StatusBarStyle {
+       /**
+        * The light style of the status bar - light background with dark letters.
+        */
+       export var light: string;
 
-        /**
-         * The dark style of the status bar - dark background with light letters.
-         */
-        export var dark: string;
-    }
+       /**
+        * The dark style of the status bar - dark background with light letters.
+        */
+       export var dark: string;
+   }
 }

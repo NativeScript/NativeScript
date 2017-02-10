@@ -1,4 +1,4 @@
-﻿import definition = require("fps-meter/fps-native");
+﻿import * as definition from "fps-meter/fps-native";
 
 import * as utils from "utils/utils";
 

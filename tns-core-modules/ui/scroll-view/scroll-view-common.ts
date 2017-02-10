@@ -1,37 +1,18 @@
-﻿import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import enums = require("ui/enums");
-import definition = require("ui/scroll-view");
-import contentView = require("ui/content-view");
+﻿import { ScrollView as ScrollViewDefinition } from "ui/scroll-view";
+import { ContentView, Property } from "ui/content-view";
 
-function isValidOrientation(value: any): boolean {
-    return value === enums.Orientation.vertical || value === enums.Orientation.horizontal;
-}
+export * from "ui/content-view";
 
-export var orientationProperty = new dependencyObservable.Property(
-    "orientation",
-    "ScrollView",
-    new proxy.PropertyMetadata(enums.Orientation.vertical,
-        dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-        undefined,
-        isValidOrientation)
-);
-
-export class ScrollView extends contentView.ContentView implements definition.ScrollView {
+export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
     private _scrollChangeCount: number = 0;
     public static scrollEvent = "scroll";
 
-    get orientation(): string {
-        return this._getValue(orientationProperty);
-    }
-    set orientation(value: string) {
-        this._setValue(orientationProperty, value);
-    }
+    public orientation: "horizontal" | "vertical";
 
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
 
-        if (arg === ScrollView.scrollEvent) {
+        if (arg === ScrollViewBase.scrollEvent) {
             this._scrollChangeCount++;
             this.attach();
         }
@@ -40,7 +21,7 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
     public removeEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
 
-        if (arg === ScrollView.scrollEvent) {
+        if (arg === ScrollViewBase.scrollEvent) {
             this._scrollChangeCount--;
             this.dettach();
         }
@@ -94,11 +75,24 @@ export class ScrollView extends contentView.ContentView implements definition.Sc
         return 0;
     }
 
-    public scrollToVerticalOffset(value: number, animated: boolean) {
-        //
-    }
-
-    public scrollToHorizontalOffset(value: number, animated: boolean) {
-        //
-    }
+    public abstract scrollToVerticalOffset(value: number, animated: boolean);
+    public abstract scrollToHorizontalOffset(value: number, animated: boolean);
+    public abstract _onOrientationChanged();
 }
+
+export const orientationProperty = new Property<ScrollViewBase, "horizontal" | "vertical">({
+    name: "orientation", defaultValue: "vertical", affectsLayout: true,
+    valueChanged: (target: ScrollViewBase, oldValue: "horizontal" | "vertical", newValue: "horizontal" | "vertical") => {
+        target._onOrientationChanged();
+    },
+    valueConverter: (value) => {
+        if (value === "vertical") {
+            return "vertical";
+        } else if (value === "horizontal") {
+            return "horizontal";
+        }
+
+        throw new Error(`Orientation should be 'horizontal' or 'vertical'. Given: ${value}`);
+    }
+});
+orientationProperty.register(ScrollViewBase);

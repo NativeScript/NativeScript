@@ -1,6 +1,6 @@
-﻿import appModule = require("application");
-import common = require("./connectivity-common");
-import utils = require("utils/utils");
+﻿import * as appModule from "application";
+import * as common from "./connectivity-common";
+import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
 

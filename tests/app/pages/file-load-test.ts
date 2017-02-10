@@ -1,7 +1,7 @@
-﻿import label = require("ui/label");
-import pages = require("ui/page");
-import fs = require("file-system");
-import fileResolverModule = require("file-system/file-name-resolver");
+﻿import * as label from "ui/label";
+import * as pages from "ui/page";
+import * as fs from "file-system";
+import * as fileResolverModule from "file-system/file-name-resolver";
 
 export function createPage() {
     var page = new pages.Page();
@@ -22,7 +22,7 @@ export function createPage() {
 
     var fileName = resolver.resolveFileName(moduleNamePath, "xml");
     lbl.text = fileName;
-    lbl.textWrap = true;;
+    lbl.textWrap = true;
 
     page.content = lbl;
     return page;

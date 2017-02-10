@@ -1,0 +1,20 @@
+.padding {
+    padding: 5;
+}
+
+.border {
+    border-width: 5;
+}
+
+.green {
+    background-color: green;
+}
+
+.yellow {
+    background-color: yellow;
+}
+
+Label, TextField, TextView, Button {
+    text-align: left;
+    margin: 1;
+}

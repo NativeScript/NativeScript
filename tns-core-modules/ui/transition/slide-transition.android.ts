@@ -1,9 +1,9 @@
-﻿import transition = require("ui/transition");
-import platform = require("platform");
+﻿import * as transition from "ui/transition";
+import * as platform from "platform";
 import lazy from "utils/lazy";
 
-var screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
-var screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);
+let screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
+let screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);
 
 export class SlideTransition extends transition.Transition {
     private _direction: string;
@@ -14,7 +14,7 @@ export class SlideTransition extends transition.Transition {
     }
 
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        var translationValues = Array.create("float", 2);
+        let translationValues = Array.create("float", 2);
         switch (this._direction) {
             case "left":
                 switch (transitionType) {
@@ -97,7 +97,7 @@ export class SlideTransition extends transition.Transition {
                 }
                 break;
         }
-        var prop;
+        let prop;
         if (this._direction === "left" || this._direction === "right") {
             prop = "translationX";
         }
@@ -105,8 +105,8 @@ export class SlideTransition extends transition.Transition {
             prop = "translationY";
         }
 
-        var animator = android.animation.ObjectAnimator.ofFloat(null, prop, translationValues);
-        var duration = this.getDuration();
+        let animator = android.animation.ObjectAnimator.ofFloat(null, prop, translationValues);
+        let duration = this.getDuration();
         if (duration !== undefined) {
             animator.setDuration(duration);
         }

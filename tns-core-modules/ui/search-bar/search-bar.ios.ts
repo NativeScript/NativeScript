@@ -1,65 +1,9 @@
-﻿import common = require("./search-bar-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import * as typesModule from "utils/types";
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
-import font = require("ui/styling/font");
-import { Color } from "color";
+﻿import {
+    SearchBarBase, Font, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
+    textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty
+} from "./search-bar-common";
 
-var types: typeof typesModule;
-function ensureTypes() {
-    if (!types) {
-        types = require("utils/types");
-    }
-}
-
-function onTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var bar = <SearchBar>data.object;
-    bar.ios.text = data.newValue;
-}
-
-(<proxy.PropertyMetadata>common.SearchBar.textProperty.metadata).onSetNativeValue = onTextPropertyChanged;
-
-function onTextFieldBackgroundColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    if (data.newValue instanceof Color) {
-        let bar = <SearchBar>data.object;
-        if (bar._textField) {
-            bar._textField.backgroundColor = data.newValue.ios;
-        }
-    }
-}
-
-(<proxy.PropertyMetadata>common.SearchBar.textFieldBackgroundColorProperty.metadata).onSetNativeValue = onTextFieldBackgroundColorPropertyChanged;
-
-function onTextFieldHintColorPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    if (data.newValue instanceof Color) {
-        let bar = <SearchBar>data.object;
-        if (bar._placeholderLabel) {
-            bar._placeholderLabel.textColor = data.newValue.ios;        
-        }
-    }
-}
-
-(<proxy.PropertyMetadata>common.SearchBar.textFieldHintColorProperty.metadata).onSetNativeValue = onTextFieldHintColorPropertyChanged;
-
-function onHintPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var bar = <SearchBar>data.object;
-    if (!bar.ios) {
-        return;
-    }
-
-    var newValue = data.newValue;
-    ensureTypes();
-
-    if (types.isString(newValue)) {
-        bar.ios.placeholder = newValue;
-    }
-}
-
-(<proxy.PropertyMetadata>common.SearchBar.hintProperty.metadata).onSetNativeValue = onHintPropertyChanged;
-
-global.moduleMerge(common, exports);
+export * from "./search-bar-common";
 
 class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
     public static ObjCProtocols = [UISearchBarDelegate];
@@ -78,11 +22,11 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
             return;
         }
 
-        owner._onPropertyChangedFromNative(common.SearchBar.textProperty, searchText);
+        textProperty.nativeValueChange(owner, searchText);
 
         // This code is needed since sometimes searchBarCancelButtonClicked is not called!
         if (searchText === "") {
-            owner._emit(common.SearchBar.clearEvent);
+            owner._emit(SearchBarBase.clearEvent);
         }
     }
 
@@ -93,7 +37,7 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
             return;
         }
 
-        owner._emit(common.SearchBar.clearEvent);
+        owner._emit(SearchBarBase.clearEvent);
     }
 
     public searchBarSearchButtonClicked(searchBar: UISearchBar) {
@@ -103,11 +47,11 @@ class UISearchBarDelegateImpl extends NSObject implements UISearchBarDelegate {
             return;
         }
 
-        owner._emit(common.SearchBar.submitEvent);
+        owner._emit(SearchBarBase.submitEvent);
     }
 }
 
-export class SearchBar extends common.SearchBar {
+export class SearchBar extends SearchBarBase {
     private _ios: UISearchBar;
     private _delegate;
     private __textField: UITextField;
@@ -117,7 +61,6 @@ export class SearchBar extends common.SearchBar {
         super();
 
         this._ios = UISearchBar.new();
-
         this._delegate = UISearchBarDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
@@ -146,102 +89,104 @@ export class SearchBar extends common.SearchBar {
 
         return this.__textField;
     }
-    
+
     get _placeholderLabel(): UILabel {
         if (!this.__placeholderLabel) {
-            if (this._textField){
-                this.__placeholderLabel = this._textField.valueForKey("placeholderLabel");   
+            if (this._textField) {
+                this.__placeholderLabel = this._textField.valueForKey("placeholderLabel");
             }
         }
 
         return this.__placeholderLabel;
     }
-}
 
-export class SearchBarStyler implements style.Styler {
-
-    private static setBackgroundColorProperty(v: view.View, newValue: any) {
-        var bar = <UISearchBar>v.ios;
-        bar.barTintColor = newValue;
+    get [backgroundColorProperty.native](): UIColor {
+        return this._ios.barTintColor;
+    }
+    set [backgroundColorProperty.native](value: UIColor | Color) {
+        let color: UIColor = value instanceof Color ? value.ios : value;
+        this._ios.barTintColor = color;
     }
 
-    private static getBackgroundColorProperty(v: view.View): any {
-        var bar = <UISearchBar>v.ios;
-        return bar.barTintColor;
-    }
-
-    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
-        var bar = <UISearchBar>v.ios;
-        bar.barTintColor = nativeValue;
-    }
-
-    private static getColorProperty(v: view.View): any {
-        var sf = <UITextField>(<any>v)._textField;
+    get [colorProperty.native](): UIColor {
+        let sf = this._textField;
         if (sf) {
             return sf.textColor;
         }
-
-        return undefined;
+        return null;
     }
-
-    private static setColorProperty(v: view.View, newValue: any) {
-        var sf = <UITextField>(<any>v)._textField;
+    set [colorProperty.native](value: UIColor | Color) {
+        let sf = this._textField;
+        let color = value instanceof Color ? value.ios : value;
         if (sf) {
-            sf.textColor = newValue;
-            sf.tintColor = newValue;
+            sf.textColor = color;
+            sf.tintColor = color;
         }
     }
 
-    private static resetColorProperty(v: view.View, nativeValue: any) {
-        var sf = <UITextField>(<any>v)._textField;
+    get [fontInternalProperty.native](): UIFont {
+        let sf = this._textField;
+        return sf ? sf.font : null;
+    }
+    set [fontInternalProperty.native](value: UIFont | Font) {
+        let sf = this._textField;
         if (sf) {
-            sf.textColor = nativeValue;
-            sf.tintColor = nativeValue;
+            sf.font = value instanceof Font ? value.getUIFont(sf.font) : value;
         }
     }
 
-    // font
-    private static setFontInternalProperty(v: view.View, newValue: any, nativeValue?: any) {
-        var sf = <UITextField>(<any>v)._textField;
-        if (sf) {
-            sf.font = (<font.Font>newValue).getUIFont(nativeValue);
+    get [backgroundInternalProperty.native](): any {
+        return null;
+    }
+    set [backgroundInternalProperty.native](value: any) {
+        //
+    }
+
+    get [textProperty.native](): string {
+        return '';
+    }
+    set [textProperty.native](value: string) {
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._ios.text = text;
+    }
+
+    get [hintProperty.native](): string {
+        return '';
+    }
+    set [hintProperty.native](value: string) {
+        const text = (value === null || value === undefined) ? '' : value.toString();
+        this._ios.placeholder = text;
+    }
+
+    get [textFieldBackgroundColorProperty.native](): UIColor {
+        const textField = this._textField;
+        if (textField) {
+            return textField.backgroundColor;
+        }
+
+        return null;
+    }
+    set [textFieldBackgroundColorProperty.native](value: Color | UIColor) {
+        const color = value instanceof Color ? value.ios : value
+        const textField = this._textField;
+        if (textField) {
+            textField.backgroundColor = color;
         }
     }
 
-    private static resetFontInternalProperty(v: view.View, nativeValue: any) {
-        var sf = <UITextField>(<any>v)._textField;
-        if (sf) {
-            sf.font = nativeValue;
-        }
-    }
-
-    private static getNativeFontInternalValue(v: view.View): any {
-        var sf = <UITextField>(<any>v)._textField;
-        if (sf) {
-            return sf.font;
+    get [textFieldHintColorProperty.native](): UIColor {
+        const placeholderLabel = this._placeholderLabel;
+        if (placeholderLabel) {
+            return placeholderLabel.textColor;
         }
 
-        return undefined;
+        return null;
     }
-
-    public static registerHandlers() {
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            SearchBarStyler.setBackgroundColorProperty,
-            SearchBarStyler.resetBackgroundColorProperty,
-            SearchBarStyler.getBackgroundColorProperty), "SearchBar");
-
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SearchBarStyler.setColorProperty,
-            SearchBarStyler.resetColorProperty,
-            SearchBarStyler.getColorProperty), "SearchBar");
-
-        style.registerHandler(style.fontInternalProperty, new style.StylePropertyChangedHandler(
-            SearchBarStyler.setFontInternalProperty,
-            SearchBarStyler.resetFontInternalProperty,
-            SearchBarStyler.getNativeFontInternalValue), "SearchBar");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "SearchBar");
+    set [textFieldHintColorProperty.native](value: Color | UIColor) {
+        const color = value instanceof Color ? value.ios : value
+        const placeholderLabel = this._placeholderLabel;
+        if (placeholderLabel) {
+            placeholderLabel.textColor = color;
+        }
     }
 }
-
-SearchBarStyler.registerHandlers();

@@ -1,8 +1,8 @@
-﻿import definition = require("file-system/file-name-resolver");
-import fs = require("file-system");
-import types = require("utils/types");
-import trace = require("trace");
-import platform = require("platform");
+import * as definition from "file-system/file-name-resolver";
+import * as fs from "file-system";
+import * as types from "utils/types";
+import * as trace from "trace";
+import * as platform from "platform";
 
 declare module "file-system/file-name-resolver" {
     export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string
@@ -163,7 +163,7 @@ export class FileNameResolver implements definition.FileNameResolver {
             });
         }
         else {
-            if (trace.enabled) {
+            if (trace.isEnabled()) {
                 trace.write("Could not find folder " + folderPath + " when loading " + path + ext, trace.categories.Navigation);
             }
         }

@@ -1,5 +1,5 @@
 
-module.exports = parse;
+exports.parse = parse;
 
 function parse(str) {
   return new Parser(str).parse();

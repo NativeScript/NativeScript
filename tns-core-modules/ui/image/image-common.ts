@@ -1,173 +1,122 @@
-﻿import dependencyObservable = require("ui/core/dependency-observable");
-import view = require("ui/core/view");
-import proxy = require("ui/core/proxy");
-import imageSource = require("image-source");
-import imageAssetModule = require("image-asset");
-import definition = require("ui/image");
-import enums = require("ui/enums");
-import platform = require("platform");
-import utils = require("utils/utils");
-import color = require("color");
+﻿import { Image as ImageDefinition } from "ui/image";
+import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "ui/core/view";
+import { ImageAsset } from "image-asset";
+import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "image-source";
+import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
 
-import * as types from "utils/types";
+export * from "ui/core/view";
+export { ImageSource, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
-var SRC = "src";
-var IMAGE_SOURCE = "imageSource";
-var LOAD_MODE = "loadMode";
+export abstract class ImageBase extends View implements ImageDefinition {
+    public imageSource: ImageSource;
+    public src: string | ImageSource;
+    public isLoading: boolean;
+    public stretch: "none" | "aspectFill" | "aspectFit" | "fill";
+    public loadMode: "sync" | "async";
 
-var SYNC = "sync";
-var ASYNC = "async";
-
-var IMAGE = "Image";
-var ISLOADING = "isLoading";
-var STRETCH = "stretch";
-
-// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-var AffectsLayout = platform.device.os === platform.platformNames.android ? dependencyObservable.PropertyMetadataSettings.None : dependencyObservable.PropertyMetadataSettings.AffectsLayout;
-
-function onSrcPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var image = <Image>data.object;
-    // Check for delay...
-    image._createImageSourceFromSrc();
-}
-
-export class Image extends view.View implements definition.Image {
-
-    public static srcProperty = new dependencyObservable.Property(SRC, IMAGE,
-        new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None, onSrcPropertyChanged));
-
-    // None on purpose. for iOS we trigger it manually if needed. Android layout handles it.
-    public static imageSourceProperty = new dependencyObservable.Property(IMAGE_SOURCE, IMAGE,
-        new proxy.PropertyMetadata(undefined, dependencyObservable.PropertyMetadataSettings.None));
-
-    public static isLoadingProperty = new dependencyObservable.Property(ISLOADING, IMAGE,
-        new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.None));
-
-    public static stretchProperty = new dependencyObservable.Property(STRETCH, IMAGE,
-        new proxy.PropertyMetadata(enums.Stretch.aspectFit, AffectsLayout));
-        
-    public static loadModeProperty = new dependencyObservable.Property(LOAD_MODE, IMAGE,
-        new proxy.PropertyMetadata(SYNC, 0, null, (value) => value === SYNC || value === ASYNC, null));
-
-    get imageSource(): imageSource.ImageSource {
-        return this._getValue(Image.imageSourceProperty);
-    }
-    set imageSource(value: imageSource.ImageSource) {
-        this._setValue(Image.imageSourceProperty, value);
-    }
-
-    get src(): any {
-        return this._getValue(Image.srcProperty);
-    }
-    set src(value: any) {
-        this._setValue(Image.srcProperty, value);
-    }
-
-    get isLoading(): boolean {
-        return this._getValue(Image.isLoadingProperty);
-    }
-
-    get stretch(): string {
-        return this._getValue(Image.stretchProperty);
-    }
-    set stretch(value: string) {
-        this._setValue(Image.stretchProperty, value);
-    }
-
-    get loadMode(): "sync" | "async" {
-        return this._getValue(Image.loadModeProperty);
-    }
-    set loadMode(value: "sync" | "async") {
-        this._setValue(Image.loadModeProperty, value);
-    }
-
-    get tintColor(): color.Color {
+    get tintColor(): Color {
         return this.style.tintColor;
     }
-
-    set tintColor(value: color.Color) {
+    set tintColor(value: Color) {
         this.style.tintColor = value;
-    } 
-
-    public _setNativeImage(nativeImage: any) {
-        //
     }
-    
+
     /**
      * @internal
      */
     public _createImageSourceFromSrc(): void {
-        var value = this.src;
-        if (types.isString(value)) {
+        let value = this.src;
+        let originalValue = value;
+        let sync = this.loadMode === "sync";
+        if (typeof value === "string") {
             value = value.trim();
             this.imageSource = null;
             this["_url"] = value;
 
-            this._setValue(Image.isLoadingProperty, true);
+            this.isLoading = true;
 
-            var source = new imageSource.ImageSource();
-            var imageLoaded = () => {
+            let source = new ImageSource();
+            let imageLoaded = () => {
                 let currentValue = this.src;
-                if (!types.isString(this.src) || value !== currentValue.trim()) {
+                if (currentValue !== originalValue) {
                     return;
                 }
                 this.imageSource = source;
-                this._setValue(Image.isLoadingProperty, false);
-            }
-            if (utils.isDataURI(value)) {
-                var base64Data = value.split(",")[1];
-                if (types.isDefined(base64Data)) {
-                    if (this.loadMode === SYNC) {
+                this.isLoading = false;
+            };
+
+            if (isDataURI(value)) {
+                let base64Data = value.split(",")[1];
+                if (base64Data !== undefined) {
+                    if (sync) {
                         source.loadFromBase64(base64Data);
                         imageLoaded();
-                    } else if (this.loadMode === ASYNC) {
+                    } else {
                         source.fromBase64(base64Data).then(imageLoaded);
                     }
                 }
             }
-            else if (imageSource.isFileOrResourcePath(value)) {
-                if (value.indexOf(utils.RESOURCE_PREFIX) === 0) {
-                    let resPath = value.substr(utils.RESOURCE_PREFIX.length);
-                    if (this.loadMode === SYNC) {
+            else if (isFileOrResourcePath(value)) {
+                if (value.indexOf(RESOURCE_PREFIX) === 0) {
+                    let resPath = value.substr(RESOURCE_PREFIX.length);
+                    if (sync) {
                         source.loadFromResource(resPath);
                         imageLoaded();
-                    } else if (this.loadMode === ASYNC) {
+                    } else {
                         this.imageSource = null;
                         source.fromResource(resPath).then(imageLoaded);
                     }
                 } else {
-                    if (this.loadMode === SYNC) {
+                    if (sync) {
                         source.loadFromFile(value);
                         imageLoaded();
-                    } else if (this.loadMode === ASYNC) {
+                    } else {
                         this.imageSource = null;
                         source.fromFile(value).then(imageLoaded);
                     }
                 }
             } else {
                 this.imageSource = null;
-                imageSource.fromUrl(value).then((r) => {
+                fromUrl(value).then((r) => {
                     if (this["_url"] === value) {
                         this.imageSource = r;
-                        this._setValue(Image.isLoadingProperty, false);
+                        this.isLoading = false;
                     }
                 });
             }
         }
-        else if (value instanceof imageSource.ImageSource) {
+        else if (value instanceof ImageSource) {
             // Support binding the imageSource trough the src property
             this.imageSource = value;
-            this._setValue(Image.isLoadingProperty, false);
+            this.isLoading = false;
         }
-        else if (value instanceof imageAssetModule.ImageAsset) {
-            imageSource.fromAsset(value).then((result) => {
+        else if (value instanceof ImageAsset) {
+            fromAsset(value).then((result) => {
                 this.imageSource = result;
-                this._setValue(Image.isLoadingProperty, false);
+                this.isLoading = false;
             });
         }
         else {
-            this.imageSource = imageSource.fromNativeSource(value);
-            this._setValue(Image.isLoadingProperty, false);
+            this.imageSource = fromNativeSource(value);
+            this.isLoading = false;
         }
     }
 }
+
+export const imageSourceProperty = new Property<ImageBase, ImageSource>({ name: "imageSource" });
+imageSourceProperty.register(ImageBase);
+
+export const srcProperty = new Property<ImageBase, any>({ name: "src" });
+srcProperty.register(ImageBase);
+
+export const loadModeProperty = new Property<ImageBase, "sync" | "async">({ name: "loadMode", defaultValue: "sync" });
+loadModeProperty.register(ImageBase);
+
+export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false, valueConverter: booleanConverter });
+isLoadingProperty.register(ImageBase);
+
+export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS });
+stretchProperty.register(ImageBase);
+
+export const tintColorProperty = new InheritedCssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });
+tintColorProperty.register(Style);

@@ -1,19 +1,8 @@
-﻿import common = require("./stack-layout-common");
-import {Orientation} from "ui/enums";
-import {PropertyMetadata} from "ui/core/proxy";
-import {PropertyChangeData} from "ui/core/dependency-observable";
+﻿import { StackLayoutBase, orientationProperty } from "./stack-layout-common";
 
-global.moduleMerge(common, exports);
+export * from "./stack-layout-common";
 
-function setNativeOrientationProperty(data: PropertyChangeData): void {
-    var stackLayout = <StackLayout>data.object;
-    var nativeView = stackLayout._nativeView;
-    nativeView.setOrientation(data.newValue === Orientation.vertical ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal);
-}
-
-(<PropertyMetadata>common.StackLayout.orientationProperty.metadata).onSetNativeValue = setNativeOrientationProperty;
-
-export class StackLayout extends common.StackLayout {
+export class StackLayout extends StackLayoutBase {
     private _layout: org.nativescript.widgets.StackLayout;
 
     get android(): org.nativescript.widgets.StackLayout {
@@ -24,7 +13,14 @@ export class StackLayout extends common.StackLayout {
         return this._layout;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._layout = new org.nativescript.widgets.StackLayout(this._context);
+    }
+
+    get [orientationProperty.native](): "horizontal" | "vertical" {
+        return "vertical";
+    }
+    set [orientationProperty.native](value: "horizontal" | "vertical") {
+        this._layout.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
     }
 }

@@ -1,7 +1,7 @@
-import observable = require("data/observable");
-import pages = require("ui/page");
-import viewModule = require("ui/core/view");
-import color = require("color");
+import * as observable from "data/observable";
+import * as pages from "ui/page";
+import * as viewModule from "ui/core/view";
+import * as color from "color";
 
 var view: viewModule.View;
 

@@ -1,6 +1,6 @@
 declare module "ui/proxy-view-container" {
-    import layout = require("ui/layouts/layout-base");
+    import { LayoutBase } from "ui/layouts/layout-base";
 
-    export class ProxyViewContainer extends layout.LayoutBase {
+    export class ProxyViewContainer extends LayoutBase {
     }
 }

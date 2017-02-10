@@ -1,14 +1,14 @@
-﻿import transition = require("ui/transition");
-import platform = require("platform");
+﻿import { Transition } from "ui/transition";
+import { screen } from "platform";
 
-let screenWidth = platform.screen.mainScreen.widthDIPs;
-let screenHeight = platform.screen.mainScreen.heightDIPs;
+let screenWidth = screen.mainScreen.widthDIPs;
+let screenHeight = screen.mainScreen.heightDIPs;
 let leftEdge = CGAffineTransformMakeTranslation(-screenWidth, 0);
 let rightEdge = CGAffineTransformMakeTranslation(screenWidth, 0);
 let topEdge = CGAffineTransformMakeTranslation(0, -screenHeight);
 let bottomEdge = CGAffineTransformMakeTranslation(0, screenHeight);
 
-export class SlideTransition extends transition.Transition {
+export class SlideTransition extends Transition {
     private _direction: string;
 
     constructor(direction: string, duration: number, curve: any) {
@@ -62,9 +62,9 @@ export class SlideTransition extends transition.Transition {
             toView.transform = CGAffineTransformIdentity;
             fromView.transform = fromViewEndTransform;
         }, (finished: boolean) => {
-            toView.transform = originalToViewTransform; 
-            fromView.transform = originalFromViewTransform; 
-            completion(finished);   
+            toView.transform = originalToViewTransform;
+            fromView.transform = originalFromViewTransform;
+            completion(finished);
         });
     }
 }

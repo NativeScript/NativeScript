@@ -1,78 +1,57 @@
-﻿import aiCommon = require("./activity-indicator-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import enums = require("ui/enums");
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility } from "./activity-indicator-common";
 
-function onBusyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var indicator = <ActivityIndicator>data.object;
-    if (!indicator.android) {
-        return;
-    }
+export * from "./activity-indicator-common";
 
-    if (indicator.visibility === enums.Visibility.visible) {
-        indicator.android.setVisibility(data.newValue ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
-    }
-}
+export class ActivityIndicator extends ActivityIndicatorBase {
+    _progressBar: android.widget.ProgressBar;
 
-// register the setNativeValue callback
-(<proxy.PropertyMetadata>aiCommon.ActivityIndicator.busyProperty.metadata).onSetNativeValue = onBusyPropertyChanged;
-
-global.moduleMerge(aiCommon, exports);
-
-export class ActivityIndicator extends aiCommon.ActivityIndicator {
-    private _android: android.widget.ProgressBar;
-
-    public _createUI() {
-        this._android = new android.widget.ProgressBar(this._context);
-        this._android.setVisibility(android.view.View.INVISIBLE);
-        this._android.setIndeterminate(true);
+    public _createNativeView() {
+        this._progressBar = new android.widget.ProgressBar(this._context);
+        this._progressBar.setVisibility(android.view.View.INVISIBLE);
+        this._progressBar.setIndeterminate(true);
     }
 
     get android(): android.widget.ProgressBar {
-        return this._android;
-    }
-} 
-
-export class ActivityIndicatorStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
-        var bar = <android.widget.ProgressBar>view._nativeView;
-        bar.getIndeterminateDrawable().setColorFilter(newValue, android.graphics.PorterDuff.Mode.SRC_IN);
+        return this._progressBar;
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: number) {
-        var bar = <android.widget.ProgressBar>view._nativeView;
-        bar.getIndeterminateDrawable().clearColorFilter();
+    get [busyProperty.native](): boolean {
+        return false;
+    }
+    set [busyProperty.native](value: boolean) {
+        if (this.visibility === Visibility.VISIBLE) {
+            this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+        }
     }
 
-    //Visibility methods
-    public static setActivityIndicatorVisibilityProperty(view: view.View, newValue: any) {
-        ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, newValue, view._nativeView);
+    get [visibilityProperty.native](): Visibility {
+        return Visibility.HIDDEN;       
+    }
+    set [visibilityProperty.native](value: Visibility) {
+        switch (value) {
+            case Visibility.VISIBLE:
+                this._progressBar.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+                break;
+            case Visibility.HIDDEN:
+                this._progressBar.setVisibility(android.view.View.INVISIBLE);
+                break;
+            case Visibility.COLLAPSE:
+                this._progressBar.setVisibility(android.view.View.GONE);
+                break;
+            default: 
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+        }
     }
 
-    public static resetActivityIndicatorVisibilityProperty(view: view.View, nativeValue: any) {
-        ActivityIndicatorStyler.setIndicatorVisibility((<any>view).busy, enums.Visibility.visible, view._nativeView);
+    get [colorProperty.native](): number {
+        return -1;
     }
-
-    public static setIndicatorVisibility(isBusy: boolean, visibility: string, nativeView: android.view.View) {
-        if (visibility === enums.Visibility.collapsed || visibility === enums.Visibility.collapse) {
-            nativeView.setVisibility(android.view.View.GONE);
+    set [colorProperty.native](value: number) {
+        if (value < 0) {
+            this._progressBar.getIndeterminateDrawable().clearColorFilter();
         }
         else {
-            nativeView.setVisibility(isBusy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
+            this._progressBar.getIndeterminateDrawable().setColorFilter(value, android.graphics.PorterDuff.Mode.SRC_IN);
         }
     }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            ActivityIndicatorStyler.setColorProperty,
-            ActivityIndicatorStyler.resetColorProperty), "ActivityIndicator");
-
-        style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
-            ActivityIndicatorStyler.setActivityIndicatorVisibilityProperty,
-            ActivityIndicatorStyler.resetActivityIndicatorVisibilityProperty), "ActivityIndicator");
-    }
 }
-
-ActivityIndicatorStyler.registerHandlers();

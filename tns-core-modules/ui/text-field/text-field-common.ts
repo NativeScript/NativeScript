@@ -1,24 +1,12 @@
-﻿import definition = require("ui/text-field");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import textBase = require("ui/text-base");
-import editableTextBase = require("ui/editable-text-base");
+﻿import { TextField as TextFieldDefinition } from "ui/text-field";
+import { EditableTextBase, Property, booleanConverter } from "ui/editable-text-base";
 
-export var secureProperty = new dependencyObservable.Property(
-    "secure",
-    "TextField",
-    new proxy.PropertyMetadata(false)
-    );
+export * from "ui/editable-text-base";
 
-global.moduleMerge(textBase, exports);
-
-export class TextField extends editableTextBase.EditableTextBase implements definition.TextField {
+export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {
     public static returnPressEvent = "returnPress";
+    public secure: boolean;
+}
 
-    get secure(): boolean {
-        return this._getValue(secureProperty);
-    }
-    set secure(value: boolean) {
-        this._setValue(secureProperty, value);
-    }
-} 
+export const secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false, valueConverter: booleanConverter });
+secureProperty.register(TextFieldBase);

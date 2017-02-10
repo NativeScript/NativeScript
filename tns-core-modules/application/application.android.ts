@@ -1,10 +1,8 @@
-﻿import appModule = require("./application-common");
-import definition = require("application");
-import frame = require("ui/frame");
-import observable = require("data/observable");
+﻿import * as appModule from "./application-common";
+import * as definition from "application";
+import * as frame from "ui/frame";
+import * as observable from "data/observable";
 import * as typesModule from "utils/types";
-import * as enumsModule from "ui/enums";
-let enums: typeof enumsModule;
 
 global.moduleMerge(appModule, exports);
 const typedExports: typeof definition = exports;
@@ -129,22 +127,18 @@ function initComponentCallbacks() {
                 return;
             }
 
-            if (!enums) {
-                enums = require("ui/enums");
-            }
-
             currentOrientation = newOrientation;
             let newValue;
 
             switch (newOrientation) {
                 case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    newValue = enums.DeviceOrientation.landscape;
+                    newValue = "landscape";
                     break;
                 case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                    newValue = enums.DeviceOrientation.portrait;
+                    newValue = "portrait";
                     break;
                 default:
-                    newValue = enums.DeviceOrientation.unknown;
+                    newValue = "unknown";
                     break;
             }
 
@@ -317,6 +311,10 @@ function loadCss() {
     }
 }
 
+export function setCssFileName(cssFileName: string) {
+    typedExports.cssFile = cssFileName;
+}
+
 export function addCss(cssText: string) {
     //HACK: identical to application.ios.ts
     const parsed = typedExports.parseCss(cssText);
@@ -344,5 +342,5 @@ global.__onUncaughtError = function (error: definition.NativeScriptError) {
         typedExports.onUncaughtError(error);
     }
 
-    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error });
+    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error, error });
 };

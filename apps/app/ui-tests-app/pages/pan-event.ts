@@ -7,7 +7,7 @@ import { TextView } from "ui/text-view";
 var view: View;
 export function navigatingTo(args: EventData) {
     var page = <Page>args.object;
-    view = page.getViewById("target");
+    view = page.getViewById<View>("target");
 }
 
 export function onPan(data: PanGestureEventData) {

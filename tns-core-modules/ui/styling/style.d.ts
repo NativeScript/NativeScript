@@ -1,10 +1,7 @@
-﻿//@private
 declare module "ui/styling/style" {
-    import styling = require("ui/styling");
-    import {DependencyObservable, Property} from "ui/core/dependency-observable";
-    import {View} from "ui/core/view";
-    import {Color} from "color";
-    import styleProperty = require("ui/styling/style-property");
+    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "ui/core/view";
+    import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
+    import { FontStyle, FontWeight } from "ui/styling/font";
 
     export interface Thickness {
         left: number;
@@ -37,215 +34,148 @@ declare module "ui/styling/style" {
         rightMarginPercent: number;
         bottomMarginPercent: number;
 
-        horizontalAlignment: string;
-        verticalAlignment: string;
+        horizontalAlignment: HorizontalAlignment;
+        verticalAlignment: VerticalAlignment;
     }
 
-    export class Style extends DependencyObservable implements styling.Style {
+    export class Style extends Observable {
+
+        public fontInternal: Font;
+        public backgroundInternal: Background;
+
         public rotate: number;
-        public translateX: number;
-        public translateY: number;
         public scaleX: number;
         public scaleY: number;
+        public translateX: Length;
+        public translateY: Length;
+
+        public clipPath: string;
         public color: Color;
         public tintColor: Color;
         public placeholderColor: Color;
+
         public backgroundColor: Color;
         public backgroundImage: string;
-        public backpublic: string;
+        public backgroundRepeat: BackgroundRepeat;
         public backgroundSize: string;
         public backgroundPosition: string;
-        public backgroundRepeat: string;
+
         public borderColor: string | Color;
         public borderTopColor: Color;
         public borderRightColor: Color;
         public borderBottomColor: Color;
         public borderLeftColor: Color;
-        public borderWidth: string | number;
-        public borderTopWidth: number;
-        public borderRightWidth: number;
-        public borderBottomWidth: number;
-        public borderLeftWidth: number;
-        public borderRadius: string | number;
-        public borderTopLeftRadius: number;
-        public borderTopRightRadius: number;
-        public borderBottomRightRadius: number;
-        public borderBottomLeftRadius: number;
+        public borderWidth: string | Length;
+        public borderTopWidth: Length;
+        public borderRightWidth: Length;
+        public borderBottomWidth: Length;
+        public borderLeftWidth: Length;
+        public borderRadius: string | Length;
+        public borderTopLeftRadius: Length;
+        public borderTopRightRadius: Length;
+        public borderBottomRightRadius: Length;
+        public borderBottomLeftRadius: Length;
+
         public fontSize: number;
         public fontFamily: string;
-        public fontStyle: string;
-        public fontWeight: string;
+        public fontStyle: FontStyle;
+        public fontWeight: FontWeight;
         public font: string;
-        public textAlignment: string;
-        public textDecoration: string;
-        public textTransform: string;
-        public minWidth: number;
-        public minHeight: number;
-        public width: number;
-        public height: number;
-        public margin: string;
-        public marginLeft: number;
-        public marginTop: number;
-        public marginRight: number;
-        public marginBottom: number;
-        public padding: string;
-        public paddingLeft: number;
-        public paddingTop: number;
-        public paddingRight: number;
-        public paddingBottom: number;
-        public horizontalAlignment: string;
-        public verticalAlignment: string;
-        public visibility: string;
-        public clipPath: string;
-        public opacity: number;
-        public whiteSpace: string;
-        public letterSpacing: number;
+
         public zIndex: number;
-        
+        public opacity: number;
+        public visibility: Visibility;
+
+        public letterSpacing: number;
+        public textAlignment: TextAlignment;
+        public textDecoration: TextDecoration;
+        public textTransform: TextTransform;
+        public whiteSpace: WhiteSpace;
+
+        public minWidth: Length;
+        public minHeight: Length;
+        public width: PercentLength;
+        public height: PercentLength;
+        public margin: string | PercentLength;
+        public marginLeft: PercentLength;
+        public marginTop: PercentLength;
+        public marginRight: PercentLength;
+        public marginBottom: PercentLength;
+        public padding: string | Length;
+        public paddingLeft: Length;
+        public paddingTop: Length;
+        public paddingRight: Length;
+        public paddingBottom: Length;
+        public horizontalAlignment: HorizontalAlignment;
+        public verticalAlignment: VerticalAlignment;
+
         // TabView-specific props
         public tabTextColor: Color;
         public tabBackgroundColor: Color;
         public selectedTabTextColor: Color;
         public androidSelectedTabHighlightColor: Color;
 
-        // ListView-specific props
-        public separatorColor : Color;
+        // ListView-specific props 
+        public separatorColor: Color;
 
         //SegmentedBar-specific props
         public selectedBackgroundColor: Color;
 
-        // Page-specific props
+        // Page-specific props 
         public statusBarStyle: string;
         public androidStatusBarBackground: Color;
 
-        constructor(parentView: View);
+        constructor(ownerView: ViewBase);
+        public view: ViewBase;
 
-        public _beginUpdate();
-        public _endUpdate();
-        public _resetCssValues(): void;
-        public _syncNativeProperties(): void;
+        // public _beginUpdate();
+        // public _endUpdate();
+        // public _resetCssValues(): void;
+        // public _syncNativeProperties(): void;
         // public _inheritStyleProperty(property: Property): void;
-        public _inheritStyleProperties(parent: View): void;
-        public _boundsChanged(): void;
-        public _updateTextDecoration(): void;
-        public _updateTextTransform(): void;
+        // public _inheritStyleProperties(parent: View): void;
+        // public _boundsChanged(): void;
+        // public _updateTextDecoration(): void;
+        // public _updateTextTransform(): void;
+        // public _sizeChanged(): void;
     }
 
-    export function registerNoStylingClass(className);
-    export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
+    // export function registerNoStylingClass(className);
+    // export function getHandler(property: Property, view: View): StylePropertyChangedHandler;
     // Property registration
 
-    export var rotateProperty: styleProperty.Property;
-    export var translateXProperty: styleProperty.Property;
-    export var translateYProperty: styleProperty.Property;
-    export var scaleXProperty: styleProperty.Property;
-    export var scaleYProperty: styleProperty.Property;
-    export var colorProperty: styleProperty.Property;
-    export var tintColorProperty: styleProperty.Property;
-    export var placeholderColorProperty: styleProperty.Property;
-    export var backgroundImageProperty: styleProperty.Property;
-    export var backgroundColorProperty: styleProperty.Property;
-    export var backgroundRepeatProperty: styleProperty.Property;
-    export var backgroundSizeProperty: styleProperty.Property;
-    export var backgroundPositionProperty: styleProperty.Property;
-    
-    export var borderTopColorProperty: styleProperty.Property;
-    export var borderRightColorProperty: styleProperty.Property;
-    export var borderBottomColorProperty: styleProperty.Property;
-    export var borderLeftColorProperty: styleProperty.Property;
-    
-    export var borderTopWidthProperty: styleProperty.Property;
-    export var borderRightWidthProperty: styleProperty.Property;
-    export var borderBottomWidthProperty: styleProperty.Property;
-    export var borderLeftWidthProperty: styleProperty.Property;
-    
-    export var borderTopLeftRadiusProperty: styleProperty.Property;
-    export var borderTopRightRadiusProperty: styleProperty.Property;
-    export var borderBottomRightRadiusProperty: styleProperty.Property;
-    export var borderBottomLeftRadiusProperty: styleProperty.Property;
-    
-    export var clipPathProperty: styleProperty.Property;
-    export var backgroundInternalProperty: styleProperty.Property;
-    export var fontSizeProperty: styleProperty.Property;
-    export var fontFamilyProperty: styleProperty.Property;
-    export var fontStyleProperty: styleProperty.Property;
-    export var fontWeightProperty: styleProperty.Property;
-    export var fontInternalProperty: styleProperty.Property;
-    export var textAlignmentProperty: styleProperty.Property;
-    export var minWidthProperty: styleProperty.Property;
-    export var minHeightProperty: styleProperty.Property;
-    export var visibilityProperty: styleProperty.Property;
-    export var opacityProperty: styleProperty.Property;
-    export var textDecorationProperty: styleProperty.Property;
-    export var textTransformProperty: styleProperty.Property;
-    export var whiteSpaceProperty: styleProperty.Property;
-    export var letterSpacingProperty: styleProperty.Property;
-    export var zIndexProperty: styleProperty.Property;
+    // /**
+    //  * Represents an object that defines how style property should be applied on a native view/widget.
+    //  */
+    // export class StylePropertyChangedHandler {
+    //     /**
+    //      * Creates a new StylePropertyChangedHandler object.
+    //      * @param applyCallback - called when a property value should be applied onto the native view/widget.
+    //      * @param resetCallback - called when the property value is cleared to restore the native view/widget in its original state. The callback
+    //      * also receives as a parameter the value stored by the getNativeValue callback.
+    //      * @param getNativeValue - called when a style property is set for the first time to get the default native value for this property
+    //      * in the native view/widget. This value will be passed to resetCallback in case the property value is cleared. Optional.
+    //      */
+    //     constructor(applyCallback: (view: View, newValue: any) => void,
+    //         resetCallback: (view: View, nativeValue: any) => void,
+    //         getNativeValue?: (view: View) => any);
+    // }
 
-    export var tabTextColorProperty: styleProperty.Property;
-    export var tabBackgroundColorProperty: styleProperty.Property;
-    export var selectedTabTextColorProperty: styleProperty.Property;
-    export var androidSelectedTabHighlightColorProperty: styleProperty.Property;
+    // /**
+    //  * Represents a sceleton for an object that holds all style related callbacks and registers handlers.
+    //  * Used for better code readability.
+    //  */
+    // export class Styler {
+    //     public static registerHandlers();
+    // }
 
-    export var selectedBackgroundColorProperty: styleProperty.Property;
+    // /**
+    //  * A function that actually registers a property with a StylePropertyChangedHandler.
+    //  * @param property - Usually a style dependency property which should be registered for style changes.
+    //  * @param handler - The handler that reacts on property changes.
+    //  * @param className(optional) - This parameter (when set) registers handler only for the class with that name and all its inheritors.
+    //  */
+    // export function registerHandler(property: Property, handler: StylePropertyChangedHandler, className?: string);
 
-    export var statusBarStyleProperty: styleProperty.Property;
-    export var androidStatusBarBackgroundProperty: styleProperty.Property;
-
-    export var separatorColorProperty: styleProperty.Property;
-
-    // Helper property holding most layout related properties available in CSS.
-    // When layout related properties are set in CSS we chache them and send them to the native view in a single call.
-    export var nativeLayoutParamsProperty: styleProperty.Property;
-    export var widthProperty: styleProperty.Property;
-    export var heightProperty: styleProperty.Property;
-    export var verticalAlignmentProperty: styleProperty.Property;
-    export var horizontalAlignmentProperty: styleProperty.Property;
-    export var marginLeftProperty: styleProperty.Property;
-    export var marginRightProperty: styleProperty.Property;
-    export var marginTopProperty: styleProperty.Property;
-    export var marginBottomProperty: styleProperty.Property;
-
-    // Helper property holding all paddings. When paddings are set through CSS we cache them and send them to the native view in a single call.
-    export var nativePaddingsProperty: styleProperty.Property;
-    export var paddingLeftProperty: styleProperty.Property;
-    export var paddingRightProperty: styleProperty.Property;
-    export var paddingTopProperty: styleProperty.Property;
-    export var paddingBottomProperty: styleProperty.Property;
-
-    /**
-     * Represents an object that defines how style property should be applied on a native view/widget.
-     */
-    export class StylePropertyChangedHandler {
-        /**
-         * Creates a new StylePropertyChangedHandler object.
-         * @param applyCallback - called when a property value should be applied onto the native view/widget.
-         * @param resetCallback - called when the property value is cleared to restore the native view/widget in its original state. The callback
-         * also receives as a parameter the value stored by the getNativeValue callback.
-         * @param getNativeValue - called when a style property is set for the first time to get the default native value for this property
-         * in the native view/widget. This value will be passed to resetCallback in case the property value is cleared. Optional.
-         */
-        constructor(applyCallback: (view: View, newValue: any) => void,
-            resetCallback: (view: View, nativeValue: any) => void,
-            getNativeValue?: (view: View) => any);
-    }
-
-    /**
-     * Represents a sceleton for an object that holds all style related callbacks and registers handlers.
-     * Used for better code readability.
-     */
-    export class Styler {
-        public static registerHandlers();
-    }
-
-    /**
-     * A function that actually registers a property with a StylePropertyChangedHandler.
-     * @param property - Usually a style dependency property which should be registered for style changes.
-     * @param handler - The handler that reacts on property changes.
-     * @param className(optional) - This parameter (when set) registers handler only for the class with that name and all its inheritors.
-     */
-    export function registerHandler(property: Property, handler: StylePropertyChangedHandler, className?: string);
-
-    export var ignorePropertyHandler;
-
+    // export var ignorePropertyHandler;
 }

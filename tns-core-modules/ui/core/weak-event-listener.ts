@@ -1,23 +1,22 @@
-﻿import observable = require("data/observable");
-import * as types from "utils/types";
+﻿import { Observable, EventData } from "data/observable";
 
-var handlersForEventName = new Map<string,(eventData: observable.EventData) => void>();
-var sourcesMap = new WeakMap<observable.Observable, Map<string, Array<TargetHandlerPair>>>();
+const handlersForEventName = new Map<string, (eventData: EventData) => void>();
+const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
 
 class TargetHandlerPair {
     tagetRef: WeakRef<Object>;
-    handler: (eventData: observable.EventData) => void;
+    handler: (eventData: EventData) => void;
 
-    constructor(target: Object, handler: (eventData: observable.EventData) => void) {
+    constructor(target: Object, handler: (eventData: EventData) => void) {
         this.tagetRef = new WeakRef(target);
         this.handler = handler;
     }
 }
 
-function getHandlerForEventName(eventName: string): (eventData: observable.EventData) => void {
+function getHandlerForEventName(eventName: string): (eventData: EventData) => void {
     var handler = handlersForEventName.get(eventName);
     if (!handler) {
-        handler = function (eventData: observable.EventData) {
+        handler = function (eventData: EventData) {
             var source = eventData.object;
             var sourceEventMap = sourcesMap.get(source);
             if (!sourceEventMap) {
@@ -61,25 +60,25 @@ function getHandlerForEventName(eventName: string): (eventData: observable.Event
     return handler;
 }
 
-function validateArgs(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
-    if (types.isNullOrUndefined(source)) {
+function validateArgs(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
+    if (!source) {
         throw new Error("source is null or undefined");
     }
 
-    if (types.isNullOrUndefined(target)) {
+    if (!target) {
         throw new Error("target is null or undefined");
     }
 
-    if (!types.isString(eventName)) {
+    if (typeof eventName !== "string") {
         throw new Error("eventName is not a string");
     }
 
-    if (!types.isFunction(handler)) {
+    if (typeof handler !== "function") {
         throw new Error("handler is not a function");
     }
 }
 
-export function addWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+export function addWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
     validateArgs(source, eventName, handler, target);
 
     var shouldAttach: boolean = false;
@@ -105,7 +104,7 @@ export function addWeakEventListener(source: observable.Observable, eventName: s
     }
 }
 
-export function removeWeakEventListener(source: observable.Observable, eventName: string, handler: (eventData: observable.EventData) => void, target: any) {
+export function removeWeakEventListener(source: Observable, eventName: string, handler: (eventData: EventData) => void, target: any) {
     validateArgs(source, eventName, handler, target);
 
     var handlerForEventWithName = handlersForEventName.get(eventName);

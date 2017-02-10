@@ -1,22 +1,15 @@
-﻿import types = require("utils/types");
-import { View } from "ui/core/view";
-import definition = require("ui/proxy-view-container");
-import trace = require("trace");
-import { LayoutBase } from "ui/layouts/layout-base";
+﻿import { ProxyViewContainer as ProxyViewContainerDefinition } from "ui/proxy-view-container";
+import { LayoutBase, View, traceEnabled, traceWrite, traceCategories } from "ui/layouts/layout-base";
 /**
  * Proxy view container that adds all its native children directly to the parent. 
  * To be used as a logical grouping container of views.
  */
 // Cases to cover:
 // * Child is added to the attached proxy. Handled in _addViewToNativeVisualTree.
-// * Proxy (with children) is added to the DOM.
-//   - IOS: Handled in _addToSuperview - when the proxy is added, it adds all its children to the new parent.
-//   - Android: _onAttached calls _addViewToNativeVisualTree recursively when the proxy is added to the parent.
+// * Proxy (with children) is added to the DOM. In _addViewToNativeVisualTree _addViewToNativeVisualTree recursively when the proxy is added to the parent.
 // * Child is removed from attached proxy. Handled in _removeViewFromNativeVisualTree.
-// * Proxy (with children) is removed form the DOM.
-//   - IOS: Handled in _removeFromSuperview - when the proxy is removed, it removes all its children from its parent.
-//   - Android: _onDetached calls _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
-export class ProxyViewContainer extends LayoutBase implements definition.ProxyViewContainer {
+// * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
+export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
     // No native view for proxy container.
     get ios(): any {
         return null;
@@ -35,13 +28,13 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
         return false;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         // 
     }
 
     public _getNativeViewsCount(): number {
         let result = 0;
-        this._eachChildView((cv) => {
+        this.eachChildView((cv) => {
             result += cv._getNativeViewsCount();
             return true;
         });
@@ -50,8 +43,8 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
     }
 
     public _eachLayoutView(callback: (View) => void): void {
-        this._eachChildView((cv) => {
-            if (cv._isVisible) {
+        this.eachChildView((cv) => {
+            if (!cv.isCollapsed) {
                 cv._eachLayoutView(callback);
             }
             return true;
@@ -59,13 +52,13 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
-        if (trace.enabled) {
-            trace.write("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, trace.categories.ViewHierarchy);
+        if (traceEnabled()) {
+            traceWrite("ViewContainer._addViewToNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
         }
         super._addViewToNativeVisualTree(child);
 
-        var parent = this.parent;
-        if (parent) {
+        const parent = this.parent;
+        if (parent instanceof View) {
             let baseIndex = 0;
             let insideIndex = 0;
             if (parent instanceof LayoutBase) {
@@ -73,14 +66,14 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
                 baseIndex = parent._childIndexToNativeChildIndex(parent.getChildIndex(this));
             }
 
-            if (types.isDefined(atIndex)) {
+            if (atIndex !== undefined) {
                 insideIndex = this._childIndexToNativeChildIndex(atIndex);
             } else {
                 // Add last;
                 insideIndex = this._getNativeViewsCount();
             }
-            if (trace.enabled) {
-                trace.write("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, trace.categories.ViewHierarchy);
+            if (traceEnabled()) {
+                traceWrite("ProxyViewContainer._addViewToNativeVisualTree at: " + atIndex + " base: " + baseIndex + " additional: " + insideIndex, traceCategories.ViewHierarchy);
             }
             return parent._addViewToNativeVisualTree(child, baseIndex + insideIndex);
         }
@@ -89,36 +82,15 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
     }
 
     public _removeViewFromNativeVisualTree(child: View): void {
-        if (trace.enabled) {
-            trace.write("ProxyViewContainer._removeViewFromNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, trace.categories.ViewHierarchy);
+        if (traceEnabled()) {
+            traceWrite("ProxyViewContainer._removeViewFromNativeVisualTree for a child " + child + " ViewContainer.parent: " + this.parent, traceCategories.ViewHierarchy);
         }
         super._removeViewFromNativeVisualTree(child);
 
-        var parent = this.parent;
-        if (parent) {
+        const parent = this.parent;
+        if (parent instanceof View) {
             return parent._removeViewFromNativeVisualTree(child);
         }
-    }
-
-    public _addToSuperview(superview: any, atIndex?: number): boolean {
-        var index = 0;
-        this._eachChildView((cv) => {
-            if (!cv._isAddedToNativeVisualTree) {
-                cv._isAddedToNativeVisualTree = this._addViewToNativeVisualTree(cv, index++);
-            }
-            return true;
-        });
-
-        return true;
-    }
-
-    public _removeFromSuperview() {
-        this._eachChildView((cv) => {
-            if (cv._isAddedToNativeVisualTree) {
-                this._removeViewFromNativeVisualTree(cv);
-            }
-            return true;
-        });
     }
 
     /*
@@ -128,14 +100,16 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
      * We register our children with the parent to avoid breakage.
      */
     public _registerLayoutChild(child: View) {
-        if (this.parent instanceof LayoutBase) {
-            (<LayoutBase>this.parent)._registerLayoutChild(child);
+        const parent = this.parent;
+        if (parent instanceof LayoutBase) {
+            parent._registerLayoutChild(child);
         }
     }
 
     public _unregisterLayoutChild(child: View) {
-        if (this.parent instanceof LayoutBase) {
-            (<LayoutBase>this.parent)._unregisterLayoutChild(child);
+        const parent = this.parent;
+        if (parent instanceof LayoutBase) {
+            parent._unregisterLayoutChild(child);
         }
     }
 
@@ -143,17 +117,19 @@ export class ProxyViewContainer extends LayoutBase implements definition.ProxyVi
      * Register/unregister existing children with the parent layout.
      */
     public _parentChanged(oldParent: View): void {
+        // call super in order to execute base logic like clear inherited properties, etc.
+        super._parentChanged(oldParent);
         const addingToParent = this.parent && !oldParent;
         const newLayout = <LayoutBase>this.parent;
         const oldLayout = <LayoutBase>oldParent;
 
         if (addingToParent && newLayout instanceof LayoutBase) {
-            this._eachChildView((child) => {
+            this.eachChildView((child) => {
                 newLayout._registerLayoutChild(child);
                 return true;
             });
         } else if (oldLayout instanceof LayoutBase) {
-            this._eachChildView((child) => {
+            this.eachChildView((child) => {
                 oldLayout._unregisterLayoutChild(child);
                 return true;
             });

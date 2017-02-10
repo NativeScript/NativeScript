@@ -1,27 +1,25 @@
-import TKUnit = require("../../TKUnit");
-import application = require("application");
-import buttonModule = require("ui/button");
-import labelModule = require("ui/label");
-import pageModule = require("ui/page");
-import stackModule = require("ui/layouts/stack-layout");
-import wrapModule = require("ui/layouts/wrap-layout");
-import tabViewModule = require("ui/tab-view");
-import helper = require("../../ui/helper");
-import styling = require("ui/styling");
-import types = require("utils/types");
-import viewModule = require("ui/core/view");
-import styleModule = require("ui/styling/style");
-import dependencyObservableModule = require("ui/core/dependency-observable");
+import * as TKUnit from "../../TKUnit";
+import * as application from "application";
+import * as buttonModule from "ui/button";
+import * as labelModule from "ui/label";
+import * as pageModule from "ui/page";
+import * as stackModule from "ui/layouts/stack-layout";
+import * as wrapModule from "ui/layouts/wrap-layout";
+import * as tabViewModule from "ui/tab-view";
+import * as helper from "../../ui/helper";
+import * as types from "utils/types";
+import * as viewModule from "ui/core/view";
 import { resolveFileNameFromUrl } from "ui/styling/style-scope";
+import { unsetValue } from "ui/core/view";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
-        var page = <pageModule.Page>views[1];
+        const page = <pageModule.Page>views[1];
         page.css = "StackLayout { background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///l2Z/dAAAAM0lEQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC;') }";
 
-        var value = stack.style._getValue(styleModule.backgroundInternalProperty);
+        const value = stack.style.backgroundInternal;
 
         TKUnit.assert(types.isDefined(value), "Style background-image not loaded correctly from data URI.");
         TKUnit.assert(types.isDefined(value.image), "Style background-image not loaded correctly from data URI.");
@@ -29,22 +27,22 @@ export function test_css_dataURI_is_applied_to_backgroundImageSource() {
 }
 
 export function test_css_is_applied_to_normal_properties() {
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
-        var page = <pageModule.Page>views[1];
-        var expected = "horizontal";
+        const page = <pageModule.Page>views[1];
+        const expected = "horizontal";
         page.css = `StackLayout { orientation: ${expected}; }`;
         TKUnit.assertEqual(stack.orientation, expected);
     });
 }
 
 export function test_css_is_applied_to_special_properties() {
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
-        var page = <pageModule.Page>views[1];
-        var expected = "test";
+        const page = <pageModule.Page>views[1];
+        const expected = "test";
         page.css = `StackLayout { class: ${expected}; }`;
         TKUnit.assertEqual(stack.className, expected);
     });
@@ -88,44 +86,44 @@ export function test_applies_css_changes_to_application_rules_after_page_load_ne
 
 // Test for inheritance in different containers
 export function test_css_is_applied_inside_StackLayout() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     stack.addChild(testButton);
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
-        var page = <pageModule.Page>views[1];
+        const page = <pageModule.Page>views[1];
         page.css = "button { color: red; }";
         helper.assertViewColor(testButton, "#FF0000");
     });
 }
 
 export function test_css_is_applied_inside_TabView() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
-    var tabView = new tabViewModule.TabView();
+    const tabView = new tabViewModule.TabView();
     let item = new tabViewModule.TabViewItem();
     item.title = "First tab";
     item.view = testButton;
     tabView.items = [item];
 
     helper.buildUIAndRunTest(tabView, function (views: Array<viewModule.View>) {
-        var page = <pageModule.Page>views[1];
+        const page = <pageModule.Page>views[1];
         page.css = "button { color: red; }";
         helper.assertViewColor(testButton, "#FF0000");
     });
 }
 
 export function test_css_is_applied_inside_NestedControls() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
-    var rootLayout = new stackModule.StackLayout();
-    var nestedLayout = new stackModule.StackLayout();
+    const rootLayout = new stackModule.StackLayout();
+    const nestedLayout = new stackModule.StackLayout();
     rootLayout.addChild(nestedLayout);
     nestedLayout.addChild(testButton);
 
     helper.buildUIAndRunTest(rootLayout, function (views: Array<viewModule.View>) {
-        var page = <pageModule.Page>views[1];
+        const page = <pageModule.Page>views[1];
         page.css = "button { color: red; }";
         helper.assertViewColor(testButton, "#FF0000");
     });
@@ -134,7 +132,7 @@ export function test_css_is_applied_inside_NestedControls() {
 // Basic selector tests
 export function test_setting_css() {
     // >> article-setting-css-page
-    var page = new pageModule.Page();
+    const page = new pageModule.Page();
     page.css = ".title { font-size: 20 }";
     // << article-setting-css-page
 
@@ -144,7 +142,8 @@ export function test_setting_css() {
 // Basic selector tests
 export function test_type_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+
+    page.style.color = unsetValue;
 
     let btn: buttonModule.Button;
     let label: labelModule.Label;
@@ -185,7 +184,7 @@ export function test_class_selector() {
     btnWithNoClass = new buttonModule.Button();
     // << article-using-class-selector
 
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     page.content = stack;
     stack.addChild(btnWithClass);
     stack.addChild(btnWithNoClass);
@@ -204,7 +203,7 @@ export function test_multiple_class_selector() {
     btnWithClasses = new buttonModule.Button();
     btnWithClasses.className = "style1 style2";
 
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     page.content = stack;
     stack.addChild(btnWithClasses);
 
@@ -214,7 +213,7 @@ export function test_multiple_class_selector() {
 
 export function test_id_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     let btnWithId: buttonModule.Button;
     let btnWithNoId: buttonModule.Button;
 
@@ -229,7 +228,7 @@ export function test_id_selector() {
     btnWithNoId = new buttonModule.Button();
     // << article-using-id-selector
 
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     page.content = stack;
     stack.addChild(btnWithId);
     stack.addChild(btnWithNoId);
@@ -241,9 +240,9 @@ export function test_id_selector() {
 // State selector tests
 export function test_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     let btn: buttonModule.Button;
-    var testStack = new stackModule.StackLayout();
+    const testStack = new stackModule.StackLayout();
     page.content = testStack;
 
     btn = new buttonModule.Button();
@@ -256,8 +255,8 @@ export function test_state_selector() {
 
 export function test_type_and_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
-    var btn: buttonModule.Button;
+    page.style.color = unsetValue;
+    let btn: buttonModule.Button;
 
     // >>article-using-state-selector
     page.css = "button:pressed { color: red; }";
@@ -265,7 +264,7 @@ export function test_type_and_state_selector() {
     //// Will be red when pressed
     btn = new buttonModule.Button();
     // << article-using-state-selector
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     page.content = stack;
     stack.addChild(btn);
 
@@ -274,7 +273,7 @@ export function test_type_and_state_selector() {
 
 export function test_class_and_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     btn.className = "test"
@@ -289,7 +288,7 @@ export function test_class_and_state_selector() {
 
 export function test_class_and_state_selector_with_multiple_classes() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -305,7 +304,7 @@ export function test_class_and_state_selector_with_multiple_classes() {
 
 export function test_id_and_state_selector() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -321,7 +320,7 @@ export function test_id_and_state_selector() {
 
 export function test_restore_original_values_when_state_is_changed() {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
 
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -338,18 +337,18 @@ export function test_restore_original_values_when_state_is_changed() {
     helper.assertViewColor(btn, "#0000FF");
 }
 
-export var test_composite_selector_type_and_class = function () {
+export const test_composite_selector_type_and_class = function () {
     // Arrange
-    var testStack = new stackModule.StackLayout();
+    const testStack = new stackModule.StackLayout();
 
-    var btnWithClass = new buttonModule.Button();
+    const btnWithClass = new buttonModule.Button();
     btnWithClass.className = "test";
     testStack.addChild(btnWithClass);
 
-    var btnWithNoClass = new buttonModule.Button();
+    const btnWithNoClass = new buttonModule.Button();
     testStack.addChild(btnWithNoClass);
 
-    var lblWithClass = new labelModule.Label();
+    const lblWithClass = new labelModule.Label();
     lblWithClass.className = "test";
     testStack.addChild(lblWithClass);
 
@@ -365,16 +364,16 @@ export var test_composite_selector_type_and_class = function () {
     helper.buildUIAndRunTest(testStack, testFunc, testCss);
 }
 
-export var test_composite_selector_type_class_state = function () {
-    var testStack = new stackModule.StackLayout();
-    var btnWithClass = new buttonModule.Button();
+export const test_composite_selector_type_class_state = function () {
+    const testStack = new stackModule.StackLayout();
+    const btnWithClass = new buttonModule.Button();
     btnWithClass.className = "test";
     testStack.addChild(btnWithClass);
 
-    var btnWithNoClass = new buttonModule.Button();
+    const btnWithNoClass = new buttonModule.Button();
     testStack.addChild(btnWithNoClass);
 
-    var lblWithClass = new labelModule.Label();
+    const lblWithClass = new labelModule.Label();
     lblWithClass.className = "test";
     testStack.addChild(lblWithClass);
 
@@ -395,7 +394,7 @@ export var test_composite_selector_type_class_state = function () {
     helper.buildUIAndRunTest(testStack, testFunc, testCss);
 }
 
-export var test_style_is_applied_when_control_is_added_after_load = function () {
+export const test_style_is_applied_when_control_is_added_after_load = function () {
     let page = helper.getClearCurrentPage();
     let btn = new buttonModule.Button();
     let testStack = new stackModule.StackLayout();
@@ -407,7 +406,7 @@ export var test_style_is_applied_when_control_is_added_after_load = function () 
     TKUnit.assertEqual(btn.style.color.hex, "#FF0000", "Color property not applied correctly.");
 }
 
-var changeIdOrClassTestCss =
+const changeIdOrClassTestCss =
     "button { background-color: #111111 } " +
     ".button-class { background-color: #222222 } " +
     ".button-class-two { background-color: #333333 } " +
@@ -415,13 +414,13 @@ var changeIdOrClassTestCss =
     "#myButtonTwo { background-color: #555555 } ";
 
 export function test_styles_are_updated_when_cssClass_is_set() {
-    var testStack = new stackModule.StackLayout();
-    var btn = new buttonModule.Button();
-    var btn2 = new buttonModule.Button();
+    const testStack = new stackModule.StackLayout();
+    const btn = new buttonModule.Button();
+    const btn2 = new buttonModule.Button();
     testStack.addChild(btn);
     testStack.addChild(btn2);
 
-    var testFunc = () => {
+    const testFunc = () => {
         helper.assertViewBackgroundColor(btn, "#111111");
         helper.assertViewBackgroundColor(btn2, "#111111");
 
@@ -435,14 +434,14 @@ export function test_styles_are_updated_when_cssClass_is_set() {
 }
 
 export function test_styles_are_updated_when_cssClass_is_changed() {
-    var testStack = new stackModule.StackLayout();
-    var btn = new buttonModule.Button();
+    const testStack = new stackModule.StackLayout();
+    const btn = new buttonModule.Button();
     btn.className = "button-class";
-    var btn2 = new buttonModule.Button();
+    const btn2 = new buttonModule.Button();
     testStack.addChild(btn);
     testStack.addChild(btn2);
 
-    var testFunc = () => {
+    const testFunc = () => {
         helper.assertViewBackgroundColor(btn, "#222222");
         helper.assertViewBackgroundColor(btn2, "#111111");
 
@@ -456,14 +455,14 @@ export function test_styles_are_updated_when_cssClass_is_changed() {
 }
 
 export function test_styles_are_updated_when_cssClass_is_cleared() {
-    var testStack = new stackModule.StackLayout();
-    var btn = new buttonModule.Button();
+    const testStack = new stackModule.StackLayout();
+    const btn = new buttonModule.Button();
     btn.className = "button-class";
-    var btn2 = new buttonModule.Button();
+    const btn2 = new buttonModule.Button();
     testStack.addChild(btn);
     testStack.addChild(btn2);
 
-    var testFunc = () => {
+    const testFunc = () => {
         helper.assertViewBackgroundColor(btn, "#222222");
         helper.assertViewBackgroundColor(btn2, "#111111");
 
@@ -477,13 +476,13 @@ export function test_styles_are_updated_when_cssClass_is_cleared() {
 }
 
 export function test_styles_are_updated_when_id_is_set() {
-    var testStack = new stackModule.StackLayout();
-    var btn = new buttonModule.Button();
-    var btn2 = new buttonModule.Button();
+    const testStack = new stackModule.StackLayout();
+    const btn = new buttonModule.Button();
+    const btn2 = new buttonModule.Button();
     testStack.addChild(btn);
     testStack.addChild(btn2);
 
-    var testFunc = () => {
+    const testFunc = () => {
         helper.assertViewBackgroundColor(btn, "#111111");
         helper.assertViewBackgroundColor(btn2, "#111111");
 
@@ -497,14 +496,14 @@ export function test_styles_are_updated_when_id_is_set() {
 }
 
 export function test_styles_are_updated_when_id_is_changed() {
-    var testStack = new stackModule.StackLayout();
-    var btn = new buttonModule.Button();
+    const testStack = new stackModule.StackLayout();
+    const btn = new buttonModule.Button();
     btn.id = "myButton";
-    var btn2 = new buttonModule.Button();
+    const btn2 = new buttonModule.Button();
     testStack.addChild(btn);
     testStack.addChild(btn2);
 
-    var testFunc = () => {
+    const testFunc = () => {
         helper.assertViewBackgroundColor(btn, "#444444");
         helper.assertViewBackgroundColor(btn2, "#111111");
 
@@ -518,14 +517,14 @@ export function test_styles_are_updated_when_id_is_changed() {
 }
 
 export function test_styles_are_updated_when_id_is_cleared() {
-    var testStack = new stackModule.StackLayout();
-    var btn = new buttonModule.Button();
+    const testStack = new stackModule.StackLayout();
+    const btn = new buttonModule.Button();
     btn.id = "myButton";
-    var btn2 = new buttonModule.Button();
+    const btn2 = new buttonModule.Button();
     testStack.addChild(btn);
     testStack.addChild(btn2);
 
-    var testFunc = () => {
+    const testFunc = () => {
         helper.assertViewBackgroundColor(btn, "#444444");
         helper.assertViewBackgroundColor(btn2, "#111111");
 
@@ -538,9 +537,9 @@ export function test_styles_are_updated_when_id_is_cleared() {
     helper.buildUIAndRunTest(testStack, testFunc, changeIdOrClassTestCss);
 }
 
-var typeSelector = "button { color: blue } ";
-var classSelector = ".button-class { color: green } ";
-var idSelector = "#myButton { color: red } ";
+const typeSelector = "button { color: blue } ";
+const classSelector = ".button-class { color: green } ";
+const idSelector = "#myButton { color: red } ";
 
 export function test_selector_priorities_1() {
     testSelectorsPrioritiesTemplate(typeSelector + classSelector + idSelector);
@@ -568,12 +567,12 @@ export function test_selector_priorities_6() {
 
 function testSelectorsPrioritiesTemplate(css: string) {
     let page = helper.getClearCurrentPage();
-    page.style._resetValue(styling.properties.colorProperty);
+    page.style.color = unsetValue;
     let btn: buttonModule.Button;
     let btnWithClass: buttonModule.Button;
     let btnWithId: buttonModule.Button;
 
-    var testStack = new stackModule.StackLayout();
+    const testStack = new stackModule.StackLayout();
     page.content = testStack;
 
     btn = new buttonModule.Button();
@@ -608,50 +607,20 @@ function testButtonPressedStateIsRed(btn: buttonModule.Button) {
     TKUnit.assert(btn.style.color === undefined, "Color should not have a value after returned to normal state.");
 }
 
-export function test_styling_converters_are_defined() {
-    TKUnit.assert(types.isDefined(styling.converters), "converters module is not defined");
-    TKUnit.assert(types.isFunction(styling.converters.colorConverter), "colorConverter function is not defined");
-    TKUnit.assert(types.isFunction(styling.converters.fontSizeConverter), "fontSizeConverter function is not defined");
-    TKUnit.assert(types.isFunction(styling.converters.textAlignConverter), "textAlignConverter function is not defined");
-}
-
-export function test_styling_properties_are_defined() {
-    TKUnit.assert(types.isDefined(styling.properties), "properties module is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.backgroundColorProperty), "backgroundColorProperty property is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.colorProperty), "colorProperty property is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.fontSizeProperty), "fontSizeProperty property is not defined");
-    TKUnit.assert(types.isDefined(styling.properties.textAlignmentProperty), "textAlignmentProperty property is not defined");
-
-    TKUnit.assert(types.isFunction(styling.properties.eachInheritableProperty), "properties.eachInheritableProperty function is not defined");
-    TKUnit.assert(types.isFunction(styling.properties.eachProperty), "properties.eachProperty function is not defined");
-    TKUnit.assert(types.isFunction(styling.properties.getPropertyByCssName), "properties.getPropertyByCssName function is not defined");
-    TKUnit.assert(types.isFunction(styling.properties.getPropertyByName), "properties.getPropertyByName function is not defined");
-}
-
-export function test_styling_stylers_are_defined() {
-    TKUnit.assert(types.isFunction(styleModule.registerHandler), "registerHandler function is not defined");
-    TKUnit.assert(types.isFunction(styleModule.StylePropertyChangedHandler), "StylePropertyChangedHandler class is not defined");
-}
-
-export function test_styling_classes_are_defined() {
-    TKUnit.assert(types.isFunction(styling.Style), "Style class is not defined");
-    TKUnit.assert(types.isFunction(styling.Property), "Property class is not defined");
-}
-
 export function test_setInlineStyle_setsLocalValues() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
-    var stack = new stackModule.StackLayout();
+    const stack = new stackModule.StackLayout();
     stack.addChild(testButton);
 
     helper.buildUIAndRunTest(stack, function (views: Array<viewModule.View>) {
         (<any>testButton)._applyInlineStyle("color: red;");
-        helper.assertViewColor(testButton, "#FF0000", dependencyObservableModule.ValueSource.Local);
+        helper.assertViewColor(testButton, "#FF0000");
     });
 }
 
 export function test_setStyle_throws() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
 
     TKUnit.assertThrows(function () {
         (<any>testButton).style = "background-color: red;";
@@ -659,50 +628,50 @@ export function test_setStyle_throws() {
 }
 
 export function test_CSS_isAppliedOnPage() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page>views[1];
+        const page: pageModule.Page = <pageModule.Page>views[1];
         page.css = "page { background-color: red; }";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
 
 export function test_CSS_isAppliedOnPage_From_Import() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page>views[1];
+        const page: pageModule.Page = <pageModule.Page>views[1];
         page.css = "@import url('~/ui/styling/test.css');";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
 
 export function test_CSS_isAppliedOnPage_From_Import_Without_Url() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page>views[1];
+        const page: pageModule.Page = <pageModule.Page>views[1];
         page.css = "@import '~/ui/styling/test.css';";
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
 
 export function test_CSS_isAppliedOnPage_From_addCssFile() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
 
     helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
-        var page: pageModule.Page = <pageModule.Page>views[1];
+        const page: pageModule.Page = <pageModule.Page>views[1];
         page.addCssFile("~/ui/styling/test.css");
         helper.assertViewBackgroundColor(page, "#FF0000");
     });
 }
 
-var invalidCSS = ".invalid { " +
+const invalidCSS = ".invalid { " +
     "color: invalidValue; " +
     "background-color: invalidValue; " +
     "border-color: invalidValue; " +
@@ -720,24 +689,24 @@ var invalidCSS = ".invalid { " +
     "}";
 
 export function test_set_invalid_CSS_values_dont_cause_crash() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
     testButton.className = "invalid";
 
-    helper.buildUIAndRunTest(testButton, function (views: Array<viewModule.View>) {
+    helper.buildUIAndRunTest(testButton, (views: Array<viewModule.View>) => {
         TKUnit.assertEqual(30, testButton.style.fontSize);
     }, invalidCSS);
 }
 
 // Check Mixed, Upper and lower case properties
-var casedCSS = ".cased {" +
+const casedCSS = ".cased {" +
     "cOlOr: blue; " +
     "FONT-SIZE: 30; " +
     "background-color: red; " +
     "}";
 
 export function test_set_mixed_CSS_cases_works() {
-    var testButton = new buttonModule.Button();
+    const testButton = new buttonModule.Button();
     testButton.text = "Test";
     testButton.className = "cased";
 
@@ -1423,7 +1392,7 @@ export function test_CascadingClassNamesAppliesAfterPageLoad() {
     const stack = new stackModule.StackLayout();
     const label = new labelModule.Label();
     label.text = "Some text";
-    label.cssClass = 'lab1';
+    label.className = 'lab1';
     stack.addChild(label);
 
     application.addCss(".added { background-color: red; } .added .lab1 { background-color: blue; } .lab1 { color: red}");

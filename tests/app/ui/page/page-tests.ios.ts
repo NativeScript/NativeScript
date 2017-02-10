@@ -1,11 +1,11 @@
-﻿import PageTestCommon = require("./page-tests-common");
+﻿import * as PageTestCommon from "./page-tests-common";
 import {Page} from "ui/page";
-import TKUnit = require("../../TKUnit");
+import * as TKUnit from "../../TKUnit";
 import {Label} from "ui/label";
-import helper = require("../helper");
+import * as helper from "../helper";
 import {View} from "ui/core/view";
 import {EventData} from "data/observable";
-import uiUtils = require("ui/utils");
+import * as uiUtils from "ui/utils";
 import * as frame from "ui/frame";
 
 global.moduleMerge(PageTestCommon, exports);
@@ -23,7 +23,7 @@ export function test_NavigateToNewPage_InnerControl() {
 
     helper.goBack();
 
-    TKUnit.assertEqual(label._context, undefined, "label._context should be undefined after navigate back.");
+    TKUnit.assertEqual(label._context, null, "label._context should be undefined after navigate back.");
     TKUnit.assertEqual(label.android, undefined, "label.android should be undefined after navigate back.");
     TKUnit.assertFalse(label.isLoaded, "label.isLoaded should become false after navigating back");
 }

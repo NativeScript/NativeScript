@@ -1,8 +1,8 @@
-import TKUnit = require("../../TKUnit");
-import testModule = require("../../ui-test");
+import * as TKUnit from "../../TKUnit";
+import * as testModule from "../../ui-test";
 
 // >> webview-require
-import webViewModule = require("ui/web-view");
+import * as webViewModule from "ui/web-view";
 // << webview-require
 
 // >> declare-webview-xml
@@ -45,7 +45,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
             // << (hide)
         });
-        webView.url = "https://github.com/";
+        webView.src = "https://github.com/";
         // << webview-url
     }
 
@@ -125,27 +125,6 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
         });
         webView.src = '<!DOCTYPE html><html><head><title>MyTitle</title><meta charset="utf-8" /></head><body><span style="color:red">TestÖ</span></body></html>';
         // << webview-string
-    }
-
-    public testLoadInvalidUrl(done) {
-        let webView = this.testView;
-        let actualError;
-
-        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-            if (actualError) {
-                // Android call this twice -- the second time args.error is undefined.
-                return;
-            }
-            actualError = args.error;
-            try {
-                TKUnit.assert(actualError !== undefined, "There should be an error.");
-                done(null);
-            }
-            catch (e) {
-                done(e);
-            }
-        });
-        webView.url = "kofti://mnogokofti";
     }
 
     public testLoadUpperCaseSrc(done) {

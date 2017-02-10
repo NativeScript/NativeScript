@@ -1,8 +1,8 @@
 /* tslint:disable:no-unused-variable */
-import TKUnit = require("./TKUnit");
-import http = require("http");
-import types = require("utils/types");
-import fs = require("file-system");
+import * as TKUnit from "./TKUnit";
+import * as http from "http";
+import * as types from "utils/types";
+import * as fs from "file-system";
 require("globals");
 
 // >> http-require

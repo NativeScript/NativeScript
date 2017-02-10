@@ -1,7 +1,8 @@
 ﻿/* tslint:disable:no-unused-variable */
-import definition = require("ui/core/control-state-change");
+import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from "ui/core/control-state-change";
 
 class ObserverClass extends NSObject {
+    // NOTE: Refactor this - use Typescript property instead of strings....
     observeValueForKeyPathOfObjectChangeContext(path: string, obj: Object, change: NSDictionary<any, any>, context: any) {
         if (path === "selected") {
             this["_owner"]._onSelectedChanged();
@@ -13,7 +14,7 @@ class ObserverClass extends NSObject {
     }
 }
 
-export class ControlStateChangeListener implements definition.ControlStateChangeListener {
+export class ControlStateChangeListener implements ControlStateChangeListenerDefinition {
     private _observer: NSObject;
     private _states: string[];
     private _control: UIControl;

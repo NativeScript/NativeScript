@@ -2,7 +2,7 @@
  * iOS specific http request implementation.
  */
 
-import http = require("http");
+import * as http from "http";
 
 import * as types from "utils/types";
 import * as imageSourceModule from "image-source";
@@ -11,7 +11,7 @@ import * as fsModule from "file-system";
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 
-import domainDebugger = require("./../debugger/debugger");
+import * as domainDebugger from "./../debugger/debugger";
 
 var device = utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
 

@@ -2,28 +2,12 @@
  * Contains the Slider class, which represents a standard slider component.
  */
 declare module "ui/slider" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
-
+    import { View, Property, CoercibleProperty } from "ui/core/view";
+    
     /**
      * Represents a slider component.
      */
-    export class Slider extends view.View {
-        /**
-         * Represents the observable property backing the value property of each Slider instance.
-         */
-        public static valueProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the minValue property of each Slider instance.
-         */
-        public static minValueProperty: dependencyObservable.Property;
-
-        /**
-         * Represents the observable property backing the maxValue property of each Slider instance.
-         */
-        public static maxValueProperty: dependencyObservable.Property;
-
+    export class Slider extends View {
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/SeekBar.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -49,4 +33,19 @@ declare module "ui/slider" {
          */
         maxValue: number;
     }
+
+    /**
+     * Represents the observable property backing the value property of each Slider instance.
+     */
+    export const valueProperty: Property<Slider, number>;
+
+    /**
+     * Represents the observable property backing the minValue property of each Slider instance.
+     */
+    export const minValueProperty: CoercibleProperty<Slider, number>;
+
+    /**
+     * Represents the observable property backing the maxValue property of each Slider instance.
+     */
+    export const maxValueProperty: CoercibleProperty<Slider, number>;
 }

@@ -1,7 +1,7 @@
 ﻿/* tslint:disable:no-unused-variable */
-import app = require("application");
-import TKUnit = require("./TKUnit");
-import commonTests = require("./application-tests-common");
+import * as app from "application";
+import * as TKUnit from "./TKUnit";
+import * as commonTests from "./application-tests-common";
 
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;

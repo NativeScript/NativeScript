@@ -106,6 +106,12 @@ declare function Deprecated(target: Object, key?: string | symbol, value?: any):
 declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
 
 /**
+ * Decorates class that implements native Java interfaces.
+ * @param interfaces Implemented interfaces.
+ */
+declare function Interfaces(...interfaces): ClassDecorator;
+
+/**
  * Decorates class that extends native Java class
  * @param nativeClassName The name of the newly generated class. Must be unique in the application.
  */

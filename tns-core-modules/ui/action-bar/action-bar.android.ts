@@ -1,61 +1,36 @@
-﻿import common = require("./action-bar-common");
-import types = require("utils/types");
-import enums = require("ui/enums");
-import application = require("application");
-import dts = require("ui/action-bar");
-import view = require("ui/core/view");
-import * as traceModule from "trace";
-import * as utilsModule from "utils/utils";
-import * as imageSourceModule from "image-source";
-import style = require("ui/styling/style");
+import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from "ui/action-bar";
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, Color } from "./action-bar-common";
+import { RESOURCE_PREFIX } from "utils/utils";
+import { fromFileOrResource } from "image-source";
+import * as application from "application";
+
+export * from "./action-bar-common";
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 1000;
 
-global.moduleMerge(common, exports);
-
-var trace: typeof traceModule;
-function ensureTrace() {
-    if (!trace) {
-        trace = require("trace");
-    }
-}
-
-var utils: typeof utilsModule;
-function ensureUtils() {
-    if (!utils) {
-        utils = require("utils/utils");
-    }
-}
-
-var imageSource: typeof imageSourceModule;
-function ensureImageSource() {
-    if (!imageSource) {
-        imageSource = require("image-source");
-    }
-}
-
-var actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
+let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
     actionItemIdGenerator++;
     return actionItemIdGenerator;
 }
 
-export class ActionItem extends common.ActionItem {
-    private _androidPosition: dts.AndroidActionItemSettings = {
-        position: enums.AndroidActionItemPosition.actionBar,
+export class ActionItem extends ActionItemBase {
+    private _androidPosition: AndroidActionItemSettings = {
+        position: "actionBar",
         systemIcon: undefined
     };
+
     private _itemId;
     constructor() {
         super();
         this._itemId = generateItemId();
     }
 
-    public get android(): dts.AndroidActionItemSettings {
+    public get android(): AndroidActionItemSettings {
         return this._androidPosition;
     }
-    public set android(value: dts.AndroidActionItemSettings) {
+    public set android(value: AndroidActionItemSettings) {
         throw new Error("ActionItem.android is read-only");
     }
 
@@ -64,10 +39,14 @@ export class ActionItem extends common.ActionItem {
     }
 }
 
-export class AndroidActionBarSettings implements dts.AndroidActionBarSettings {
+export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinition {
     private _actionBar: ActionBar;
     private _icon: string;
-    private _iconVisibility: string = enums.AndroidActionBarIconVisibility.auto;
+    private _iconVisibility: "auto" | "never" | "always" = "auto";
+
+    constructor(actionBar: ActionBar) {
+        this._actionBar = actionBar;
+    }
 
     public get icon(): string {
         return this._icon;
@@ -79,18 +58,14 @@ export class AndroidActionBarSettings implements dts.AndroidActionBarSettings {
         }
     }
 
-    public get iconVisibility(): string {
+    public get iconVisibility(): "auto" | "never" | "always" {
         return this._iconVisibility;
     }
-    public set iconVisibility(value: string) {
+    public set iconVisibility(value: "auto" | "never" | "always") {
         if (value !== this._iconVisibility) {
             this._iconVisibility = value;
             this._actionBar._onIconPropertyChanged();
         }
-    }
-
-    constructor(actionBar: ActionBar) {
-        this._actionBar = actionBar;
     }
 }
 
@@ -98,22 +73,29 @@ export class NavigationButton extends ActionItem {
 
 }
 
-export class ActionBar extends common.ActionBar {
+@Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
+class MenuItemClickListener extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
+    constructor(public owner: WeakRef<ActionBar>) {
+        super();
+        return global.__native(this);
+    }
+
+    onMenuItemClick(item: android.view.IMenuItem): boolean {
+        let owner = this.owner.get();
+        if (!owner) {
+            return false;
+        }
+
+        let itemId = item.getItemId();
+        return owner._onAndroidItemSelected(itemId);
+    }
+}
+
+export class ActionBar extends ActionBarBase {
     private _appResources: android.content.res.Resources;
     private _android: AndroidActionBarSettings;
     private _toolbar: android.support.v7.widget.Toolbar;
-
-    get android(): AndroidActionBarSettings {
-        return this._android;
-    }
-
-    set android(value: AndroidActionBarSettings) {
-        throw new Error("ActionBar.android is read-only");
-    }
-
-    get _nativeView() {
-        return this._toolbar;
-    }
+    private _menuItemClickListener: android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 
     constructor() {
         super();
@@ -122,19 +104,21 @@ export class ActionBar extends common.ActionBar {
         this._android = new AndroidActionBarSettings(this);
     }
 
-    public _createUI() {
+    get android(): AndroidActionBarSettings {
+        return this._android;
+    }
+    set android(value: AndroidActionBarSettings) {
+        throw new Error("ActionBar.android is read-only");
+    }
+
+    get _nativeView(): android.support.v7.widget.Toolbar {
+        return this._toolbar;
+    }
+
+    public _createNativeView() {
         this._toolbar = new android.support.v7.widget.Toolbar(this._context);
-        let ownerRef = new WeakRef(this);
-        this._toolbar.setOnMenuItemClickListener(new android.support.v7.widget.Toolbar.OnMenuItemClickListener({
-            onMenuItemClick: function (item: android.view.IMenuItem): boolean {
-                let ownerValue = ownerRef.get();
-                if (!ownerValue) {
-                    return false;
-                }
-                let itemId = item.getItemId();
-                return ownerValue._onAndroidItemSelected(itemId);
-            }
-        }));
+        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(new WeakRef(this));
+        this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
     }
 
     public onLoaded() {
@@ -143,17 +127,18 @@ export class ActionBar extends common.ActionBar {
     }
 
     public update() {
-        if (!this._toolbar) {
+        if (!this.nativeView) {
             return;
         }
 
         if (!this.page.frame || !this.page.frame._getNavBarVisible(this.page)) {
-            this._toolbar.setVisibility(android.view.View.GONE);
+            this.nativeView.setVisibility(android.view.View.GONE);
 
             // If action bar is hidden - no need to fill it with items.
             return;
         }
-        this._toolbar.setVisibility(android.view.View.VISIBLE);
+
+        this.nativeView.setVisibility(android.view.View.VISIBLE);
 
         // Add menu items
         this._addActionItems();
@@ -176,11 +161,11 @@ export class ActionBar extends common.ActionBar {
         }
 
         // Find item with the right ID;
-        var menuItem: dts.ActionItem = undefined;
-        var items = this.actionItems.getItems();
+        let menuItem: ActionItem = undefined;
+        let items = this.actionItems.getItems();
         for (let i = 0; i < items.length; i++) {
             if ((<ActionItem>items[i])._getItemId() === itemId) {
-                menuItem = items[i];
+                menuItem = <ActionItem>items[i];
                 break;
             }
         }
@@ -195,21 +180,21 @@ export class ActionBar extends common.ActionBar {
 
     public _updateNavigationButton() {
         let navButton = this.navigationButton;
-        if (navButton && common.isVisible(navButton)) {
+        if (navButton && isVisible(navButton)) {
             if (navButton.android.systemIcon) {
                 // Try to look in the system resources.
                 let systemResourceId = getSystemResourceId(navButton.android.systemIcon);
                 if (systemResourceId) {
-                    this._toolbar.setNavigationIcon(systemResourceId);
+                    this.nativeView.setNavigationIcon(systemResourceId);
                 }
             }
             else if (navButton.icon) {
                 let drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
-                this._toolbar.setNavigationIcon(drawableOrId);
+                this.nativeView.setNavigationIcon(drawableOrId);
             }
 
             let navBtn = new WeakRef(navButton);
-            this._toolbar.setNavigationOnClickListener(new android.view.View.OnClickListener({
+            this.nativeView.setNavigationOnClickListener(new android.view.View.OnClickListener({
                 onClick: function (v) {
                     let owner = navBtn.get();
                     if (owner) {
@@ -219,59 +204,59 @@ export class ActionBar extends common.ActionBar {
             }));
         }
         else {
-            this._toolbar.setNavigationIcon(null);
+            this.nativeView.setNavigationIcon(null);
         }
     }
 
     public _updateIcon() {
-        var visibility = getIconVisibility(this.android.iconVisibility);
+        let visibility = getIconVisibility(this.android.iconVisibility);
         if (visibility) {
-            var icon = this.android.icon;
-            if (types.isDefined(icon)) {
-                var drawableOrId = getDrawableOrResourceId(icon, this._appResources);
+            let icon = this.android.icon;
+            if (icon !== undefined) {
+                let drawableOrId = getDrawableOrResourceId(icon, this._appResources);
                 if (drawableOrId) {
-                    this._toolbar.setLogo(drawableOrId);
+                    this.nativeView.setLogo(drawableOrId);
                 }
             }
             else {
-                var defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
-                this._toolbar.setLogo(defaultIcon);
+                let defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
+                this.nativeView.setLogo(defaultIcon);
             }
         }
         else {
-            this._toolbar.setLogo(null);
+            this.nativeView.setLogo(null);
         }
     }
 
     public _updateTitleAndTitleView() {
         if (!this.titleView) {
             // No title view - show the title
-            var title = this.title;
-            if (types.isDefined(title)) {
-                this._toolbar.setTitle(title);
+            let title = this.title;
+            if (title !== undefined) {
+                this.nativeView.setTitle(title);
             } else {
-                var appContext = application.android.context;
-                var appInfo = appContext.getApplicationInfo();
-                var appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
+                let appContext = application.android.context;
+                let appInfo = appContext.getApplicationInfo();
+                let appLabel = appContext.getPackageManager().getApplicationLabel(appInfo);
                 if (appLabel) {
-                    this._toolbar.setTitle(appLabel);
+                    this.nativeView.setTitle(appLabel);
                 }
             }
         }
     }
 
     public _addActionItems() {
-        var menu = this._toolbar.getMenu();
-        var items = this.actionItems.getVisibleItems();
+        let menu = this.nativeView.getMenu();
+        let items = this.actionItems.getVisibleItems();
 
         menu.clear();
-        for (var i = 0; i < items.length; i++) {
-            var item = <ActionItem>items[i];
-            var menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + "");
+        for (let i = 0; i < items.length; i++) {
+            let item = <ActionItem>items[i];
+            let menuItem = menu.add(android.view.Menu.NONE, item._getItemId(), android.view.Menu.NONE, item.text + "");
 
             if (item.actionView && item.actionView.android) {
                 // With custom action view, the menuitem cannot be displayed in a popup menu. 
-                item.android.position = enums.AndroidActionItemPosition.actionBar;
+                item.android.position = "actionBar";
                 menuItem.setActionView(item.actionView.android);
                 ActionBar._setOnClickListener(item);
             }
@@ -283,7 +268,7 @@ export class ActionBar extends common.ActionBar {
                 }
             }
             else if (item.icon) {
-                var drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
                 if (drawableOrId) {
                     menuItem.setIcon(drawableOrId);
                 }
@@ -292,7 +277,7 @@ export class ActionBar extends common.ActionBar {
                 }
             }
 
-            var showAsAction = getShowAsAction(item);
+            let showAsAction = getShowAsAction(item);
             menuItem.setShowAsAction(showAsAction);
         }
     }
@@ -306,32 +291,31 @@ export class ActionBar extends common.ActionBar {
     }
 
     public _onTitlePropertyChanged() {
-        if (this._toolbar) {
+        if (this.nativeView) {
             this._updateTitleAndTitleView();
         }
     }
 
     public _onIconPropertyChanged() {
-        if (this._toolbar) {
+        if (this.nativeView) {
             this._updateIcon();
         }
     }
 
-    public _clearAndroidReference() {
+    public _disposeNativeView() {
         // don't clear _android field!
-        this._toolbar = undefined;
+        this.nativeView = undefined;
     }
 
-    public _addViewToNativeVisualTree(child: view.View, atIndex?: number): boolean {
+    public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_VALUE): boolean {
         super._addViewToNativeVisualTree(child);
 
-        if (this._toolbar && child._nativeView) {
-
-            if (types.isNullOrUndefined(atIndex) || atIndex >= this._nativeView.getChildCount()) {
-                this._toolbar.addView(child._nativeView);
+        if (this.nativeView && child._nativeView) {
+            if (atIndex >= this._nativeView.getChildCount()) {
+                this.nativeView.addView(child._nativeView);
             }
             else {
-                this._toolbar.addView(child._nativeView, atIndex);
+                this.nativeView.addView(child._nativeView, atIndex);
             }
             return true;
         }
@@ -339,38 +323,45 @@ export class ActionBar extends common.ActionBar {
         return false;
     }
 
-    public _removeViewFromNativeVisualTree(child: view.View): void {
+    public _removeViewFromNativeVisualTree(child: View): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (this._toolbar && child._nativeView) {
-            this._toolbar.removeView(child._nativeView);
-
-            ensureTrace();
-
-            trace.notifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
+        if (this.nativeView && child._nativeView) {
+            this.nativeView.removeView(child._nativeView);
         }
+    }
+
+    get [colorProperty.native](): number {
+        if (!defaultTitleTextColor) {
+            let textView = new android.widget.TextView(this._context);
+            defaultTitleTextColor = textView.getTextColors().getDefaultColor();
+        }
+
+        return defaultTitleTextColor;
+    }
+    set [colorProperty.native](value: number | Color) {
+        let color = value instanceof Color ? value.android : value;   
+        this.nativeView.setTitleTextColor(color);
     }
 }
 
+let defaultTitleTextColor: number;
+
 function getDrawableOrResourceId(icon: string, resources: android.content.res.Resources): any {
-    if (!types.isString(icon)) {
+    if (typeof icon !== "string") {
         return undefined;
     }
 
-    ensureUtils();
-
-    if (icon.indexOf(utils.RESOURCE_PREFIX) === 0) {
-        var resourceId: number = resources.getIdentifier(icon.substr(utils.RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
+    if (icon.indexOf(RESOURCE_PREFIX) === 0) {
+        let resourceId: number = resources.getIdentifier(icon.substr(RESOURCE_PREFIX.length), 'drawable', application.android.packageName);
         if (resourceId > 0) {
             return resourceId;
         }
     }
     else {
-        var drawable: android.graphics.drawable.BitmapDrawable;
+        let drawable: android.graphics.drawable.BitmapDrawable;
 
-        ensureImageSource();
-
-        var is = imageSource.fromFileOrResource(icon);
+        let is = fromFileOrResource(icon);
         if (is) {
             drawable = new android.graphics.drawable.BitmapDrawable(is.android);
         }
@@ -381,15 +372,15 @@ function getDrawableOrResourceId(icon: string, resources: android.content.res.Re
     return undefined;
 }
 
-function getShowAsAction(menuItem: dts.ActionItem): number {
+function getShowAsAction(menuItem: ActionItem): number {
     switch (menuItem.android.position) {
-        case enums.AndroidActionItemPosition.actionBarIfRoom:
+        case "actionBarIfRoom":
             return android.view.MenuItem.SHOW_AS_ACTION_IF_ROOM;
 
-        case enums.AndroidActionItemPosition.popup:
+        case "popup":
             return android.view.MenuItem.SHOW_AS_ACTION_NEVER;
 
-        case enums.AndroidActionItemPosition.actionBar:
+        case "actionBar":
         default:
             return android.view.MenuItem.SHOW_AS_ACTION_ALWAYS;
     }
@@ -397,11 +388,11 @@ function getShowAsAction(menuItem: dts.ActionItem): number {
 
 function getIconVisibility(iconVisibility: string): boolean {
     switch (iconVisibility) {
-        case enums.AndroidActionBarIconVisibility.always:
+        case "always":
             return true;
 
-        case enums.AndroidActionBarIconVisibility.auto:
-        case enums.AndroidActionBarIconVisibility.never:
+        case "auto":
+        case "never":
         default:
             return false;
     }
@@ -410,52 +401,3 @@ function getIconVisibility(iconVisibility: string): boolean {
 function getSystemResourceId(systemIcon: string): number {
     return android.content.res.Resources.getSystem().getIdentifier(systemIcon, "drawable", "android");
 }
-
-export class ActionBarStyler implements style.Styler {
-    // color
-    private static setColorProperty(v: view.View, newValue: any) {
-        var toolbar = (<android.support.v7.widget.Toolbar>v._nativeView);
-        toolbar.setTitleTextColor(newValue);
-
-    }
-
-    private static resetColorProperty(v: view.View, nativeValue: any) {
-        // there is no toolbar.getTitleTextColor - so default to black
-        if (types.isNullOrUndefined(nativeValue)) {
-            nativeValue = android.graphics.Color.BLACK;
-        }
-        (<android.support.v7.widget.Toolbar>v._nativeView).setTitleTextColor(nativeValue);
-    }
-
-    // background-color
-    private static getBackgroundColorProperty(view: view.View): any {
-        let toolbar = <android.support.v7.widget.Toolbar>view._nativeView;
-        return toolbar.getBackground();
-    }
-
-    private static setBackgroundColorProperty(v: view.View, newValue: any) {
-        var toolbar = (<android.support.v7.widget.Toolbar>v._nativeView);
-        if (toolbar) {
-            toolbar.setBackgroundColor(newValue);
-        }
-    }
-
-    private static resetBackgroundColorProperty(v: view.View, nativeValue: any) {
-        var toolbar = (<android.support.v7.widget.Toolbar>v._nativeView);
-        if (toolbar) {
-            toolbar.setBackgroundColor(nativeValue);
-        }
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            ActionBarStyler.setColorProperty,
-            ActionBarStyler.resetColorProperty), "ActionBar");
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            ActionBarStyler.setBackgroundColorProperty,
-            ActionBarStyler.resetBackgroundColorProperty, 
-            ActionBarStyler.getBackgroundColorProperty), "ActionBar");
-    }
-}
-
-ActionBarStyler.registerHandlers();

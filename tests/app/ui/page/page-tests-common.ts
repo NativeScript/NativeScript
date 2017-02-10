@@ -1,27 +1,29 @@
 ﻿// >> article-require-page-module
-import pageModule = require("ui/page");
+import * as pageModule from "ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
-import frameModule = require("ui/frame");
+import * as frameModule from "ui/frame";
 // << article-require-page-module
 
 // >> article-set-bindingcontext
 function pageLoaded(args) {
-  let page = args.object;
-  page.bindingContext = { name : "Some name" };
+    let page = args.object;
+    page.bindingContext = { name: "Some name" };
 }
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
-import TKUnit = require("../../TKUnit");
-import labelModule = require("ui/label");
-import {StackLayout} from "ui/layouts/stack-layout";
-import helper = require("../helper");
-import view = require("ui/core/view");
-import observable = require("data/observable");
-import {Page, ShownModallyData, NavigatedData} from "ui/page";
-import {Label} from "ui/label";
-import {EventData} from "data/observable";
-import {widthProperty, heightProperty} from "ui/styling/style"
-import platform = require("platform");
+import * as TKUnit from "../../TKUnit";
+import * as labelModule from "ui/label";
+import { StackLayout } from "ui/layouts/stack-layout";
+import * as helper from "../helper";
+import * as view from "ui/core/view";
+import * as observable from "data/observable";
+import { Page, ShownModallyData, NavigatedData } from "ui/page";
+import { Label } from "ui/label";
+import { EventData } from "data/observable";
+import { PercentLength } from "ui/core/view";
+import * as platform from "platform";
+import {unsetValue} from "ui/core/view";
+import { Color } from "color";
 
 export function addLabelToPage(page: Page, text?: string) {
     let label = new Label();
@@ -96,7 +98,7 @@ export function test_NavigateToNewPage() {
     let currentPage;
     let topFrame = frameModule.topmost();
     currentPage = topFrame.currentPage;
-    
+
     let testPage: Page;
     let pageFactory = function (): Page {
         testPage = new pageModule.Page();
@@ -121,7 +123,7 @@ export function test_NavigateToNewPage() {
 
     TKUnit.waitUntilReady(() => { return topFrame.currentPage !== null && topFrame.currentPage === currentPage });
     TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
-    TKUnit.assert(testPage._context === undefined, "Page._context should become undefined after navigating back");
+    TKUnit.assert(testPage._context === null, "Page._context should become undefined after navigating back");
     TKUnit.assert(testPage.isLoaded === false, "Page.isLoaded should become false after navigating back");
     TKUnit.assert(testPage.frame === undefined, "Page.frame should become undefined after navigating back");
     TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
@@ -239,7 +241,7 @@ export function test_NavigateTo_WithBindingContext() {
     let pageFactory = function (): Page {
         testPage = new Page();
         testPage.on(pageModule.Page.navigatingToEvent, function (args: NavigatedData) {
-            bindingContext = (<Page>args.object).bindingContext; 
+            bindingContext = (<Page>args.object).bindingContext;
         });
         return testPage;
     };
@@ -252,7 +254,7 @@ export function test_NavigateTo_WithBindingContext() {
     topFrame.navigate(navEntry);
     TKUnit.waitUntilReady(() => topFrame.currentPage !== null && topFrame.currentPage !== currentPage && testPage.isLayoutValid);
     helper.goBack();
-    
+
     TKUnit.assertEqual(bindingContext, navEntry.bindingContext, "The Page's bindingContext should be equal to the NavigationEntry.bindingContext property when navigating to.");
 }
 
@@ -339,7 +341,7 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
     };
 
     helper.navigate(pageFactory);
-    
+
     TKUnit.assertEqual(label.style.backgroundColor.hex, "#ff00ff00");
     TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#ffff0000");
 }
@@ -375,7 +377,12 @@ export function test_page_backgroundColor_is_white() {
     page.id = "page_test_page_backgroundColor_is_white";
     let factory = () => page;
     helper.navigate(factory);
-    TKUnit.assertEqual(page.style.backgroundColor.hex.toLowerCase(), "#ffffff", "page background-color");
+    let whiteColor = new Color("white");
+    if (platform.isIOS) {
+        TKUnit.assertTrue(whiteColor.ios.CGColor.isEqual(page.nativeView.backgroundColor.CGColor), "page default backgroundColor should be white");
+    } else {
+        TKUnit.assertEqual(page.nativeView.getBackground().getColor(), whiteColor.android, "page default backgroundColor should be white");
+    }
 }
 
 export function test_WhenPageIsLoadedFrameCurrentPageIsNotYetTheSameAsThePage() {
@@ -537,7 +544,7 @@ export function test_WhenPageIsNavigatedToItCanShowAnotherPageAsModal() {
     masterPage.off(Page.navigatedToEvent, navigatedToEventHandler);
 }
 
-export function  test_percent_width_and_height_support() {
+export function test_percent_width_and_height_support() {
     let testPage = new Page();
     testPage.id = "test_percent_width_and_height_support";
 
@@ -545,7 +552,7 @@ export function  test_percent_width_and_height_support() {
     (<any>stackLayout).width = "50%";
     (<any>stackLayout).height = "50%";
 
-    testPage.content = stackLayout; 
+    testPage.content = stackLayout;
 
     let pageWidth = testPage.getMeasuredWidth();
     let pageHeight = testPage.getMeasuredHeight()
@@ -554,14 +561,14 @@ export function  test_percent_width_and_height_support() {
     TKUnit.assertEqual(pageHeight, Math.round(pageHeight / 2), "Current page MeasuredHeight incorrect");
 
     //reset values.
-    (<any>testPage.style)._resetValue(heightProperty);
-    (<any>testPage.style)._resetValue(widthProperty);
+    testPage.style.height = unsetValue;
+    testPage.style.width = unsetValue;
 
-    TKUnit.assert(isNaN(testPage.width), "width");
-    TKUnit.assert(isNaN(testPage.height), "height");
+    TKUnit.assertTrue(PercentLength.equals(testPage.width, "auto"));
+    TKUnit.assertTrue(PercentLength.equals(testPage.height, "auto"));
 }
 
-export function  test_percent_margin_support() {
+export function test_percent_margin_support() {
     let testPage = new Page();
     testPage.id = "ttest_percent_margin_support";
 
@@ -584,10 +591,10 @@ export function  test_percent_margin_support() {
     //reset values.
     testPage.margin = "0";
 
-    TKUnit.assertEqual(testPage.marginLeft, 0, "marginLeft");
-    TKUnit.assertEqual(testPage.marginTop, 0, "marginTop");
-    TKUnit.assertEqual(testPage.marginRight, 0, "marginRight");
-    TKUnit.assertEqual(testPage.marginBottom, 0, "marginBottom");
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginLeft, 0));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginTop, 0));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginRight, 0));
+    TKUnit.assertTrue(PercentLength.equals(testPage.marginBottom, 0));
 }
 
 //export function test_ModalPage_Layout_is_Correct() {

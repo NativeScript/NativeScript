@@ -1,6 +1,6 @@
-﻿import definition = require("ui/image-cache");
-import observable = require("data/observable");
-import imageSource = require("image-source");
+﻿import * as definition from "ui/image-cache";
+import * as observable from "data/observable";
+import * as imageSource from "image-source";
 
 export interface DownloadRequest {
     url: string;

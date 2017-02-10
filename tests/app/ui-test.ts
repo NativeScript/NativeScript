@@ -1,11 +1,11 @@
-﻿import {Page} from "ui/page";
-import {View} from "ui/core/view";
-import trace = require("trace");
-import navHelper = require("./ui/helper");
-import TKUnit = require("./TKUnit");
+﻿import { Page } from "ui/page";
+import { View } from "ui/core/view";
+import * as trace from "trace";
+import * as navHelper from "./ui/helper";
+import * as TKUnit from "./TKUnit";
 
 export class UITest<T extends View> implements trace.TraceWriter {
-    
+
     private _testPage: Page;
     private _testView: T;
     private _errorMessage;
@@ -39,9 +39,8 @@ export class UITest<T extends View> implements trace.TraceWriter {
     }
 
     public setUpModule(): void {
-        
-        var pageFactory = () => {
-            var page = new Page();
+        const pageFactory = () => {
+            const page = new Page();
             this._testPage = page;
             return page;
         };
@@ -56,7 +55,7 @@ export class UITest<T extends View> implements trace.TraceWriter {
         trace.removeWriter(this);
     }
 
-    public setUp() {        
+    public setUp() {
         this._testView = this.create();
         this._testPage.content = this._testView;
     }

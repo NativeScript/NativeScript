@@ -1,22 +1,25 @@
-﻿import definition = require("ui/tab-view");
-import {View, AddArrayFromBuilder} from "ui/core/view";
-import {PropertyMetadataSettings, Property, PropertyChangeData} from "ui/core/dependency-observable";
-import {Bindable} from "ui/core/bindable";
-import {isAndroid} from "platform";
-import {PropertyMetadata} from "ui/core/proxy";
-import types = require("utils/types");
-import trace = require("trace");
-import color = require("color");
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from "ui/tab-view";
+import {
+    View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
+    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder
+} from "ui/core/view";
 
-// on Android we explicitly set propertySettings to None because android will invalidate its layout (skip unnecessary native call).
-let AffectsLayout = isAndroid ? PropertyMetadataSettings.None : PropertyMetadataSettings.AffectsLayout;
+export * from "ui/core/view";
 
-export var traceCategory = "TabView";
+export const traceCategory = "TabView";
 
-export class TabViewItem extends Bindable implements definition.TabViewItem {
+// TODO: Change base class to ViewBase and use addView method to add it.
+// This way we will support property and binding propagation automatically.
+export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
     private _title: string = "";
     private _view: View;
     private _iconSource: string;
+
+    public _addChildFromBuilder(name: string, value: any): void {
+        if (value instanceof View) {
+            this.view = value;
+        }
+    }
 
     get title(): string {
         return this._title;
@@ -32,7 +35,6 @@ export class TabViewItem extends Bindable implements definition.TabViewItem {
     get view(): View {
         return this._view;
     }
-
     set view(value: View) {
         if (this._view !== value) {
             if (this._view) {
@@ -40,13 +42,13 @@ export class TabViewItem extends Bindable implements definition.TabViewItem {
             }
 
             this._view = value;
+            this._addView(value);
         }
     }
 
     get iconSource(): string {
         return this._iconSource;
     }
-
     set iconSource(value: string) {
         if (this._iconSource !== value) {
             this._iconSource = value;
@@ -54,234 +56,48 @@ export class TabViewItem extends Bindable implements definition.TabViewItem {
         }
     }
 
-    public _update() {
-        //
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        const view = this._view;
+        if (view) {
+            callback(view);
+        }
     }
-}
 
-var TAB_VIEW = "TabView";
-var ITEMS = "items";
-var SELECTED_INDEX = "selectedIndex";
+    public abstract _update();
+}
 
 export module knownCollections {
-    export var items = "items";
+    export const items = "items";
 }
 
-var itemsProperty = new Property(ITEMS, TAB_VIEW, new PropertyMetadata(undefined, AffectsLayout));
-var selectedIndexProperty = new Property(SELECTED_INDEX, TAB_VIEW, new PropertyMetadata(undefined, AffectsLayout));
-
-(<PropertyMetadata>selectedIndexProperty.metadata).onSetNativeValue = function (data: PropertyChangeData) {
-    var tabView = <TabView>data.object;
-    tabView._onSelectedIndexPropertyChangedSetNativeValue(data);
-};
-
-(<PropertyMetadata>itemsProperty.metadata).onSetNativeValue = function (data: PropertyChangeData) {
-    var tabView = <TabView>data.object;
-    tabView._onItemsPropertyChangedSetNativeValue(data);
-}
-
-export class TabView extends View implements definition.TabView, AddArrayFromBuilder {
-    public static itemsProperty = itemsProperty;
-    public static selectedIndexProperty = selectedIndexProperty;
+export class TabViewBase extends View implements TabViewDefinition, AddChildFromBuilder, AddArrayFromBuilder {
     public static selectedIndexChangedEvent = "selectedIndexChanged";
 
+    public items: TabViewItemDefinition[];
+    public selectedIndex: number;
+    public androidOffscreenTabLimit: number;
+    public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
     public _addArrayFromBuilder(name: string, value: Array<any>) {
-        if (name === ITEMS) {
+        if (name === "items") {
             this.items = value;
         }
     }
 
-    get items(): Array<definition.TabViewItem> {
-        return this._getValue(TabView.itemsProperty);
-    }
-    set items(value: Array<definition.TabViewItem>) {
-        this._setValue(TabView.itemsProperty, value);
-    }
-
-    public _onItemsPropertyChangedSetNativeValue(data: PropertyChangeData) {
-        if (trace.enabled) {
-            trace.write("TabView.__onItemsPropertyChangedSetNativeValue(" + data.oldValue + " -> " + data.newValue + ");", traceCategory);
-        }
-        if (data.oldValue) {
-            this._removeTabs(data.oldValue);
-        }
-
-        if (data.newValue) {
-            this._addTabs(data.newValue);
-        }
-
-        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
-    }
-
-    public _updateSelectedIndexOnItemsPropertyChanged(newItems) {
-        if (trace.enabled) {
-            trace.write("TabView._updateSelectedIndexOnItemsPropertyChanged(" + newItems + ");", traceCategory);
-        }
-        var newItemsCount = 0;
-        if (newItems) {
-            newItemsCount = newItems.length;
-        }
-
-        if (newItemsCount === 0) {
-            this.selectedIndex = undefined;
-        }
-        else if (types.isUndefined(this.selectedIndex) || this.selectedIndex >= newItemsCount) {
-            this.selectedIndex = 0;
-        }
-    }
-
-    public _removeTabs(oldItems: Array<definition.TabViewItem>) {
-        var i: number;
-        var length = oldItems.length;
-        var oldItem: definition.TabViewItem;
-        for (i = 0; i < length; i++) {
-            oldItem = oldItems[i];
-
-            if (!oldItem) {
-                throw new Error("TabViewItem at index " + i + " is undefined.");
+    public _addChildFromBuilder(name: string, value: any): void {
+        if (name === "TabViewItem") {
+            if (!this.items) {
+                this.items = new Array<TabViewItemBase>();
             }
-
-            if (!oldItem.view) {
-                throw new Error("TabViewItem at index " + i + " does not have a view.");
-            }
-            this._removeView(oldItem.view);
-        }        
-    }
-
-    public _addTabs(newItems: Array<definition.TabViewItem>) {
-        // Validate that all items are ok before the native _addTabs code runs.
-        var i: number;
-        var length = newItems.length;
-        var newItem: definition.TabViewItem;
-        for (i = 0; i < length; i++) {
-            newItem = newItems[i];
-
-            if (!newItem) {
-                throw new Error("TabViewItem at index " + i + " is undefined.");
-            }
-
-            if (!newItem.view) {
-                throw new Error("TabViewItem at index " + i + " does not have a view.");
-            }
-            this._addView(newItem.view, i);
-        }
-    }
-
-    get selectedIndex(): number {
-        return this._getValue(TabView.selectedIndexProperty);
-    }
-    set selectedIndex(value: number) {
-        this._setValue(TabView.selectedIndexProperty, value);
-    }
-
-    // [Deprecated. Please use `selectedTabTextColor` to color the titles of the tabs on both platforms and `androidSelectedTabHighlightColor` to color the horizontal line at the bottom of the tab on Android.]
-    get selectedColor(): color.Color {
-        // Avoid breaking changes and keep the old behavior until we remove this prop
-        if (isAndroid){
-            return this.style.androidSelectedTabHighlightColor;
-        }
-        else {
-            return this.style.selectedTabTextColor;
-        }
-    }
-    set selectedColor(value: color.Color) {
-        // Avoid breaking changes and keep the old behavior until we remove this prop
-        if (isAndroid){
-            this.style.androidSelectedTabHighlightColor = value;;
-        }
-        else {
-            this.style.selectedTabTextColor = value;
-        }
-    }
-
-    // [Deprecated. Please use `tabBackgroundColor` instead]
-    get tabsBackgroundColor(): color.Color {
-        return this.style.tabBackgroundColor;
-    }
-    set tabsBackgroundColor(value: color.Color) {
-        this.style.tabBackgroundColor = value;
-    }
-
-    get tabTextColor(): color.Color {
-        return this.style.tabTextColor;
-    }
-    set tabTextColor(value: color.Color) {
-        this.style.tabTextColor = value;
-    }
-
-    get tabBackgroundColor(): color.Color {
-        return this.style.tabBackgroundColor;
-    }
-    set tabBackgroundColor(value: color.Color) {
-        this.style.tabBackgroundColor = value;
-    }
-
-    get selectedTabTextColor(): color.Color {
-        return this.style.selectedTabTextColor;
-    }
-    set selectedTabTextColor(value: color.Color) {
-        this.style.selectedTabTextColor = value;
-    }
-
-    get androidSelectedTabHighlightColor(): color.Color {
-        return this.style.androidSelectedTabHighlightColor;
-    }
-    set androidSelectedTabHighlightColor(value: color.Color) {
-        this.style.androidSelectedTabHighlightColor = value;
-    }
-
-    get textTransform(): string {
-        return this.style.textTransform;
-    }
-    set textTransform(value: string) {
-        this.style.textTransform = value;
-    }
-
-    get iosIconRenderingMode(): string {
-        return undefined;
-    }
-    set iosIconRenderingMode(value: string) {
-        //
-    }
-
-    get androidOffscreenTabLimit(): number {
-        return undefined;
-    }
-    set androidOffscreenTabLimit(value: number) {
-        //
-    }
-
-    public _onSelectedIndexPropertyChangedSetNativeValue(data: PropertyChangeData) {
-        var index = this.selectedIndex;
-        if (types.isUndefined(index)) {
-            return;
-        }
-
-        if (types.isDefined(this.items)) {
-            if (index < 0 || index >= this.items.length) {
-                this.selectedIndex = undefined;
-                throw new Error("SelectedIndex should be between [0, items.length)");
-            }
+            this.items.push(<TabViewItemBase>value);
+            this._addView(value);
+            selectedIndexProperty.coerce(this);
         }
     }
 
     get _selectedView(): View {
-        var _items = this.items;
-        var _selectedIndex = this.selectedIndex;
-
-        if (!_items) {
-            return undefined;
-        }
-
-        if (_items.length === 0) {
-            return undefined;
-        }
-
-        if (_selectedIndex === undefined) {
-            return undefined;
-        }
-
-        return _items[_selectedIndex].view;
+        let selectedIndex = this.selectedIndex;
+        return selectedIndex > -1 ? this.items[selectedIndex].view : null;
     }
 
     get _childrenCount(): number {
@@ -292,46 +108,97 @@ export class TabView extends View implements definition.TabView, AddArrayFromBui
         return 0;
     }
 
-    public _eachChildView(callback: (child: View) => boolean) {
-        var _items = this.items;
+    public eachChild(callback: (child: ViewBase) => boolean) {
+        const items = this.items;
+        if (items) {
+            items.forEach((item, i) => {
+                callback(item);
+            });
+        }
+    }
 
-        if (!_items) {
-            return;
+    public eachChildView(callback: (child: View) => boolean) {
+        const items = this.items;
+        if (items) {
+            items.forEach((item, i) => {
+                callback(item.view);
+            });
+        }
+    }
+
+    public onItemsChanged(oldItems: TabViewItemDefinition[], newItems: TabViewItemDefinition[]): void {
+        if (oldItems) {
+            for (let i = 0, count = oldItems.length; i < count; i++) {
+                this._removeView(oldItems[i]);
+            }
         }
 
-        var i;
-        var length = _items.length;
-        var item: definition.TabViewItem;
-        var retVal: boolean;
-
-        for (i = 0; i < length; i++) {
-            item = _items[i];
-            if (item.view) {
-                retVal = callback(item.view);
-                if (retVal === false) {
-                    break;
+        if (newItems) {
+            for (let i = 0, count = newItems.length; i < count; i++) {
+                const item = newItems[i];
+                if (!item) {
+                    throw new Error(`TabViewItem at index ${i} is undefined.`);
                 }
+
+                if (!item.view) {
+                    throw new Error(`TabViewItem at index ${i} does not have a view.`);
+                }
+                this._addView(item);
             }
         }
     }
+}
 
-    public _onBindingContextChanged(oldValue: any, newValue: any) {
-        super._onBindingContextChanged(oldValue, newValue);
-        if (this.items && this.items.length > 0) {
-            var i = 0;
-            var length = this.items.length;
-            for (; i < length; i++) {
-                this.items[i].bindingContext = newValue;
-            }    
+export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
+    name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
+    valueChanged: (target, oldValue, newValue) => {
+        target.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue });
+    },
+    coerceValue: (target, value) => {
+        let items = target.items;
+        if (items) {
+            let max = items.length - 1;
+            if (value < 0) {
+                value = 0;
+            }
+            if (value > max) {
+                value = max;
+            }
+        } else {
+            value = -1;
         }
-    }
-    
-    public _getAndroidTabView(): org.nativescript.widgets.TabLayout {
-        // Android specific
-        return undefined;
-    }
 
-    public _updateIOSTabBarColorsAndFonts(): void {
-        // iOS sepcific
+        return value;
+    },
+    valueConverter: (v) => parseInt(v)
+});
+selectedIndexProperty.register(TabViewBase);
+
+export const itemsProperty = new Property<TabViewBase, TabViewItemDefinition[]>({
+    name: "items", valueChanged: (target, oldValue, newValue) => {
+        target.onItemsChanged(oldValue, newValue);
+        selectedIndexProperty.coerce(target);
     }
-} 
+});
+itemsProperty.register(TabViewBase);
+
+export const iosIconRenderingModeProperty = new Property<TabViewBase, "automatic" | "alwaysOriginal" | "alwaysTemplate">({ name: "iosIconRenderingMode", defaultValue: "automatic" });
+iosIconRenderingModeProperty.register(TabViewBase);
+
+export const androidOffscreenTabLimitProperty = new Property<TabViewBase, number>({
+    name: "androidOffscreenTabLimit", defaultValue: 1, affectsLayout: isIOS,
+    valueConverter: (v) => parseInt(v)
+});
+androidOffscreenTabLimitProperty.register(TabViewBase);
+
+export const tabTextColorProperty = new CssProperty<Style, Color>({ name: "tabTextColor", cssName: "tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+tabTextColorProperty.register(Style);
+
+export const tabBackgroundColorProperty = new CssProperty<Style, Color>({ name: "tabBackgroundColor", cssName: "tab-background-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+tabBackgroundColorProperty.register(Style);
+
+export const selectedTabTextColorProperty = new CssProperty<Style, Color>({ name: "selectedTabTextColor", cssName: "selected-tab-text-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+selectedTabTextColorProperty.register(Style);
+
+export const androidSelectedTabHighlightColorProperty = new CssProperty<Style, Color>({ name: "androidSelectedTabHighlightColor", cssName: "android-selected-tab-highlight-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+androidSelectedTabHighlightColorProperty.register(Style);

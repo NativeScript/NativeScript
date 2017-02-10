@@ -1,6 +1,6 @@
-﻿import types = require("utils/types");
-import definition = require("image-source");
-import common = require("./image-source-common");
+﻿import * as types from "utils/types";
+import * as definition from "image-source";
+import * as common from "./image-source-common";
 import * as utilsModule from "utils/utils";
 import * as fileSystemModule from "file-system";
 import * as enumsModule from "ui/enums";
@@ -159,7 +159,7 @@ export class ImageSource implements definition.ImageSource {
 
     public toBase64String(format: string, quality = 100): string {
         if (!this.android) {
-            return null;;
+            return null;
         }
 
         var targetFormat = getTargetFormat(format);

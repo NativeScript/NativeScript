@@ -1,5 +1,5 @@
-﻿import common = require("./application-settings-common");
-import utils = require("utils/utils");
+﻿import * as common from "./application-settings-common";
+import * as utils from "utils/utils";
 
 var sharedPreferences;
 function ensureSharedPreferences() {

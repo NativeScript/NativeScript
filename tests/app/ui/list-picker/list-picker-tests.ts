@@ -1,11 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import listPickerTestsNative = require("./list-picker-tests-native");
-import application = require("application");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as listPickerTestsNative from "./list-picker-tests-native";
+import * as application from "application";
 
 // >> article-require-listpicker-module
-import listPickerModule = require("ui/list-picker");
+import * as listPickerModule from "ui/list-picker";
 // << article-require-listpicker-module
 
 function _createListPicker(): listPickerModule.ListPicker {
@@ -36,7 +36,7 @@ export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
 export var testWhenlistPickerIsCreatedSelectedIndexIsUndefined = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
@@ -82,7 +82,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToEmptyArray = functio
         listPicker.selectedIndex = 9;
         // << article-selecting-item
         listPicker.items = [];
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
@@ -94,7 +94,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToUndefined = function
         listPicker.items = _createItems(10);
         listPicker.selectedIndex = 9;
         listPicker.items = undefined;
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
@@ -106,7 +106,7 @@ export var testSelectedIndexBecomesUndefinedWhenItemsBoundToNull = function () {
         listPicker.items = _createItems(10);
         listPicker.selectedIndex = 9;
         listPicker.items = null;
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = listPicker.selectedIndex;
         TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
     });
@@ -136,28 +136,28 @@ export var testSelectedIndexIsResolvedCorrectlyIfSetBeforeViewIsLoaded = functio
     });
 }
 
-export var testSettingNegativeSelectedIndexShouldThrow = function () {
-    var listPicker = _createListPicker();
-    helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
-        var listPicker = <listPickerModule.ListPicker>views[0];
-        listPicker.items = _createItems(10);
+// export var testSettingNegativeSelectedIndexShouldThrow = function () {
+//     var listPicker = _createListPicker();
+//     helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
+//         var listPicker = <listPickerModule.ListPicker>views[0];
+//         listPicker.items = _createItems(10);
 
-        TKUnit.assertThrows(function () {
-            listPicker.selectedIndex = -1;
-        }, "Setting selectedIndex to a negative number should throw.");
-    });
-}
+//         TKUnit.assertThrows(function () {
+//             listPicker.selectedIndex = -1;
+//         }, "Setting selectedIndex to a negative number should throw.");
+//     });
+// }
 
-export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
-    var listPicker = _createListPicker();
-    helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
-        var listPicker = <listPickerModule.ListPicker>views[0];
-        listPicker.items = _createItems(10);
-        TKUnit.assertThrows(function () {
-            listPicker.selectedIndex = 10;
-        }, "Setting selectedIndex to a number larger than item count should throw.");
-    });
-}
+// export var testSettingSelectedIndexLargerThanCountShouldThrow = function () {
+//     var listPicker = _createListPicker();
+//     helper.buildUIAndRunTest(listPicker, function (views: Array<viewModule.View>) {
+//         var listPicker = <listPickerModule.ListPicker>views[0];
+//         listPicker.items = _createItems(10);
+//         TKUnit.assertThrows(function () {
+//             listPicker.selectedIndex = 10;
+//         }, "Setting selectedIndex to a number larger than item count should throw.");
+//     });
+// }
 
 export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = function () {
     let listPicker = _createListPicker();

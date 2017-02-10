@@ -1,5 +1,5 @@
-﻿//import locationManagerModule = require("location/location-manager");
-import defModule = require("location");
+﻿//import * as locationManagerModule from "location/location-manager";
+import * as defModule from "location";
 import * as timerModule from "timer";
 
 var defaultGetLocationTimeout = 20000;

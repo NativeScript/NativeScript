@@ -1,23 +1,22 @@
-﻿import testModule = require("../../ui-test");
-import TKUnit = require("../../TKUnit");
-import app = require("application");
-import observable = require("data/observable");
-import types = require("utils/types");
-import platform = require("platform");
-import utils = require("utils/utils");
+﻿import * as testModule from "../../ui-test";
+import * as TKUnit from "../../TKUnit";
+import * as app from "application";
+import * as observable from "data/observable";
+import * as types from "utils/types";
+import * as platform from "platform";
+import * as utils from "utils/utils";
 import { Label } from "ui/label";
-import helper = require("../helper");
+import * as helper from "../helper";
 import { Page } from "ui/page";
-import { View, KeyedTemplate } from "ui/core/view";
-import { separatorColorProperty } from "ui/styling/style";
+import { View, KeyedTemplate, isIOS } from "ui/core/view";
 
 // >> article-require-listview-module
-import listViewModule = require("ui/list-view");
+import * as listViewModule from "ui/list-view";
 // << article-require-listview-module
 
 // >> article-require-modules-listview
-import observableArray = require("data/observable-array");
-import labelModule = require("ui/label");
+import * as observableArray from "data/observable-array";
+import * as labelModule from "ui/label";
 // << article-require-modules-listview
 
 // >> article-item-tap
@@ -58,7 +57,6 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         var listView = new listViewModule.ListView();
         // << article-create-listview
 
-        TKUnit.assertEqual(listView.isScrolling, false, "Default listView.isScrolling");
         TKUnit.assert(types.isUndefined(listView.items), "Default listView.items should be undefined");
     }
 
@@ -102,42 +100,42 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_set_native_item_exposed() {
-        let listView = this.testView;
+        const listView = this.testView;
 
-        let indexes = {};
-        let colors = ["red", "green", "blue"];
-        listView.items = colors;
+        const indexes = [];
+        const colors = ["red", "green", "blue"];
         listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
-            if (platform.device.os === platform.platformNames.ios) {
-                indexes[args.index] = args.ios;
-            } else if (platform.device.os === platform.platformNames.android) {
-                indexes[args.index] = args.android;
-            }
+            indexes[args.index] = isIOS ? args.ios : args.android;
         });
-        this.waitUntilListViewReady();
+        listView.items = colors;
+        TKUnit.waitUntilReady(() => indexes.length === 3);
 
         for (var item in indexes) {
-            if (platform.device.os === platform.platformNames.ios) {
-                TKUnit.assert(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
+            if (isIOS) {
+                TKUnit.assertTrue(indexes[item] instanceof UITableViewCell, "itemLoading not called for index " + item);
             } else if (platform.device.os === platform.platformNames.android) {
-                TKUnit.assert(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
+                TKUnit.assertTrue(indexes[item] instanceof android.view.ViewGroup, "itemLoading not called for index " + item);
             }
         }
     }
 
     public test_cell_selection_ios() {
-        if (platform.device.os === platform.platformNames.ios) {
-            let listView = this.testView;
+        if (isIOS) {
+            const listView = this.testView;
 
-            let colors = ["red", "green", "blue"];
+            const indexes = [];
+            const colors = ["red", "green", "blue"];
+            listView.on(listViewModule.ListView.itemLoadingEvent, function (args: listViewModule.ItemEventData) {
+                indexes[args.index] = isIOS ? args.ios : args.android;
+            });
             listView.items = colors;
-            this.waitUntilListViewReady();
+            TKUnit.waitUntilReady(() => indexes.length === 3);
 
-            var index = 1;
+            const index = 1;
             this.performNativeItemTap(listView, index);
-            var uiTableView = <UITableView>listView.ios;
-            var cellIndexPath = NSIndexPath.indexPathForItemInSection(index, 0);
-            var cell = uiTableView.cellForRowAtIndexPath(cellIndexPath);
+            const uiTableView = <UITableView>listView.ios;
+            const cellIndexPath = NSIndexPath.indexPathForItemInSection(index, 0);
+            const cell = uiTableView.cellForRowAtIndexPath(cellIndexPath);
             uiTableView.selectRowAtIndexPathAnimatedScrollPosition(cellIndexPath, false, 0);
 
             TKUnit.assertTrue(cell.selected, "cell is selected");
@@ -699,35 +697,6 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         TKUnit.assert(weakRef.get(), weakRef.get() + " died prematurely!");
     }
 
-    public test_separatorColor_setInCSS_is_respected() {
-        let listView = this.testView;
-        let items = ["John", "Joshua", "Gregory"];
-        listView.items = items;
-
-        helper.buildUIAndRunTest(listView, function (views) {
-            let page = views[1];
-            page.css = "ListView { separator-color: #FF0000; }";
-
-            TKUnit.assertEqual(listView.style.separatorColor.hex, "#FF0000", "separatorColor property");
-        });
-    }
-    
-    public test_separatorColor_reset() {
-        let listView = this.testView;
-        let items = ["John", "Joshua", "Gregory"];
-        listView.items = items;
-
-        helper.buildUIAndRunTest(listView, function (views) {
-            let defaultsSeparatorColor = listView.style.separatorColor;
-
-            listView.style._setValue(separatorColorProperty, "#FF0000");
-            TKUnit.assertEqual(listView.style.separatorColor.hex, "#FF0000", "set separatorColor property");
-
-            listView.style._resetValue(separatorColorProperty);
-            TKUnit.assertEqual(listView.style.separatorColor, defaultsSeparatorColor, "reset separatorColor property");
-        });
-    }
-    
     private assertNoMemoryLeak(weakRef: WeakRef<listViewModule.ListView>) {
         this.tearDown();
         TKUnit.waitUntilReady(() => {
@@ -891,19 +860,20 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         listView.itemTemplates = this._itemTemplatesString;
         listView.itemTemplateSelector = "age % 2 === 0 ? 'red' : (age % 3 === 0 ? 'blue' : 'green')";
         listView.items = ListViewTest.generateItemsForMultipleTemplatesTests(10);
-        TKUnit.wait(0.05);
+        TKUnit.wait(0.01);
 
         // Forward
-        for (let i = 0, length = listView.items.length; i < length; i++) {
+        listView.items.forEach((item, i, arr) => {
             listView.scrollToIndex(i);
-            TKUnit.wait(0.05);
-        }
+            TKUnit.wait(0.01);
+        });
 
         // Back
-        for (let i = listView.items.length - 1; i >= 0; i--) {
-            listView.scrollToIndex(i);
-            TKUnit.wait(0.05);
-        }
+        const count = listView.items.length - 1;
+         listView.items.forEach((item, i, arr) => {
+            listView.scrollToIndex(count - i);
+            TKUnit.wait(0.01);
+        });
 
         if (listView.android) {
             //(<any>listView)._dumpRealizedTemplates();

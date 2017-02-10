@@ -1,19 +1,8 @@
-﻿import common = require("./switch-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import * as utils from "utils/utils";
-import style = require("ui/styling/style");
-import view = require("ui/core/view");
+﻿import {
+    SwitchBase, layout, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, checkedProperty
+} from "./switch-common";
 
-function onCheckedPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var swtch = <Switch>data.object;
-    swtch.ios.on = data.newValue;
-}
-
-// register the setNativeValue callbacks
-(<proxy.PropertyMetadata>common.Switch.checkedProperty.metadata).onSetNativeValue = onCheckedPropertyChanged;
-
-global.moduleMerge(common, exports);
+export * from "./switch-common";
 
 class SwitchChangeHandlerImpl extends NSObject {
 
@@ -28,7 +17,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     public valueChanged(sender: UISwitch) {
         let owner = this._owner.get();
         if (owner) {
-            owner._onPropertyChangedFromNative(common.Switch.checkedProperty, sender.on);
+            checkedProperty.nativeValueChange(owner, sender.on);
         }
     }
 
@@ -37,7 +26,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     };
 }
 
-export class Switch extends common.Switch {
+export class Switch extends SwitchBase {
     private _ios: UISwitch;
     private _handler: NSObject;
 
@@ -53,62 +42,50 @@ export class Switch extends common.Switch {
         return this._ios;
     }
 
+    get _nativeView(): UISwitch {
+        return this._ios;
+    }
+
+    get nativeView(): UISwitch {
+        return this._ios;
+    }
+
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // It can't be anything different from 51x31
         let nativeSize = this._nativeView.sizeThatFits(CGSizeMake(0, 0));
         this.width = nativeSize.width;
         this.height = nativeSize.height;
-        
-        let widthAndState = utils.layout.makeMeasureSpec(nativeSize.width, utils.layout.EXACTLY);
-        let heightAndState = utils.layout.makeMeasureSpec(nativeSize.height, utils.layout.EXACTLY);
+
+        let widthAndState = layout.makeMeasureSpec(nativeSize.width, layout.EXACTLY);
+        let heightAndState = layout.makeMeasureSpec(nativeSize.height, layout.EXACTLY);
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
-} 
 
-export class SwitchStyler implements style.Styler {
-    private static setColorProperty(view: view.View, newValue: any) {
-        var sw = <UISwitch>view.ios;
-        sw.thumbTintColor = newValue;
+    get [checkedProperty.native](): boolean {
+        return false;
+    }
+    set [checkedProperty.native](value: boolean) {
+        this._ios.on = value;
     }
 
-    private static resetColorProperty(view: view.View, nativeValue: any) {
-        var sw = <UISwitch>view.ios;
-        sw.thumbTintColor = nativeValue;
+    get [colorProperty.native](): UIColor {
+        return this._ios.thumbTintColor;
+    }
+    set [colorProperty.native](value: UIColor | Color) {
+        this._ios.thumbTintColor = value instanceof Color ? value.ios : value;
     }
 
-    private static getNativeColorValue(view: view.View): any {
-        var sw = <UISwitch>view.ios;
-        return sw.thumbTintColor;
+    get [backgroundColorProperty.native](): UIColor {
+        return this._ios.onTintColor;
+    }
+    set [backgroundColorProperty.native](value: UIColor | Color) {
+        this._ios.onTintColor = value instanceof Color ? value.ios : value;
     }
 
-    private static setBackgroundColorProperty(view: view.View, newValue: any) {
-        var sw = <UISwitch>view.ios;
-        sw.onTintColor = view.backgroundColor.ios;
+    get [backgroundInternalProperty.native](): any {
+        return null;
     }
-
-    private static resetBackgroundColorProperty(view: view.View, nativeValue: any) {
-        var sw = <UISwitch>view.ios;
-        sw.onTintColor = nativeValue;
-    }
-
-    private static getBackgroundColorProperty(view: view.View): any {
-        var sw = <UISwitch>view.ios;
-        return sw.onTintColor;
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.colorProperty, new style.StylePropertyChangedHandler(
-            SwitchStyler.setColorProperty,
-            SwitchStyler.resetColorProperty,
-            SwitchStyler.getNativeColorValue), "Switch");
-
-        style.registerHandler(style.backgroundColorProperty, new style.StylePropertyChangedHandler(
-            SwitchStyler.setBackgroundColorProperty,
-            SwitchStyler.resetBackgroundColorProperty,
-            SwitchStyler.getBackgroundColorProperty), "Switch");
-
-        style.registerHandler(style.backgroundInternalProperty, style.ignorePropertyHandler, "Switch");
+    set [backgroundInternalProperty.native](value: any) {
+        //
     }
 }
-
-SwitchStyler.registerHandlers();

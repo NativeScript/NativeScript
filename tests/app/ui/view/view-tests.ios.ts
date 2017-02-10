@@ -1,12 +1,24 @@
-import commonTests = require("./view-tests-common");
-import view = require("ui/core/view");
-import grid = require("ui/layouts/grid-layout");
-import color = require("color");
-import helper = require("../helper");
-import TKUnit = require("../../TKUnit");
-import button = require("ui/button");
+import * as commonTests from "./view-tests-common";
+import * as view from "ui/core/view";
+import * as grid from "ui/layouts/grid-layout";
+import * as color from "color";
+import * as helper from "../helper";
+import * as TKUnit from "../../TKUnit";
+import * as button from "ui/button";
 
 global.moduleMerge(commonTests, exports);
+
+class MyGrid extends grid.GridLayout {
+    public backgroundSetterCount: number = 0;
+
+    get [view.backgroundInternalProperty.native](): any {
+        return null;
+    }
+    set [view.backgroundInternalProperty.native](value: any) {
+        this.backgroundSetterCount ++;
+    }
+
+}
 
 export function getUniformNativeBorderWidth(v: view.View): number {
     return (<UIView>v.ios).layer.borderWidth;
@@ -41,28 +53,20 @@ export function checkNativeBackgroundImage(v: view.View): boolean {
 export function testBackgroundInternalChangedOnceOnResize() {
 
     let root = helper.getCurrentPage();
-    let layout = new grid.GridLayout();
+    let layout = new MyGrid();
     layout.className = "myClass";
     layout.backgroundColor = new color.Color(255, 255, 0, 0);
 
     root.css = ".myClass { background-image: url('~/tests/logo.png') }";
     root.content = layout;
 
-    let sizeChangedCount = 0;
     function trackCount() {
-        let result = sizeChangedCount;
-        sizeChangedCount = 0;
+        let result = layout.backgroundSetterCount;
+        layout.backgroundSetterCount = 0;
         return result;
     }
 
-    var base = (<any>layout.style)._applyStyleProperty;
-    (<any>layout.style)._applyStyleProperty = function (property) {
-        base.apply(layout.style, arguments);
-        if (property.name === "_backgroundInternal") {
-            ++sizeChangedCount;
-        }
-    }
-
+    trackCount();
     layout.requestLayout();
     layout.layout(0, 0, 200, 200);
 

@@ -1,6 +1,6 @@
-﻿import enums = require("ui/enums");
-import pageModule = require("ui/page");
-import model = require("./myview");
+﻿import * as enums from "ui/enums";
+import * as pageModule from "ui/page";
+import * as model from "./myview";
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <pageModule.Page>args.object;

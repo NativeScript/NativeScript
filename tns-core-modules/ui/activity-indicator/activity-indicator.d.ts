@@ -2,18 +2,12 @@
  * Contains the ActivityIndicator class, which represents a widget for showing that something is currently busy.
  */
 declare module "ui/activity-indicator" {
-    import {View} from "ui/core/view";
-    import {Property} from "ui/core/dependency-observable";
+    import { View } from "ui/core/view";
 
     /**
      * Represents a UI widget which displays a progress indicator hinting the user for some background operation running.
      */
     export class ActivityIndicator extends View {
-        /**
-         * Represents the busy property of the ActivityIndicator class.
-         */
-        public static busyProperty: Property;
-
         /**
          * Gets the native [android widget](http://developer.android.com/reference/android/widget/ProgressBar.html) that represents the user interface for this component. Valid only when running on Android OS.
          */

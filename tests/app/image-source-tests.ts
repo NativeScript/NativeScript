@@ -6,12 +6,12 @@
 // var fs = require("file-system");
 // << imagesource-require-alt
 
-import imageSource = require("image-source");
-import fs = require("file-system");
-import enums = require("ui/enums");
-import app = require("application");
-import TKUnit = require("./TKUnit");
-import platform = require("platform");
+import * as imageSource from "image-source";
+import * as fs from "file-system";
+import * as enums from "ui/enums";
+import * as app from "application";
+import * as TKUnit from "./TKUnit";
+import * as platform from "platform";
 
 var imagePath = fs.path.join(__dirname, "/logo.png");
 var smallImagePath = fs.path.join(__dirname, "/small-image.png");
@@ -36,7 +36,7 @@ export function testFromUrl(done) {
         //completed = true;
         result = res;
         try {
-            TKUnit.assert(typeof result !== "undefined", "Image not downloaded");
+            TKUnit.assertNotEqual(result, undefined, "Image not downloaded");
             TKUnit.assert(result.height > 0, "Image not downloaded");
             done(null);
         }

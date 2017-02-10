@@ -1,30 +1,31 @@
-﻿import TKUnit = require("../TKUnit");
-import view = require("ui/core/view");
-import builder = require("ui/builder");
-import buttonModule = require("ui/button");
-import switchModule = require("ui/switch");
-import searchBarModule = require("ui/search-bar");
-import textFieldModule = require("ui/text-field");
-import gridLayoutModule = require("ui/layouts/grid-layout");
-import absoluteLayoutModule = require("ui/layouts/absolute-layout");
-import types = require("utils/types");
-import fs = require("file-system");
-import observable = require("data/observable");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import {Label} from "ui/label";
-import {Page} from "ui/page";
-import {Button} from "ui/button";
-import {TabView} from "ui/tab-view";
-import {Observable} from "data/observable";
-import {TemplateView} from "./template-builder-tests/template-view";
-import myCustomControlWithoutXml = require("./mymodule/MyControl");
-import listViewModule = require("ui/list-view");
-import helper = require("../ui/helper");
-import viewModule = require("ui/core/view");
-import platform = require("platform");
-import gesturesModule = require("ui/gestures");
-import segmentedBar = require("ui/segmented-bar");
+﻿import * as TKUnit from "../TKUnit";
+import * as view from "ui/core/view";
+import * as builder from "ui/builder";
+import * as buttonModule from "ui/button";
+import * as switchModule from "ui/switch";
+import * as searchBarModule from "ui/search-bar";
+import * as textFieldModule from "ui/text-field";
+import * as gridLayoutModule from "ui/layouts/grid-layout";
+import * as absoluteLayoutModule from "ui/layouts/absolute-layout";
+import * as types from "utils/types";
+import * as fs from "file-system";
+import * as observable from "data/observable";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import { Label } from "ui/label";
+import { Page } from "ui/page";
+import { Button } from "ui/button";
+import { TabView } from "ui/tab-view";
+import { Observable } from "data/observable";
+import { TemplateView } from "./template-builder-tests/template-view";
+import * as myCustomControlWithoutXml from "./mymodule/MyControl";
+import * as listViewModule from "ui/list-view";
+import * as helper from "../ui/helper";
+import * as viewModule from "ui/core/view";
+import * as platform from "platform";
+import * as gesturesModule from "ui/gestures";
+import * as segmentedBar from "ui/segmented-bar";
 import { Source } from "utils/debug";
+import { PercentLength, Length } from "ui/core/view";
 
 export function test_load_IsDefined() {
     TKUnit.assertTrue(types.isFunction(builder.load), "ui/builder should have load method!");
@@ -295,20 +296,20 @@ export function test_parse_ShouldSetGridAttachedProperties() {
 
 export function test_parse_ShouldSetCanvasAttachedProperties() {
     var p = <Page>builder.parse("<Page><AbsoluteLayout><Label left='1' top='2' right='3' bottom='4' /></AbsoluteLayout></Page>");
-    var grid = <gridLayoutModule.GridLayout>p.content;
-    var child = grid.getChildAt(0);
+    var absLayout = <absoluteLayoutModule.AbsoluteLayout>p.content;
+    var child = absLayout.getChildAt(0);
 
     var left = absoluteLayoutModule.AbsoluteLayout.getLeft(child);
-    TKUnit.assertEqual(left, 1, "Expected result for canvas left: 1; Actual result: " + left + ";");
+    
+    TKUnit.assert(Length.equals(left, Length.parse("1")), `Expected result for canvas left: 1; Actual result: ${(<any>left).value};`)
 
     var top = absoluteLayoutModule.AbsoluteLayout.getTop(child);
-    TKUnit.assertEqual(top, 2, "Expected result for canvas top: 2; Actual result: " + top + ";");
+    TKUnit.assert(Length.equals(top, Length.parse("2")), `Expected result for canvas top: 2; Actual result: ${(<any>top).value};`)
 };
 
 export function test_parse_ShouldParseNumberProperties() {
     var p = <Page>builder.parse("<Page width='100' />");
-
-    TKUnit.assertEqual(p.width, 100, "Expected result: 100; Actual result: " + p.width + "; type: " + typeof (p.width));
+    TKUnit.assertTrue(PercentLength.equals(p.width, 100));
 };
 
 export function test_parse_ShouldParseBooleanProperties() {
@@ -445,13 +446,13 @@ export function test_parse_ShouldParseBindingsToGesturesWithOn() {
 };
 
 export function test_parse_ShouldParseSubProperties() {
-    var p = <Page>builder.parse("<Page><Switch style.visibility='collapsed' checked='{{ myProp }}' /></Page>");
+    var p = <Page>builder.parse("<Page><Switch style.visibility='collapse' checked='{{ myProp }}' /></Page>");
     var obj = new observable.Observable();
     obj.set("myProp", true);
     p.bindingContext = obj;
     var sw = <switchModule.Switch>p.content;
 
-    TKUnit.assert(sw.visibility === "collapsed", "Expected result: collapsed; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
+    TKUnit.assert(sw.visibility === "collapse", "Expected result: collapse; Actual result: " + sw.visibility + "; type: " + typeof (sw.visibility));
 };
 
 export function test_parse_ShouldParseBindingToSpecialProperty() {
@@ -539,10 +540,10 @@ export function test_parse_ShouldParseCustomComponentWithXml() {
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml_WithAttributes() {
-    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapsed" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:MyControl visibility="collapse" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
-    TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
+    TKUnit.assertEqual(panel.visibility, "collapse", "panel.visibility");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXml_WithCustomAttributes() {
@@ -561,10 +562,10 @@ export function test_parse_ShouldParseCustomComponentWithXmlNoJS() {
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithAttributes() {
-    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapsed" /></Page>');
+    var p = <Page>builder.parse('<Page xmlns:customControls="xml-declaration/mymodulewithxml"><customControls:my-control-no-js visibility="collapse" /></Page>');
     var panel = <stackLayoutModule.StackLayout>p.content;
 
-    TKUnit.assertEqual(panel.visibility, "collapsed", "panel.visibility");
+    TKUnit.assertEqual(panel.visibility, "collapse", "panel.visibility");
 };
 
 export function test_parse_ShouldParseCustomComponentWithXmlNoJS_WithCustomAttributes() {
@@ -613,13 +614,23 @@ export function test_parse_ShouldParseNestedListViewInListViewTemplate() {
 }
 
 export function test_parse_ShouldEvaluateEventBindingExpressionInListViewTemplate() {
-    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><SegmentedBar items="{{ $parents[\'ListView\'].items }}" selectedIndexChanged="{{ $parents[\'ListView\'].changed }}" /></ListView.itemTemplate></ListView></Page>');
+    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd"><ListView items="{{ items }}" itemLoading="{{ itemLoading }}"><ListView.itemTemplate><SegmentedBar items="{{ $parents[\'ListView\'].segmentedBarItems }}" selectedIndexChanged="{{ $parents[\'ListView\'].changed }}" /></ListView.itemTemplate></ListView></Page>');
 
     function testAction(views: Array<viewModule.View>) {
         let ctrl: segmentedBar.SegmentedBar = null;
         let changed;
         let obj = new observable.Observable();
+
+        let firstItem = new segmentedBar.SegmentedBarItem();
+        firstItem.title = "One";
+        let secondItem = new segmentedBar.SegmentedBarItem();
+        secondItem.title = "Two";
+        let thirdItem = new segmentedBar.SegmentedBarItem();
+        thirdItem.title = "Tree";
+        let segmentedBarItems = [firstItem, secondItem, thirdItem];
+
         obj.set("items", [1, 2, 3]);
+        obj.set("segmentedBarItems", segmentedBarItems);
         obj.set("itemLoading", function (args: listViewModule.ItemEventData) {
             ctrl = <segmentedBar.SegmentedBar>args.view
         });
@@ -689,8 +700,8 @@ export function test_parseSpansDirectlyOnLabel() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testLabel = <Label>page.getViewById("testLabel");
-        TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "Formatted string should be set");
-        TKUnit.assertEqual(testLabel.text + "", "We areAwesome", "Formatted string should be set");
+        TKUnit.assertEqual(testLabel.formattedText + "", "We areAwesome", "formattedText");
+        TKUnit.assertEqual(testLabel.text + "", "We areAwesome", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -702,8 +713,8 @@ export function test_parseSpansDirectlyOnButton() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "We areAwesome", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "We areAwesome", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "We areAwesome", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -715,8 +726,8 @@ export function test_parseFormattedStringWithoutFormattedText() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -728,8 +739,8 @@ export function test_parseFormattedStringFullSyntax() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
     }
 
     helper.navigate(function () { return p; });
@@ -741,8 +752,8 @@ export function test_parseSpansDirectlyToFormattedString() {
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
-        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "Formatted string should be set");
-        TKUnit.assertEqual(testButton.text + "", "author num_comments", "Formatted string should be set");
+        TKUnit.assertEqual(testButton.formattedText + "", "author num_comments", "formattedText");
+        TKUnit.assertEqual(testButton.text + "", "author num_comments", "text");
     }
 
     helper.navigate(function () { return p; });

@@ -1,33 +1,60 @@
-import definition = require("ui/animation/keyframe-animation");
-import animationModule = require("ui/animation");
-import view = require("ui/core/view");
-import enums = require("ui/enums");
-import style = require("ui/styling/style");
+import {
+    KeyframeDeclaration as KeyframeDeclarationDefinition,
+    KeyframeInfo as KeyframeInfoDefinition,
+    KeyframeAnimationInfo as KeyframeAnimationInfoDefinition,
+    KeyframeAnimation as KeyframeAnimationDefinition
+} from "ui/animation/keyframe-animation";
 
-export class KeyframeDeclaration implements definition.KeyframeDeclaration {
+import {
+    View,
+    backgroundColorProperty,
+    scaleXProperty,
+    scaleYProperty,
+    translateXProperty,
+    translateYProperty,
+    rotateProperty,
+    opacityProperty,
+    unsetValue,
+    Color
+} from "ui/core/view";
+import { Animation } from "ui/animation";
+
+export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;
     public value: any;
 }
 
-export class KeyframeInfo implements definition.KeyframeInfo {
+export class KeyframeInfo implements KeyframeInfoDefinition {
     public duration: number;
     public curve: any;
     public declarations: Array<KeyframeDeclaration>;
 }
 
-export class KeyframeAnimationInfo implements definition.KeyframeAnimationInfo {
+export class KeyframeAnimationInfo implements KeyframeAnimationInfoDefinition {
     public name: string = "";
     public duration: number = 0.3;
     public delay: number = 0;
     public iterations: number = 1;
-    public curve: any = enums.AnimationCurve.ease;
+    public curve: any = "ease";
     public isForwards: boolean = false;
     public isReverse: boolean = false;
     public keyframes: Array<KeyframeInfo>;
 }
 
-export class KeyframeAnimation {
-    public animations: Array<Object>;
+interface Keyframe {
+    backgroundColor?: Color;
+    scale?: { x: number, y: number };
+    translate?: { x: number, y: number };
+    rotate?: number;
+    opacity?: number;
+    valueSource?: "keyframe" | "animation";
+    duration?: number;
+    curve?: any;
+    forceLayer?: boolean;
+}
+
+export class KeyframeAnimation implements KeyframeAnimationDefinition {
+    public animations: Array<Keyframe>;
     public delay: number = 0;
     public iterations: number = 1;
 
@@ -35,25 +62,25 @@ export class KeyframeAnimation {
     private _reject;
     private _isPlaying: boolean;
     private _isForwards: boolean;
-    private _nativeAnimations: Array<animationModule.Animation>;
-    private _target: view.View;
+    private _nativeAnimations: Array<Animation>;
+    private _target: View;
 
-    public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number) {
-        let animations = new Array<Object>();
+    public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo) {
+        let animations = new Array<Keyframe>();
         let length = info.keyframes.length;
         let startDuration = 0;
         if (info.isReverse) {
-            for (let index = length - 1; index >= 0; index --) {
+            for (let index = length - 1; index >= 0; index--) {
                 let keyframe = info.keyframes[index];
-                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration, valueSourceModifier);
+                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
             }
         }
         else {
-            for (let index = 0; index < length; index ++) {
+            for (let index = 0; index < length; index++) {
                 let keyframe = info.keyframes[index];
-                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration, valueSourceModifier);
+                startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
             }
-            for (let index = length - 1; index > 0; index --) {
+            for (let index = length - 1; index > 0; index--) {
                 let a1 = animations[index];
                 let a2 = animations[index - 1];
                 if (a2["curve"] !== undefined) {
@@ -76,8 +103,8 @@ export class KeyframeAnimation {
         return animation;
     }
 
-    private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number, valueSourceModifier: number): number {
-        let animation = {};
+    private static parseKeyframe(info: KeyframeAnimationInfo, keyframe: KeyframeInfo, animations: Array<Object>, startDuration: number): number {
+        let animation: Keyframe = {};
         for (let declaration of keyframe.declarations) {
             animation[declaration.property] = declaration.value;
         }
@@ -89,10 +116,10 @@ export class KeyframeAnimation {
             duration = (info.duration * duration) - startDuration;
             startDuration += duration;
         }
-        animation["duration"] = info.isReverse ? info.duration - duration : duration;
-        animation["curve"] = keyframe.curve;
-        animation["forceLayer"] = true;
-        animation["valueSource"] = valueSourceModifier;
+        animation.duration = info.isReverse ? info.duration - duration : duration;
+        animation.curve = keyframe.curve;
+        animation.forceLayer = true;
+        animation.valueSource = "keyframe";
         animations.push(animation);
         return startDuration;
     }
@@ -118,7 +145,7 @@ export class KeyframeAnimation {
         }
     }
 
-    public play(view: view.View): Promise<void> {
+    public play(view: View): Promise<void> {
         if (this._isPlaying) {
             throw new Error("Animation is already playing.");
         }
@@ -129,7 +156,7 @@ export class KeyframeAnimation {
         });
 
         this._isPlaying = true;
-        this._nativeAnimations = new Array<animationModule.Animation>();
+        this._nativeAnimations = new Array<Animation>();
         this._target = view;
 
         if (this.delay !== 0) {
@@ -142,30 +169,29 @@ export class KeyframeAnimation {
         return animationFinishedPromise;
     }
 
-    private animate(view: view.View, index: number, iterations: number) {
+    private animate(view: View, index: number, iterations: number) {
         if (!this._isPlaying) {
             return;
         }
         if (index === 0) {
             let animation = this.animations[0];
-            let modifier = animation["valueSource"];
 
             if ("backgroundColor" in animation) {
-                view.style._setValue(style.backgroundColorProperty, animation["backgroundColor"], modifier);
+                view.style[backgroundColorProperty.keyframe] = animation.backgroundColor;
             }
             if ("scale" in animation) {
-                view.style._setValue(style.scaleXProperty, animation["scale"].x, modifier);
-                view.style._setValue(style.scaleYProperty, animation["scale"].y, modifier);
+                view.style[scaleXProperty.keyframe] = animation.scale.x;
+                view.style[scaleYProperty.keyframe] = animation.scale.y;
             }
             if ("translate" in animation) {
-                view.style._setValue(style.translateXProperty, animation["translate"].x, modifier);
-                view.style._setValue(style.translateYProperty, animation["translate"].y, modifier);
+                view.style[translateXProperty.keyframe] = animation.translate.x;
+                view.style[translateYProperty.keyframe] = animation.translate.y;
             }
             if ("rotate" in animation) {
-                view.style._setValue(style.rotateProperty, animation["rotate"], modifier);
+                view.style[rotateProperty.keyframe] = animation.rotate;
             }
             if ("opacity" in animation) {
-                view.style._setValue(style.opacityProperty, animation["opacity"], modifier);
+                view.style[opacityProperty.keyframe] = animation.opacity;
             }
 
             setTimeout(() => this.animate(view, 1, iterations), 1);
@@ -186,7 +212,7 @@ export class KeyframeAnimation {
         else {
             let animationDef = this.animations[index];
             (<any>animationDef).target = view;
-            let animation = new animationModule.Animation([animationDef]);
+            let animation = new Animation([animationDef]);
             animation.play().then(() => {
                 this.animate(view, index + 1, iterations);
             });
@@ -195,37 +221,36 @@ export class KeyframeAnimation {
     }
 
     public _resolveAnimationFinishedPromise() {
-        this._nativeAnimations = new Array<animationModule.Animation>();
+        this._nativeAnimations = new Array<Animation>();
         this._isPlaying = false;
         this._target = null;
         this._resolve();
     }
 
     public _rejectAnimationFinishedPromise() {
-        this._nativeAnimations = new Array<animationModule.Animation>();
+        this._nativeAnimations = new Array<Animation>();
         this._isPlaying = false;
         this._target = null;
         this._reject(new Error("Animation cancelled."));
     }
 
-    private _resetAnimationValues(view: view.View, animation: Object) {
-        let modifier = animation["valueSource"];
+    private _resetAnimationValues(view: View, animation: Object) {
         if ("backgroundColor" in animation) {
-            view.style._resetValue(style.backgroundColorProperty, modifier);
+            view.style[backgroundColorProperty.keyframe] = unsetValue;
         }
         if ("scale" in animation) {
-            view.style._resetValue(style.scaleXProperty, modifier);
-            view.style._resetValue(style.scaleYProperty, modifier);
+            view.style[scaleXProperty.keyframe] = unsetValue;
+            view.style[scaleYProperty.keyframe] = unsetValue;
         }
         if ("translate" in animation) {
-            view.style._resetValue(style.translateXProperty, modifier);
-            view.style._resetValue(style.translateYProperty, modifier);
+            view.style[translateXProperty.keyframe] = unsetValue;
+            view.style[translateYProperty.keyframe] = unsetValue;
         }
         if ("rotate" in animation) {
-            view.style._resetValue(style.rotateProperty, modifier);
+            view.style[rotateProperty.keyframe] = unsetValue;
         }
         if ("opacity" in animation) {
-            view.style._resetValue(style.opacityProperty, modifier);
+            view.style[opacityProperty.keyframe] = unsetValue;
         }
     }
 }

@@ -2,17 +2,12 @@
  * Contains the TimePicker class.
  */
 declare module "ui/time-picker" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
+    import { View, Property } from "ui/core/view";
 
     /**
      * Represents an time picker.
      */
-    export class TimePicker extends view.View {
-        public static hourProperty: dependencyObservable.Property;
-        public static minuteProperty: dependencyObservable.Property;
-        public static timeProperty: dependencyObservable.Property;
-
+    export class TimePicker extends View {
         /**
          * Gets the native [android.widget.TimePicker](http://developer.android.com/reference/android/widget/TimePicker.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
@@ -32,7 +27,7 @@ declare module "ui/time-picker" {
          * Gets or sets the time minute.
          */
         minute: number;
-        
+
         /**
          * Gets or sets the time.
          */
@@ -62,12 +57,16 @@ declare module "ui/time-picker" {
          * Gets or sets the minute interval.
          */
         minuteInterval: number;
-
-        //@private
-        _setNativeTime(): void;
-        _setNativeMinTime(): void;
-        _setNativeMaxTime(): void;
-        _setNativeMinuteIntervalTime(): void;
-        //@endprivate
     }
+
+    export const hourProperty: Property<TimePicker, number>;
+    export const maxHourProperty: Property<TimePicker, number>;
+    export const minHourProperty: Property<TimePicker, number>;
+
+    export const minuteProperty: Property<TimePicker, number>;
+    export const maxMinuteProperty: Property<TimePicker, number>;
+    export const minMinuteProperty: Property<TimePicker, number>;
+
+    export const timeProperty: Property<TimePicker, Date>;
+    export const minuteIntervalProperty: Property<TimePicker, number>;
 }

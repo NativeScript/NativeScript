@@ -1,5 +1,5 @@
 ﻿// >> connectivity-require
-import connectivity = require("connectivity");
+import * as connectivity from "connectivity";
 // << connectivity-require
 
 export var test_DummyTestForSnippetOnly0 = function () {

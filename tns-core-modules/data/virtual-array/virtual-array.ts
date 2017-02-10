@@ -1,17 +1,19 @@
-﻿import observable = require("data/observable");
-import types = require("utils/types");
-import virtualArrayDef = require("data/virtual-array");
+﻿import { Observable } from "data/observable";
+import * as virtualArrayDef from "data/virtual-array";
 
-var CHANGE = "change", UPDATE = "update", DELETE = "delete", ADD = "add";
+const CHANGE = "change";
+const UPDATE = "update";
+const DELETE = "delete";
+const ADD = "add";
 
 export class ChangeType implements virtualArrayDef.ChangeType {
-    static Add = "add";
-    static Delete = "delete";
-    static Update = "update";
-    static Splice = "splice";
+    static Add = ADD;
+    static Delete = DELETE;
+    static Update = UPDATE;
+    static Splice = CHANGE;
 }
 
-export class VirtualArray<T> extends observable.Observable {
+export class VirtualArray<T> extends Observable implements virtualArrayDef.VirtualArray<T> {
     public static changeEvent = CHANGE;
     public static itemsLoadingEvent = "itemsLoading";
 
@@ -36,8 +38,8 @@ export class VirtualArray<T> extends observable.Observable {
     set length(value: number) {
         if (this._length !== value) {
 
-            var index = this._length;
-            var count = value - this._length;
+            const index = this._length;
+            const count = value - this._length;
 
             this._length = value;
 
@@ -60,9 +62,9 @@ export class VirtualArray<T> extends observable.Observable {
     }
 
     getItem(index: number): T {
-        var item = this._cache[index];
+        const item = this._cache[index];
 
-        if (types.isUndefined(item)) {
+        if (item === undefined) {
             if (index >= 0 && index < this.length && this._requestedIndexes.indexOf(index) < 0 && this._loadedIndexes.indexOf(index) < 0) {
                 this.requestItems(index);
             }
@@ -78,10 +80,9 @@ export class VirtualArray<T> extends observable.Observable {
     }
 
     load(index: number, items: T[]): void {
-        var i: number;
-        for (i = 0; i < items.length; i++) {
+        for (let i = 0; i < items.length; i++) {
 
-            var itemIndex = index + i;
+            const itemIndex = index + i;
 
             this._cache[itemIndex] = items[i];
 
@@ -94,7 +95,7 @@ export class VirtualArray<T> extends observable.Observable {
 
         // Remove requested but never loaded indexes.
         if (this._requestedIndexes.length > 0) {
-            for (i = 0; i < this.loadSize - items.length; i++) {
+            for (let i = 0; i < this.loadSize - items.length; i++) {
                 this._requestedIndexes.splice(this._requestedIndexes.indexOf(index + i), 1);
             }
         }
@@ -109,14 +110,14 @@ export class VirtualArray<T> extends observable.Observable {
     }
 
     private requestItems(index: number): void {
-        var indexesToLoad = [];
+        const indexesToLoad = [];
 
-        var pageIndex = this._loadSize > 0 ? this._loadSize * Math.floor(index / this._loadSize) : index;
-        var count = 0;
-        var start = -1;
+        const pageIndex = this._loadSize > 0 ? this._loadSize * Math.floor(index / this._loadSize) : index;
+        let count = 0;
+        let start = -1;
 
-        for (var i = 0; i < this.loadSize; i++) {
-            var itemIndex = pageIndex + i;
+        for (let i = 0; i < this.loadSize; i++) {
+            const itemIndex = pageIndex + i;
 
             if (itemIndex >= this._length) {
                 break;

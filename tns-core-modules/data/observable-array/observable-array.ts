@@ -1,6 +1,6 @@
-﻿import observable = require("data/observable");
-import observableArrayDef = require("data/observable-array");
-import types = require("utils/types");
+﻿import * as observable from "data/observable";
+import * as observableArrayDef from "data/observable-array";
+import * as types from "utils/types";
 
 export class ChangeType implements observableArrayDef.ChangeType {
     static Add = "add";
@@ -9,7 +9,7 @@ export class ChangeType implements observableArrayDef.ChangeType {
     static Splice = "splice";
 }
 
-var CHANGE = "change";
+const CHANGE = "change";
 
 export class ObservableArray<T> extends observable.Observable implements observableArrayDef.ObservableArray<T> { // implements Array<T> {
 
@@ -91,7 +91,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      */
     concat(): T[] {
         this._addArgs.index = this._array.length;
-        var result = this._array.concat.apply(this._array, arguments);
+        const result = this._array.concat.apply(this._array, arguments);
         return result;
     }
 
@@ -109,7 +109,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     pop(): T {
         this._deleteArgs.index = this._array.length - 1;
 
-        var result = this._array.pop();
+        const result = this._array.pop();
 
         this._deleteArgs.removed = [result];
 
@@ -127,10 +127,9 @@ export class ObservableArray<T> extends observable.Observable implements observa
         this._addArgs.index = this._array.length;
 
         if (arguments.length === 1 && Array.isArray(arguments[0])) {
+            const source = <Array<T>>arguments[0];
 
-            var source = <Array<T>>arguments[0];
-
-            for (var i = 0, l = source.length; i < l; i++) {
+            for (let i = 0, l = source.length; i < l; i++) {
                 this._array.push(source[i]);
             }
         }
@@ -147,7 +146,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
     }
 
     _notifyLengthChange() {
-        var lengthChangedData = this._createPropertyChangeData("length", this._array.length);
+        const lengthChangedData = this._createPropertyChangeData("length", this._array.length);
         this.notify(lengthChangedData);
     }
 
@@ -162,7 +161,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * Removes the first element from an array and returns it.
      */
     shift(): T {
-        var result = this._array.shift();
+        const result = this._array.shift();
 
         this._deleteArgs.index = 0;
         this._deleteArgs.removed = [result];
@@ -197,8 +196,8 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param items Elements to insert into the array in place of the deleted elements.
      */
     splice(start: number, deleteCount?: number): T[] {
-        var length = this._array.length;
-        var result = this._array.splice.apply(this._array, arguments);
+        const length = this._array.length;
+        const result = this._array.splice.apply(this._array, arguments);
 
         this.notify(<observableArrayDef.ChangedData<T>>{
             eventName: CHANGE, object: this,
@@ -219,8 +218,8 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param items  Elements to insert at the start of the Array.
      */
     unshift(): number {
-        var length = this._array.length;
-        var result = this._array.unshift.apply(this._array, arguments);
+        const length = this._array.length;
+        const result = this._array.unshift.apply(this._array, arguments);
 
         this._addArgs.index = 0;
         this._addArgs.addedCount = result - length;
@@ -237,8 +236,8 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
      */
     indexOf(searchElement: T, fromIndex?: number): number {
-        var index = fromIndex ? fromIndex : 0;
-        for (var i = index, l = this._array.length; i < l; i++) {
+        const index = fromIndex ? fromIndex : 0;
+        for (let i = index, l = this._array.length; i < l; i++) {
             if (this._array[i] === searchElement) {
                 return i;
             }
@@ -252,9 +251,9 @@ export class ObservableArray<T> extends observable.Observable implements observa
      * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at the last index in the array.
      */
     lastIndexOf(searchElement: T, fromIndex?: number): number {
-        var index = fromIndex ? fromIndex : this._array.length - 1;
+        const index = fromIndex ? fromIndex : this._array.length - 1;
 
-        for (var i = index; i >= 0; i--) {
+        for (let i = index; i >= 0; i--) {
             if (this._array[i] === searchElement) {
                 return i;
             }
@@ -316,7 +315,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
         return this._array.reduce(callbackfn, initialValue);
     }
 
-    /** 
+    /**
      * Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.
      * @param callbackfn A function that accepts up to four arguments. The reduceRight method calls the callbackfn function one time for each element in the array. 
      * @param initialValue If initialValue is specified, it is used as the initial value to start the accumulation. The first call to the callbackfn function provides this value as an argument instead of an array value.

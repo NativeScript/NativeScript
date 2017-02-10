@@ -1,5 +1,6 @@
-﻿import pages = require("ui/page");
-import buttons = require("ui/button");
+﻿import * as pages from "ui/page";
+import * as buttons from "ui/button";
+import { VerticalAlignment } from "ui/core/view";
 
 export function createPage() {
     var page = new pages.Page();
@@ -9,7 +10,7 @@ export function createPage() {
     btn.height = 60;
     btn.text = "test";
 
-    var vAligns = ["stretch", "top", "center", "bottom"];
+    var vAligns: VerticalAlignment[] = ["stretch", "top", "middle", "bottom"];
     //var hAligns = ["stretch", "left", "center", "right"];
     var count = 0;
     btn.on(buttons.Button.tapEvent, function () {

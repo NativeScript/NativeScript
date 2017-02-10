@@ -1,7 +1,7 @@
-﻿import enums = require("ui/enums");
-import locationModule = require("location");
-import common = require("./location-common");
-import utils = require("utils/utils");
+﻿import * as enums from "ui/enums";
+import * as locationModule from "location";
+import * as common from "./location-common";
+import * as utils from "utils/utils";
 
 global.moduleMerge(common, exports);
 

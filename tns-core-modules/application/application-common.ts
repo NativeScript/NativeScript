@@ -1,11 +1,12 @@
 ﻿require("globals");
-import definition = require("application");
-import observable = require("data/observable");
-import frame = require("ui/frame");
-import {RuleSet} from "ui/styling/css-selector";
+import * as definition from "application";
+import * as observable from "data/observable";
+// TODO: Raise event on("livesync") and attach this handler in the ui/frame module. 
+import { NavigationEntry, reloadPage } from "ui/frame";
+import { RuleSet } from "ui/styling/css-selector";
 import * as fileSystemModule from "file-system";
 import * as styleScopeModule from "ui/styling/style-scope";
-import * as fileResolverModule  from "file-system/file-name-resolver";
+import * as fileResolverModule from "file-system/file-name-resolver";
 import * as builderModule from "ui/builder";
 import * as platformModule from "platform";
 import "../bundle-entry-points";
@@ -45,13 +46,9 @@ export var uncaughtErrorEvent = "uncaughtError";
 export var orientationChangedEvent = "orientationChanged";
 
 export var mainModule: string;
-export var mainEntry: frame.NavigationEntry;
+export var mainEntry: NavigationEntry;
 
-export var cssFile: string = "app.css"
-
-export function setCssFileName(cssFileName: string) {
-    cssFile = cssFileName;
-}
+export var cssFile: string = "app.css";
 
 export var appSelectors: RuleSet[] = [];
 export var additionalSelectors: RuleSet[] = [];
@@ -147,7 +144,7 @@ export function __onLiveSync() {
 
 export function __onLiveSyncCore() {
     // Reload current page.
-    frame.reloadPage();
+    reloadPage();
 }
 global.__onLiveSyncCore = __onLiveSyncCore;
 

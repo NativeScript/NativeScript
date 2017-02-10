@@ -1,17 +1,16 @@
-﻿import view = require("ui/core/view");
-import frame = require("ui/frame");
-import page = require("ui/page");
-import stackLayoutModule = require("ui/layouts/stack-layout");
-import button = require("ui/button");
-import TKUnit = require("../TKUnit");
-import utils = require("utils/utils");
-import types = require("utils/types");
-import styling = require("ui/styling");
-import platform = require("platform");
-import colorModule = require("color");
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
-import enums = require("ui/enums");
+﻿import * as view from "ui/core/view";
+import * as frame from "ui/frame";
+import * as page from "ui/page";
+import * as stackLayoutModule from "ui/layouts/stack-layout";
+import * as button from "ui/button";
+import * as TKUnit from "../TKUnit";
+import * as utils from "utils/utils";
+import * as platform from "platform";
+import * as colorModule from "color";
+import * as formattedStringModule from "text/formatted-string";
+import * as spanModule from "text/span";
+import { ActionBar } from "ui/action-bar";
+import { unsetValue } from "ui/core/view";
 
 var DELTA = 0.1;
 
@@ -21,22 +20,17 @@ export var MEMORY_ASYNC = 2;
 function clearPage(): void {
     let newPage = getCurrentPage();
     if (!newPage) {
-        TKUnit.waitUntilReady(() => getCurrentPage() !== null);
-        newPage = getCurrentPage();
-    }
-
-    if (!newPage) {
         throw new Error("NO CURRENT PAGE!!!!");
     }
 
-    newPage.style._resetValue(styling.properties.backgroundColorProperty);
-    newPage.style._resetValue(styling.properties.colorProperty);
-    newPage._resetValue(button.Button.bindingContextProperty);
-    newPage._resetValue(button.Button.cssClassProperty);
-    newPage._resetValue(button.Button.idProperty);
+    newPage.style.backgroundColor = unsetValue;
+    newPage.style.color = unsetValue;
+    newPage.bindingContext = unsetValue;
+    newPage.className = unsetValue;
+    newPage.id = unsetValue;
 }
 
-export function do_PageTest(test: (views: Array<view.View>) => void, content: view.View, secondView: view.View, thirdView: view.View) {
+export function do_PageTest(test: (views: [page.Page, view.View, view.View, view.View, ActionBar]) => void, content: view.View, secondView: view.View, thirdView: view.View) {
     clearPage();
     let newPage = getCurrentPage();
     newPage.content = content;
@@ -44,7 +38,7 @@ export function do_PageTest(test: (views: Array<view.View>) => void, content: vi
     newPage.content = null;
 }
 
-export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) {
+export function do_PageTest_WithButton(test: (views: [page.Page, button.Button, ActionBar]) => void) {
     clearPage();
     let newPage = getCurrentPage();
     let btn = new button.Button();
@@ -53,7 +47,7 @@ export function do_PageTest_WithButton(test: (views: Array<view.View>) => void) 
     newPage.content = null;
 }
 
-export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.View>) => void) {
+export function do_PageTest_WithStackLayout_AndButton(test: (views: [page.Page, stackLayoutModule.StackLayout, button.Button, ActionBar]) => void) {
     clearPage();
     let newPage = getCurrentPage();
     let stackLayout = new stackLayoutModule.StackLayout();
@@ -65,12 +59,12 @@ export function do_PageTest_WithStackLayout_AndButton(test: (views: Array<view.V
 }
 
 //export function buildUIAndRunTest(controlToTest, testFunction, pageCss?, testDelay?) {
-export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
+export function buildUIAndRunTest<T extends view.View>(controlToTest: T, testFunction: (views: [T, page.Page]) => void, pageCss?) {
     clearPage();
     let newPage = getCurrentPage();
-    newPage.content = controlToTest;
 
     newPage.css = pageCss;
+    newPage.content = controlToTest;
 
     testFunction([controlToTest, newPage]);
     newPage.content = null;
@@ -79,45 +73,30 @@ export function buildUIAndRunTest(controlToTest, testFunction, pageCss?) {
 
 export function buildUIWithWeakRefAndInteract<T extends view.View>(createFunc: () => T, interactWithViewFunc?: (view: T) => void, done?) {
     clearPage();
-    let newPage = getCurrentPage();
-    let sp = new stackLayoutModule.StackLayout();
-    let testFinished = false;
+    const page = getCurrentPage();
+    const weakRef = new WeakRef(createFunc());
+    page.content = weakRef.get();
+    if (interactWithViewFunc) {
+        interactWithViewFunc(weakRef.get());
+    }
+    page.content = null;
+    // Give a change for native cleanup (e.g. keyboard close, etc.).
+    TKUnit.wait(0.001);
+    if (page.ios) {
+        /* tslint:disable:no-unused-expression */
+        // Could cause GC on the next call.
+        // NOTE: Don't replace this with forceGC();
+        new ArrayBuffer(4 * 1024 * 1024);
+    }
+    utils.GC();
 
-    sp.on("loaded", () => {
-        let weakRef = new WeakRef(createFunc());
-        try {
-            sp.addChild(weakRef.get());
-
-            if (interactWithViewFunc) {
-                interactWithViewFunc(weakRef.get());
-            }
-
-            sp.removeChild(weakRef.get());
-            
-            TKUnit.wait(1); // Wait for the TextField/TextView to close its keyboard so it can be released.
-            
-            if (newPage.ios) {
-                /* tslint:disable:no-unused-expression */
-                // Could cause GC on the next call.
-                // NOTE: Don't replace this with forceGC();
-                new ArrayBuffer(4 * 1024 * 1024);
-            }
-            utils.GC();
-
-            TKUnit.waitUntilReady(() => { return weakRef.get() ? !(weakRef.get().isLoaded) : true; }, MEMORY_ASYNC);
-            TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
-            testFinished = true;
-        }
-        catch (e) {
-            done(e);
-        }
-    });
-
-    newPage.content = sp;
-
-    TKUnit.waitUntilReady(() => testFinished, MEMORY_ASYNC);
-    TKUnit.assertTrue(testFinished, "Test did not completed.")
-    done(null);
+    try {
+        TKUnit.assert(!weakRef.get(), weakRef.get() + " leaked!");
+        done(null);
+    }
+    catch (ex) {
+        done(ex);
+    }
 }
 
 export function navigateToModuleAndRunTest(moduleName, context, testFunction) {
@@ -146,11 +125,11 @@ export function getCurrentPage(): page.Page {
 
 export function getClearCurrentPage(): page.Page {
     let page = frame.topmost().currentPage;
-    page.style._resetValue(styling.properties.backgroundColorProperty);
-    page.style._resetValue(styling.properties.colorProperty);
-    page._resetValue(button.Button.bindingContextProperty);
-    page._resetValue(button.Button.cssClassProperty);
-    page._resetValue(button.Button.idProperty);
+    page.style.backgroundColor = unsetValue;
+    page.style.color = unsetValue;
+    page.bindingContext = unsetValue;
+    page.className = unsetValue;
+    page.id = unsetValue;
     return page;
 }
 
@@ -163,7 +142,7 @@ export function navigateWithEntry(entry: frame.NavigationEntry): page.Page {
     entry.moduleName = null;
     entry.create = function () {
         return page;
-    }
+    };
 
     let currentPage = getCurrentPage();
     frame.topmost().navigate(entry);
@@ -178,22 +157,18 @@ export function goBack() {
 }
 
 export function assertAreClose(actual: number, expected: number, message: string): void {
-    var density = utils.layout.getDisplayDensity();
-    var delta = Math.floor(density) !== density ? 1.1 : DELTA;
+    const density = utils.layout.getDisplayDensity();
+    const delta = Math.floor(density) !== density ? 1.1 : DELTA;
 
     TKUnit.assertAreClose(actual, expected, delta, message);
 }
 
-export function assertViewColor(testView: view.View, hexColor: string, valueSource?: number) {
+export function assertViewColor(testView: view.View, hexColor: string) {
     TKUnit.assert(testView.style.color, "Color property not applied correctly. Style value is not defined.");
     TKUnit.assertEqual(testView.style.color.hex, hexColor, "color property");
-
-    if (types.isDefined(valueSource)) {
-        TKUnit.assertEqual(testView.style._getValueSource(styling.properties.colorProperty), valueSource, "valueSource");
-    }
 }
 
-export function assertViewBackgroundColor(testView: view.View, hexColor: string) {
+export function assertViewBackgroundColor(testView: view.ViewBase, hexColor: string) {
     TKUnit.assert(testView.style.backgroundColor, "Background color property not applied correctly. Style value is not defined.");
     TKUnit.assertEqual(testView.style.backgroundColor.hex, hexColor, "backgroundColor property");
 }
@@ -203,35 +178,33 @@ export function forceGC() {
         /* tslint:disable:no-unused-expression */
         // Could cause GC on the next call.
         new ArrayBuffer(4 * 1024 * 1024);
-        TKUnit.wait(ASYNC);
     }
 
     utils.GC();
+    TKUnit.wait(0.001);
 }
 
-export function _generateFormattedString(): formattedStringModule.FormattedString{
+export function _generateFormattedString(): formattedStringModule.FormattedString {
     let formattedString = new formattedStringModule.FormattedString();
     let span: spanModule.Span;
 
     span = new spanModule.Span();
     span.fontFamily = "serif";
     span.fontSize = 10;
-    span.fontAttributes = enums.FontAttributes.Bold;
-    span.foregroundColor = new colorModule.Color("red");
+    span.fontWeight = "bold";
+    span.color = new colorModule.Color("red");
     span.backgroundColor = new colorModule.Color("blue");
-    span.underline = 0;
-    span.strikethrough = 1;
+    span.textDecoration = "line-through";
     span.text = "Formatted";
     formattedString.spans.push(span);
-    
+
     span = new spanModule.Span();
     span.fontFamily = "sans-serif";
     span.fontSize = 20;
-    span.fontAttributes = enums.FontAttributes.Italic;
-    span.foregroundColor = new colorModule.Color("green");
+    span.fontStyle = "italic";
+    span.color = new colorModule.Color("green");
     span.backgroundColor = new colorModule.Color("yellow");
-    span.underline = 1;
-    span.strikethrough = 0;
+    span.textDecoration = "underline";
     span.text = "Text";
     formattedString.spans.push(span);
 

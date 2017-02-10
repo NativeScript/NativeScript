@@ -1,8 +1,8 @@
-import TKUnit = require("../TKUnit");
-import types = require("utils/types");
+import * as TKUnit from "../TKUnit";
+import * as types from "utils/types";
 
 // >> virtual-array-require
-import virtualArrayModule = require("data/virtual-array");
+import * as virtualArrayModule from "data/virtual-array";
 // << virtual-array-require
 
 require("globals");

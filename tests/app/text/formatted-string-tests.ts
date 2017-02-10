@@ -1,17 +1,17 @@
 ﻿// >> formatted-string-require
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
+import { FormattedString } from "text/formatted-string";
+import { Span } from "text/span";
 // << formatted-string-require
 
-import observable = require("data/observable");
-import TKUnit = require("../TKUnit");
-import LabelModule = require("ui/label");
+import { Observable } from "data/observable";
+import { Label } from "ui/label";
+import * as TKUnit from "../TKUnit";
 
-export var test_FormattedString_RemovesEventListeners_for_spans = function () {
+export function test_FormattedString_RemovesEventListeners_for_spans() {
     // >> formatted-string-set
-    var label = new LabelModule.Label();
-    var formattedString = new formattedStringModule.FormattedString();
-    var firstSpan = new spanModule.Span();
+    const label = new Label();
+    const formattedString = new FormattedString();
+    const firstSpan = new Span();
 
     firstSpan.fontSize = 15;
     firstSpan.text = "LoremIpsum";
@@ -19,63 +19,61 @@ export var test_FormattedString_RemovesEventListeners_for_spans = function () {
     label.formattedText = formattedString;
     // << formatted-string-set
 
-    TKUnit.assert(formattedString.spans.getItem(0).hasListeners(observable.Observable.propertyChangeEvent) === true, "Listener for spans collection change event is not attached!");
-    var removedSpan = formattedString.spans.pop();
-    TKUnit.assert(removedSpan.hasListeners(observable.Observable.propertyChangeEvent) === false, "Listener for spans collection change event is not removed!");
-}
+    TKUnit.assert(formattedString.spans.getItem(0).hasListeners(Observable.propertyChangeEvent) === true, "Listener for spans collection change event is not attached!");
+    const removedSpan = formattedString.spans.pop();
+    TKUnit.assert(removedSpan.hasListeners(Observable.propertyChangeEvent) === false, "Listener for spans collection change event is not removed!");
+};
 
-export var test_FormattedTextProperty_IsChanged_When_SpanIsAdded = function () {
-    var formattedString = new formattedStringModule.FormattedString();
-    var formattedTextChanged = false;
-    formattedString.addEventListener(observable.Observable.propertyChangeEvent, () => {
+export function test_FormattedTextProperty_IsChanged_When_SpanIsAdded() {
+    const formattedString = new FormattedString();
+    let formattedTextChanged = false;
+    formattedString.addEventListener(Observable.propertyChangeEvent, () => {
         formattedTextChanged = true;
     });
 
-    var firstSpan = new spanModule.Span();
+    const firstSpan = new Span();
     firstSpan.fontSize = 15;
     firstSpan.text = "LoremIpsum";
     formattedString.spans.push(firstSpan);
 
     TKUnit.assertTrue(formattedTextChanged, "FormattedText property is not changed.");
-}
+};
 
-export var test_FormattedTextProperty_IsChanged_When_SpanIsChanged = function () {
-    var formattedString = new formattedStringModule.FormattedString();
-    var expectedValue = 17;
+export function test_FormattedTextProperty_IsChanged_When_SpanIsChanged() {
+    const formattedString = new FormattedString();
+    const expectedValue = 17;
 
-    var firstSpan = new spanModule.Span();
+    const firstSpan = new Span();
     firstSpan.fontSize = 15;
     firstSpan.text = "LoremIpsum";
     formattedString.spans.push(firstSpan);
 
-    var formattedTextChanged = false;
-    formattedString.addEventListener(observable.Observable.propertyChangeEvent, () => {
+    let formattedTextChanged = false;
+    formattedString.addEventListener(Observable.propertyChangeEvent, () => {
         formattedTextChanged = true;
     });
 
-    firstSpan.beginEdit();
     firstSpan.fontSize = expectedValue;
-    firstSpan.endEdit();
 
     TKUnit.assertTrue(formattedTextChanged, "FormattedText property is not changed.");
     TKUnit.assert(formattedString.spans.getItem(0).fontSize === expectedValue, "FormattedString internal span is not changed as expected");
-}
+};
 
-export var test_FormattedTextProperty_DoNotCrash_When_KnownColorIsSetForForegroundColor = function () {
-    var formattedString = new formattedStringModule.FormattedString();
-    var expectedValue1 = "red";
-    var expectedValue2 = "blue";
+export function test_FormattedTextProperty_DoNotCrash_When_KnownColorIsSetForForegroundColor() {
+    const formattedString = new FormattedString();
+    const expectedValue1 = "red";
+    const expectedValue2 = "blue";
 
-    var firstSpan = new spanModule.Span();
-    firstSpan.foregroundColor = <any>expectedValue1;
+    const firstSpan = new Span();
+    firstSpan.color = <any>expectedValue1;
     firstSpan.text = "LoremIpsum1";
     formattedString.spans.push(firstSpan);
 
-    var secondSpan = new spanModule.Span();
+    const secondSpan = new Span();
     secondSpan.backgroundColor = <any>expectedValue2;
     secondSpan.text = "LoremIpsum2";
     formattedString.spans.push(secondSpan);
 
-    TKUnit.assertEqual(formattedString.spans.getItem(0).foregroundColor.name, expectedValue1);
+    TKUnit.assertEqual(formattedString.spans.getItem(0).color.name, expectedValue1);
     TKUnit.assertEqual(formattedString.spans.getItem(1).backgroundColor.name, expectedValue2);
-}
+};

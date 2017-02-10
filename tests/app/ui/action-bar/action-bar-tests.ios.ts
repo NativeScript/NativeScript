@@ -1,10 +1,10 @@
-﻿import actionTestsCommon = require("./action-bar-tests-common");
-import PageModule = require("ui/page");
-import TKUnit = require("../../TKUnit");
-import LabelModule = require("ui/label");
-import helper = require("../helper");
-import view = require("ui/core/view");
-import actionBar = require("ui/action-bar");
+﻿import * as actionTestsCommon from "./action-bar-tests-common";
+import * as PageModule from "ui/page";
+import * as TKUnit from "../../TKUnit";
+import * as LabelModule from "ui/label";
+import * as helper from "../helper";
+import * as view from "ui/core/view";
+import * as actionBar from "ui/action-bar";
 import { Visibility } from "ui/enums";
 
 global.moduleMerge(actionTestsCommon, exports);

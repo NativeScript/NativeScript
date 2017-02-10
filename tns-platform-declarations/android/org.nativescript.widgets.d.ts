@@ -49,6 +49,7 @@
             export class BorderDrawable extends android.graphics.drawable.ColorDrawable {
                 constructor(density: number);
                 constructor(density: number, id: string);
+
                 public refresh(
                     borderTopColor: number,
                     borderRightColor: number,
@@ -353,10 +354,10 @@
 
                 setSelectedIndicatorColors(color: Array<number>): void;
                 getSelectedIndicatorColors(): Array<number>;
-                setTabTextColor(color: java.lang.Integer): void;
-                getTabTextColor(): java.lang.Integer;
-                setSelectedTabTextColor(color: java.lang.Integer): void;
-                getSelectedTabTextColor(): java.lang.Integer;
+                setTabTextColor(color: number): void;
+                getTabTextColor(): number;
+                setSelectedTabTextColor(color: number): void;
+                getSelectedTabTextColor(): number;
 
                 setItems(items: Array<TabItemSpec>, viewPager: android.support.v4.view.ViewPager): void;
                 updateItemAt(position: number, itemSpec: TabItemSpec): void;
@@ -400,7 +401,7 @@
                     public addImageCache(cache: Cache): void;
                     public initCache(): void;
                     public clearCache(): void;
-                    public loadImage(data: Object, imageView: ImageView, 
+                    public loadImage(data: Object, imageView: ImageView,
                         decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean,
                         listener: Worker.IOnImageLoadedListener): void;
                 }
@@ -413,6 +414,84 @@
                         public setMemCacheSizePercent(percent: number): void;
                     }
                 }
+            }
+
+            export class ViewHelper {
+                public static getMinWidth(view: android.view.View): number;
+                public static setMinWidth(view: android.view.View, value: number): void;
+
+                public static getMinHeight(view: android.view.View): number;
+                public static setMinHeight(view: android.view.View, value: number): void;
+
+                public static getWidth(view: android.view.View): number;
+                public static setWidth(view: android.view.View, value: number): void;
+                public static setWidthPercent(view: android.view.View, value: number): void;
+
+                public static getHeight(view: android.view.View): number;
+                public static setHeight(view: android.view.View, value: number): void;
+                public static setHeightPercent(view: android.view.View, value: number): void;
+
+                public static getMargin(view: android.view.View): { left: number, top: number, right: number, bottom: number };
+                public static setMargin(view: android.view.View, left: number, top: number, right: number, bottom: number): void;
+
+                public static getMarginLeft(view: android.view.View): number;
+                public static setMarginLeft(view: android.view.View, value: number): void;
+                public static setMarginLeftPercent(view: android.view.View, value: number): void;
+
+                public static getMarginTop(view: android.view.View): number;
+                public static setMarginTop(view: android.view.View, value: number): void;
+                public static setMarginTopPercent(view: android.view.View, value: number): void;
+
+                public static getMarginRight(view: android.view.View): number;
+                public static setMarginRight(view: android.view.View, value: number): void;
+                public static setMarginRightPercent(view: android.view.View, value: number): void;
+
+                public static getMarginBottom(view: android.view.View): number;
+                public static setMarginBottom(view: android.view.View, value: number): void;
+                public static setMarginBottomPercent(view: android.view.View, value: number): void;
+
+                public static getHorizontalAlignment(view: android.view.View): string;
+                public static setHorizontalAlignment(view: android.view.View, value: string): void;
+
+                public static getVerticalAlignment(view: android.view.View): string;
+                public static setVerticalAlignment(view: android.view.View, value: string): void;
+
+                public static getPadding(view: android.view.View): { left: number, top: number, right: number, bottom: number };
+                public static setPadding(view: android.view.View, left: number, top: number, right: number, bottom: number): void;
+
+                public static getPaddingLeft(view: android.view.View): number;
+                public static setPaddingLeft(view: android.view.View, value: number): void;
+
+                public static getPaddingTop(view: android.view.View): number;
+                public static setPaddingTop(view: android.view.View, value: number): void;
+
+                public static getPaddingRight(view: android.view.View): number;
+                public static setPaddingRight(view: android.view.View, value: number): void;
+
+                public static getPaddingBottom(view: android.view.View): number;
+                public static setPaddingBottom(view: android.view.View, value: number): void;
+
+                public static getRotate(view: android.view.View): number;
+                public static setRotate(view: android.view.View, value: number): void;
+
+                public static getScaleX(view: android.view.View): number;
+                public static setScaleX(view: android.view.View, value: number): void;
+
+                public static getScaleY(view: android.view.View): number;
+                public static setScaleY(view: android.view.View, value: number): void;
+
+                public static getTranslateX(view: android.view.View): number;
+                public static setTranslateX(view: android.view.View, value: number): void;
+
+                public static getTranslateY(view: android.view.View): number;
+                public static setTranslateY(view: android.view.View, value: number): void;
+
+                public static getZIndex(view: android.view.View): number;
+                public static setZIndex(view: android.view.View, value: number): void;
+
+                public static getLetterspacing(view: android.view.View): number;
+                public static setLetterspacing(view: android.view.View, value: number): void;
+
             }
         }
     }

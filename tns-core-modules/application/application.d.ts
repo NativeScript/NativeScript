@@ -2,10 +2,9 @@
  * Contains the application abstraction with all related methods.
  */
 declare module "application" {
-    import {RuleSet} from "ui/styling/css-selector";
-    import observable = require("data/observable");
-    import frame = require("ui/frame");
-    import {View} from "ui/core/view";
+    import { RuleSet } from "ui/styling/css-selector";
+    import { NavigationEntry, View, Observable } from "ui/frame";
+
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
      */
@@ -69,7 +68,7 @@ declare module "application" {
          * The name of the event.
          */
         eventName: string;
-        
+
         /**
          * The instance that has raised the event.
          */
@@ -79,7 +78,7 @@ declare module "application" {
     /**
      * Event data containing information for launch event.
      */
-    export interface LaunchEventData extends ApplicationEventData {        
+    export interface LaunchEventData extends ApplicationEventData {
         /**
          * The root view for this Window on iOS or Activity for Android.
          * If not set a new Frame will be created as a root view in order to maintain backwards compatibility.
@@ -94,7 +93,16 @@ declare module "application" {
         /**
          * New orientation value.
          */
-        newValue: string;
+        newValue: "portrait" | "landscape" | "unknown";
+    }
+    
+    /**
+     * Event data containing information about unhandled application errors.
+     */
+    export interface UnhandledErrorEventData extends ApplicationEventData {
+        ios?: NativeScriptError;
+        android?: NativeScriptError;
+        error: NativeScriptError;
     }
 
     /**
@@ -109,7 +117,7 @@ declare module "application" {
     /**
      * The main navigation entry to be used when loading the main Page.
      */
-    export var mainEntry: frame.NavigationEntry;
+    export var mainEntry: NavigationEntry;
 
 	/**
 	 * An application level static resources.
@@ -156,7 +164,7 @@ declare module "application" {
     /**
      * Call this method to start the application. Important: All code after this method call will not be executed!
      */
-    export function start(entry?: frame.NavigationEntry);
+    export function start(entry?: NavigationEntry);
 
     /**
      * The main entry point event. This method is expected to use the root frame to navigate to the main application page.
@@ -247,7 +255,7 @@ declare module "application" {
     /**
      * This event is raised when an uncaught error occurs while the application is running.
      */
-    export function on(event: "uncaughtError", callback: (args: ApplicationEventData) => void, thisArg?: any);
+    export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventData) => void, thisArg?: any);
 
     /**
      * This event is raised the orientation of the current device has changed.
@@ -351,7 +359,7 @@ declare module "application" {
     /**
      * The abstraction of an Android-specific application object.
      */
-    export class AndroidApplication extends observable.Observable {
+    export class AndroidApplication extends Observable {
         /**
          * The [android Application](http://developer.android.com/reference/android/app/Application.html) object instance provided to the init of the module.
          */
@@ -386,7 +394,7 @@ declare module "application" {
          * True if the main application activity is not running (suspended), false otherwise.
          */
         paused: boolean;
-        
+
         /**
          * Initialized the android-specific application object with the native android.app.Application instance.
          * This is useful when creating custom application types.
@@ -433,7 +441,7 @@ declare module "application" {
          * [Deprecated. Please use the respective event instead.] Direct handler of the onActivityResult method.
          */
         onActivityResult: (requestCode: number, resultCode: number, data: any /* android.content.Intent */) => void;
-            
+
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
          * @param eventNames - String corresponding to events (e.g. "propertyChange"). Optionally could be used more events separated by `,` (e.g. "propertyChange", "change"). 
@@ -536,7 +544,7 @@ declare module "application" {
          * String value used when hooking to activityBackPressed event.
          */
         public static activityBackPressedEvent: string;
-        
+
         /**
          * String value used when hooking to requestPermissions event.
          */
@@ -573,7 +581,7 @@ declare module "application" {
         /**
          * The key window.
          */
-        window: any /* UIWindow */;        
+        window: any /* UIWindow */;
 
         /**
          * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
@@ -602,7 +610,7 @@ declare module "application" {
          */
         removeNotificationObserver(observer: any, notificationName: string): void;
     }
-    
+
     /* tslint:disable */
     export interface RootViewControllerImpl {
 

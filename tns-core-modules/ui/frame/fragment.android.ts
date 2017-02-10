@@ -1,4 +1,4 @@
-import {AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass} from "ui/frame";
+import { AndroidFragmentCallbacks, setFragmentCallbacks, setFragmentClass } from "ui/frame";
 
 @JavaProxy("com.tns.FragmentClass")
 class FragmentClass extends android.app.Fragment {

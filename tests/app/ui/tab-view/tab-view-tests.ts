@@ -1,14 +1,14 @@
-﻿import testModule = require("../../ui-test");
+import testModule = require("../../ui-test");
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
 import labelModule = require("ui/label");
 import stackLayoutModule = require("ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
-import style = require("ui/styling/style");
+import { unsetValue } from "ui/core/view";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
-import tabViewModule = require("ui/tab-view");
+import * as tabViewModule from "ui/tab-view";
 // << article-require-tabview-module
 
 export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
@@ -34,12 +34,19 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         return items;
     }
 
+    public tearDown() {
+        if (this.testView && this.testView.items) {
+            this.testView.items.length = 0;
+        }
+        super.tearDown();
+    }
+
     public testWhenTabViewIsCreatedItemsAreUndefined = function () {
         TKUnit.assertEqual(this.testView.items, undefined, "Items should be undefined initally.");
     }
 
     public testWhenTabViewIsCreatedSelectedIndexIsUndefined = function () {
-        TKUnit.assertEqual(this.testView.selectedIndex, undefined, "selectedIndex should be undefined initally.");
+        TKUnit.assertEqual(this.testView.selectedIndex, -1, "selectedIndex should be undefined initally.");
     }
 
     public testWhenSettingItemsToNonEmptyArrayTheSameAmountOfNativeTabsIsCreated = function () {
@@ -71,19 +78,17 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         var label0 = new labelModule.Label();
         label0.text = "Tab 0";
         StackLayout0.addChild(label0);
-        var tabEntry0 = {
-            title: "Tab 0",
-            view: StackLayout0
-        };
+        var tabEntry0 = new tabViewModule.TabViewItem();
+        tabEntry0.title = "Tab 0";
+        tabEntry0.view = StackLayout0;
         items.push(tabEntry0);
         var StackLayout1 = new stackLayoutModule.StackLayout();
         var label1 = new labelModule.Label();
         label1.text = "Tab 1";
         StackLayout1.addChild(label1);
-        var tabEntry1 = {
-            title: "Tab 1",
-            view: StackLayout1
-        };
+        var tabEntry1 = new tabViewModule.TabViewItem();
+        tabEntry1.title = "Tab 1";
+        tabEntry1.view = StackLayout1;
         items.push(tabEntry1);
         tabView.items = items;
         // << article-binding-tabview-items
@@ -106,7 +111,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         // << article-select-tab
         tabView.items = [];
 
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
     }
@@ -118,7 +123,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
 
         tabView.selectedIndex = 9;
         tabView.items = undefined;
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
     }
@@ -130,7 +135,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         this.waitUntilTestElementIsLoaded();
 
         tabView.items = null;
-        var expectedValue = undefined;
+        var expectedValue = -1;
         var actualValue = tabView.selectedIndex;
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex should be undefined.");
     }
@@ -157,24 +162,24 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         TKUnit.assertEqual(actualValue, expectedValue, "selectedIndex");
     }
 
-    public testSettingNegativeSelectedIndexShouldThrow = function () {
-        var tabView = this.testView;
-        this.waitUntilTestElementIsLoaded();
-        tabView.items = this._createItems(10);
+    // public testSettingNegativeSelectedIndexShouldThrow = function () {
+    //     var tabView = this.testView;
+    //     this.waitUntilTestElementIsLoaded();
+    //     tabView.items = this._createItems(10);
 
-        TKUnit.assertThrows(function () {
-            tabView.selectedIndex = -1;
-        }, "Setting selectedIndex to a negative number should throw.");
-    }
+    //     TKUnit.assertThrows(function () {
+    //         tabView.selectedIndex = -1;
+    //     }, "Setting selectedIndex to a negative number should throw.");
+    // }
 
-    public testSettingSelectedIndexLargerThanCountShouldThrow = function () {
-        var tabView = this.testView;
-        this.waitUntilTestElementIsLoaded();
-        tabView.items = this._createItems(10);
-        TKUnit.assertThrows(function () {
-            tabView.selectedIndex = 10;
-        }, "Setting selectedIndex to a negative number should throw.");
-    }
+    // public testSettingSelectedIndexLargerThanCountShouldThrow = function () {
+    //     var tabView = this.testView;
+    //     this.waitUntilTestElementIsLoaded();
+    //     tabView.items = this._createItems(10);
+    //     TKUnit.assertThrows(function () {
+    //         tabView.selectedIndex = 10;
+    //     }, "Setting selectedIndex to a number bigger than items count should throw.");
+    // }
 
     public testBindingToTabEntryWithUndefinedViewShouldThrow = function () {
         var tabView = this.testView;
@@ -326,7 +331,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         //console.log(`>>>>>>>>>>>>> nativeFont: ${fontToString(nativeFont)}`);
 
         //console.log(`>>>>>>>>>>>>> RESET`);
-        this.testView.style._resetValue(style.fontInternalProperty);
+        this.testView.style.font = unsetValue;
         assertFontsAreEqual(tabViewTestsNative.getNativeFont(this.testView), originalFont, "Font must be the original one after resetting the style.");
     }
 }

@@ -1,6 +1,6 @@
-import colorModule = require("color");
-import searchBarModule = require("ui/search-bar");
-import utils = require("utils/utils");
+import * as colorModule from "color";
+import * as searchBarModule from "ui/search-bar";
+import * as utils from "utils/utils";
 
 function getTextView(bar: android.widget.SearchView): android.widget.TextView {
     if (bar) {

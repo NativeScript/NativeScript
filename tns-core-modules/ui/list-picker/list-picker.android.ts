@@ -1,144 +1,152 @@
-﻿import common = require("./list-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import utils = require("utils/utils")
-import * as types from "utils/types";
-import { Styler, colorProperty, registerHandler, StylePropertyChangedHandler } from "ui/styling/style";
-import { View } from "ui/core/view";
+﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
+import { ItemsSource } from "ui/list-picker";
 
-global.moduleMerge(common, exports);
+export * from "./list-picker-common";
 
-export class ListPicker extends common.ListPicker {
+@Interfaces([android.widget.NumberPicker.Formatter])
+class Formatter extends java.lang.Object implements android.widget.NumberPicker.Formatter {
+    constructor(private owner: WeakRef<ListPicker>) {
+        super();
+        return global.__native(this);
+    }
+
+    format(index: number): string {
+        let owner = this.owner.get();
+        if (owner) {
+            return owner._getItemAsString(index);
+        }
+
+        return " ";
+    }
+}
+
+@Interfaces([android.widget.NumberPicker.OnValueChangeListener])
+class ValueChangeListener extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
+    constructor(private owner: WeakRef<ListPicker>) {
+        super();
+        return global.__native(this);
+    }
+
+    onValueChange(picker: android.widget.NumberPicker, oldValue: number, newValue: number): void {
+        let owner = this.owner.get();
+        if (owner) {
+            selectedIndexProperty.nativeValueChange(owner, newValue);
+        }
+    }
+}
+
+function getEditText(picker: android.widget.NumberPicker): android.widget.EditText {
+    for (let i = 0, count = picker.getChildCount(); i < count; i++) {
+        let child = picker.getChildAt(i);
+        if (child instanceof android.widget.EditText) {
+            return child;
+        }
+    }
+
+    return null;
+}
+
+let selectorWheelPaintField: java.lang.reflect.Field;
+function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.graphics.Paint {
+    if (!selectorWheelPaintField) {
+        selectorWheelPaintField = picker.getClass().getDeclaredField("mSelectorWheelPaint");
+        selectorWheelPaintField.setAccessible(true);
+    }
+
+    return selectorWheelPaintField.get(picker);
+}
+
+export class ListPicker extends ListPickerBase {
     private _android: android.widget.NumberPicker;
     private _valueChangedListener: android.widget.NumberPicker.OnValueChangeListener;
     private _formatter: android.widget.NumberPicker.Formatter;
     private _editText: android.widget.EditText;
+    private _selectorWheelPaint: android.graphics.Paint;
 
     get android(): android.widget.NumberPicker {
         return this._android;
     }
 
-    public _createUI() {
+    public _createNativeView() {
         this._android = new android.widget.NumberPicker(this._context);
+        let editText = getEditText(this._android);
+        this._editText = editText;
+        this._selectorWheelPaint = getSelectorWheelPaint(this._android);
+
         this._android.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
 
         this._android.setMinValue(0);
         this._android.setMaxValue(0);
         this._android.setValue(0);
 
-        var that = new WeakRef(this);
-
-        this._formatter = new android.widget.NumberPicker.Formatter(
-            <utils.Owned & android.widget.NumberPicker.IFormatter>{
-                get owner(): ListPicker {
-                    return that.get();
-                },
-
-                format: function (index: number) {
-                    if (this.owner) {
-                        return this.owner._getItemAsString(index);
-                    }
-
-                    return " ";
-                }
-            });
+        this._formatter = this._formatter || new Formatter(new WeakRef(this));
         this._android.setFormatter(this._formatter);
 
-        this._valueChangedListener = new android.widget.NumberPicker.OnValueChangeListener(<utils.Owned & android.widget.NumberPicker.IOnValueChangeListener>{
-            get owner() {
-                return that.get();
-            },
-
-            onValueChange: function (picker: android.widget.NumberPicker, oldVal: number, newVal: number) {
-                if (this.owner) {
-                    this.owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, newVal);
-                }
-            }
-        });
+        this._valueChangedListener = this._valueChangedListener || new ValueChangeListener(new WeakRef(this));
         this._android.setOnValueChangedListener(this._valueChangedListener);
 
-        //Fix the disappearing selected item.
-        //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
-        var mInputTextField = java.lang.Class.forName("android.widget.NumberPicker").getDeclaredField("mInputText");
-        mInputTextField.setAccessible(true);
-        this._editText = <android.widget.EditText>mInputTextField.get(this._android);
-        this._editText.setFilters([]);
+        if (editText) {
+            //Fix the disappearing selected item.
+            //HACK: http://stackoverflow.com/questions/17708325/android-numberpicker-with-formatter-does-not-format-on-first-rendering/26797732
+            editText.setFilters([]);
 
-        //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
-        this._editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
-    }
-
-    public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        super._onSelectedIndexPropertyChanged(data);
-        if (this.android && types.isNumber(data.newValue)) {
-            this.android.setValue(data.newValue);
-        }
-    }
-
-    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.android) {
-            if (!data.newValue || !data.newValue.length) {
-                this.android.setMaxValue(0);
-            }
-            else {
-                this.android.setMaxValue(data.newValue.length - 1);
-            }
-
-            this.android.setWrapSelectorWheel(false);
+            //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
+            editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
         }
 
-        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
-
-        this._fixNumberPickerRendering();
+        this._android.setWrapSelectorWheel(false);
+        this.nativeView = this._android;
     }
 
     private _fixNumberPickerRendering() {
-        if (!this.android) {
-            return;
-        }
-
         //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
-        this.android.setFormatter(null);
-        this.android.setFormatter(this._formatter); //Force the NumberPicker to call our Formatter 
+        this._android.setFormatter(null);
+        this._android.setFormatter(this._formatter); //Force the NumberPicker to call our Formatter 
         if (this._editText) {
             this._editText.setFilters([]);
+            this._editText.invalidate(); //Force the EditText to redraw
         }
-        this._editText.invalidate(); //Force the EditText to redraw
         this.android.invalidate();
     }
-}
 
-export class ListPickerStyler implements Styler {
-    // color
-    private static setColorProperty(view: View, newValue: any) {
-        var picker = <android.widget.NumberPicker>view._nativeView;
-        ListPickerStyler._setNumberPickerTextColor(picker, newValue);
+    get [selectedIndexProperty.native](): number {
+        return -1;
+    }
+    set [selectedIndexProperty.native](value: number) {
+        if (value >= 0) {
+            this.android.setValue(value);
+        }
     }
 
-    private static resetColorProperty(view: View, nativeValue: any) {
-        var picker = <android.widget.NumberPicker>view._nativeView;
-        ListPickerStyler._setNumberPickerTextColor(picker, nativeValue);
+    get [itemsProperty.native](): any[] {
+        return null;
+    }
+    set [itemsProperty.native](value: any[] | ItemsSource) {
+        let maxValue = value && value.length > 0 ? value.length - 1 : 0;
+        this.android.setMaxValue(maxValue);
+        this._fixNumberPickerRendering();
     }
 
-    public static registerHandlers() {
-        registerHandler(colorProperty, new StylePropertyChangedHandler(
-            ListPickerStyler.setColorProperty,
-            ListPickerStyler.resetColorProperty), "ListPicker");
+    get [colorProperty.native](): { wheelColor: number, textColor: number } {
+        return {
+            wheelColor: this._selectorWheelPaint.getColor(),
+            textColor: this._editText ? this._editText.getTextColors().getDefaultColor() : -1
+        }
     }
 
-    private static _setNumberPickerTextColor(picker: android.widget.NumberPicker, newValue: any) {
-        let childrenCount = picker.getChildCount();
+    set [colorProperty.native](value: { wheelColor: number, textColor: number } | Color) {
+        let color: number;
+        let wheelColor: number;
+        if (value instanceof Color) {
+            color = wheelColor = value.android;
+        } else {
+            color = value.textColor;
+            wheelColor = value.wheelColor;
+        }
 
-        for (let i = 0; i < childrenCount; i++) {
-            let child = picker.getChildAt(i);
-            if (child instanceof android.widget.EditText) {
-                let selectorWheelPaintField = picker.getClass().getDeclaredField("mSelectorWheelPaint");
-                selectorWheelPaintField.setAccessible(true);
-
-                selectorWheelPaintField.get(picker).setColor(newValue);
-                (<android.widget.EditText>picker.getChildAt(i)).setTextColor(newValue);
-            }
+        this._selectorWheelPaint.setColor(wheelColor);
+        if (this._editText) {
+            this._editText.setTextColor(color);
         }
     }
 }
-
-ListPickerStyler.registerHandlers();

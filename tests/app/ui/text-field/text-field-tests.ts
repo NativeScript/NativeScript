@@ -1,22 +1,22 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import pagesModule = require("ui/page");
-import textFieldTestsNative = require("./text-field-tests-native");
-import colorModule = require("color");
-import enums = require("ui/enums");
-import platform = require("platform");
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as pagesModule from "ui/page";
+import * as textFieldTestsNative from "./text-field-tests-native";
+import * as colorModule from "color";
+import * as enums from "ui/enums";
+import * as platform from "platform";
+import * as formattedStringModule from "text/formatted-string";
+import * as spanModule from "text/span";
 
 // >> require-textfield
-import textFieldModule = require("ui/text-field");
+import * as textFieldModule from "ui/text-field";
 // << require-textfield
 // Other frequently used modules when working with buttons include:
 
-import bindable = require("ui/core/bindable");
+import * as bindable from "ui/core/bindable";
 // >> require-observable-textfield
-import observable = require("data/observable");
+import * as observable from "data/observable";
 // << require-observable-textfield
 
 // ### Binding two TextFields text property to observable view-model property.
@@ -192,7 +192,7 @@ if (platform.device.os === platform.platformNames.ios) {
         helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
             var textField = <textFieldModule.TextField>views[0];
             textField.color = new colorModule.Color("red");
-            TKUnit.assertEqual(textField.color.ios.CGColor, textField.ios.tintColor.CGColor, "textField.color");
+            TKUnit.assertEqual(textField.color.ios.CGColor, textField.ios.textColor.CGColor, "textField.color");
         });
     }
 }
@@ -224,7 +224,7 @@ export var testBindTextToBindingContext = function () {
 export var testTextIsUpdatedWhenUserTypes = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-        textField.updateTextTrigger = enums.UpdateTextTrigger.focusLost;
+        textField.updateTextTrigger = "focusLost";
 
         var expectedValue = "Hello, world!";
         textFieldTestsNative.typeTextNatively(textField, expectedValue);
@@ -463,7 +463,7 @@ export var testNativeBackgroundColorFromLocal = function () {
     });
 }
 
-var expectedTextAlignment = enums.TextAlignment.right;
+var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var view = <textFieldModule.TextField>views[0];
@@ -540,9 +540,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration");
-        TKUnit.assertTrue(isNaN(view.style.letterSpacing), "LetterSpacing");
+        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform default value");
+        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration default value");
+        TKUnit.assertTrue(view.style.letterSpacing === 0, "LetterSpacing default value");
 
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");

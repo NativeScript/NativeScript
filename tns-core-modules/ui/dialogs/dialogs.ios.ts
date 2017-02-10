@@ -1,27 +1,24 @@
 ﻿/**
  * iOS specific dialogs functions implementation.
  */
-import dialogs = require("ui/dialogs");
-import dialogsCommon = require("./dialogs-common");
-import types = require("utils/types");
 
+import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from "ui/dialogs";
+import { getCurrentPage, getLabelColor, getButtonColor, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
+import { isString, isDefined, isFunction } from "utils/types";
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 
-global.moduleMerge(dialogsCommon, exports);
+export * from "./dialogs-common";
 
 class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
     public static ObjCProtocols = [UIAlertViewDelegate];
 
-    static new(): UIAlertViewDelegateImpl {
-        return <UIAlertViewDelegateImpl>super.new();
-    }
-
     private _callback: (view: any, index: number) => void;
 
-    public initWithCallback(callback: (view: any, index: number) => void): UIAlertViewDelegateImpl {
-        this._callback = callback;
-        return this;
+    public static initWithCallback(callback: (view: any, index: number) => void): UIAlertViewDelegateImpl {
+        let delegate = <UIAlertViewDelegateImpl>UIAlertViewDelegateImpl.new();
+        delegate._callback = callback;
+        return delegate;
     }
 
     public alertViewClickedButtonAtIndex(view, index) {
@@ -32,15 +29,12 @@ class UIAlertViewDelegateImpl extends NSObject implements UIAlertViewDelegate {
 class UIActionSheetDelegateImpl extends NSObject implements UIActionSheetDelegate {
     public static ObjCProtocols = [UIActionSheetDelegate];
 
-    static new(): UIActionSheetDelegateImpl {
-        return <UIActionSheetDelegateImpl>super.new();
-    }
-
     private _callback: (actionSheet: UIActionSheet, index: number) => void;
 
-    public initWithCallback(callback: (actionSheet: UIActionSheet, index: number) => void): UIActionSheetDelegateImpl {
-        this._callback = callback;
-        return this;
+    public static initWithCallback(callback: (actionSheet: UIActionSheet, index: number) => void): UIActionSheetDelegateImpl {
+        let delegate = <UIActionSheetDelegateImpl>UIActionSheetDelegateImpl.new();
+        delegate._callback = callback;
+        return delegate;
     }
 
     public actionSheetClickedButtonAtIndex(actionSheet, index) {
@@ -48,8 +42,8 @@ class UIActionSheetDelegateImpl extends NSObject implements UIActionSheetDelegat
     }
 }
 
-function createUIAlertView(options: dialogs.DialogOptions): UIAlertView {
-    var alert = UIAlertView.new();
+function createUIAlertView(options: DialogOptions): UIAlertView {
+    let alert = UIAlertView.new();
     alert.title = options && options.title ? options.title : "";
     alert.message = options && options.message ? options.message : "";
     return alert;
@@ -61,7 +55,7 @@ enum allertButtons {
     ok = 1 << 2,
 }
 
-function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOptions): void {
+function addButtonsToAlertDialog(alert: UIAlertView, options: ConfirmOptions): void {
     if (!options) {
         return;
     }
@@ -83,9 +77,9 @@ function addButtonsToAlertDialog(alert: UIAlertView, options: dialogs.ConfirmOpt
 }
 
 function getDialogResult(buttons: allertButtons, index: number) {
-    var hasCancel = buttons & allertButtons.cancel;
-    var hasNeutral = buttons & allertButtons.neutral;
-    var hasOk = buttons & allertButtons.ok;
+    let hasCancel = buttons & allertButtons.cancel;
+    let hasNeutral = buttons & allertButtons.neutral;
+    let hasOk = buttons & allertButtons.ok;
 
     if (hasCancel && hasNeutral && hasOk) {
         return index === 0 ? false : index === 2 ? true : undefined;
@@ -104,24 +98,24 @@ function getDialogResult(buttons: allertButtons, index: number) {
     return undefined;
 }
 
-function addButtonsToAlertController(alertController: UIAlertController, options: dialogs.ConfirmOptions, callback?: Function): void {
+function addButtonsToAlertController(alertController: UIAlertController, options: ConfirmOptions, callback?: Function): void {
     if (!options) {
         return;
     }
 
-    if (types.isString(options.cancelButtonText)) {
+    if (isString(options.cancelButtonText)) {
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
             raiseCallback(callback, false);
         }));
     }
 
-    if (types.isString(options.neutralButtonText)) {
+    if (isString(options.neutralButtonText)) {
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.neutralButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
             raiseCallback(callback, undefined);
         }));
     }
 
-    if (types.isString(options.okButtonText)) {
+    if (isString(options.okButtonText)) {
         alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.okButtonText, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
             raiseCallback(callback, true);
         }));
@@ -129,26 +123,26 @@ function addButtonsToAlertController(alertController: UIAlertController, options
 }
 
 function raiseCallback(callback, result) {
-    if (types.isFunction(callback)) {
+    if (isFunction(callback)) {
         callback(result);
     }
 }
 export function alert(arg: any): Promise<void> {
     return new Promise<void>((resolve, reject) => {
         try {
-            var options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.ALERT, okButtonText: dialogsCommon.OK, message: arg + "" } : arg;
+            let options = !isDialogOptions(arg) ? { title: ALERT, okButtonText: OK, message: arg + "" } : arg;
 
             if (utils.ios.MajorVersion < 8) {
-                var alert = createUIAlertView(options);
+                let alert = createUIAlertView(options);
 
                 if (options.okButtonText) {
                     alert.addButtonWithTitle(options.okButtonText);
                 }
 
-                // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
-                var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
+                // Assign first to local letiable, otherwise it will be garbage collected since delegate is weak reference.
+                let delegate = UIAlertViewDelegateImpl.initWithCallback(function (view, index) {
                     resolve();
-                    // Remove the local variable for the delegate.
+                    // Remove the local letiable for the delegate.
                     delegate = undefined;
                 });
 
@@ -156,7 +150,7 @@ export function alert(arg: any): Promise<void> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+                let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 addButtonsToAlertController(alertController, options, () => { resolve(); });
 
@@ -171,18 +165,18 @@ export function alert(arg: any): Promise<void> {
 export function confirm(arg: any): Promise<boolean> {
     return new Promise<boolean>((resolve, reject) => {
         try {
-            var options = !dialogsCommon.isDialogOptions(arg) ? { title: dialogsCommon.CONFIRM, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL, message: arg + "" } : arg;
+            let options = !isDialogOptions(arg) ? { title: CONFIRM, okButtonText: OK, cancelButtonText: CANCEL, message: arg + "" } : arg;
 
             if (utils.ios.MajorVersion < 8) {
-                var alert = createUIAlertView(options);
+                let alert = createUIAlertView(options);
 
                 addButtonsToAlertDialog(alert, options);
 
-                // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
-                var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
+                // Assign first to local letiable, otherwise it will be garbage collected since delegate is weak reference.
+                let delegate = UIAlertViewDelegateImpl.initWithCallback(function (view, index) {
                     resolve(getDialogResult(alert.tag, index));
 
-                    // Remove the local variable for the delegate.
+                    // Remove the local letiable for the delegate.
                     delegate = undefined;
                 });
 
@@ -190,7 +184,7 @@ export function confirm(arg: any): Promise<boolean> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+                let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 addButtonsToAlertController(alertController, options, (r) => { resolve(r); });
 
@@ -203,39 +197,39 @@ export function confirm(arg: any): Promise<boolean> {
     });
 }
 
-export function prompt(arg: any): Promise<dialogs.PromptResult> {
-    var options: dialogs.PromptOptions;
+export function prompt(arg: any): Promise<PromptResult> {
+    let options: PromptOptions;
 
-    var defaultOptions = {
-        title: dialogsCommon.PROMPT,
-        okButtonText: dialogsCommon.OK,
-        cancelButtonText: dialogsCommon.CANCEL,
-        inputType: dialogs.inputType.text,
+    let defaultOptions = {
+        title: PROMPT,
+        okButtonText: OK,
+        cancelButtonText: CANCEL,
+        inputType: inputType.text,
     };
 
     if (arguments.length === 1) {
-        if (types.isString(arg)) {
+        if (isString(arg)) {
             options = defaultOptions;
             options.message = arg;
         } else {
             options = arg;
         }
     } else if (arguments.length === 2) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.defaultText = arguments[1];
         }
     }
 
-    return new Promise<dialogs.PromptResult>((resolve, reject) => {
+    return new Promise<PromptResult>((resolve, reject) => {
         try {
-            var textField: UITextField;
+            let textField: UITextField;
 
             if (utils.ios.MajorVersion < 8) {
-                var alert = createUIAlertView(options);
+                let alert = createUIAlertView(options);
 
-                if (options.inputType === dialogs.inputType.password) {
+                if (options.inputType === inputType.password) {
                     alert.alertViewStyle = UIAlertViewStyle.SecureTextInput;
                 } else {
                     alert.alertViewStyle = UIAlertViewStyle.PlainTextInput;
@@ -244,12 +238,12 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
                 addButtonsToAlertDialog(alert, options);
 
                 textField = alert.textFieldAtIndex(0);
-                textField.text = types.isString(options.defaultText) ? options.defaultText : "";
+                textField.text = isString(options.defaultText) ? options.defaultText : "";
 
-                // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
-                var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
+                // Assign first to local letiable, otherwise it will be garbage collected since delegate is weak reference.
+                let delegate = UIAlertViewDelegateImpl.initWithCallback(function (view, index) {
                     resolve({ result: getDialogResult(alert.tag, index), text: textField.text });
-                    // Remove the local variable for the delegate.
+                    // Remove the local letiable for the delegate.
                     delegate = undefined;
                 });
 
@@ -257,13 +251,13 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+                let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
-                    arg.text = types.isString(options.defaultText) ? options.defaultText : "";
-                    arg.secureTextEntry = options && options.inputType === dialogs.inputType.password;
+                    arg.text = isString(options.defaultText) ? options.defaultText : "";
+                    arg.secureTextEntry = options && options.inputType === inputType.password;
 
-                    var color = dialogsCommon.getTextFieldColor();
+                    let color = getTextFieldColor();
                     if (color) {
                         arg.textColor = arg.tintColor = color.ios;
                     }
@@ -283,26 +277,26 @@ export function prompt(arg: any): Promise<dialogs.PromptResult> {
     });
 }
 
-export function login(arg: any): Promise<dialogs.LoginResult> {
-    var options: dialogs.LoginOptions;
+export function login(arg: any): Promise<LoginResult> {
+    let options: LoginOptions;
 
-    var defaultOptions = { title: dialogsCommon.LOGIN, okButtonText: dialogsCommon.OK, cancelButtonText: dialogsCommon.CANCEL };
+    let defaultOptions = { title: LOGIN, okButtonText: OK, cancelButtonText: CANCEL };
 
     if (arguments.length === 1) {
-        if (types.isString(arguments[0])) {
+        if (isString(arguments[0])) {
             options = defaultOptions;
             options.message = arguments[0];
         } else {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userName = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1]) && types.isString(arguments[2])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isString(arguments[2])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.userName = arguments[1];
@@ -310,28 +304,28 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
         }
     }
 
-    return new Promise<dialogs.LoginResult>((resolve, reject) => {
+    return new Promise<LoginResult>((resolve, reject) => {
         try {
-            var userNameTextField: UITextField;
-            var passwordTextField: UITextField;
+            let userNameTextField: UITextField;
+            let passwordTextField: UITextField;
 
             if (utils.ios.MajorVersion < 8) {
-                var alert = createUIAlertView(options);
+                let alert = createUIAlertView(options);
 
                 alert.alertViewStyle = UIAlertViewStyle.LoginAndPasswordInput;
 
                 addButtonsToAlertDialog(alert, options);
 
                 userNameTextField = alert.textFieldAtIndex(0);
-                userNameTextField.text = types.isString(options.userName) ? options.userName : "";
+                userNameTextField.text = isString(options.userName) ? options.userName : "";
 
                 passwordTextField = alert.textFieldAtIndex(1);
-                passwordTextField.text = types.isString(options.password) ? options.password : "";
+                passwordTextField.text = isString(options.password) ? options.password : "";
 
-                // Assign first to local variable, otherwise it will be garbage collected since delegate is weak reference.
-                var delegate = UIAlertViewDelegateImpl.new().initWithCallback(function (view, index) {
+                // Assign first to local letiable, otherwise it will be garbage collected since delegate is weak reference.
+                let delegate = UIAlertViewDelegateImpl.initWithCallback(function (view, index) {
                     resolve({ result: getDialogResult(alert.tag, index), userName: userNameTextField.text, password: passwordTextField.text });
-                    // Remove the local variable for the delegate.
+                    // Remove the local letiable for the delegate.
                     delegate = undefined;
                 });
 
@@ -339,13 +333,13 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 
                 alert.show();
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
+                let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.Alert);
 
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.placeholder = "Login";
-                    arg.text = types.isString(options.userName) ? options.userName : "";
+                    arg.text = isString(options.userName) ? options.userName : "";
 
-                    var color = dialogsCommon.getTextFieldColor();
+                    let color = getTextFieldColor();
                     if (color) {
                         arg.textColor = arg.tintColor = color.ios;
                     }
@@ -354,9 +348,9 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.placeholder = "Password";
                     arg.secureTextEntry = true;
-                    arg.text = types.isString(options.password) ? options.password : "";
+                    arg.text = isString(options.password) ? options.password : "";
 
-                    var color = dialogsCommon.getTextFieldColor();
+                    let color = getTextFieldColor();
                     if (color) {
                         arg.textColor = arg.tintColor = color.ios;
                     }
@@ -387,9 +381,9 @@ export function login(arg: any): Promise<dialogs.LoginResult> {
 }
 
 function showUIAlertController(alertController: UIAlertController) {
-    var currentPage = dialogsCommon.getCurrentPage();
+    let currentPage = getCurrentPage();
     if (currentPage) {
-        var viewController: UIViewController = currentPage.modal ? currentPage.modal.ios : currentPage.ios;
+        let viewController: UIViewController = currentPage.modal ? currentPage.modal.ios : currentPage.ios;
         if (viewController) {
             if (alertController.popoverPresentationController) {
                 alertController.popoverPresentationController.sourceView = viewController.view;
@@ -397,19 +391,19 @@ function showUIAlertController(alertController: UIAlertController) {
                 alertController.popoverPresentationController.permittedArrowDirections = 0;
             }
 
-            var color = dialogsCommon.getButtonColor();
+            let color = getButtonColor();
             if (color) {
                 alertController.view.tintColor = color.ios;
             }
 
-            var lblColor = dialogsCommon.getLabelColor();
+            let lblColor = getLabelColor();
             if (lblColor) {
                 if (alertController.title) {
-                    var title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                    let title = NSAttributedString.alloc().initWithStringAttributes(alertController.title, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
                     alertController.setValueForKey(title, "attributedTitle");
                 }
                 if (alertController.message) {
-                    var message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
+                    let message = NSAttributedString.alloc().initWithStringAttributes(alertController.message, <any>{ [NSForegroundColorAttributeName]: lblColor.ios });
                     alertController.setValueForKey(message, "attributedMessage");
                 }
             }
@@ -420,25 +414,25 @@ function showUIAlertController(alertController: UIAlertController) {
 }
 
 export function action(arg: any): Promise<string> {
-    var options: dialogs.ActionOptions;
+    let options: ActionOptions;
 
-    var defaultOptions = { title: null, cancelButtonText: dialogsCommon.CANCEL };
+    let defaultOptions = { title: null, cancelButtonText: CANCEL };
 
     if (arguments.length === 1) {
-        if (types.isString(arguments[0])) {
+        if (isString(arguments[0])) {
             options = defaultOptions;
             options.message = arguments[0];
         } else {
             options = arguments[0];
         }
     } else if (arguments.length === 2) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1])) {
+        if (isString(arguments[0]) && isString(arguments[1])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.cancelButtonText = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (types.isString(arguments[0]) && types.isString(arguments[1]) && types.isDefined(arguments[2])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && isDefined(arguments[2])) {
             options = defaultOptions;
             options.message = arguments[0];
             options.cancelButtonText = arguments[1];
@@ -448,31 +442,31 @@ export function action(arg: any): Promise<string> {
 
     return new Promise<string>((resolve, reject) => {
         try {
-            var i: number;
-            var action: string;
+            let i: number;
+            let action: string;
 
             if (utils.ios.MajorVersion < 8) {
-                var actionSheet = UIActionSheet.new();
+                let actionSheet = UIActionSheet.new();
 
-                if (types.isString(options.message)) {
+                if (isString(options.message)) {
                     actionSheet.title = options.message;
                 }
 
                 if (options.actions) {
                     for (i = 0; i < options.actions.length; i++) {
                         action = options.actions[i];
-                        if (types.isString(action)) {
+                        if (isString(action)) {
                             actionSheet.addButtonWithTitle(action);
                         }
                     }
                 }
 
-                if (types.isString(options.cancelButtonText)) {
+                if (isString(options.cancelButtonText)) {
                     actionSheet.addButtonWithTitle(options.cancelButtonText);
                     actionSheet.cancelButtonIndex = actionSheet.numberOfButtons - 1;
                 }
 
-                var delegate = UIActionSheetDelegateImpl.new().initWithCallback(function (sender: UIActionSheet, index: number) {
+                let delegate = UIActionSheetDelegateImpl.initWithCallback(function (sender: UIActionSheet, index: number) {
                     resolve(sender.buttonTitleAtIndex(index));
                     delegate = undefined;
                 });
@@ -480,12 +474,12 @@ export function action(arg: any): Promise<string> {
                 actionSheet.delegate = delegate;
                 actionSheet.showInView(getter(UIApplication, UIApplication.sharedApplication).keyWindow);
             } else {
-                var alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
+                let alertController = UIAlertController.alertControllerWithTitleMessagePreferredStyle(options.title, options.message, UIAlertControllerStyle.ActionSheet);
 
                 if (options.actions) {
                     for (i = 0; i < options.actions.length; i++) {
                         action = options.actions[i];
-                        if (types.isString(action)) {
+                        if (isString(action)) {
                             alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(action, UIAlertActionStyle.Default, (arg: UIAlertAction) => {
                                 resolve(arg.title);
                             }));
@@ -493,7 +487,7 @@ export function action(arg: any): Promise<string> {
                     }
                 }
 
-                if (types.isString(options.cancelButtonText)) {
+                if (isString(options.cancelButtonText)) {
                     alertController.addAction(UIAlertAction.actionWithTitleStyleHandler(options.cancelButtonText, UIAlertActionStyle.Cancel, (arg: UIAlertAction) => {
                         resolve(arg.title);
                     }));

@@ -1,7 +1,7 @@
-﻿import frame = require("ui/frame");
-import pages = require("ui/page");
-import buttonModule = require("ui/button");
-import tabViewModule = require("ui/tab-view");
+﻿import * as frame from "ui/frame";
+import * as pages from "ui/page";
+import * as buttonModule from "ui/button";
+import * as tabViewModule from "ui/tab-view";
 
 export function createPage() {
     var tab = new tabViewModule.TabView();

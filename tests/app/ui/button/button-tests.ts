@@ -1,20 +1,19 @@
-﻿import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
-import viewModule = require("ui/core/view");
-import pagesModule = require("ui/page");
-import buttonTestsNative = require("./button-tests-native");
-import colorModule = require("color");
-import enums = require("ui/enums");
-import formattedStringModule = require("text/formatted-string");
-import spanModule = require("text/span");
+﻿import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
+import * as viewModule from "ui/core/view";
+import * as pagesModule from "ui/page";
+import * as buttonTestsNative from "./button-tests-native";
+import * as colorModule from "color";
+import * as formattedStringModule from "text/formatted-string";
+import * as spanModule from "text/span";
 
 // >> button-require
-import buttonModule = require("ui/button");
+import * as buttonModule from "ui/button";
 // << button-require
 
 // >> button-require-others
-import bindable = require("ui/core/bindable");
-import observable = require("data/observable");
+import * as bindable from "ui/core/bindable";
+import * as observable from "data/observable";
 // << button-require-others
 
 export var testSetText = function () {
@@ -235,7 +234,7 @@ var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View
     TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
 }
 
-var expectedTextAlignment = enums.TextAlignment.right;
+var expectedTextAlignment: "right" = "right";
 export var testLocalTextAlignmentFromCss = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
@@ -349,9 +348,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }
@@ -362,9 +361,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }

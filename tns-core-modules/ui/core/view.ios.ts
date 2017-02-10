@@ -1,81 +1,36 @@
-﻿import types = require("utils/types");
-import viewCommon = require("./view-common");
-import viewDefinition = require("ui/core/view");
-import trace = require("trace");
-import utils = require("utils/utils");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import style = require("ui/styling/style");
-import enums = require("ui/enums");
-import * as backgroundModule from "ui/styling/background";
+﻿import { Point, View as ViewDefinition } from "ui/core/view";
+import { ios } from "ui/styling/background";
+import {
+    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
+    rotateProperty, scaleXProperty, scaleYProperty,
+    translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
+    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background, Visibility, Length
+} from "./view-common";
 
-global.moduleMerge(viewCommon, exports);
+export * from "./view-common";
 
-function onAutomationTextPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._nativeView.accessibilityIdentifier = data.newValue + "";
-    view._nativeView.accessibilityLabel = data.newValue + "";
-}
-(<proxy.PropertyMetadata>viewCommon.View.automationTextProperty.metadata).onSetNativeValue = onAutomationTextPropertyChanged;
+const PFLAG_FORCE_LAYOUT = 1;
+const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
+const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
-function onOriginPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    view._updateOriginPoint();
-}
-(<proxy.PropertyMetadata>viewCommon.View.originXProperty.metadata).onSetNativeValue = onOriginPropertyChanged;
-(<proxy.PropertyMetadata>viewCommon.View.originYProperty.metadata).onSetNativeValue = onOriginPropertyChanged;
-
-function onIsEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    if (!view._nativeView) {
-        return;
-    }
-
-    if (view._nativeView instanceof UIControl) {
-        (<UIControl>view._nativeView).enabled = data.newValue;
-    }
-}
-(<proxy.PropertyMetadata>viewCommon.View.isEnabledProperty.metadata).onSetNativeValue = onIsEnabledPropertyChanged;
-
-function onIsUserInteractionEnabledPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var view = <View>data.object;
-    if (!view._nativeView) {
-        return;
-    }
-
-    view._nativeView.userInteractionEnabled = data.newValue;
-}
-(<proxy.PropertyMetadata>viewCommon.View.isUserInteractionEnabledProperty.metadata).onSetNativeValue = onIsUserInteractionEnabledPropertyChanged;
-
-var PFLAG_FORCE_LAYOUT = 1;
-var PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
-var PFLAG_LAYOUT_REQUIRED = 1 << 2;
-
-export class View extends viewCommon.View {
+export class View extends ViewCommon {
     private _hasTransfrom = false;
-    private _privateFlags: number;
+    private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
 
-    constructor() {
-        super();
-        this._privateFlags = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
+    get _nativeView(): UIView {
+        return this.ios;
     }
 
-    public _addViewCore(view: viewCommon.View, atIndex?: number) {
+    public _addViewCore(view: ViewCommon, atIndex?: number) {
         super._addViewCore(view, atIndex);
         this.requestLayout();
     }
 
-    public _removeViewCore(view: viewCommon.View) {
+    public _removeViewCore(view: ViewCommon) {
         super._removeViewCore(view);
-        // TODO: Detach from the context?
-        view._onDetached();
         this.requestLayout();
-    }
-
-    get _nativeView(): UIView {
-        return this.ios;
     }
 
     get isLayoutRequired(): boolean {
@@ -90,15 +45,15 @@ export class View extends viewCommon.View {
         super.requestLayout();
         this._privateFlags |= PFLAG_FORCE_LAYOUT;
 
-        var parent = <View>this.parent;
+        let parent = <View>this.parent;
         if (parent && !parent.isLayoutRequested) {
             parent.requestLayout();
         }
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
-        var forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
+        let measureSpecsChanged = this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
+        let forceLayout = (this._privateFlags & PFLAG_FORCE_LAYOUT) === PFLAG_FORCE_LAYOUT;
         if (forceLayout || measureSpecsChanged) {
 
             // first clears the measured dimension flag
@@ -117,7 +72,7 @@ export class View extends viewCommon.View {
     }
 
     public layout(left: number, top: number, right: number, bottom: number): void {
-        var { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
+        let { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.layoutNativeView(left, top, right, bottom);
         if (boundsChanged || (this._privateFlags & PFLAG_LAYOUT_REQUIRED) === PFLAG_LAYOUT_REQUIRED) {
             this.onLayout(left, top, right, bottom);
@@ -137,35 +92,35 @@ export class View extends viewCommon.View {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var view = this._nativeView;
+        let view = this.nativeView;
         let nativeWidth = 0;
         let nativeHeight = 0;
 
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
         if (view) {
-            var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-            var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
-
-            var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-            var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
-
-            if (widthMode === utils.layout.UNSPECIFIED) {
+            if (widthMode === layout.UNSPECIFIED) {
                 width = Number.POSITIVE_INFINITY;
             }
 
-            if (heightMode === utils.layout.UNSPECIFIED) {
+            if (heightMode === layout.UNSPECIFIED) {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            var nativeSize = view.sizeThatFits(CGSizeMake(width, height));
+            let nativeSize = view.sizeThatFits(CGSizeMake(width, height));
             nativeWidth = nativeSize.width;
             nativeHeight = nativeSize.height;
         }
 
-        var measureWidth = Math.max(nativeWidth, this.minWidth);
-        var measureHeight = Math.max(nativeHeight, this.minHeight);
+        let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+        let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
 
-        var widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        var heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -174,10 +129,10 @@ export class View extends viewCommon.View {
         //
     }
 
-    public _setNativeViewFrame(nativeView: any, frame: any) {
+    public _setNativeViewFrame(nativeView: UIView, frame: CGRect) {
         if (!CGRectEqualToRect(nativeView.frame, frame)) {
-            if (trace.enabled) {
-                trace.write(this + ", Native setFrame: = " + NSStringFromCGRect(frame), trace.categories.Layout);
+            if (traceEnabled()) {
+                traceWrite(this + ", Native setFrame: = " + NSStringFromCGRect(frame), traceCategories.Layout);
             }
             this._cachedFrame = frame;
             if (this._hasTransfrom) {
@@ -190,37 +145,24 @@ export class View extends viewCommon.View {
             else {
                 nativeView.frame = frame;
             }
-            var boundsOrigin = nativeView.bounds.origin;
+            let boundsOrigin = nativeView.bounds.origin;
             nativeView.bounds = CGRectMake(boundsOrigin.x, boundsOrigin.y, frame.size.width, frame.size.height);
         }
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-        if (!this._nativeView) {
+        if (!this.nativeView) {
             return;
         }
 
-        // This is done because when rotated in iOS7 there is rotation applied on the first subview on the Window which is our frame.nativeView.view.
-        // If we set it it should be transformed so it is correct.
-        // When in landscape in iOS 7 there is transformation on the first subview of the window so we set frame to its subview.
-        // in iOS 8 we set frame to subview again otherwise we get clipped.
-        var nativeView: UIView;
-        if (!this.parent && this._nativeView.subviews.count > 0 && utils.ios.MajorVersion < 8) {
-            if (trace.enabled) {
-                trace.write(this + " has no parent. Setting frame to first child instead.", trace.categories.Layout);
-            }
-            nativeView = (<UIView>this._nativeView.subviews[0]);
-        }
-        else {
-            nativeView = this._nativeView;
-        }
+        let nativeView = this.nativeView;
 
-        var frame = CGRectMake(left, top, right - left, bottom - top);
+        let frame = CGRectMake(left, top, right - left, bottom - top);
         this._setNativeViewFrame(nativeView, frame);
     }
 
     public _updateLayout() {
-        var oldBounds = this._getCurrentLayoutBounds();
+        let oldBounds = this._getCurrentLayoutBounds();
         this.layoutNativeView(oldBounds.left, oldBounds.top, oldBounds.right, oldBounds.bottom);
     }
 
@@ -232,53 +174,66 @@ export class View extends viewCommon.View {
         return false;
     }
 
-    public getLocationInWindow(): viewDefinition.Point {
-        if (!this._nativeView || !this._nativeView.window) {
+    public getLocationInWindow(): Point {
+        if (!this.nativeView || !this.nativeView.window) {
             return undefined;
         }
 
-        var pointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
+        let pointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
         return {
-            x: utils.layout.toDeviceIndependentPixels(pointInWindow.x),
-            y: utils.layout.toDeviceIndependentPixels(pointInWindow.y),
+            x: layout.toDeviceIndependentPixels(pointInWindow.x),
+            y: layout.toDeviceIndependentPixels(pointInWindow.y),
         };
     }
 
-    public getLocationOnScreen(): viewDefinition.Point {
-        if (!this._nativeView || !this._nativeView.window) {
+    public getLocationOnScreen(): Point {
+        if (!this.nativeView || !this.nativeView.window) {
             return undefined;
         }
 
-        var pointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
-        var pointOnScreen = this._nativeView.window.convertPointToWindow(pointInWindow, null);
+        let pointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
+        let pointOnScreen = this.nativeView.window.convertPointToWindow(pointInWindow, null);
         return {
-            x: utils.layout.toDeviceIndependentPixels(pointOnScreen.x),
-            y: utils.layout.toDeviceIndependentPixels(pointOnScreen.y),
+            x: layout.toDeviceIndependentPixels(pointOnScreen.x),
+            y: layout.toDeviceIndependentPixels(pointOnScreen.y),
         };
     }
 
-    public getLocationRelativeTo(otherView: viewDefinition.View): viewDefinition.Point {
-        if (!this._nativeView || !this._nativeView.window ||
-            !otherView._nativeView || !otherView._nativeView.window ||
-            this._nativeView.window !== otherView._nativeView.window) {
+    public getLocationRelativeTo(otherView: ViewDefinition): Point {
+        if (!this.nativeView || !this.nativeView.window ||
+            !otherView.nativeView || !otherView.nativeView.window ||
+            this.nativeView.window !== otherView.nativeView.window) {
             return undefined;
         }
 
-        var myPointInWindow = this._nativeView.convertPointToView(this._nativeView.bounds.origin, null);
-        var otherPointInWindow = otherView._nativeView.convertPointToView(otherView._nativeView.bounds.origin, null);
+        let myPointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
+        let otherPointInWindow = otherView.nativeView.convertPointToView(otherView.nativeView.bounds.origin, null);
         return {
-            x: utils.layout.toDeviceIndependentPixels(myPointInWindow.x - otherPointInWindow.x),
-            y: utils.layout.toDeviceIndependentPixels(myPointInWindow.y - otherPointInWindow.y),
+            x: layout.toDeviceIndependentPixels(myPointInWindow.x - otherPointInWindow.x),
+            y: layout.toDeviceIndependentPixels(myPointInWindow.y - otherPointInWindow.y),
         };
     }
 
-    private _onSizeChanged() {
-        this.style._sizeChanged();
+    private _onSizeChanged(): void {
+        let nativeView = this.nativeView;
+        if (!nativeView) {
+            return;
+        }
+
+        let background = this.style.backgroundInternal;
+        if (!background.isEmpty()) {
+            this[backgroundInternalProperty.native] = background;
+        }
+
+        let clipPath = this.style.clipPath;
+        if (clipPath !== "") {
+            this[clipPathProperty.native] = clipPath;
+        }
     }
 
-    public _updateNativeTransform() {
-        let translateX = this.translateX || 0;
-        let translateY = this.translateY || 0;
+    public updateNativeTransform() {
+        let translateX = Length.toDevicePixels(this.translateX || 0, 0);
+        let translateY = Length.toDevicePixels(this.translateY || 0, 0);
         let scaleX = this.scaleX || 1;
         let scaleY = this.scaleY || 1;
         let rotate = this.rotate || 0;
@@ -286,37 +241,17 @@ export class View extends viewCommon.View {
         newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
         newTransform = CGAffineTransformScale(newTransform, scaleX === 0 ? 0.001 : scaleX, scaleY === 0 ? 0.001 : scaleY);
-        if (!CGAffineTransformEqualToTransform(this._nativeView.transform, newTransform)) {
-            this._nativeView.transform = newTransform;
-            this._hasTransfrom = this._nativeView && !CGAffineTransformEqualToTransform(this._nativeView.transform, CGAffineTransformIdentity);
+        if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
+            this.nativeView.transform = newTransform;
+            this._hasTransfrom = this.nativeView && !CGAffineTransformEqualToTransform(this.nativeView.transform, CGAffineTransformIdentity);
         }
     }
 
-    public _updateOriginPoint() {
-        let newPoint = CGPointMake(this.originX, this.originY);
-        this._nativeView.layer.anchorPoint = newPoint;
+    public updateOriginPoint(originX: number, originY: number) {
+        let newPoint = CGPointMake(originX, originY);
+        this.nativeView.layer.anchorPoint = newPoint;
         if (this._cachedFrame) {
-            this._setNativeViewFrame(this._nativeView, this._cachedFrame);
-        }
-    }
-
-    public _addToSuperview(superview: any, atIndex?: number): boolean {
-        if (superview && this._nativeView) {
-            if (types.isNullOrUndefined(atIndex) || atIndex >= superview.subviews.count) {
-                superview.addSubview(this._nativeView);
-            } else {
-                superview.insertSubviewAtIndex(this._nativeView, atIndex);
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    public _removeFromSuperview() {
-        if (this._nativeView) {
-            this._nativeView.removeFromSuperview();
+            this._setNativeViewFrame(this.nativeView, this._cachedFrame);
         }
     }
 
@@ -334,6 +269,139 @@ export class View extends viewCommon.View {
     public _isPresentationLayerUpdateSuspeneded() {
         return this._suspendCATransaction;
     }
+
+    get [isEnabledProperty.native](): boolean {
+        let nativeView = this.nativeView;
+        return nativeView instanceof UIControl ? nativeView.enabled : true;
+    }
+    set [isEnabledProperty.native](value: boolean) {
+        let nativeView = this.nativeView;
+        if (nativeView instanceof UIControl) {
+            nativeView.enabled = value;
+        }
+    }
+
+    get [originXProperty.native](): number {
+        return this.nativeView.layer.anchorPoint.x;
+    }
+    set [originXProperty.native](value: number) {
+        this.updateOriginPoint(value, this.originY);
+    }
+
+    get [originYProperty.native](): number {
+        return this.nativeView.layer.anchorPoint.y;
+    }
+    set [originYProperty.native](value: number) {
+        this.updateOriginPoint(this.originX, value);
+    }
+
+    get [automationTextProperty.native](): string {
+        return this.nativeView.accessibilityLabel;
+    }
+    set [automationTextProperty.native](value: string) {
+        this.nativeView.accessibilityIdentifier = value;
+        this.nativeView.accessibilityLabel = value;
+    }
+
+    get [isUserInteractionEnabledProperty.native](): boolean {
+        return this.nativeView.userInteractionEnabled;
+    }
+    set [isUserInteractionEnabledProperty.native](value: boolean) {
+        this.nativeView.userInteractionEnabled = value;
+    }
+
+    get [visibilityProperty.native](): Visibility {
+        return this.nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
+    }
+    set [visibilityProperty.native](value: Visibility) {
+        switch (value) {
+            case Visibility.VISIBLE:
+                this.nativeView.hidden = false;
+                break;
+            case Visibility.HIDDEN:
+            case Visibility.COLLAPSE:
+                this.nativeView.hidden = true;
+                break;
+            default:
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+        }
+    }
+
+    get [opacityProperty.native](): number {
+        return this.nativeView.alpha;
+    }
+    set [opacityProperty.native](value: number) {
+        let nativeView = this.nativeView;
+        let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+        if (!updateSuspended) {
+            CATransaction.begin();
+        }
+        nativeView.alpha = value;
+        if (!updateSuspended) {
+            CATransaction.commit();
+        }
+    }
+
+    get [rotateProperty.native](): number {
+        return 0;
+    }
+    set [rotateProperty.native](value: number) {
+        this.updateNativeTransform();
+    }
+
+    get [scaleXProperty.native](): number {
+        return 1;
+    }
+    set [scaleXProperty.native](value: number) {
+        this.updateNativeTransform();
+    }
+
+    get [scaleYProperty.native](): number {
+        return 1;
+    }
+    set [scaleYProperty.native](value: number) {
+        this.updateNativeTransform();
+    }
+
+    get [translateXProperty.native](): Length | number {
+        return 0;
+    }
+    set [translateXProperty.native](value: Length) {
+        this.updateNativeTransform();
+    }
+
+    get [translateYProperty.native](): Length | number {
+        return 0;
+    }
+    set [translateYProperty.native](value: Length) {
+        this.updateNativeTransform();
+    }
+
+    get [zIndexProperty.native](): number {
+        return 0;
+    }
+    set [zIndexProperty.native](value: number) {
+        this.nativeView.layer.zPosition = value;
+    }
+
+    get [backgroundInternalProperty.native](): UIColor {
+        return this.nativeView.backgroundColor;
+    }
+    set [backgroundInternalProperty.native](value: UIColor | Background) {
+        let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+        if (!updateSuspended) {
+            CATransaction.begin();
+        }
+
+        if (value instanceof UIColor) {
+            this.nativeView.backgroundColor = value;
+        } else {
+            this.nativeView.backgroundColor = ios.createBackgroundUIColor(this);
+        }
+        if (!updateSuspended) {
+            CATransaction.commit();
+        }
+    }
 }
 
 export class CustomLayoutView extends View {
@@ -349,10 +417,6 @@ export class CustomLayoutView extends View {
         return this._view;
     }
 
-    get _nativeView(): UIView {
-        return this._view;
-    }
-
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // Don't call super because it will set MeasureDimension. This method must be overriden and calculate its measuredDimensions.
     }
@@ -360,227 +424,27 @@ export class CustomLayoutView extends View {
     public _addViewToNativeVisualTree(child: View, atIndex: number): boolean {
         super._addViewToNativeVisualTree(child, atIndex);
 
-        return child._addToSuperview(this._nativeView, atIndex);
+        const parentNativeView = this.nativeView;
+        const childNativeView = child.nativeView;
+
+        if (parentNativeView && childNativeView) {
+            if (typeof atIndex !== "number" || atIndex >= parentNativeView.subviews.count) {
+                parentNativeView.addSubview(childNativeView);
+            } else {
+                parentNativeView.insertSubviewAtIndex(childNativeView, atIndex);
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
     public _removeViewFromNativeVisualTree(child: View): void {
         super._removeViewFromNativeVisualTree(child);
 
-        child._removeFromSuperview();
+        if (child.nativeView) {
+            child.nativeView.removeFromSuperview();
+        }
     }
 }
-
-export class ViewStyler implements style.Styler {
-    // Background methods
-    private static setBackgroundInternalProperty(view: View, newValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
-            if (!updateSuspended) {
-                CATransaction.begin();
-            }
-            nativeView.backgroundColor = backgroundModule.ios.createBackgroundUIColor(view);
-            
-            if (!updateSuspended) {
-                CATransaction.commit();
-            }
-        }
-    }
-
-    private static resetBackgroundInternalProperty(view: View, nativeValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            nativeView.backgroundColor = nativeValue;
-        }
-    }
-
-    private static getNativeBackgroundInternalValue(view: View): any {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            return nativeView.backgroundColor;
-        }
-        return undefined;
-    }
-
-    // Visibility methods
-    private static setVisibilityProperty(view: View, newValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            return nativeView.hidden = (newValue !== enums.Visibility.visible);
-        }
-    }
-
-    private static resetVisibilityProperty(view: View, nativeValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            return nativeView.hidden = false;
-        }
-    }
-
-    // Opacity methods
-    private static setOpacityProperty(view: View, newValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            var updateSuspended = view._isPresentationLayerUpdateSuspeneded();
-            if (!updateSuspended) {
-                CATransaction.begin();
-            }
-            var alpha = nativeView.alpha = newValue;
-            if (!updateSuspended) {
-                CATransaction.commit();
-            }
-            return alpha;
-        }
-    }
-
-    private static resetOpacityProperty(view: View, nativeValue: any) {
-        var nativeView: UIView = <UIView>view._nativeView;
-        if (nativeView) {
-            return nativeView.alpha = 1.0;
-        }
-    }
-    
-    // Rotate
-    private static setRotateProperty(view: View, newValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static resetRotateProperty(view: View, nativeValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static getRotateProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
-            return Math.atan2(t.b, t.a);
-        }
-        return 0;
-    }
-
-    // ScaleX
-    private static setScaleXProperty(view: View, newValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static resetScaleXProperty(view: View, nativeValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static getScaleXProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
-            return Math.sqrt(t.a * t.a + t.c * t.c);
-        }
-        return 0;
-    }
-
-    // ScaleY
-    private static setScaleYProperty(view: View, newValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static resetScaleYProperty(view: View, nativeValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static getScaleYProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
-            return Math.sqrt(t.b * t.b + t.d * t.d);
-        }
-        return 0;
-    }
-
-    // TranslateX
-    private static setTranslateXProperty(view: View, newValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static resetTranslateXProperty(view: View, nativeValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static getTranslateXProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
-            return t.tx;
-        }
-        return 0;
-    }
-
-    // TranslateY
-    private static setTranslateYProperty(view: View, newValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static resetTranslateYProperty(view: View, nativeValue: any) {
-        view._updateNativeTransform();
-    }
-
-    private static getTranslateYProperty(view: View): any {
-        if (view._nativeView instanceof UIView) {
-            let t: CGAffineTransform = (<UIView>view._nativeView).transform;
-            return t.ty;
-        }
-        return 0;
-    }
-
-    // z-index
-    private static setZIndexProperty(view: View, newValue: any) {
-        view.ios.layer.zPosition = newValue;
-    }
-
-    private static resetZIndexProperty(view: View, nativeValue: any) {
-        view.ios.layer.zPosition = nativeValue;
-    }
-
-    private static getZIndexProperty(view: View): any {
-        return view.ios.layer.zPosition;
-    }
-
-    public static registerHandlers() {
-        style.registerHandler(style.backgroundInternalProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setBackgroundInternalProperty,
-            ViewStyler.resetBackgroundInternalProperty,
-            ViewStyler.getNativeBackgroundInternalValue));
-
-        style.registerHandler(style.visibilityProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setVisibilityProperty,
-            ViewStyler.resetVisibilityProperty));
-
-        style.registerHandler(style.opacityProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setOpacityProperty,
-            ViewStyler.resetOpacityProperty));
-        style.registerHandler(style.rotateProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setRotateProperty,
-            ViewStyler.resetRotateProperty,
-            ViewStyler.getRotateProperty));
-
-        style.registerHandler(style.scaleXProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setScaleXProperty,
-            ViewStyler.resetScaleXProperty,
-            ViewStyler.getScaleXProperty));
-
-        style.registerHandler(style.scaleYProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setScaleYProperty,
-            ViewStyler.resetScaleYProperty,
-            ViewStyler.getScaleYProperty));
-
-        style.registerHandler(style.translateXProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setTranslateXProperty,
-            ViewStyler.resetTranslateXProperty,
-            ViewStyler.getTranslateXProperty));
-
-        style.registerHandler(style.translateYProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setTranslateYProperty,
-            ViewStyler.resetTranslateYProperty,
-            ViewStyler.getTranslateYProperty));
-
-        style.registerHandler(style.zIndexProperty, new style.StylePropertyChangedHandler(
-            ViewStyler.setZIndexProperty,
-            ViewStyler.resetZIndexProperty,
-            ViewStyler.getZIndexProperty));
-    }
-}
-
-ViewStyler.registerHandlers();

@@ -1,11 +1,11 @@
-﻿import TKUnit = require("../../TKUnit");
-import testModule = require("../../ui-test");
-import timePickerTestsNative = require("./time-picker-tests-native");
-import color = require("color");
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as testModule from "../../ui-test";
+import * as timePickerTestsNative from "./time-picker-tests-native";
+import * as color from "color";
+import * as platform from "platform";
 
 // >> require-time-picker
-import timePickerModule = require("ui/time-picker");
+import * as timePickerModule from "ui/time-picker";
 // << require-time-picker
 
 function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: number, expectedMinute) {
@@ -128,7 +128,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
         this.testView.hour = 14;
         this.testView.maxHour = this.testView.hour + 1;
         TKUnit.assertThrows(function() {
-            this.testView.hour = this.testView.maxHour + 1;;
+            this.testView.hour = this.testView.maxHour + 1;
         }, "Setting hour property to a value greater than maxHour property value should throw.");
     }
 

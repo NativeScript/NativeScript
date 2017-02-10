@@ -1,12 +1,9 @@
-﻿import common = require("./list-picker-common");
-import dependencyObservable = require("ui/core/dependency-observable");
-import * as types from "utils/types";
-import { backgroundColorProperty, colorProperty, registerHandler, Styler, StylePropertyChangedHandler } from "ui/styling/style";
-import { View } from "ui/core/view";
+﻿import { ListPickerBase, Color, selectedIndexProperty, itemsProperty, backgroundColorProperty, colorProperty } from "./list-picker-common";
+import { ItemsSource } from "ui/list-picker";
 
-global.moduleMerge(common, exports);
+export * from "./list-picker-common";
 
-export class ListPicker extends common.ListPicker {
+export class ListPicker extends ListPickerBase {
     private _ios: UIPickerView;
     private _dataSource: ListPickerDataSource;
     private _delegate: ListPickerDelegateImpl;
@@ -17,6 +14,8 @@ export class ListPicker extends common.ListPicker {
         this._ios = UIPickerView.new();
         this._ios.dataSource = this._dataSource = ListPickerDataSource.initWithOwner(new WeakRef(this));
         this._delegate = ListPickerDelegateImpl.initWithOwner(new WeakRef(this));
+
+        this.nativeView = this._ios;
     }
 
     public onLoaded() {
@@ -33,19 +32,34 @@ export class ListPicker extends common.ListPicker {
         return this._ios;
     }
 
-    public _onSelectedIndexPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        super._onSelectedIndexPropertyChanged(data);
-        if (this.ios && types.isNumber(data.newValue)) {
-            this.ios.selectRowInComponentAnimated(data.newValue, 0, false);
+    get [selectedIndexProperty.native](): number {
+        return -1;
+    }
+    set [selectedIndexProperty.native](value: number) {
+        if (value >= 0) {
+            this.ios.selectRowInComponentAnimated(value, 0, false);
         }
     }
 
-    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (this.ios) {
-            this.ios.reloadAllComponents();
-        }
+    get [itemsProperty.native](): any[] {
+        return null;
+    }
+    set [itemsProperty.native](value: any[] | ItemsSource) {
+        this.ios.reloadAllComponents();
+    }
 
-        this._updateSelectedIndexOnItemsPropertyChanged(data.newValue);
+    get [backgroundColorProperty.native](): UIColor {
+        return this._ios.backgroundColor;
+    }
+    set [backgroundColorProperty.native](value: UIColor | Color) {
+        this._ios.backgroundColor = value instanceof Color ? value.ios : value;
+    }
+
+    get [colorProperty.native](): UIColor {
+        return this._ios.tintColor;
+    }
+    set [colorProperty.native](value: UIColor | Color) {
+        this._ios.tintColor = value instanceof Color ? value.ios : value;
     }
 }
 
@@ -93,55 +107,7 @@ class ListPickerDelegateImpl extends NSObject implements UIPickerViewDelegate {
     public pickerViewDidSelectRowInComponent(pickerView: UIPickerView, row: number, component: number): void {
         let owner = this._owner.get();
         if (owner) {
-            owner._onPropertyChangedFromNative(common.ListPicker.selectedIndexProperty, row);
+            selectedIndexProperty.nativeValueChange(owner, row);
         }
     }
 }
-
-export class ListPickerStyler implements Styler {
-    // background-color
-    private static setBackgroundColorProperty(view: View, newValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.backgroundColor = newValue;
-    }
-
-    private static resetBackgroundColorProperty(view: View, nativeValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.backgroundColor = nativeValue;
-    }
-
-    private static getBackgroundColorProperty(view: View): any {
-        var picker = <UIPickerView>view._nativeView;
-        return picker.backgroundColor;
-    }
-    
-    // color
-    private static setColorProperty(view: View, newValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.tintColor = newValue;
-    }
-
-    private static resetColorProperty(view: View, nativeValue: any) {
-        var picker = <UIPickerView>view._nativeView;
-        picker.tintColor = nativeValue;
-    }
-
-    private static getColorProperty(view: View): any {
-        var picker = <UIPickerView>view._nativeView;
-        return picker.tintColor;
-    }
-
-    public static registerHandlers() {
-        registerHandler(backgroundColorProperty, new StylePropertyChangedHandler(
-            ListPickerStyler.setBackgroundColorProperty,
-            ListPickerStyler.resetBackgroundColorProperty,
-            ListPickerStyler.getBackgroundColorProperty), "ListPicker");
-
-        registerHandler(colorProperty, new StylePropertyChangedHandler(
-            ListPickerStyler.setColorProperty,
-            ListPickerStyler.resetColorProperty,
-            ListPickerStyler.getColorProperty), "ListPicker");
-    }
-}
-
-ListPickerStyler.registerHandlers();

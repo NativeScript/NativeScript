@@ -1,10 +1,8 @@
-﻿import TKUnit = require("../../TKUnit");
-import layoutHelper = require("./layout-helper");
-import enums = require("ui/enums");
-import testModule = require("../../ui-test");
-import {LayoutBase} from "ui/layouts/layout-base";
-import {widthProperty} from "ui/styling/style"
-import platform = require("platform");
+﻿import * as TKUnit from "../../TKUnit";
+import * as layoutHelper from "./layout-helper";
+import * as testModule from "../../ui-test";
+import {LayoutBase, unsetValue, PercentLength} from "ui/layouts/layout-base";
+import * as platform from "platform";
 
 function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
     var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
@@ -21,12 +19,12 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
     }
 
     let layout = test.testView;
-    layout.width = layoutHelper.dp(200);
-    layout.height = layoutHelper.dp(200);
+    layout.width = { value: 200, unit: "px" };
+    layout.height = { value: 200, unit: "px" };
 
     let btn = new layoutHelper.MyButton();
-    btn.width = layoutHelper.dp(100);
-    btn.height = layoutHelper.dp(100);
+    btn.width = { value: 100, unit: "px" };
+    btn.height = { value: 100, unit: "px" };
     btn.margin = "10%";
     layout.addChild(btn);
 
@@ -56,8 +54,9 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
     TKUnit.assertEqual(lp.heightPercent, 0.5, "heightPercent");
 
     btn.margin = "0";
-    btn.height = Number.NaN;
-    (<any>btn.style)._resetValue(widthProperty);
+    btn.height = unsetValue;
+    btn.style.width = unsetValue;
+
     test.waitUntilTestElementLayoutIsValid();
 
     TKUnit.assertEqual(lp.width, -1, "width");
@@ -77,12 +76,12 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
 export function percent_support_children_test(test: testModule.UITest<LayoutBase>) {
     let layout: LayoutBase = test.testView;
     layout.removeChildren();
-    layout.width = layoutHelper.dp(200);
-    layout.height = layoutHelper.dp(200);
+    layout.width = { value: 200, unit: "px" };
+    layout.height = { value: 200, unit: "px" };
 
     let btn = new layoutHelper.MyButton();
-    btn.horizontalAlignment = enums.HorizontalAlignment.left;
-    btn.verticalAlignment = enums.VerticalAlignment.top;
+    btn.horizontalAlignment = "left";
+    btn.verticalAlignment = "top";
     (<any>btn).width = "50%";
     (<any>btn).height = "50%";
     btn.margin = "10%";
@@ -100,8 +99,8 @@ export function percent_support_children_test(test: testModule.UITest<LayoutBase
     TKUnit.assertEqual(bounds.right, 120, "TopLeft layout RIGHT incorrect");
     TKUnit.assertEqual(bounds.bottom, 120, "TopLeft layout BOTTOM incorrect");
 
-    btn.horizontalAlignment = enums.HorizontalAlignment.center;
-    btn.verticalAlignment = enums.VerticalAlignment.center;
+    btn.horizontalAlignment = "center";
+    btn.verticalAlignment = "middle";
     test.waitUntilTestElementLayoutIsValid();
 
     bounds = btn._getCurrentLayoutBounds();
@@ -110,8 +109,8 @@ export function percent_support_children_test(test: testModule.UITest<LayoutBase
     TKUnit.assertEqual(bounds.right, 150, "Center layout RIGHT incorrect");
     TKUnit.assertEqual(bounds.bottom, 150, "Center layout BOTTOM incorrect");
 
-    btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
-    btn.verticalAlignment = enums.VerticalAlignment.stretch;
+    btn.horizontalAlignment = "stretch";
+    btn.verticalAlignment = "stretch";
     test.waitUntilTestElementLayoutIsValid();
 
     bounds = btn._getCurrentLayoutBounds();
@@ -120,8 +119,8 @@ export function percent_support_children_test(test: testModule.UITest<LayoutBase
     TKUnit.assertEqual(bounds.right, 150, "Stretch layout RIGHT incorrect");
     TKUnit.assertEqual(bounds.bottom, 150, "Stretch layout BOTTOM incorrect");
 
-    btn.horizontalAlignment = enums.HorizontalAlignment.right;
-    btn.verticalAlignment = enums.VerticalAlignment.bottom;
+    btn.horizontalAlignment = "right";
+    btn.verticalAlignment = "bottom";
     test.waitUntilTestElementLayoutIsValid();
 
     bounds = btn._getCurrentLayoutBounds();
@@ -131,19 +130,21 @@ export function percent_support_children_test(test: testModule.UITest<LayoutBase
     TKUnit.assertEqual(bounds.bottom, 200 - 20, "BottomRight layout BOTTOM incorrect");
 
     //reset values.
-    btn.height = Number.NaN;
-    (<any>btn.style)._resetValue(widthProperty);
-    btn.margin = "0";
-    btn.horizontalAlignment = enums.HorizontalAlignment.stretch;
-    btn.verticalAlignment = enums.VerticalAlignment.stretch;
-    btn.height = Number.NaN;
+    btn.height = unsetValue;
+    btn.width = unsetValue;
 
-    TKUnit.assertEqual(btn.marginLeft, 0, "marginLeft");
-    TKUnit.assertEqual(btn.marginTop, 0, "marginTop");
-    TKUnit.assertEqual(btn.marginRight, 0, "marginRight");
-    TKUnit.assertEqual(btn.marginBottom, 0, "marginBottom");
-    TKUnit.assert(isNaN(btn.width), "width");
-    TKUnit.assert(isNaN(btn.height), "height");
+    btn.margin = "0";
+    btn.horizontalAlignment = "stretch";
+    btn.verticalAlignment = "stretch";
+    btn.height = unsetValue;
+
+    TKUnit.assertTrue(PercentLength.equals(btn.marginLeft, 0));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginTop, 0));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginRight, 0));
+    TKUnit.assertTrue(PercentLength.equals(btn.marginBottom, 0));
+
+    TKUnit.assertTrue(PercentLength.equals(btn.width, "auto"));
+    TKUnit.assertTrue(PercentLength.equals(btn.height, "auto"));
 
     test.waitUntilTestElementLayoutIsValid();
 

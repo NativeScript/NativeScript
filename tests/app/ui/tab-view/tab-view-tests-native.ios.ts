@@ -1,4 +1,4 @@
-﻿import tabViewModule = require("ui/tab-view");
+import tabViewModule = require("ui/tab-view");
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 

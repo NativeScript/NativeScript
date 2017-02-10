@@ -2,13 +2,12 @@
  * Contains the Placeholder class, which is used to add a native view to the visual tree.
  */
 declare module "ui/placeholder" {
-    import view = require("ui/core/view");
-    import observable = require("data/observable");
+    import { View, EventData } from "ui/core/view";
 
     /**
      * Represents a Placeholder, which is used to add a native view to the visual tree.
      */
-    export class Placeholder extends view.View {
+    export class Placeholder extends View {
         /**
          * String value used when hooking to creatingView event.
          */
@@ -20,7 +19,7 @@ declare module "ui/placeholder" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (args: observable.EventData) => void);
+        on(eventNames: string, callback: (args: EventData) => void);
 
         /**
          * Raised when a creatingView event occurs.
@@ -31,12 +30,12 @@ declare module "ui/placeholder" {
     /**
      * Event data containing information for creating a native view that will be added to the visual tree.
      */
-    export interface CreateViewEventData extends observable.EventData {
+    export interface CreateViewEventData extends EventData {
         /**
          * The native view that should be added to the visual tree.
          */
         view: any;
-        
+
         /**
          * An optional context for creating the view.
          */

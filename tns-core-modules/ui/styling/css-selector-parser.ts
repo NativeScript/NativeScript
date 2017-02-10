@@ -56,7 +56,7 @@ export function parse(selector: string): SimpleSelector[] {
 
     var result: RegExpExecArray;
     var lastIndex = regex.lastIndex = 0;
-    while(result = regex.exec(selector)) {
+    while (result = regex.exec(selector)) {
         let pos = result.index;
         if (lastIndex !== pos) {
             throw new Error(`Unexpected characters at index, near: ${lastIndex}: ${result.input.substr(lastIndex, 32)}`);
@@ -68,7 +68,7 @@ export function parse(selector: string): SimpleSelector[] {
 
         var type = getType(result);
         let selector: SimpleSelector | SimpleIdentifierSelector | AttributeSelector;
-        switch(type) {
+        switch (type) {
             case "*":
                 selector = { pos, type };
                 break;

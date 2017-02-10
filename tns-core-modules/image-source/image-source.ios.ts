@@ -1,8 +1,8 @@
-﻿import definition = require("image-source");
-import types = require("utils/types");
-import fs = require("file-system");
-import common = require("./image-source-common");
-import enums = require("ui/enums");
+﻿import * as definition from "image-source";
+import * as types from "utils/types";
+import * as fs from "file-system";
+import * as common from "./image-source-common";
+import * as enums from "ui/enums";
 import * as imageAssetModule from "image-asset";
 
 global.moduleMerge(common, exports);

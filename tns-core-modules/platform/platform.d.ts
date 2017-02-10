@@ -60,7 +60,7 @@ declare module "platform" {
          * Gets the type current device.
          * Available values: "phone", "tablet".
          */
-        deviceType: string;
+        deviceType: "Phone" | "Tablet";
 
         /**
          * Gets the uuid.

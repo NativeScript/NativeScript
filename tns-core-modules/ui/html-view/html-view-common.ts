@@ -1,19 +1,12 @@
-﻿import definition = require("ui/html-view");
-import dependencyObservable = require("ui/core/dependency-observable");
-import proxy = require("ui/core/proxy");
-import view = require("ui/core/view");
+﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
+import { View, Property } from "ui/core/view";
 
-export class HtmlView extends view.View implements definition.HtmlView {
-    public static htmlProperty = new dependencyObservable.Property(
-        "html",
-        "HtmlView",
-        new proxy.PropertyMetadata(false, dependencyObservable.PropertyMetadataSettings.AffectsLayout)
-        );
+export * from "ui/core/view";
 
-    get html(): string {
-        return this._getValue(HtmlView.htmlProperty);
-    }
-    set html(value: string) {
-        this._setValue(HtmlView.htmlProperty, value);
-    }
+export class HtmlViewBase extends View implements HtmlViewDefinition {
+    public html: string;
 }
+
+// TODO: Can we use Label.ios optimization for affectsLayout???
+export const htmlProperty = new Property<HtmlViewBase, string>({ name: "html", defaultValue: "", affectsLayout: true });
+htmlProperty.register(HtmlViewBase);

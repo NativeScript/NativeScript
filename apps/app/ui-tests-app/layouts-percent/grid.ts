@@ -1,38 +1,40 @@
-﻿import buttonModule = require("ui/button");
-import pageModule = require("ui/page");
-import gridLayoutModule = require("ui/layouts/grid-layout");
-import model = require("./myview");
+﻿import * as model from "./myview";
+import { Button } from "ui/button";
+import { Page } from "ui/page";
+import { GridLayout, ItemSpec, GridUnitType } from "ui/layouts/grid-layout";
 
 export function onLoaded(args: { eventName: string, object: any }) {
-    var page = <pageModule.Page>args.object;
+    var page = <Page>args.object;
     page.bindingContext = new model.ViewModel();
 }
 
 export function onAddRowColumn(args: { eventName: string, object: any }) {
-    var layout = <gridLayoutModule.GridLayout>args.object.parent.parent;
-    var row = new gridLayoutModule.ItemSpec(1, gridLayoutModule.GridUnitType.auto);
-    var column = new gridLayoutModule.ItemSpec(1, gridLayoutModule.GridUnitType.auto);
+
+    var layout = <GridLayout>args.object.parent.parent;
+    var row = new ItemSpec(1, GridUnitType.AUTO);
+    var column = new ItemSpec(1, GridUnitType.AUTO);
+
     layout.addRow(row);
     layout.addColumn(column);
 
-    var btn0 = new buttonModule.Button();
-    var btn1 = new buttonModule.Button();
+    var btn0 = new Button();
+    var btn1 = new Button();
     btn0.id = "b0";
     btn1.id = "b1";
     btn0.text = "b0";
     btn1.text = "b1";
     layout.addChild(btn0);
     layout.addChild(btn1);
-    gridLayoutModule.GridLayout.setRow(btn0, 0);
-    gridLayoutModule.GridLayout.setColumn(btn0, 4);
-    gridLayoutModule.GridLayout.setRow(btn1, 4);
-    gridLayoutModule.GridLayout.setColumn(btn1, 0);
-    gridLayoutModule.GridLayout.setColumnSpan(btn1, 2);
-    gridLayoutModule.GridLayout.setRowSpan(btn0, 3);
+    GridLayout.setRow(btn0, 0);
+    GridLayout.setColumn(btn0, 4);
+    GridLayout.setRow(btn1, 4);
+    GridLayout.setColumn(btn1, 0);
+    GridLayout.setColumnSpan(btn1, 2);
+    GridLayout.setRowSpan(btn0, 3);
 }
 
 export function onRemoveRowColumn(args: { eventName: string, object: any }) {
-    var layout = <gridLayoutModule.GridLayout>args.object.parent.parent;
+    var layout = <GridLayout>args.object.parent.parent;
     var itemSpecs, count;
     itemSpecs = layout.getRows();
     count = itemSpecs.length;

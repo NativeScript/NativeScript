@@ -1,5 +1,5 @@
 ﻿// >> trace-require
-import trace = require("trace");
+import * as trace from "trace";
 // << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {
@@ -29,7 +29,7 @@ export var test_DummyTestForSnippetOnly2 = function () {
     // >> trace-message
     trace.setCategories(trace.categories.Debug);
     trace.enable();
-    if (trace.enabled) {
+    if (trace.isEnabled()) {
         trace.write("My Debug Message", trace.categories.Debug);
     }
     // << trace-message

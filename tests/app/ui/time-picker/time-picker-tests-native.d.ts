@@ -1,5 +1,5 @@
 ﻿//@private
-import timePickerModule = require("ui/time-picker");
+import * as timePickerModule from "ui/time-picker";
 
 export declare function getNativeHour(timePicker: timePickerModule.TimePicker): number;
 export declare function getNativeMinute(timePicker: timePickerModule.TimePicker): number;

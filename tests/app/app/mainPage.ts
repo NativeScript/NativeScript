@@ -1,7 +1,7 @@
-﻿import {Page} from "ui/page";
+﻿import { Page } from "ui/page";
 import * as trace from "trace";
-import tests = require("../testRunner");
-import {Label} from "ui/label";
+import * as tests from "../testRunner";
+import { Label } from "ui/label";
 import * as application from "application";
 import * as platform from "platform";
 
@@ -37,9 +37,9 @@ function onNavigatedTo(args) {
 
     if (platform.isAndroid && parseInt(platform.device.sdkVersion) >= 23) {
         let handler = (args: application.AndroidActivityRequestPermissionsEventData) => {
-            application.android.off(application.AndroidApplication.activityRequestPermissionsEvent, handler);    
+            application.android.off(application.AndroidApplication.activityRequestPermissionsEvent, handler);
             if (args.requestCode === 1234 && args.grantResults.length > 0 && args.grantResults[0] === android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                runTests();             
+                runTests();
             } else {
                 trace.write("Permission for write to external storage not granted!", trace.categories.Error, trace.messageType.error);
             }

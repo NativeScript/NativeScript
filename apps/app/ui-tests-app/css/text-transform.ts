@@ -1,8 +1,8 @@
-﻿import view = require("ui/core/view");
-import label = require("ui/label");
-import button = require("ui/button");
-import textField = require("ui/text-field");
-import textView = require("ui/text-view");
+﻿import * as view from "ui/core/view";
+import * as label from "ui/label";
+import * as button from "ui/button";
+import * as textField from "ui/text-field";
+import * as textView from "ui/text-view";
 
 export function changeTextButonTap(args) {
     var btnChange = <button.Button>args.object;
@@ -35,30 +35,15 @@ export function butonTap(args) {
         btn.style.textTransform = "uppercase";
         textField.style.textTransform = "uppercase";
         textView.style.textTransform = "uppercase";
-    } else if (lbl.style.textTransform === "uppercase" && lbl.style.textDecoration !== "line-through underline") {
+    } else if (lbl.style.textTransform === "uppercase") {
         lbl.style.textTransform = "lowercase";
         btn.style.textTransform = "lowercase";
         textField.style.textTransform = "lowercase";
         textView.style.textTransform = "lowercase";
     } else if (lbl.style.textTransform === "lowercase") {
-    //    lbl.style.textTransform = "uppercase";
-    //    btn.style.textTransform = "uppercase";
-    //    textField.style.textTransform = "uppercase";
-    //    textView.style.textTransform = "uppercase";
-
-    //    lbl.style.textDecoration = "line-through underline";
-    //    btn.style.textDecoration = "line-through underline";
-    //    textField.style.textDecoration = "line-through underline";
-    //    textView.style.textDecoration = "line-through underline";
-    //} else if (lbl.style.textTransform === "uppercase" && lbl.style.textDecoration === "line-through underline") {
         lbl.style.textTransform = "none";
         btn.style.textTransform = "none";
         textField.style.textTransform = "none";
         textView.style.textTransform = "none";
-
-        //lbl.style.textDecoration = "none";
-        //btn.style.textDecoration = "none";
-        //textField.style.textDecoration = "none";
-        //textView.style.textDecoration = "none";
     }
 }

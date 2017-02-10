@@ -1,120 +1,33 @@
-﻿import definition = require("ui/repeater");
-import proxy = require("ui/core/proxy");
-import dependencyObservable = require("ui/core/dependency-observable");
-import viewModule = require("ui/core/view");
-import observable = require("data/observable");
-import layoutBaseModule = require("ui/layouts/layout-base");
-import utils = require("utils/utils");
-import trace = require("trace");
-import * as platform from "platform";
-import * as stackLayout from "ui/layouts/stack-layout";
-import * as types from "utils/types";
-import * as builder from "ui/builder";
-import * as labelModule from "ui/label";
-import * as observableArray from "data/observable-array";
-import * as weakEvents from "ui/core/weak-event-listener";
+﻿import { Repeater as RepeaterDefinition, ItemsSource } from "ui/repeater";
+import { Label } from "ui/label";
+import { LayoutBase, CustomLayoutView, View, Template, Property, layout } from "ui/layouts/layout-base";
+import { StackLayout } from "ui/layouts/stack-layout";
+import { ObservableArray, ChangedData } from "data/observable-array";
+import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
+import { parse } from "ui/builder";
 
-var label: typeof labelModule;
-function ensureLabel() {
-    if (!label) {
-        label = require("ui/label");
-    }
-}
-
-var ITEMS = "items";
-var ITEMTEMPLATE = "itemTemplate";
-var LAYOUT = "layout";
-var REPEATER = "Repeater";
+export * from "ui/layouts/layout-base";
 
 export module knownTemplates {
-    export var itemTemplate = "itemTemplate";
+    export const itemTemplate = "itemTemplate";
 }
 
-function onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var repeater = <Repeater>data.object;
-    repeater._onItemsPropertyChanged(data);
-}
-
-function onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var repeater = <Repeater>data.object;
-    repeater._onItemTemplatePropertyChanged(data);
-}
-
-function onItemsLayoutPropertyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-    var repeater = <Repeater>data.object;
-    repeater._onItemsLayoutPropertyPropertyChanged(data);
-
-}
-
-export class Repeater extends viewModule.CustomLayoutView implements definition.Repeater {
-    private _ios: UIView;
+export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     private _isDirty = false;
+    public ios;
+    public android;
 
     constructor() {
         super();
-
-        if (platform.device.os === platform.platformNames.ios) {
-            this._ios = UIView.new();
-        }
-
-        this.itemsLayout = new stackLayout.StackLayout();
+        // TODO: Do we need this as property?
+        this.itemsLayout = new StackLayout();
     }
 
-    public static itemsProperty = new dependencyObservable.Property(
-        ITEMS,
-        REPEATER,
-        new proxy.PropertyMetadata(
-            undefined,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            onItemsPropertyChanged
-            )
-        );
-
-    public static itemTemplateProperty = new dependencyObservable.Property(
-        ITEMTEMPLATE,
-        REPEATER,
-        new proxy.PropertyMetadata(
-            undefined,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            onItemTemplatePropertyChanged
-            )
-        );
-
-    public static itemsLayoutProperty = new dependencyObservable.Property(
-        LAYOUT,
-        REPEATER,
-        new proxy.PropertyMetadata(
-            undefined,
-            dependencyObservable.PropertyMetadataSettings.AffectsLayout,
-            onItemsLayoutPropertyPropertyChanged
-            )
-        );
-
-    get items(): any {
-        return this._getValue(Repeater.itemsProperty);
-    }
-    set items(value: any) {
-        this._setValue(Repeater.itemsProperty, value);
-    }
-
-    get itemTemplate(): string | viewModule.Template {
-        return this._getValue(Repeater.itemTemplateProperty);
-    }
-    set itemTemplate(value: string | viewModule.Template) {
-        this._setValue(Repeater.itemTemplateProperty, value);
-    }
-
-    get itemsLayout(): layoutBaseModule.LayoutBase {
-        return this._getValue(Repeater.itemsLayoutProperty);
-    }
-    set itemsLayout(value: layoutBaseModule.LayoutBase) {
-        this._setValue(Repeater.itemsLayoutProperty, value);
-    }
+    public items: any[] | ItemsSource;
+    public itemTemplate: string | Template;
+    public itemsLayout: LayoutBase;
 
     public onLoaded() {
-        if (trace.enabled) {
-            trace.write("Repeater.onLoaded()", "Repeater");
-        }
         if (this._isDirty) {
             this.refresh();
         }
@@ -122,10 +35,7 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
         super.onLoaded();
     }
 
-    private _requestRefresh() {
-        if (trace.enabled) {
-            trace.write(`Repeater._requestRefresh()`, "Repeater");
-        }
+    public _requestRefresh() {
         this._isDirty = true;
         if (this.isLoaded) {
             this.refresh();
@@ -133,78 +43,32 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     public refresh() {
-        if (trace.enabled) {
-            trace.write("Repeater.refresh()", "Repeater");
-        }
         if (this.itemsLayout) {
             this.itemsLayout.removeChildren();
         }
 
-        if (types.isNullOrUndefined(this.items) || !types.isNumber(this.items.length)) {
+        if (!this.items) {
             return;
         }
 
-        var length = this.items.length;
+        const length = this.items.length;
         for (let i = 0; i < length; i++) {
-            let viewToAdd = !types.isNullOrUndefined(this.itemTemplate) ? builder.parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
-            var dataItem = this._getDataItem(i);
-            //trace.write(`viewToAdd.bindingContext = ${dataItem};`, "Repeater");
+            const viewToAdd = this.itemTemplate ? parse(this.itemTemplate, this) : this._getDefaultItemContent(i);
+            const dataItem = this._getDataItem(i);
             viewToAdd.bindingContext = dataItem;
-            //trace.write(`Repeater.itemsLayout.addChild(${viewToAdd})`, "Repeater");
             this.itemsLayout.addChild(viewToAdd);
         }
 
         this._isDirty = false;
     }
 
-    public _onItemsPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (trace.enabled) {
-            trace.write(`Repeater._onItemsPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
-        }
-        if (data.oldValue instanceof observableArray.ObservableArray) {
-            weakEvents.removeWeakEventListener(data.oldValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
-        }
-
-        if (data.newValue instanceof observableArray.ObservableArray) {
-            weakEvents.addWeakEventListener(data.newValue, observableArray.ObservableArray.changeEvent, this._onItemsChanged, this);
-        }
-
+    public _onItemsChanged(data: ChangedData<any>) {
+        // TODO: use the event args and optimize this code by remove/add single items instead of full rebuild.
         this._requestRefresh();
     }
 
-    public _onItemTemplatePropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (trace.enabled) {
-            trace.write(`Repeater._onItemTemplatePropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
-        }
-        this._requestRefresh();
-    }
-
-    public _onItemsLayoutPropertyPropertyChanged(data: dependencyObservable.PropertyChangeData) {
-        if (trace.enabled) {
-            trace.write(`Repeater._onItemsLayoutPropertyPropertyChanged(${data.oldValue} => ${data.newValue})`, "Repeater");
-        }
-        if (data.oldValue instanceof layoutBaseModule.LayoutBase) {
-            this._removeView((<layoutBaseModule.LayoutBase>data.oldValue));
-        }
-
-        if (data.newValue instanceof layoutBaseModule.LayoutBase) {
-            this._addView((<layoutBaseModule.LayoutBase>data.newValue));
-        }
-
-        this._requestRefresh();
-    }
-
-    private _onItemsChanged(data: observable.EventData) {
-        if (trace.enabled) {
-            trace.write(`Repeater._onItemsChanged(${data})`, "Repeater");
-        }
-        this._requestRefresh();
-    }
-
-    public _getDefaultItemContent(index: number): viewModule.View {
-        ensureLabel();
-
-        var lbl = new label.Label();
+    public _getDefaultItemContent(index: number): View {
+        const lbl = new Label();
         lbl.bind({
             targetProperty: "text",
             sourceProperty: "$value"
@@ -213,11 +77,8 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
     }
 
     private _getDataItem(index: number): any {
-        return this.items.getItem ? this.items.getItem(index) : this.items[index];
-    }
-
-    get ios(): UIView {
-        return this._ios;
+        let items = <ItemsSource>this.items;
+        return items.getItem ? items.getItem(index) : this.items[index];
     }
 
     get _childrenCount(): number {
@@ -230,29 +91,73 @@ export class Repeater extends viewModule.CustomLayoutView implements definition.
         return count;
     }
 
-    public _eachChildView(callback: (child: viewModule.View) => boolean) {
+    public eachChildView(callback: (child: View) => boolean) {
         if (this.itemsLayout) {
             callback(this.itemsLayout);
         }
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        viewModule.View.layoutChild(this, this.itemsLayout, 0, 0, right - left, bottom - top);
+        View.layoutChild(this, this.itemsLayout, 0, 0, right - left, bottom - top);
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var result = viewModule.View.measureChild(this, this.itemsLayout, widthMeasureSpec, heightMeasureSpec);
+        const result = View.measureChild(this, this.itemsLayout, widthMeasureSpec, heightMeasureSpec);
 
-        var width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        var widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        var height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        var heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        var widthAndState = viewModule.View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
-        var heightAndState = viewModule.View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(result.measuredWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(result.measuredHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
 }
+
+/**
+ * Represents the item template property of each ListView instance.
+ */
+export const itemTemplateProperty = new Property<Repeater, string | Template>({
+    name: "itemTemplate", affectsLayout: true, valueChanged: (target) => {
+        target._requestRefresh();
+    }
+});
+itemTemplateProperty.register(Repeater);
+
+/**
+ * Represents the property backing the items property of each ListView instance.
+ */
+export const itemsProperty = new Property<Repeater, any[] | ItemsSource>({
+    name: "items", affectsLayout: true, valueChanged: (target, oldValue, newValue) => {
+        if (oldValue instanceof ObservableArray) {
+            removeWeakEventListener(oldValue, ObservableArray.changeEvent, target._onItemsChanged, target);
+        }
+
+        if (newValue instanceof ObservableArray) {
+            addWeakEventListener(newValue, ObservableArray.changeEvent, target._onItemsChanged, target);
+        }
+
+        target._requestRefresh();
+    }
+});
+itemsProperty.register(Repeater);
+
+export const itemsLayoutProperty = new Property<Repeater, LayoutBase>({
+    name: "itemsLayout", affectsLayout: true, valueChanged: (target, oldValue, newValue) => {
+        if (oldValue) {
+            target._removeView(oldValue);
+            oldValue.removeChildren();
+        }
+
+        if (newValue) {
+            target._addView(newValue);
+        }
+
+        target._requestRefresh();
+    }
+});
+itemsLayoutProperty.register(Repeater);

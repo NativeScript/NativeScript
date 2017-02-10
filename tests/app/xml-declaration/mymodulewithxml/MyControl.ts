@@ -1,6 +1,6 @@
-﻿import observable = require("data/observable");
-import view = require("ui/core/view");
-import label = require("ui/label");
+﻿import * as observable from "data/observable";
+import * as view from "ui/core/view";
+import * as label from "ui/label";
 
 var count = 0;
 export function buttonTap2(args: observable.EventData) {

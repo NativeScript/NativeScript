@@ -1,7 +1,7 @@
-﻿import frameModule = require("ui/frame");
-import textFieldModule = require("ui/text-field");
-import fs = require("file-system");
-import helper = require("../ui/helper");
+﻿import * as frameModule from "ui/frame";
+import * as textFieldModule from "ui/text-field";
+import * as fs from "file-system";
+import * as helper from "../ui/helper";
 
 export var test_BindingExpressions_ArrayAccess = function () {
     navigateToPage("bindingExpressions_arrayAccess_testPage");

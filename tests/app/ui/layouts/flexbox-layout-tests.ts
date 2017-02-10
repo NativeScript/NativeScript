@@ -10,10 +10,10 @@ import {
 } from "ui/layouts/flexbox-layout";
 // << flexbox-layout-require
 
-import {View} from "ui/core/view";
+import {View, unsetValue, Length, PercentLength} from "ui/core/view";
 import {Label} from "ui/label";
-import TKUnit = require("../../TKUnit");
-import helper = require("../helper");
+import * as TKUnit from "../../TKUnit";
+import * as helper from "../helper";
 import {layout} from "utils/utils";
 import {parse} from "ui/builder";
 
@@ -37,14 +37,14 @@ function commonAncestor(view1: View, view2: View): View {
                 return view1;
             }
             set.add(view1);
-            view1 = view1.parent;
+            view1 = <View>view1.parent;
         }
         if (view2) {
             if (set.has(view2)) {
                 return view2;
             }
             set.add(view2);
-            view2 = view2.parent;
+            view2 = <View>view2.parent;
         }
     } while(view1 || view2);
     return null;
@@ -68,7 +68,7 @@ function bounds(view: View): Bounds {
 function boundsToAncestor(child: View, ancestor: View = null) {
     let currentBounds = bounds(child);
     while(child && child !== ancestor) {
-        child = child.parent;
+        child = <View>child.parent;
         let childBounds = bounds(child);
         currentBounds.left += childBounds.left;
         currentBounds.right += childBounds.left;
@@ -172,7 +172,7 @@ function isAbove(view1: View, view2: View) {
 export function testFlexboxPage() {
     let page = helper.navigateWithEntry({ moduleName: "ui/layouts/flexbox-layout-page" });
     function view(id: string) {
-        return page.getViewById(id);
+        return <View>page.getViewById(id);
     }
     isLeftOf(view("six"), view("one"));
     isAbove(view("one"), view("scrollview"));
@@ -492,8 +492,8 @@ export const testJustifyContent_flexStart_withParentPadding = test(
     ({root, flexbox, text1, text2, text3}) => {
         isRightOf(text2, text1);
         isRightOf(text3, text2);
-        equal(left(text1), dipToDp(flexbox.paddingLeft), `Expected ${text1}.left to equal ${flexbox}.paddingLeft`);
-        equal(top(text1), dipToDp(flexbox.paddingTop), `Expected ${text1}.top to equal ${flexbox}.paddingTop`);
+        equal(left(text1), Length.toDevicePixels(flexbox.style.paddingLeft, 0), `Expected ${text1}.left to equal ${flexbox}.paddingLeft`);
+        equal(top(text1), Length.toDevicePixels(flexbox.style.paddingTop, 0), `Expected ${text1}.top to equal ${flexbox}.paddingTop`);
     }
 );
 
@@ -514,8 +514,8 @@ export const testJustifyContent_flexEnd_withParentPadding = test(
     ({root, flexbox, text1, text2, text3}) => {
         isLeftOf(text2, text3);
         isLeftOf(text1, text2);
-        closeEnough(width(flexbox) - right(text3), dipToDp(flexbox.paddingRight));
-        closeEnough(top(text3), dipToDp(flexbox.paddingTop));
+        closeEnough(width(flexbox) - right(text3), Length.toDevicePixels(flexbox.style.paddingRight, 0));
+        closeEnough(top(text3), Length.toDevicePixels(flexbox.style.paddingTop, 0));
     }
 );
 
@@ -542,10 +542,10 @@ export const testJustifyContent_center_withParentPadding = test(
     ({root, flexbox, text1, text2, text3}) => {
         isRightOf(text2, text1);
         isRightOf(text3, text2);
-        let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(flexbox.paddingLeft) - dipToDp(flexbox.paddingRight);
+        let space = width(flexbox) - width(text1) - width(text2) - width(text3) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) - Length.toDevicePixels(flexbox.style.paddingRight, 0);
         space = space / 2;
-        check(space - 1 <= left(text1) - dipToDp(flexbox.paddingLeft) && left(text1) - dipToDp(flexbox.paddingLeft) <= space + 1);
-        check(space - 1 <= width(flexbox) - right(text3) - dipToDp(flexbox.paddingRight) && width(flexbox) - right(text3) - dipToDp(flexbox.paddingRight) <= space + 1);
+        check(space - 1 <= left(text1) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) && left(text1) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) <= space + 1);
+        check(space - 1 <= width(flexbox) - right(text3) - Length.toDevicePixels(flexbox.style.paddingRight, 0) && width(flexbox) - right(text3) - Length.toDevicePixels(flexbox.style.paddingRight, 0) <= space + 1);
     }
 );
 
@@ -569,7 +569,7 @@ export const testJustifyContent_spaceBetween_withPadding = test(
     activity_justify_content_test,
     ({flexbox}) => {
         flexbox.justifyContent = JustifyContent.SPACE_BETWEEN;
-        flexbox.padding = padding;
+        flexbox.style.padding = padding;
     },
     ({root, flexbox, text1, text2, text3}) => {
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(padding) * 2;
@@ -606,7 +606,7 @@ export const testJustifyContent_spaceAround_withPadding = test(
     activity_justify_content_test,
     ({flexbox}) => {
         flexbox.justifyContent = JustifyContent.SPACE_AROUND;
-        flexbox.padding = padding;
+        flexbox.style.padding = padding;
     },
     ({root, flexbox, text1, text2, text3}) => {
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(padding) * 2;
@@ -692,7 +692,7 @@ export const testJustifyContent_spaceBetween_flexDirection_column_withPadding = 
     ({flexbox}) => {
         flexbox.justifyContent = JustifyContent.SPACE_BETWEEN;
         flexbox.flexDirection = FlexDirection.COLUMN;
-        flexbox.padding = padding;
+        flexbox.style.padding = padding;
     },
     ({root, flexbox, text1, text2, text3}) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
@@ -731,7 +731,7 @@ export const testJustifyContent_spaceAround_flexDirection_column_withPadding = t
     ({flexbox}) => {
         flexbox.justifyContent = JustifyContent.SPACE_AROUND;
         flexbox.flexDirection = FlexDirection.COLUMN;
-        flexbox.padding = padding;
+        flexbox.style.padding = padding;
     },
     ({root, flexbox, text1, text2, text3}) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
@@ -861,14 +861,14 @@ export const testAlignContent_flexEnd_parentPadding = test(
     activity_align_content_test,
     ({flexbox}) => {
         flexbox.alignContent = AlignContent.FLEX_END;
-        flexbox.padding = "32";
+        flexbox.style.padding = "32";
     },
     ({root, flexbox, text1, text2, text3}) => {
         isAbove(text1, text3);
         isAbove(text1, text3);
         isAbove(text2, text3);
 
-        closeEnough(bottom(text3), height(flexbox) - dipToDp(flexbox.paddingBottom));
+        closeEnough(bottom(text3), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
     }
 );
 
@@ -877,14 +877,14 @@ export const testAlignContent_flexEnd_parentPadding_column = test(
     ({flexbox}) => {
         flexbox.alignContent = AlignContent.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
-        flexbox.padding = "32";
+        flexbox.style.padding = "32";
     },
     ({root, flexbox, text1, text2, text3}) => {
         isLeftOf(text1, text3);
         isLeftOf(text2, text3);
 
         let { bounds1, bounds2 } = comparableBounds(text3, flexbox);
-        closeEnough(bounds1.right, bounds2.right - dipToDp(flexbox.paddingRight));
+        closeEnough(bounds1.right, bounds2.right - Length.toDevicePixels(flexbox.style.paddingRight, 0));
     }
 );
 
@@ -955,7 +955,7 @@ export const testAlignContent_spaceAround = test(
 export const testAlignContent_stretch_parentWrapContent = test(
     activity_align_content_test,
     ({flexbox}) => {
-        flexbox.height = Number.NaN; // TODO: Check that "NaN" is auto-ish
+        flexbox.height = unsetValue; // TODO: Check that "NaN" is auto-ish
         flexbox.verticalAlignment = "top";
     },
     ({root, flexbox, text1, text2, text3}) => {
@@ -1089,7 +1089,7 @@ export const testAlignContent_spaceAround_flexDirection_column = test(
 export const testAlignContent_stretch_parentWrapContent_flexDirection_column = test(
     activity_align_content_test,
     ({flexbox}) => {
-        flexbox.width = Number.NaN; // TODO: Check default is Number.NaN
+        flexbox.width = unsetValue; // TODO: Check default is Number.NaN
         flexbox.horizontalAlignment = "left";
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
@@ -1247,8 +1247,8 @@ export const testAlignItems_flexEnd_parentPadding = test(
     ({flexbox}) => flexbox.alignItems = AlignItems.FLEX_END,
     ({root, flexbox, text1, text2, text3}) => {
         isRightOf(text2, text1);
-        closeEnough(bottom(text1), height(flexbox) - dipToDp(flexbox.paddingBottom));
-        closeEnough(bottom(text2), height(flexbox) - dipToDp(flexbox.paddingBottom));
+        closeEnough(bottom(text1), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
+        closeEnough(bottom(text2), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
     }
 );
 
@@ -1260,8 +1260,8 @@ export const testAlignItems_flexEnd_parentPadding_column = test(
     },
     ({root, flexbox, text1, text2, text3}) => {
         isBelow(text2, text1);
-        closeEnough(right(text1), width(flexbox) - dipToDp(flexbox.paddingRight));
-        closeEnough(right(text2), width(flexbox) - dipToDp(flexbox.paddingRight));
+        closeEnough(right(text1), width(flexbox) - Length.toDevicePixels(flexbox.style.paddingRight, 0));
+        closeEnough(right(text2), width(flexbox) - Length.toDevicePixels(flexbox.style.paddingRight, 0));
     }
 );
 
@@ -1872,7 +1872,7 @@ export const testWrap_parentPadding_horizontal = test(
     ({flexbox, text1, text2, text3}) => {
         isBelow(text2, text1);
         isRightOf(text3, text2);
-        closeEnough(height(flexbox), dipToDp(flexbox.paddingTop) + dipToDp(flexbox.paddingBottom) + height(text1) + height(text2));
+        closeEnough(height(flexbox), Length.toDevicePixels(flexbox.style.paddingTop, 0) + Length.toDevicePixels(flexbox.style.paddingBottom, 0) + height(text1) + height(text2));
     }
 );
 
@@ -1890,7 +1890,7 @@ export const testWrap_parentPadding_vertical = test(
     ({flexbox, text1, text2, text3}) => {
         isRightOf(text2, text1);
         isBelow(text3, text2);
-        closeEnough(width(flexbox), dipToDp(flexbox.paddingLeft) + dipToDp(flexbox.paddingRight) + width(text1) + width(text2));
+        closeEnough(width(flexbox), Length.toDevicePixels(flexbox.style.paddingLeft, 0) + Length.toDevicePixels(flexbox.style.paddingRight, 0) + width(text1) + width(text2));
     }
 );
 
@@ -1908,7 +1908,7 @@ export const testWrap_childMargin_horizontal = test(
     ({flexbox, text1, text2, text3}) => {
         isBelow(text2, text1);
         isRightOf(text3, text2);
-        closeEnough(height(flexbox), height(text1) + height(text2) + dipToDp(text2.marginTop) + dipToDp(text2.marginBottom));
+        closeEnough(height(flexbox), height(text1) + height(text2) + PercentLength.toDevicePixels(text2.style.marginTop, 0, Number.NaN) + PercentLength.toDevicePixels(text2.style.marginBottom, 0, Number.NaN));
     }
 );
 
@@ -1971,7 +1971,7 @@ export const testWrap_childMargin_vertical = test(
         isRightOf(text2, text1);
         isBelow(text3, text2);
         // dips anyone?
-        closeEnough(width(flexbox), width(text1) + width(text2) + dipToDp(text2.marginLeft) + dipToDp(text2.marginRight));
+        closeEnough(width(flexbox), width(text1) + width(text2) + PercentLength.toDevicePixels(text2.marginLeft, 0, Number.NaN) + PercentLength.toDevicePixels(text2.marginRight, 0, Number.NaN));
     }
 );
 

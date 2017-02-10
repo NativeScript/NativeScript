@@ -1,4 +1,4 @@
-﻿import pages = require("ui/page");
+﻿import * as pages from "ui/page";
 
 export function pageLoaded(args) {
     var strArr: string[] = ["tests", "bindings", "tests"];

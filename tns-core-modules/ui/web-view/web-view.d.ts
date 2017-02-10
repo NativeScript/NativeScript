@@ -2,14 +2,17 @@
  * Contains the WebView class, which represents a standard browser widget.
  */
 declare module "ui/web-view" {
-    import view = require("ui/core/view");
-    import dependencyObservable = require("ui/core/dependency-observable");
-    import observable = require("data/observable");
+    import { View, Property, EventData } from "ui/core/view";
+
+    /**
+     * Represents the observable property backing the Url property of each WebView instance.
+     */
+    export const urlProperty: Property<WebView, string>;
 
     /**
      * Represents a standard WebView widget.
      */
-    export class WebView extends view.View {
+    export class WebView extends View {
         /**
          * String value used when hooking to loadStarted event.
          */
@@ -26,11 +29,6 @@ declare module "ui/web-view" {
         public static navigationTypes: string[];
 
         /**
-         * Represents the observable property backing the Url property of each WebView instance.
-         */
-        public static urlProperty: dependencyObservable.Property;
-
-        /**
          * Gets the native [android widget](http://developer.android.com/reference/android/webkit/WebView.html) that represents the user interface for this component. Valid only when running on Android OS.
          */
         android: any /* android.webkit.WebView */;
@@ -39,11 +37,6 @@ declare module "ui/web-view" {
          * Gets the native [UIWebView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIWebView_Class/) that represents the user interface for this component. Valid only when running on iOS.
          */
         ios: any /* UIWebView */;
-
-        /**
-         * [Obsolete. Please use src instead!] Gets or sets the url displayed by this instance.
-         */
-        url: string;
 
         /**
          * Gets or sets the url, local file path or HTML string.
@@ -86,7 +79,7 @@ declare module "ui/web-view" {
          * @param callback - Callback function which will be executed when event is raised.
          * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
          */
-        on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+        on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
 
         /**
          * Raised when a loadFinished event occurs.
@@ -102,7 +95,7 @@ declare module "ui/web-view" {
     /**
      * Event data containing information for the loading events of a WebView.
      */
-    export interface LoadEventData extends observable.EventData {
+    export interface LoadEventData extends EventData {
         /**
          * Gets the url of the web-view.
          */
