@@ -169,13 +169,6 @@ module.exports = function(grunt) {
         "!obj/**/*.*"
     ];
     localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function(item) { return /^!/.test(item); });
-    localCfg.typeScriptSrcForTsLint = localCfg.typeScriptSrc.concat([
-        "!tns-core-modules/libjs.d.ts",
-        "!tns-core-modules/lib.core.es6.d.ts",
-        "!tns-core-modules/lib.dom.d.ts",
-        "!tns-core-modules.es2016.d.ts",
-        "!tns-platform-declarations/**/*"
-    ]);
     localCfg.srcTsdFiles = [
         "tns-core-modules/**/*.d.ts",
         "!tns-core-modules/ios/**",
@@ -321,16 +314,6 @@ module.exports = function(grunt) {
                 dest: "<%= grunt.option('path') %>/node_modules/tns-core-modules/",
             }
         },
-        tslint: {
-            build: {
-                files: {
-                    src: localCfg.typeScriptSrcForTsLint
-                },
-                options: {
-                    configuration: grunt.file.readJSON("./build/tslint.json")
-                }
-            }
-        },
         exec: {
             packModules: {
                 cmd: "npm pack",
@@ -351,6 +334,7 @@ module.exports = function(grunt) {
             compileNodeTests: "npm run compile-node-tests",
             compileCheckBaseDts: "npm run compile-check-base-dts",
             compileCheckCombinedDts: "npm run compile-check-combined-dts",
+            tslint: "npm run tslint",
         },
         simplemocha: {
             node: {
@@ -382,7 +366,6 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-simple-mocha");
@@ -530,7 +513,7 @@ module.exports = function(grunt) {
     
     grunt.registerTask("get-ready-packages", ["copy:readyPackages"]);
 
-    grunt.registerTask("default", (skipTsLint ? [] : ["tslint:build"]).concat([
+    grunt.registerTask("default", (skipTsLint ? [] : ["shell:tslint"]).concat([
         "build-all",
         "pack-apps",
         "get-ready-packages"

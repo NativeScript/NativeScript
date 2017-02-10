@@ -18,7 +18,6 @@
     "grunt-mkdir": "1.0.0",
     "grunt-shell": "2.1.0",
     "grunt-simple-mocha": "0.4.1",
-    "grunt-tslint": "4.0.0",
     "grunt-typedoc": "0.2.4",
     "http-server": "^0.9.0",
     "markdown-snippet-injector": "0.1.1",
