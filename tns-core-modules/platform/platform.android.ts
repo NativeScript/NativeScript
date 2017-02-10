@@ -8,6 +8,12 @@ declare module "platform" {
     }
 }
 
+declare module "platform" {
+    export interface ScreenMetrics {
+        _invalidate(): void;
+    }
+}
+
 const MIN_TABLET_PIXELS = 600;
 
 export module platformNames {

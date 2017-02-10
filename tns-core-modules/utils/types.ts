@@ -43,7 +43,7 @@ export function verifyCallback(value: any) {
 }
 
 var classInfosMap = new Map<Function, ClassInfo>();
-var funcNameRegex = /function (.{1,})\(/;
+var funcNameRegex = /function ([_a-zA-Z0-9]{1,})\(/;
 export function getClass(object: Object): string {
     return getClassInfo(object).name;
 }
