@@ -3,6 +3,7 @@
   "description": "Telerik NativeScript Core Modules",
   "version": "3.0.0",
   "homepage":"https://www.nativescript.org",
+  "main":"application/application.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/NativeScript/NativeScript"
