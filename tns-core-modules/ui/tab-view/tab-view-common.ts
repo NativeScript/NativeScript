@@ -8,8 +8,6 @@ export * from "ui/core/view";
 
 export const traceCategory = "TabView";
 
-// TODO: Change base class to ViewBase and use addView method to add it.
-// This way we will support property and binding propagation automatically.
 export abstract class TabViewItemBase extends ViewBase implements TabViewItemDefinition, AddChildFromBuilder {
     private _title: string = "";
     private _view: View;
@@ -77,6 +75,27 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     public selectedIndex: number;
     public androidOffscreenTabLimit: number;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    get tabTextColor(): Color {
+        return this.style.tabTextColor;
+    }
+    set tabTextColor(value: Color) {
+        this.style.tabTextColor = value;
+    }
+
+    get tabBackgroundColor(): Color {
+        return this.style.tabBackgroundColor;
+    }
+    set tabBackgroundColor(value: Color) {
+        this.style.tabBackgroundColor = value;
+    }
+
+    get selectedTabTextColor(): Color {
+        return this.style.selectedTabTextColor;
+    }
+    set selectedTabTextColor(value: Color) {
+        this.style.selectedTabTextColor = value;
+    }
 
     public _addArrayFromBuilder(name: string, value: Array<any>) {
         if (name === "items") {

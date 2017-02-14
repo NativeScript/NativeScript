@@ -16,6 +16,15 @@ const ACCENT_COLOR = "colorAccent";
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
+let defaultAccentColor: number = undefined;
+function getDefaultAccentColor(context: android.content.Context): number {
+    if (defaultAccentColor === undefined) {
+        //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
+        defaultAccentColor = ad.resources.getPalleteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
+    }
+    return defaultAccentColor;
+}
+
 export class TabViewItem extends TabViewItemBase {
     public nativeView: android.widget.TextView;
     public tabItemSpec: org.nativescript.widgets.TabItemSpec;
@@ -61,17 +70,6 @@ export class TabViewItem extends TabViewItemBase {
         const tv = this.nativeView;
         const result = getTransformedText(this.title, value);
         tv.setText(result);
-    }
-
-    get [tabTextColorProperty.native](): android.content.res.ColorStateList {
-        return this.nativeView.getTextColors();
-    }
-    set [tabTextColorProperty.native](value: android.content.res.ColorStateList | Color) {
-        if (value instanceof Color) {
-            this.nativeView.setTextColor(value.android);
-        } else {
-            this.nativeView.setTextColor(value);
-        }
     }
 }
 
@@ -279,7 +277,7 @@ export class TabView extends TabViewBase {
 
         this.setElevation();
 
-        const accentColor = ad.resources.getPalleteColor(ACCENT_COLOR, this._context);
+        const accentColor = getDefaultAccentColor(this._context);
         if (accentColor) {
             this._tabLayout.setSelectedIndicatorColors([accentColor]);
         }
@@ -370,15 +368,23 @@ export class TabView extends TabViewBase {
         this.setAdapter(value);
     }
 
-    get [tabBackgroundColorProperty.native](): android.graphics.drawable.Drawable {
-        return this._tabLayout.getBackground();
+    get [tabBackgroundColorProperty.native](): android.graphics.drawable.Drawable.ConstantState {
+        return this._tabLayout.getBackground().getConstantState();
     }
-    set [tabBackgroundColorProperty.native](value: android.graphics.drawable.Drawable | Color) {
+    set [tabBackgroundColorProperty.native](value: android.graphics.drawable.Drawable.ConstantState | Color) {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
-            this._tabLayout.setBackground(value);
+            this._tabLayout.setBackground(value.newDrawable());
         }
+    }
+
+    get [tabTextColorProperty.native](): number {
+        return this._tabLayout.getTabTextColor();
+    }
+    set [tabTextColorProperty.native](value: number | Color) {
+        let color = value instanceof Color ? value.android : value;
+        this._tabLayout.setTabTextColor(color);
     }
 
     get [selectedTabTextColorProperty.native](): number {
@@ -386,12 +392,11 @@ export class TabView extends TabViewBase {
     }
     set [selectedTabTextColorProperty.native](value: number | Color) {
         let color = value instanceof Color ? value.android : value;
-        this._tabLayout.setTabTextColor(color);
+        this._tabLayout.setSelectedTabTextColor(color);
     }
 
     get [androidSelectedTabHighlightColorProperty.native](): number {
-        //from https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-        return 0xFF33B5E5;
+        return getDefaultAccentColor(this._context);
     }
     set [androidSelectedTabHighlightColorProperty.native](value: number | Color) {
         let tabLayout = this._tabLayout;
