@@ -334,7 +334,7 @@ global.__onLiveSync = function () {
     loadCss();
 };
 
-global.__onUncaughtError = function (error: definition.NativeScriptError) {
+global.__onUncaughtError = function (error: NativeScriptError) {
     const types: typeof typesModule = require("utils/types");
 
     // TODO: Obsolete this

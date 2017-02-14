@@ -38,9 +38,10 @@ export function setTimeout(callback: Function, milliseconds = 0): number {
 }
 
 export function clearTimeout(id: number): void {
-    if (timeoutCallbacks[id]) {
-        timeoutHandler.removeCallbacks(timeoutCallbacks[id]);
-        delete timeoutCallbacks[id];
+    let index = id;
+    if (timeoutCallbacks[index]) {
+        timeoutHandler.removeCallbacks(timeoutCallbacks[index]);
+        delete timeoutCallbacks[index];
     }
 }
 

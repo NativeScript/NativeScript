@@ -1,8 +1,13 @@
-import * as definition from "console";
 import * as trace from "trace";
 import * as platform from "platform";
 
-export class Console implements definition.Console {
+function __message(message: any, level: string) {
+    if ((<any>global).__consoleMessage) {
+        (<any>global).__consoleMessage(message, level);
+    }
+}
+
+export class Console {
     private TAG: string = "JS";
     private _timers: any;
     private _stripFirstTwoLinesRegEx: RegExp;
@@ -250,9 +255,7 @@ export class Console implements definition.Console {
             Array.prototype.shift.apply(arguments);
             let formatedMessage = this.formatParams.apply(this, arguments);
             this.error(formatedMessage, trace.messageType.error);
-            if (global.__consoleMessage) {
-                global.__consoleMessage(formatedMessage, "error");
-            }
+            __message(formatedMessage, "error");
         }
     }
 
@@ -263,29 +266,23 @@ export class Console implements definition.Console {
     public warn(message: any, ...formatParams: any[]): void {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.warn);
-        if (global.__consoleMessage) {
-            global.__consoleMessage(formatedMessage, "warning");
-        }
+        __message(formatedMessage, "warning");
     }
 
     public error(message: any, ...formatParams: any[]): void {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.error);
-        if (global.__consoleMessage) {
-            global.__consoleMessage(formatedMessage, "error")
-        }
+        __message(formatedMessage, "error");
     }
 
     public log(message: any, ...formatParams: any[]): void {
         let formatedMessage = this.formatParams.apply(this, arguments);
         this.logMessage(formatedMessage, trace.messageType.log);
-        if (global.__consoleMessage) {
-            global.__consoleMessage(formatedMessage, "log")
-        }
+        __message(formatedMessage, "log");
     }
 
     private logMessage(message: string, messageType: number): void {
-        if (!global.android) {
+        if (!(<any>global).android) {
             // This case may be entered during heap snapshot where the global.android is not present
             return;
         }

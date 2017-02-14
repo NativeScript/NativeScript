@@ -6,16 +6,6 @@ declare module "application" {
     import { NavigationEntry, View, Observable } from "ui/frame";
 
     /**
-     * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
-     */
-    export interface NativeScriptError extends Error {
-        /**
-         * Represents the native error object.
-         */
-        nativeError: any;
-    }
-
-    /**
      * String value used when hooking to launch event.
      */
     export var launchEvent: string;

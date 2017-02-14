@@ -215,7 +215,7 @@ class IOSApplication implements definition.iOSApplication {
 var iosApp = new IOSApplication();
 typedExports.ios = iosApp;
 
-global.__onUncaughtError = function (error: definition.NativeScriptError) {
+global.__onUncaughtError = function (error: NativeScriptError) {
     var types: typeof typesModule = require("utils/types");
 
     // TODO: This should be obsoleted

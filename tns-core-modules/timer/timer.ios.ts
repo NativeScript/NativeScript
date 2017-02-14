@@ -68,7 +68,7 @@ export function setTimeout(callback: Function, milliseconds = 0): number {
 }
 
 export function clearTimeout(id: number): void {
-    let pair = timeoutCallbacks.get(id);
+    let pair = timeoutCallbacks.get(<number><any>id);
     if (pair) {
         pair.v.unregister();
     }

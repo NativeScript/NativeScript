@@ -84,13 +84,9 @@ module.exports = function(grunt) {
         });
         var combinedDtsPath = path.join(outDir, outFile);
         grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
-    }
-    
+    };
+
     var generateModulesDts = function generateModulesDts(outDir, srcDir) {
-        var angularConflicts = ['module.d.ts'];
-        var angularExcludes = angularConflicts.map(function(file) {
-            return '!' + file;
-        });
         var dtsFiles = grunt.file.expand({cwd: srcDir }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
@@ -99,24 +95,14 @@ module.exports = function(grunt) {
             "!android17.d.ts",
             "!**/*.android.d.ts",
             "!ios/**",
-            "!lib.core.d.ts",
-            "!lib.dom.d.ts",
             "!**/*.ios.d.ts",
             "!tns-core-modules.d.ts",
-            "!tns-core-modules.es6.d.ts",
-            "!tns-core-modules.es2016.d.ts",
-            "!tns-core-modules.base.d.ts",
             "!references.d.ts",
-            "!webworker.es2016.d.ts"
-        ].concat(localCfg.defaultExcludes).concat(angularExcludes));
+        ].concat(localCfg.defaultExcludes));
         dtsFiles.sort();
 
-        writeDtsFile(dtsFiles, outDir, 'tns-core-modules/tns-core-modules.base.d.ts');
-        var es6Files = angularConflicts.concat(['tns-core-modules.base.d.ts']);
-        writeDtsFile(es6Files, outDir, 'tns-core-modules/tns-core-modules.es6.d.ts');
-        var allFiles = angularConflicts.concat(['tns-core-modules.base.d.ts']);
-        writeDtsFile(allFiles, outDir, 'tns-core-modules/tns-core-modules.d.ts');
-    }
+        writeDtsFile(dtsFiles, outDir, "tns-core-modules/tns-core-modules.d.ts");
+    };
 
     // Configure localCfg
     var outDir = tsconfig.compilerOptions.outDir || "./bin/dist";
@@ -411,9 +397,9 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, ".", localCfg.srcTnsCoreModules));
-    
+
     grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outDir, localCfg.outTnsCoreModules));
-    
+
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
