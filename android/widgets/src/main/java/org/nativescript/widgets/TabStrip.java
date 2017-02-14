@@ -50,9 +50,8 @@ class TabStrip extends LinearLayout {
     private TabLayout.TabColorizer mCustomTabColorizer;
     private final SimpleTabColorizer mDefaultTabColorizer;
 
-    private int mDefaultTabTextColor;
-    private int mTabTextColor = -1;
-    private int mSelectedTabTextColor = -1;
+    private int mTabTextColor;
+    private int mSelectedTabTextColor;
 
     TabStrip(Context context) {
         this(context, null);
@@ -83,7 +82,10 @@ class TabStrip extends LinearLayout {
         mSelectedIndicatorPaint = new Paint();
 
         TextView defaultTextView = new TextView(context);
-        mDefaultTabTextColor = defaultTextView.getTextColors().getDefaultColor();
+        mTabTextColor = defaultTextView.getTextColors().getDefaultColor();
+
+        // Default selected color is the same as mTabTextColor
+        mSelectedTabTextColor = mTabTextColor;
     }
 
     void setCustomTabColorizer(TabLayout.TabColorizer customTabColorizer) {
@@ -122,20 +124,10 @@ class TabStrip extends LinearLayout {
             LinearLayout linearLayout = (LinearLayout)getChildAt(i);
             TextView textView = (TextView)linearLayout.getChildAt(1);
             if (i == mSelectedPosition){
-                if (mSelectedTabTextColor >= 0){
-                    textView.setTextColor(mSelectedTabTextColor);
-                }
-                else {
-                    textView.setTextColor(mDefaultTabTextColor);
-                }
+                textView.setTextColor(mSelectedTabTextColor);
             }
             else {
-                if (mTabTextColor >= 0){
-                    textView.setTextColor(mTabTextColor);
-                }
-                else {
-                    textView.setTextColor(mDefaultTabTextColor);
-                }
+                textView.setTextColor(mTabTextColor);
             }
         }
     }
