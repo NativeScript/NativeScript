@@ -1,20 +1,5 @@
 {
-    "compilerOptions": {
-        "noEmitOnError": true,
-        "noEmitHelpers": true,
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": true,
-        "experimentalDecorators": true,
-        "sourceMap": true,
-        "jsx": "react",
-        "reactNamespace": "UIBuilder",
-        "lib": [
-            "es2016", "dom"
-        ]
-    },
+    "extends": "./tsconfig.shared",
     "include": [
         "tns-core-modules/js-libs/easysax/**/*.ts",
         "tns-core-modules/module.d.ts",

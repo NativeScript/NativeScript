@@ -1,22 +1,5 @@
 {
-    "compilerOptions": {
-        "noEmitOnError": false,
-        "noEmitHelpers": true,
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": true,
-        "removeComments": true,
-        "experimentalDecorators": true,
-        "diagnostics": true,
-        "sourceMap": true,
-        "jsx": "react",
-        "reactNamespace": "UIBuilder",
-        "lib": [
-            "es6", "dom"
-        ]
-    },
+    "extends": "./tsconfig.shared",
     "exclude": [
         "tns-platform-declarations/node_modules/",
         "tns-platform-declarations/package/",

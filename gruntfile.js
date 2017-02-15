@@ -105,7 +105,7 @@ module.exports = function(grunt) {
     };
 
     // Configure localCfg
-    var outDir = tsconfig.compilerOptions.outDir || "./bin/dist";
+    var outDir = "./bin/dist";
     var srcDir = ".";
     var tnsCoreModulesDir = path.join(srcDir, "tns-core-modules");;
     var srcAppDirs = ["tests/app", "apps/app"]; //Don't move the tests folder from index 0!
@@ -155,15 +155,6 @@ module.exports = function(grunt) {
         "!**/ios.d.ts",
         "!**/*.ios.d.ts"
     ].concat(localCfg.defaultExcludes);
-
-    var tsOptions = tsconfig.compilerOptions;
-    tsOptions.fast = 'never';
-    tsOptions.removeComments = !grunt.option('leavecomments') || '';
-    tsOptions.compiler = "node_modules/typescript/bin/tsc";
-    tsOptions.failOnTypeErrors = true;
-    tsOptions.outDir = localCfg.outDir;
-    var removeCommentsArgument = tsOptions.removeComments ? " --removeComments" : "";
-    tsOptions.additionalFlags = "--outDir " + localCfg.outDir + removeCommentsArgument;
 
     // Config
     grunt.initConfig({

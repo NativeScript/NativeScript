@@ -1,20 +1,7 @@
 {
+    "extends": "./tsconfig.shared",
     "compilerOptions": {
-        "noEmit": true,
-        "noEmitOnError": true,
-        "noEmitHelpers": true,
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": true,
-        "experimentalDecorators": true,
-        "sourceMap": true,
-        "jsx": "react",
-        "reactNamespace": "UIBuilder",
-        "lib": [
-            "es6", "dom"
-        ]
+        "noEmit": true
     },
     "include": [
         "bin/dist/tns-core-modules/tns-core-modules.d.ts"
