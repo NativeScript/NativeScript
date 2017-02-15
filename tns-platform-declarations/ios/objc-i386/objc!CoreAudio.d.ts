@@ -1,14 +1,14 @@
 
-interface AudioBuffer {
+interface _AudioBuffer {
 	mNumberChannels: number;
 	mDataByteSize: number;
 	mData: interop.Pointer | interop.Reference<any>;
 }
-declare var AudioBuffer: interop.StructType<AudioBuffer>;
+declare var _AudioBuffer: interop.StructType<_AudioBuffer>;
 
 interface AudioBufferList {
 	mNumberBuffers: number;
-	mBuffers: interop.Reference<AudioBuffer>;
+	mBuffers: interop.Reference<any /*AudioBuffer*/>;
 }
 declare var AudioBufferList: interop.StructType<AudioBufferList>;
 

@@ -1,5 +1,4 @@
 ﻿require("globals");
-import * as definition from "application";
 import * as observable from "data/observable";
 // TODO: Raise event on("livesync") and attach this handler in the ui/frame module. 
 import { NavigationEntry, reloadPage } from "ui/frame";
@@ -62,7 +61,7 @@ export function setResources(res: any) {
     resources = res;
 }
 
-export var onUncaughtError: (error: definition.NativeScriptError) => void = undefined;
+export var onUncaughtError: (error: NativeScriptError) => void = undefined;
 
 export var onLaunch: (context: any) => any = undefined;
 
@@ -118,9 +117,9 @@ export function parseCss(cssText: string, cssFileName?: string): RuleSet[] {
 
 export function __onLiveSync() {
     // Close the error page if available and remove the reference from global context.
-    if (global.errorPage) {
-        global.errorPage.closeModal();
-        global.errorPage = undefined;
+    if ((<any>global).errorPage) {
+        (<any>global).errorPage.closeModal();
+        (<any>global).errorPage = undefined;
     }
 
     try {
@@ -132,13 +131,13 @@ export function __onLiveSync() {
         // Reload app.css in case it was changed.
         loadCss();
 
-        global.__onLiveSyncCore();
+        (<any>global).__onLiveSyncCore();
 
     } catch (ex) {
         // Show the error as modal page, save reference to the page in global context.
         ensureBuilder();
-        global.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
-        global.errorPage.showModal();
+        (<any>global).errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
+        (<any>global).errorPage.showModal();
     }
 }
 
@@ -146,7 +145,7 @@ export function __onLiveSyncCore() {
     // Reload current page.
     reloadPage();
 }
-global.__onLiveSyncCore = __onLiveSyncCore;
+(<any>global).__onLiveSyncCore = __onLiveSyncCore;
 
 export function _onOrientationChanged(){
     ensurePlatform();

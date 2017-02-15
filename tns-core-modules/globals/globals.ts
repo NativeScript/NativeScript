@@ -46,13 +46,13 @@ global.loadModule = function(name: string): any {
 }
 
 global.zonedCallback = function (callback: Function): Function {
-    if (global.zone) {
+    if ((<any>global).zone) {
         // Zone v0.5.* style callback wrapping
-        return global.zone.bind(callback);
+        return (<any>global).zone.bind(callback);
     }
-    if (global.Zone) {
+    if ((<any>global).Zone) {
         // Zone v0.6.* style callback wrapping
-        return global.Zone.current.wrap(callback);
+        return (<any>global).Zone.current.wrap(callback);
     } else {
         return callback;
     }
@@ -86,28 +86,28 @@ function registerOnGlobalContext(name: string, module: string): void {
     });
 }
 
-if (global.__snapshot) {
+if ((<any>global).__snapshot) {
     // when we have a snapshot, it is better to pre-populate these on the global context to get them saved within the blob
     var timer: typeof timerModule = require("timer");
-    global.setTimeout = timer.setTimeout;
-    global.clearTimeout = timer.clearTimeout;
-    global.setInterval = timer.setInterval;
-    global.clearInterval = timer.clearInterval;
+    (<any>global).setTimeout = timer.setTimeout;
+    (<any>global).clearTimeout = timer.clearTimeout;
+    (<any>global).setInterval = timer.setInterval;
+    (<any>global).clearInterval = timer.clearInterval;
 
     var dialogs: typeof dialogsModule = require("ui/dialogs");
-    global.alert = dialogs.alert;
-    global.confirm = dialogs.confirm;
-    global.prompt = dialogs.prompt;
+    (<any>global).alert = dialogs.alert;
+    (<any>global).confirm = dialogs.confirm;
+    (<any>global).prompt = dialogs.prompt;
 
     var xhr = require("xhr");
-    global.XMLHttpRequest = xhr.XMLHttpRequest;
-    global.FormData = xhr.FormData;
+    (<any>global).XMLHttpRequest = xhr.XMLHttpRequest;
+    (<any>global).FormData = xhr.FormData;
 
     var fetch = require("fetch");
-    global.fetch = fetch.fetch;
-    global.Headers = fetch.Headers;
-    global.Request = fetch.Request;
-    global.Response = fetch.Response;
+    (<any>global).fetch = fetch.fetch;
+    (<any>global).Headers = fetch.Headers;
+    (<any>global).Request = fetch.Request;
+    (<any>global).Response = fetch.Response;
 } else {
     registerOnGlobalContext("setTimeout", "timer");
     registerOnGlobalContext("clearTimeout", "timer");
@@ -122,14 +122,14 @@ if (global.__snapshot) {
 }
 
 import * as platform from "platform";
-import * as consoleModule from "console";
 
+let consoleModule = require("console");
 var c = new consoleModule.Console();
 
 if (platform.device.os === platform.platformNames.android) {
-    global.console = c;
+    (<any>global).console = c;
 } else if (platform.device.os === platform.platformNames.ios) {
-    global.console.dump = function (args) { c.dump(args); };
+    (<any>global).console.dump = function (args) { c.dump(args); };
 }
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {

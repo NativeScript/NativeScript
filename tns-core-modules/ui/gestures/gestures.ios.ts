@@ -409,14 +409,14 @@ class TouchGestureEventData implements TouchGestureEventData {
     android: any = undefined;
     action: string;
     view: View;
-    ios: { touches: NSSet<any>, event: UIEvent };
+    ios: { touches: NSSet<any>, event: _UIEvent };
     object: any;
 
     private _activePointers: Array<Pointer>;
     private _allPointers: Array<Pointer>;
     private _mainPointer: UITouch;
 
-    public prepare(view: View, action: string, touches: NSSet<any>, event: UIEvent) {
+    public prepare(view: View, action: string, touches: NSSet<any>, event: _UIEvent) {
         this.action = action;
         this.view = view;
         this.object = view;

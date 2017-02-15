@@ -47,7 +47,7 @@ class AnimationDelegateImpl extends NSObject implements CAAnimationDelegate {
     public nextAnimation: Function;
 
     // The CAAnimationDelegate protocol has been introduced in the iOS 10 SDK
-    static ObjCProtocols = global.CAAnimationDelegate ? [global.CAAnimationDelegate] : [];
+    static ObjCProtocols = (<any>global).CAAnimationDelegate ? [(<any>global).CAAnimationDelegate] : [];
 
     private _finishedCallback: Function;
     private _propertyAnimation: PropertyAnimationInfo;

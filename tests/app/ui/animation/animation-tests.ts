@@ -5,6 +5,7 @@ import {Label} from "ui/label";
 import {StackLayout} from "ui/layouts/stack-layout";
 import * as colorModule from "color";
 import * as enums from "ui/enums";
+import { AnimationPromise } from "ui/animation";
 
 // >> animation-require
 import * as animation from "ui/animation";
@@ -105,7 +106,7 @@ export function test_CancellingAnimate(done) {
             }
             // << (hide)
         });
-    animation1.cancel();
+    (<AnimationPromise>animation1).cancel();
     // << animation-cancel2
 }
 

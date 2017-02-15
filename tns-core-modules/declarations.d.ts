@@ -42,6 +42,24 @@ declare class Headers {
     set(name: string, value: string): void;
 }
 
+interface Blob {
+    readonly size: number;
+    readonly type: string;
+    msClose(): void;
+    msDetachStream(): any;
+    slice(start?: number, end?: number, contentType?: string): Blob;
+}
+
+declare var Blob: {
+    prototype: Blob;
+    new (blobParts?: any[], options?: BlobPropertyBag): Blob;
+}
+
+interface BlobPropertyBag {
+    type?: string;
+    endings?: string;
+}
+
 declare class Body {
     bodyUsed: boolean;
     /*
@@ -80,26 +98,24 @@ declare type RequestInfo = Request|string;
 
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
-interface XMLHttpRequest {
-    send(data?: FormData): void;
-}
-
+/**
+ * Allows printing messages to the device's console. 
+ */
 interface Console {
-    time(reportName: string): void;
-    timeEnd(reportName: string): void;
-    assert(test: boolean, message: string, ...formatParams: any[]): void;
-    info(message: any, ...formatParams: any[]): void;
-    warn(message: any, ...formatParams: any[]): void;
-    error(message: any, ...formatParams: any[]): void;
-    log(message: any, ...formatParams: any[]): void;
+    /**
+     * Prints the current stack trace in the console.
+     */
     trace(): void;
+
+    /**
+     * Prints the state of the specified object to the console.
+     * @param obj The object instance to be dumped.
+     */
     dump(obj: any): void;
-    createDump(obj: any): string;
-    dir(obj: any): void;
 }
 
 declare var console: Console;
-declare var require: NativeScriptRequire;
+declare var require: NodeRequire;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
@@ -165,10 +181,14 @@ declare class WeakRef<T> {
     clear(): void;
 }
 
-declare var module: NativeScriptModule;
+declare var module: NodeModule;
 // Same as module.exports
 declare var exports: any;
 
 interface Array<T> {
     filter<U extends T>(pred: (a: T) => a is U): U[];
 }
+
+//Dialogs
+declare function alert(message?: any): void;
+declare function confirm(message?: string): boolean;

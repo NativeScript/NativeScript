@@ -1,10 +1,10 @@
-if (typeof global.__decorate !== "function") {
-    global.__decorate = function (decorators, target, key, desc) {
+if (typeof (<any>global).__decorate !== "function") {
+    (<any>global).__decorate = function (decorators, target, key, desc) {
         var c = arguments.length;
         var r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 
-        if (typeof global.Reflect === "object" && typeof global.Reflect.decorate === "function") {
-            r = global.Reflect.decorate(decorators, target, key, desc);
+        if (typeof (<any>global).Reflect === "object" && typeof (<any>global).Reflect.decorate === "function") {
+            r = (<any>global).Reflect.decorate(decorators, target, key, desc);
         }
         else {
             for (var i = decorators.length - 1; i >= 0; i--) {
@@ -17,16 +17,16 @@ if (typeof global.__decorate !== "function") {
     }
 }
 
-if (typeof global.__metadata !== "function") {
-    global.__metadata = function (k, v) {
-        if (typeof global.Reflect === "object" && typeof global.Reflect.metadata === "function") {
-            return global.Reflect.metadata(k, v);
+if (typeof (<any>global).__metadata !== "function") {
+    (<any>global).__metadata = function (k, v) {
+        if (typeof (<any>global).Reflect === "object" && typeof (<any>global).Reflect.metadata === "function") {
+            return (<any>global).Reflect.metadata(k, v);
         }
     };
 }
 
-if (typeof global.__param !== "function") {
-    global.__param = (global && global.__param) || function (paramIndex, decorator) {
+if (typeof (<any>global).__param !== "function") {
+    (<any>global).__param = (global && (<any>global).__param) || function (paramIndex, decorator) {
         return function (target, key) { decorator(target, key, paramIndex); }
     };
 }

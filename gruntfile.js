@@ -84,22 +84,9 @@ module.exports = function(grunt) {
         });
         var combinedDtsPath = path.join(outDir, outFile);
         grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
-    }
-    
+    };
+
     var generateModulesDts = function generateModulesDts(outDir, srcDir) {
-        var angularConflicts = ['module.d.ts'];
-        var angularExcludes = angularConflicts.map(function(file) {
-            return '!' + file;
-        });
-        var nonES6Files = [
-            'es-collections.d.ts',
-           'es6-promise.d.ts',
-           'es6.d.ts',
-           'weakmap.d.ts',
-        ];
-        var es6Excludes = nonES6Files.map(function(file) {
-            return '!' + file;
-        });
         var dtsFiles = grunt.file.expand({cwd: srcDir }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
@@ -108,27 +95,17 @@ module.exports = function(grunt) {
             "!android17.d.ts",
             "!**/*.android.d.ts",
             "!ios/**",
-            "!lib.core.d.ts",
-            "!lib.dom.d.ts",
             "!**/*.ios.d.ts",
             "!tns-core-modules.d.ts",
-            "!tns-core-modules.es6.d.ts",
-            "!tns-core-modules.es2016.d.ts",
-            "!tns-core-modules.base.d.ts",
             "!references.d.ts",
-            "!webworker.es2016.d.ts"
-        ].concat(localCfg.defaultExcludes).concat(es6Excludes).concat(angularExcludes));
+        ].concat(localCfg.defaultExcludes));
         dtsFiles.sort();
 
-        writeDtsFile(dtsFiles, outDir, 'tns-core-modules/tns-core-modules.base.d.ts');
-        var es6Files = angularConflicts.concat(['tns-core-modules.base.d.ts']);
-        writeDtsFile(es6Files, outDir, 'tns-core-modules/tns-core-modules.es6.d.ts');
-        var allFiles = angularConflicts.concat(nonES6Files).concat(['tns-core-modules.base.d.ts']);
-        writeDtsFile(allFiles, outDir, 'tns-core-modules/tns-core-modules.d.ts');
-    }
+        writeDtsFile(dtsFiles, outDir, "tns-core-modules/tns-core-modules.d.ts");
+    };
 
     // Configure localCfg
-    var outDir = tsconfig.compilerOptions.outDir || "./bin/dist";
+    var outDir = "./bin/dist";
     var srcDir = ".";
     var tnsCoreModulesDir = path.join(srcDir, "tns-core-modules");;
     var srcAppDirs = ["tests/app", "apps/app"]; //Don't move the tests folder from index 0!
@@ -169,13 +146,6 @@ module.exports = function(grunt) {
         "!obj/**/*.*"
     ];
     localCfg.defaultExcludes = localCfg.typeScriptSrc.filter(function(item) { return /^!/.test(item); });
-    localCfg.typeScriptSrcForTsLint = localCfg.typeScriptSrc.concat([
-        "!tns-core-modules/libjs.d.ts",
-        "!tns-core-modules/lib.core.es6.d.ts",
-        "!tns-core-modules/lib.dom.d.ts",
-        "!tns-core-modules.es2016.d.ts",
-        "!tns-platform-declarations/**/*"
-    ]);
     localCfg.srcTsdFiles = [
         "tns-core-modules/**/*.d.ts",
         "!tns-core-modules/ios/**",
@@ -185,15 +155,6 @@ module.exports = function(grunt) {
         "!**/ios.d.ts",
         "!**/*.ios.d.ts"
     ].concat(localCfg.defaultExcludes);
-
-    var tsOptions = tsconfig.compilerOptions;
-    tsOptions.fast = 'never';
-    tsOptions.removeComments = !grunt.option('leavecomments') || '';
-    tsOptions.compiler = "node_modules/typescript/bin/tsc";
-    tsOptions.failOnTypeErrors = true;
-    tsOptions.outDir = localCfg.outDir;
-    var removeCommentsArgument = tsOptions.removeComments ? " --removeComments" : "";
-    tsOptions.additionalFlags = "--outDir " + localCfg.outDir + removeCommentsArgument;
 
     // Config
     grunt.initConfig({
@@ -321,69 +282,6 @@ module.exports = function(grunt) {
                 dest: "<%= grunt.option('path') %>/node_modules/tns-core-modules/",
             }
         },
-        ts: {
-            build: {
-                tsconfig: {
-                    tsconfig: 'tsconfig.json',
-                    passThrough: true,
-                },
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: tsOptions
-            },
-            buildNodeTests: {
-                src: [
-                    'tns-core-modules/js-libs/easysax/**/*.ts',
-                    'tns-core-modules/module.d.ts',
-                    'tns-core-modules/xml/**/*.ts',
-                    'tns-core-modules/lib.core.d.ts',
-                    'tns-core-modules/lib.dom.d.ts',
-                    'tns-core-modules/es-collections.d.ts',
-                    'tns-core-modules/declarations.d.ts',
-                    'tns-core-modules/es6-promise.d.ts',
-                    'node-tests/**/*.ts'
-                ],
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: tsOptions
-            },
-            buildDts: {
-                src: [
-                    'tns-core-modules/**/*.d.ts',
-                    '!org.nativescript.widgets.d.ts',
-                    '!**/*.android.d.ts',
-                    '!**/node_modules/**/*',
-                    '!**/platforms/**/*',
-                    '!bin/**/*',
-                    '!**/references.d.ts',
-                    '!tns-core-modules/references.d.ts',
-                    '!tns-core-modules/android17.d.ts',
-                    '!tns-core-modules/ios/**/*',
-                    '!tns-core-modules/org.nativescript.widgets.d.ts',
-                ],
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: tsOptions
-            },
-            testCombinedDts: {
-                src: [
-                    path.join(localCfg.outTnsCoreModules, 'tns-core-modules.d.ts'),
-                ],
-                outDir: localCfg.outDir,
-                dest: localCfg.outDir,
-                options: Object.assign({}, tsOptions, { noLib: false })
-            }
-        },
-        tslint: {
-            build: {
-                files: {
-                    src: localCfg.typeScriptSrcForTsLint
-                },
-                options: {
-                    configuration: grunt.file.readJSON("./build/tslint.json")
-                }
-            }
-        },
         exec: {
             packModules: {
                 cmd: "npm pack",
@@ -400,6 +298,11 @@ module.exports = function(grunt) {
                     callback: assignGitSHA
                 }
             },
+            compileAll: "npm run compile-all",
+            compileNodeTests: "npm run compile-node-tests",
+            compileCheckBaseDts: "npm run compile-check-base-dts",
+            compileCheckCombinedDts: "npm run compile-check-combined-dts",
+            tslint: "npm run tslint",
         },
         simplemocha: {
             node: {
@@ -431,8 +334,6 @@ module.exports = function(grunt) {
 
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-copy");
-    grunt.loadNpmTasks("grunt-ts");
-    grunt.loadNpmTasks("grunt-tslint");
     grunt.loadNpmTasks("grunt-exec");
     grunt.loadNpmTasks("grunt-shell");
     grunt.loadNpmTasks("grunt-simple-mocha");
@@ -446,8 +347,8 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask("compile-ts", [
-        "ts:buildDts",
-        "ts:build",
+        "shell:compileCheckBaseDts",
+        "shell:compileAll",
         "clean:typeScriptLeftovers",
         "copy:childPackageFiles"
     ]);
@@ -487,9 +388,9 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, ".", localCfg.srcTnsCoreModules));
-    
+
     grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outDir, localCfg.outTnsCoreModules));
-    
+
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
@@ -508,12 +409,12 @@ module.exports = function(grunt) {
         "copy:definitionFiles",
         "copy:jsLibs",
         "generate-tns-core-modules-dts",
-        "ts:testCombinedDts",
+        "shell:compileCheckCombinedDts",
     ]);
 
     grunt.registerTask("node-tests", [
         "clean:nodeTests",
-        "ts:buildNodeTests",
+        "shell:compileNodeTests",
         "copy:childPackageFiles",
         "copy:jsLibs",
         "env:nodeTests",
@@ -580,7 +481,7 @@ module.exports = function(grunt) {
     
     grunt.registerTask("get-ready-packages", ["copy:readyPackages"]);
 
-    grunt.registerTask("default", (skipTsLint ? [] : ["tslint:build"]).concat([
+    grunt.registerTask("default", (skipTsLint ? [] : ["shell:tslint"]).concat([
         "build-all",
         "pack-apps",
         "get-ready-packages"

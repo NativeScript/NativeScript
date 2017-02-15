@@ -56,7 +56,7 @@ class TextWatcher extends java.lang.Object implements android.text.TextWatcher {
 }
 
 //https://github.com/NativeScript/NativeScript/issues/2942
-let dismissKeyboardTimeoutId: number;
+let dismissKeyboardTimeoutId: any;
 
 @Interfaces([android.view.View.OnFocusChangeListener])
 class FocusChangeListener extends java.lang.Object implements android.view.View.OnFocusChangeListener {

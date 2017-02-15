@@ -5,6 +5,7 @@
     AnimationDefinition,
     Pair
 } from "ui/animation";
+export { AnimationPromise } from "ui/animation";
 
 import { View, Color, traceEnabled, traceWrite, traceCategories } from "ui/core/view";
 
@@ -43,14 +44,6 @@ export class CubicBezierAnimationCurve implements CubicBezierAnimationCurveDefin
     }
 }
 
-// This is a BOGUS Class to make TypeScript happy - This is not needed other than to make TS happy.
-// We didn't want to actually modify Promise; as the cancel() is ONLY valid for animations "Promise"
-export class AnimationPromise implements AnimationPromiseDefinition {
-    public cancel(): void { /* Do Nothing */ }
-    public then(onFulfilled?: (value?: any) => void, onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
-    public catch(onRejected?: (error?: any) => void): AnimationPromise { return new AnimationPromise(); }
-}
-
 export abstract class AnimationBase implements AnimationBaseDefinition {
     public _propertyAnimations: Array<PropertyAnimation>;
     public _playSequentially: boolean;
@@ -87,14 +80,14 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
 
     abstract _resolveAnimationCurve(curve: any): any;
 
-    public play(): AnimationPromise {
+    public play(): AnimationPromiseDefinition {
         if (this.isPlaying) {
             throw new Error("Animation is already playing.");
         }
 
         // We have to actually create a "Promise" due to a bug in the v8 engine and decedent promises
         // We just cast it to a animationPromise so that all the rest of the code works fine
-        var animationFinishedPromise = <AnimationPromise>new Promise<void>((resolve, reject) => {
+        var animationFinishedPromise = <AnimationPromiseDefinition>new Promise<void>((resolve, reject) => {
             this._resolve = resolve;
             this._reject = reject;
         });
@@ -105,7 +98,7 @@ export abstract class AnimationBase implements AnimationBaseDefinition {
         return animationFinishedPromise;
     }
 
-    private fixupAnimationPromise(promise: AnimationPromise): void {
+    private fixupAnimationPromise(promise: AnimationPromiseDefinition): void {
         // Since we are using function() below because of arguments, TS won't automatically do a _this for those functions.
         var _this = this;
         promise.cancel = () => {

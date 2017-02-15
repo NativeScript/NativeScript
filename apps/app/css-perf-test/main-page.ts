@@ -2,6 +2,6 @@
 
 export function navigatedTo(args: ObservableEventData) {
     setTimeout(() => {
-        console.log(`Time: ${global.time() - global.startTime} ms`);
+        console.log(`Time: ${(<any>global).time() - (<any>global).startTime} ms`);
     });
 }
