@@ -1,16 +1,5 @@
 {
-    "compilerOptions": {
-        "noEmitOnError": true,
-        "noEmitHelpers": true,
-        "target": "es5",
-        "module": "commonjs",
-        "declaration": false,
-        "noImplicitAny": false,
-        "noImplicitUseStrict": true,
-        "experimentalDecorators": true,
-        "diagnostics": true,
-        "sourceMap": true
-    },
+    "extends": "../tsconfig.shared",
     "exclude": [
         "node_modules",
         "platforms"
