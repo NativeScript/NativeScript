@@ -22,6 +22,6 @@
     "babylon": "6.8.0",
     "filewalker": "0.1.2",
     "lazy": "1.0.11",
-    "typescript": "~2.0.10"
+    "typescript": "~2.1.6"
   }
 }
