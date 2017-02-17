@@ -131,19 +131,19 @@ public class TabLayout extends HorizontalScrollView {
         return this.mSelectedIndicatorColors;
     }
 
-    public void setTabTextColor(Integer color){
+    public void setTabTextColor(int color){
         mTabStrip.setTabTextColor(color);
     }
 
-    public Integer getTabTextColor(){
+    public int getTabTextColor(){
         return mTabStrip.getTabTextColor();
     }
 
-    public void setSelectedTabTextColor(Integer color){
+    public void setSelectedTabTextColor(int color){
         mTabStrip.setSelectedTabTextColor(color);
     }
 
-    public Integer getSelectedTabTextColor(){
+    public int getSelectedTabTextColor(){
         return mTabStrip.getSelectedTabTextColor();
     }
 
