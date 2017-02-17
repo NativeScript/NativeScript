@@ -180,58 +180,60 @@ var _testNativeFontSizeFromLocal = function (views: Array<viewModule.View>) {
     helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
 }
 
-var expectedColorHex = "#ffff0000";
+var actualColorHex = "#ffff0000";
+var expectedNormalizedColorHex = "#FF0000"
 var _testLocalColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
     var page = <pagesModule.Page>views[1];
-    page.css = "button { color: " + expectedColorHex + "; }";
+    page.css = "button { color: " + actualColorHex + "; }";
 
     var actualResult = button.style.color.hex;
-    TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+    TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
 }
 
 var _testNativeColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
     var page = <pagesModule.Page>views[1];
-    page.css = "button { color: " + expectedColorHex + "; }";
+    page.css = "button { color: " + actualColorHex + "; }";
 
     var actualResult = buttonTestsNative.getNativeColor(button).hex;
-    TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+    TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
 }
 
 var _testNativeColorFromLocal = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
-    button.style.color = new colorModule.Color(expectedColorHex);
+    button.style.color = new colorModule.Color(actualColorHex);
 
     var actualResult = buttonTestsNative.getNativeColor(button).hex;
-    TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+    TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
 }
 
-var expectedBackgroundColorHex = "#ff00ff00";
+var actualBackgroundColorHex = "#FF00FF00";
+var expectedNormalizedBackgroundColorHex = "#00FF00";
 var _testLocalBackgroundColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
     var page = <pagesModule.Page>views[1];
-    page.css = "button { background-color: " + expectedBackgroundColorHex + "; }";
+    page.css = "button { background-color: " + actualBackgroundColorHex + "; }";
 
     var actualResult = button.style.backgroundColor.hex;
-    TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+    TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
 }
 
 var _testNativeBackgroundColorFromCss = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
     var page = <pagesModule.Page>views[1];
-    page.css = "button { background-color: " + expectedBackgroundColorHex + "; }";
+    page.css = "button { background-color: " + actualBackgroundColorHex + "; }";
 
     var actualResult = buttonTestsNative.getNativeBackgroundColor(button).hex;
-    TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+    TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
 }
 
 var _testNativeBackgroundColorFromLocal = function (views: Array<viewModule.View>) {
     var button = <buttonModule.Button>views[0];
-    button.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
+    button.style.backgroundColor = new colorModule.Color(actualBackgroundColorHex);
 
     var actualResult = buttonTestsNative.getNativeBackgroundColor(button).hex;
-    TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+    TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
 }
 
 var expectedTextAlignment: "right" = "right";
@@ -261,13 +263,14 @@ export var test_StateHighlighted_also_fires_pressedState = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
         var page = <pagesModule.Page>views[1];
-        var expectedColor = "#ffff0000";
+        var expectedColor = "#FFFF0000";
+        var expectedNormalizedColor = "#FF0000";
         page.css = "button:pressed { background-color: " + expectedColor + "; }";
 
         view._goToVisualState('highlighted');
 
         var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
-        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+        TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     });
 }
 
@@ -275,13 +278,14 @@ export var test_StateHighlighted_also_fires_activeState = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
         var page = <pagesModule.Page>views[1];
-        var expectedColor = "#ffff0000";
+        var expectedColor = "#FFFF0000";
+        var expectedNormalizedColor = "#FF0000";
         page.css = "button:active { background-color: " + expectedColor + "; }";
 
         view._goToVisualState('highlighted');
 
         var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
-        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+        TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     });
 }
 
@@ -289,13 +293,14 @@ export var test_applying_disabled_visual_State_when_button_is_disable = function
     helper.buildUIAndRunTest(_createButtonFunc(), function (views: Array<viewModule.View>) {
         var view = <buttonModule.Button>views[0];
         var page = <pagesModule.Page>views[1];
-        var expectedColor = "#ffff0000";
+        var expectedColor = "#FFFF0000";
+        var expectedNormalizedColor = "#FF0000";
         page.css = "button:disabled { background-color: " + expectedColor + "; }";
 
         view.isEnabled = false;
 
         var actualResult = buttonTestsNative.getNativeBackgroundColor(view);
-        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+        TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     });
 }
 

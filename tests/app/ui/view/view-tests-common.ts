@@ -755,8 +755,8 @@ export function testIsVisible() {
 export function testSetInlineStyle() {
     const lbl = new Label();
 
-    const expectedColor = "#ff0000";
-    const expectedBackgroundColor = "#ff0000";
+    const expectedColor = "#FF0000";
+    const expectedBackgroundColor = "#FF0000";
 
     lbl.setInlineStyle(`color: ${expectedColor};background-color: ${expectedBackgroundColor};`);
 

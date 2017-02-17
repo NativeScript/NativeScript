@@ -193,8 +193,8 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         const label = this.testView;
 
         const fontSize = 14;
-        const color = "#ffff0000";
-        const backgroundColor = "#ff00ff00";
+        const color = "#FFFF0000";
+        const backgroundColor = "#FF00FF00";
         const testCss = [".title {background-color: ", backgroundColor, "; ",
             "color: ", color, "; ",
             "font-size: ", fontSize, ";}"].join("");
@@ -471,14 +471,15 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         let view = this.testView;
         let page = this.testPage;
         this.waitUntilTestElementIsLoaded();
-        let expectedColor = "#ffff0000";
+        let expectedColor = "#FFFF0000";
+        let expectedNormalizedColor = "#FF0000";
 
         page.css = "label:disabled { background-color: " + expectedColor + "; }";
 
         view.isEnabled = false;
 
         let actualResult = labelTestsNative.getNativeBackgroundColor(view);
-        TKUnit.assert(actualResult.hex === expectedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedColor);
+        TKUnit.assert(actualResult.hex === expectedNormalizedColor, "Actual: " + actualResult.hex + "; Expected: " + expectedNormalizedColor);
     };
 
     public test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormattedText_DoesNotCrash() {

@@ -6,11 +6,6 @@ const SHARP = "#";
 const HEX_REGEX = /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)|(^#[0-9A-F]{8}$)/i;
 
 export class Color implements definition.Color {
-    private _a: number;
-    private _r: number;
-    private _g: number;
-    private _b: number;
-    private _hex: string;
     private _argb: number;
     private _name: string;
 
@@ -25,61 +20,48 @@ export class Color implements definition.Color {
                     this._argb = argbFromRgbOrRgba(arg);
                 } else if (knownColors.isKnownName(arg)) {
                     // The parameter is a known color name
-                    this._hex = knownColors.getKnownColor(arg);
+                    const hex = knownColors.getKnownColor(arg);
                     this._name = arg;
-                    this._argb = this._argbFromString(this._hex);
+                    this._argb = this._argbFromString(hex);
                 } else if (HEX_REGEX.test(arg)) {
                     // The parameter is a "#AARRGGBB" formatted string
-                    this._hex = this._normalizeHex(arg);
-                    this._argb = this._argbFromString(this._hex);
+                    const hex = this._normalizeHex(arg);
+                    this._argb = this._argbFromString(hex);
                 } else {
                     throw new Error("Invalid color: " + arg);
                 }
             } else if (types.isNumber(arg)) {
                 // The parameter is a 32-bit unsigned integer where each 8 bits specify a color component
-                this._argb = arg;
+                // In case a 32-bit signed int (Android, Java has no unsigned types) was provided - convert to unsigned by applyint >>> 0
+                this._argb = arg >>> 0;
             } else {
                 throw new Error("Expected 1 or 4 constructor parameters.");
             }
-            this._parseComponents();
-            if (!this._hex) {
-                this._hex = this._buildHex();
-            }
         } else if (arguments.length === 4) {
-            // TODO: Alpha may be optional
-            this._a = arguments[0];
-            this._r = arguments[1];
-            this._g = arguments[2];
-            this._b = arguments[3];
-            this._buildArgb();
-            this._hex = this._buildHex();
+            this._argb = (arguments[0] & 0xFF) * 0x01000000
+                       + (arguments[1] & 0xFF) * 0x00010000
+                       + (arguments[2] & 0xFF) * 0x00000100
+                       + (arguments[3] & 0xFF) * 0x00000001;
         } else {
             throw new Error("Expected 1 or 4 constructor parameters.");
         }
     }
 
-    get a(): number {
-        return this._a;
-    }
-
-    get r(): number {
-        return this._r;
-    }
-
-    get g(): number {
-        return this._g;
-    }
-
-    get b(): number {
-        return this._b;
-    }
+    get a(): number { return (this._argb / 0x01000000) & 0xFF; }
+    get r(): number { return (this._argb / 0x00010000) & 0xFF; }
+    get g(): number { return (this._argb / 0x00000100) & 0xFF; }
+    get b(): number { return (this._argb / 0x00000001) & 0xFF; }
 
     get argb(): number {
         return this._argb;
     }
 
     get hex(): string {
-        return this._hex;
+        if (this.a === 0xFF) {
+            return ("#" + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
+        } else {
+            return ("#" + this._componentToHex(this.a) + this._componentToHex(this.r) + this._componentToHex(this.g) + this._componentToHex(this.b)).toUpperCase();
+        }
     }
 
     get name(): string {
@@ -95,7 +77,23 @@ export class Color implements definition.Color {
     }
 
     public _argbFromString(hex: string): number {
-        return undefined;
+        if (hex.charAt(0) === "#") {
+            hex = hex.substr(1);
+        }
+
+        if (hex.length === 3) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        } else if (hex.length === 4) {
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2] + hex[3] + hex[3];
+        }
+
+        var intVal = parseInt(hex, 16);
+        if (hex.length === 6) {
+            // add the alpha component since the provided string is RRGGBB
+            intVal = (intVal & 0x00FFFFFF) + 0xFF000000;
+        }
+
+        return intVal;
     }
 
     public equals(value: definition.Color): boolean {
@@ -132,10 +130,6 @@ export class Color implements definition.Color {
         return HEX_REGEX.test(value) || isRgbOrRgba(value);
     }
 
-    private _buildHex(): string {
-        return SHARP + this._componentToHex(this._a) + this._componentToHex(this._r) + this._componentToHex(this._g) + this._componentToHex(this._b);
-    }
-
     private _componentToHex(component: number): string {
         let hex = component.toString(16);
         if (hex.length === 1) {
@@ -143,23 +137,6 @@ export class Color implements definition.Color {
         }
 
         return hex;
-    }
-
-    private _parseComponents() {
-        if (types.isUndefined(this._argb)) {
-            throw new Error("Missing the ARGB numeric value");
-        }
-
-        // Format is ARGB, so alpha takes the first 8 bits, red the next, green the next and the last 8 bits are for the blue component
-        this._a = (this._argb >> 24) & 255;
-        this._r = (this._argb >> 16) & 255;
-        this._g = (this._argb >> 8) & 255;
-        this._b = this._argb & 255;
-    }
-
-    private _buildArgb() {
-        // Format is ARGB, so alpha takes the first 8 bits, red the next, green the next and the last 8 bits are for the blue component
-        this._argb = (this._a << 24) | (this._r << 16) | (this._g << 8) | this._b;
     }
 
     private _normalizeHex(hexStr: string): string {
@@ -208,6 +185,8 @@ function argbFromRgbOrRgba(value: string): number {
         a = Math.round(parseFloat(parts[3].trim()) * 255);
     }
 
-    // Format is ARGB, so alpha takes the first 8 bits, red the next, green the next and the last 8 bits are for the blue component
-    return (a << 24) | (r << 16) | (g << 8) | b;
+    return (a & 0xFF) * 0x01000000
+         + (r & 0xFF) * 0x00010000
+         + (g & 0xFF) * 0x00000100
+         + (b & 0xFF) * 0x00000001;
 }

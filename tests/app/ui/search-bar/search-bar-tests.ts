@@ -31,18 +31,18 @@ export var testSearchBarHintColorAndroid = function () {
         searchBar.text = "";
         searchBar.hint = "hint color test";
 
-        var expectedValue;
+        var expectedNormalizedValue;
         var actualValue;
 
         searchBar.textFieldHintColor = new colorModule.Color("blue");
-        expectedValue = "#ff0000ff"; // blue
+        expectedNormalizedValue = "#0000FF"; // blue
         actualValue = searchBarTestsNative.getNativeHintColor(searchBar).hex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assert(actualValue === expectedNormalizedValue, "Actual: " + actualValue + "; Expected: " + expectedNormalizedValue);
 
         searchBar.textFieldHintColor = new colorModule.Color("red");
-        expectedValue = "#ffff0000"; // Red
+        expectedNormalizedValue = "#FF0000"; // red
         actualValue = searchBarTestsNative.getNativeHintColor(searchBar).hex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assert(actualValue === expectedNormalizedValue, "Actual: " + actualValue + "; Expected: " + expectedNormalizedValue);
     });
 };
 

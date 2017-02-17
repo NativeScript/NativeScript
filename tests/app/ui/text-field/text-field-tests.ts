@@ -397,7 +397,8 @@ export var testNativeFontSizeFromLocal = function () {
     });
 }
 
-var expectedColorHex = "#ffff0000";
+var expectedColorHex = "#FFFF0000";
+var expectedNormalizedColorHex = "#FF0000";
 export var testLocalColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
@@ -405,7 +406,7 @@ export var testLocalColorFromCss = function () {
         page.css = "textfield { color: " + expectedColorHex + "; }";
 
         var actualResult = textField.style.color.hex;
-        TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
 }
 
@@ -416,7 +417,7 @@ export var testNativeColorFromCss = function () {
         page.css = "textfield { color: " + expectedColorHex + "; }";
 
         var actualResult = textFieldTestsNative.getNativeColor(textField).hex;
-        TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
 }
 
@@ -426,11 +427,12 @@ export var testNativeColorFromLocal = function () {
         textField.style.color = new colorModule.Color(expectedColorHex);
 
         var actualResult = textFieldTestsNative.getNativeColor(textField).hex;
-        TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
 }
 
-var expectedBackgroundColorHex = "#ff00ff00";
+var expectedBackgroundColorHex = "#FF00FF00";
+var expectedNormalizedBackgroundColorHex = "#00FF00";
 export var testLocalBackgroundColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
@@ -438,7 +440,7 @@ export var testLocalBackgroundColorFromCss = function () {
         page.css = "textfield { background-color: " + expectedBackgroundColorHex + "; }";
 
         var actualResult = textField.style.backgroundColor.hex;
-        TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
 }
 
@@ -449,7 +451,7 @@ export var testNativeBackgroundColorFromCss = function () {
         page.css = "textfield { background-color: " + expectedBackgroundColorHex + "; }";
 
         var actualResult = textFieldTestsNative.getNativeBackgroundColor(textField).hex;
-        TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
 }
 
@@ -459,7 +461,7 @@ export var testNativeBackgroundColorFromLocal = function () {
         textField.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
 
         var actualResult = textFieldTestsNative.getNativeBackgroundColor(textField).hex;
-        TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
 }
 
@@ -568,21 +570,23 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
 
 export function test_set_placeholder_color() {
     let view = new textFieldModule.TextField();
-    let expectedColorHex = "#ffff0000";
+    let expectedColorHex = "#FFFF0000";
+    let expectedNormalizedColorHex = "#FF0000";
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.hint = "Some text for hint";
         view.setInlineStyle("placeholder-color: " + expectedColorHex + ";");
         let actualColorHex = textFieldTestsNative.getNativePlaceholderColor(view).hex;
-        TKUnit.assertEqual(actualColorHex, expectedColorHex);
+        TKUnit.assertEqual(actualColorHex, expectedNormalizedColorHex);
     });
 }
 
 export function test_set_placeholder_color_when_hint_is_not_set() {
     let view = new textFieldModule.TextField();
-    let expectedColorHex = "#ffff0000";
+    let expectedColorHex = "#FFFF0000";
+    let expectedNormalizedColorHex = "#FF0000";
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.setInlineStyle("placeholder-color: " + expectedColorHex + ";");
         let actualColorHex = textFieldTestsNative.getNativePlaceholderColor(view).hex;
-        TKUnit.assertEqual(actualColorHex, expectedColorHex);
+        TKUnit.assertEqual(actualColorHex, expectedNormalizedColorHex);
     });
 }
