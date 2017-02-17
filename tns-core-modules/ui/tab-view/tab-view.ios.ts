@@ -133,8 +133,7 @@ export class TabViewItem extends TabViewItemBase {
             // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
             // Delete the repeating code.
             const states = getTitleAttributesForStates(parent);
-            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
-            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
+            applyStatesToItem(tabBarItem, states);
             controller.tabBarItem = tabBarItem;
         }
     }
@@ -256,8 +255,7 @@ export class TabView extends TabViewBase {
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
             }
-            tabBarItem.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
-            tabBarItem.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
+            applyStatesToItem(tabBarItem, states);
 
             newController.tabBarItem = tabBarItem;
             controllers.addObject(newController);
@@ -360,9 +358,7 @@ export class TabView extends TabViewBase {
         const tabBar = <UITabBar>this.ios.tabBar;
         const states = getTitleAttributesForStates(this);
         for (let i = 0; i < tabBar.items.count; i++) {
-            const item = <UITabBarItem>tabBar.items[i];
-            item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
-            item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
+            applyStatesToItem(tabBar.items[i], states);
         }
     }
 
@@ -402,6 +398,7 @@ export class TabView extends TabViewBase {
         return null;
     }
     set [tabTextColorProperty.native](value: UIColor) {
+        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
     }
 
@@ -416,7 +413,6 @@ export class TabView extends TabViewBase {
         return this._ios.tabBar.tintColor;
     }
     set [selectedTabTextColorProperty.native](value: UIColor) {
-        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
     }
 
@@ -427,24 +423,6 @@ export class TabView extends TabViewBase {
     set [textTransformProperty.native](value: TextTransform) {
         this._updateIOSTabBarTextTransform(value);
     }
-
-    // private static getNativeFontValue(v: view.View) {
-    //     var tabBar = <UITabBar>v.ios.tabBar;
-    //     let currentFont;
-
-    //     if (tabBar.items.count > 0) {
-    //         let currentAttrs = tabBar.items[0].titleTextAttributesForState(UIControlState.Normal);
-    //         if (currentAttrs) {
-    //             currentFont = currentAttrs.objectForKey(NSFontAttributeName);
-    //         }
-    //     }
-
-    //     if (!currentFont) {
-    //         currentFont = UIFont.systemFontOfSize(getter(UIFont, UIFont.labelFontSize));
-    //     }
-
-    //     return currentFont;
-    // }
 
     // TODO: Move this to TabViewItem
     get [fontInternalProperty.native](): Font {
@@ -472,28 +450,35 @@ export class TabView extends TabViewBase {
     }
 }
 
-function getTitleAttributesForStates(tabView: TabView): { normalState: any, selectedState: any } {
-    const normalState = {};
-    if (tabView.color instanceof Color) {
-        normalState[UITextAttributeTextColor] = tabView.color.ios;
-    }
+interface TabStates {
+    normalState?: any;
+    selectedState?: any;
+}
 
-    const selectedState = {};
+function getTitleAttributesForStates(tabView: TabView): TabStates {
+    const result: TabStates = { };
+
+    const font = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
     let tabItemTextColor = tabView.style.tabTextColor;
     if (tabItemTextColor instanceof Color) {
-        selectedState[UITextAttributeTextColor] = tabItemTextColor.ios;
-    }
-    else {
-        selectedState[UITextAttributeTextColor] = tabView.ios.tabBar.tintColor;
+        result.normalState = {
+            [UITextAttributeTextColor]: tabItemTextColor.ios,
+            [NSFontAttributeName]: font
+        }
     }
 
-    const defaultFont = UIFont.systemFontOfSize(10);
-    const font = tabView.style.fontInternal.getUIFont(defaultFont);
-    normalState[NSFontAttributeName] = font;
-    selectedState[NSFontAttributeName] = font;
+    const tabSelectedItemTextColor = tabView.style.selectedTabTextColor;
+    if (tabSelectedItemTextColor instanceof Color) {
+        result.selectedState = {
+            [UITextAttributeTextColor]: tabSelectedItemTextColor.ios,
+            [NSFontAttributeName]: font
+        }
+    }
 
-    return {
-        normalState: normalState,
-        selectedState: selectedState
-    };
+    return result;
+}
+
+function applyStatesToItem(item: UITabBarItem, states: TabStates) {
+    item.setTitleTextAttributesForState(states.normalState, UIControlState.Normal);
+    item.setTitleTextAttributesForState(states.selectedState, UIControlState.Selected);
 }
