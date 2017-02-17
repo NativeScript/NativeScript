@@ -98,24 +98,15 @@ declare type RequestInfo = Request|string;
 
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
 
-/**
- * Allows printing messages to the device's console. 
- */
-interface Console {
-    /**
-     * Prints the current stack trace in the console.
-     */
-    trace(): void;
-
-    /**
-     * Prints the state of the specified object to the console.
-     * @param obj The object instance to be dumped.
-     */
-    dump(obj: any): void;
-}
-
 declare var console: Console;
 declare var require: NodeRequire;
+
+declare var __dirname: string;
+declare var __filename: string;
+
+declare var module: NodeModule;
+// Same as module.exports
+declare var exports: any;
 
 // Global functions
 declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
@@ -143,9 +134,6 @@ declare function Interfaces(interfaces: any[]): ClassDecorator;
 declare function Log(data: any): void;
 declare function log(data: any): void;
 declare function fail(data: any): void;
-
-declare var __dirname: string;
-declare var __filename: string;
 
 /**
  * Calls a function after a specified delay.
@@ -180,10 +168,6 @@ declare class WeakRef<T> {
     get(): T;
     clear(): void;
 }
-
-declare var module: NodeModule;
-// Same as module.exports
-declare var exports: any;
 
 interface Array<T> {
     filter<U extends T>(pred: (a: T) => a is U): U[];

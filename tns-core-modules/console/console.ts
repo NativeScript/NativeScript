@@ -1,5 +1,3 @@
-import { Console as ConsoleDefinition } from "console";
-
 const enum MessageType {
     log = 0,
     info = 1,
@@ -7,7 +5,13 @@ const enum MessageType {
     error = 3
 }
 
-export class Console implements ConsoleDefinition {
+function __message(message: any, level: string) {
+    if ((<any>global).__consoleMessage) {
+        (<any>global).__consoleMessage(message, level);
+    }
+}
+
+export class Console {
     private TAG: string = "JS";
     private _timers: any;
     private _stripFirstTwoLinesRegEx: RegExp;

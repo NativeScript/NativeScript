@@ -11,18 +11,19 @@ export * from "ui/page";
 function onLivesync(args: EventData): void {
     // give time to allow fileNameResolver & css to reload.
     setTimeout(() => {
+        let g = <any>global;
         // Close the error page if available and remove the reference from global context.
-        if (global.errorPage) {
-            global.errorPage.closeModal();
-            global.errorPage = undefined;
+        if (g.errorPage) {
+            g.errorPage.closeModal();
+            g.errorPage = undefined;
         }
 
         try {
             reloadPage();
         } catch (ex) {
             // Show the error as modal page, save reference to the page in global context.
-            global.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
-            global.errorPage.showModal();
+            g.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
+            g.errorPage.showModal();
         }
     });
 }
