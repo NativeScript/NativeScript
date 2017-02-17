@@ -1,15 +1,17 @@
-﻿import * as appModule from "application";
-import * as common from "./connectivity-common";
-import * as utils from "utils/utils";
+﻿import { getNativeApplication, android as androidApp} from "application";
 
-global.moduleMerge(common, exports);
+export const enum connectionType {
+    none = 0,
+    wifi = 1,
+    mobile = 2,
+}
 
-let wifi = "wifi";
-let mobile = "mobile";
+const wifi = "wifi";
+const mobile = "mobile";
 
 // Get Connection Type
 function getConnectivityManager(): android.net.ConnectivityManager {
-    return utils.ad.getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
+    return getNativeApplication().getApplicationContext().getSystemService(android.content.Context.CONNECTIVITY_SERVICE);
 }
 
 function getActiveNetworkInfo(): android.net.NetworkInfo {
@@ -24,19 +26,19 @@ function getActiveNetworkInfo(): android.net.NetworkInfo {
 export function getConnectionType(): number {
     let activeNetworkInfo = getActiveNetworkInfo();
     if (!activeNetworkInfo || !activeNetworkInfo.isConnected()) {
-        return common.connectionType.none;
+        return connectionType.none;
     }
 
-    let connectionType = activeNetworkInfo.getTypeName().toLowerCase();
-    if (connectionType.indexOf(wifi) !== -1){
-        return common.connectionType.wifi;
+    let type = activeNetworkInfo.getTypeName().toLowerCase();
+    if (type.indexOf(wifi) !== -1){
+        return connectionType.wifi;
     }
     
-    if (connectionType.indexOf(mobile) !== -1){
-        return common.connectionType.mobile;
+    if (type.indexOf(mobile) !== -1){
+        return connectionType.mobile;
     }
         
-    return common.connectionType.none;
+    return connectionType.none;
 }
 
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
@@ -44,9 +46,9 @@ export function startMonitoring(connectionTypeChangedCallback: (newConnectionTyp
         let newConnectionType = getConnectionType();
         connectionTypeChangedCallback(newConnectionType);
     }
-    appModule.android.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, onReceiveCallback);
+    androidApp.registerBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION, onReceiveCallback);
 }
 
 export function stopMonitoring(): void {
-    appModule.android.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
+    androidApp.unregisterBroadcastReceiver(android.net.ConnectivityManager.CONNECTIVITY_ACTION);
 }

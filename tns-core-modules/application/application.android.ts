@@ -1,171 +1,40 @@
-﻿import * as appModule from "./application-common";
-import * as definition from "application";
-import * as frame from "ui/frame";
-import * as observable from "data/observable";
-import * as typesModule from "utils/types";
+﻿import {
+    AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
+    AndroidApplication as AndroidApplicationDefinition
+} from "application";
 
-global.moduleMerge(appModule, exports);
-const typedExports: typeof definition = exports;
+import {
+    notify, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent,
+    setApplication, livesync, Observable
+} from "./application-common";
 
-function initLifecycleCallbacks() {
-    // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
-    let lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
-        onActivityCreated: function (activity: any, bundle: any) {
-            // Set app theme after launch screen was used during startup
-            let activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
-            if (activityInfo.metaData) {
-                let setThemeOnLaunch = activityInfo.metaData.getInt("SET_THEME_ON_LAUNCH", -1);
-                if (setThemeOnLaunch !== -1) {
-                    activity.setTheme(setThemeOnLaunch);
-                }
-            }
+// First reexport so that app module is initialized.
+export * from "./application-common";
 
-            if (!androidApp.startActivity) {
-                androidApp.startActivity = activity;
-            }
+import { NavigationEntry } from "ui/frame";
 
-            androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "activityCreated", object: androidApp, activity: activity, bundle: bundle });
-            if (androidApp.onActivityCreated) {
-                androidApp.onActivityCreated(activity, bundle);
-            }
-        },
+const ActivityCreated = "activityCreated";
+const ActivityDestroyed = "activityDestroyed";
+const ActivityStarted = "activityStarted";
+const ActivityPaused = "activityPaused";
+const ActivityResumed = "activityResumed";
+const ActivityStopped = "activityStopped";
+const SaveActivityState = "saveActivityState";
+const ActivityResult = "activityResult";
+const ActivityBackPressed = "activityBackPressed";
+const ActivityRequestPermissions = "activityRequestPermissions";
 
-        onActivityDestroyed: function (activity: any) {
-            if (activity === androidApp.foregroundActivity) {
-                androidApp.foregroundActivity = undefined;
-            }
-            
-            if (activity === androidApp.startActivity) {
-                androidApp.startActivity = undefined;
-            }
-
-            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityDestroyed", object: androidApp, activity: activity });
-            if (androidApp.onActivityDestroyed) {
-                androidApp.onActivityDestroyed(activity);
-            }
-
-            // TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
-            gc();
-        },
-
-        onActivityPaused: function (activity: any) {
-            if (activity.isNativeScriptActivity) {
-                androidApp.paused = true;
-
-                if (typedExports.onSuspend) {
-                    typedExports.onSuspend();
-                }
-                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.suspendEvent, object: androidApp, android: activity });
-            }
-
-            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityPaused", object: androidApp, activity: activity });
-            if (androidApp.onActivityPaused) {
-                androidApp.onActivityPaused(activity);
-            }
-        },
-
-        onActivityResumed: function (activity: any) {
-            androidApp.foregroundActivity = activity;
-
-            if (activity.isNativeScriptActivity) {
-                if (typedExports.onResume) {
-                    typedExports.onResume();
-                }
-                typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.resumeEvent, object: androidApp, android: activity });
-
-                androidApp.paused = false;
-            }
-
-            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityResumed", object: androidApp, activity: activity });
-            if (androidApp.onActivityResumed) {
-                androidApp.onActivityResumed(activity);
-            }
-        },
-
-        onActivitySaveInstanceState: function (activity: any, bundle: any) {
-            androidApp.notify(<definition.AndroidActivityBundleEventData>{ eventName: "saveActivityState", object: androidApp, activity: activity, bundle: bundle });
-
-            if (androidApp.onSaveActivityState) {
-                androidApp.onSaveActivityState(activity, bundle);
-            }
-        },
-
-        onActivityStarted: function (activity: any) {
-            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityStarted", object: androidApp, activity: activity });
-            if (androidApp.onActivityStarted) {
-                androidApp.onActivityStarted(activity);
-            }
-        },
-
-        onActivityStopped: function (activity: any) {
-            androidApp.notify(<definition.AndroidActivityEventData>{ eventName: "activityStopped", object: androidApp, activity: activity });
-            if (androidApp.onActivityStopped) {
-                androidApp.onActivityStopped(activity);
-            }
-        }
-    });
-
-    return lifecycleCallbacks;
-}
-
-let currentOrientation: number;
-function initComponentCallbacks() {
-    let componentCallbacks = new android.content.ComponentCallbacks2({
-        onLowMemory: function () {
-            gc();
-            java.lang.System.gc();
-            typedExports.notify(<definition.ApplicationEventData>{ eventName: typedExports.lowMemoryEvent, object: this, android: this });
-        },
-
-        onTrimMemory: function (level: number) {
-            // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
-        },
-
-        onConfigurationChanged: function (newConfig: android.content.res.Configuration) {
-            let newOrientation = newConfig.orientation;
-            if (newOrientation === currentOrientation) {
-                return;
-            }
-
-            currentOrientation = newOrientation;
-            let newValue;
-
-            switch (newOrientation) {
-                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
-                    newValue = "landscape";
-                    break;
-                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
-                    newValue = "portrait";
-                    break;
-                default:
-                    newValue = "unknown";
-                    break;
-            }
-
-            appModule._onOrientationChanged();
-            typedExports.notify(<definition.OrientationChangedEventData>{
-                eventName: typedExports.orientationChangedEvent,
-                android: androidApp.nativeApp,
-                newValue: newValue,
-                object: typedExports.android,
-            });
-        }
-    });
-
-    return componentCallbacks;
-}
-
-export class AndroidApplication extends observable.Observable implements definition.AndroidApplication {
-    public static activityCreatedEvent = "activityCreated";
-    public static activityDestroyedEvent = "activityDestroyed";
-    public static activityStartedEvent = "activityStarted";
-    public static activityPausedEvent = "activityPaused";
-    public static activityResumedEvent = "activityResumed";
-    public static activityStoppedEvent = "activityStopped";
-    public static saveActivityStateEvent = "saveActivityState";
-    public static activityResultEvent = "activityResult";
-    public static activityBackPressedEvent = "activityBackPressed";
-    public static activityRequestPermissionsEvent = "activityRequestPermissions";
+export class AndroidApplication extends Observable implements AndroidApplicationDefinition {
+    public static activityCreatedEvent = ActivityCreated;
+    public static activityDestroyedEvent = ActivityDestroyed;
+    public static activityStartedEvent = ActivityStarted;
+    public static activityPausedEvent = ActivityPaused;
+    public static activityResumedEvent = ActivityResumed;
+    public static activityStoppedEvent = ActivityStopped;
+    public static saveActivityStateEvent = SaveActivityState;
+    public static activityResultEvent = ActivityResult;
+    public static activityBackPressedEvent = ActivityBackPressed;
+    public static activityRequestPermissionsEvent = ActivityRequestPermissions;
 
     public paused: boolean;
     public nativeApp: android.app.Application;
@@ -173,27 +42,10 @@ export class AndroidApplication extends observable.Observable implements definit
     public foregroundActivity: android.app.Activity;
     public startActivity: android.app.Activity;
     public packageName: string;
-    public hasActionBar: boolean;
 
     public get currentContext(): android.content.Context {
         return this.foregroundActivity;
     }
-
-    public onActivityCreated: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
-
-    public onActivityDestroyed: (activity: android.app.Activity) => void;
-
-    public onActivityStarted: (activity: android.app.Activity) => void;
-
-    public onActivityPaused: (activity: android.app.Activity) => void;
-
-    public onActivityResumed: (activity: android.app.Activity) => void;
-
-    public onActivityStopped: (activity: android.app.Activity) => void;
-
-    public onSaveActivityState: (activity: android.app.Activity, bundle: android.os.Bundle) => void;
-
-    public onActivityResult: (requestCode: number, resultCode: number, data: android.content.Intent) => void;
 
     public init(nativeApp: any) {
         if (this.nativeApp) {
@@ -215,15 +67,8 @@ export class AndroidApplication extends observable.Observable implements definit
     private _registeredReceivers = {};
     private _pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
     private _registerPendingReceivers() {
-        if (this._pendingReceiverRegistrations) {
-            let i = 0;
-            const length = this._pendingReceiverRegistrations.length;
-            for (; i < length; i++) {
-                const registerFunc = this._pendingReceiverRegistrations[i];
-                registerFunc(this.context);
-            }
-            this._pendingReceiverRegistrations = new Array<(context: android.content.Context) => void>();
-        }
+        this._pendingReceiverRegistrations.forEach(func => func(this.context));
+        this._pendingReceiverRegistrations.length = 0;
     }
 
     public registerBroadcastReceiver(intentFilter: string, onReceiveCallback: (context: android.content.Context, intent: android.content.Intent) => void) {
@@ -253,9 +98,189 @@ export class AndroidApplication extends observable.Observable implements definit
     }
 }
 
-let androidApp = new AndroidApplication();
+const androidApp = new AndroidApplication();
 // use the exports object instead of 'export var' due to global namespace collision
-typedExports.android = androidApp;
+exports.android = androidApp;
+setApplication(androidApp);
+
+let started = false;
+export function start(entry?: NavigationEntry) {
+    if (started) {
+        throw new Error("Application is already started.");
+    }
+
+    if (!androidApp.nativeApp) {
+        const nativeApp = getNativeApplication();
+        androidApp.init(nativeApp);
+    }
+
+    started = true;
+    if (entry) {
+        exports.mainEntry = entry;
+    }
+}
+
+export function getNativeApplication(): android.app.Application {
+    // Try getting it from module - check whether application.android.init has been explicitly called
+    let nativeApp = androidApp.nativeApp;
+    if (!nativeApp) {
+        // check whether the com.tns.NativeScriptApplication type exists
+        if (!nativeApp && com.tns.NativeScriptApplication) {
+            nativeApp = com.tns.NativeScriptApplication.getInstance();
+        }
+
+        // the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
+        if (!nativeApp) {
+            // TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module? 
+            const clazz = java.lang.Class.forName("android.app.ActivityThread");
+            if (clazz) {
+                const method = clazz.getMethod("currentApplication", null);
+                if (method) {
+                    nativeApp = method.invoke(null, null);
+                }
+            }
+        }
+
+        // we cannot work without having the app instance
+        if (!nativeApp) {
+            throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
+        }
+    }
+
+    return nativeApp;
+}
+
+global.__onLiveSync = function () {
+    if (androidApp && androidApp.paused) {
+        return;
+    }
+
+    livesync();
+};
+
+declare namespace com {
+    namespace tns {
+        class NativeScriptApplication extends android.app.Application {
+            static getInstance(): NativeScriptApplication;
+        }
+    }
+}
+
+function initLifecycleCallbacks() {
+    // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
+    const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
+        onActivityCreated: function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
+            // Set app theme after launch screen was used during startup
+            const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
+            if (activityInfo.metaData) {
+                const setThemeOnLaunch = activityInfo.metaData.getInt("SET_THEME_ON_LAUNCH", -1);
+                if (setThemeOnLaunch !== -1) {
+                    activity.setTheme(setThemeOnLaunch);
+                }
+            }
+
+            if (!androidApp.startActivity) {
+                androidApp.startActivity = activity;
+            }
+
+            androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity: activity, bundle: savedInstanceState });
+        },
+
+        onActivityDestroyed: function (activity: android.app.Activity) {
+            if (activity === androidApp.foregroundActivity) {
+                androidApp.foregroundActivity = undefined;
+            }
+
+            if (activity === androidApp.startActivity) {
+                androidApp.startActivity = undefined;
+            }
+
+            androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityDestroyed, object: androidApp, activity: activity });
+            // TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
+            gc();
+        },
+
+        onActivityPaused: function (activity: android.app.Activity) {
+            if ((<any>activity).isNativeScriptActivity) {
+                androidApp.paused = true;
+                notify(<ApplicationEventData>{ eventName: suspendEvent, object: androidApp, android: activity });
+            }
+
+            androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityPaused, object: androidApp, activity: activity });
+        },
+
+        onActivityResumed: function (activity: android.app.Activity) {
+            androidApp.foregroundActivity = activity;
+
+            if ((<any>activity).isNativeScriptActivity) {
+                notify(<ApplicationEventData>{ eventName: resumeEvent, object: androidApp, android: activity });
+                androidApp.paused = false;
+            }
+
+            androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityResumed, object: androidApp, activity: activity });
+        },
+
+        onActivitySaveInstanceState: function (activity: android.app.Activity, outState: android.os.Bundle) {
+            androidApp.notify(<AndroidActivityBundleEventData>{ eventName: SaveActivityState, object: androidApp, activity: activity, bundle: outState });
+        },
+
+        onActivityStarted: function (activity: android.app.Activity) {
+            androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityStarted, object: androidApp, activity: activity });
+        },
+
+        onActivityStopped: function (activity: android.app.Activity) {
+            androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityStopped, object: androidApp, activity: activity });
+        }
+    });
+
+    return lifecycleCallbacks;
+}
+
+let currentOrientation: number;
+function initComponentCallbacks() {
+    let componentCallbacks = new android.content.ComponentCallbacks2({
+        onLowMemory: function () {
+            gc();
+            java.lang.System.gc();
+            notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, android: this });
+        },
+
+        onTrimMemory: function (level: number) {
+            // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
+        },
+
+        onConfigurationChanged: function (newConfig: android.content.res.Configuration) {
+            let newOrientation = newConfig.orientation;
+            if (newOrientation === currentOrientation) {
+                return;
+            }
+
+            currentOrientation = newOrientation;
+            let newValue;
+
+            switch (newOrientation) {
+                case android.content.res.Configuration.ORIENTATION_LANDSCAPE:
+                    newValue = "landscape";
+                    break;
+                case android.content.res.Configuration.ORIENTATION_PORTRAIT:
+                    newValue = "portrait";
+                    break;
+                default:
+                    newValue = "unknown";
+                    break;
+            }
+
+            notify(<OrientationChangedEventData>{
+                eventName: orientationChangedEvent,
+                android: androidApp.nativeApp,
+                newValue: newValue,
+                object: androidApp
+            });
+        }
+    });
+
+    return componentCallbacks;
+}
 
 let BroadcastReceiverClass;
 function ensureBroadCastReceiverClass() {
@@ -281,66 +306,3 @@ function ensureBroadCastReceiverClass() {
 
     BroadcastReceiverClass = BroadcastReceiver;
 }
-
-let started = false;
-export function start(entry?: frame.NavigationEntry) {
-    if (started) {
-        throw new Error("Application is already started.");
-    }
-
-    if (!androidApp.nativeApp) {
-        // we are still not initialized, this is possible if no 'androidApp.init' call has been made
-        let utils = require("utils/utils");
-        let nativeApp = utils.ad.getApplication();
-        androidApp.init(nativeApp);
-    }
-
-    started = true;
-    if (entry) {
-        typedExports.mainEntry = entry;
-    }
-
-    loadCss();
-}
-
-function loadCss() {
-    //HACK: identical to application.ios.ts
-    typedExports.appSelectors = typedExports.loadCss(typedExports.cssFile) || [];
-    if (typedExports.appSelectors.length > 0) {
-        typedExports.mergeCssSelectors(typedExports);
-    }
-}
-
-export function setCssFileName(cssFileName: string) {
-    typedExports.cssFile = cssFileName;
-}
-
-export function addCss(cssText: string) {
-    //HACK: identical to application.ios.ts
-    const parsed = typedExports.parseCss(cssText);
-    if (parsed) {
-        typedExports.additionalSelectors.push.apply(typedExports.additionalSelectors, parsed);
-        typedExports.mergeCssSelectors(typedExports);
-    }
-}
-
-global.__onLiveSync = function () {
-    if (typedExports.android && typedExports.android.paused) {
-        return;
-    }
-
-    appModule.__onLiveSync();
-
-    loadCss();
-};
-
-global.__onUncaughtError = function (error: NativeScriptError) {
-    const types: typeof typesModule = require("utils/types");
-
-    // TODO: Obsolete this
-    if (types.isFunction(typedExports.onUncaughtError)) {
-        typedExports.onUncaughtError(error);
-    }
-
-    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: appModule.android, android: error, error });
-};

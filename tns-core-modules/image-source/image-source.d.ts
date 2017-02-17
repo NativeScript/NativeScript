@@ -99,14 +99,14 @@ declare module "image-source" {
         * @param format The format (encoding) of the image.
         * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality.
         */
-        saveToFile(path: string, format: string, quality?: number): boolean;
+        saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality?: number): boolean;
 
         /**
          * Converts the image to base64 encoded string, using the provided image format and quality.
          * @param format The format (encoding) of the image.
          * @param quality Optional parameter, specifying the quality of the encoding. Defaults to the maximum available quality.
          */
-        toBase64String(format: string, quality?: number): string;
+        toBase64String(format: "png" | "jpeg" | "jpg", quality?: number): string;
     }
 
     export function fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource>;

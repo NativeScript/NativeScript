@@ -1,11 +1,33 @@
 ﻿import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from "ui/frame";
-import { Page, View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories } from "ui/page";
+import { Page, View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "ui/page";
 import { isString, isFunction, isDefined } from "utils/types";
 import { resolveFileName } from "file-system/file-name-resolver";
 import * as fs from "file-system";
 import * as builder from "ui/builder";
+import * as application from "application";
 
 export * from "ui/page";
+
+function onLivesync(args: EventData): void {
+    // give time to allow fileNameResolver & css to reload.
+    setTimeout(() => {
+        let g = <any>global;
+        // Close the error page if available and remove the reference from global context.
+        if (g.errorPage) {
+            g.errorPage.closeModal();
+            g.errorPage = undefined;
+        }
+
+        try {
+            reloadPage();
+        } catch (ex) {
+            // Show the error as modal page, save reference to the page in global context.
+            g.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
+            g.errorPage.showModal();
+        }
+    });
+}
+application.on("livesync", args => onLivesync);
 
 let frameStack: Array<FrameBase> = [];
 
@@ -29,14 +51,14 @@ function buildEntryFromArgs(arg: any): NavigationEntry {
 }
 
 export function reloadPage(): void {
-    let frame = topmost();
+    const frame = topmost();
     if (frame) {
         if (frame.currentPage && frame.currentPage.modal) {
             frame.currentPage.modal.closeModal();
         }
 
-        let currentEntry = frame._currentEntry.entry;
-        let newEntry: NavigationEntry = {
+        const currentEntry = frame._currentEntry.entry;
+        const newEntry: NavigationEntry = {
             animated: false,
             clearHistory: true,
             context: currentEntry.context,
@@ -66,6 +88,7 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
         let moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
 
         let moduleExports;
+        // web-pack case where developers register their page JS file manually.
         if (global.moduleExists(entry.moduleName)) {
             if (traceEnabled()) {
                 traceWrite("Loading pre-registered JS module: " + entry.moduleName, traceCategories.Navigation);
@@ -89,19 +112,19 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
                 traceWrite("Calling createPage()", traceCategories.Navigation);
             }
             page = moduleExports.createPage();
-        }
-        else {
+
+            let cssFileName = resolveFileName(moduleNamePath, "css");
+            // If there is no cssFile only appCss will be applied at loaded.
+            if (cssFileName) {
+                page.addCssFile(cssFileName);
+            }
+        } else {
+            // cssFileName is loaded inside pageFromBuilder->loadPage
             page = pageFromBuilder(moduleNamePath, moduleExports);
         }
 
         if (!(page && page instanceof Page)) {
             throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
-        }
-
-        // Possible CSS file path. Add it only if CSS not already specified and loaded from cssFile Page attribute in XML.
-        let cssFileName = resolveFileName(moduleNamePath, "css");
-        if (cssFileName && !page["cssFile"]) {
-            page.addCssFile(cssFileName);
         }
     }
 
@@ -120,10 +143,7 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
         }
 
         // Or check if the file exists in the app modules and load the page from XML.
-        element = builder.load(fileName, moduleExports);
-        if (element instanceof Page) {
-            page = <Page>element;
-        }
+        page = builder.loadPage(moduleNamePath, fileName, moduleExports);
     }
 
     // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311

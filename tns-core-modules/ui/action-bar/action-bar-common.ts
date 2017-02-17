@@ -5,10 +5,10 @@
     IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings,
     NavigationButton
 } from "ui/action-bar";
-import { Page } from "ui/page";
-import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 
 export * from "ui/core/view";
+
+import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 
 export module knownCollections {
     export var actionItems = "actionItems";
@@ -17,7 +17,6 @@ export module knownCollections {
 export class ActionBarBase extends View implements ActionBarDefinition {
     private _actionItems: ActionItems;
     private _navigationButton: NavigationButton;
-    private _page: Page;
     private _titleView: View;
 
     public title: string;
@@ -71,13 +70,6 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
             this.update();
         }
-    }
-
-    get page(): Page {
-        return this._page;
-    }
-    set page(value: Page) {
-        this._page = value;
     }
 
     get android(): AndroidActionBarSettings {
@@ -292,10 +284,6 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
         if (value !== this._actionBar) {
             this._actionBar = value;
         }
-    }
-
-    get page(): Page {
-        return this.actionBar ? this.actionBar.page : undefined;
     }
 
     public _raiseTap() {

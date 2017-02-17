@@ -755,18 +755,14 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
             traceWrite(`Activity.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
         }
 
-        let app = application.android;
-        let intent = activity.getIntent();
-        if (application.onLaunch) {
-            application.onLaunch(intent);
-        }
-
-        let launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: app, android: intent };
+        const app = application.android;
+        const intent = activity.getIntent();
+        const launchArgs: application.LaunchEventData = { eventName: application.launchEvent, object: app, android: intent };
         application.notify(launchArgs);
 
         let frameId = -1;
         let rootView = launchArgs.root;
-        let extras = intent.getExtras();
+        const extras = intent.getExtras();
 
         // We have extras when we call - new Frame().navigate();
         // savedInstanceState is used when activity is recreated.
@@ -872,9 +868,6 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         const exitArgs = { eventName: application.exitEvent, object: application.android, android: activity };
         application.notify(exitArgs);
-        if (application.onExit) {
-            application.onExit();
-        }
     }
 
     public onBackPressed(activity: any, superFunc: Function): void {
@@ -918,11 +911,6 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         superFunc.call(activity, requestCode, resultCode, data);
         if (traceEnabled()) {
             traceWrite(`NativeScriptActivity.onActivityResult(${requestCode}, ${resultCode}, ${data})`, traceCategories.NativeLifecycle);
-        }
-
-        const result = application.android.onActivityResult;
-        if (result) {
-            result(requestCode, resultCode, data);
         }
 
         application.android.notify(<application.AndroidActivityResultEventData>{

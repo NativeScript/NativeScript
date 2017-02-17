@@ -44,7 +44,7 @@ export function parseMultipleTemplates(value: string, context: any): Array<Keyed
     return parseInternal(dummyComponent, context).component["itemTemplates"];
 }
 
-function parseInternal(value: string, context: any, uri?: string): ComponentModule {
+function parseInternal(value: string, context: any, uri?: string, moduleNamePath?: string): ComponentModule {
     var start: xml2ui.XmlStringParser;
     var ui: xml2ui.ComponentParser;
 
@@ -55,7 +55,7 @@ function parseInternal(value: string, context: any, uri?: string): ComponentModu
 
     (start = new xml2ui.XmlStringParser(errorFormat))
         .pipe(new xml2ui.PlatformFilter())
-        .pipe(new xml2ui.XmlStateParser(ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker)));
+        .pipe(new xml2ui.XmlStateParser(ui = new xml2ui.ComponentParser(context, errorFormat, componentSourceTracker, moduleNamePath)));
 
     start.parse(value);
 
@@ -63,7 +63,7 @@ function parseInternal(value: string, context: any, uri?: string): ComponentModu
 }
 
 function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: Page): ComponentModule {
-    if (!parentPage && context){
+    if (!parentPage && context) {
         // Read the parent page that was passed down below
         // https://github.com/NativeScript/NativeScript/issues/1639
         parentPage = context["_parentPage"];
@@ -95,20 +95,19 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
                 subExports = global.loadModule(jsFilePath)
             }
         }
-        
+
         // Pass the parent page down the chain in case of custom components nested on many levels. Use the context for piggybacking.
         // https://github.com/NativeScript/NativeScript/issues/1639
         if (!subExports) {
-            subExports = {};    
+            subExports = {};
         }
         subExports["_parentPage"] = parentPage;
-        
+
         result = loadInternal(xmlFilePath, subExports);
 
         // Attributes will be transfered to the custom component
         if (isDefined(result) && isDefined(result.component) && isDefined(attributes)) {
-            var attr: string;
-            for (attr in attributes) {
+            for (let attr in attributes) {
                 setPropertyValue(result.component, subExports, context, attr, attributes[attr]);
             }
         }
@@ -156,16 +155,37 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
     return viewToReturn;
 }
 
+export function loadPage(moduleNamePath: string, fileName: string, context?: any): Page {
+    var componentModule: ComponentModule;
+
+    // Check if the XML file exists.
+    if (File.exists(fileName)) {
+        const file = File.fromPath(fileName);
+        const onError = function (error) {
+            throw new Error("Error loading file " + fileName + " :" + error.message);
+        }
+        const text = file.readTextSync(onError);
+        componentModule = parseInternal(text, context, fileName, moduleNamePath);
+    }
+
+    if (componentModule && componentModule.component) {
+        // Save exports to root component (will be used for templates).
+        (<any>componentModule.component).exports = context;
+    }
+
+    return (<Page>componentModule.component);
+}
+
 function loadInternal(fileName: string, context?: any): ComponentModule {
     var componentModule: ComponentModule;
 
     // Check if the XML file exists.
     if (File.exists(fileName)) {
-        var file = File.fromPath(fileName);
-        var onError = function (error) {
+        const file = File.fromPath(fileName);
+        const onError = function (error) {
             throw new Error("Error loading file " + fileName + " :" + error.message);
         }
-        var text = file.readTextSync(onError);
+        const text = file.readTextSync(onError);
         componentModule = parseInternal(text, context, fileName);
     }
 
@@ -501,7 +521,7 @@ namespace xml2ui {
         private error: ErrorFormatter;
         private sourceTracker: SourceTracker;
 
-        constructor(context: any, errorFormat: ErrorFormatter, sourceTracker: SourceTracker) {
+        constructor(context: any, errorFormat: ErrorFormatter, sourceTracker: SourceTracker, private moduleNamePath?: string) {
             this.context = context;
             this.error = errorFormat;
             this.sourceTracker = sourceTracker;
@@ -563,7 +583,7 @@ namespace xml2ui {
                             //Ignore the default ...tns.xsd namespace URL
                             namespace = undefined;
                         }
-                        componentModule = getComponentModule(args.elementName, namespace, args.attributes, this.context);
+                        componentModule = getComponentModule(args.elementName, namespace, args.attributes, this.context, this.moduleNamePath);
                     }
 
                     if (componentModule) {

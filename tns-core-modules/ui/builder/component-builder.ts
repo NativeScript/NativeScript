@@ -4,18 +4,12 @@ import { View, isEventOrGesture } from "ui/core/view";
 import { ComponentModule } from "ui/builder/component-builder";
 import { File, path, knownFolders } from "file-system";
 import { getBindingOptions, bindingConstants } from "./binding-builder";
+import { resolveFileName } from "file-system/file-name-resolver";
 import * as debugModule from "utils/debug";
 import * as platformModule from "platform";
 
-//the imports below are needed for special property registration
-import "ui/layouts/dock-layout";
-import "ui/layouts/grid-layout";
-import "ui/layouts/absolute-layout";
-
-import { getSpecialPropertySetter } from "ui/builder/special-properties";
-
-var UI_PATH = "ui/";
-var MODULES = {
+const UI_PATH = "ui/";
+const MODULES = {
     "TabViewItem": "ui/tab-view",
     "FormattedString": "text/formatted-string",
     "Span": "text/span",
@@ -24,19 +18,18 @@ var MODULES = {
     "SegmentedBarItem": "ui/segmented-bar",
 };
 
-var CODEFILE = "codeFile";
-var CSSFILE = "cssFile";
+const CODEFILE = "codeFile";
+const CSSFILE = "cssFile";
+const IMPORT = "import";
 
-var IMPORT = "import";
-
-var platform: typeof platformModule;
+let platform: typeof platformModule;
 function ensurePlatform() {
     if (!platform) {
         platform = require("platform");
     }
 }
 
-export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object): ComponentModule {
+export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object, moduleNamePath?: string): ComponentModule {
     var instance: View;
     var instanceModule: Object;
     var componentModule: ComponentModule;
@@ -50,11 +43,11 @@ export function getComponentModule(elementName: string, namespace: string, attri
         elementName.split(/(?=[A-Z])/).join("-").toLowerCase();
 
     try {
-        if (isString(namespace)) {
+        if (typeof namespace === "string") {
             if (global.moduleExists(namespace)) {
                 moduleId = namespace;
             } else {
-                var pathInsideTNSModules = path.join(knownFolders.currentApp().path, "tns_modules", namespace);
+                const pathInsideTNSModules = path.join(knownFolders.currentApp().path, "tns_modules", namespace);
 
                 try {
                     // module inside tns_modules
@@ -73,18 +66,19 @@ export function getComponentModule(elementName: string, namespace: string, attri
         }
 
         // Get the component type from module.
-        var instanceType = instanceModule[elementName] || Object;
+        const instanceType = instanceModule[elementName] || Object;
 
         // Create instance of the component.
         instance = new instanceType();
     } catch (ex) {
-        var debug: typeof debugModule = require("utils/debug");
+        const debug: typeof debugModule = require("utils/debug");
         throw new debug.ScopeError(ex, "Module '" + moduleId + "' not found for element '" + (namespace ? namespace + ":" : "") + elementName + "'.");
     }
 
+    let cssApplied = false;
     if (attributes) {
         if (attributes[IMPORT]) {
-            var importPath = attributes[IMPORT].trim();
+            let importPath = attributes[IMPORT].trim();
 
             if (importPath.indexOf("~/") === 0) {
                 importPath = path.join(knownFolders.currentApp().path, importPath.replace("~/", ""));
@@ -94,45 +88,55 @@ export function getComponentModule(elementName: string, namespace: string, attri
             (<any>instance).exports = exports;
         }
 
-        if (attributes[CODEFILE]) {
-            if (instance instanceof Page) {
-                var codeFilePath = attributes[CODEFILE].trim();
+        if (instance instanceof Page) {
+            if (attributes[CODEFILE]) {
+                let codeFilePath = attributes[CODEFILE].trim();
                 if (codeFilePath.indexOf("~/") === 0) {
                     codeFilePath = path.join(knownFolders.currentApp().path, codeFilePath.replace("~/", ""));
                 }
 
-                let codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
+                const codeFilePathWithExt = codeFilePath.indexOf(".js") !== -1 ? codeFilePath : `${codeFilePath}.js`;
                 if (File.exists(codeFilePathWithExt)) {
                     exports = global.loadModule(codeFilePath);
                     (<any>instance).exports = exports;
                 } else {
                     throw new Error(`Code file with path "${codeFilePathWithExt}" cannot be found!`);
                 }
-            } else {
-                throw new Error("Code file atribute is valid only for pages!");
             }
-        }
 
-        if (attributes[CSSFILE]) {
-            if (instance instanceof Page) {
-                var cssFilePath = attributes[CSSFILE].trim();
+            if (attributes[CSSFILE]) {
+                let cssFilePath = attributes[CSSFILE].trim();
                 if (cssFilePath.indexOf("~/") === 0) {
                     cssFilePath = path.join(knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
                 }
                 if (File.exists(cssFilePath)) {
-                    (<Page>instance).addCssFile(cssFilePath);
-                    instance[CSSFILE] = true;
+                    instance.addCssFile(cssFilePath);
+                    cssApplied = true;
                 } else {
                     throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
                 }
-            } else {
-                throw new Error("Css file attribute is valid only for pages!");
             }
         }
     }
 
+    if (instance instanceof Page) {
+        if (moduleNamePath && !cssApplied) {
+            let cssFilePath = resolveFileName(moduleNamePath, "css");
+            if (cssFilePath) {
+                instance.addCssFile(cssFilePath);
+                cssApplied = true;
+            }
+        }
+
+        if (!cssApplied) {
+            // Called only to apply application css.
+            // If we have page css (through file or cssAttribute) we have appCss applied.
+            instance._refreshCss();
+        }
+    }
+
     if (instance && instanceModule) {
-        for (var attr in attributes) {
+        for (let attr in attributes) {
 
             var attrValue = <string>attributes[attr];
 
@@ -149,12 +153,11 @@ export function getComponentModule(elementName: string, namespace: string, attri
             }
 
             if (attr.indexOf(".") !== -1) {
-                var subObj = instance;
-                var properties = attr.split(".");
-                var subPropName = properties[properties.length - 1];
+                let subObj = instance;
+                const properties = attr.split(".");
+                const subPropName = properties[properties.length - 1];
 
-                var i: number;
-                for (i = 0; i < properties.length - 1; i++) {
+                for (let i = 0; i < properties.length - 1; i++) {
                     if (isDefined(subObj)) {
                         subObj = subObj[properties[i]];
                     }
@@ -199,13 +202,8 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
     }
     else {
         let attrHandled = false;
-        let specialSetter = getSpecialPropertySetter(propertyName);
-        if (!attrHandled && specialSetter) {
-            specialSetter(instance, propertyValue);
-            attrHandled = true;
-        }
-        if (!attrHandled && (<any>instance)._applyXmlAttribute) {
-            attrHandled = (<any>instance)._applyXmlAttribute(propertyName, propertyValue);
+        if (!attrHandled && instance._applyXmlAttribute) {
+            attrHandled = instance._applyXmlAttribute(propertyName, propertyValue);
         }
         if (!attrHandled) {
             instance[propertyName] = propertyValue;

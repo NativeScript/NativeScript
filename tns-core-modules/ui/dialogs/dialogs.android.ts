@@ -3,10 +3,13 @@
  */
 import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from "ui/dialogs";
 import { getLabelColor, getButtonColor, getButtonBackgroundColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
-import { isString, isDefined } from "utils/types";
 import { android as androidApp } from "application";
 
 export * from "./dialogs-common";
+
+function isString(value): value is string {
+    return typeof value === "string";
+}
 
 function createAlertDialog(options?: DialogOptions): android.app.AlertDialog.Builder {
     const alert = new android.app.AlertDialog.Builder(androidApp.foregroundActivity);
@@ -279,7 +282,7 @@ export function action(arg: any): Promise<string> {
             options.cancelButtonText = arguments[1];
         }
     } else if (arguments.length === 3) {
-        if (isString(arguments[0]) && isString(arguments[1]) && isDefined(arguments[2])) {
+        if (isString(arguments[0]) && isString(arguments[1]) && typeof arguments[2] !== "undefined") {
             options = defaultOptions;
             options.message = arguments[0];
             options.cancelButtonText = arguments[1];

@@ -206,12 +206,7 @@
          */
         export function openFile(filePath: string): boolean
     }
-    /**
-     * An utility function that copies properties from source object to target object.
-     * @param source - The source object.
-     * @param target - The target object.
-     */
-    export function copyFrom(source: any, target: any);
+
     /**
      * An utility function that invokes garbage collection on the JavaScript side.
      */
@@ -228,12 +223,6 @@
      * @param uri The URI.
      */
     export function isDataURI(uri: string): boolean
-
-    /**
-     * Returns object from JSON or JSONP string.
-     * @param source The JSON or JSONP string.
-     */
-    export function parseJSON(source: string): any
 
     /**
      * Opens url.

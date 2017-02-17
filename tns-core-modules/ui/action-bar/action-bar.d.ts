@@ -3,8 +3,7 @@
  */
 declare module "ui/action-bar" {
     import { EventData, ViewBase, View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
-    import { Page } from "ui/page";
-
+    
     /**
      * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).
      */
@@ -34,11 +33,6 @@ declare module "ui/action-bar" {
          * Gets the android specific options of the action bar.
          */
         android: AndroidActionBarSettings;
-
-        /**
-         * Gets the page that contains the action bar.
-         */
-        page: Page;
 
         /**
          * Updates the action bar.
@@ -109,11 +103,6 @@ declare module "ui/action-bar" {
          * Gets the action bar that contains the action item.
          */
         actionBar: ActionBar;
-
-        /**
-         * Gets the page that contains the action item.
-         */
-        page: Page;
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).

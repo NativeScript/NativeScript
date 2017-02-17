@@ -1,21 +1,15 @@
 ﻿/* tslint:disable:class-name */
-import * as definition from "platform";
-import * as utils from "utils/utils";
-
-declare module "platform" {
-    export interface ScreenMetrics {
-        _invalidate(): void;
-    }
-}
+import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from "platform";
+import * as appModule from "application";
 
 const MIN_TABLET_PIXELS = 600;
 
 export module platformNames {
-    export var android = "Android";
-    export var ios = "iOS";
+    export const android = "Android";
+    export const ios = "iOS";
 }
 
-class Device implements definition.Device {
+class Device implements DeviceDefinition {
     private _manufacturer: string;
     private _model: string;
     private _osVersion: string;
@@ -78,10 +72,11 @@ class Device implements definition.Device {
 
     get uuid(): string {
         if (!this._uuid) {
+            const nativeApp = <android.app.Application>appModule.android.nativeApp;
             this._uuid = android.provider.Settings.Secure.getString(
-                utils.ad.getApplicationContext().getContentResolver(),
+                nativeApp.getContentResolver(),
                 android.provider.Settings.Secure.ANDROID_ID
-                );
+            );
         }
 
         return this._uuid;
@@ -96,7 +91,7 @@ class Device implements definition.Device {
     }
 
     get region(): string {
-        if(!this._region) {
+        if (!this._region) {
             this._region = java.util.Locale.getDefault().getCountry();
         }
 
@@ -104,17 +99,30 @@ class Device implements definition.Device {
     }
 }
 
-class MainScreen implements definition.ScreenMetrics {
+class MainScreen implements ScreenMetricsDefinition {
     private _metrics: android.util.DisplayMetrics;
 
-    public _invalidate(): void {
-        this._metrics = null;
+    constructor() {
+        // NOTE: This will be memory leak but we MainScreen is singleton
+        appModule.on("cssChanged", this.cssChanged, this);
     }
-    
+
+    private cssChanged(args: appModule.CssChangedEventData): void {
+        if (!this._metrics) {
+            this._metrics = new android.util.DisplayMetrics();
+        }
+        this.initMetrics();
+    }
+
+    private initMetrics(): void {
+        const nativeApp = <android.app.Application>appModule.getNativeApplication();
+        nativeApp.getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
+    }
+
     private get metrics(): android.util.DisplayMetrics {
         if (!this._metrics) {
             this._metrics = new android.util.DisplayMetrics();
-            utils.ad.getApplicationContext().getSystemService(android.content.Context.WINDOW_SERVICE).getDefaultDisplay().getRealMetrics(this._metrics);
+            this.initMetrics();
         }
         return this._metrics;
     }
@@ -137,10 +145,10 @@ class MainScreen implements definition.ScreenMetrics {
 
 }
 
-export var device: definition.Device = new Device();
+export const device = new Device();
 
 export module screen {
-    export var mainScreen = new MainScreen();
+    export const mainScreen = new MainScreen();
 }
 
-export var isAndroid = true;
+export const isAndroid = true;

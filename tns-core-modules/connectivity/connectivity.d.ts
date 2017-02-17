@@ -12,21 +12,21 @@ declare module "connectivity" {
     /**
      * Defines the different connection types.
      */
-    export module connectionType {
+    export const enum connectionType {
         /**
          * Denotes no connection.
          */
-        export var none: number;
+        none = 0,
 
         /**
          * Denotes a WiFi connection.
          */
-        export var wifi: number;
+        wifi = 1,
 
         /**
          * Denotes a mobile connection, i.e. cellular network or WAN
          */
-        export var mobile: number;
+        mobile = 2
     }
 
     /**

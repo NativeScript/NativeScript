@@ -1,15 +1,16 @@
-﻿import * as common from "./connectivity-common";
-
-global.moduleMerge(common, exports);
+﻿export const enum connectionType {
+    none = 0,
+    wifi = 1,
+    mobile = 2,
+}
 
 // Get Connection Type
-declare var sockaddr;
+declare const sockaddr;
 function _createReachability(host?: string): any {
     if (host) {
         return SCNetworkReachabilityCreateWithName(null, host);
-    }
-    else {
-        var zeroAddress = new interop.Reference<sockaddr>(sockaddr, {
+    } else {
+        const zeroAddress = new interop.Reference<sockaddr>(sockaddr, {
             sa_len: 16,
             sa_family: 2
         });
@@ -18,9 +19,9 @@ function _createReachability(host?: string): any {
 }
 
 function _getReachabilityFlags(host?: string): number {
-    var reachability = _createReachability(host);
-    var flagsRef = new interop.Reference<number>();
-    var gotFlags = SCNetworkReachabilityGetFlags(reachability, flagsRef);
+    const reachability = _createReachability(host);
+    const flagsRef = new interop.Reference<number>();
+    const gotFlags = SCNetworkReachabilityGetFlags(reachability, flagsRef);
     if (!gotFlags) {
         return null;
     }
@@ -28,27 +29,27 @@ function _getReachabilityFlags(host?: string): number {
 }
 
 function _getConnectionType(host?: string): number {
-    var flags = _getReachabilityFlags(host);
+    const flags = _getReachabilityFlags(host);
     return _getConnectionTypeFromFlags(flags);
 }
 
 function _getConnectionTypeFromFlags(flags: number): number {
     if (!flags) {
-        return common.connectionType.none;
+        return connectionType.none;
     }
 
-    var isReachable = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsReachable;
-    var connectionRequired = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsConnectionRequired;
+    const isReachable = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsReachable;
+    const connectionRequired = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsConnectionRequired;
     if (!isReachable || connectionRequired) {
-        return common.connectionType.none;
+        return connectionType.none;
     }
 
-    var isWWAN = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsIsWWAN;
+    const isWWAN = flags & SCNetworkReachabilityFlags.kSCNetworkReachabilityFlagsIsWWAN;
     if (isWWAN) {
-        return common.connectionType.mobile;
+        return connectionType.mobile;
     }
 
-    return common.connectionType.wifi;
+    return connectionType.wifi;
 }
 
 export function getConnectionType(): number {
@@ -58,14 +59,15 @@ export function getConnectionType(): number {
 // Start/Stop Monitoring
 function _reachabilityCallback(target: any, flags: number, info: any) {
     if (_connectionTypeChangedCallback) {
-        var newConnectionType = _getConnectionTypeFromFlags(flags);
+        const newConnectionType = _getConnectionTypeFromFlags(flags);
         _connectionTypeChangedCallback(newConnectionType);
     }
 }
-var _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabilityCallback)
 
-var _monitorReachabilityRef: any;
-var _connectionTypeChangedCallback: (newConnectionType: number) => void;
+const _reachabilityCallbackFunctionRef = new interop.FunctionReference(_reachabilityCallback);
+
+let _monitorReachabilityRef: any;
+let _connectionTypeChangedCallback: (newConnectionType: number) => void;
 
 export function startMonitoring(connectionTypeChangedCallback: (newConnectionType: number) => void): void {
     if (!_monitorReachabilityRef) {

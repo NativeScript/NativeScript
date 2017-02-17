@@ -8,7 +8,6 @@
 
 import * as imageSource from "image-source";
 import * as fs from "file-system";
-import * as enums from "ui/enums";
 import * as app from "application";
 import * as TKUnit from "./TKUnit";
 import * as platform from "platform";
@@ -59,7 +58,7 @@ export function testSaveToFile() {
     var img = imageSource.fromFile(imagePath);
     var folder = fs.knownFolders.documents();
     var path = fs.path.join(folder.path, "Test.png");
-    var saved = img.saveToFile(path, enums.ImageFormat.png);
+    var saved = img.saveToFile(path, "png");
     // << imagesource-save-to
     TKUnit.assert(saved, "Image not saved to file");
     TKUnit.assert(fs.File.exists(path), "Image not saved to file");
@@ -111,7 +110,7 @@ export function testBase64Encode_PNG() {
         }
     }
 
-    var result = img.toBase64String(enums.ImageFormat.png);
+    var result = img.toBase64String("png");
     TKUnit.assertEqual(
         result,
         expected,
@@ -121,7 +120,7 @@ export function testBase64Encode_PNG() {
 export function testBase64Encode_JPEG() {
     var img = imageSource.fromFile(smallImagePath);
 
-    var result = img.toBase64String(enums.ImageFormat.jpeg);
+    var result = img.toBase64String("jpeg");
     result = result.substr(0, expectedJpegStart.length);
 
     TKUnit.assertEqual(

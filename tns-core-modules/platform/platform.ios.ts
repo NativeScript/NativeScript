@@ -1,14 +1,14 @@
 ﻿/* tslint:disable:class-name */
-import * as definition from "platform";
+import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from "platform";
 
 import * as utils from "utils/utils";
 
 export module platformNames {
-    export var android = "Android";
-    export var ios = "iOS";
+    export const android = "Android";
+    export const ios = "iOS";
 }
 
-class Device implements definition.Device {
+class Device implements DeviceDefinition {
     private _model: string;
     private _osVersion: string;
     private _sdkVersion: string;
@@ -94,12 +94,8 @@ class Device implements definition.Device {
     }
 }
 
-class MainScreen implements definition.ScreenMetrics {
+class MainScreen implements ScreenMetricsDefinition {
     private _screen: UIScreen;
-
-    _invalidate(){
-        //
-    }
     
     private get screen(): UIScreen {
         if (!this._screen) {
@@ -126,10 +122,10 @@ class MainScreen implements definition.ScreenMetrics {
     }
 }
 
-export var device: definition.Device = new Device();
+export const device = new Device();
 
 export module screen {
-    export var mainScreen = new MainScreen();
+    export const mainScreen = new MainScreen();
 }
 
-export var isIOS = true;
+export const isIOS = true;

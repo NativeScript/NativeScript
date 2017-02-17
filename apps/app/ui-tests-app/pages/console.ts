@@ -61,16 +61,16 @@ export function pageLoaded() {
     console.assert(true, "1 equals 1");
 
     if (app.android) {
-        console.dump(true);
-        console.dump(false);
-        console.dump(null);
-        console.dump(undef);
+        console.dir(true);
+        console.dir(false);
+        console.dir(null);
+        console.dir(undef);
 
-        console.dump(num);
-        console.dump(str);
+        console.dir(num);
+        console.dir(str);
 
         console.dir(obj);
-        console.dump(foo);
+        console.dir(foo);
         console.log("%j", button);
     }
 

@@ -36,7 +36,7 @@ export class ActionItem extends ActionItemBase {
         return this._ios;
     }
     public set ios(value: IOSActionItemSettings) {
-        throw new Error("ActionItem.android is read-only");
+        throw new Error("ActionItem.ios is read-only");
     }
 }
 
@@ -61,13 +61,13 @@ export class ActionBar extends ActionBarBase {
     }
 
     public update() {
-        let page = this.page;
+        const page = this.page;
         // Page should be attached to frame to update the action bar.
         if (!page || !page.parent) {
             return;
         }
 
-        let viewController = (<UIViewController>this.page.ios);
+        let viewController = (<UIViewController>page.ios);
         let navigationItem: UINavigationItem = viewController.navigationItem;
         let navController = <UINavigationController>page.frame.ios.controller;
         let navigationBar = navController ? navController.navigationBar : null;
@@ -161,8 +161,12 @@ export class ActionBar extends ActionBarBase {
             item.actionView.ios.addGestureRecognizer(recognizer);
             barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
         }
-        else if (typeof item.ios.systemIcon === "number") {
-            barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(item.ios.systemIcon, tapHandler, "tap");
+        else if (item.ios.systemIcon !== undefined) {
+            let id: number = item.ios.systemIcon;
+            if (typeof id === "string") {
+                id = parseInt(id);
+            }
+            barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
         }
         else if (item.icon) {
             let img = fromFileOrResource(item.icon);
@@ -202,7 +206,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     public _onTitlePropertyChanged() {
-        let page = this.page;
+        const page = this.page;
         if (!page) {
             return;
         }
@@ -225,7 +229,7 @@ export class ActionBar extends ActionBarBase {
 
         let navBarWidth = 0;
         let navBarHeight = 0;
-
+        
         let frame = this.page.frame;
         if (frame) {
             let navBar: UIView = frame.ios.controller.navigationBar;
@@ -284,7 +288,7 @@ export class ActionBar extends ActionBarBase {
     // }
 
     private get navBar(): UINavigationBar {
-        let page = this.page;
+        const page = this.page;
         // Page should be attached to frame to update the action bar.
         if (!page || !page.frame) {
             return undefined;

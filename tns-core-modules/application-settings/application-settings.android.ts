@@ -1,10 +1,10 @@
 ﻿import * as common from "./application-settings-common";
-import * as utils from "utils/utils";
+import { getNativeApplication } from "application";
 
 var sharedPreferences;
 function ensureSharedPreferences() {
     if (!sharedPreferences) {
-        sharedPreferences = utils.ad.getApplicationContext().getSharedPreferences("prefs.db", 0);
+        sharedPreferences = (<android.app.Application>getNativeApplication()).getApplicationContext().getSharedPreferences("prefs.db", 0);
     }
 }
 
@@ -13,13 +13,13 @@ function verify(key: string) {
     ensureSharedPreferences();
 }
 
-export var hasKey = function (key: string): boolean {
+export function hasKey(key: string): boolean {
     verify(key);
     return sharedPreferences.contains(key);
 }
 
 // getters
-export var getBoolean = function (key: string, defaultValue?: boolean): boolean {
+export function getBoolean(key: string, defaultValue?: boolean): boolean {
     verify(key);
     if (hasKey(key)) {
         return sharedPreferences.getBoolean(key, false);
@@ -27,7 +27,7 @@ export var getBoolean = function (key: string, defaultValue?: boolean): boolean 
     return defaultValue;
 }
 
-export var getString = function (key: string, defaultValue?: string): string {
+export function getString(key: string, defaultValue?: string): string {
     verify(key);
     if (hasKey(key)) {
         return sharedPreferences.getString(key, "");
@@ -35,7 +35,7 @@ export var getString = function (key: string, defaultValue?: string): string {
     return defaultValue;
 }
 
-export var getNumber = function (key: string, defaultValue?: number): number {
+export function getNumber(key: string, defaultValue?: number): number {
     verify(key);
     if (hasKey(key)) {
         return sharedPreferences.getFloat(key, float(0.0));
@@ -44,7 +44,7 @@ export var getNumber = function (key: string, defaultValue?: number): number {
 }
 
 // setters
-export var setBoolean = function (key: string, value: boolean): void {
+export function setBoolean(key: string, value: boolean): void {
     verify(key);
     common.ensureValidValue(value, "boolean");
     var editor = sharedPreferences.edit();
@@ -52,7 +52,7 @@ export var setBoolean = function (key: string, value: boolean): void {
     editor.commit();
 }
 
-export var setString = function (key: string, value: string): void {
+export function setString(key: string, value: string): void {
     verify(key);
     common.ensureValidValue(value, "string");
     var editor = sharedPreferences.edit();
@@ -60,7 +60,7 @@ export var setString = function (key: string, value: string): void {
     editor.commit();
 }
 
-export var setNumber = function (key: string, value: number): void {
+export function setNumber(key: string, value: number): void {
     verify(key);
     common.ensureValidValue(value, "number");
     var editor = sharedPreferences.edit();
@@ -68,14 +68,14 @@ export var setNumber = function (key: string, value: number): void {
     editor.commit();
 }
 
-export var remove = function (key: string): void {
+export function remove(key: string): void {
     verify(key);
     var editor = sharedPreferences.edit();
     editor.remove(key);
     editor.commit();
 }
 
-export var clear = function (): void {
+export function clear(): void {
     ensureSharedPreferences();
     sharedPreferences.edit().clear().commit();
 }

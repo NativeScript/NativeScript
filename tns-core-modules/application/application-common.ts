@@ -1,156 +1,58 @@
 ﻿require("globals");
-import * as observable from "data/observable";
-// TODO: Raise event on("livesync") and attach this handler in the ui/frame module. 
-import { NavigationEntry, reloadPage } from "ui/frame";
-import { RuleSet } from "ui/styling/css-selector";
-import * as fileSystemModule from "file-system";
-import * as styleScopeModule from "ui/styling/style-scope";
-import * as fileResolverModule from "file-system/file-name-resolver";
-import * as builderModule from "ui/builder";
-import * as platformModule from "platform";
+
+import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
+import { Observable, EventData } from "data/observable";
+import { NavigationEntry } from "ui/frame";
 import "../bundle-entry-points";
 
-var builder: typeof builderModule;
-function ensureBuilder() {
-    if (!builder) {
-        builder = require("ui/builder");
-    }
-}
-
-var platform: typeof platformModule;
-function ensurePlatform() {
-    if (!platform) {
-        platform = require("platform");
-    }
-}
-
-var fileNameResolver: typeof fileResolverModule;
-function ensureFileNameResolver() {
-    if (!fileNameResolver) {
-        fileNameResolver = require("file-system/file-name-resolver");
-    }
-}
-
-var styleScope: typeof styleScopeModule = undefined;
-
-var events = new observable.Observable();
+const events = new Observable();
 global.moduleMerge(events, exports);
 
-export var launchEvent = "launch";
-export var suspendEvent = "suspend";
-export var resumeEvent = "resume";
-export var exitEvent = "exit";
-export var lowMemoryEvent = "lowMemory";
-export var uncaughtErrorEvent = "uncaughtError";
-export var orientationChangedEvent = "orientationChanged";
+export { Observable };
 
-export var mainModule: string;
-export var mainEntry: NavigationEntry;
+export const launchEvent = "launch";
+export const suspendEvent = "suspend";
+export const resumeEvent = "resume";
+export const exitEvent = "exit";
+export const lowMemoryEvent = "lowMemory";
+export const uncaughtErrorEvent = "uncaughtError";
+export const orientationChangedEvent = "orientationChanged";
 
-export var cssFile: string = "app.css";
+export let cssFile: string = "app.css";
 
-export var appSelectors: RuleSet[] = [];
-export var additionalSelectors: RuleSet[] = [];
-export var cssSelectors: RuleSet[] = [];
-export var cssSelectorVersion: number = 0;
-export var keyframes: any = {};
+export let mainModule: string;
+export let mainEntry: NavigationEntry;
 
-export var resources: any = {};
+export let resources: any = {};
 
 export function setResources(res: any) {
     resources = res;
 }
 
-export var onUncaughtError: (error: NativeScriptError) => void = undefined;
+export let android = undefined;
+export let ios = undefined;
 
-export var onLaunch: (context: any) => any = undefined;
-
-export var onSuspend: () => any = undefined;
-
-export var onResume: () => any = undefined;
-
-export var onExit: () => any = undefined;
-
-export var onLowMemory: () => any = undefined;
-
-export var android = undefined;
-
-export var ios = undefined;
-
-export function loadCss(cssFile?: string): RuleSet[] {
-    if (!cssFile) {
-        return undefined;
-    }
-
-    var result: RuleSet[];
-
-    var fs: typeof fileSystemModule = require("file-system");
-    if (!styleScope) {
-        styleScope = require("ui/styling/style-scope");
-    }
-
-    var cssFileName = fs.path.join(fs.knownFolders.currentApp().path, cssFile);
-    if (fs.File.exists(cssFileName)) {
-        var file = fs.File.fromPath(cssFileName);
-        var applicationCss = file.readTextSync();
-        if (applicationCss) {
-            result = parseCss(applicationCss, cssFileName);
-        }
-    }
-
-    return result;
+export function notify(args: EventData): void {
+    events.notify(args);
 }
 
-export function mergeCssSelectors(module: any): void {
-    //HACK: pass the merged module and work with its exported vars.
-    module.cssSelectors = module.appSelectors.slice();
-    module.cssSelectors.push.apply(module.cssSelectors, module.additionalSelectors);
-    module.cssSelectorVersion++;
+let app: iOSApplication | AndroidApplication;
+export function setApplication(instance: iOSApplication | AndroidApplication): void {
+    app = instance;
 }
 
-export function parseCss(cssText: string, cssFileName?: string): RuleSet[] {
-    if (!styleScope) {
-        styleScope = require("ui/styling/style-scope");
-    }
-    return styleScope.StyleScope.createSelectorsFromCss(cssText, cssFileName, keyframes);
+export function livesync() {
+    events.notify(<EventData>{ eventName: "livesync", object: app });  
 }
 
-export function __onLiveSync() {
-    // Close the error page if available and remove the reference from global context.
-    if ((<any>global).errorPage) {
-        (<any>global).errorPage.closeModal();
-        (<any>global).errorPage = undefined;
-    }
-
-    try {
-        ensureFileNameResolver();
-
-        // Clear file resolver cache to respect newly added files.
-        fileNameResolver.clearCache();
-
-        // Reload app.css in case it was changed.
-        loadCss();
-
-        (<any>global).__onLiveSyncCore();
-
-    } catch (ex) {
-        // Show the error as modal page, save reference to the page in global context.
-        ensureBuilder();
-        (<any>global).errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
-        (<any>global).errorPage.showModal();
-    }
+export function setCssFileName(cssFileName: string) {
+    cssFile = cssFileName;
 }
 
-export function __onLiveSyncCore() {
-    // Reload current page.
-    reloadPage();
+export function addCss(cssText: string): void {
+    events.notify(<CssChangedEventData>{ eventName: "cssChanged", object: app, cssText: cssText });
 }
-(<any>global).__onLiveSyncCore = __onLiveSyncCore;
 
-export function _onOrientationChanged(){
-    ensurePlatform();
-    platform.screen.mainScreen._invalidate();
-
-    ensureFileNameResolver();
-    fileNameResolver._invalidateResolverInstance();
+global.__onUncaughtError = function (error: NativeScriptError) {
+    events.notify(<UnhandledErrorEventData>{ eventName: uncaughtErrorEvent, object: app, android: error, ios: error, error: error });
 }

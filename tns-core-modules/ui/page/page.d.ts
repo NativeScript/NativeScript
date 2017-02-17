@@ -248,6 +248,7 @@ declare module "ui/page" {
          */
         onNavigatedFrom(isBackNavigation: boolean): void;
 
+        _refreshCss(): void;
         _getStyleScope(): styleScope.StyleScope;
         //@endprivate
     }

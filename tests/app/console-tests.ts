@@ -29,13 +29,6 @@ export var test_DummyTestForSnippetOnly3 = function () {
     // << console-dir
 }
 
-export var test_DummyTestForSnippetOnly4 = function () {
-    // >> console-dump
-    var obj = { name: "John", age: 34 };
-    console.dump(obj);
-    // << console-dump
-}
-
 export var test_DummyTestForSnippetOnly5 = function () {
     // >> console-trace
     console.trace();

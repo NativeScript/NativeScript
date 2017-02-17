@@ -2,6 +2,7 @@
     import { View, Template, KeyedTemplate } from "ui/core/view";
     import { Page } from "ui/page";
 
+    export function loadPage(moduleNamePath: string, fileName: string, moduleExports?: any): Page;
     export function load(fileName: string, exports?: any): View;
     export function load(options: LoadOptions): View;
     export function parse(value: string | Template, exports?: any): View;

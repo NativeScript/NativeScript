@@ -1,41 +1,37 @@
-﻿import * as common from "./application-common";
-import {Frame, NavigationEntry} from "ui/frame";
-import * as definition from "application";
-import * as uiUtils from "ui/utils";
-import * as typesModule from "utils/types";
-import * as utils from "utils/utils";
+﻿import { iOSApplication as IOSApplicationDefinition, LaunchEventData, ApplicationEventData, OrientationChangedEventData } from "application";
 
-global.moduleMerge(common, exports);
-var typedExports: typeof definition = exports;
+import {
+    notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
+    orientationChangedEvent, setApplication, livesync
+} from "./application-common";
+
+// First reexport so that app module is initialized.
+export * from "./application-common";
+
+import { Frame, View, NavigationEntry } from "ui/frame";
+import { ios } from "ui/utils";
+import * as utils from "utils/utils";
 
 class Responder extends UIResponder {
     //
 }
 
 class Window extends UIWindow {
-
-    private _content;
+    public content;
 
     initWithFrame(frame: CGRect): this {
-        var window = <this>super.initWithFrame(frame);
+        const window = <this>super.initWithFrame(frame);
         if (window) {
             window.autoresizingMask = UIViewAutoresizing.None;
         }
         return window;
     }
 
-    public get content() {
-        return this._content;
-    }
-    public set content(value) {
-        this._content = value;
-    }
-
     public layoutSubviews(): void {
         if (utils.ios.MajorVersion < 9) {
-            uiUtils.ios._layoutRootView(this._content, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
-        }else{
-            uiUtils.ios._layoutRootView(this._content, this.frame);
+            ios._layoutRootView(this.content, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+        } else {
+            ios._layoutRootView(this.content, this.frame);
         }
     }
 }
@@ -43,13 +39,10 @@ class Window extends UIWindow {
 class NotificationObserver extends NSObject {
     private _onReceiveCallback: (notification: NSNotification) => void;
 
-    static new(): NotificationObserver {
-        return <NotificationObserver>super.new();
-    }
-
-    public initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
-        this._onReceiveCallback = onReceiveCallback;
-        return this;
+    public static initWithCallback(onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
+        const observer = <NotificationObserver>super.new();
+        observer._onReceiveCallback = onReceiveCallback;
+        return observer;
     }
 
     public onReceive(notification: NSNotification): void {
@@ -61,7 +54,7 @@ class NotificationObserver extends NSObject {
     };
 }
 
-class IOSApplication implements definition.iOSApplication {
+class IOSApplication implements IOSApplicationDefinition {
     public rootController: any;
 
     private _delegate: typeof UIApplicationDelegate;
@@ -85,7 +78,7 @@ class IOSApplication implements definition.iOSApplication {
 
     get window(): Window {
         return this._window;
-    }    
+    }
 
     get delegate(): typeof UIApplicationDelegate {
         return this._delegate;
@@ -97,7 +90,7 @@ class IOSApplication implements definition.iOSApplication {
     }
 
     public addNotificationObserver(notificationName: string, onReceiveCallback: (notification: NSNotification) => void): NotificationObserver {
-        var observer = NotificationObserver.new().initWithCallback(onReceiveCallback);
+        const observer = NotificationObserver.initWithCallback(onReceiveCallback);
         utils.ios.getter(NSNotificationCenter, NSNotificationCenter.defaultCenter).addObserverSelectorNameObject(observer, "onReceive", notificationName, null);
         this._observers.push(observer);
         return observer;
@@ -115,17 +108,13 @@ class IOSApplication implements definition.iOSApplication {
         this._window = <Window>Window.alloc().initWithFrame(utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
         this._window.backgroundColor = utils.ios.getter(UIColor, UIColor.whiteColor);
 
-        if (typedExports.onLaunch) {
-            typedExports.onLaunch(undefined);
-        }
-
-        let args: definition.LaunchEventData = {
-            eventName: typedExports.launchEvent,
+        const args: LaunchEventData = {
+            eventName: launchEvent,
             object: this,
             ios: notification.userInfo && notification.userInfo.objectForKey("UIApplicationLaunchOptionsLocalNotificationKey") || null
         };
 
-        typedExports.notify(args);
+        notify(args);
 
         let rootView = createRootView(args.root);
         this._window.content = rootView;
@@ -149,39 +138,23 @@ class IOSApplication implements definition.iOSApplication {
     }
 
     private didBecomeActive(notification: NSNotification) {
-        if (typedExports.onResume) {
-            typedExports.onResume();
-        }
-
-        typedExports.notify({ eventName: typedExports.resumeEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: resumeEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
     }
 
     private didEnterBackground(notification: NSNotification) {
-        if (typedExports.onSuspend) {
-            typedExports.onSuspend();
-        }
-
-        typedExports.notify({ eventName: typedExports.suspendEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: suspendEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
     }
 
     private willTerminate(notification: NSNotification) {
-        if (typedExports.onExit) {
-            typedExports.onExit();
-        }
-
-        typedExports.notify({ eventName: typedExports.exitEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: exitEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
     }
 
     private didReceiveMemoryWarning(notification: NSNotification) {
-        if (typedExports.onLowMemory) {
-            typedExports.onLowMemory();
-        }
-
-        typedExports.notify({ eventName: typedExports.lowMemoryEvent, object: this, android: undefined, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
     }
 
     private orientationDidChange(notification: NSNotification) {
-        var orientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
+        const orientation = utils.ios.getter(UIDevice, UIDevice.currentDevice).orientation;
 
         if (this._currentOrientation !== orientation) {
             this._currentOrientation = orientation;
@@ -201,9 +174,8 @@ class IOSApplication implements definition.iOSApplication {
                     break;
             }
 
-            common._onOrientationChanged();
-            typedExports.notify(<definition.OrientationChangedEventData>{
-                eventName: typedExports.orientationChangedEvent,
+            notify(<OrientationChangedEventData>{
+                eventName: orientationChangedEvent,
                 ios: this,
                 newValue: newValue,
                 object: this
@@ -212,55 +184,20 @@ class IOSApplication implements definition.iOSApplication {
     }
 }
 
-var iosApp = new IOSApplication();
-typedExports.ios = iosApp;
+const iosApp = new IOSApplication();
+exports.ios = iosApp;
+setApplication(iosApp);
 
-global.__onUncaughtError = function (error: NativeScriptError) {
-    var types: typeof typesModule = require("utils/types");
-
-    // TODO: This should be obsoleted
-    if (types.isFunction(typedExports.onUncaughtError)) {
-        typedExports.onUncaughtError(error);
-    }
-    
-    typedExports.notify({ eventName: typedExports.uncaughtErrorEvent, object: typedExports.ios, ios: error, error });
-}
-
-function loadCss() {
-    //HACK: identical to application.ios.ts
-    typedExports.appSelectors = typedExports.loadCss(typedExports.cssFile) || [];
-    if (typedExports.appSelectors.length > 0) {
-        typedExports.mergeCssSelectors(typedExports);
-    }
-}
-
-export function setCssFileName(cssFileName: string) {
-    typedExports.cssFile = cssFileName;
-}
-
-export function addCss(cssText: string) {
-    //HACK: identical to application.android.ts
-    const parsed = typedExports.parseCss(cssText);
-    if (parsed) {
-        typedExports.additionalSelectors.push.apply(typedExports.additionalSelectors, parsed);
-        typedExports.mergeCssSelectors(typedExports);
-    }
-}
-
-function createRootView(v?) {
+function createRootView(v?: View) {
     let rootView = v;
     let frame: Frame;
-    let navParam: Object;
+    let main: string | NavigationEntry;
     if (!rootView) {
         // try to navigate to the mainEntry/Module (if specified)
-        navParam = typedExports.mainEntry;
-        if (!navParam) {
-            navParam = typedExports.mainModule;
-        }
-
-        if (navParam) {
+        main = exports.mainEntry || exports.mainModule;
+        if (main) {
             frame = new Frame();
-            frame.navigate(navParam);
+            frame.navigate(main);
         } else {
             // TODO: Throw an exception?
             throw new Error("A Frame must be used to navigate to a Page.");
@@ -272,31 +209,33 @@ function createRootView(v?) {
     return rootView;
 }
 
-var started: boolean = false;
-typedExports.start = function (entry?: NavigationEntry) {
+let started: boolean = false;
+exports.start = function (entry?: NavigationEntry) {
     if (entry) {
         exports.mainEntry = entry;
     }
 
-    loadCss();
-
-    if(!iosApp.nativeApp) {
+    if (!iosApp.nativeApp) {
         // Normal NativeScript app will need UIApplicationMain. 
-        UIApplicationMain(0, null, null, typedExports.ios && typedExports.ios.delegate ? NSStringFromClass(typedExports.ios.delegate) : NSStringFromClass(Responder));
+        UIApplicationMain(0, null, null, iosApp && iosApp.delegate ? NSStringFromClass(<any>iosApp.delegate) : NSStringFromClass(Responder));
     } else {
         let rootView = createRootView();
-        if(rootView) {
+        if (rootView) {
             // Attach to the existing iOS app
             var window = iosApp.nativeApp.keyWindow || (iosApp.nativeApp.windows.count > 0 && iosApp.nativeApp.windows[0]);
-            if(window) {
+            if (window) {
                 var rootController = window.rootViewController;
-                if(rootController) {
+                if (rootController) {
                     rootController.presentViewControllerAnimatedCompletion(rootView.ios.controller, true, null);
-                    uiUtils.ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
+                    ios._layoutRootView(rootView, utils.ios.getter(UIScreen, UIScreen.mainScreen).bounds);
                 }
             }
         }
     }
+}
+
+export function getNativeApplication(): UIApplication {
+    return iosApp.nativeApp;
 }
 
 global.__onLiveSync = function () {
@@ -304,7 +243,5 @@ global.__onLiveSync = function () {
         return;
     }
 
-    common.__onLiveSync();
-
-    loadCss();
+    livesync();
 }
