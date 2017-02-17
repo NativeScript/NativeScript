@@ -8,7 +8,6 @@ declare module "ui/core/view-base" {
     import { fromString as gestureFromString } from "ui/gestures";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
     import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
-    import { StyleScope } from "ui/styling/style-scope";
     import { Page } from "ui/page";
 
     export {
@@ -187,7 +186,7 @@ declare module "ui/core/view-base" {
         public deletePseudoClass(name: string): void;
 
         //@private
-        public _styleScope: StyleScope;
+        public _styleScope: any;
         //@endprivate
     }
 
