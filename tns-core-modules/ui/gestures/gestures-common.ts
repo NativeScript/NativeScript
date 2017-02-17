@@ -1,7 +1,8 @@
 ﻿import { GestureEventData as GestureEventData, GesturesObserver as GesturesObserverDefinition } from "ui/gestures";
 import { View } from "ui/core/view";
 
-export { View, EventData, layout } from "ui/core/view";
+// Only types:
+export { View, EventData } from "ui/core/view";
 
 export enum GestureTypes {
     tap = 1 << 0,
@@ -74,7 +75,7 @@ export function toString(type: GestureTypes, separator?: string): string {
 }
 
 // NOTE: toString could return the text of multiple GestureTypes.
-// Souldn't fromString do split on separator? and return multiple GestureTypes?
+// Souldn't fromString do split on separator and return multiple GestureTypes?
 export function fromString(type: string): GestureTypes {
     let t = type.trim().toLowerCase();
 

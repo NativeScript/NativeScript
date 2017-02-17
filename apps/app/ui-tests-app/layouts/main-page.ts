@@ -14,14 +14,12 @@ export function pageLoaded(args: EventData) {
     examples.set("absolute", "layouts/absolute");
     examples.set("dock", "layouts/dock");
     examples.set("grid", "layouts/grid");
-    examples.set("myview", "layouts/myview");
     examples.set("stack", "layouts/stack");
     examples.set("wrap", "layouts/wrap");
 
     examples.set("pabsolute", "layouts-percent/absolute");
     examples.set("pdock", "layouts-percent/dock");
     examples.set("pgrid", "layouts-percent/grid");
-    examples.set("pmyview", "layouts-percent/myview");
     examples.set("pstack", "layouts-percent/stack");
     examples.set("pwrap", "layouts-percent/wrap");
 
