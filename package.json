@@ -23,7 +23,7 @@
     "http-server": "^0.9.0",
     "markdown-snippet-injector": "0.1.1",
     "mocha": "2.2.5",
-    "nativescript-typedoc-theme": "0.0.7",
+    "nativescript-typedoc-theme": "git+https://github.com/NativeScript/nativescript-typedoc-theme.git#master",
     "shelljs": "^0.7.0",
     "time-grunt": "1.3.0",
     "tslint": "^4.4.2",
