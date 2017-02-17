@@ -4,19 +4,20 @@
 
 export * from "./utils-common";
 
+import { getNativeApplication } from "application";
+
 export module layout {
-    let density = -1;
-    let metrics: android.util.DisplayMetrics;
+    let density: number;
 
     // cache the MeasureSpec constants here, to prevent extensive marshaling calls to and from Java
     // TODO: While this boosts the performance it is error-prone in case Google changes these constants
     const MODE_SHIFT = 30;
     const MODE_MASK = 0x3 << MODE_SHIFT;
-    let sdkVersion = -1;
+    let sdkVersion: number;
     let useOldMeasureSpec = false;
 
     export function makeMeasureSpec(size: number, mode: number): number {
-        if (sdkVersion === -1) {
+        if (sdkVersion === undefined) {
             // check whether the old layout is needed
             sdkVersion = ad.getApplicationContext().getApplicationInfo().targetSdkVersion;
             useOldMeasureSpec = sdkVersion <= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1;
@@ -29,17 +30,9 @@ export module layout {
         return (size & ~MODE_MASK) | (mode & MODE_MASK);
     }
 
-    export function getDisplayMetrics(): android.util.DisplayMetrics {
-        if (!metrics) {
-            metrics = ad.getApplicationContext().getResources().getDisplayMetrics();
-        }
-
-        return metrics;
-    }
-
     export function getDisplayDensity(): number {
-        if (density === -1) {
-            density = getDisplayMetrics().density;
+        if (density === undefined) {
+            density = ad.getResources().getDisplayMetrics().density;
         }
 
         return density;
@@ -56,44 +49,38 @@ export module layout {
 
 // We are using "ad" here to avoid namespace collision with the global android object
 export module ad {
-    let nativeApp: android.app.Application;
-    declare var com;
-    export function getApplication() {
-        if (!nativeApp) {
-            // check whether the com.tns.NativeScriptApplication type exists
-            if (com.tns.NativeScriptApplication) {
-                nativeApp = com.tns.NativeScriptApplication.getInstance();
-            }
 
-            // the getInstance might return null if com.tns.NativeScriptApplication exists but is  not the starting app type
-            if (!nativeApp) {
-                // check whether application.android.init has been explicitly called
-                let application = require("application");
-                nativeApp = application.android.nativeApp;
-
-                if (!nativeApp) {
-                    // TODO: Should we handle the case when a custom application type is provided and the user has not explicitly initialized the application module? 
-                    let clazz = java.lang.Class.forName("android.app.ActivityThread");
-                    if (clazz) {
-                        let method = clazz.getMethod("currentApplication", null);
-                        if (method) {
-                            nativeApp = method.invoke(null, null);
-                        }
-                    }
-                }
-            }
-
-            // we cannot work without having the app instance
-            if (!nativeApp) {
-                throw new Error("Failed to retrieve native Android Application object. If you have a custom android.app.Application type implemented make sure that you've called the '<application-module>.android.init' method.")
-            }
+    let application: android.app.Application;
+    let applicationContext: android.content.Context;
+    let contextResources: android.content.res.Resources;
+    let packageName: string;
+    export function getApplicationContext() {
+        if (!applicationContext) {
+            applicationContext = getApplication().getApplicationContext();
         }
 
-        return nativeApp;
+        return applicationContext;
     }
-    export function getApplicationContext() {
-        let app = getApplication();
-        return app.getApplicationContext();
+    export function getApplication() {
+        if (!application) {
+            application = (<android.app.Application>getNativeApplication());
+        }
+
+        return application;
+    }
+    export function getResources() {
+        if (!contextResources) {
+            contextResources = getApplication().getResources();
+        }
+
+        return contextResources;
+    }
+    function getPackageName() {
+        if (!packageName) {
+            packageName = getApplicationContext().getPackageName();
+        }
+
+        return packageName;
     }
 
     let inputMethodManager: android.view.inputmethod.InputMethodManager;
@@ -156,8 +143,8 @@ export module ad {
         }
 
         export function getId(name: string): number {
-            var resources = getApplicationContext().getResources();
-            var packageName = getApplicationContext().getPackageName();
+            var resources = getResources();
+            var packageName = getPackageName();
             var uri = packageName + name;
             return resources.getIdentifier(uri, null, null);
         }
@@ -200,7 +187,7 @@ export function GC() {
 }
 
 export function openUrl(location: string): boolean {
-    var context = ad.getApplicationContext();
+    const context = ad.getApplicationContext();
     try {
         var intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(location.trim()));
         intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);

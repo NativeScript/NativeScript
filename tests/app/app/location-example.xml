@@ -1,8 +1,0 @@
-﻿<Page loaded="pageLoaded">
-	<GridLayout rows="50, *" columns="*, *, *">
-		<Button text="Request" tap="onRequestButtonTap" col="0" row="0" />
-		<Button text="Start" tap="onStartButtonTap" col="1" row="0" />
-		<Button text="Stop" tap="onStopButtonTap" col="2" row="0" />
-		<TextView id="textView" colSpan="3" row="1" editable="false" style.fontSize="8"/>
-	</GridLayout>
-</Page>

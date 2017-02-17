@@ -1,6 +1,6 @@
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Observable, EventData, PropertyChangeData } from "data/observable";
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritedProperties, resetCSSProperties, initNativeView, resetNativeView } from "./properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "./properties";
 import { Binding, BindingOptions } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { fromString as gestureFromString } from "ui/gestures";
@@ -8,6 +8,8 @@ import { SelectorCore } from "ui/styling/css-selector";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+
+import { Page } from "ui/page";
 
 // TODO: Remove this import!
 import * as types from "utils/types";
@@ -126,8 +128,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public _domId: number;
     public _context: any;
     public _isAddedToNativeVisualTree: boolean;
-    public _isCssApplied: boolean;
     public _cssState: ssm.CssState;
+    public _styleScope: ssm.StyleScope;
 
     constructor() {
         super();
@@ -135,6 +137,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._style = new Style(this);
     }
 
+    // TODO: Use Type.prototype.typeName instead.
     get typeName(): string {
         return types.getClass(this);
     }
@@ -177,7 +180,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         return <T>getViewById(this, id);
     }
 
-    get page(): ViewBaseDefinition {
+    get page(): Page {
         if (this.parent) {
             return this.parent.page;
         }
@@ -199,6 +202,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public onUnloaded() {
+        this._styleScope = null;
         this._setCssState(null);
         this._unloadEachChild();
         this._isLoaded = false;
@@ -216,14 +220,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _applyStyleFromScope() {
-        let rootPage = this.page;
-        if (!rootPage || this._isCssApplied) {
-            return;
+        const scope = this._styleScope;
+        if (scope) {
+            scope.applySelectors(this);
         }
-
-        let scope: ssm.StyleScope = (<any>rootPage)._getStyleScope();
-        scope.applySelectors(this);
-        this._isCssApplied = true;
     }
 
     // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
@@ -452,17 +452,29 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         view._parentChanged(null);
     }
 
-    protected _addViewCore(view: ViewBase, atIndex?: number) {
-        view._applyStyleFromScope();
+    private _setStyleScope(scope: ssm.StyleScope): void {
+        this._styleScope = scope;
+        this._applyStyleFromScope();
+        this.eachChild((v) => {
+            v._setStyleScope(scope);
+            return true;
+        });
+    }
 
-        // TODO: Split this method - we want binding context before loaded.
-        propagateInheritedProperties(this);
+    public _addViewCore(view: ViewBase, atIndex?: number) {
+        propagateInheritableProperties(this);
+
+        const styleScope = this._styleScope;
+        if (styleScope) {
+            view._setStyleScope(styleScope);
+        }
+
+        propagateInheritableCssProperties(this.style);
 
         if (this._context) {
             view._setupUI(this._context, atIndex);
         }
-
-        // TODO: Discuss this.
+        
         if (this._isLoaded) {
             view.onLoaded();
         }
@@ -519,9 +531,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    public _setupUI(context: android.content.Context, atIndex?: number) {
-        this._applyStyleFromScope();
-
+    public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean) {
         traceNotifyEvent(this, "_setupUI");
         if (traceEnabled()) {
             traceWrite(`${this}._setupUI(${context})`, traceCategories.VisualTreeEvents);
@@ -689,7 +699,6 @@ export const classNameProperty = new Property<ViewBase, string>({
 classNameProperty.register(ViewBase);
 
 function resetStyles(view: ViewBase): void {
-    view._isCssApplied = false;
     view._cancelAllAnimations();
     resetCSSProperties(view.style);
     view._applyStyleFromScope();

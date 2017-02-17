@@ -131,7 +131,8 @@ export class ActionBar extends ActionBarBase {
             return;
         }
 
-        if (!this.page.frame || !this.page.frame._getNavBarVisible(this.page)) {
+        const page = this.page;
+        if (!page.frame || !page.frame._getNavBarVisible(page)) {
             this.nativeView.setVisibility(android.view.View.GONE);
 
             // If action bar is hidden - no need to fill it with items.
@@ -179,11 +180,12 @@ export class ActionBar extends ActionBarBase {
     }
 
     public _updateNavigationButton() {
-        let navButton = this.navigationButton;
+        const navButton = this.navigationButton;
         if (navButton && isVisible(navButton)) {
-            if (navButton.android.systemIcon) {
+            const systemIcon = navButton.android.systemIcon;
+            if (systemIcon !== undefined) {
                 // Try to look in the system resources.
-                let systemResourceId = getSystemResourceId(navButton.android.systemIcon);
+                const systemResourceId = getSystemResourceId(systemIcon);
                 if (systemResourceId) {
                     this.nativeView.setNavigationIcon(systemResourceId);
                 }

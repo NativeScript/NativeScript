@@ -2,33 +2,6 @@
 
 export var RESOURCE_PREFIX = "res://";
 
-export function copyFrom(source: any, target: any) {
-    if (types.isDefined(source) && types.isDefined(target)) {
-        var i: number;
-        var key: string;
-        var value: any;
-        var keys = Object.keys(source);
-
-        for (i = 0; i < keys.length; i++) {
-            key = keys[i];
-            value = source[key];
-
-            if (types.isDefined(value)) {
-                target[key] = value;
-            }
-        }
-    }
-}
-
-export function parseJSON(source: string): any {
-    var src = source.trim();
-    if (src.lastIndexOf(")") === src.length - 1) {
-        return JSON.parse(src.substring(src.indexOf("(") + 1, src.lastIndexOf(")")));
-    }
-
-    return JSON.parse(src);
-}
-
 export function escapeRegexSymbols(source: string): string {
     let escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
     return source.replace(escapeRegex, "\\$&");

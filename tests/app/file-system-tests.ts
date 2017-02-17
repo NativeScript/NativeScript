@@ -60,14 +60,14 @@ export var testFileFromPath = function () {
                     file.remove();
                 }, function (error) {
                     TKUnit.assert(false, "Failed to read/write text");
-                    //console.dump(error);
+                    //console.dir(error);
                 });
             // << (hide)
         }, function (error) {
             // Failed to write to the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
-            //console.dump(error);
+            //console.dir(error);
             // << (hide)
         });
     // << file-system-create
@@ -101,14 +101,14 @@ export var testFileWrite = function () {
                     file.remove();
                 }, function (error) {
                     TKUnit.assert(false, "Failed to read/write text");
-                    //console.dump(error);
+                    //console.dir(error);
                 });
             // << (hide)
         }, function (error) {
             // Failed to write to the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
-            //console.dump(error);
+            //console.dir(error);
             // << (hide)
         });
     // << file-system-write-string
@@ -162,14 +162,14 @@ export var testFileRead = function () {
                     // Failed to read from the file.
                     // >> (hide)
                     TKUnit.assert(false, "Failed to read/write text");
-                    //console.dump(error);
+                    //console.dir(error);
                     // << (hide)
                 });
         }, function (error) {
             // Failed to write to the file.
             // >> (hide)
             TKUnit.assert(false, "Failed to read/write text");
-            //console.dump(error);
+            //console.dir(error);
             // << (hide)
         });
     // << file-system-example-text

@@ -1,8 +1,6 @@
 ﻿/**
  * Android specific http request implementation.
  */
-import * as types from "utils/types";
-import * as utilsModule from "utils/utils";
 import * as imageSourceModule from "image-source";
 import * as platformModule from "platform";
 import * as fsModule from "file-system";
@@ -10,15 +8,17 @@ import * as fsModule from "file-system";
 // this is imported for definition purposes only
 import * as http from "http";
 
+function parseJSON(source: string): any {
+    var src = source.trim();
+    if (src.lastIndexOf(")") === src.length - 1) {
+        return JSON.parse(src.substring(src.indexOf("(") + 1, src.lastIndexOf(")")));
+    }
+
+    return JSON.parse(src);
+}
+
 var requestIdCounter = 0;
 var pendingRequests = {};
-
-var utils: typeof utilsModule;
-function ensureUtils() {
-    if (!utils) {
-        utils = require("utils/utils");
-    }
-}
 
 var imageSource: typeof imageSourceModule;
 function ensureImageSource() {
@@ -81,21 +81,20 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 } else {
                     str = result.responseAsString;
                 }
-                if (types.isString(str)) {
+                if (typeof str === "string") {
                     return str;
                 } else {
                     throw new Error("Response content may not be converted to string");
                 }
             },
             toJSON: (encoding?: http.HttpResponseEncoding) => {
-                ensureUtils();
                 let str: string;
                 if (encoding) {
                     str = decodeResponse(result.raw, encoding);
                 } else {
                     str = result.responseAsString;
                 }
-                return utils.parseJSON(str);
+                return parseJSON(str);
             },
             toImage: () => {
                 ensureImageSource();
@@ -138,7 +137,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
 }
 
 function buildJavaOptions(options: http.HttpRequestOptions) {
-    if (!types.isString(options.url)) {
+    if (typeof options.url !== "string") {
         throw new Error("Http request must provide a valid url.");
     }
 
@@ -146,16 +145,16 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
 
     javaOptions.url = options.url;
 
-    if (types.isString(options.method)) {
+    if (typeof options.method === "string") {
         javaOptions.method = options.method;
     }
-    if (types.isString(options.content) || options.content instanceof FormData) {
+    if (typeof options.content === "string" || options.content instanceof FormData) {
         javaOptions.content = options.content.toString();
     }
-    if (types.isNumber(options.timeout)) {
+    if (typeof options.timeout === "number") {
         javaOptions.timeout = options.timeout;
     }
-    if (types.isBoolean(options.dontFollowRedirects)) {
+    if (typeof options.dontFollowRedirects === "boolean") {
         javaOptions.dontFollowRedirects = options.dontFollowRedirects;
     }
 
@@ -181,7 +180,7 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
 }
 
 export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
-    if (!types.isDefined(options)) {
+    if (options === undefined || options === null) {
         // TODO: Shouldn't we throw an error here - defensive programming
         return;
     }

@@ -5,7 +5,7 @@ import {
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
 import { ActionBar } from "ui/action-bar";
 import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
-import { StyleScope } from "../styling/style-scope";
+import { StyleScope } from "ui/styling/style-scope";
 import { File, path, knownFolders } from "file-system";
 
 export * from "ui/content-view";
@@ -24,8 +24,6 @@ export class PageBase extends ContentView implements PageDefinition {
 
     private _navigationContext: any;
 
-    private _cssApplied: boolean;
-    private _styleScope = new StyleScope();
     private _actionBar: ActionBar;
 
     public _modal: PageBase;
@@ -39,7 +37,7 @@ export class PageBase extends ContentView implements PageDefinition {
 
     constructor() {
         super();
-        this.actionBar = new ActionBar();
+        this._styleScope = new StyleScope();
     }
 
     get navigationContext(): any {
@@ -47,17 +45,19 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get css(): string {
-        if (this._styleScope) {
-            return this._styleScope.css;
-        }
-        return undefined;
+        return this._styleScope.css;
     }
     set css(value: string) {
         this._styleScope.css = value;
+        this._cssFiles = {};
         this._refreshCss();
     }
 
     get actionBar(): ActionBar {
+        if (!this._actionBar) {
+            this._actionBar = new ActionBar();
+            this._addView(this._actionBar);
+        }
         return this._actionBar;
     }
     set actionBar(value: ActionBar) {
@@ -67,35 +67,41 @@ export class PageBase extends ContentView implements PageDefinition {
 
         if (this._actionBar !== value) {
             if (this._actionBar) {
-                this._actionBar.page = undefined;
                 this._removeView(this._actionBar);
             }
             this._actionBar = value;
-            this._actionBar.page = this;
             this._addView(this._actionBar);
         }
     }
 
-    get page(): View {
+    get page(): PageDefinition {
         return this;
     }
 
-    private _refreshCss(): void {
-        if (this._cssApplied) {
-            this._resetCssValues();
+    public refreshCssIfAppCssChanged(): void {
+        // If app css changed ensureSelectors will return true.
+        // Need when app css change and page is in the backstack.
+        if (this._styleScope.ensureSelectors()) {
+            this._refreshCss();
         }
+    }
 
-        this._cssApplied = false;
-        if (this.isLoaded) {
-            this._applyCss();
-        }
+    public onLoaded(): void {
+        this.refreshCssIfAppCssChanged();
+        super.onLoaded();
+    }
+
+    public onUnloaded() {
+        const styleScope = this._styleScope;
+        super.onUnloaded();
+        this._styleScope = styleScope;
     }
 
     public addCss(cssString: string): void {
-        this._addCssInternal(cssString, undefined);
+        this._addCssInternal(cssString);
     }
 
-    private _addCssInternal(cssString: string, cssFileName: string): void {
+    private _addCssInternal(cssString: string, cssFileName?: string): void {
         this._styleScope.addCss(cssString, cssFileName);
         this._refreshCss();
     }
@@ -115,6 +121,18 @@ export class PageBase extends ContentView implements PageDefinition {
                 }
             }
         }
+    }
+
+    public _refreshCss(): void {
+        const styleScope = this._styleScope;
+        this._resetCssValues();
+        const checkSelectors = (view: View): boolean => {
+            styleScope.applySelectors(view);
+            return true;
+        };
+
+        checkSelectors(this);
+        eachDescendant(this, checkSelectors);
     }
 
     public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
@@ -249,25 +267,6 @@ export class PageBase extends ContentView implements PageDefinition {
 
     get _childrenCount(): number {
         return (this.content ? 1 : 0) + (this.actionBar ? 1 : 0);
-    }
-
-    private _applyCss() {
-        if (this._cssApplied) {
-            return;
-        }
-
-        this._styleScope.ensureSelectors();
-
-        const scope = this._styleScope;
-        const checkSelectors = (view: View): boolean => {
-            scope.applySelectors(view);
-            return true;
-        };
-
-        checkSelectors(this);
-        eachDescendant(this, checkSelectors);
-
-        this._cssApplied = true;
     }
 
     private _resetCssValues() {

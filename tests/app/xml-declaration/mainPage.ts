@@ -5,8 +5,6 @@ import * as button from "ui/button";
 import * as image from "ui/image";
 import * as pages from "ui/page";
 import * as http from "http";
-import * as camera from "camera";
-import * as dialogs from "ui/dialogs";
 
 var obj = new observable.Observable();
 obj.set("id", 0);
@@ -39,11 +37,11 @@ export function buttonTap(args: observable.EventData) {
         }
     }
 
-    http.getString("http://it-ebooks-api.info/v1/book/1615005640").then(r=> {
+    http.getString("http://it-ebooks-api.info/v1/book/1615005640").then(r => {
         console.log("R: " + r)
     });
 
-    http.getString("http://www.telerik.com").then(r=> {
+    http.getString("http://www.telerik.com").then(r => {
         console.log("R: " + r)
     });
 }
@@ -56,11 +54,5 @@ export function MyPageLoaded(args: observable.EventData) {
 }
 
 export function setPicture(args: observable.EventData) {
-    var btn = <button.Button>args.object;
-    var parent = btn.parent;
-    var img = parent.getViewById<image.Image>("cameraImage");
-
-    camera.takePicture().then(r=> {
-        img.src = r;
-    }).catch(e => dialogs.alert("ERROR: " + e));
+    // 
 }

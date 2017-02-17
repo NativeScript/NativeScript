@@ -28,15 +28,6 @@ declare module "ui/core/view" {
      */
     export function lengthComparer(x: Length, y: Length): boolean;
 
-    /**
-     * Iterates through all child views (via visual tree) and executes a function.
-     * @param view - Starting view (parent container).
-     * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
-     */
-    export function eachDescendant(view: View, callback: (child: View) => boolean);
-
-    export function isEventOrGesture(name: string, view: View): boolean;
-
     export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
     /**

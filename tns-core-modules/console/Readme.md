@@ -13,7 +13,5 @@ console.assert((2 == 1), 'assertion failed:', 'error');
 console.warn('calling trace');
 console.trace();
 
-console.dump(console);
-
 console.timeEnd('test');
 ```

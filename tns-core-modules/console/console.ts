@@ -1,13 +1,13 @@
-import * as trace from "trace";
-import * as platform from "platform";
+import { Console as ConsoleDefinition } from "console";
 
-function __message(message: any, level: string) {
-    if ((<any>global).__consoleMessage) {
-        (<any>global).__consoleMessage(message, level);
-    }
+const enum MessageType {
+    log = 0,
+    info = 1,
+    warn = 2,
+    error = 3
 }
 
-export class Console {
+export class Console implements ConsoleDefinition {
     private TAG: string = "JS";
     private _timers: any;
     private _stripFirstTwoLinesRegEx: RegExp;
@@ -254,64 +254,63 @@ export class Console {
         if (!test) {
             Array.prototype.shift.apply(arguments);
             let formatedMessage = this.formatParams.apply(this, arguments);
-            this.error(formatedMessage, trace.messageType.error);
+            this.error(formatedMessage, MessageType.error);
             __message(formatedMessage, "error");
         }
     }
 
     public info(message: any, ...formatParams: any[]): void {
-        this.logMessage(this.formatParams.apply(this, arguments), trace.messageType.info);
+        this.logMessage(this.formatParams.apply(this, arguments), MessageType.info);
     }
 
     public warn(message: any, ...formatParams: any[]): void {
         let formatedMessage = this.formatParams.apply(this, arguments);
-        this.logMessage(formatedMessage, trace.messageType.warn);
+        this.logMessage(formatedMessage, MessageType.warn);
         __message(formatedMessage, "warning");
     }
 
     public error(message: any, ...formatParams: any[]): void {
         let formatedMessage = this.formatParams.apply(this, arguments);
-        this.logMessage(formatedMessage, trace.messageType.error);
+        this.logMessage(formatedMessage, MessageType.error);
         __message(formatedMessage, "error");
     }
 
     public log(message: any, ...formatParams: any[]): void {
         let formatedMessage = this.formatParams.apply(this, arguments);
-        this.logMessage(formatedMessage, trace.messageType.log);
+        this.logMessage(formatedMessage, MessageType.log);
         __message(formatedMessage, "log");
     }
 
-    private logMessage(message: string, messageType: number): void {
+    private logMessage(message: string, messageType: MessageType): void {
         if (!(<any>global).android) {
             // This case may be entered during heap snapshot where the global.android is not present
             return;
         }
 
-        var arrayToLog = [];
+        const arrayToLog = [];
         if (message.length > 4000) {
-            var i;
-            for (i = 0; i * 4000 < message.length; i++) {
+            for (let i = 0; i * 4000 < message.length; i++) {
                 arrayToLog.push(message.substr((i * 4000), 4000));
             }
         }
         else {
             arrayToLog.push(message);
         }
-        for (i = 0; i < arrayToLog.length; i++) {
+        for (let i = 0; i < arrayToLog.length; i++) {
             switch (messageType) {
-                case trace.messageType.log: {
+                case MessageType.log: {
                     android.util.Log.v(this.TAG, arrayToLog[i]);
                     break;
                 }
-                case trace.messageType.warn: {
+                case MessageType.warn: {
                     android.util.Log.w(this.TAG, arrayToLog[i]);
                     break;
                 }
-                case trace.messageType.error: {
+                case MessageType.error: {
                     android.util.Log.e(this.TAG, arrayToLog[i]);
                     break;
                 }
-                case trace.messageType.info: {
+                case MessageType.info: {
                     android.util.Log.i(this.TAG, arrayToLog[i]);
                     break;
                 }
@@ -374,15 +373,8 @@ export class Console {
         return result.join('');
     }
 
-    public dump(obj: any): void {
-        var dump = this.createDump(obj);
-
-        if (platform.device.os === platform.platformNames.android) {
-            this.log(dump);
-        } else if (platform.device.os === platform.platformNames.ios) {
-            console.log(dump);
-        }
+    public dir(obj: any): void {
+        const dump = this.createDump(obj);
+        this.log(dump);
     }
-
-    public dir = this.dump;
 }

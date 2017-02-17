@@ -585,8 +585,9 @@ export class CssAnimationProperty<T extends Style, U> {
         const eventName = propertyName + "Change";
 
         function descriptor(symbol: symbol, propertySource: ValueSource, enumerable: boolean, configurable: boolean, getsComputed: boolean): PropertyDescriptor {
-            return { enumerable, configurable,
-                get: getsComputed ? function(this: T) { return this[computedValue]; } : function(this: T) { return this[symbol]; },
+            return {
+                enumerable, configurable,
+                get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
                 set(this: T, value: U) {
                     let prev = this[computedValue];
                     if (value === unsetValue) {
@@ -999,10 +1000,9 @@ export function resetCSSProperties(style: Style): void {
     }
 }
 
-export function propagateInheritedProperties(view: ViewBase): void {
+export function propagateInheritableProperties(view: ViewBase): void {
     const inheritablePropertyValues = inheritablePropertyValuesOn(view);
-    const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(view.style);
-    if (inheritablePropertyValues.length === 0 && inheritableCssPropertyValues.length === 0) {
+    if (inheritablePropertyValues.length === 0) {
         return;
     }
 
@@ -1016,6 +1016,18 @@ export function propagateInheritedProperties(view: ViewBase): void {
             }
         }
 
+        return true;
+    });
+}
+
+export function propagateInheritableCssProperties(style: Style): void {
+    const view = style.view;
+    const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(style);
+    if (inheritableCssPropertyValues.length === 0) {
+        return;
+    }
+
+    view.eachChild((child) => {
         for (let pair of inheritableCssPropertyValues) {
             const prop = pair.property;
             const sourceKey = prop.sourceKey;
@@ -1025,6 +1037,7 @@ export function propagateInheritedProperties(view: ViewBase): void {
                 prop.setInheritedValue.call(style, pair.value, ValueSource.Inherited);
             }
         }
+
         return true;
     });
 }

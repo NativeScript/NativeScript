@@ -1,1 +1,0 @@
-Deprecated. Please use same functionality from `nativescript-geolocation` npm module.

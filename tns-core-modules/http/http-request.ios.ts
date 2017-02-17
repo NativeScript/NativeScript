@@ -21,6 +21,15 @@ var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS 6_0 like Mac OS X) AppleWebKit
 var sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
 var queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
 
+function parseJSON(source: string): any {
+    var src = source.trim();
+    if (src.lastIndexOf(")") === src.length - 1) {
+        return JSON.parse(src.substring(src.indexOf("(") + 1, src.lastIndexOf(")")));
+    }
+
+    return JSON.parse(src);
+}
+
 class NSURLSessionTaskDelegateImpl extends NSObject implements NSURLSessionTaskDelegate {
     public static ObjCProtocols = [NSURLSessionTaskDelegate];
     public URLSessionTaskWillPerformHTTPRedirectionNewRequestCompletionHandler(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse, request: NSURLRequest, completionHandler: (p1: NSURLRequest) => void): void {
@@ -121,7 +130,7 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                 raw: data,
                                 toString: (encoding?: http.HttpResponseEncoding) => { return NSDataToString(data, encoding); },
                                 toJSON: (encoding?: http.HttpResponseEncoding) => {
-                                    return utils.parseJSON(NSDataToString(data, encoding));
+                                    return parseJSON(NSDataToString(data, encoding));
                                 },
                                 toImage: () => {
                                     ensureImageSource();

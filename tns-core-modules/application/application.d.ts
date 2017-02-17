@@ -2,8 +2,7 @@
  * Contains the application abstraction with all related methods.
  */
 declare module "application" {
-    import { RuleSet } from "ui/styling/css-selector";
-    import { NavigationEntry, View, Observable } from "ui/frame";
+    import { NavigationEntry, View, Observable, EventData } from "ui/frame";
 
     /**
      * String value used when hooking to launch event.
@@ -41,9 +40,19 @@ declare module "application" {
     export var orientationChangedEvent: string;
 
     /**
+     * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
+     */
+    export interface NativeScriptError extends Error {
+        /**
+         * Represents the native error object.
+         */
+        nativeError: any;
+    }
+
+    /**
      * Event data containing information for the application events.
      */
-    export interface ApplicationEventData {
+    export interface ApplicationEventData extends EventData {
         /**
          * Gets the native iOS event arguments. Valid only when running on iOS.
          */
@@ -85,7 +94,7 @@ declare module "application" {
          */
         newValue: "portrait" | "landscape" | "unknown";
     }
-    
+
     /**
      * Event data containing information about unhandled application errors.
      */
@@ -93,6 +102,14 @@ declare module "application" {
         ios?: NativeScriptError;
         android?: NativeScriptError;
         error: NativeScriptError;
+    }
+
+    /**
+     * Event data containing information about application css change.
+     */
+    export interface CssChangedEventData extends EventData {
+        cssFile?: string;
+        cssText?: string;
     }
 
     /**
@@ -128,66 +145,24 @@ declare module "application" {
     /**
      * Sets css file name for the application. 
      */
-    export function setCssFileName(cssFile: string);
-
-    //@private
-    export var appSelectors: RuleSet[];
-    export var additionalSelectors: RuleSet[];
-    /**
-     * Cached css selectors created from the content of the css file.
-     */
-    export var cssSelectors: RuleSet[];
-    export var cssSelectorVersion: number;
-    export var keyframes: any;
-    export function parseCss(cssText: string, cssFileName?: string): RuleSet[];
-    export function mergeCssSelectors(module: any): void;
-    //@endprivate
+    export function setCssFileName(cssFile: string): void;
 
     export function addCss(cssText: string): void;
 
     /**
-     * Loads css file and parses to a css syntax tree.
-     * @param cssFile Optional parameter to point to an arbitrary css file. If not specified, the cssFile property is used.
+     * This event is raised when application css is changed.
      */
-    export function loadCss(cssFile?: string): RuleSet[];
+    export function on(event: "cssChanged", callback: (args: CssChangedEventData) => void, thisArg?: any);
+
+    /**
+     * Event raised then livesync operation is performed.
+     */
+    export function on(event: "livesync", callback: (args: EventData) => void);
 
     /**
      * Call this method to start the application. Important: All code after this method call will not be executed!
      */
     export function start(entry?: NavigationEntry);
-
-    /**
-     * The main entry point event. This method is expected to use the root frame to navigate to the main application page.
-     */
-    export function onLaunch(context?: any): void;
-
-    /**
-     * A callback to be used when an uncaught error occurs while the application is running.
-     * The application will be shut down after this method returns.
-     * Loading new UI at this point is erroneous and may lead to unpredictable results.
-     * The method is intended to be used for crash reports and/or application restart. 
-     */
-    export function onUncaughtError(error: NativeScriptError): void;
-
-    /**
-     * This method will be called when the Application is suspended.
-     */
-    export function onSuspend();
-
-    /**
-     * This method will be called when the Application is resumed after it has been suspended.
-     */
-    export function onResume();
-
-    /**
-     * This method will be called when the Application is about to exitEvent.
-     */
-    export function onExit();
-
-    /**
-     * This method will be called when there is low memory on the target device.
-     */
-    export function onLowMemory();
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -257,14 +232,14 @@ declare module "application" {
      * Encapsulates methods and properties specific to the Android platform.
      * Will be undefined when TargetOS is iOS.
      */
-    export var android: AndroidApplication;
+    export let android: AndroidApplication;
 
     /**
      * This is the iOS-specific application object instance.
      * Encapsulates methods and properties specific to the iOS platform.
      * Will be undefined when TargetOS is Android.
      */
-    export var ios: iOSApplication;
+    export let ios: iOSApplication;
 
     /**
      * Data for the Android activity events.
@@ -391,46 +366,6 @@ declare module "application" {
          * @param nativeApp - the android.app.Application instance that started the app. 
          */
         init: (nativeApp) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityCreated method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onActivityCreated: (activity: any /* android.app.Activity */, bundle: any /* android.os.Bundle */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onActivityDestroyed: (activity: any /* android.app.Activity */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityDestroyed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onActivityStarted: (activity: any /* android.app.Activity */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityPaused method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onActivityPaused: (activity: any /* android.app.Activity */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityResumed method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onActivityResumed: (activity: any /* android.app.Activity */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivityStopped method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onActivityStopped: (activity: any /* android.app.Activity */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the [onActivitySaveInstanceState method](http://developer.android.com/reference/android/app/Application.ActivityLifecycleCallbacks.html).
-         */
-        onSaveActivityState: (activity: any /* android.app.Activity */, bundle: any /* android.os.Bundle */) => void;
-
-        /**
-         * [Deprecated. Please use the respective event instead.] Direct handler of the onActivityResult method.
-         */
-        onActivityResult: (requestCode: number, resultCode: number, data: any /* android.content.Intent */) => void;
 
         /**
          * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -603,8 +538,8 @@ declare module "application" {
 
     /* tslint:disable */
     export interface RootViewControllerImpl {
-
         contentController: any;
-
     }
+
+    export function getNativeApplication(): any;
 }

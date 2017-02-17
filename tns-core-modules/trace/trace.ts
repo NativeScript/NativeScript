@@ -1,10 +1,9 @@
 ﻿import * as definition from "trace";
-import * as types from "utils/types";
 
-var enabled = false;
-var _categories = {};
-var _writers: Array<definition.TraceWriter> = [];
-var _eventListeners: Array<definition.EventListener> = [];
+let enabled = false;
+let _categories = {};
+let _writers: Array<definition.TraceWriter> = [];
+let _eventListeners: Array<definition.EventListener> = [];
 
 export function enable() {
     enabled = true;
@@ -156,7 +155,7 @@ class ConsoleWriter implements definition.TraceWriter {
         }
 
         var msgType;
-        if (types.isUndefined(type)) {
+        if (type === undefined) {
             msgType = messageType.log;
         } else {
             msgType = type;

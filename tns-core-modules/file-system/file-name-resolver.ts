@@ -1,36 +1,35 @@
-import * as definition from "file-system/file-name-resolver";
-import * as fs from "file-system";
-import * as types from "utils/types";
+import { PlatformContext, FileNameResolver as FileNameResolverDefinition } from "file-system/file-name-resolver";
+import { screen, device } from "platform";
+import { path as fsPath, Folder, File } from "file-system";
 import * as trace from "trace";
-import * as platform from "platform";
+import * as appModule from "application";
 
 declare module "file-system/file-name-resolver" {
     export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string
-    export function _invalidateResolverInstance(): void;
 }
 
-var MIN_WH: string = "minWH";
-var MIN_W: string = "minW";
-var MIN_H: string = "minH";
-var PRIORITY_STEP = 10000;
+const MIN_WH: string = "minWH";
+const MIN_W: string = "minW";
+const MIN_H: string = "minH";
+const PRIORITY_STEP = 10000;
 
 interface QualifierSpec {
     isMatch(value: string): boolean;
-    getMatchValue(value: string, context: definition.PlatformContext): number;
+    getMatchValue(value: string, context: PlatformContext): number;
 }
 
-var minWidthHeightQualifier: QualifierSpec = {
+const minWidthHeightQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value.indexOf(MIN_WH) === 0;
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number {
-        var numVal = parseInt(value.substr(MIN_WH.length));
+    getMatchValue(value: string, context: PlatformContext): number {
+        const numVal = parseInt(value.substr(MIN_WH.length));
         if (isNaN(numVal)) {
             return -1;
         }
 
-        var actualLength = Math.min(context.width, context.height);
+        const actualLength = Math.min(context.width, context.height);
         if (actualLength < numVal) {
             return -1;
         }
@@ -39,18 +38,18 @@ var minWidthHeightQualifier: QualifierSpec = {
     }
 }
 
-var minWidthQualifier: QualifierSpec = {
+const minWidthQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value.indexOf(MIN_W) === 0 && value.indexOf(MIN_WH) < 0;
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number {
-        var numVal = parseInt(value.substr(MIN_W.length));
+    getMatchValue(value: string, context: PlatformContext): number {
+        const numVal = parseInt(value.substr(MIN_W.length));
         if (isNaN(numVal)) {
             return -1;
         }
 
-        var actualWidth = context.width;
+        const actualWidth = context.width;
         if (actualWidth < numVal) {
             return -1;
         }
@@ -59,18 +58,18 @@ var minWidthQualifier: QualifierSpec = {
     }
 }
 
-var minHeightQualifier: QualifierSpec = {
+const minHeightQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value.indexOf(MIN_H) === 0 && value.indexOf(MIN_WH) < 0;
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number {
-        var numVal = parseInt(value.substr(MIN_H.length));
+    getMatchValue(value: string, context: PlatformContext): number {
+        const numVal = parseInt(value.substr(MIN_H.length));
         if (isNaN(numVal)) {
             return -1;
         }
 
-        var actualHeight = context.height;
+        const actualHeight = context.height;
         if (actualHeight < numVal) {
             return -1;
         }
@@ -79,31 +78,31 @@ var minHeightQualifier: QualifierSpec = {
     }
 }
 
-var platformQualifier: QualifierSpec = {
+const platformQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value === "android" ||
             value === "ios";
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number {
+    getMatchValue(value: string, context: PlatformContext): number {
         return value === context.os.toLowerCase() ? 1 : -1;
     }
 }
 
-var orientationQualifier: QualifierSpec = {
+const orientationQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value === "land" ||
             value === "port";
 
     },
-    getMatchValue(value: string, context: definition.PlatformContext): number {
-        var isLandscape: number = (context.width > context.height) ? 1 : -1;
+    getMatchValue(value: string, context: PlatformContext): number {
+        const isLandscape: number = (context.width > context.height) ? 1 : -1;
         return (value === "land") ? isLandscape : -isLandscape;
     }
 }
 
 // List of supported qualifiers ordered by priority
-var supportedQualifiers: Array<QualifierSpec> = [
+const supportedQualifiers: Array<QualifierSpec> = [
     minWidthHeightQualifier,
     minWidthQualifier,
     minHeightQualifier,
@@ -111,18 +110,18 @@ var supportedQualifiers: Array<QualifierSpec> = [
     platformQualifier
 ];
 
-export class FileNameResolver implements definition.FileNameResolver {
-    private _context: definition.PlatformContext;
+export class FileNameResolver implements FileNameResolverDefinition {
+    private _context: PlatformContext;
     private _cache = {};
 
-    constructor(context: definition.PlatformContext) {
+    constructor(context: PlatformContext) {
         this._context = context;
     }
 
     public resolveFileName(path: string, ext: string): string {
-        var key = path + ext;
-        var result: string = this._cache[key];
-        if (types.isUndefined(result)) {
+        const key = path + ext;
+        let result: string = this._cache[key];
+        if (result === undefined) {
             result = this.resolveFileNameImpl(path, ext);
             this._cache[key] = result;
         }
@@ -135,25 +134,25 @@ export class FileNameResolver implements definition.FileNameResolver {
     }
 
     private resolveFileNameImpl(path: string, ext: string): string {
-        var result: string = null;
-        path = fs.path.normalize(path);
+        let result: string = null;
+        path = fsPath.normalize(path);
         ext = "." + ext;
 
-        var candidates = this.getFileCandidatesFromFolder(path, ext);
+        const candidates = this.getFileCandidatesFromFolder(path, ext);
         result = _findFileMatch(path, ext, candidates, this._context);
 
         return result;
     }
 
     private getFileCandidatesFromFolder(path: string, ext: string): Array<string> {
-        var candidates = new Array<string>();
-        var folderPath = path.substring(0, path.lastIndexOf(fs.path.separator) + 1);
+        const candidates = new Array<string>();
+        const folderPath = path.substring(0, path.lastIndexOf(fsPath.separator) + 1);
 
-        if (fs.Folder.exists(folderPath)) {
-            var folder = fs.Folder.fromPath(folderPath);
+        if (Folder.exists(folderPath)) {
+            const folder = Folder.fromPath(folderPath);
             folder.eachEntity((e) => {
-                if (e instanceof fs.File) {
-                    var file = <fs.File>e;
+                if (e instanceof File) {
+                    const file = e;
                     if (file.path.indexOf(path) === 0 && file.extension === ext) {
                         candidates.push(file.path);
                     }
@@ -172,17 +171,17 @@ export class FileNameResolver implements definition.FileNameResolver {
     }
 }
 
-export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: definition.PlatformContext): string {
-    var bestValue = -1
-    var result: string = null;
+export function _findFileMatch(path: string, ext: string, candidates: Array<string>, context: PlatformContext): string {
+    let bestValue = -1
+    let result: string = null;
 
-    for (var i = 0; i < candidates.length; i++) {
-        var filePath = candidates[i];
-        var qualifiersStr: string = filePath.substr(path.length, filePath.length - path.length - ext.length);
+    for (let i = 0; i < candidates.length; i++) {
+        const filePath = candidates[i];
+        const qualifiersStr: string = filePath.substr(path.length, filePath.length - path.length - ext.length);
 
-        var qualifiers = qualifiersStr.split(".");
+        const qualifiers = qualifiersStr.split(".");
 
-        var value = checkQualifiers(qualifiers, context);
+        const value = checkQualifiers(qualifiers, context);
 
         if (value >= 0 && value > bestValue) {
             bestValue = value;
@@ -193,8 +192,8 @@ export function _findFileMatch(path: string, ext: string, candidates: Array<stri
     return result;
 }
 
-function checkQualifiers(qualifiers: Array<string>, context: definition.PlatformContext): number {
-    var result = 0;
+function checkQualifiers(qualifiers: Array<string>, context: PlatformContext): number {
+    let result = 0;
     for (var i = 0; i < qualifiers.length; i++) {
         if (qualifiers[i]) {
             var value = checkQualifier(qualifiers[i], context);
@@ -210,8 +209,8 @@ function checkQualifiers(qualifiers: Array<string>, context: definition.Platform
     return result;
 }
 
-function checkQualifier(value: string, context: definition.PlatformContext) {
-    for (var i = 0; i < supportedQualifiers.length; i++) {
+function checkQualifier(value: string, context: PlatformContext) {
+for (var i = 0; i < supportedQualifiers.length; i++) {
         if (supportedQualifiers[i].isMatch(value)) {
             var result = supportedQualifiers[i].getMatchValue(value, context);
             if (result > 0) {
@@ -224,27 +223,20 @@ function checkQualifier(value: string, context: definition.PlatformContext) {
     return -1;
 }
 
-var resolverInstance: FileNameResolver;
+let resolverInstance: FileNameResolver;
 
 export function resolveFileName(path: string, ext: string): string {
     if (!resolverInstance) {
         resolverInstance = new FileNameResolver({
-            width: platform.screen.mainScreen.widthDIPs,
-            height: platform.screen.mainScreen.heightDIPs,
-            os: platform.device.os,
-            deviceType: platform.device.deviceType
+            width: screen.mainScreen.widthDIPs,
+            height: screen.mainScreen.heightDIPs,
+            os: device.os,
+            deviceType: device.deviceType
         });
     }
 
     return resolverInstance.resolveFileName(path, ext);
 }
 
-export function clearCache(): void {
-    if (resolverInstance) {
-        resolverInstance.clearCache();
-    }
-}
-
-export function _invalidateResolverInstance(): void {
-    resolverInstance = undefined;
-}
+appModule.on("cssChanged", args => resolverInstance = undefined);
+appModule.on("livesync", args => resolverInstance && resolverInstance.clearCache());

@@ -1,40 +1,35 @@
-﻿import * as types from "utils/types";
-import * as definition from "image-source";
-import * as common from "./image-source-common";
-import * as utilsModule from "utils/utils";
-import * as fileSystemModule from "file-system";
-import * as enumsModule from "ui/enums";
+﻿import { ImageSource as ImageSourceDeifinition } from "image-source";
+
+export * from "./image-source-common";
+import * as fs from "file-system";
 import * as imageAssetModule from "image-asset";
 
-global.moduleMerge(common, exports);
+import { getNativeApplication } from "application";
 
-var utils: typeof utilsModule;
-function ensureUtils() {
-    if (!utils) {
-        utils = require("utils/utils");
+let application: android.app.Application;
+let resources: android.content.res.Resources;
+
+function getApplication() {
+    if (!application) {
+        application = (<android.app.Application>getNativeApplication());
     }
+
+    return application;
+}
+function getResources() {
+    if (!resources) {
+        resources = getApplication().getResources();
+    }
+
+    return resources;
 }
 
-var fs: typeof fileSystemModule;
-function ensureFS() {
-    if (!fs) {
-        fs = require("file-system");
-    }
-}
-
-var enums: typeof enumsModule;
-function ensureEnums() {
-    if (!enums) {
-        enums = require("ui/enums");
-    }
-}
-
-export class ImageSource implements definition.ImageSource {
+export class ImageSource implements ImageSourceDeifinition {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
 
-    public fromAsset(asset: imageAssetModule.ImageAsset): Promise<definition.ImageSource> {
-        return new Promise<definition.ImageSource>((resolve, reject) => {
+    public fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource> {
+        return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
                     this.setRotationAngleFromFile(asset.android);
@@ -50,15 +45,12 @@ export class ImageSource implements definition.ImageSource {
 
     public loadFromResource(name: string): boolean {
         this.android = null;
-
-        ensureUtils();
-
-        var res = utils.ad.getApplicationContext().getResources();
+        const res = getResources();
         if (res) {
-            var identifier: number = res.getIdentifier(name, 'drawable', utils.ad.getApplication().getPackageName());
+            const identifier: number = res.getIdentifier(name, 'drawable', getApplication().getPackageName());
             if (0 < identifier) {
                 // Load BitmapDrawable with getDrawable to make use of Android internal caching
-                var bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);
+                const bitmapDrawable = <android.graphics.drawable.BitmapDrawable>res.getDrawable(identifier);
                 if (bitmapDrawable && bitmapDrawable.getBitmap) {
                     this.android = bitmapDrawable.getBitmap();
                 }
@@ -76,8 +68,8 @@ export class ImageSource implements definition.ImageSource {
 
     private setRotationAngleFromFile(filename: string) {
         this.rotationAngle = 0;
-        let ei = new android.media.ExifInterface(filename);
-        let orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
+        const ei = new android.media.ExifInterface(filename);
+        const orientation = ei.getAttributeInt(android.media.ExifInterface.TAG_ORIENTATION, android.media.ExifInterface.ORIENTATION_NORMAL);
 
         switch (orientation) {
             case android.media.ExifInterface.ORIENTATION_ROTATE_90:
@@ -93,9 +85,7 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromFile(path: string): boolean {
-        ensureFS();
-
-        var fileName = types.isString(path) ? path.trim() : "";
+        let fileName = typeof path === "string" ? path.trim() : "";
         if (fileName.indexOf("~/") === 0) {
             fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
         }
@@ -124,8 +114,8 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromBase64(source: string): boolean {
-        if (types.isString(source)) {
-            var bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
+        if (typeof source === "string") {
+            const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
             this.android = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
         }
         return this.android != null;
@@ -142,30 +132,30 @@ export class ImageSource implements definition.ImageSource {
         return source != null;
     }
 
-    public saveToFile(path: string, format: string, quality = 100): boolean {
+    public saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality = 100): boolean {
         if (!this.android) {
             return false;
         }
 
-        var targetFormat = getTargetFormat(format);
+        const targetFormat = getTargetFormat(format);
 
         // TODO add exception handling
-        var outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
+        const outputStream = new java.io.BufferedOutputStream(new java.io.FileOutputStream(path));
 
-        var res = this.android.compress(targetFormat, quality, outputStream);
+        const res = this.android.compress(targetFormat, quality, outputStream);
         outputStream.close();
         return res;
     }
 
-    public toBase64String(format: string, quality = 100): string {
+    public toBase64String(format: "png" | "jpeg" | "jpg", quality = 100): string {
         if (!this.android) {
             return null;
         }
 
-        var targetFormat = getTargetFormat(format);
+        const targetFormat = getTargetFormat(format);
 
-        var outputStream = new java.io.ByteArrayOutputStream();
-        var base64Stream = new android.util.Base64OutputStream(outputStream, android.util.Base64.NO_WRAP);
+        const outputStream = new java.io.ByteArrayOutputStream();
+        const base64Stream = new android.util.Base64OutputStream(outputStream, android.util.Base64.NO_WRAP);
 
         this.android.compress(targetFormat, quality, base64Stream);
 
@@ -201,11 +191,9 @@ export class ImageSource implements definition.ImageSource {
     }
 }
 
-function getTargetFormat(format: string): android.graphics.Bitmap.CompressFormat {
-    ensureEnums();
-
+function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitmap.CompressFormat {
     switch (format) {
-        case enums.ImageFormat.jpeg || enums.ImageFormat.jpg:
+        case "jpeg" || "jpg":
             return android.graphics.Bitmap.CompressFormat.JPEG;
         default:
             return android.graphics.Bitmap.CompressFormat.PNG;

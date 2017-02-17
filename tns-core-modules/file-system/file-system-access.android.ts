@@ -1,6 +1,14 @@
 ﻿import * as textModule from "text";
-import * as utils from "utils/utils";
-import * as typesModule from "utils/types";
+import { getNativeApplication } from "application";
+
+let applicationContext: android.content.Context;
+function getApplicationContext() {
+    if (!applicationContext) {
+        applicationContext = (<android.app.Application>getNativeApplication()).getApplicationContext();
+    }
+
+    return applicationContext;
+}
 
 export class FileSystemAccess {
     private _pathSeparator = "/";
@@ -179,17 +187,17 @@ export class FileSystemAccess {
     }
 
     public getDocumentsFolderPath(): string {
-        var dir = utils.ad.getApplicationContext().getFilesDir();
+        var dir = getApplicationContext().getFilesDir();
         return dir.getAbsolutePath();
     }
 
     public getLogicalRootPath(): string {
-        var dir = utils.ad.getApplicationContext().getFilesDir();
+        var dir = getApplicationContext().getFilesDir();
         return dir.getCanonicalPath();
     }
 
     public getTempFolderPath(): string {
-        var dir = utils.ad.getApplicationContext().getCacheDir();
+        var dir = getApplicationContext().getCacheDir();
         return dir.getAbsolutePath();
     }
 
@@ -227,8 +235,6 @@ export class FileSystemAccess {
 
     public readText(path: string, onError?: (error: any) => any, encoding?: any) {
         try {
-            var types: typeof typesModule = require("utils/types");
-
             var javaFile = new java.io.File(path);
             var stream = new java.io.FileInputStream(javaFile);
 
@@ -245,7 +251,7 @@ export class FileSystemAccess {
             var result = "";
             while (true) {
                 line = bufferedReader.readLine();
-                if (types.isNullOrUndefined(line)) {
+                if (line === null) {
                     break;
                 }
 

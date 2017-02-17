@@ -58,6 +58,12 @@ export class Request {
 
     set mimeType(value: string) {
         if (this._mimeType !== value) {
+            if (!value) {
+                this._mimeType = "text/plain";
+                this._resourceType = "Other";
+                return;
+            }
+            
             this._mimeType = value;
 
             var resourceType = "Other";

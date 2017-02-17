@@ -1,10 +1,6 @@
 declare module "ui/core/view-base" {
     import { Observable, EventData } from "data/observable";
-    import {
-        Property, PropertyOptions, CoercibleProperty, CoerciblePropertyOptions,
-        InheritedProperty, CssProperty, CssPropertyOptions, InheritedCssProperty,
-        ShorthandProperty, ShorthandPropertyOptions, unsetValue
-    } from "ui/core/properties";
+    import { Property, InheritedProperty } from "ui/core/properties";
     import { Binding, BindingOptions } from "ui/core/bindable";
     import { Style } from "ui/styling/style";
     import { SelectorCore } from "ui/styling/css-selector";
@@ -12,6 +8,8 @@ declare module "ui/core/view-base" {
     import { fromString as gestureFromString } from "ui/gestures";
     import { KeyframeAnimation } from "ui/animation/keyframe-animation";
     import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
+    import { StyleScope } from "ui/styling/style-scope";
+    import { Page } from "ui/page";
 
     export {
         Observable, EventData, KeyframeAnimation,
@@ -20,6 +18,13 @@ declare module "ui/core/view-base" {
     };
 
     export * from "ui/core/properties";
+
+    /**
+     * Iterates through all child views (via visual tree) and executes a function.
+     * @param view - Starting view (parent container).
+     * @param callback - A function to execute on every child. If function returns false it breaks the iteration.
+     */
+    export function eachDescendant(view: ViewBase, callback: (child: ViewBase) => boolean);
 
     /**
      * Gets an ancestor from a given type.
@@ -84,7 +89,7 @@ declare module "ui/core/view-base" {
         /**
          * Gets owner page. This is a read-only property.
          */
-        public readonly page: ViewBase;
+        public readonly page: Page;
 
         /**
          * Gets the style object associated to this view.
@@ -180,6 +185,10 @@ declare module "ui/core/view-base" {
          * A widget can call this method to discard mathing css pseudo class.
          */
         public deletePseudoClass(name: string): void;
+
+        //@private
+        public _styleScope: StyleScope;
+        //@endprivate
     }
 
     export const idProperty: Property<ViewBase, string>;
@@ -293,6 +302,8 @@ declare module "ui/core/properties" {
     export function initNativeView(view: ViewBase): void;
     export function resetNativeView(view: ViewBase): void;
     export function resetCSSProperties(style: Style): void;
+    export function propagateInheritableProperties(view: ViewBase): void;
+    export function propagateInheritableCssProperties(style: Style): void;
 
     export function makeValidator<T>(...values: T[]): (value: any) => value is T;
     export function makeParser<T>(isValid: (value: any) => boolean): (value: any) => T;

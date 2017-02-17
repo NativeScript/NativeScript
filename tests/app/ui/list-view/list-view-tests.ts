@@ -23,7 +23,7 @@ import * as labelModule from "ui/label";
 function listViewItemTap(args) {
     var itemIndex = args.index;
     // >> (hide)
-    console.dump(itemIndex);
+    console.log(itemIndex);
     // << (hide)
 }
 exports.listViewItemTap = listViewItemTap;

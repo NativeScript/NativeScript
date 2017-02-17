@@ -61,13 +61,13 @@ export class ActionBar extends ActionBarBase {
     }
 
     public update() {
-        let page = this.page;
+        const page = this.page;
         // Page should be attached to frame to update the action bar.
         if (!page || !page.parent) {
             return;
         }
 
-        let viewController = (<UIViewController>this.page.ios);
+        let viewController = (<UIViewController>page.ios);
         let navigationItem: UINavigationItem = viewController.navigationItem;
         let navController = <UINavigationController>page.frame.ios.controller;
         let navigationBar = navController ? navController.navigationBar : null;
@@ -206,7 +206,7 @@ export class ActionBar extends ActionBarBase {
     }
 
     public _onTitlePropertyChanged() {
-        let page = this.page;
+        const page = this.page;
         if (!page) {
             return;
         }
@@ -229,7 +229,7 @@ export class ActionBar extends ActionBarBase {
 
         let navBarWidth = 0;
         let navBarHeight = 0;
-
+        
         let frame = this.page.frame;
         if (frame) {
             let navBar: UIView = frame.ios.controller.navigationBar;
@@ -288,7 +288,7 @@ export class ActionBar extends ActionBarBase {
     // }
 
     private get navBar(): UINavigationBar {
-        let page = this.page;
+        const page = this.page;
         // Page should be attached to frame to update the action bar.
         if (!page || !page.frame) {
             return undefined;

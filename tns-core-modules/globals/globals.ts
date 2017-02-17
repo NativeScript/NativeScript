@@ -121,15 +121,9 @@ if ((<any>global).__snapshot) {
     registerOnGlobalContext("fetch", "fetch");
 }
 
-import * as platform from "platform";
-
-let consoleModule = require("console");
-var c = new consoleModule.Console();
-
-if (platform.device.os === platform.platformNames.android) {
-    (<any>global).console = c;
-} else if (platform.device.os === platform.platformNames.ios) {
-    (<any>global).console.dump = function (args) { c.dump(args); };
+if (!global.console) {
+    const consoleModule = require("console");
+    (<any>global).console = new consoleModule.Console();
 }
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
