@@ -295,7 +295,7 @@ export function test_LoadPageFromDeclarativeWithCSS() {
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
     let testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page declarative file with css.");
-    TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#ff00ff00");
+    TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
 }
 
 export function test_LoadPageFromModuleWithCSS() {
@@ -305,7 +305,7 @@ export function test_LoadPageFromModuleWithCSS() {
     TKUnit.assert(topFrame.currentPage.content instanceof Label, "Content of the test page should be a Label created within test-page-module-css.");
     let testLabel = <Label>topFrame.currentPage.content;
     TKUnit.assertEqual(testLabel.text, "Label created within a page module css.");
-    TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#ff00ff00");
+    TKUnit.assertEqual(testLabel.style.backgroundColor.hex, "#00FF00");
 }
 
 export function test_NavigateToPageCreatedWithNavigationEntry() {
@@ -334,7 +334,7 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
     let stackLayout = new StackLayout();
     stackLayout.addChild(label);
     testPage.content = stackLayout;
-    testPage.css = "stackLayout {background-color: #ffff0000;} label {background-color: #ff00ff00;}";
+    testPage.css = "stackLayout {background-color: #FFFF0000;} label {background-color: #FF00FF00;}";
 
     let pageFactory = function () {
         return testPage;
@@ -342,8 +342,8 @@ export function test_cssShouldBeAppliedToAllNestedElements() {
 
     helper.navigate(pageFactory);
 
-    TKUnit.assertEqual(label.style.backgroundColor.hex, "#ff00ff00");
-    TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#ffff0000");
+    TKUnit.assertEqual(label.style.backgroundColor.hex, "#00FF00");
+    TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#FF0000");
 }
 
 export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
@@ -356,7 +356,7 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
     let stackLayout = new StackLayout();
     stackLayout.addChild(label);
     testPage.content = stackLayout;
-    testPage.css = "stackLayout {background-color: #ffff0000;} label {background-color: #ff00ff00;}";
+    testPage.css = "stackLayout {background-color: #FFFF0000;} label {background-color: #FF00FF00;}";
 
     let pageFactory = function () {
         return testPage;
@@ -364,12 +364,12 @@ export function test_cssShouldBeAppliedAfterChangeToAllNestedElements() {
 
     helper.navigate(pageFactory);
 
-    TKUnit.assertEqual(label.style.backgroundColor.hex, "#ff00ff00");
-    TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#ffff0000");
+    TKUnit.assertEqual(label.style.backgroundColor.hex, "#00FF00");
+    TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#FF0000");
 
-    testPage.css = "stackLayout {background-color: #ff0000ff;} label {background-color: #ffff0000;}";
-    TKUnit.assertEqual(label.style.backgroundColor.hex, "#ffff0000");
-    TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#ff0000ff");
+    testPage.css = "stackLayout {background-color: #FF0000FF;} label {background-color: #FFFF0000;}";
+    TKUnit.assertEqual(label.style.backgroundColor.hex, "#FF0000");
+    TKUnit.assertEqual(stackLayout.style.backgroundColor.hex, "#0000FF");
 }
 
 export function test_page_backgroundColor_is_white() {

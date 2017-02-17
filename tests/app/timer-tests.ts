@@ -52,16 +52,17 @@ export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
 
     TKUnit.waitUntilReady(() => completed, 1);
     timer.clearTimeout(id);
-    TKUnit.assert(completed, "Callback should be called after specified time!");
+    TKUnit.assert(completed, "Callback should be called after the specified time!");
 };
 
 export function test_setTimeout_callbackNotCalled() {
     let completed = false;
-    const id = timer.setTimeout(() => completed = true, 50);
 
-    TKUnit.wait(0.007);
+    const id = timer.setTimeout(() => completed = true, 10);
     timer.clearTimeout(id);
-    TKUnit.assert(!completed, "Callback should be called after specified time!");
+    TKUnit.wait(30 / 1000);
+
+    TKUnit.assert(!completed, "Callback should not be called after the specified time!");
 };
 
 export function test_setTimeout_shouldReturnNumber() {

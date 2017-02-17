@@ -260,22 +260,19 @@ export var testHintColoriOS = function () {
         textView.hint = "hint";
 
         var expectedValue;
+        var expectedNormalizedValue;
         var actualValue;
 
-        // expectedValue = "#38.1999948ff0000"; // 22% red
-        // if (utils.ios.MajorVersion > 7) {
-        //     expectedValue = "#38.19999999999aff0000"; // 22% red
-        // }
         actualValue = textViewTestsNative.getNativeColor(textView).hex;
-        // TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
-        TKUnit.assert(actualValue.indexOf("#38.19999") === 0, "Expected hint color to start with #38.19999");
-        TKUnit.assert(actualValue.indexOf("ff0000") !== -1, "Expected hint color to end with ff0000");
+
+        TKUnit.assertEqual(actualValue, "#38FF0000", "Expected hint color to be a subtle transparent red: #38FF0000");
 
         textView.text = "text";
 
-        expectedValue = "#ffff0000"; // red
+        expectedValue = "#FFFF0000"; // red
+        expectedNormalizedValue = "#FF0000";
         actualValue = textViewTestsNative.getNativeColor(textView).hex;
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        TKUnit.assert(actualValue === expectedNormalizedValue, "Actual: " + actualValue + "; Expected: " + expectedNormalizedValue);
     });
 }
 
@@ -377,7 +374,8 @@ export var testNativeFontSizeFromLocal = function () {
     });
 }
 
-var expectedColorHex = "#ffff0000";
+var expectedColorHex = "#FFFF0000";
+var expectedNormalizedColorHex = "#FF0000";
 export var testLocalColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
@@ -385,7 +383,7 @@ export var testLocalColorFromCss = function () {
         page.css = "textview { color: " + expectedColorHex + "; }";
 
         var actualResult = textView.style.color.hex;
-        TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
 }
 
@@ -396,7 +394,7 @@ export var testNativeColorFromCss = function () {
         page.css = "textview { color: " + expectedColorHex + "; }";
 
         var actualResult = textViewTestsNative.getNativeColor(textView).hex;
-        TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
 }
 
@@ -406,11 +404,12 @@ export var testNativeColorFromLocal = function () {
         textView.style.color = new colorModule.Color(expectedColorHex);
 
         var actualResult = textViewTestsNative.getNativeColor(textView).hex;
-        TKUnit.assert(actualResult === expectedColorHex, "Actual: " + actualResult + "; Expected: " + expectedColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedColorHex);
     });
 }
 
-var expectedBackgroundColorHex = "#ff00ff00";
+var expectedBackgroundColorHex = "#FF00FF00";
+var expectedNormalizedBackgroundColorHex = "#00FF00";
 export var testLocalBackgroundColorFromCss = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
@@ -418,7 +417,7 @@ export var testLocalBackgroundColorFromCss = function () {
         page.css = "textview { background-color: " + expectedBackgroundColorHex + "; }";
 
         var actualResult = textView.style.backgroundColor.hex;
-        TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
 }
 
@@ -429,7 +428,7 @@ export var testNativeBackgroundColorFromCss = function () {
         page.css = "textview { background-color: " + expectedBackgroundColorHex + "; }";
 
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
-        TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
 }
 
@@ -439,7 +438,7 @@ export var testNativeBackgroundColorFromLocal = function () {
         textView.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
 
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
-        TKUnit.assert(actualResult === expectedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedBackgroundColorHex);
+        TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
 }
 
