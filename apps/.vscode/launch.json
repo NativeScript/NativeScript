@@ -2,76 +2,40 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Sync on iOS",
-            "type": "nativescript",
-            "platform": "ios",
-            "request": "launch",
-            "appRoot": "${workspaceRoot}",
-            "sourceMaps": true,
-            "diagnosticLogging": false,
-            "emulator": false,
-            "rebuild": false,
-            "syncAllFiles": true,
-            "stopOnEntry": true
-        },
-        {
             "name": "Launch on iOS",
             "type": "nativescript",
-            "platform": "ios",
             "request": "launch",
+            "platform": "ios",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "diagnosticLogging": false,
-            "emulator": false,
-            "rebuild": true,
-            "stopOnEntry": true
+            "watch": true
         },
         {
             "name": "Attach on iOS",
             "type": "nativescript",
-            "platform": "ios",
             "request": "attach",
+            "platform": "ios",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "diagnosticLogging": false,
-            "emulator": false,
-            "stopOnEntry": true
-        },
-        {
-            "name": "Sync on Android",
-            "type": "nativescript",
-            "platform": "android",
-            "request": "launch",
-            "appRoot": "${workspaceRoot}",
-            "sourceMaps": true,
-            "diagnosticLogging": false,
-            "emulator": false,
-            "rebuild": false,
-            "syncAllFiles": true,
-            "stopOnEntry": true
+            "watch": false
         },
         {
             "name": "Launch on Android",
             "type": "nativescript",
-            "platform": "android",
             "request": "launch",
+            "platform": "android",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "diagnosticLogging": false,
-            "emulator": false,
-            "rebuild": true,
-            "stopOnEntry": true
+            "watch": true
         },
         {
             "name": "Attach on Android",
             "type": "nativescript",
-            "platform": "android",
             "request": "attach",
+            "platform": "android",
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
-            "diagnosticLogging": false,
-            "emulator": false,
-            "stopOnEntry": true
+            "watch": false
         }
     ]
 }

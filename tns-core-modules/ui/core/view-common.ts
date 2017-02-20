@@ -1997,8 +1997,8 @@ const fontProperty = new ShorthandProperty<Style, string>({
                 [fontFamilyProperty, unsetValue]
             ];
         } else {
-            let font = parseFont(value);
-            let fontSize = parseFloat(font.fontSize);
+            const font = parseFont(value);
+            const fontSize = parseFloat(font.fontSize);
 
             return [
                 [fontStyleProperty, font.fontStyle],

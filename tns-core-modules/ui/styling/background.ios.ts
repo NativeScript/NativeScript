@@ -193,6 +193,22 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
     const lbi: Point = { x: nativeViewLayerBounds.left + left, y: nativeViewLayerBounds.bottom - bottom }; // left-bottom-inside
 
     let hasNonUniformBorder: boolean;
+
+    // TODO: This is inefficient.
+    // We need to know what caused the change and reuse as much as possible.
+    if (nativeView.topBorderLayer) {
+        nativeView.topBorderLayer.removeFromSuperlayer();
+    }
+    if (nativeView.rightBorderLayer) {
+        nativeView.rightBorderLayer.removeFromSuperlayer();
+    }
+    if (nativeView.bottomBorderLayer) {
+        nativeView.bottomBorderLayer.removeFromSuperlayer();
+    }
+    if (nativeView.leftBorderLayer) {
+        nativeView.leftBorderLayer.removeFromSuperlayer();
+    }
+
     const borderTopColor = background.borderTopColor;
     if (top > 0 && borderTopColor && borderTopColor.ios) {
         const topBorderPath = CGPathCreateMutable();
@@ -209,8 +225,6 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
         layer.addSublayer(topBorderLayer);
         nativeView.topBorderLayer = topBorderLayer;
         hasNonUniformBorder = true;
-    } else if (nativeView.topBorderLayer) {
-        nativeView.topBorderLayer.removeFromSuperlayer();
     }
 
     const borderRightColor = background.borderRightColor;
@@ -229,8 +243,6 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
         layer.addSublayer(rightBorderLayer);
         nativeView.rightBorderLayer = rightBorderLayer;
         hasNonUniformBorder = true;
-    } else if (nativeView.rightBorderLayer) {
-        nativeView.rightBorderLayer.removeFromSuperlayer();
     }
 
     const borderBottomColor = background.borderBottomColor;
@@ -249,8 +261,6 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
         layer.addSublayer(bottomBorderLayer);
         nativeView.bottomBorderLayer = bottomBorderLayer;
         hasNonUniformBorder = true;
-    } else if (nativeView.bottomBorderLayer) {
-        nativeView.bottomBorderLayer.removeFromSuperlayer();
     }
 
     const borderLeftColor = background.borderLeftColor;
@@ -269,8 +279,6 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
         layer.addSublayer(leftBorderLayer);
         nativeView.leftBorderLayer = leftBorderLayer;
         hasNonUniformBorder = true;
-    } else if (nativeView.leftBorderLayer) {
-        nativeView.leftBorderLayer.removeFromSuperlayer();
     }
 
     nativeView.hasNonUniformBorder = hasNonUniformBorder;
