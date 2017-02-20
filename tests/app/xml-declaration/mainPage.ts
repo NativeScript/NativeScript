@@ -1,8 +1,6 @@
 import * as observable from "data/observable";
 import * as view from "ui/core/view";
 import * as label from "ui/label";
-import * as button from "ui/button";
-import * as image from "ui/image";
 import * as pages from "ui/page";
 import * as http from "http";
 

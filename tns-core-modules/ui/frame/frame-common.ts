@@ -133,7 +133,6 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
 
 function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
     let page: Page;
-    let element: View;
 
     // Possible XML file path.
     let fileName = resolveFileName(moduleNamePath, "xml");
