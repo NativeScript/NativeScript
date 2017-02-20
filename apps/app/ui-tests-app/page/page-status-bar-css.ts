@@ -1,6 +1,7 @@
 import { Color } from "color";
 import { Page } from "ui/page";
-import { View, unsetValue } from "ui/core/view";
+import { View } from "ui/core/view";
+import { unsetValue } from "ui/core/properties";
 
 export function applyTap(args) {
     let page = <Page>(<View>args.object).page;
