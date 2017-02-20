@@ -1,7 +1,16 @@
 <Page loaded="loaded">
-  <ListView items="{{ items }}">
-    <ListView.itemTemplate>
-      <Label text="{{ $value }}" style="text-transform: uppercase; text-decoration: underline;" />
-    </ListView.itemTemplate>
-  </ListView>
+  <StackLayout>
+    <Label text="lightskyblue separator"></Label>
+    <ListView items="{{ items }}" style="separator-color:red; background-color:lightskyblue">
+      <ListView.itemTemplate>
+        <Label text="{{ $value }}"/>
+      </ListView.itemTemplate>
+    </ListView>
+    <Label text="transparent separator"></Label>
+    <ListView items="{{ items }}" style="separator-color:transparent; background-color:transparent">
+      <ListView.itemTemplate>
+        <Label text="{{ $value }}" />
+      </ListView.itemTemplate>
+    </ListView>
+  </StackLayout>
 </Page>
