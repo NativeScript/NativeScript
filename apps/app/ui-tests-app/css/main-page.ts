@@ -38,6 +38,7 @@ export function pageLoaded(args: EventData) {
     examples.set("all-non-uniform-border", "css/all-non-uniform-border");
     examples.set("margins-paddings-with-percentage", "css/margins-paddings-with-percentage");
     examples.set("list-picker", "css/list-picker");
+    examples.set("listview", "css/listview");
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("border-playground", "css/border-playground");
 
