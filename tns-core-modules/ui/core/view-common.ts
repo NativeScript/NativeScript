@@ -7,7 +7,13 @@ import {
     Property, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty,
     gestureFromString, isIOS, traceEnabled, traceWrite, traceCategories, makeParser, makeValidator
 } from "./view-base";
-import { observe as gestureObserve, GesturesObserver, GestureTypes, GestureEventData } from "ui/gestures";
+import {
+    observe as gestureObserve,
+    GesturesObserver,
+    GestureTypes,
+    GestureEventData,
+    TouchAction
+} from "ui/gestures";
 import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
 
 // Only types:
@@ -21,8 +27,13 @@ export { layout };
 export * from "./view-base";
 
 export {
-    GestureTypes, GesturesObserver, GestureEventData,
-    Background, Font, Color
+    GestureTypes,
+    GesturesObserver,
+    GestureEventData,
+    TouchAction,
+    Background,
+    Font,
+    Color,
 }
 
 import * as am from "ui/animation";
