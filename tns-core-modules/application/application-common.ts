@@ -46,7 +46,8 @@ export function livesync() {
 }
 
 export function setCssFileName(cssFileName: string) {
-    cssFile = cssFileName;
+    exports.cssFile = cssFileName;
+    events.notify(<CssChangedEventData>{ eventName: "cssChanged", object: app, cssFile: cssFileName });
 }
 
 export function addCss(cssText: string): void {
