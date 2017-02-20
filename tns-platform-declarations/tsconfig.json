@@ -1,12 +1,5 @@
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
-        "experimentalDecorators": true,
-        "lib": [
-            "es2016"
-        ]
-    },
+    "extends": "../tsconfig.shared",
     "exclude": [
         "ios/objc-x86_64",
         "node_modules",
