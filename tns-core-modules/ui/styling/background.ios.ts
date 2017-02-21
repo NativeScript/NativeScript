@@ -1,5 +1,7 @@
-import { Background, View, Point, layout, Color } from "./background-common";
+import { View, Color, Point } from "ui/core/view";
+import { Background } from "./background-common";
 import { ios as utilsIos } from "utils/utils";
+import { layout } from "utils/utils";
 
 export * from "./background-common";
 

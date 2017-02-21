@@ -2,7 +2,6 @@ import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/sty
 import { Color, BackgroundRepeat } from "ui/core/view";
 import { ImageSource } from "image-source";
 import { CSSValue, parse as cssParse } from "css-value";
-export * from "ui/core/view";
 
 export class Background implements BackgroundDefinition {
     public static default = new Background();

@@ -1,4 +1,4 @@
-import { View } from "./background-common";
+import { View } from "ui/core/view";
 import { isNullOrUndefined, isFunction, getClass } from "utils/types";
 import { CacheLayerType, layout } from "utils/utils";
 import { parse } from "css-value";
