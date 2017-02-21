@@ -1975,6 +1975,20 @@ export const testWrap_childMargin_vertical = test(
     }
 );
 
+let activity_flexbox_with_proxy_view_container = () => getViews(
+    `<FlexboxLayout id="flexbox">
+        <ProxyViewContainer></ProxyViewContainer>
+    </FlexboxLayout>`
+);
+
+export const testFlexboxLayout_does_not_crash_with_proxy_view_container = test(
+    activity_flexbox_with_proxy_view_container,
+    noop,
+    ({root, flexbox}) => {
+        TKUnit.assert(flexbox.id === "flexbox", "FlexboxLayout actually there");
+    }
+);
+
 // Omit testEmptyChildren
 // Omit testDivider_directionRow_verticalBeginning
 

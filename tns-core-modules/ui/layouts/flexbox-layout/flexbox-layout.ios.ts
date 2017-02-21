@@ -67,6 +67,28 @@ import makeMeasureSpec = utils.layout.makeMeasureSpec;
 import getMeasureSpecMode = utils.layout.getMeasureSpecMode;
 import getMeasureSpecSize = utils.layout.getMeasureSpecSize;
 
+// `eachLayoutChild` iterates over children, and we need more - indexed access.
+// This class tries to accomodate that by collecting all children in an
+// array no more than once per measure.
+class MeasureContext {
+    private children: View[];
+
+    constructor(private owner: FlexboxLayout) {
+        this.children = [];
+        this.owner.eachLayoutChild((child) => {
+            this.children.push(child);
+        });
+    }
+
+    public get childrenCount(): number {
+        return this.children.length;
+    }
+
+    public childAt(index: number): View {
+        return this.children[index];
+    }
+}
+
 class FlexLine {
 
     _left: number = Number.MAX_VALUE;
@@ -117,6 +139,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _orderCache: number[];
     private _flexLines: FlexLine[] = [];
     private _childrenFrozen: boolean[];
+    private measureContext: MeasureContext;
 
     _setNativeFlexDirection(flexDirection: FlexDirection) {
         // lint happy no-op
@@ -141,6 +164,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        this.measureContext = new MeasureContext(this);
         LayoutBase.adjustChildrenLayoutParams(this, widthMeasureSpec, heightMeasureSpec);
 
         // Omit: super.onMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -148,8 +172,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         if (this._isOrderChangedFromLastMeasurement) {
             this._reorderedIndices = this._createReorderedIndices();
         }
-        if (!this._childrenFrozen || this._childrenFrozen.length < this.getChildrenCount()) {
-            this._childrenFrozen = new Array(this.getChildrenCount());
+        if (!this._childrenFrozen || this._childrenFrozen.length < this.measureContext.childrenCount) {
+            this._childrenFrozen = new Array(this.measureContext.childrenCount);
         }
 
         switch (this.flexDirection) {
@@ -174,13 +198,13 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             child = null;
         } else {
             let reorderedIndex = this._reorderedIndices[index];
-            child = this.getChildAt(reorderedIndex);
+            child = this.measureContext.childAt(reorderedIndex);
         }
         return child;
     }
 
     private _createReorderedIndices(): number[] {
-        let childCount = this.getChildrenCount();
+        let childCount = this.measureContext.childrenCount;
         let orders = this._createOrders(childCount);
         return this._sortOrdersIntoReorderedIndices(childCount, orders);
     }
@@ -203,7 +227,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _createOrders(childCount: number): Order[] {
         let orders: Order[] = [];
         for (let i = 0; i < childCount; i++) {
-            let child = this.getChildAt(i);
+            let child = this.measureContext.childAt(i);
             let order = new Order();
             order.order = FlexboxLayout.getOrder(child);
             order.index = i;
@@ -213,7 +237,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     }
 
     private get _isOrderChangedFromLastMeasurement(): boolean {
-        let childCount = this.getChildrenCount();
+        let childCount = this.measureContext.childrenCount;
         if (!this._orderCache) {
             this._orderCache = [];
         }
@@ -221,7 +245,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
             return true;
         }
         for (let i = 0; i < childCount; i++) {
-            let view = this.getChildAt(i);
+            let view = this.measureContext.childAt(i);
             if (view === null) {
                 continue;
             }
@@ -241,7 +265,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this._flexLines.length = 0;
 
         (() => {
-            let childCount = this.getChildrenCount();
+            let childCount = this.measureContext.childrenCount;
             let paddingStart = FlexboxLayout.getPaddingStart(this);
             let paddingEnd = FlexboxLayout.getPaddingEnd(this);
             let largestHeightInRow = Number.MIN_VALUE;
@@ -355,7 +379,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
         this._flexLines.length = 0;
 
-        let childCount = this.getChildrenCount();
+        let childCount = this.measureContext.childrenCount;
         let paddingTop = this.paddingTop;
         let paddingBottom = this.paddingBottom;
         let largestWidthInColumn = Number.MIN_VALUE;
