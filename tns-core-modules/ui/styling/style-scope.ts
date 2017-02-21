@@ -42,6 +42,8 @@ function onCssChanged(args: application.CssChangedEventData): void {
             applicationAdditionalSelectors.push.apply(applicationAdditionalSelectors, parsed);
             mergeCssSelectors();
         }
+    } else if (args.cssFile) {
+        loadCss(args.cssFile);
     }
 }
 
