@@ -39,6 +39,7 @@ export function pageLoaded(args: EventData) {
     examples.set("margins-paddings-with-percentage", "css/margins-paddings-with-percentage");
     examples.set("list-picker", "css/list-picker");
     examples.set("listview", "css/listview");
+    examples.set("listview_bg_separator_color", "css/listview_bg_separator_color");
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("border-playground", "css/border-playground");
 
