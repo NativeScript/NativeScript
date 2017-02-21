@@ -1,6 +1,6 @@
 import { View } from "./background-common";
 import { isNullOrUndefined, isFunction, getClass } from "utils/types";
-import { CacheLayerType } from "utils/utils";
+import { CacheLayerType, layout } from "utils/utils";
 import { parse } from "css-value";
 
 export * from "./background-common"
@@ -20,14 +20,14 @@ export module ad {
     let _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
 
     function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
-        return ( 
-            nativeView instanceof android.widget.Button || 
-            (nativeView instanceof android.support.v7.widget.Toolbar 
-            && getSDK() >= 21 // There is an issue with the DrawableContainer which was fixed for API version 21 and above: https://code.google.com/p/android/issues/detail?id=60183
+        return (
+            nativeView instanceof android.widget.Button ||
+            (nativeView instanceof android.support.v7.widget.Toolbar
+                && getSDK() >= 21 // There is an issue with the DrawableContainer which was fixed for API version 21 and above: https://code.google.com/p/android/issues/detail?id=60183
             )
-        ); 
+        );
     }
-    
+
     export function onBackgroundOrBorderPropertyChanged(view: View) {
         let nativeView = <android.view.View>view._nativeView;
         if (!nativeView) {
@@ -38,14 +38,14 @@ export module ad {
         let backgroundDrawable = nativeView.getBackground();
         let cache = <CacheLayerType>view._nativeView;
 
-        if (isSetColorFilterOnlyWidget(nativeView) 
-        && !isNullOrUndefined(backgroundDrawable) 
-        && isFunction(backgroundDrawable.setColorFilter) 
-        && !background.hasBorderWidth()
-        && !background.hasBorderRadius()
-        && !background.clipPath 
-        && isNullOrUndefined(background.image) 
-        && !isNullOrUndefined(background.color)) {
+        if (isSetColorFilterOnlyWidget(nativeView)
+            && !isNullOrUndefined(backgroundDrawable)
+            && isFunction(backgroundDrawable.setColorFilter)
+            && !background.hasBorderWidth()
+            && !background.hasBorderRadius()
+            && !background.clipPath
+            && isNullOrUndefined(background.image)
+            && !isNullOrUndefined(background.color)) {
             let backgroundColor = (<any>backgroundDrawable).backgroundColor = background.color.android;
             backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
             (<any>backgroundDrawable).backgroundColor = backgroundColor;
@@ -57,7 +57,7 @@ export module ad {
                     _defaultBackgrounds.set(viewClass, nativeView.getBackground());
                 }
 
-                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(1, view.toString());
+                backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
                 refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
 
                 if (getSDK() >= 16) {
@@ -133,9 +133,9 @@ function refreshBorderDrawable(view: View, borderDrawable: org.nativescript.widg
             backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size);
         }
 
-	let blackColor = android.graphics.Color.BLACK;
+        let blackColor = android.graphics.Color.BLACK;
         borderDrawable.refresh(
-            
+
             (background.borderTopColor && background.borderTopColor.android !== undefined) ? background.borderTopColor.android : blackColor,
             (background.borderRightColor && background.borderRightColor.android !== undefined) ? background.borderRightColor.android : blackColor,
             (background.borderBottomColor && background.borderBottomColor.android !== undefined) ? background.borderBottomColor.android : blackColor,
