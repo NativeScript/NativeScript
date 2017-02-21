@@ -70,7 +70,7 @@ public class BorderDrawable extends ColorDrawable {
     }
 
     public int getUniformBorderColor() {
-        if (this.hasUniformBorderColor()){
+        if (this.hasUniformBorderColor()) {
             return this.borderTopColor;
         }
 
@@ -94,7 +94,7 @@ public class BorderDrawable extends ColorDrawable {
     }
 
     public float getUniformBorderWidth() {
-        if (this.hasUniformBorderWidth()){
+        if (this.hasUniformBorderWidth()) {
             return this.borderTopWidth;
         }
 
@@ -118,7 +118,7 @@ public class BorderDrawable extends ColorDrawable {
     }
 
     public float getUniformBorderRadius() {
-        if (this.hasUniformBorderRadius()){
+        if (this.hasUniformBorderRadius()) {
             return this.borderTopLeftRadius;
         }
 
@@ -150,37 +150,37 @@ public class BorderDrawable extends ColorDrawable {
     }
 
     public boolean hasUniformBorderColor() {
-        return  this.borderTopColor == this.borderRightColor &&
+        return this.borderTopColor == this.borderRightColor &&
                 this.borderTopColor == this.borderBottomColor &&
                 this.borderTopColor == this.borderLeftColor;
     }
 
     public boolean hasUniformBorderWidth() {
-        return  this.borderTopWidth == this.borderRightWidth &&
+        return this.borderTopWidth == this.borderRightWidth &&
                 this.borderTopWidth == this.borderBottomWidth &&
                 this.borderTopWidth == this.borderLeftWidth;
     }
 
     public boolean hasUniformBorderRadius() {
-        return  this.borderTopLeftRadius == this.borderTopRightRadius &&
+        return this.borderTopLeftRadius == this.borderTopRightRadius &&
                 this.borderTopLeftRadius == this.borderBottomRightRadius &&
                 this.borderTopLeftRadius == this.borderBottomLeftRadius;
     }
 
-    public boolean hasUniformBorder(){
-        return  this.hasUniformBorderColor() &&
+    public boolean hasUniformBorder() {
+        return this.hasUniformBorderColor() &&
                 this.hasUniformBorderWidth() &&
                 this.hasUniformBorderRadius();
     }
 
-    public BorderDrawable(float density){
+    public BorderDrawable(float density) {
         super();
-        this.density = 1f;
+        this.density = density;
     }
 
-    public BorderDrawable(float density, String id){
+    public BorderDrawable(float density, String id) {
         super();
-        this.density = 1f;
+        this.density = density;
         this.id = id;
     }
 
@@ -195,7 +195,7 @@ public class BorderDrawable extends ColorDrawable {
                         String backgroundPosition,
                         CSSValue[] backgroundPositionParsedCSSValues,
                         String backgroundSize,
-                        CSSValue[] backgroundSizeParsedCSSValues){
+                        CSSValue[] backgroundSizeParsedCSSValues) {
         this.refresh(
                 borderColor,
                 borderColor,
@@ -247,7 +247,7 @@ public class BorderDrawable extends ColorDrawable {
                         String backgroundPosition,
                         CSSValue[] backgroundPositionParsedCSSValues,
                         String backgroundSize,
-                        CSSValue[] backgroundSizeParsedCSSValues){
+                        CSSValue[] backgroundSizeParsedCSSValues) {
 
         this.borderTopColor = borderTopColor;
         this.borderRightColor = borderRightColor;
@@ -285,10 +285,10 @@ public class BorderDrawable extends ColorDrawable {
             return;
         }
 
-        float topBackoffAntialias = calculateBackoffAntialias(this.borderTopColor, this.borderTopWidth, this.density);
-        float rightBackoffAntialias = calculateBackoffAntialias(this.borderRightColor, this.borderRightWidth, this.density);
-        float bottomBackoffAntialias = calculateBackoffAntialias(this.borderBottomColor, this.borderBottomWidth, this.density);
-        float leftBackoffAntialias = calculateBackoffAntialias(this.borderLeftColor, this.borderLeftWidth, this.density);
+        float topBackoffAntialias = calculateBackoffAntialias(this.borderTopColor, this.borderTopWidth);
+        float rightBackoffAntialias = calculateBackoffAntialias(this.borderRightColor, this.borderRightWidth);
+        float bottomBackoffAntialias = calculateBackoffAntialias(this.borderBottomColor, this.borderBottomWidth);
+        float leftBackoffAntialias = calculateBackoffAntialias(this.borderLeftColor, this.borderLeftWidth);
 
         RectF backgroundBoundsF = new RectF(
                 bounds.left + leftBackoffAntialias,
@@ -296,7 +296,7 @@ public class BorderDrawable extends ColorDrawable {
                 bounds.right - rightBackoffAntialias,
                 bounds.bottom - bottomBackoffAntialias);
 
-        float outerRadius = this.getUniformBorderRadius() * this.density;
+        float outerRadius = this.getUniformBorderRadius();
 
         // draw background
         if (this.backgroundColor != 0) {
@@ -306,14 +306,13 @@ public class BorderDrawable extends ColorDrawable {
             backgroundColorPaint.setAntiAlias(true);
 
             if (this.clipPath != null && !this.clipPath.isEmpty()) {
-                drawClipPath(this.clipPath, canvas, backgroundColorPaint, backgroundBoundsF, density);
-            }
-            else {
+                drawClipPath(this.clipPath, canvas, backgroundColorPaint, backgroundBoundsF, this.density);
+            } else {
                 canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundColorPaint);
             }
         }
 
-        if (this.backgroundImage != null){
+        if (this.backgroundImage != null) {
             BackgroundDrawParams params = this.getDrawParams(bounds.width(), bounds.height());
             Matrix transform = new Matrix();
             if (params.sizeX > 0 && params.sizeY > 0) {
@@ -338,9 +337,8 @@ public class BorderDrawable extends ColorDrawable {
             params.posY = params.repeatY ? 0 : params.posY;
 
             if (this.clipPath != null && !this.clipPath.isEmpty()) {
-                drawClipPath(this.clipPath, canvas, backgroundImagePaint, backgroundBoundsF, density);
-            }
-            else {
+                drawClipPath(this.clipPath, canvas, backgroundImagePaint, backgroundBoundsF, this.density);
+            } else {
                 boolean supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
                 if (supportsPathOp) {
                     // Path.Op can be used in API level 19+ to achieve the perfect geometry.
@@ -350,8 +348,7 @@ public class BorderDrawable extends ColorDrawable {
                     backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, Path.Direction.CCW);
                     intersect(backgroundPath, backgroundNoRepeatPath);
                     canvas.drawPath(backgroundPath, backgroundImagePaint);
-                }
-                else {
+                } else {
                     // Clipping here will not be anti-aliased but at least it won't shine through the rounded corners.
                     canvas.save();
                     canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
@@ -362,8 +359,8 @@ public class BorderDrawable extends ColorDrawable {
         }
 
         // draw border
-        if (this.hasUniformBorder()){
-            float borderWidth = this.getUniformBorderWidth() * this.density;
+        if (this.hasUniformBorder()) {
+            float borderWidth = this.getUniformBorderWidth();
             int borderColor = this.getUniformBorderColor();
 
             // iOS and browsers use black when no color is specified.
@@ -376,21 +373,18 @@ public class BorderDrawable extends ColorDrawable {
                 if (this.clipPath != null && !this.clipPath.isEmpty()) {
                     borderPaint.setStyle(Paint.Style.STROKE);
                     borderPaint.setStrokeWidth(borderWidth);
-                    drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, density);
-                }
-                else {
+                    drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, this.density);
+                } else {
                     if (outerRadius <= 0) {
                         borderPaint.setStyle(Paint.Style.STROKE);
                         borderPaint.setStrokeWidth(borderWidth);
                         canvas.drawRect(middleBoundsF, borderPaint);
-                    }
-                    else if (outerRadius >= borderWidth) {
+                    } else if (outerRadius >= borderWidth) {
                         borderPaint.setStyle(Paint.Style.STROKE);
                         borderPaint.setStrokeWidth(borderWidth);
                         float middleRadius = Math.max(0, outerRadius - halfBorderWidth);
                         canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
-                    }
-                    else {
+                    } else {
                         Path borderPath = new Path();
                         RectF borderOuterBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
                         borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
@@ -401,12 +395,11 @@ public class BorderDrawable extends ColorDrawable {
                     }
                 }
             }
-        }
-        else {
-            float top = this.borderTopWidth * this.density;
-            float right = this.borderRightWidth * this.density;
-            float bottom = this.borderBottomWidth * this.density;
-            float left = this.borderLeftWidth * this.density;
+        } else {
+            float top = this.borderTopWidth;
+            float right = this.borderRightWidth;
+            float bottom = this.borderBottomWidth;
+            float left = this.borderLeftWidth;
 
             //lto                       rto
             //   +---------------------+
@@ -431,7 +424,7 @@ public class BorderDrawable extends ColorDrawable {
             PointF lbo = new PointF(0, bounds.bottom); // left-bottom-outside
             PointF lbi = new PointF(left, bounds.bottom - bottom); // left-bottom-inside
 
-            if (this.borderTopWidth > 0){
+            if (this.borderTopWidth > 0) {
                 Paint topBorderPaint = new Paint();
                 topBorderPaint.setColor(this.borderTopColor);
                 topBorderPaint.setAntiAlias(true);
@@ -445,7 +438,7 @@ public class BorderDrawable extends ColorDrawable {
                 canvas.drawPath(topBorderPath, topBorderPaint);
             }
 
-            if (this.borderRightWidth > 0){
+            if (this.borderRightWidth > 0) {
                 Paint rightBorderPaint = new Paint();
                 rightBorderPaint.setColor(this.borderRightColor);
                 rightBorderPaint.setAntiAlias(true);
@@ -459,7 +452,7 @@ public class BorderDrawable extends ColorDrawable {
                 canvas.drawPath(rightBorderPath, rightBorderPaint);
             }
 
-            if (this.borderBottomWidth > 0){
+            if (this.borderBottomWidth > 0) {
                 Paint bottomBorderPaint = new Paint();
                 bottomBorderPaint.setColor(this.borderBottomColor);
                 bottomBorderPaint.setAntiAlias(true);
@@ -473,7 +466,7 @@ public class BorderDrawable extends ColorDrawable {
                 canvas.drawPath(bottomBorderPath, bottomBorderPaint);
             }
 
-            if (this.borderLeftWidth > 0){
+            if (this.borderLeftWidth > 0) {
                 Paint leftBorderPaint = new Paint();
                 leftBorderPaint.setColor(this.borderLeftColor);
                 leftBorderPaint.setAntiAlias(true);
@@ -489,21 +482,22 @@ public class BorderDrawable extends ColorDrawable {
         }
     }
 
-    private static float calculateBackoffAntialias(int borderColor, float borderWidth, float density){
+    private static float calculateBackoffAntialias(int borderColor, float borderWidth) {
         // We will inset background colors and images so antialiasing will not color pixels outside the border.
         // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
-        float halfBorderWidth = borderWidth * density / 2.0f;
-        float normalizedBorderAlpha = ((float)Color.alpha(borderColor)) / 255.0f;
+        float halfBorderWidth = borderWidth / 2.0f;
+        float normalizedBorderAlpha = ((float) Color.alpha(borderColor)) / 255.0f;
         return Math.min(0.5f, halfBorderWidth) * normalizedBorderAlpha;
     }
 
     @TargetApi(19)
-    private static void intersect(Path path1, Path path2){
+    private static void intersect(Path path1, Path path2) {
         path1.op(path2, Path.Op.INTERSECT);
     }
 
     private static Pattern spaceAndComma = Pattern.compile("[\\s,]+");
     private static Pattern space = Pattern.compile("\\s+");
+
     private static void drawClipPath(String clipPath, Canvas canvas, Paint paint, RectF bounds, float density) {
         // Sample string is polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
         String functionName = clipPath.substring(0, clipPath.indexOf("("));
@@ -514,7 +508,7 @@ public class BorderDrawable extends ColorDrawable {
         float right;
         float bottom;
         float left;
-        switch (functionName){
+        switch (functionName) {
             case "rect":
                 arr = spaceAndComma.split(value);
 
@@ -522,7 +516,7 @@ public class BorderDrawable extends ColorDrawable {
                 right = cssValueToDevicePixels(arr[1], bounds.right, density);
                 bottom = cssValueToDevicePixels(arr[2], bounds.bottom, density);
                 left = cssValueToDevicePixels(arr[3], bounds.right, density);
-                
+
                 canvas.drawRect(left, top, right, bottom, paint);
                 break;
             case "inset":
@@ -533,17 +527,14 @@ public class BorderDrawable extends ColorDrawable {
                 String leftString = "0";
                 if (arr.length == 1) {
                     topString = rightString = bottomString = leftString = arr[0];
-                }
-                else if (arr.length == 2) {
+                } else if (arr.length == 2) {
                     topString = bottomString = arr[0];
                     rightString = leftString = arr[1];
-                }
-                else if (arr.length == 3) {
+                } else if (arr.length == 3) {
                     topString = arr[0];
                     rightString = leftString = arr[1];
                     bottomString = arr[2];
-                }
-                else if (arr.length == 4) {
+                } else if (arr.length == 4) {
                     topString = arr[0];
                     rightString = arr[1];
                     bottomString = arr[2];
@@ -591,7 +582,7 @@ public class BorderDrawable extends ColorDrawable {
 
                     path.lineTo(point.x, point.y);
                 }
-                if (firstPoint != null){
+                if (firstPoint != null) {
                     path.lineTo(firstPoint.x, firstPoint.y);
                 }
                 canvas.drawPath(path, paint);
@@ -634,8 +625,7 @@ public class BorderDrawable extends ColorDrawable {
 
                     res.sizeX = imageWidth;
                     res.sizeY = imageHeight;
-                }
-                else if ("number".equals(vx.getType()) && "number".equals(vy.getType()) &&
+                } else if ("number".equals(vx.getType()) && "number".equals(vy.getType()) &&
                         (("px".equals(vx.getUnit()) && "px".equals(vy.getUnit())) || ((vx.getUnit() == null || vx.getUnit().isEmpty()) && (vy.getUnit() == null || vy.getUnit().isEmpty())))) {
                     imageWidth = vx.getValue();
                     imageHeight = vy.getValue();
@@ -643,14 +633,12 @@ public class BorderDrawable extends ColorDrawable {
                     res.sizeX = imageWidth;
                     res.sizeY = imageHeight;
                 }
-            }
-            else if (this.backgroundSizeParsedCSSValues.length == 1 && "ident".equals(this.backgroundSizeParsedCSSValues[0].getType())) {
+            } else if (this.backgroundSizeParsedCSSValues.length == 1 && "ident".equals(this.backgroundSizeParsedCSSValues[0].getType())) {
                 float scale = 0;
 
                 if ("cover".equals(this.backgroundSizeParsedCSSValues[0].getString())) {
                     scale = Math.max(width / imageWidth, height / imageHeight);
-                }
-                else if ("contain".equals(this.backgroundSizeParsedCSSValues[0].getString())) {
+                } else if ("contain".equals(this.backgroundSizeParsedCSSValues[0].getString())) {
                     scale = Math.min(width / imageWidth, height / imageHeight);
                 }
 
@@ -676,24 +664,20 @@ public class BorderDrawable extends ColorDrawable {
                 if ("%".equals(vx.getUnit()) && "%".equals(vy.getUnit())) {
                     res.posX = spaceX * vx.getValue() / 100;
                     res.posY = spaceY * vy.getValue() / 100;
-                }
-                else if ("number".equals(vx.getType()) && "number".equals(vy.getType()) &&
+                } else if ("number".equals(vx.getType()) && "number".equals(vy.getType()) &&
                         (("px".equals(vx.getUnit()) && "px".equals(vy.getUnit())) || ((vx.getUnit() == null || vx.getUnit().isEmpty()) && (vy.getUnit() == null || vy.getUnit().isEmpty())))) {
                     res.posX = vx.getValue();
                     res.posY = vy.getValue();
-                }
-                else if ("ident".equals(vx.getType()) && "ident".equals(vy.getType())) {
+                } else if ("ident".equals(vx.getType()) && "ident".equals(vy.getType())) {
                     if ("center".equals(vx.getString().toLowerCase(Locale.ENGLISH))) {
                         res.posX = spaceX / 2;
-                    }
-                    else if ("right".equals(vx.getString().toLowerCase(Locale.ENGLISH))) {
+                    } else if ("right".equals(vx.getString().toLowerCase(Locale.ENGLISH))) {
                         res.posX = spaceX;
                     }
 
                     if ("center".equals(vy.getString().toLowerCase(Locale.ENGLISH))) {
                         res.posY = spaceY / 2;
-                    }
-                    else if ("bottom".equals(vy.getString().toLowerCase(Locale.ENGLISH))) {
+                    } else if ("bottom".equals(vy.getString().toLowerCase(Locale.ENGLISH))) {
                         res.posY = spaceY;
                     }
                 }
@@ -715,13 +699,11 @@ public class BorderDrawable extends ColorDrawable {
 
             // If you only one keyword is specified, the other value is "center"
             if ("left".equals(val) || "right".equals(val)) {
-                result  = new CSSValue[] {values[0], center};
-            }
-            else if ("top".equals(val) || "bottom".equals(val)) {
-                result  = new CSSValue[] {center, values[0]};
-            }
-            else if ("center".equals(val)) {
-                result  = new CSSValue[] {center, center};
+                result = new CSSValue[]{values[0], center};
+            } else if ("top".equals(val) || "bottom".equals(val)) {
+                result = new CSSValue[]{center, values[0]};
+            } else if ("center".equals(val)) {
+                result = new CSSValue[]{center, center};
             }
         }
 
@@ -729,48 +711,43 @@ public class BorderDrawable extends ColorDrawable {
     }
 
     private static float cssValueToDevicePixels(String source, float total, float density) {
-        float result;
         source = source.trim();
-
-        if (source.contains("px")) {
-            result = Float.parseFloat(source.replace("px", ""));
-        }
-        else if (source.contains("%")) {
-            result = (Float.parseFloat(source.replace("%", "")) / 100) * (total / density);
+        if (source.contains("%")) {
+            return Float.parseFloat(source.replace("%", "")) * total / 100;
+        } else if (source.contains("px")) {
+            return Float.parseFloat(source.replace("px", "")) * density;
         } else {
-            result = Float.parseFloat(source);
+            return Float.parseFloat(source) * density;
         }
-        return result * density;
     }
 
     public String toDebugString() {
-        return
-            getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + "; " +
+        return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) + "; " +
 
-            "id: " + this.id + "; " +
+                "id: " + this.id + "; " +
 
-            "borderTopColor: " + this.borderTopColor + "; " +
-            "borderRightColor: " + this.borderRightColor + "; " +
-            "borderBottomColor: " + this.borderBottomColor + "; " +
-            "borderLeftColor: " + this.borderLeftColor + "; " +
+                "borderTopColor: " + this.borderTopColor + "; " +
+                "borderRightColor: " + this.borderRightColor + "; " +
+                "borderBottomColor: " + this.borderBottomColor + "; " +
+                "borderLeftColor: " + this.borderLeftColor + "; " +
 
-            "borderTopWidth: " + this.borderTopWidth + "; " +
-            "borderRightWidth: " + this.borderRightWidth + "; " +
-            "borderBottomWidth: " + this.borderBottomWidth + "; " +
-            "borderLeftWidth: " + this.borderLeftWidth + "; " +
+                "borderTopWidth: " + this.borderTopWidth + "; " +
+                "borderRightWidth: " + this.borderRightWidth + "; " +
+                "borderBottomWidth: " + this.borderBottomWidth + "; " +
+                "borderLeftWidth: " + this.borderLeftWidth + "; " +
 
-            "borderTopLeftRadius: " + this.borderTopLeftRadius + "; " +
-            "borderTopRightRadius: " + this.borderTopRightRadius + "; " +
-            "borderBottomRightRadius: " + this.borderBottomRightRadius + "; " +
-            "borderBottomLeftRadius: " + this.borderBottomLeftRadius + "; " +
+                "borderTopLeftRadius: " + this.borderTopLeftRadius + "; " +
+                "borderTopRightRadius: " + this.borderTopRightRadius + "; " +
+                "borderBottomRightRadius: " + this.borderBottomRightRadius + "; " +
+                "borderBottomLeftRadius: " + this.borderBottomLeftRadius + "; " +
 
-            "clipPath: " + this.clipPath + "; " +
-            "backgroundColor: " + this.backgroundColor + "; " +
-            "backgroundImage: " + this.backgroundImage + "; " +
-            "backgroundRepeat: " + this.backgroundRepeat + "; " +
-            "backgroundPosition: " + this.backgroundPosition + "; " +
-            "backgroundSize: " + this.backgroundSize + "; "
-        ;
+                "clipPath: " + this.clipPath + "; " +
+                "backgroundColor: " + this.backgroundColor + "; " +
+                "backgroundImage: " + this.backgroundImage + "; " +
+                "backgroundRepeat: " + this.backgroundRepeat + "; " +
+                "backgroundPosition: " + this.backgroundPosition + "; " +
+                "backgroundSize: " + this.backgroundSize + "; "
+                ;
     }
 
     private class BackgroundDrawParams {
