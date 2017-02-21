@@ -1,8 +1,8 @@
 ﻿import { ControlStateChangeListener } from "ui/core/control-state-change";
 import {
     ButtonBase, PseudoClassHandler, whiteSpaceProperty,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace
+    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, textAlignmentProperty,
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace, TextAlignment
 } from "./button-common";
 
 export * from "./button-common";
@@ -159,6 +159,25 @@ export class Button extends ButtonBase {
         let inset = this.nativeView.contentEdgeInsets;
         let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
+    }
+
+    get [textAlignmentProperty.native](): TextAlignment {
+        return Button.nativeToJsTextAlignment[this.nativeView.contentHorizontalAlignment];
+    }
+    set [textAlignmentProperty.native](value: TextAlignment) {
+        this.nativeView.contentHorizontalAlignment = Button.jsToNativeTextAlignment[value];
+    }
+
+    private static nativeToJsTextAlignment: { [key: number]: TextAlignment } = {
+        [UIControlContentHorizontalAlignment.Left]: "left",
+        [UIControlContentHorizontalAlignment.Center]: "center",
+        [UIControlContentHorizontalAlignment.Right]: "right",
+        [UIControlContentHorizontalAlignment.Fill]: "center"
+    }
+    private static jsToNativeTextAlignment: { [key in TextAlignment]: UIControlContentHorizontalAlignment } = {
+        "left": UIControlContentHorizontalAlignment.Left,
+        "center": UIControlContentHorizontalAlignment.Center,
+        "right": UIControlContentHorizontalAlignment.Right
     }
 }
 

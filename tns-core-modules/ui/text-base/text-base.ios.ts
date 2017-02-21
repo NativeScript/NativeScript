@@ -104,9 +104,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
     set [textAlignmentProperty.native](value: TextAlignment) {
-        let nativeView = this.nativeView;
-        nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-        // NOTE: if Button textAlignment is not enough - set also btn.contentHorizontalAlignment
+        let nativeView = <UITextField | UITextView | UILabel>this.nativeView;
         switch (value) {
             case "left":
                 nativeView.textAlignment = NSTextAlignment.Left;
