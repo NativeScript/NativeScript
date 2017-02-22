@@ -22,4 +22,10 @@ export function butonTap(args: EventData) {
     btn.textDecoration = newValue;
     textField.textDecoration = newValue;
     textView.textDecoration = newValue;
+
+    if(lbl.text === "Change text") {
+        lbl.text = btn.text = textField.text = textView.text = "Text changed";
+    } else {
+        lbl.text = btn.text = textField.text = textView.text = "Change text";
+    }
 }
