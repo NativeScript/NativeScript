@@ -657,6 +657,10 @@ export class CssAnimationProperty<T extends Style, U> {
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
         }
     }
+
+    public static _getByCssName(name: string): CssAnimationProperty<any, any> {
+        return this.properties[name];
+    }
 }
 
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements definitions.InheritedCssProperty<T, U> {
