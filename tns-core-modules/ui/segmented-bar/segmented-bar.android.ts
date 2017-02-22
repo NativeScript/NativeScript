@@ -110,30 +110,32 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         this._textView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    get [selectedBackgroundColorProperty.native](): android.graphics.drawable.Drawable {
+    get [selectedBackgroundColorProperty.native](): android.graphics.drawable.Drawable.ConstantState {
         let viewGroup = <android.view.ViewGroup>this._textView.getParent();
-        return viewGroup.getBackground();
+        return viewGroup.getBackground().getConstantState();
     }
-    set [selectedBackgroundColorProperty.native](value: Color | android.graphics.drawable.Drawable) {
+    set [selectedBackgroundColorProperty.native](value: Color | android.graphics.drawable.Drawable.ConstantState) {
         let viewGroup = <android.view.ViewGroup>this._textView.getParent();
         if (value instanceof Color) {
             let color = value.android;
-            let backgroundDrawable = viewGroup.getBackground();
+            const backgroundDrawable = viewGroup.getBackground();
             if (apiLevel > 21 && backgroundDrawable && typeof backgroundDrawable.setColorFilter === "function") {
-                backgroundDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+                const newDrawable = backgroundDrawable.getConstantState().newDrawable();
+                newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
+                setBackground(viewGroup, newDrawable);
             } else {
-                let stateDrawable = new android.graphics.drawable.StateListDrawable();
+                const stateDrawable = new android.graphics.drawable.StateListDrawable();
 
                 let arr = Array.create("int", 1);
                 arr[0] = R_ATTR_STATE_SELECTED;
                 let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(color);
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, viewGroup.getRight(), viewGroup.getBottom());
-
+                
                 setBackground(viewGroup, stateDrawable);
             }
         } else {
-            setBackground(viewGroup, value);
+            setBackground(viewGroup, value.newDrawable());
         }
     }
 }
