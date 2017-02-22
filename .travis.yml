@@ -49,22 +49,22 @@ script:
 - node ./build/travis-scripts/check-testrun-broken.js
 - adb pull /storage/sdcard/Documents/test-results.xml
 - mv test-results.xml ~/test-run-results$PACKAGE_VERSION.xml
-# before_deploy:
-# - mv bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz ../.deploymentpackage
-# - mv build ../
-# - cd ..
-# - rm -rf NativeScript
-# - tar -zxvf .deploymentpackage
-# - mv package $PACKAGE_NAME
-# - cd $PACKAGE_NAME
-# - rm ../.deploymentpackage
-# - mv ../build ./
-# - node ./build/travis-scripts/add-publishConfig.js next
-# deploy:
-#   provider: npm
-#   email: nativescript@telerik.com
-#   on:
-#     branch: master
-#     skip_cleanup: true
-#   api_key:
-#     secure: VJksODKcxXltNTU1Unv4V3qZMI5rrAupuxnCUpIBxks6azi6/FvcW6ctMOj5wPQ9cQKPa8SgaKF/ksyueTmcUt+RznBWbGJ3lxe+6MF0Uk7OI3M3Ga8Ke/21KcZ1oIysgZ0JGCmyR9iAIoSHK1KarIYfiYo9dGWOSuDkqJzLTjk=
+before_deploy:
+- mv bin/dist/$PACKAGE_NAME-$FULL_PACKAGE_VERSION.tgz ../.deploymentpackage
+- mv build ../
+- cd ..
+- rm -rf NativeScript
+- tar -zxvf .deploymentpackage
+- mv package $PACKAGE_NAME
+- cd $PACKAGE_NAME
+- rm ../.deploymentpackage
+- mv ../build ./
+- node ./build/travis-scripts/add-publishConfig.js internal-preview
+deploy:
+  provider: npm
+  email: nativescript@telerik.com
+  on:
+    branch: master
+    skip_cleanup: true
+  api_key:
+    secure: VJksODKcxXltNTU1Unv4V3qZMI5rrAupuxnCUpIBxks6azi6/FvcW6ctMOj5wPQ9cQKPa8SgaKF/ksyueTmcUt+RznBWbGJ3lxe+6MF0Uk7OI3M3Ga8Ke/21KcZ1oIysgZ0JGCmyR9iAIoSHK1KarIYfiYo9dGWOSuDkqJzLTjk=
