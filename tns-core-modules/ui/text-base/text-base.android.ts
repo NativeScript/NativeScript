@@ -89,7 +89,7 @@ export class TextBase extends TextBaseCommon {
 
     //TextAlignment
     get [textAlignmentProperty.native](): TextAlignment {
-        let textAlignmentGravity = this._nativeView.getGravity() & android.view.View.TEXT_ALIGNMENT_GRAVITY;
+        let textAlignmentGravity = this._nativeView.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
         switch (textAlignmentGravity) {
             case android.view.Gravity.LEFT:
                 return TextAlignment.LEFT;
@@ -98,7 +98,7 @@ export class TextBase extends TextBaseCommon {
             case android.view.Gravity.RIGHT:
                 return TextAlignment.RIGHT;
             default:
-                throw new Error(`Unsupported android.view.View.TEXT_ALIGNMENT_GRAVITY: ${textAlignmentGravity}. Currently supported values are android.view.Gravity.LEFT, android.view.Gravity.CENTER_HORIZONTAL, and android.view.Gravity.RIGHT.`);
+                return TextAlignment.LEFT;
         }
     }
     set [textAlignmentProperty.native](value: TextAlignment) {
