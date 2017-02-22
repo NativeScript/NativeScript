@@ -52,6 +52,7 @@ module.exports = {
 
             workingDir:".testsapprun",
             testsAppName:"TestsApp",
+            tnsCoreModulesSource: pathModule.resolve("./tns-core-modules"),
             applicationDir: pathModule.join(".testsapprun", "TestsApp"),
             appDir: pathModule.join(".testsapprun", "TestsApp", "app"),
             pathToApk: "./platforms/android/build/outputs/apk/TestsApp-debug.apk",
@@ -203,6 +204,11 @@ module.exports = {
                 "npm-i-modules": {
                     cmd: "npm i " + pathModule.relative(localCfg.applicationDir, localCfg.modulesPath),
                     cwd: localCfg.applicationDir
+                },
+                "npm-i-widgets": {
+                    // HACK: switch to @next when it gets switched to the 3.0 branch
+                    cmd: "npm i tns-core-modules-widgets@rc",
+                    cwd: localCfg.applicationDir
                 }
             },
             shell: {
@@ -254,7 +260,6 @@ module.exports = {
         grunt.loadNpmTasks("grunt-mkdir");
         grunt.loadNpmTasks("grunt-contrib-clean");
         grunt.loadNpmTasks("grunt-contrib-copy");
-        grunt.loadNpmTasks("grunt-untar");
 
         var getPlatformSpecificTask = function(templatedTaskName) {
             return templatedTaskName.replace(/\{platform\}/, localCfg.platform);
@@ -296,6 +301,7 @@ module.exports = {
             "copy:testsAppToRunDir",
             "clean:modules",
             "exec:npm-i-modules",
+            "exec:npm-i-widgets",
             "copy:modulesToDir",
             "clean:tempExtractedModules",
 
