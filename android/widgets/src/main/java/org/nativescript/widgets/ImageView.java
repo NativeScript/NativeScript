@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.nativescript.widgets;
 
@@ -12,7 +12,6 @@ import org.nativescript.widgets.image.Worker;
 
 /**
  * @author hhristov
- * 
  */
 public class ImageView extends android.widget.ImageView {
     private static final double EPSILON = 1E-05;
@@ -22,8 +21,8 @@ public class ImageView extends android.widget.ImageView {
 
     private double scaleW = 1;
     private double scaleH = 1;
-	
-	private float rotationAngle;
+
+    private float rotationAngle;
 
     private Matrix mMatrix;
     private Bitmap mBitmap;
@@ -146,16 +145,16 @@ public class ImageView extends android.widget.ImageView {
             } else {
                 // No infinite dimensions.
                 switch (scale) {
-                case FIT_CENTER:
-                    this.scaleH = this.scaleW < this.scaleH ? this.scaleW : this.scaleH;
-                    this.scaleW = this.scaleH;
-                    break;
-                case CENTER_CROP:
-                    this.scaleH = this.scaleW > this.scaleH ? this.scaleW : this.scaleH;
-                    this.scaleW = this.scaleH;
-                    break;
-                default:
-                    break;
+                    case FIT_CENTER:
+                        this.scaleH = this.scaleW < this.scaleH ? this.scaleW : this.scaleH;
+                        this.scaleW = this.scaleH;
+                        break;
+                    case CENTER_CROP:
+                        this.scaleH = this.scaleW > this.scaleH ? this.scaleW : this.scaleH;
+                        this.scaleW = this.scaleH;
+                        break;
+                    default:
+                        break;
                 }
             }
         }
@@ -189,9 +188,9 @@ public class ImageView extends android.widget.ImageView {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable)this.getBackground() : null;
-        float uniformBorderWidth = background != null ? background.getUniformBorderWidth() * background.getDensity() : 0;
-        float uniformBorderRadius = background != null ? background.getUniformBorderRadius() * background.getDensity() : 0;
+        BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable) this.getBackground() : null;
+        float uniformBorderWidth = background != null ? background.getUniformBorderWidth() : 0;
+        float uniformBorderRadius = background != null ? background.getUniformBorderRadius() : 0;
 
         // floor the border width to avoid gaps between the border and the image
         float roundedBorderWidth = (float) Math.floor(uniformBorderWidth);
@@ -206,8 +205,8 @@ public class ImageView extends android.widget.ImageView {
         if (innerRadius > 0) {
             this.rect.set(
                     roundedBorderWidth,
-                    roundedBorderWidth, 
-                    this.getWidth() - roundedBorderWidth, 
+                    roundedBorderWidth,
+                    this.getWidth() - roundedBorderWidth,
                     this.getHeight() - roundedBorderWidth);
 
             this.path.reset();
@@ -241,8 +240,7 @@ public class ImageView extends android.widget.ImageView {
 
             if (scaleType == ScaleType.FIT_CENTER || scaleType == ScaleType.MATRIX) {
                 scale = (scaleX < scaleY) ? scaleX : scaleY;
-            }
-            else if (scaleType == ScaleType.CENTER_CROP) {
+            } else if (scaleType == ScaleType.CENTER_CROP) {
                 scale = (scaleX < scaleY) ? scaleY : scaleX;
             }
 
@@ -250,20 +248,18 @@ public class ImageView extends android.widget.ImageView {
             matrix.reset();
 
             if (scaleType == ScaleType.CENTER_CROP || scaleType == ScaleType.FIT_CENTER || scaleType == ScaleType.MATRIX) {
-				matrix.postScale(scale, scale);
-            	matrix.postTranslate(-(bitmapWidth * scale) / 2, -(bitmapHeight * scale) / 2);
-            }
-            else if (scaleType == ScaleType.FIT_XY) {
+                matrix.postScale(scale, scale);
+                matrix.postTranslate(-(bitmapWidth * scale) / 2, -(bitmapHeight * scale) / 2);
+            } else if (scaleType == ScaleType.FIT_XY) {
                 matrix.postScale(scaleX, scaleY);
                 matrix.postTranslate(-((bitmapWidth * scaleX) + roundedBorderWidth) / 2, -((bitmapHeight * scaleY) + roundedBorderWidth) / 2);
             }
-			
-			matrix.postRotate(rotationDegree);
-			matrix.postTranslate(viewWidth / 2 + roundedBorderWidth, viewHeight / 2 + roundedBorderWidth);
+
+            matrix.postRotate(rotationDegree);
+            matrix.postTranslate(viewWidth / 2 + roundedBorderWidth, viewHeight / 2 + roundedBorderWidth);
 
             canvas.drawBitmap(this.mBitmap, matrix, null);
-        }
-        else {
+        } else {
             super.onDraw(canvas);
         }
     }
