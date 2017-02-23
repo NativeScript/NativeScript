@@ -1950,7 +1950,7 @@ export const fontInternalProperty = new CssProperty<Style, Font>({ name: "fontIn
 fontInternalProperty.register(Style);
 
 export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
-    name: "fontFamily", cssName: "font-family", valueChanged: (target, oldValue, newValue) => {
+    name: "fontFamily", cssName: "font-family", affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontFamily !== newValue) {
             const newFont = currentFont.withFontFamily(newValue);
@@ -1961,7 +1961,7 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 fontFamilyProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
-    name: "fontSize", cssName: "font-size", valueChanged: (target, oldValue, newValue) => {
+    name: "fontSize", cssName: "font-size", affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontSize !== newValue) {
             const newFont = currentFont.withFontSize(newValue);
@@ -1973,7 +1973,7 @@ export const fontSizeProperty = new InheritedCssProperty<Style, number>({
 fontSizeProperty.register(Style);
 
 export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
-    name: "fontStyle", cssName: "font-style", defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, oldValue, newValue) => {
+    name: "fontStyle", cssName: "font-style", affectsLayout: isIOS, defaultValue: FontStyle.NORMAL, valueConverter: FontStyle.parse, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontStyle !== newValue) {
             const newFont = currentFont.withFontStyle(newValue);
@@ -1984,7 +1984,7 @@ export const fontStyleProperty = new InheritedCssProperty<Style, FontStyle>({
 fontStyleProperty.register(Style);
 
 export const fontWeightProperty = new InheritedCssProperty<Style, FontWeight>({
-    name: "fontWeight", cssName: "font-weight", defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, oldValue, newValue) => {
+    name: "fontWeight", cssName: "font-weight", affectsLayout: isIOS, defaultValue: FontWeight.NORMAL, valueConverter: FontWeight.parse, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontWeight !== newValue) {
             const newFont = currentFont.withFontWeight(newValue);
