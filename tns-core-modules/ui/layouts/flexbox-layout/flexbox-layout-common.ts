@@ -392,16 +392,3 @@ const flexProperty = new ShorthandProperty<Style, string>({
     }
 })
 flexProperty.register(Style);
-
-Style.prototype.flexDirection = flexDirectionProperty.defaultValue;
-Style.prototype.flexWrap = flexWrapProperty.defaultValue;
-Style.prototype.justifyContent = justifyContentProperty.defaultValue;
-Style.prototype.alignItems = alignItemsProperty.defaultValue;
-Style.prototype.alignContent = alignContentProperty.defaultValue;
-Style.prototype.order = orderProperty.defaultValue;
-Style.prototype.flexGrow = flexGrowProperty.defaultValue;
-Style.prototype.flexShrink = flexShrinkProperty.defaultValue;
-Style.prototype.flexWrapBefore = flexWrapBeforeProperty.defaultValue;
-Style.prototype.alignSelf = alignSelfProperty.defaultValue;
-
-// No flex-basis in our implementation.

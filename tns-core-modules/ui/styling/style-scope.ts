@@ -135,7 +135,7 @@ export class StyleScope {
     private _statesByKey = {};
     private _viewIdToKey = {};
 
-    private _css: string;
+    private _css: string = "";
     private _cssFileName: string;
     private _mergedCssSelectors: RuleSet[];
     private _localCssSelectors: RuleSet[] = [];
@@ -154,25 +154,26 @@ export class StyleScope {
     }
 
     public addCss(cssString: string, cssFileName?: string): void {
-        this.setCss(cssString, cssFileName, true);
+        this.appendCss(cssString, cssFileName)
     }
 
-    private setCss(cssString: string, cssFileName?: string, append: boolean = false): void {
-        this._css = this._css && append ? this._css + cssString : cssString;
-        if (cssFileName) {
-            this._cssFileName = cssFileName;
-        }
-
+    private setCss(cssString: string, cssFileName?): void {
+        this._css = cssString;
         this._reset();
+        this._localCssSelectors = createSelectorsFromCss(this._css, cssFileName, this._keyframes);
+        this._localCssSelectorVersion++;
+        this.ensureSelectors();
+    }
 
-        const parsedSelectors = createSelectorsFromCss(this._css, cssFileName, this._keyframes);
-
-        if (append) {
-            this._localCssSelectors.push.apply(this._localCssSelectors, parsedSelectors);
-        } else {
-            this._localCssSelectors = parsedSelectors;
+    private appendCss(cssString: string, cssFileName?): void {
+        if (!cssString) {
+            return;
         }
 
+        this._css = this._css + cssString;
+        this._reset();
+        let parsedCssSelectors = createSelectorsFromCss(cssString, cssFileName, this._keyframes);
+        this._localCssSelectors.push.apply(this._localCssSelectors, parsedCssSelectors);
         this._localCssSelectorVersion++;
         this.ensureSelectors();
     }

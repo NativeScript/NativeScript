@@ -2,11 +2,8 @@ import { FlexboxLayout } from "ui/layouts/flexbox-layout";
 
 function set(what: string) {
     return function(args) {
-        // args.object.page.getViewById("container")[what] = args.object.text;
         let containerCss = " #container { " + args.object.tag + " }" ;
-        // console.log(containerCss);
         args.object.page.addCss(containerCss);
-        // console.log(args.object.page.css);
     }
 }
 
