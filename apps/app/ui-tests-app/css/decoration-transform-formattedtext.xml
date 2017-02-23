@@ -6,8 +6,8 @@
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="label" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="Label" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="label" fontWeight="bold" color="#0000ff" />
+              <Span text="Label" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </Label.formattedText>
@@ -16,8 +16,8 @@
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="label" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="Label" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="label" fontWeight="bold" color="#0000ff" />
+              <Span text="Label" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </Label.formattedText>
@@ -28,8 +28,8 @@
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="button" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="Button" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="button" fontWeight="bold" color="#0000ff" />
+              <Span text="Button" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </Button.formattedText>
@@ -38,8 +38,8 @@
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="button" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="Button" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="button" fontWeight="bold" color="#0000ff" />
+              <Span text="Button" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </Button.formattedText>
@@ -50,8 +50,8 @@
         <TextField.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="Field" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="Field" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </TextField.formattedText>
@@ -60,8 +60,8 @@
         <TextField.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="Field" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="Field" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </TextField.formattedText>
@@ -72,8 +72,8 @@
         <TextView.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="View" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="View" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </TextView.formattedText>
@@ -82,8 +82,8 @@
         <TextView.formattedText>
           <FormattedString>
             <FormattedString.spans>
-              <Span text="text" fontAttributes="Bold" foregroundColor="#0000ff" />
-              <Span text="View" fontAttributes="Italic" foregroundColor="#00ff00" />
+              <Span text="text" fontWeight="bold" color="#0000ff" />
+              <Span text="View" fontStyle="italic" color="#00ff00" />
             </FormattedString.spans>
           </FormattedString>
         </TextView.formattedText>

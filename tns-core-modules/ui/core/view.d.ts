@@ -660,7 +660,7 @@ declare module "ui/core/view" {
      */
     export interface ApplyXmlAttributes {
         /**
-         * Called for every attribute in xml declaration. <... fontAttributes="bold" ../>
+         * Called for every attribute in xml declaration. <... fontWeight="bold" ../>
          * @param attributeName - the name of the attribute (fontAttributes)
          * @param attrValue - the value of the attribute (bold)
          * Should return true if this attribute is handled and there is no need default handler to process it.

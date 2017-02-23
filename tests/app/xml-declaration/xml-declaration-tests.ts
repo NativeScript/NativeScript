@@ -696,7 +696,7 @@ export function test_parse_NestedRepeaters() {
 }
 
 export function test_parseSpansDirectlyOnLabel() {
-    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Label id="testLabel"><Span text="We are" fontSize="10"/><Span text="Awesome" fontAttributes="Bold"/></Label></StackLayout></Page>');
+    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Label id="testLabel"><Span text="We are" fontSize="10"/><Span text="Awesome" fontWeight="bold"/></Label></StackLayout></Page>');
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testLabel = <Label>page.getViewById("testLabel");
@@ -709,7 +709,7 @@ export function test_parseSpansDirectlyOnLabel() {
 }
 
 export function test_parseSpansDirectlyOnButton() {
-    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Button id="testButton"><Span text="We are" fontSize="10"/><Span text="Awesome" fontAttributes="Bold"/></Button></StackLayout></Page>');
+    var p = <Page>builder.parse('<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatedTo="pageNavigated"><StackLayout><Button id="testButton"><Span text="We are" fontSize="10"/><Span text="Awesome" fontWeight="bold"/></Button></StackLayout></Page>');
     function testAction(views: Array<viewModule.View>) {
         var page = <Page>views[0];
         var testButton = <Button>page.getViewById("testButton");
