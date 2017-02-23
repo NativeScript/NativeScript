@@ -1,7 +1,3 @@
-﻿require("globals");
-
-
-
 import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { Observable, EventData } from "data/observable";
 import { NavigationEntry } from "ui/frame";
