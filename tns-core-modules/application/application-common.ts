@@ -6,7 +6,7 @@ import "../bundle-entry-points";
 const events = new Observable();
 global.moduleMerge(events, exports);
 
-export { Observable }
+export { Observable } test
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
