@@ -914,6 +914,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.effectiveMarginTop = PercentLength.toDevicePixels(style.marginTop, 0, parentAvailableHeight);
         this.effectiveMarginBottom = PercentLength.toDevicePixels(style.marginBottom, 0, parentAvailableHeight);
     }
+
+    public _setNativeClipToBounds() {
+        //
+    }
 }
 
 ViewCommon.prototype._oldLeft = 0;
