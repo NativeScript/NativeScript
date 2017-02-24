@@ -7,6 +7,7 @@
         "tns-core-modules/**/*.d.ts"
     ],
     "exclude": [
+        "tns-core-modules/docs-shims.d.ts",
         "tns-platform-declarations/node_modules/",
         "tns-platform-declarations/package/",
         "tns-core-modules/node_modules/",

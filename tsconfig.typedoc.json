@@ -10,6 +10,7 @@
         "experimentalDecorators": true
     },
     "files": [
+        "tns-core-modules/docs-shims.d.ts",
         "tns-core-modules/tns-core-modules.d.ts"
     ]
 }
