@@ -90,6 +90,7 @@ module.exports = function(grunt) {
         var dtsFiles = grunt.file.expand({cwd: srcDir }, [
             "**/*.d.ts",
             //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
+            "!docs-shims.d.ts",
             "!node-tests/**",
             "!org.nativescript.widgets.d.ts",
             "!android17.d.ts",
