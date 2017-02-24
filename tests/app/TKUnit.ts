@@ -234,8 +234,8 @@ export function assertEqual<T extends { equals?(arg: T): boolean }>(actual: T, e
  * Assert two json like objects are deep equal.
  */
 export function assertDeepEqual(actual, expected, path: any[] = []): void {
-    let typeofActual = typeof actual;
-    let typeofExpected = typeof expected;
+    let typeofActual: string = typeof actual;
+    let typeofExpected: string = typeof expected;
     if (typeofActual !== typeofExpected) {
         throw new Error("At /" + path.join("/") + " types of actual " + typeofActual + " and expected " + typeofExpected + " differ.");
     } else if (typeofActual === "object" || typeofActual === "array") {
@@ -290,8 +290,8 @@ export function assertDeepEqual(actual, expected, path: any[] = []): void {
 }
 
 export function assertDeepSuperset(actual, expected, path: any[] = []): void {
-    let typeofActual = typeof actual;
-    let typeofExpected = typeof expected;
+    let typeofActual: string = typeof actual;
+    let typeofExpected: string = typeof expected;
     if (typeofActual !== typeofExpected) {
         throw new Error("At /" + path.join("/") + " types of actual " + typeofActual + " and expected " + typeofExpected + " differ.");
     } else if (typeofActual === "object" || typeofActual === "array") {
