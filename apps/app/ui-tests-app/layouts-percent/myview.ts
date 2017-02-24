@@ -1,11 +1,11 @@
-import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility} from "ui/layouts/layout-base";
+import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility, PercentLength, Length } from "ui/layouts/layout-base";
 
 export class ViewModel extends Observable {
 
     // View properties
     public onWidthHeight(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
-        if ((<any>view).width !== "50%") {
+        if (!PercentLength.equals(view.marginLeft, { value: 0.5, unit: "%"})) {
             (<any>view).width = "50%";
             (<any>view).height = "50%";
         } else {
@@ -16,7 +16,7 @@ export class ViewModel extends Observable {
 
     public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
-        if (view.minWidth !== 105) {
+        if (!PercentLength.equals(view.marginLeft, 105)) {
             view.minWidth = 105;
             view.minHeight = 55;
         } else {
@@ -27,7 +27,7 @@ export class ViewModel extends Observable {
 
     public onMargins(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
-        if ((<any>view).marginLeft !== "10%") {
+        if (!PercentLength.equals(view.marginLeft, { value: 0.1, unit: "%"})) {
             (<any>view).marginLeft = "10%";
             (<any>view).marginTop = "10%";
             (<any>view).marginRight = "10%";
@@ -74,8 +74,8 @@ export class ViewModel extends Observable {
 
     // Layout properties
     public onPaddings(args: { eventName: string, object: any }): void {
-        var layout = args.object.parent;
-        if (layout.paddingLeft !== 5) {
+        var layout: LayoutBase = args.object.parent;
+        if (!Length.equals(layout.paddingLeft, 5)) {
             layout.paddingLeft = 5;
             layout.paddingTop = 5;
             layout.paddingRight = 5;
@@ -89,12 +89,12 @@ export class ViewModel extends Observable {
     }
 
     public onAllProperties(args: { eventName: string, object: any }): void {
-        var child;
-        var layout = args.object.parent;
+        var child: View;
+        var layout: LayoutBase = args.object.parent;
 
         // WidthHeight
-        child = layout.getViewById("widthHeight");
-        if ((<any>child).width !== "50%") {
+        child = <View>layout.getViewById("widthHeight");
+        if (!PercentLength.equals((<any>child).width, { value: 0.5, unit: "%"})) {
             (<any>child).width = "50%";
             (<any>child).height = "50%";
         } else {
@@ -103,8 +103,8 @@ export class ViewModel extends Observable {
         }
 
         // MinWidthMinHeight
-        child = layout.getViewById("minWidthMinHeight");
-        if (child.minWidth !== 105) {
+        child = <View>layout.getViewById("minWidthMinHeight");
+        if (!Length.equals(child.minWidth, 105)) {
             child.minWidth = 105;
             child.minHeight = 55;
         } else {
@@ -113,8 +113,8 @@ export class ViewModel extends Observable {
         }
 
         // Margins
-        child = layout.getViewById("margins");
-        if ((<any>child).marginLeft !== "10%") {
+        child = <View>layout.getViewById("margins");
+        if (!PercentLength.equals((<any>child).marginLeft, { value: 0.1, unit: "%"})) {
             (<any>child).marginLeft = "10%";
             (<any>child).marginTop = "10%";
             (<any>child).marginRight = "10%";
@@ -127,7 +127,7 @@ export class ViewModel extends Observable {
         }
 
         // Alignments
-        child = layout.getViewById("alignments");
+        child = <View>layout.getViewById("alignments");
         if (child.horizontalAlignment === HorizontalAlignment.STRETCH) {
             child.horizontalAlignment = HorizontalAlignment.LEFT;
             child.verticalAlignment = VerticalAlignment.TOP;
@@ -143,7 +143,7 @@ export class ViewModel extends Observable {
         }
 
         // Collapse
-        child = layout.getViewById("collapse");
+        child = <View>layout.getViewById("collapse");
         if (child.visibility === Visibility.VISIBLE) {
             child.visibility = Visibility.COLLAPSE;
         } else {
@@ -151,7 +151,7 @@ export class ViewModel extends Observable {
         }
 
         // Paddings
-        if (layout.paddingLeft !== 5) {
+        if (!Length.equals(layout.paddingLeft, 5)) {
             layout.paddingLeft = 5;
             layout.paddingTop = 5;
             layout.paddingRight = 5;
