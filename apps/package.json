@@ -22,6 +22,6 @@
     "babylon": "6.8.3",
     "lazy": "1.0.11",
     "nativescript-dev-typescript": "^0.3.0",
-    "typescript": "~2.1.6"
+    "typescript": "~2.2.1"
   }
 }

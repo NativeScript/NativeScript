@@ -8,6 +8,7 @@
   },
   "license": "Apache-2.0",
   "devDependencies": {
+    "@types/node": "^7.0.5",
     "chai": "3.2.0",
     "concurrently": "^2.1.0",
     "grunt": "1.0.1",
@@ -17,8 +18,8 @@
     "grunt-exec": "1.0.1",
     "grunt-mkdir": "1.0.0",
     "grunt-shell": "2.1.0",
-    "grunt-ts": "6.0.0-beta.11",
     "grunt-simple-mocha": "0.4.1",
+    "grunt-ts": "6.0.0-beta.11",
     "grunt-typedoc": "0.2.4",
     "http-server": "^0.9.0",
     "markdown-snippet-injector": "0.1.1",
@@ -27,8 +28,8 @@
     "shelljs": "^0.7.0",
     "time-grunt": "1.3.0",
     "tslint": "^4.4.2",
-    "typedoc": "0.5.6",
-    "typescript": "~2.1.5"
+    "typedoc": "https://github.com/hdeshev/typedoc/blob/npm/typedoc-no-types.tgz?raw=true",
+    "typescript": "~2.2.1"
   },
   "scripts": {
     "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps",
