@@ -47,7 +47,9 @@ export module ad {
             && isNullOrUndefined(background.image)
             && !isNullOrUndefined(background.color)) {
             let backgroundColor = (<any>backgroundDrawable).backgroundColor = background.color.android;
+            backgroundDrawable.mutate();
             backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+            backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
             (<any>backgroundDrawable).backgroundColor = backgroundColor;
         }
         else if (!background.isEmpty()) {
