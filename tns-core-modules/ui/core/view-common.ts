@@ -108,8 +108,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public _gestureObservers = {};
 
-    // public parent: ViewCommon;
-
     public effectiveMinWidth: number;
     public effectiveMinHeight: number;
     public effectiveWidth: number;
@@ -126,11 +124,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public effectiveBorderRightWidth: number;
     public effectiveBorderBottomWidth: number;
     public effectiveBorderLeftWidth: number;
-
-    constructor() {
-        super();
-        this._goToVisualState("normal");
-    }
 
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
         if (!this._gestureObservers[type]) {

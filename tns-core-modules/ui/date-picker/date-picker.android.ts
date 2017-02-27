@@ -5,39 +5,49 @@
 
 export * from "./date-picker-common";
 
-@Interfaces([android.widget.DatePicker.OnDateChangedListener])
-class DateChangedListener extends java.lang.Object implements android.widget.DatePicker.OnDateChangedListener {
-    constructor(public owner: WeakRef<DatePicker>) {
-        super()
-        return global.__native(this);
+interface DateChangedListener {
+    new (owner: DatePicker): android.widget.DatePicker.OnDateChangedListener;
+}
+
+let DateChangedListener: DateChangedListener;
+
+function initializeDateChangedListener(): void {
+    if (DateChangedListener) {
+        return;
     }
 
-    onDateChanged(picker: android.widget.DatePicker, year: number, month: number, day: number) {
-        let owner = this.owner.get();
-        if (!owner) {
-            return;
+    @Interfaces([android.widget.DatePicker.OnDateChangedListener])
+    class DateChangedListenerImpl extends java.lang.Object implements android.widget.DatePicker.OnDateChangedListener {
+        constructor(public owner: DatePicker) {
+            super()
+            return global.__native(this);
         }
 
-        let dateIsChanged = false;
-        if (year !== owner.year) {
-            yearProperty.nativeValueChange(owner, year);
-            dateIsChanged = true;
-        }
+        onDateChanged(picker: android.widget.DatePicker, year: number, month: number, day: number) {
+            const owner = this.owner;
+            let dateIsChanged = false;
+            if (year !== owner.year) {
+                yearProperty.nativeValueChange(owner, year);
+                dateIsChanged = true;
+            }
 
-        if ((month + 1) !== owner.month) {
-            monthProperty.nativeValueChange(owner, month + 1);
-            dateIsChanged = true;
-        }
+            if ((month + 1) !== owner.month) {
+                monthProperty.nativeValueChange(owner, month + 1);
+                dateIsChanged = true;
+            }
 
-        if (day !== owner.day) {
-            dayProperty.nativeValueChange(owner, day);
-            dateIsChanged = true;
-        }
+            if (day !== owner.day) {
+                dayProperty.nativeValueChange(owner, day);
+                dateIsChanged = true;
+            }
 
-        if (dateIsChanged) {
-            dateProperty.nativeValueChange(owner, new Date(year, month, day));
+            if (dateIsChanged) {
+                dateProperty.nativeValueChange(owner, new Date(year, month, day));
+            }
         }
     }
+
+    DateChangedListener = DateChangedListenerImpl;
 }
 
 export class DatePicker extends DatePickerBase {
@@ -49,9 +59,10 @@ export class DatePicker extends DatePickerBase {
     }
 
     public _createNativeView() {
+        initializeDateChangedListener();
         this._android = new android.widget.DatePicker(this._context);
         this._android.setCalendarViewShown(false);
-        this._listener = this._listener = new DateChangedListener(new WeakRef(this));
+        this._listener = this._listener = new DateChangedListener(this);
         this._android.init(0, 0, 0, this._listener);
     }
 

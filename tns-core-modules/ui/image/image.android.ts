@@ -60,6 +60,7 @@ export class Image extends ImageBase {
     }
 
     public _createNativeView() {
+        initializeImageLoadedListener();
         if (!imageFetcher) {
             initImageCache(this._context);
         }
@@ -77,7 +78,7 @@ export class Image extends ImageBase {
 
         let value = this.src;
         let async = this.loadMode === ASYNC;
-        this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(new WeakRef(this));
+        this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(this);
 
         if (typeof value === "string") {
             value = value.trim();
@@ -163,17 +164,27 @@ export class Image extends ImageBase {
     }
 }
 
-@Interfaces([org.nativescript.widgets.image.Worker.OnImageLoadedListener])
-class ImageLoadedListener extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
-    constructor(private owner: WeakRef<Image>) {
-        super();
-        return global.__native(this);
+interface ImageLoadedListener {
+    new (owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
+}
+
+let ImageLoadedListener: ImageLoadedListener;
+function initializeImageLoadedListener() {
+    if (ImageLoadedListener) {
+        return;
     }
 
-    onImageLoaded(success: boolean): void {
-        let owner = this.owner.get();
-        if (owner) {
-            owner.isLoading = false;
+    @Interfaces([org.nativescript.widgets.image.Worker.OnImageLoadedListener])
+    class ImageLoadedListenerImpl extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
+        constructor(private owner: Image) {
+            super();
+            return global.__native(this);
+        }
+
+        onImageLoaded(success: boolean): void {
+            this.owner.isLoading = false;
         }
     }
+
+    ImageLoadedListener = ImageLoadedListenerImpl;
 }

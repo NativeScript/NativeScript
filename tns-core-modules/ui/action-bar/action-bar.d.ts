@@ -40,7 +40,7 @@ declare module "ui/action-bar" {
         update();
 
         //@private
-        _isEmpty(): boolean
+        _isEmpty(): boolean;
         //@endprivate
 
         _addArrayFromBuilder(name: string, value: Array<any>): void;

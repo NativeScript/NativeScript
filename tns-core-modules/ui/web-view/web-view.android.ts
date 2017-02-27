@@ -2,13 +2,18 @@ import { WebViewBase, knownFolders, traceEnabled, traceWrite, traceCategories } 
 
 export * from "./web-view-common";
 
-let WebViewClientClass;
-function ensureWebViewClientClass() {
-    if (WebViewClientClass) {
+interface WebViewClient {
+    new (owner: WebView): android.webkit.WebViewClient;
+}
+
+let WebViewClient: WebViewClient;
+
+function initializeWebViewClient(): void {
+    if (WebViewClient) {
         return;
     }
 
-    class WebViewClientClassInner extends android.webkit.WebViewClient {
+    class WebViewClientImpl extends android.webkit.WebViewClient {
         private _view: WebViewBase;
 
         constructor(view: WebViewBase) {
@@ -79,25 +84,20 @@ function ensureWebViewClientClass() {
         }
     };
 
-    WebViewClientClass = WebViewClientClassInner;
+    WebViewClient = WebViewClientImpl;
 }
 
 export class WebView extends WebViewBase {
     private _android: android.webkit.WebView;
     private _webViewClient: android.webkit.WebViewClient;
 
-    constructor() {
-        super();
-
-        ensureWebViewClientClass();
-        this._webViewClient = new WebViewClientClass(this);
-    }
-
     get android(): android.webkit.WebView {
         return this._android;
     }
 
     public _createNativeView() {
+        initializeWebViewClient();
+        this._webViewClient = new WebViewClient(this);
         this._android = new android.webkit.WebView(this._context);
         this._android.getSettings().setJavaScriptEnabled(true);
         this._android.getSettings().setBuiltInZoomControls(true);

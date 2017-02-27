@@ -77,64 +77,62 @@ function setLayoutParamsProperty(view: View, setter: (lp: org.nativescript.widge
     }
 }
 
-import FlexboxLayoutWidget = org.nativescript.widgets.FlexboxLayout;
-
 const flexDirectionMap = {
-    [FlexDirection.ROW]: FlexboxLayoutWidget.FLEX_DIRECTION_ROW,
-    [FlexDirection.ROW_REVERSE]: FlexboxLayoutWidget.FLEX_DIRECTION_ROW_REVERSE,
-    [FlexDirection.COLUMN]: FlexboxLayoutWidget.FLEX_DIRECTION_COLUMN,
-    [FlexDirection.COLUMN_REVERSE]: FlexboxLayoutWidget.FLEX_DIRECTION_COLUMN_REVERSE
-}
+    [FlexDirection.ROW]: 0, //FlexboxLayoutWidget.FLEX_DIRECTION_ROW,
+    [FlexDirection.ROW_REVERSE]: 1, //FlexboxLayoutWidget.FLEX_DIRECTION_ROW_REVERSE,
+    [FlexDirection.COLUMN]: 2, //FlexboxLayoutWidget.FLEX_DIRECTION_COLUMN,
+    [FlexDirection.COLUMN_REVERSE]: 3 //FlexboxLayoutWidget.FLEX_DIRECTION_COLUMN_REVERSE
+};
 
 const flexWrapMap = {
-    [FlexWrap.NOWRAP]: FlexboxLayoutWidget.FLEX_WRAP_NOWRAP,
-    [FlexWrap.WRAP]: FlexboxLayoutWidget.FLEX_WRAP_WRAP,
-    [FlexWrap.WRAP_REVERSE]: FlexboxLayoutWidget.FLEX_WRAP_WRAP_REVERSE
+    [FlexWrap.NOWRAP]: 0, //FlexboxLayoutWidget.FLEX_WRAP_NOWRAP,
+    [FlexWrap.WRAP]: 1, //FlexboxLayoutWidget.FLEX_WRAP_WRAP,
+    [FlexWrap.WRAP_REVERSE]: 2 //FlexboxLayoutWidget.FLEX_WRAP_WRAP_REVERSE
 }
 
 const justifyContentMap = {
-    [JustifyContent.CENTER]: FlexboxLayoutWidget.JUSTIFY_CONTENT_CENTER,
-    [JustifyContent.FLEX_END]: FlexboxLayoutWidget.JUSTIFY_CONTENT_FLEX_END,
-    [JustifyContent.FLEX_START]: FlexboxLayoutWidget.JUSTIFY_CONTENT_FLEX_START,
-    [JustifyContent.SPACE_AROUND]: FlexboxLayoutWidget.JUSTIFY_CONTENT_SPACE_AROUND,
-    [JustifyContent.SPACE_BETWEEN]: FlexboxLayoutWidget.JUSTIFY_CONTENT_SPACE_BETWEEN
+    [JustifyContent.FLEX_START]: 0, //FlexboxLayoutWidget.JUSTIFY_CONTENT_FLEX_START,
+    [JustifyContent.FLEX_END]: 1, //FlexboxLayoutWidget.JUSTIFY_CONTENT_FLEX_END,
+    [JustifyContent.CENTER]: 2, //FlexboxLayoutWidget.JUSTIFY_CONTENT_CENTER,
+    [JustifyContent.SPACE_BETWEEN]: 3, //FlexboxLayoutWidget.JUSTIFY_CONTENT_SPACE_BETWEEN
+    [JustifyContent.SPACE_AROUND]: 4 //FlexboxLayoutWidget.JUSTIFY_CONTENT_SPACE_AROUND,
 }
 
 const alignItemsMap = {
-    [AlignItems.BASELINE]: FlexboxLayoutWidget.ALIGN_ITEMS_BASELINE,
-    [AlignItems.CENTER]: FlexboxLayoutWidget.ALIGN_ITEMS_CENTER,
-    [AlignItems.FLEX_END]: FlexboxLayoutWidget.ALIGN_ITEMS_FLEX_END,
-    [AlignItems.FLEX_START]: FlexboxLayoutWidget.ALIGN_ITEMS_FLEX_START,
-    [AlignItems.STRETCH]: FlexboxLayoutWidget.ALIGN_ITEMS_STRETCH
+    [AlignItems.FLEX_START]: 0, //FlexboxLayoutWidget.ALIGN_ITEMS_FLEX_START,
+    [AlignItems.FLEX_END]: 1, //FlexboxLayoutWidget.ALIGN_ITEMS_FLEX_END,
+    [AlignItems.CENTER]: 2, //FlexboxLayoutWidget.ALIGN_ITEMS_CENTER,
+    [AlignItems.BASELINE]: 3, //FlexboxLayoutWidget.ALIGN_ITEMS_BASELINE,
+    [AlignItems.STRETCH]: 4 //FlexboxLayoutWidget.ALIGN_ITEMS_STRETCH
 }
 
 const alignContentMap = {
-    [AlignContent.CENTER]: FlexboxLayoutWidget.ALIGN_CONTENT_CENTER,
-    [AlignContent.FLEX_END]: FlexboxLayoutWidget.ALIGN_CONTENT_FLEX_END,
-    [AlignContent.FLEX_START]: FlexboxLayoutWidget.ALIGN_CONTENT_FLEX_START,
-    [AlignContent.SPACE_AROUND]: FlexboxLayoutWidget.ALIGN_CONTENT_SPACE_AROUND,
-    [AlignContent.SPACE_BETWEEN]: FlexboxLayoutWidget.ALIGN_CONTENT_SPACE_BETWEEN,
-    [AlignContent.STRETCH]: FlexboxLayoutWidget.ALIGN_CONTENT_STRETCH
+    [AlignContent.FLEX_START]: 0, //FlexboxLayoutWidget.ALIGN_CONTENT_FLEX_START,
+    [AlignContent.FLEX_END]: 1, //FlexboxLayoutWidget.ALIGN_CONTENT_FLEX_END,
+    [AlignContent.CENTER]: 2, //FlexboxLayoutWidget.ALIGN_CONTENT_CENTER,
+    [AlignContent.SPACE_BETWEEN]: 3, //FlexboxLayoutWidget.ALIGN_CONTENT_SPACE_BETWEEN,
+    [AlignContent.SPACE_AROUND]: 4, //FlexboxLayoutWidget.ALIGN_CONTENT_SPACE_AROUND,
+    [AlignContent.STRETCH]: 5 //FlexboxLayoutWidget.ALIGN_CONTENT_STRETCH
 }
 
 const alignSelfMap = {
-    [AlignSelf.AUTO]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_AUTO,
-    [AlignSelf.FLEX_START]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_FLEX_START,
-    [AlignSelf.FLEX_END]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_FLEX_END,
-    [AlignSelf.CENTER]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_CENTER,
-    [AlignSelf.BASELINE]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_BASELINE,
-    [AlignSelf.STRETCH]: FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_STRETCH
+    [AlignSelf.AUTO]: -1, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_AUTO,
+    [AlignSelf.FLEX_START]: 0, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_FLEX_START,
+    [AlignSelf.FLEX_END]: 1, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_FLEX_END,
+    [AlignSelf.CENTER]: 2, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_CENTER,
+    [AlignSelf.BASELINE]: 3, //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_BASELINE,
+    [AlignSelf.STRETCH]: 4 //FlexboxLayoutWidget.LayoutParams.ALIGN_SELF_STRETCH
 }
 
 export class FlexboxLayout extends FlexboxLayoutBase {
-    private _layout: FlexboxLayoutWidget;
+    private _layout: org.nativescript.widgets.FlexboxLayout;
 
     constructor() {
         super();
     }
 
-    get android(): FlexboxLayoutWidget { return this._layout; }
-    get _nativeView(): FlexboxLayoutWidget { return this._layout; }
+    get android(): org.nativescript.widgets.FlexboxLayout { return this._layout; }
+    get _nativeView(): org.nativescript.widgets.FlexboxLayout { return this._layout; }
 
     public _createNativeView() {
         this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
@@ -161,7 +159,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         this.android.setJustifyContent(justifyContentMap[justifyContent]);
     }
 
-    get [alignItemsProperty.native](): AlignItems{
+    get [alignItemsProperty.native](): AlignItems {
         return alignItemsProperty.defaultValue;
     }
     set [alignItemsProperty.native](alignItems: AlignItems) {

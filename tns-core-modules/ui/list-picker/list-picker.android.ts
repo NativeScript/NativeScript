@@ -3,36 +3,48 @@ import { ItemsSource } from "ui/list-picker";
 
 export * from "./list-picker-common";
 
-@Interfaces([android.widget.NumberPicker.Formatter])
-class Formatter extends java.lang.Object implements android.widget.NumberPicker.Formatter {
-    constructor(private owner: WeakRef<ListPicker>) {
-        super();
-        return global.__native(this);
-    }
-
-    format(index: number): string {
-        let owner = this.owner.get();
-        if (owner) {
-            return owner._getItemAsString(index);
-        }
-
-        return " ";
-    }
+interface Formatter {
+    new (owner: ListPicker): android.widget.NumberPicker.Formatter;
 }
 
-@Interfaces([android.widget.NumberPicker.OnValueChangeListener])
-class ValueChangeListener extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
-    constructor(private owner: WeakRef<ListPicker>) {
-        super();
-        return global.__native(this);
+interface ValueChangeListener {
+    new (owner: ListPicker): android.widget.NumberPicker.OnValueChangeListener;
+}
+
+let Formatter: Formatter;
+let ValueChangeListener: ValueChangeListener;
+
+function initializeNativeClasses(): void {
+    if (Formatter) {
+        return;
     }
 
-    onValueChange(picker: android.widget.NumberPicker, oldValue: number, newValue: number): void {
-        let owner = this.owner.get();
-        if (owner) {
-            selectedIndexProperty.nativeValueChange(owner, newValue);
+    @Interfaces([android.widget.NumberPicker.Formatter])
+    class FormatterImpl extends java.lang.Object implements android.widget.NumberPicker.Formatter {
+        constructor(private owner: ListPicker) {
+            super();
+            return global.__native(this);
+        }
+
+        format(index: number): string {
+            return this.owner._getItemAsString(index);
         }
     }
+
+    @Interfaces([android.widget.NumberPicker.OnValueChangeListener])
+    class ValueChangeListenerImpl extends java.lang.Object implements android.widget.NumberPicker.OnValueChangeListener {
+        constructor(private owner: ListPicker) {
+            super();
+            return global.__native(this);
+        }
+
+        onValueChange(picker: android.widget.NumberPicker, oldValue: number, newValue: number): void {
+            selectedIndexProperty.nativeValueChange(this.owner, newValue);
+        }
+    }
+
+    Formatter = FormatterImpl;
+    ValueChangeListener = ValueChangeListenerImpl;
 }
 
 function getEditText(picker: android.widget.NumberPicker): android.widget.EditText {
@@ -68,6 +80,7 @@ export class ListPicker extends ListPickerBase {
     }
 
     public _createNativeView() {
+        initializeNativeClasses();
         this._android = new android.widget.NumberPicker(this._context);
         let editText = getEditText(this._android);
         this._editText = editText;
@@ -79,10 +92,10 @@ export class ListPicker extends ListPickerBase {
         this._android.setMaxValue(0);
         this._android.setValue(0);
 
-        this._formatter = this._formatter || new Formatter(new WeakRef(this));
+        this._formatter = this._formatter || new Formatter(this);
         this._android.setFormatter(this._formatter);
 
-        this._valueChangedListener = this._valueChangedListener || new ValueChangeListener(new WeakRef(this));
+        this._valueChangedListener = this._valueChangedListener || new ValueChangeListener(this);
         this._android.setOnValueChangedListener(this._valueChangedListener);
 
         if (editText) {

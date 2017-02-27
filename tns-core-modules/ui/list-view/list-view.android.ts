@@ -13,20 +13,32 @@ const ITEMLOADING = ListViewBase.itemLoadingEvent;
 const LOADMOREITEMS = ListViewBase.loadMoreItemsEvent;
 const ITEMTAP = ListViewBase.itemTapEvent;
 
-@Interfaces([android.widget.AdapterView.OnItemClickListener])
-class ItemClickListener extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
-    constructor(private owner: WeakRef<ListView>) {
-        super();
-        return global.__native(this);
+interface ItemClickListener {
+    new (owner: ListView): android.widget.AdapterView.OnItemClickListener;
+}
+
+let ItemClickListener: ItemClickListener;
+
+function initializeItemClickListener(): void {
+    if (ItemClickListener) {
+        return;
     }
 
-    onItemClick<T extends android.widget.Adapter>(parent: android.widget.AdapterView<T>, convertView: android.view.View, index: number, id: number) {
-        let owner = this.owner.get();
-        if (owner) {
-            let view = owner._realizedTemplates.get(owner._getItemTemplate(index).key).get(convertView);
+    @Interfaces([android.widget.AdapterView.OnItemClickListener])
+    class ItemClickListenerImpl extends java.lang.Object implements android.widget.AdapterView.OnItemClickListener {
+        constructor(private owner: ListView) {
+            super();
+            return global.__native(this);
+        }
+
+        onItemClick<T extends android.widget.Adapter>(parent: android.widget.AdapterView<T>, convertView: android.view.View, index: number, id: number) {
+            const owner = this.owner;
+            const view = owner._realizedTemplates.get(owner._getItemTemplate(index).key).get(convertView);
             owner.notify({ eventName: ITEMTAP, object: owner, index: index, view: view });
         }
     }
+
+    ItemClickListener = ItemClickListenerImpl;
 }
 
 export class ListView extends ListViewBase {
@@ -37,6 +49,7 @@ export class ListView extends ListViewBase {
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
     public _createNativeView() {
+        initializeItemClickListener();
         this._android = new android.widget.ListView(this._context);
         this._android.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
         this.updateEffectiveRowHeight();
@@ -51,7 +64,7 @@ export class ListView extends ListViewBase {
         ensureListViewAdapterClass();
         this._android.setAdapter(new ListViewAdapterClass(this));
 
-        this._itemClickListener = this._itemClickListener || new ItemClickListener(new WeakRef(this));
+        this._itemClickListener = this._itemClickListener || new ItemClickListener(this);
         this.android.setOnItemClickListener(this._itemClickListener);
     }
 

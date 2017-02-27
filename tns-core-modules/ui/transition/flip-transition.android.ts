@@ -13,10 +13,10 @@ export class FlipTransition extends Transition {
         let objectAnimators;
         let values;
         let animator: android.animation.ObjectAnimator;
-        let animatorSet = new android.animation.AnimatorSet();
-        let fullDuration = this.getDuration() || 300;
-        let interpolator = this.getCurve();
-        let rotationY = this._direction === "right" ? 180 : -180;
+        const animatorSet = new android.animation.AnimatorSet();
+        const fullDuration = this.getDuration() || 300;
+        const interpolator = this.getCurve();
+        const rotationY = this._direction === "right" ? 180 : -180;
 
         switch (transitionType) {
             case AndroidTransitionType.enter: // card_flip_right_in

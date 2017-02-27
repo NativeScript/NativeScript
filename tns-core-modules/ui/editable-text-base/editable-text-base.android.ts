@@ -9,102 +9,86 @@ import { ad } from "utils/utils";
 
 export * from "./editable-text-base-common";
 
-@Interfaces([android.text.TextWatcher])
-class TextWatcher extends java.lang.Object implements android.text.TextWatcher {
-    constructor(private owner: WeakRef<EditableTextBase>) {
-        super();
-        return global.__native(this);
-    }
-
-    public beforeTextChanged(text: string, start: number, count: number, after: number) {
-        //
-    }
-
-    public onTextChanged(text: string, start: number, before: number, count: number) {
-        let owner = this.owner.get();
-        if (!owner) {
-            return;
-        }
-        let selectionStart = owner.android.getSelectionStart();
-        owner.android.removeTextChangedListener(owner._textWatcher);
-
-        // //RemoveThisDoubleCall
-        // owner.style._updateTextDecoration();
-        // owner.style._updateTextTransform();
-
-        owner.android.addTextChangedListener(owner._textWatcher);
-        owner.android.setSelection(selectionStart);
-    }
-
-    public afterTextChanged(editable: android.text.IEditable) {
-        let owner = this.owner.get();
-        if (!owner) {
-            return;
-        }
-
-        switch (owner.updateTextTrigger) {
-            case "focusLost":
-                owner._dirtyTextAccumulator = editable.toString();
-                break;
-            case "textChanged":
-                textProperty.nativeValueChange(owner, editable.toString());
-                break;
-            default:
-                throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
-        }
-    }
-}
-
 //https://github.com/NativeScript/NativeScript/issues/2942
 let dismissKeyboardTimeoutId: any;
 
-@Interfaces([android.view.View.OnFocusChangeListener])
-class FocusChangeListener extends java.lang.Object implements android.view.View.OnFocusChangeListener {
-    constructor(private owner: WeakRef<EditableTextBase>) {
-        super();
-        return global.__native(this);
-    }
-
-    public onFocusChange(view: android.view.View, hasFocus: boolean) {
-        let owner = this.owner.get();
-        if (!owner) {
-            return;
-        }
-
-        if (hasFocus) {
-            if (dismissKeyboardTimeoutId) {
-                // https://github.com/NativeScript/NativeScript/issues/2942
-                // Don't hide the keyboard since another (or the same) EditText has gained focus.
-                clearTimeout(dismissKeyboardTimeoutId);
-                dismissKeyboardTimeoutId = undefined;
-            }
-        }
-        else {
-            if (owner._dirtyTextAccumulator) {
-                textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
-                owner._dirtyTextAccumulator = undefined;
-            }
-
-            dismissKeyboardTimeoutId = setTimeout(() => {
-                // https://github.com/NativeScript/NativeScript/issues/2942
-                // Dismiss the keyboard if focus goes to something different from EditText.
-                owner.dismissSoftInput();
-                dismissKeyboardTimeoutId = null;
-            }, 1);
-        }
-    }
+interface EditTextListeners extends android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
 }
 
-@Interfaces([android.widget.TextView.OnEditorActionListener])
-class EditorActionListener extends java.lang.Object implements android.widget.TextView.OnEditorActionListener {
-    constructor(private owner: WeakRef<EditableTextBase>) {
-        super();
-        return global.__native(this);
+interface EditTextListenersClass {
+    prototype: EditTextListeners;
+    new (owner: EditableTextBase): EditTextListeners;
+}
+
+let EditTextListeners: EditTextListenersClass;
+
+function initializeEditTextListeners(): void {
+    if (EditTextListeners) {
+        return;
     }
 
-    public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
-        let owner = this.owner.get();
-        if (owner) {
+    @Interfaces([android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener])
+    class EditTextListenersImpl extends java.lang.Object implements android.text.TextWatcher, android.view.View.OnFocusChangeListener, android.widget.TextView.OnEditorActionListener {
+        constructor(private owner: EditableTextBase) {
+            super();
+            return global.__native(this);
+        }
+
+        public beforeTextChanged(text: string, start: number, count: number, after: number) {
+            //
+        }
+
+        public onTextChanged(text: string, start: number, before: number, count: number) {
+            const owner = this.owner;
+            let selectionStart = owner.android.getSelectionStart();
+            owner.android.removeTextChangedListener(owner._editTextListeners);
+            owner.android.addTextChangedListener(owner._editTextListeners);
+            owner.android.setSelection(selectionStart);
+        }
+
+        public afterTextChanged(editable: android.text.IEditable) {
+            const owner = this.owner;
+            switch (owner.updateTextTrigger) {
+                case "focusLost":
+                    owner._dirtyTextAccumulator = editable.toString();
+                    break;
+                case "textChanged":
+                    textProperty.nativeValueChange(owner, editable.toString());
+                    break;
+                default:
+                    throw new Error("Invalid updateTextTrigger: " + owner.updateTextTrigger);
+            }
+        }
+
+        public onFocusChange(view: android.view.View, hasFocus: boolean) {
+            const owner = this.owner;
+
+            if (hasFocus) {
+                if (dismissKeyboardTimeoutId) {
+                    // https://github.com/NativeScript/NativeScript/issues/2942
+                    // Don't hide the keyboard since another (or the same) EditText has gained focus.
+                    clearTimeout(dismissKeyboardTimeoutId);
+                    dismissKeyboardTimeoutId = undefined;
+                }
+            }
+            else {
+                if (owner._dirtyTextAccumulator) {
+                    textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
+                    owner._dirtyTextAccumulator = undefined;
+                }
+
+                dismissKeyboardTimeoutId = setTimeout(() => {
+                    // https://github.com/NativeScript/NativeScript/issues/2942
+                    // Dismiss the keyboard if focus goes to something different from EditText.
+                    owner.dismissSoftInput();
+                    dismissKeyboardTimeoutId = null;
+                }, 1);
+            }
+        }
+
+        public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
+            const owner = this.owner;
+
             if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
@@ -126,18 +110,19 @@ class EditorActionListener extends java.lang.Object implements android.widget.Te
             return false;
         }
     }
+
+    EditTextListeners = EditTextListenersImpl;
 }
 
 export abstract class EditableTextBase extends EditableTextBaseCommon {
-    _textWatcher: android.text.TextWatcher;
     /* tslint:disable */
     _dirtyTextAccumulator: string;
     /* tslint:enable */
+    
+    _editTextListeners: EditTextListeners;
 
     private _android: android.widget.EditText;
     private _keyListenerCache: android.text.method.KeyListener;
-    private _focusChangeListener: android.view.View.OnFocusChangeListener;
-    private _editorActionListener: android.widget.TextView.OnEditorActionListener;
 
     get android(): android.widget.EditText {
         return this._android;
@@ -148,34 +133,24 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     public abstract _onReturnPress(): void;
 
     public _createNativeView() {
+        initializeEditTextListeners();
         this._android = new android.widget.EditText(this._context);
         this._configureEditText();
         this._keyListenerCache = this.android.getKeyListener();
 
-        let weakRef = new WeakRef(this);
-
-        this._textWatcher = this._textWatcher || new TextWatcher(weakRef);
-        this._android.addTextChangedListener(this._textWatcher);
-
-        this._focusChangeListener = this._focusChangeListener || new FocusChangeListener(weakRef);
-        this._android.setOnFocusChangeListener(this._focusChangeListener);
-
-        this._editorActionListener = this._editorActionListener || new EditorActionListener(weakRef);
-        this._android.setOnEditorActionListener(this._editorActionListener);
+        this._editTextListeners = this._editTextListeners || new EditTextListeners(this);
+        this._android.addTextChangedListener(this._editTextListeners);
+        this._android.setOnFocusChangeListener(this._editTextListeners);
+        this._android.setOnEditorActionListener(this._editTextListeners);
     }
 
     public _resetNativeView(force?: boolean) {
         if (this._android) {
-            if (this._textWatcher) {
-                this._android.removeTextChangedListener(this._textWatcher);
-            }
+            this._android.setOnFocusChangeListener(null);
+            this._android.setOnEditorActionListener(null);
 
-            if (this._focusChangeListener) {
-                this._android.setOnFocusChangeListener(null);
-            }
-
-            if (this._editorActionListener) {
-                this._android.setOnEditorActionListener(null);
+            if (this._editTextListeners) {
+                this._android.removeTextChangedListener(this._editTextListeners);
             }
         }
         super._resetNativeView();

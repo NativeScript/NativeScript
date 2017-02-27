@@ -45,10 +45,10 @@ interface ExpandedFragment {
     isDestroyed: boolean;
 }
 
-let enterFakeResourceId = -10;
-let exitFakeResourceId = -20;
-let popEnterFakeResourceId = -30;
-let popExitFakeResourceId = -40;
+const enterFakeResourceId = -10;
+const exitFakeResourceId = -20;
+const popEnterFakeResourceId = -30;
+const popExitFakeResourceId = -40;
 
 export module AndroidTransitionType {
     export const enter: string = "enter";

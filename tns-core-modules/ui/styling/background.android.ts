@@ -72,32 +72,26 @@ export module ad {
                 refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
             }
 
+            // This should be done only when backgroundImage is set!!!
             if ((background.hasBorderWidth() || background.hasBorderRadius() || background.clipPath) && getSDK() < 18) {
                 // Switch to software because of unsupported canvas methods if hardware acceleration is on:
                 // http://developer.android.com/guide/topics/graphics/hardware-accel.html
-                cache.layerType = cache.getLayerType();
-                cache.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+                if (cache.layerType === undefined) {
+                    cache.layerType = cache.getLayerType();
+                    cache.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
+                }
             }
         }
         else {
             // reset the value with the default native value
             if (nativeView instanceof android.widget.Button) {
                 let nativeButton = new android.widget.Button(nativeView.getContext());
-
-                if (getSDK() >= 16) {
-                    nativeView.setBackground(nativeButton.getBackground());
-                } else {
-                    nativeView.setBackgroundDrawable(nativeButton.getBackground());
-                }
+                org.nativescript.widgets.ViewHelper.setBackground(nativeView, nativeButton.getBackground());
             }
             else {
                 let viewClass = getClass(view);
                 if (_defaultBackgrounds.has(viewClass)) {
-                    if (getSDK() >= 16) {
-                        nativeView.setBackground(_defaultBackgrounds.get(viewClass));
-                    } else {
-                        nativeView.setBackgroundDrawable(_defaultBackgrounds.get(viewClass));
-                    }
+                    org.nativescript.widgets.ViewHelper.setBackground(nativeView, _defaultBackgrounds.get(viewClass));
                 }
             }
 

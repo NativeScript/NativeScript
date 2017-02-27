@@ -15,6 +15,33 @@ function generateItemId(): number {
     return actionItemIdGenerator;
 }
 
+interface MenuItemClickListener {
+    new (owner: ActionBar): android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+}
+
+let MenuItemClickListener: MenuItemClickListener;
+
+function initializeMenuItemClickListener(): void {
+    if (MenuItemClickListener) {
+        return;
+    }
+
+    @Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
+    class MenuItemClickListenerImpl extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
+        constructor(public owner: ActionBar) {
+            super();
+            return global.__native(this);
+        }
+
+        onMenuItemClick(item: android.view.IMenuItem): boolean {
+            let itemId = item.getItemId();
+            return this.owner._onAndroidItemSelected(itemId);
+        }
+    }
+
+    MenuItemClickListener = MenuItemClickListenerImpl;
+}
+
 export class ActionItem extends ActionItemBase {
     private _androidPosition: AndroidActionItemSettings = {
         position: "actionBar",
@@ -73,24 +100,6 @@ export class NavigationButton extends ActionItem {
 
 }
 
-@Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
-class MenuItemClickListener extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
-    constructor(public owner: WeakRef<ActionBar>) {
-        super();
-        return global.__native(this);
-    }
-
-    onMenuItemClick(item: android.view.IMenuItem): boolean {
-        let owner = this.owner.get();
-        if (!owner) {
-            return false;
-        }
-
-        let itemId = item.getItemId();
-        return owner._onAndroidItemSelected(itemId);
-    }
-}
-
 export class ActionBar extends ActionBarBase {
     private _appResources: android.content.res.Resources;
     private _android: AndroidActionBarSettings;
@@ -116,8 +125,9 @@ export class ActionBar extends ActionBarBase {
     }
 
     public _createNativeView() {
+        initializeMenuItemClickListener();
         this._toolbar = new android.support.v7.widget.Toolbar(this._context);
-        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(new WeakRef(this));
+        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(this);
         this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
     }
 
@@ -342,7 +352,7 @@ export class ActionBar extends ActionBarBase {
         return defaultTitleTextColor;
     }
     set [colorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;   
+        let color = value instanceof Color ? value.android : value;
         this.nativeView.setTitleTextColor(color);
     }
 }

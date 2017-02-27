@@ -17,49 +17,53 @@ const ANDROID = "_android";
 const NATIVE_VIEW = "_nativeView";
 const VIEW_GROUP = "_viewGroup";
 
-// TODO: Move this class into widgets.
-@Interfaces([android.view.View.OnTouchListener])
-class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {
-    constructor() {
-        super();
-        return global.__native(this);
-    }
-
-    onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
-        return true;
-    }
+interface TouchListener {
+    new (owner: View): android.view.View.OnTouchListener;
 }
 
-@Interfaces([android.view.View.OnTouchListener])
-class TouchListener extends java.lang.Object implements android.view.View.OnTouchListener {
-    constructor(private owner: WeakRef<View>) {
-        super();
-        return global.__native(this);
+let TouchListener: TouchListener;
+let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
+
+function initializeDisabledListener(): void {
+    if (disableUserInteractionListener) {
+        return;
     }
 
-    onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
-        let owner = this.owner.get();
-        if (!owner) {
-            return false;
+    disableUserInteractionListener = new org.nativescript.widgets.DisableUserInteractionListener();
+}
+
+function initializeTouchListener(): void {
+    if (TouchListener) {
+        return;
+    }
+
+    @Interfaces([android.view.View.OnTouchListener])
+    class TouchListenerImpl extends java.lang.Object implements android.view.View.OnTouchListener {
+        constructor(private owner: View) {
+            super();
+            return global.__native(this);
         }
 
-        for (let type in owner._gestureObservers) {
-            let list = owner._gestureObservers[type];
-            for (let i = 0; i < list.length; i++) {
-                list[i].androidOnTouchEvent(event);
+        onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
+            const owner = this.owner;
+            for (let type in owner._gestureObservers) {
+                let list = owner._gestureObservers[type];
+                list.forEach(element => {
+                    element.androidOnTouchEvent(event);
+                });
             }
-        }
 
-        let nativeView = owner._nativeView;
-        if (!nativeView || !nativeView.onTouchEvent) {
-            return false;
-        }
+            let nativeView = owner._nativeView;
+            if (!nativeView || !nativeView.onTouchEvent) {
+                return false;
+            }
 
-        return nativeView.onTouchEvent(event);
+            return nativeView.onTouchEvent(event);
+        }
     }
-}
 
-const disableUserInteractionListener = new DisableUserInteractionListener();
+    TouchListener = TouchListenerImpl;
+}
 
 export class View extends ViewCommon {
     private touchListenerIsSet: boolean;
@@ -101,7 +105,8 @@ export class View extends ViewCommon {
                 this._nativeView.setClickable(true);
             }
 
-            this.touchListener = this.touchListener || new TouchListener(new WeakRef(this));
+            initializeTouchListener();
+            this.touchListener = this.touchListener || new TouchListener(this);
             this._nativeView.setOnTouchListener(this.touchListener);
         }
     }
@@ -311,6 +316,7 @@ export class View extends ViewCommon {
     }
     set [isUserInteractionEnabledProperty.native](value: boolean) {
         if (!value) {
+            initializeDisabledListener();
             // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
             this._nativeView.setOnTouchListener(disableUserInteractionListener);
         } else {
@@ -480,62 +486,60 @@ function createNativePercentLengthProperty({key, auto = 0, getPixels, setPixels,
     });
 }
 
-const ViewHelper = org.nativescript.widgets.ViewHelper;
-
 createNativePercentLengthProperty({
     key: marginTopProperty.native,
-    getPixels: ViewHelper.getMarginTop,
-    setPixels: ViewHelper.setMarginTop,
-    setPercent: ViewHelper.setMarginTopPercent
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginTop,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginTop,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginTopPercent
 });
 
 createNativePercentLengthProperty({
     key: marginRightProperty.native,
-    getPixels: ViewHelper.getMarginRight,
-    setPixels: ViewHelper.setMarginRight,
-    setPercent: ViewHelper.setMarginRightPercent
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginRight,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginRight,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginRightPercent
 });
 
 createNativePercentLengthProperty({
     key: marginBottomProperty.native,
-    getPixels: ViewHelper.getMarginBottom,
-    setPixels: ViewHelper.setMarginBottom,
-    setPercent: ViewHelper.setMarginBottomPercent
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginBottom,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginBottom,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginBottomPercent
 });
 
 createNativePercentLengthProperty({
     key: marginLeftProperty.native,
-    getPixels: ViewHelper.getMarginLeft,
-    setPixels: ViewHelper.setMarginLeft,
-    setPercent: ViewHelper.setMarginLeftPercent
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginLeft,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginLeft,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginLeftPercent
 });
 
 createNativePercentLengthProperty({
     key: widthProperty.native,
     auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: ViewHelper.getWidth,
-    setPixels: ViewHelper.setWidth,
-    setPercent: ViewHelper.setWidthPercent
+    getPixels: org.nativescript.widgets.ViewHelper.getWidth,
+    setPixels: org.nativescript.widgets.ViewHelper.setWidth,
+    setPercent: org.nativescript.widgets.ViewHelper.setWidthPercent
 });
 
 createNativePercentLengthProperty({
     key: heightProperty.native,
     auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: ViewHelper.getHeight,
-    setPixels: ViewHelper.setHeight,
-    setPercent: ViewHelper.setHeightPercent
+    getPixels: org.nativescript.widgets.ViewHelper.getHeight,
+    setPixels: org.nativescript.widgets.ViewHelper.setHeight,
+    setPercent: org.nativescript.widgets.ViewHelper.setHeightPercent
 });
 
 createNativePercentLengthProperty({
     key: "_minWidthNative",
-    getPixels: ViewHelper.getMinWidth,
-    setPixels: ViewHelper.setMinWidth
+    getPixels: org.nativescript.widgets.ViewHelper.getMinWidth,
+    setPixels: org.nativescript.widgets.ViewHelper.setMinWidth
 });
 
 createNativePercentLengthProperty({
     key: "_minHeightNative",
-    getPixels: ViewHelper.getMinHeight,
-    setPixels: ViewHelper.setMinHeight
+    getPixels: org.nativescript.widgets.ViewHelper.getMinHeight,
+    setPixels: org.nativescript.widgets.ViewHelper.setMinHeight
 });
 
 export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
