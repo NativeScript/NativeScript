@@ -126,6 +126,10 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
             callback(text);
         }
     }
+
+    _setNativeText(): void {
+        //
+    }
 }
 
 //Text

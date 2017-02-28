@@ -87,6 +87,8 @@
          * Called when the text property is changed to request layout.
          */
         _requestLayoutOnTextChanged(): void;
+
+        _setNativeText(): void;
         //@endprivate
     }
 

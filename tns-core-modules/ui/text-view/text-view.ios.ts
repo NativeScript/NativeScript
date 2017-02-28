@@ -117,11 +117,8 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     public showText() {
-        const nativeView = this.nativeView;
-        nativeView.textColor = this.color ? this.color.ios : null;
-        const text = this.text;
-        const textAsString = (text === null || text === undefined) ? '' : text.toString();
-        nativeView.text = textAsString;
+        this.nativeView.textColor = this.color ? this.color.ios : null;
+        this._setNativeText();
         this._isShowingHint = false;
     }
 

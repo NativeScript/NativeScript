@@ -11,10 +11,6 @@ export * from "./text-base-common";
 
 export class TextBase extends TextBaseCommon {
 
-    private textDecorationSet: boolean;
-    private textTransformSet: boolean;
-    private letterSpacingSet: boolean;
-
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
     //Text
@@ -26,17 +22,7 @@ export class TextBase extends TextBaseCommon {
             return;
         }
 
-        const newValue = (value === undefined || value === null) ? '' : value.toString();
-        const nativeView = this.nativeView;
-        if (this.textDecorationSet || this.textTransformSet || this.letterSpacingSet) {
-            const style = this.style;
-            this.setTextDecorationAndTransform(newValue, nativeView, style.textDecoration, style.textTransform, style.letterSpacing, style.color);
-        } else if (nativeView instanceof UIButton) {
-            nativeView.setTitleForState(newValue, UIControlState.Normal);
-        } else {
-            nativeView.text = newValue;
-        }
-
+        this._setNativeText();
         this._requestLayoutOnTextChanged();
     }
 
@@ -45,8 +31,7 @@ export class TextBase extends TextBaseCommon {
         return null;
     }
     set [formattedTextProperty.native](value: FormattedString) {
-        const style = this.style;
-        this.setFormattedTextDecorationAndTransform(value, this.nativeView, style.textDecoration, style.textTransform, style.letterSpacing);
+        this._setNativeText();
         textProperty.nativeValueChange(this, !value ? '' : value.toString());
         this._requestLayoutOnTextChanged();
     }
@@ -128,13 +113,7 @@ export class TextBase extends TextBaseCommon {
         return TextDecoration.NONE;
     }
     set [textDecorationProperty.native](value: TextDecoration) {
-        this.textDecorationSet = value !== TextDecoration.NONE;
-        const style = this.style;
-        if (this.formattedText) {
-            this.setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, value, style.textTransform, style.letterSpacing);
-        } else {
-            this.setTextDecorationAndTransform(this.text, this.nativeView, value, style.textTransform, style.letterSpacing, style.color);
-        }
+        this._setNativeText();
     }
 
     //TextTransform
@@ -142,13 +121,7 @@ export class TextBase extends TextBaseCommon {
         return TextTransform.NONE;
     }
     set [textTransformProperty.native](value: TextTransform) {
-        this.textTransformSet = value !== TextTransform.NONE;
-        const style = this.style;
-        if (this.formattedText) {
-            this.setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, style.textDecoration, value, style.letterSpacing);
-        } else {
-            this.setTextDecorationAndTransform(this.text, this.nativeView, style.textDecoration, value, style.letterSpacing, style.color);
-        }
+        this._setNativeText();
     }
 
     // LetterSpacing.
@@ -156,32 +129,36 @@ export class TextBase extends TextBaseCommon {
         return 0;
     }
     set [letterSpacingProperty.native](value: number) {
-        this.letterSpacingSet = value !== 0;
-        const style = this.style;
+        this._setNativeText();
+    }
+
+    _setNativeText() {
         if (this.formattedText) {
-            this.setFormattedTextDecorationAndTransform(this.formattedText, this.nativeView, style.textDecoration, style.textTransform, value);
+            this.setFormattedTextDecorationAndTransform();
         } else {
-            this.setTextDecorationAndTransform(this.text, this.nativeView, style.textDecoration, style.textTransform, value, style.color);
+            this.setTextDecorationAndTransform();
         }
     }
 
-    setFormattedTextDecorationAndTransform(formattedText: FormattedString, nativeView: UITextField | UITextView | UILabel | UIButton, textDecoration: TextDecoration, textTransform: TextTransform, letterSpacing: number) {
-        const attrText = this.createNSMutableAttributedString(formattedText);
-        if (letterSpacing !== 0) {
-            attrText.addAttributeValueRange(NSKernAttributeName, letterSpacing * nativeView.font.pointSize, { location: 0, length: attrText.length });
+    setFormattedTextDecorationAndTransform() {
+        const attrText = this.createNSMutableAttributedString(this.formattedText);
+        if (this.letterSpacing !== 0) {
+            attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeView.font.pointSize, { location: 0, length: attrText.length });
         }
 
-        if (nativeView instanceof UIButton) {
-            nativeView.setAttributedTitleForState(attrText, UIControlState.Normal);
+        if (this.nativeView instanceof UIButton) {
+            this.nativeView.setAttributedTitleForState(attrText, UIControlState.Normal);
         }
         else {
-            nativeView.attributedText = attrText;
+            this.nativeView.attributedText = attrText;
         }
     }
 
-    setTextDecorationAndTransform(text: string, nativeView: UITextField | UITextView | UILabel | UIButton, textDecoration: TextDecoration, textTransform: TextTransform, letterSpacing: number, color: Color) {
-        let dict = new Map<string, number>();
-        switch (textDecoration) {
+    setTextDecorationAndTransform() {
+        const style = this.style;
+
+        let dict = new Map<string, any>();
+        switch (style.textDecoration) {
             case TextDecoration.NONE:
                 break;
             case TextDecoration.UNDERLINE:
@@ -195,35 +172,42 @@ export class TextBase extends TextBaseCommon {
                 dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             default:
-                throw new Error(`Invalid text decoration value: ${textDecoration}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
+                throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
         }
 
-        if (letterSpacing !== 0) {
-            dict.set(NSKernAttributeName, letterSpacing * nativeView.font.pointSize);
+        if (style.letterSpacing !== 0) {
+            dict.set(NSKernAttributeName, style.letterSpacing * this.nativeView.font.pointSize);
         }
 
-        if (color) {
-            dict.set(NSForegroundColorAttributeName, color.ios);
+        if (style.color) {
+            dict.set(NSForegroundColorAttributeName, style.color.ios);
         }
 
-        let source = getTransformedText(text, textTransform);
-        if (dict.size > 0) {
+        const text = this.text;
+        const string = (text === undefined || text === null) ? '' : text.toString();
+        const source = getTransformedText(string, this.textTransform);
+        const isTextView = this.nativeView instanceof UITextView;
+        if (dict.size > 0 || isTextView) {
+            if (isTextView) {
+                // UITextView's font seems to change inside.
+                dict.set(NSFontAttributeName, this.nativeView.font);
+            }
             let result = NSMutableAttributedString.alloc().initWithString(source);
             result.setAttributesRange(<any>dict, { location: 0, length: source.length });
-            if (nativeView instanceof UIButton) {
-                nativeView.setAttributedTitleForState(result, UIControlState.Normal);
+            if (this.nativeView instanceof UIButton) {
+                this.nativeView.setAttributedTitleForState(result, UIControlState.Normal);
             } else {
-                nativeView.attributedText = result;
+                this.nativeView.attributedText = result;
             }
         } else {
-            if (nativeView instanceof UIButton) {
+            if (this.nativeView instanceof UIButton) {
                 // Clear attributedText or title won't be affected.
-                nativeView.setAttributedTitleForState(null, UIControlState.Normal);
-                nativeView.setTitleForState(source, UIControlState.Normal);
+                this.nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+                this.nativeView.setTitleForState(source, UIControlState.Normal);
             } else {
                 // Clear attributedText or text won't be affected.
-                nativeView.attributedText = undefined;
-                nativeView.text = source;
+                this.nativeView.attributedText = undefined;
+                this.nativeView.text = source;
             }
         }
     }
