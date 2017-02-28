@@ -164,7 +164,6 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
     layer.borderColor = undefined;
     layer.borderWidth = 0;
     layer.cornerRadius = 0;
-    nativeView.clipsToBounds = true;
 
     const layerBounds = layer.bounds;
     const layerOrigin = layerBounds.origin;

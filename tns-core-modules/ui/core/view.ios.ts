@@ -13,6 +13,12 @@ const PFLAG_FORCE_LAYOUT = 1;
 const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
+declare module "ui/core/view" {
+    export interface View {
+        _setNativeClipToBounds();
+    }
+}
+
 export class View extends ViewCommon {
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
@@ -397,10 +403,16 @@ export class View extends ViewCommon {
             this.nativeView.backgroundColor = value;
         } else {
             this.nativeView.backgroundColor = ios.createBackgroundUIColor(this);
+            this._setNativeClipToBounds();
         }
         if (!updateSuspended) {
             CATransaction.commit();
         }
+    }
+
+    _setNativeClipToBounds() {
+        let backgroundInternal = this.style.backgroundInternal;
+        this.nativeView.clipsToBounds = backgroundInternal.hasUniformBorder() || backgroundInternal.getUniformBorderRadius() > 0;
     }
 }
 
