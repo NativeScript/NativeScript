@@ -3,7 +3,6 @@
     AndroidApplication as AndroidApplicationDefinition
 } from "application";
 
-
 import {
     notify, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent,
     setApplication, livesync, Observable
