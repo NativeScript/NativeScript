@@ -19,6 +19,7 @@ interface MenuItemClickListener {
     new (owner: ActionBar): android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 }
 
+let appResources: android.content.res.Resources;
 let MenuItemClickListener: MenuItemClickListener;
 
 function initializeMenuItemClickListener(): void {
@@ -40,6 +41,7 @@ function initializeMenuItemClickListener(): void {
     }
 
     MenuItemClickListener = MenuItemClickListenerImpl;
+    appResources = application.android.context.getResources();
 }
 
 export class ActionItem extends ActionItemBase {
@@ -101,15 +103,12 @@ export class NavigationButton extends ActionItem {
 }
 
 export class ActionBar extends ActionBarBase {
-    private _appResources: android.content.res.Resources;
     private _android: AndroidActionBarSettings;
     private _toolbar: android.support.v7.widget.Toolbar;
     private _menuItemClickListener: android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 
     constructor() {
         super();
-
-        this._appResources = application.android.context.getResources();
         this._android = new AndroidActionBarSettings(this);
     }
 
@@ -201,7 +200,7 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (navButton.icon) {
-                let drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
                 this.nativeView.setNavigationIcon(drawableOrId);
             }
 
@@ -225,7 +224,7 @@ export class ActionBar extends ActionBarBase {
         if (visibility) {
             let icon = this.android.icon;
             if (icon !== undefined) {
-                let drawableOrId = getDrawableOrResourceId(icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(icon, appResources);
                 if (drawableOrId) {
                     this.nativeView.setLogo(drawableOrId);
                 }
@@ -280,7 +279,7 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (item.icon) {
-                let drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(item.icon, appResources);
                 if (drawableOrId) {
                     menuItem.setIcon(drawableOrId);
                 }
