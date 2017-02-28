@@ -95,6 +95,9 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     public _refreshHintState(hint: string, text: string) {
+        if (this.formattedText) {
+            return;
+        }
         if (text !== null && text !== undefined && text !== '') {
             this.showText();
         } else if (hint !== null && hint !== undefined && hint !== '') {
