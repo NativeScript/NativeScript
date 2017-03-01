@@ -1,0 +1,47 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingTo="navigatingTo" class="page">
+    <Page.actionBar>
+        <ActionBar title="FontAwesome" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
+    <StackLayout class="p-20">
+        <Label text="Tap the button" class="h1 text-center"/>
+        <Label text="&#xf0a1;" class="font-awesome" fontFamily="FontAwesome" fontSize="42em" />
+        <Button text="TAP" tap="onTap">
+            <FormattedString>
+                <Span text="&#xf0a1;" class="font-awesome" fontFamily="FontAwesome" fontSize="42em" foregroundColor="white" fontAttributes="Bold"></Span>
+                <Span text="font-awesome" fontAttributes="Bold"></Span>
+            </FormattedString>
+        </Button>
+        <Button text="TAP" tap="onTap" class="">
+            <FormattedString>
+                <Span text="&#xf1ec;" fontFamily="FontAwesome" fontSize="42em" foregroundColor="white" fontAttributes="Bold"></Span>
+                <Span text="some text" fontAttributes="Bold"></Span>
+            </FormattedString>
+        </Button>
+        <Button text="TAP" tap="onTap" class="">
+            <FormattedString>
+                <Span text="&#xf017;" fontFamily="FontAwesome" fontSize="42em" foregroundColor="white" fontAttributes="Bold"></Span>
+                <Span text="some text" fontAttributes="Bold"></Span>
+            </FormattedString>
+        </Button>
+        <Button text="TAP" tap="onTap" class="">
+            <FormattedString>
+                <Span text="&#xf1b9;" fontFamily="FontAwesome" fontSize="42em" foregroundColor="white" fontAttributes="Bold"></Span>
+                <Span text="some text" fontAttributes="Bold"></Span>
+            </FormattedString>
+        </Button>
+        <Button text="TAP" tap="onTap" class="">
+            <FormattedString>
+                <Span text="&#xf075;" fontFamily="FontAwesome" fontSize="42em" foregroundColor="white" fontAttributes="Bold"></Span>
+                <Span text="some text" fontAttributes="Bold"></Span>
+            </FormattedString>
+        </Button>
+        <Button text="TAP" tap="onTap" class="">
+            <FormattedString>
+                <Span text="&#xf05a;" fontFamily="FontAwesome" fontSize="42em" foregroundColor="white" fontAttributes="Bold"></Span>
+                <Span text="some text" fontAttributes="Bold"></Span>
+            </FormattedString>
+        </Button>
+        <Label text="{{ message }}" class="h2 text-center" textWrap="true"/>
+    </StackLayout>
+</Page>
