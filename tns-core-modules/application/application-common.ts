@@ -9,7 +9,7 @@ global.moduleMerge(events, exports);
 
 export { Observable };
 
-import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
+import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { NavigationEntry } from "ui/frame";
 
 export const launchEvent = "launch";

@@ -1,167 +1,165 @@
-﻿declare module "ui/layouts/grid-layout" {
-    import { LayoutBase, Property, View } from "ui/layouts/layout-base";
+﻿import { LayoutBase, Property, View } from "ui/layouts/layout-base";
+
+/**
+ * Defines row/column specific properties that apply to GridLayout elements.
+ */
+export class ItemSpec {
+
+    constructor();
+    constructor(value: number, type: GridUnitType);
 
     /**
-     * Defines row/column specific properties that apply to GridLayout elements.
+     * Gets the actual length of an ItemSpec.
      */
-    export class ItemSpec {
-
-        constructor();
-        constructor(value: number, type: GridUnitType);
-
-        /**
-         * Gets the actual length of an ItemSpec.
-         */
-        actualLength: number;
-
-        /**
-         * Returns unit type of this ItemSpec instance.
-         */
-        gridUnitType: GridUnitType;
-
-        /** 
-         * Returns true if this ItemSpec instance holds
-         * an absolute (pixel) value. 
-         */
-        isAbsolute: boolean;
-
-        /** 
-         * Returns true if this GridLength instance is  
-         * automatic (not specified). 
-         */
-        isAuto: boolean;
-
-        /** 
-         * Returns true if this ItemSpec instance holds weighted propertion  
-         * of available space. 
-         */
-        isStar: boolean;
-
-        /** 
-         * Returns value part of this ItemSpec instance. 
-         */
-        value: number;
-    }
+    actualLength: number;
 
     /**
-     * Defines a rectangular layout area that consists of columns and rows.
+     * Returns unit type of this ItemSpec instance.
      */
-    export class GridLayout extends LayoutBase {
+    gridUnitType: GridUnitType;
 
-        /**
-         * Gets the value of the Column attached property from a given View.
-         */
-        static getColumn(view: View): number;
+    /** 
+     * Returns true if this ItemSpec instance holds
+     * an absolute (pixel) value. 
+     */
+    isAbsolute: boolean;
 
-        /**
-         * Sets the value of the Column attached property to a given View. 
-         */
-        static setColumn(view: View, value: number): void;
+    /** 
+     * Returns true if this GridLength instance is  
+     * automatic (not specified). 
+     */
+    isAuto: boolean;
 
-        /**
-         * Gets the value of the ColumnSpan attached property from a given View.
-         */
-        static getColumnSpan(view: View): number;
+    /** 
+     * Returns true if this ItemSpec instance holds weighted propertion  
+     * of available space. 
+     */
+    isStar: boolean;
 
-        /**
-         * Sets the value of the ColumnSpan attached property to a given View. 
-         */
-        static setColumnSpan(view: View, value: number): void;
+    /** 
+     * Returns value part of this ItemSpec instance. 
+     */
+    value: number;
+}
 
-        /**
-         * Gets the value of the Row attached property from a given View.
-         */
-        static getRow(view: View): number;
-
-        /**
-         * Sets the value of the Row attached property to a given View. 
-         */
-        static setRow(view: View, value: number): void;
-
-        /**
-         * Gets the value of the RowSpan attached property from a given View.
-         */
-        static getRowSpan(view: View): number;
-
-        /**
-         * Sets the value of the RowSpan attached property to a given View. 
-         */
-        static setRowSpan(view: View, value: number): void;
-
-        /**
-         * Adds a column specification to a GridLayout.
-         */
-        public addColumn(itemSpec: ItemSpec): void;
-
-        /**
-         * Adds a row specification to a GridLayout.
-         */
-        public addRow(itemSpec: ItemSpec): void;
-
-        /**
-         * Removes a column specification from a GridLayout.
-         */
-        public removeColumn(itemSpec: ItemSpec): void;
-
-        /**
-         * Removes all columns specification from a GridLayout.
-         */
-        public removeColumns(): void;
-
-        /**
-         * Removes a row specification from a GridLayout.
-         */
-        public removeRow(itemSpec: ItemSpec): void;
-
-        /**
-         * Removes all rows specification from a GridLayout.
-         */
-        public removeRows(): void;
-
-        /**
-         * Gets array of column specifications defined on this instance of GridLayout. 
-         */
-        public getColumns(): Array<ItemSpec>;
-
-        /**
-         * Gets array of row specifications defined on this instance of GridLayout.
-         */
-        public getRows(): Array<ItemSpec>;
-
-        //@private
-        public _onRowAdded(itemSpec: ItemSpec): void;
-        public _onColumnAdded(itemSpec: ItemSpec): void;
-        public _onRowRemoved(itemSpec: ItemSpec, index: number): void;
-        public _onColumnRemoved(itemSpec: ItemSpec, index: number): void;
-        //@endprivate
-    }
+/**
+ * Defines a rectangular layout area that consists of columns and rows.
+ */
+export class GridLayout extends LayoutBase {
 
     /**
-     * Represents the observable property backing the column property.
+     * Gets the value of the Column attached property from a given View.
      */
-    export const columnProperty: Property<GridLayout, number>;
+    static getColumn(view: View): number;
 
     /**
-     * Represents the observable property backing the columnSpan property.
+     * Sets the value of the Column attached property to a given View. 
      */
-    export const columnSpanProperty: Property<GridLayout, number>;
+    static setColumn(view: View, value: number): void;
 
     /**
-     * Represents the observable property backing the row property.
+     * Gets the value of the ColumnSpan attached property from a given View.
      */
-    export const rowProperty: Property<GridLayout, number>;
+    static getColumnSpan(view: View): number;
 
     /**
-     * Represents the observable property backing the rowSpan property.
+     * Sets the value of the ColumnSpan attached property to a given View. 
      */
-    export const rowSpanProperty: Property<GridLayout, number>;
+    static setColumnSpan(view: View, value: number): void;
 
-    export type GridUnitType = "pixel" | "star" | "auto";
-    export namespace GridUnitType {
-        export const PIXEL: "pixel";
-        export const STAR: "star";
-        export const AUTO: "auto";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): GridUnitType;
-    }
+    /**
+     * Gets the value of the Row attached property from a given View.
+     */
+    static getRow(view: View): number;
+
+    /**
+     * Sets the value of the Row attached property to a given View. 
+     */
+    static setRow(view: View, value: number): void;
+
+    /**
+     * Gets the value of the RowSpan attached property from a given View.
+     */
+    static getRowSpan(view: View): number;
+
+    /**
+     * Sets the value of the RowSpan attached property to a given View. 
+     */
+    static setRowSpan(view: View, value: number): void;
+
+    /**
+     * Adds a column specification to a GridLayout.
+     */
+    public addColumn(itemSpec: ItemSpec): void;
+
+    /**
+     * Adds a row specification to a GridLayout.
+     */
+    public addRow(itemSpec: ItemSpec): void;
+
+    /**
+     * Removes a column specification from a GridLayout.
+     */
+    public removeColumn(itemSpec: ItemSpec): void;
+
+    /**
+     * Removes all columns specification from a GridLayout.
+     */
+    public removeColumns(): void;
+
+    /**
+     * Removes a row specification from a GridLayout.
+     */
+    public removeRow(itemSpec: ItemSpec): void;
+
+    /**
+     * Removes all rows specification from a GridLayout.
+     */
+    public removeRows(): void;
+
+    /**
+     * Gets array of column specifications defined on this instance of GridLayout. 
+     */
+    public getColumns(): Array<ItemSpec>;
+
+    /**
+     * Gets array of row specifications defined on this instance of GridLayout.
+     */
+    public getRows(): Array<ItemSpec>;
+
+    //@private
+    public _onRowAdded(itemSpec: ItemSpec): void;
+    public _onColumnAdded(itemSpec: ItemSpec): void;
+    public _onRowRemoved(itemSpec: ItemSpec, index: number): void;
+    public _onColumnRemoved(itemSpec: ItemSpec, index: number): void;
+    //@endprivate
+}
+
+/**
+ * Represents the observable property backing the column property.
+ */
+export const columnProperty: Property<GridLayout, number>;
+
+/**
+ * Represents the observable property backing the columnSpan property.
+ */
+export const columnSpanProperty: Property<GridLayout, number>;
+
+/**
+ * Represents the observable property backing the row property.
+ */
+export const rowProperty: Property<GridLayout, number>;
+
+/**
+ * Represents the observable property backing the rowSpan property.
+ */
+export const rowSpanProperty: Property<GridLayout, number>;
+
+export type GridUnitType = "pixel" | "star" | "auto";
+export namespace GridUnitType {
+    export const PIXEL: "pixel";
+    export const STAR: "star";
+    export const AUTO: "auto";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): GridUnitType;
 }

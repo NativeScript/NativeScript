@@ -1,2 +1,5 @@
-{ "name" : "page",
-  "main" : "page" }
+{
+  "name" : "page",
+  "main" : "page",
+  "types" : "page.d.ts"
+}

@@ -1,2 +1,5 @@
-{ "name" : "border",
-  "main" : "border" }
+{
+  "name" : "border",
+  "main" : "border",
+  "types" : "border.d.ts"
+}

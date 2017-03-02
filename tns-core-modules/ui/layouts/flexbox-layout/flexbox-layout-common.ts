@@ -2,30 +2,11 @@ import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeVal
 
 export * from "ui/layouts/layout-base";
 
-// declare module "ui/layouts/flexbox-layout" {
-//     export function _onNativeOrderPropertyChanged(view: View, newValue: number): void;
-//     export function _onNativeFlexGrowPropertyChanged(view: View, newValue: number): void;
-//     export function _onNativeFlexShrinkPropertyChanged(view: View, newValue: number): void;
-//     export function _onNativeAlignSelfPropertyChanged(view: View, newValue: AlignSelf): void;
-//     export function _onNativeFlexWrapBeforePropertyChanged(view: View, newValue: boolean): void;
-// }
-
 export type Basis = "auto" | number;
 
 export const ORDER_DEFAULT = 1;
 export const FLEX_GROW_DEFAULT = 0.0;
 export const FLEX_SHRINK_DEFAULT = 1.0;
-
-// function makeValidator<T>(...values: T[]): (value: any) => value is T {
-//     const set = new Set(values);
-//     return (value: any): value is T => set.has(value);
-// }
-// function makeParser<T>(isValid: (value: any) => boolean, def: T): (value: any) => T {
-//     return value => {
-//         const lower = value && value.toLowerCase();
-//         return isValid(lower) ? lower : def;
-//     }
-// }
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export namespace FlexDirection {

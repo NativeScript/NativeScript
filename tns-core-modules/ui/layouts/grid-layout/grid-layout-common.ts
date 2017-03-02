@@ -10,15 +10,6 @@ function validateArgs(element: View): View {
     return element;
 }
 
-declare module "ui/core/view" {
-    interface View {
-        row: number;
-        col: number;
-        rowSpan: number;
-        colSpan: number;
-    }
-}
-
 View.prototype.row = 0;
 View.prototype.col = 0;
 View.prototype.rowSpan = 1;

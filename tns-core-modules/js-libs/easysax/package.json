@@ -9,6 +9,7 @@
   ],
   "version": "0.1.14",
   "main": "easysax",
+  "types": "easysax.d.ts",
   "bugs": {
     "url": "https://github.com/vflash/easysax/issues"
   },

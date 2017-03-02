@@ -78,33 +78,6 @@ module.exports = function(grunt) {
         return localCfg.mainPackageContent.version + "-" + buildVersion;
     };
 
-    var writeDtsFile = function writeDtsFile(dtsFiles, outDir, outFile) {
-        var dtsLines = dtsFiles.map(function(dtsFile) {
-            return '/// <reference path="' + dtsFile + '" />';
-        });
-        var combinedDtsPath = path.join(outDir, outFile);
-        grunt.file.write(combinedDtsPath, dtsLines.join('\n'));
-    };
-
-    var generateModulesDts = function generateModulesDts(outDir, srcDir) {
-        var dtsFiles = grunt.file.expand({cwd: srcDir }, [
-            "**/*.d.ts",
-            //Exclude the d.ts files in the apps folder - these are part of the apps and are already packed there!
-            "!docs-shims.d.ts",
-            "!node-tests/**",
-            "!org.nativescript.widgets.d.ts",
-            "!android17.d.ts",
-            "!**/*.android.d.ts",
-            "!ios/**",
-            "!**/*.ios.d.ts",
-            "!tns-core-modules.d.ts",
-            "!references.d.ts",
-        ].concat(localCfg.defaultExcludes));
-        dtsFiles.sort();
-
-        writeDtsFile(dtsFiles, outDir, "tns-core-modules/tns-core-modules.d.ts");
-    };
-
     // Configure localCfg
     var outDir = "./bin/dist";
     var srcDir = ".";
@@ -300,9 +273,8 @@ module.exports = function(grunt) {
                 }
             },
             compileAll: "npm run compile-all",
+            setupLinks: "npm run setup",
             compileNodeTests: "npm run compile-node-tests",
-            compileCheckBaseDts: "npm run compile-check-base-dts",
-            compileCheckCombinedDts: "npm run compile-check-combined-dts",
             tslint: "npm run tslint",
         },
         simplemocha: {
@@ -348,7 +320,7 @@ module.exports = function(grunt) {
     ]);
 
     grunt.registerTask("compile-ts", [
-        "shell:compileCheckBaseDts",
+        "shell:setupLinks",
         "shell:compileAll",
         "clean:typeScriptLeftovers",
         "copy:childPackageFiles"
@@ -388,10 +360,6 @@ module.exports = function(grunt) {
         });
     });
 
-    grunt.registerTask("generate-tns-core-modules-dev-dts", generateModulesDts.bind(null, ".", localCfg.srcTnsCoreModules));
-
-    grunt.registerTask("generate-tns-core-modules-dts", generateModulesDts.bind(null, localCfg.outDir, localCfg.outTnsCoreModules));
-
     //aliasing pack-modules for backwards compatibility
     grunt.registerTask("pack-modules", [
         "compile-modules",
@@ -409,8 +377,6 @@ module.exports = function(grunt) {
         "collect-modules-raw-files",
         "copy:definitionFiles",
         "copy:jsLibs",
-        "generate-tns-core-modules-dts",
-        "shell:compileCheckCombinedDts",
     ]);
 
     grunt.registerTask("node-tests", [

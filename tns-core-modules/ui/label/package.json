@@ -1,2 +1,5 @@
-{ "name" : "label",
-  "main" : "label" }
+{
+  "name" : "label",
+  "main" : "label",
+  "types" : "label.d.ts"
+}

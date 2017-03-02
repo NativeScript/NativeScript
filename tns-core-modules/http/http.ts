@@ -1,5 +1,5 @@
 import * as image from "image-source";
-import * as httpRequest from "http/http-request";
+import * as httpRequest from "./http-request";
 
 global.moduleMerge(httpRequest, exports);
 

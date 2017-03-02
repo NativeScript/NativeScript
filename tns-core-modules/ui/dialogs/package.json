@@ -1,2 +1,5 @@
-{ "name" : "dialogs",
-  "main" : "dialogs" }
+{
+  "name" : "dialogs",
+  "main" : "dialogs",
+  "types" : "dialogs.d.ts"
+}

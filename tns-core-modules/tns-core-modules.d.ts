@@ -1,102 +1,120 @@
-/// <reference path="module.d.ts" />
-/// <reference path="application-settings/application-settings.d.ts" />
-/// <reference path="application/application.d.ts" />
-/// <reference path="color/color.d.ts" />
-/// <reference path="color/known-colors.d.ts" />
-/// <reference path="connectivity/connectivity.d.ts" />
-/// <reference path="css-value/reworkcss-value.d.ts" />
-/// <reference path="css/reworkcss.d.ts" />
-/// <reference path="data/observable-array/observable-array.d.ts" />
-/// <reference path="data/observable/observable.d.ts" />
-/// <reference path="data/virtual-array/virtual-array.d.ts" />
-/// <reference path="declarations.d.ts" />
-/// <reference path="file-system/file-name-resolver.d.ts" />
-/// <reference path="file-system/file-system-access.d.ts" />
-/// <reference path="file-system/file-system.d.ts" />
-/// <reference path="fps-meter/fps-meter.d.ts" />
-/// <reference path="fps-meter/fps-native.d.ts" />
-/// <reference path="http/http-request.d.ts" />
-/// <reference path="http/http.d.ts" />
-/// <reference path="image-asset/image-asset.d.ts" />
-/// <reference path="image-source/image-source.d.ts" />
-/// <reference path="js-libs/easysax/easysax.d.ts" />
-/// <reference path="js-libs/esprima/esprima.d.ts" />
-/// <reference path="js-libs/polymer-expressions/polymer-expressions.d.ts" />
-/// <reference path="platform/platform.d.ts" />
-/// <reference path="text/formatted-string.d.ts" />
-/// <reference path="text/span.d.ts" />
-/// <reference path="text/text.d.ts" />
-/// <reference path="timer/timer.d.ts" />
-/// <reference path="trace/trace.d.ts" />
-/// <reference path="ui/core/properties.d.ts" />
-/// <reference path="ui/core/view-base.d.ts" />
-/// <reference path="ui/action-bar/action-bar.d.ts" />
-/// <reference path="ui/activity-indicator/activity-indicator.d.ts" />
-/// <reference path="ui/animation/animation.d.ts" />
-/// <reference path="ui/animation/keyframe-animation.d.ts" />
-/// <reference path="ui/border/border.d.ts" />
-/// <reference path="ui/builder/binding-builder.d.ts" />
-/// <reference path="ui/builder/builder.d.ts" />
-/// <reference path="ui/builder/component-builder.d.ts" />
-/// <reference path="ui/builder/special-properties.d.ts" />
-/// <reference path="ui/button/button.d.ts" />
-/// <reference path="ui/content-view/content-view.d.ts" />
-/// <reference path="ui/core/bindable.d.ts" />
-/// <reference path="ui/core/control-state-change.d.ts" />
-/// <reference path="ui/core/dependency-observable.d.ts" />
-/// <reference path="ui/core/properties.d.ts" />
-/// <reference path="ui/core/view.d.ts" />
-/// <reference path="ui/core/weak-event-listener.d.ts" />
-/// <reference path="ui/date-picker/date-picker.d.ts" />
-/// <reference path="ui/dialogs/dialogs.d.ts" />
-/// <reference path="ui/editable-text-base/editable-text-base.d.ts" />
-/// <reference path="ui/enums/enums.d.ts" />
-/// <reference path="ui/frame/frame.d.ts" />
-/// <reference path="ui/gestures/gestures.d.ts" />
-/// <reference path="ui/html-view/html-view.d.ts" />
-/// <reference path="ui/image-cache/image-cache.d.ts" />
-/// <reference path="ui/image/image.d.ts" />
-/// <reference path="ui/label/label.d.ts" />
-/// <reference path="ui/layouts/absolute-layout/absolute-layout.d.ts" />
-/// <reference path="ui/layouts/dock-layout/dock-layout.d.ts" />
-/// <reference path="ui/layouts/grid-layout/grid-layout.d.ts" />
-/// <reference path="ui/layouts/flexbox-layout/flexbox-layout.d.ts" />
-/// <reference path="ui/layouts/layout-base.d.ts" />
-/// <reference path="ui/layouts/layout.d.ts" />
-/// <reference path="ui/layouts/stack-layout/stack-layout.d.ts" />
-/// <reference path="ui/layouts/wrap-layout/wrap-layout.d.ts" />
-/// <reference path="ui/list-picker/list-picker.d.ts" />
-/// <reference path="ui/list-view/list-view.d.ts" />
-/// <reference path="ui/page/page.d.ts" />
-/// <reference path="ui/placeholder/placeholder.d.ts" />
-/// <reference path="ui/progress/progress.d.ts" />
-/// <reference path="ui/proxy-view-container/proxy-view-container.d.ts" />
-/// <reference path="ui/repeater/repeater.d.ts" />
-/// <reference path="ui/scroll-view/scroll-view.d.ts" />
-/// <reference path="ui/search-bar/search-bar.d.ts" />
-/// <reference path="ui/segmented-bar/segmented-bar.d.ts" />
-/// <reference path="ui/slider/slider.d.ts" />
-/// <reference path="ui/styling/background.d.ts" />
-/// <reference path="ui/styling/css-selector.d.ts" />
-/// <reference path="ui/styling/font.d.ts" />
-/// <reference path="ui/styling/style-property.d.ts" />
-/// <reference path="ui/styling/style-properties.d.ts" />
-/// <reference path="ui/styling/style-scope.d.ts" />
-/// <reference path="ui/styling/style.d.ts" />
-/// <reference path="ui/styling/styling.d.ts" />
-/// <reference path="ui/switch/switch.d.ts" />
-/// <reference path="ui/tab-view/tab-view.d.ts" />
-/// <reference path="ui/text-base/text-base.d.ts" />
-/// <reference path="ui/text-field/text-field.d.ts" />
-/// <reference path="ui/text-view/text-view.d.ts" />
-/// <reference path="ui/time-picker/time-picker.d.ts" />
-/// <reference path="ui/transition/fade-transition.d.ts" />
-/// <reference path="ui/transition/slide-transition.d.ts" />
-/// <reference path="ui/transition/transition.d.ts" />
-/// <reference path="ui/utils.d.ts" />
-/// <reference path="ui/web-view/web-view.d.ts" />
-/// <reference path="utils/debug.d.ts" />
-/// <reference path="utils/lazy.d.ts" />
-/// <reference path="utils/types.d.ts" />
-/// <reference path="utils/utils.d.ts" />
-/// <reference path="xml/xml.d.ts" />
+/* tslint:disable:no-unused-variable */
+///<reference path="./module.d.ts" />
+
+declare enum RequestContext {
+    "audio", "beacon", "cspreport", "download", "embed", "eventsource", "favicon", "fetch",
+    "font", "form", "frame", "hyperlink", "iframe", "image", "imageset", "import",
+    "internal", "location", "manifest", "object", "ping", "plugin", "prefetch", "script",
+    "serviceworker", "sharedworker", "subresource", "style", "track", "video", "worker",
+    "xmlhttprequest", "xslt"
+}
+
+// Extend the lib.dom.d.ts Body interface with `formData`
+interface Body {
+    formData() : Promise<FormData>;
+}
+
+declare enum RequestMode { "same-origin", "no-cors", "cors" }
+declare enum RequestCredentials { "omit", "same-origin", "include" }
+declare enum RequestCache { "default", "no-store", "reload", "no-cache", "force-cache", "only-if-cached" }
+
+interface Blob {
+    readonly size: number;
+    readonly type: string;
+    msClose(): void;
+    msDetachStream(): any;
+    slice(start?: number, end?: number, contentType?: string): Blob;
+}
+
+declare var Blob: {
+    prototype: Blob;
+    new (blobParts?: any[], options?: BlobPropertyBag): Blob;
+}
+
+interface BlobPropertyBag {
+    type?: string;
+    endings?: string;
+}
+
+declare type HeaderInit = Headers|Array<string>;
+
+declare function fetch(url: string, init?: RequestInit): Promise<Response>;
+
+declare var console: Console;
+declare var require: NodeRequire;
+
+declare var __dirname: string;
+declare var __filename: string;
+
+declare var module: NodeModule;
+// Same as module.exports
+declare var exports: any;
+
+// Global functions
+declare function Deprecated(target: Object, key?: string | symbol, value?: any): void;
+declare function Experimental(target: Object, key?: string | symbol, value?: any): void;
+
+/**
+ * Decorates class that implements native Java interfaces.
+ * @param interfaces Implemented interfaces.
+ */
+declare function Interfaces(...interfaces): ClassDecorator;
+
+/**
+ * Decorates class that extends native Java class
+ * @param nativeClassName The name of the newly generated class. Must be unique in the application.
+ */
+declare function JavaProxy(nativeClassName: string): ClassDecorator;
+
+/**
+ * Important: Not applicable to Objective-C classes (iOS platform)
+ * Decorates class that extends native Java class
+ * @param interfaces An array of fully-classified Java interface names that the class must implement.
+ */ 
+declare function Interfaces(interfaces: any[]): ClassDecorator;
+
+declare function Log(data: any): void;
+declare function log(data: any): void;
+declare function fail(data: any): void;
+
+/**
+ * Calls a function after a specified delay.
+ * @param callback The function to be called.
+ * @param milliseconds The time to wait before the function is called. Defaults to 0.
+ */
+declare function setTimeout(callback: Function, milliseconds?: number): number;
+
+/**
+ * Clears the delay set by a call to the setTimeout function.
+ * @param id The identifier returned by the previously called setTimeout() method.
+ */
+declare function clearTimeout(id: number): void;
+
+/**
+ * Calls a function repeatedly with a delay between each call.
+ * @param callback The function to be called.
+ * @param milliseconds The delay between each function call.
+ */
+declare function setInterval(callback: Function, milliseconds?: number): number;
+
+/**
+ * Clears repeated function which was set up by calling setInterval().
+ * @param id The identifier returned by the setInterval() method.
+ */
+declare function clearInterval(id: number): void;
+
+declare function zonedCallback(callback: Function): Function;
+
+declare class WeakRef<T> {
+    constructor(obj: T);
+    get(): T;
+    clear(): void;
+}
+
+interface Array<T> {
+    filter<U extends T>(pred: (a: T) => a is U): U[];
+}
+
+//Dialogs
+declare function alert(message?: any): void;
+declare function confirm(message?: string): boolean;

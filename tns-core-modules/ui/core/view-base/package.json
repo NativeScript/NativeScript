@@ -1,0 +1,5 @@
+{
+  "name" : "view-base",
+  "main" : "view-base",
+  "types" : "view-base.d.ts"
+}

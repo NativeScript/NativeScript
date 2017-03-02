@@ -3,15 +3,6 @@ import { LayoutBase, View, Property, Length, zeroLength } from "ui/layouts/layou
 
 export * from "ui/layouts/layout-base";
 
-declare module "ui/core/view" {
-    interface View {
-        left: Length;
-        top: Length;
-        effectiveLeft: number;
-        effectiveTop: number;
-    }
-}
-
 View.prototype.effectiveLeft = 0;
 View.prototype.effectiveTop = 0;
 

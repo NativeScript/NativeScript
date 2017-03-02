@@ -1,2 +1,5 @@
-{ "name" : "scroll-view",
-  "main" : "scroll-view" }
+{
+  "name" : "scroll-view",
+  "main" : "scroll-view",
+  "types" : "scroll-view.d.ts"
+}

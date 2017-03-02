@@ -1,2 +1,5 @@
-{ "name" : "wrap-layout",
-  "main" : "wrap-layout" }
+{
+  "name" : "wrap-layout",
+  "main" : "wrap-layout",
+  "types" : "wrap-layout.d.ts"
+}

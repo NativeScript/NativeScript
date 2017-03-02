@@ -1,5 +1,6 @@
 {
-	"name" : "connectivity",
-	"main" : "connectivity",
-	"nativescript": {}
+  "name" : "connectivity",
+  "main" : "connectivity",
+  "types": "connectivity.d.ts",
+  "nativescript": {}
 }

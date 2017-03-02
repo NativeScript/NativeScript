@@ -1,51 +1,49 @@
 ﻿/**
  * Contains the Slider class, which represents a standard slider component.
  */
-declare module "ui/slider" {
-    import { View, Property, CoercibleProperty } from "ui/core/view";
-    
+import { View, Property, CoercibleProperty } from "ui/core/view";
+
+/**
+ * Represents a slider component.
+ */
+export class Slider extends View {
     /**
-     * Represents a slider component.
+     * Gets the native [android widget](http://developer.android.com/reference/android/widget/SeekBar.html) that represents the user interface for this component. Valid only when running on Android OS.
      */
-    export class Slider extends View {
-        /**
-         * Gets the native [android widget](http://developer.android.com/reference/android/widget/SeekBar.html) that represents the user interface for this component. Valid only when running on Android OS.
-         */
-        android: any /* android.widget.SeekBar */;
-
-        /**
-         * Gets the native iOS [UISlider](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UISlider_Class/) that represents the user interface for this component. Valid only when running on iOS.
-         */
-        ios: any /* UISlider */;
-
-        /**
-         * Gets or sets a slider current value. The default value is 0.
-         */
-        value: number;
-
-        /**
-         * Gets or sets a slider min value. The default value is 0.
-         */
-        minValue: number;
-
-        /**
-         * Gets or sets a slider max value. The default value is 100.
-         */
-        maxValue: number;
-    }
+    android: any /* android.widget.SeekBar */;
 
     /**
-     * Represents the observable property backing the value property of each Slider instance.
+     * Gets the native iOS [UISlider](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UISlider_Class/) that represents the user interface for this component. Valid only when running on iOS.
      */
-    export const valueProperty: Property<Slider, number>;
+    ios: any /* UISlider */;
 
     /**
-     * Represents the observable property backing the minValue property of each Slider instance.
+     * Gets or sets a slider current value. The default value is 0.
      */
-    export const minValueProperty: CoercibleProperty<Slider, number>;
+    value: number;
 
     /**
-     * Represents the observable property backing the maxValue property of each Slider instance.
+     * Gets or sets a slider min value. The default value is 0.
      */
-    export const maxValueProperty: CoercibleProperty<Slider, number>;
+    minValue: number;
+
+    /**
+     * Gets or sets a slider max value. The default value is 100.
+     */
+    maxValue: number;
 }
+
+/**
+ * Represents the observable property backing the value property of each Slider instance.
+ */
+export const valueProperty: Property<Slider, number>;
+
+/**
+ * Represents the observable property backing the minValue property of each Slider instance.
+ */
+export const minValueProperty: CoercibleProperty<Slider, number>;
+
+/**
+ * Represents the observable property backing the maxValue property of each Slider instance.
+ */
+export const maxValueProperty: CoercibleProperty<Slider, number>;

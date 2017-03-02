@@ -15,6 +15,13 @@
         "reactNamespace": "UIBuilder",
         "lib": [
             "es6", "dom"
-        ]
+        ],
+        "baseUrl": ".",
+        "paths": {
+            "*": [
+                "./tns-core-modules/*",
+                "./node_modules/*"
+            ]
+        }
     }
 }

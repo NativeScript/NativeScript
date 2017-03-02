@@ -27,8 +27,8 @@ export class Style extends Observable implements StyleDefinition {
     public rotate: number;
     public scaleX: number;
     public scaleY: number;
-    public translateX: number;
-    public translateY: number;
+    public translateX: Length;
+    public translateY: Length;
 
     public clipPath: string;
     public color: Color;

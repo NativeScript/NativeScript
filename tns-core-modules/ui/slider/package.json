@@ -1,2 +1,5 @@
-{ "name" : "slider",
-  "main" : "slider" }
+{
+  "name" : "slider",
+  "main" : "slider",
+  "types" : "slider.d.ts"
+}

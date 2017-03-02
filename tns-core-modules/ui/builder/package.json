@@ -1,2 +1,5 @@
-{ "name" : "builder",
-  "main" : "builder" }
+{
+  "name" : "builder",
+  "main" : "builder",
+  "types" : "builder.d.ts"
+}

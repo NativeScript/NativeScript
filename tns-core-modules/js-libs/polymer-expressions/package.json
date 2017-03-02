@@ -1,2 +1,5 @@
-{ "name" : "polymer-expressions",
-  "main" : "polymer-expressions" }
+{
+  "name" : "polymer-expressions",
+  "main" : "polymer-expressions",
+  "types" : "polymer-expressions.d.ts"
+}

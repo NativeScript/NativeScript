@@ -1,2 +1,5 @@
-{ "name" : "list-picker",
-  "main" : "list-picker" }
+{
+  "name" : "list-picker",
+  "main" : "list-picker",
+  "types" : "list-picker.d.ts"
+}
