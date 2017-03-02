@@ -1,2 +1,5 @@
-{ "name" : "frame",
-  "main" : "frame" }
+{
+  "name" : "frame",
+  "main" : "frame",
+  "types" : "frame.d.ts"
+}

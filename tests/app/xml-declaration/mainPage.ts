@@ -2,7 +2,7 @@ import * as observable from "data/observable";
 import * as view from "ui/core/view";
 import * as label from "ui/label";
 import * as pages from "ui/page";
-import * as http from "http";
+import * as http from "tns-core-modules/http";
 
 var obj = new observable.Observable();
 obj.set("id", 0);

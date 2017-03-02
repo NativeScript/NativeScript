@@ -1,2 +1,5 @@
-{ "name" : "placeholder",
-  "main" : "placeholder" }
+{
+  "name" : "placeholder",
+  "main" : "placeholder",
+  "types" : "placeholder.d.ts"
+}

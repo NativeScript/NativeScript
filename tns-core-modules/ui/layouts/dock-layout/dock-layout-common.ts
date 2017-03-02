@@ -10,12 +10,6 @@ function validateArgs(element: View): View {
 
 export * from "ui/layouts/layout-base";
 
-declare module "ui/core/view" {
-    interface View {
-        dock: "left" | "top" | "right" | "bottom";
-    }
-}
-
 export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
 
     public static getDock(element: View): "left" | "top" | "right" | "bottom" {

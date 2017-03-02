@@ -1,2 +1,5 @@
-{ "name" : "activity-indicator",
-  "main" : "activity-indicator" }
+{
+  "name" : "activity-indicator",
+  "main" : "activity-indicator",
+  "types" : "activity-indicator.d.ts"
+}

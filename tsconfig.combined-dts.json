@@ -1,9 +1,0 @@
-{
-    "extends": "./tsconfig.shared",
-    "compilerOptions": {
-        "noEmit": true
-    },
-    "include": [
-        "bin/dist/tns-core-modules/tns-core-modules.d.ts"
-    ]
-}

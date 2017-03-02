@@ -14,5 +14,6 @@
     "should": "~1.2.2"
   },
   "main": "index",
+  "types": "reworkcss-value.d.ts",
   "nativescript": {}
 }

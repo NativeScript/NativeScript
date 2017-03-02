@@ -1,2 +1,5 @@
-{ "name" : "gestures",
-  "main" : "gestures" }
+{
+  "name" : "gestures",
+  "main" : "gestures",
+  "types" : "gestures.d.ts"
+}

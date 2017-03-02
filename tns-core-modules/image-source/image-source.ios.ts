@@ -1,7 +1,7 @@
 ﻿// Definitions.
 import { ImageSource as ImageSourceDefinition } from "image-source";
 import { ImageAsset } from "image-asset";
-import * as httpModule from "http";
+import * as httpModule from "../http";
 
 // Types.
 import { path as fsPath, knownFolders } from "file-system";
@@ -12,7 +12,7 @@ export { isFileOrResourcePath };
 let http: typeof httpModule;
 function ensureHttp() {
     if (!http) {
-        http = require("http");
+        http = require("../http");
     }
 }
 

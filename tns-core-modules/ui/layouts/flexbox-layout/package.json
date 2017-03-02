@@ -1,2 +1,5 @@
-{ "name" : "flexbox-layout",
-  "main" : "flexbox-layout" }
+{
+  "name" : "flexbox-layout",
+  "main" : "flexbox-layout",
+  "types" : "flexbox-layout.d.ts"
+}

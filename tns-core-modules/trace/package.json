@@ -1,5 +1,6 @@
 { 
-	"name" : "trace",
-  	"main" : "trace",
-	"nativescript": {}
+  "name" : "trace",
+  "main" : "trace",
+  "types" : "trace.d.ts",
+  "nativescript": {}
 }

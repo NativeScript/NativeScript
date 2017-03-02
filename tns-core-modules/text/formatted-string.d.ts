@@ -1,64 +1,62 @@
 ﻿/**
  * Contains the FormattedString and Span classes, which are used to create a formatted (rich text) strings.
  */
-declare module "text/formatted-string" {
-    import { Span } from "text/span";
-    import { ObservableArray } from "data/observable-array";
-    import { ViewBase } from "ui/core/view";
-    import { Color } from "color";
-    import { FontStyle, FontWeight } from "ui/styling/font";
-    import { TextDecoration } from "ui/text-base";
+import { Span } from "text/span";
+import { ObservableArray } from "data/observable-array";
+import { ViewBase } from "ui/core/view";
+import { Color } from "color";
+import { FontStyle, FontWeight } from "ui/styling/font";
+import { TextDecoration } from "ui/text-base";
 
-    export { Span };
-    
+export { Span };
+
+/**
+ * A class used to create a formatted (rich text) string.
+ */
+export class FormattedString extends ViewBase {
+
     /**
-     * A class used to create a formatted (rich text) string.
+     * An observable collection of Span objects used to define common text properties.
      */
-    export class FormattedString extends ViewBase {
+    public spans: ObservableArray<Span>;
 
-        /**
-         * An observable collection of Span objects used to define common text properties.
-         */
-        public spans: ObservableArray<Span>;
+    /**
+     * A human readable representation of the formatted string.
+     */
+    public toString(): string;
 
-        /**
-         * A human readable representation of the formatted string.
-         */
-        public toString(): string;
+    /**
+     * Gets or sets the font family which will be used for all spans that doesn't have a specific value.
+     */
+    public fontFamily: string;
 
-        /**
-         * Gets or sets the font family which will be used for all spans that doesn't have a specific value.
-         */
-        public fontFamily: string;
+    /**
+     * Gets or sets the font size which will be used for all spans that doesn't have a specific value.
+     */
+    public fontSize: number;
 
-        /**
-         * Gets or sets the font size which will be used for all spans that doesn't have a specific value.
-         */
-        public fontSize: number;
+    /**
+     * Gets or sets the font style which will be used for all spans that doesn't have a specific value.
+     */
+    public fontStyle: FontStyle;
 
-        /**
-         * Gets or sets the font style which will be used for all spans that doesn't have a specific value.
-         */
-        public fontStyle: FontStyle;
+    /**
+     * Gets or sets the font weight which will be used for all spans that doesn't have a specific value.
+     */
+    public fontWeight: FontWeight;
 
-        /**
-         * Gets or sets the font weight which will be used for all spans that doesn't have a specific value.
-         */
-        public fontWeight: FontWeight;
+    /**
+     * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.
+     */
+    public textDecoration: TextDecoration;
 
-        /**
-         * Gets or sets text decorations which will be used for all spans that doesn't have a specific value.
-         */
-        public textDecoration: TextDecoration;
+    /**
+     * Gets or sets the font foreground color which will be used for all spans that doesn't have a specific value.
+     */
+    public color: Color;
 
-        /**
-         * Gets or sets the font foreground color which will be used for all spans that doesn't have a specific value.
-         */
-        public color: Color;
-
-        /**
-         * Gets or sets the font background color which will be used for all spans that doesn't have a specific value.
-         */
-        public backgroundColor: Color;
-    }
+    /**
+     * Gets or sets the font background color which will be used for all spans that doesn't have a specific value.
+     */
+    public backgroundColor: Color;
 }

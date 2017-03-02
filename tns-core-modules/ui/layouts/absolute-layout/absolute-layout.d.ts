@@ -1,38 +1,36 @@
-﻿declare module "ui/layouts/absolute-layout" {
-    import { LayoutBase, View, Property, Length } from "ui/layouts/layout-base";
+﻿import { LayoutBase, View, Property, Length } from "ui/layouts/layout-base";
+
+/**
+ *  A layout that lets you specify exact locations (left/top coordinates) of its children.
+ */
+export class AbsoluteLayout extends LayoutBase {
+    /**
+     * Gets the value of the Left property from a given View.
+     */
+    static getLeft(view: View): Length;
 
     /**
-     *  A layout that lets you specify exact locations (left/top coordinates) of its children.
+     * Sets the value of the Left property from a given View.
      */
-    class AbsoluteLayout extends LayoutBase {
-        /**
-         * Gets the value of the Left property from a given View.
-         */
-        static getLeft(view: View): Length;
-
-        /**
-         * Sets the value of the Left property from a given View.
-         */
-        static setLeft(view: View, value: Length): void;
-
-        /**
-         * Gets the value of the Top property from a given View.
-         */
-        static getTop(view: View): Length;
-
-        /**
-         * Sets the value of the Top property from a given View.
-         */
-        static setTop(view: View, value: Length): void;
-    }
+    static setLeft(view: View, value: Length): void;
 
     /**
-     * Represents the observable property backing the left property.
+     * Gets the value of the Top property from a given View.
      */
-    export const leftProperty: Property<View, Length>;
+    static getTop(view: View): Length;
 
     /**
-     * Represents the observable property backing the top property.
+     * Sets the value of the Top property from a given View.
      */
-    export const topProperty: Property<View, Length>;
+    static setTop(view: View, value: Length): void;
 }
+
+/**
+ * Represents the observable property backing the left property.
+ */
+export const leftProperty: Property<View, Length>;
+
+/**
+ * Represents the observable property backing the top property.
+ */
+export const topProperty: Property<View, Length>;

@@ -31,5 +31,6 @@
     "stringifier",
     "stylesheet"
   ],
+  "types": "reworkcss.d.ts",
   "nativescript": {}
 }

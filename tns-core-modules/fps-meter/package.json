@@ -1,6 +1,7 @@
 {
-	"name" : "fps-meter",
-  	"main" : "fps-meter",
-	"nativescript": {}
+  "name" : "fps-meter",
+  "main" : "fps-meter",
+  "types": "fps-meter.d.ts",
+  "nativescript": {}
 }
 

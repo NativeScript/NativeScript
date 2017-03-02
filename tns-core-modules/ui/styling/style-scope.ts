@@ -1,7 +1,8 @@
 import { ViewBase } from "ui/core/view-base";
+import { View } from "ui/core/view";
 import { resetCSSProperties } from "ui/core/properties";
-import { SyntaxTree, Keyframes, parse as parseCss, Node } from "css";
-import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
+import { SyntaxTree, Keyframes, parse as parseCss, Node as CssNode } from "css";
+import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from "ui/styling/css-selector";
 import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
 import { File, knownFolders, path } from "file-system";
 import * as application from "application";
@@ -119,7 +120,7 @@ export class CssState {
                 let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
                 if (animation) {
                     view._registerAnimation(animation);
-                    animation.play(view)
+                    animation.play(<View>view)
                         .then(() => { view._unregisterAnimation(animation); })
                         .catch((e) => { view._unregisterAnimation(animation); });
                 }
@@ -354,7 +355,7 @@ export function applyInlineStyle(view: ViewBase, styleStr: string) {
     });
 }
 
-function isKeyframe(node: Node): node is Keyframes {
+function isKeyframe(node: CssNode): node is Keyframes {
     return node.type === "keyframes";
 }
 

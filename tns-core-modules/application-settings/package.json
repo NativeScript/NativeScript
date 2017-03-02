@@ -1,5 +1,6 @@
 {
-	"name" : "application-settings",
-  	"main" : "application-settings",
-	"nativescript": {}
+  "name" : "application-settings",
+  "main" : "application-settings",
+  "types": "application-settings.d.ts",
+  "nativescript": {}
 }

@@ -4,7 +4,7 @@ import * as stacks from "ui/layouts/stack-layout";
 import * as scroll from "ui/scroll-view";
 import * as textView from "ui/text-view";
 import * as timer from "timer";
-import * as http from "http";
+import * as http from "tns-core-modules/http";
 import * as trace from "trace";
 trace.enable();
 trace.setCategories(trace.categories.Style);

@@ -1,5 +1,6 @@
 {
-	"name" : "file-system",
-  	"main" : "file-system",
-	"nativescript": {}
+  "name" : "file-system",
+  "main" : "file-system",
+  "types": "file-system.d.ts",
+  "nativescript": {}
 }

@@ -1,2 +1,5 @@
-{ "name" : "grid-layout",
-  "main" : "grid-layout" }
+{
+  "name" : "grid-layout",
+  "main" : "grid-layout",
+  "types" : "grid-layout.d.ts"
+}

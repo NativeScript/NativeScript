@@ -1,2 +1,5 @@
-{ "name" : "enums",
-  "main" : "enums" }
+{
+  "name" : "enums",
+  "main" : "enums",
+  "types" : "enums.d.ts"
+}

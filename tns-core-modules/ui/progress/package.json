@@ -1,2 +1,5 @@
-{ "name" : "progress",
-  "main" : "progress" }
+{
+  "name" : "progress",
+  "main" : "progress",
+  "types" : "progress.d.ts"
+}

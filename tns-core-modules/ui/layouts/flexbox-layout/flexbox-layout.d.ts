@@ -1,173 +1,136 @@
-declare module "ui/styling/style" {
-    import {
-        FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
-        Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
-    } from "ui/layouts/flexbox-layout"
-    
-    interface Style {
-        flexDirection: FlexDirection;
-        flexWrap: FlexWrap;
-        justifyContent: JustifyContent;
-        alignItems: AlignItems;
-        alignContent: AlignContent;
-        order: Order;
-        flexGrow: FlexGrow;
-        flexShrink: FlexShrink;
-        flexWrapBefore: FlexWrapBefore;
-        alignSelf: AlignSelf;
-    }
+import { LayoutBase, View, Style, CssProperty } from "ui/layouts/layout-base";
+
+export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
+export namespace FlexDirection {
+    export const ROW: "row";
+    export const ROW_REVERSE: "row-reverse";
+    export const COLUMN: "column";
+    export const COLUMN_REVERSE: "column-reverse";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): FlexDirection;
 }
 
-declare module "ui/core/view" {
-    import {
-        Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
-    } from "ui/layouts/flexbox-layout"
-
-    interface View {
-        order: Order;
-        flexGrow: FlexGrow;
-        flexShrink: FlexShrink;
-        flexWrapBefore: FlexWrapBefore;
-        alignSelf: AlignSelf;
-    }
+export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";
+export namespace FlexWrap {
+    export const NOWRAP: "nowrap";
+    export const WRAP: "wrap";
+    export const WRAP_REVERSE: "wrap-reverse";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): FlexWrap;
 }
 
-declare module "ui/layouts/flexbox-layout" {
-
-    import { LayoutBase, View, Style, CssProperty } from "ui/layouts/layout-base";
-
-    export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
-    export namespace FlexDirection {
-        export const ROW: "row";
-        export const ROW_REVERSE: "row-reverse";
-        export const COLUMN: "column";
-        export const COLUMN_REVERSE: "column-reverse";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): FlexDirection;
-    }
-
-    export type FlexWrap = "nowrap" | "wrap" | "wrap-reverse";
-    export namespace FlexWrap {
-        export const NOWRAP: "nowrap";
-        export const WRAP: "wrap";
-        export const WRAP_REVERSE: "wrap-reverse";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): FlexWrap;
-    }
-
-    export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
-    export namespace JustifyContent {
-        export const FLEX_START: "flex-start";
-        export const FLEX_END: "flex-end";
-        export const CENTER: "center";
-        export const SPACE_BETWEEN: "space-between";
-        export const SPACE_AROUND: "space-around";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): JustifyContent;
-    }
-
-    export type AlignItems = "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
-    export namespace AlignItems {
-        export const FLEX_START: "flex-start";
-        export const FLEX_END: "flex-end";
-        export const CENTER: "center";
-        export const BASELINE: "baseline";
-        export const STRETCH: "stretch";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): AlignItems;
-    }
-
-    export type AlignContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
-    export namespace AlignContent {
-        export const FLEX_START: "flex-start";
-        export const FLEX_END: "flex-end";
-        export const CENTER: "center";
-        export const SPACE_BETWEEN: "space-between";
-        export const SPACE_AROUND: "space-around";
-        export const STRETCH: "stretch";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): AlignContent;
-    }
-
-    /**
-     * A flex order integer.
-     */
-    export type Order = number;
-    export namespace Order {
-        export function isValid(value: any): boolean;
-        export function parse(value: string): Order;
-    }
-
-    /**
-     * A flex-grow number. Negative values are invalid.
-     */
-    export type FlexGrow = number;
-    export namespace FlexGrow {
-        export function isValid(value: any): boolean;
-        export function parse(value: string): FlexGrow;
-    }
-
-    /**
-     * A flex-shrink number. Negative values are invalid.
-     */
-    export type FlexShrink = number;
-    export namespace FlexShrink {
-        export function isValid(value: any): boolean;
-        export function parse(value: string): FlexShrink;
-    }
-
-    /**
-     * A flex-wrap-before value. True, false or their string presentations "true" or "false".
-     */
-    export type FlexWrapBefore = boolean;
-    export namespace FlexWrapBefore {
-        export function isValid(value: any): boolean;
-        export function parse(value: string): FlexWrapBefore;
-    }
-
-    export type AlignSelf = "auto" | AlignItems;
-    export namespace AlignSelf {
-        export const AUTO: "auto";
-        export const FLEX_START: "flex-start";
-        export const FLEX_END: "flex-end";
-        export const CENTER: "center";
-        export const BASELINE: "baseline";
-        export const STRETCH: "stretch";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): AlignSelf;
-    }
-
-    export class FlexboxLayout extends LayoutBase {
-        public flexDirection: FlexDirection;
-        public flexWrap: FlexWrap;
-        public justifyContent: JustifyContent;
-        public alignItems: AlignItems;
-        public alignContent: AlignContent;
-
-        public static setOrder(view: View, order: number);
-        public static getOrder(view: View): number;
-
-        public static setFlexGrow(view: View, grow: number);
-        public static getFlexGrow(view: View);
-
-        public static setFlexShrink(view: View, shrink: number);
-        public static getFlexShrink(view: View): number;
-
-        public static setAlignSelf(view: View, align: AlignSelf);
-        public static getAlignSelf(view: View): AlignSelf;
-
-        public static setFlexWrapBefore(view: View, wrap: boolean);
-        public static getFlexWrapBefore(view: View): boolean;
-    }
-
-    export const flexDirectionProperty: CssProperty<Style, FlexDirection>;
-    export const flexWrapProperty: CssProperty<Style, FlexWrap>;
-    export const justifyContentProperty: CssProperty<Style, JustifyContent>;
-    export const alignItemsProperty: CssProperty<Style, AlignItems>;
-
-    export const orderProperty: CssProperty<Style, Order>;
-    export const flexGrowProperty: CssProperty<Style, FlexGrow>;
-    export const flexShrinkProperty: CssProperty<Style, FlexShrink>;
-    export const flexWrapBeforeProperty: CssProperty<Style, FlexWrapBefore>;
-    export const alignSelfProperty: CssProperty<Style, AlignSelf>;
+export type JustifyContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around";
+export namespace JustifyContent {
+    export const FLEX_START: "flex-start";
+    export const FLEX_END: "flex-end";
+    export const CENTER: "center";
+    export const SPACE_BETWEEN: "space-between";
+    export const SPACE_AROUND: "space-around";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): JustifyContent;
 }
+
+export type AlignItems = "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
+export namespace AlignItems {
+    export const FLEX_START: "flex-start";
+    export const FLEX_END: "flex-end";
+    export const CENTER: "center";
+    export const BASELINE: "baseline";
+    export const STRETCH: "stretch";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): AlignItems;
+}
+
+export type AlignContent = "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "stretch";
+export namespace AlignContent {
+    export const FLEX_START: "flex-start";
+    export const FLEX_END: "flex-end";
+    export const CENTER: "center";
+    export const SPACE_BETWEEN: "space-between";
+    export const SPACE_AROUND: "space-around";
+    export const STRETCH: "stretch";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): AlignContent;
+}
+
+/**
+ * A flex order integer.
+ */
+export type Order = number;
+export namespace Order {
+    export function isValid(value: any): boolean;
+    export function parse(value: string): Order;
+}
+
+/**
+ * A flex-grow number. Negative values are invalid.
+ */
+export type FlexGrow = number;
+export namespace FlexGrow {
+    export function isValid(value: any): boolean;
+    export function parse(value: string): FlexGrow;
+}
+
+/**
+ * A flex-shrink number. Negative values are invalid.
+ */
+export type FlexShrink = number;
+export namespace FlexShrink {
+    export function isValid(value: any): boolean;
+    export function parse(value: string): FlexShrink;
+}
+
+/**
+ * A flex-wrap-before value. True, false or their string presentations "true" or "false".
+ */
+export type FlexWrapBefore = boolean;
+export namespace FlexWrapBefore {
+    export function isValid(value: any): boolean;
+    export function parse(value: string): FlexWrapBefore;
+}
+
+export type AlignSelf = "auto" | AlignItems;
+export namespace AlignSelf {
+    export const AUTO: "auto";
+    export const FLEX_START: "flex-start";
+    export const FLEX_END: "flex-end";
+    export const CENTER: "center";
+    export const BASELINE: "baseline";
+    export const STRETCH: "stretch";
+    export function isValid(value: any): boolean;
+    export function parse(value: string): AlignSelf;
+}
+
+export class FlexboxLayout extends LayoutBase {
+    public flexDirection: FlexDirection;
+    public flexWrap: FlexWrap;
+    public justifyContent: JustifyContent;
+    public alignItems: AlignItems;
+    public alignContent: AlignContent;
+
+    public static setOrder(view: View, order: number);
+    public static getOrder(view: View): number;
+
+    public static setFlexGrow(view: View, grow: number);
+    public static getFlexGrow(view: View);
+
+    public static setFlexShrink(view: View, shrink: number);
+    public static getFlexShrink(view: View): number;
+
+    public static setAlignSelf(view: View, align: AlignSelf);
+    public static getAlignSelf(view: View): AlignSelf;
+
+    public static setFlexWrapBefore(view: View, wrap: boolean);
+    public static getFlexWrapBefore(view: View): boolean;
+}
+
+export const flexDirectionProperty: CssProperty<Style, FlexDirection>;
+export const flexWrapProperty: CssProperty<Style, FlexWrap>;
+export const justifyContentProperty: CssProperty<Style, JustifyContent>;
+export const alignItemsProperty: CssProperty<Style, AlignItems>;
+
+export const orderProperty: CssProperty<Style, Order>;
+export const flexGrowProperty: CssProperty<Style, FlexGrow>;
+export const flexShrinkProperty: CssProperty<Style, FlexShrink>;
+export const flexWrapBeforeProperty: CssProperty<Style, FlexWrapBefore>;
+export const alignSelfProperty: CssProperty<Style, AlignSelf>;

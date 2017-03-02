@@ -1,2 +1,5 @@
-{ "name" : "switch",
-  "main" : "switch" }
+{
+  "name" : "switch",
+  "main" : "switch",
+  "types" : "switch.d.ts"
+}

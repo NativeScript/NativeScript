@@ -1,2 +1,5 @@
-{ "name" : "animation",
-  "main" : "animation" }
+{
+  "name" : "animation",
+  "main" : "animation",
+  "types" : "animation.d.ts"
+}
