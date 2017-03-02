@@ -1,36 +1,14 @@
-﻿<Page >
+﻿<Page>
+    <Page.actionBar>
+        <ActionBar title="Text transform" class="action-bar">
+        </ActionBar>
+    </Page.actionBar>
   <StackLayout>
-    <Button id="ChangeText" text="Change text" tap="changeTextButonTap" />
-    <Button id="Change" text="Change" tap="butonTap" />
+    <Button id="ChangeText" text="Change text" tap="onChangeText" />
+    <Button id="Change" text="Change" tap="onChangeTextTransformation" />
     <Label id="Label" text="label Label" style.textTransform="none" />
     <Button id="Button" text="button Button" style.textTransform="none" />
     <TextField id="TextField" text="textField textField" style.textTransform="none" />
     <TextView id="TextView" text="textView textView" style.textTransform="none" />
-
-    <!--
-    <Label text="label label" style="text-transform:none" />
-    <Label text="label label" style="text-transform:capitalize" />
-    <Label text="label label" style="text-transform:uppercase" />
-    <Label text="label label" style="text-transform:lowercase" />
-
-    <TextField text="textField textField" style="text-transform:none" />
-    <TextField text="textField textField" style="text-transform:capitalize" />
-    <TextField text="textField textField" style="text-transform:uppercase;" />
-    <TextField text="textField textField" style="text-transform:lowercase" />
-    <TextField text="textField textField" style="text-transform:uppercase; text-decoration:underline;" />
-
-    <TextView text="textView textView" style="text-transform:none" />
-    <TextView text="textView textView" style="text-transform:capitalize" />
-    <TextView text="textView textView" style="text-transform:uppercase" />
-    <TextView text="textView textView" style="text-transform:lowercase" />
-    <TextView text="textView textView" style="text-transform:uppercase; text-decoration:underline;" />
-
-    <Button text="button Button" style="text-transform:none" />
-    <Button text="button Button" style="text-transform:capitalize" />
-    <Button text="button Button" style="text-transform:uppercase" />
-    <Button text="button Button" style="text-transform:lowercase" />
-    <Button text="button Button" style="text-transform:uppercase; text-decoration:underline;" />
-    -->
-
   </StackLayout>
 </Page>

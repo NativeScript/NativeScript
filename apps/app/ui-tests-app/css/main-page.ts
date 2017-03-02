@@ -42,6 +42,7 @@ export function pageLoaded(args: EventData) {
     examples.set("listview_bg_separator_color", "css/listview_bg_separator_color");
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("border-playground", "css/border-playground");
+    examples.set("textview-hint-color", "css/textview-hint-color");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
