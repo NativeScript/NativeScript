@@ -1,5 +1,3 @@
-﻿require("globals");
-
 import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { Observable, EventData } from "data/observable";
 import { NavigationEntry } from "ui/frame";
@@ -8,7 +6,7 @@ import "../bundle-entry-points";
 const events = new Observable();
 global.moduleMerge(events, exports);
 
-export { Observable };
+export { Observable } test
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
