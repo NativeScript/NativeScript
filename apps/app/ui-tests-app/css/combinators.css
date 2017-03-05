@@ -7,3 +7,12 @@
   background-color: blue;
   color: white;
 }
+
+.direct-sibling--type Button + Button {
+  background-color: green;
+  color: white;
+}
+
+.direct-sibling--class .test-child + .test-child {
+  background-color: yellow;
+}

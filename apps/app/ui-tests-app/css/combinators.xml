@@ -8,12 +8,27 @@
 				<Button text="I'm not!"/>
 			</StackLayout>
 		</StackLayout>
+
 		<StackLayout class="direct-child--class">
 			<Label text="Direct child test by class"/>
 			<Button class="test-child" text="I'm a direct child!"/>
 			<StackLayout>
 				<Button class="test-child" text="I'm not!"/>
 			</StackLayout>
+		</StackLayout>
+
+		<StackLayout class="direct-sibling--type">
+			<Label text="Direct sibling test by type"/>
+			<Button text="I'm the ref"/>
+			<Button text="I'm a direct sibling!"/>
+			<Button text="I'm not!"/>
+		</StackLayout>
+
+		<StackLayout class="direct-sibling--class">
+			<Label text="Direct sibling test by class"/>
+			<Button class="test-child" text="I'm the ref"/>
+			<Button class="test-child" text="I'm a direct sibling!"/>
+			<Button class="test-child" text="I'm not!"/>
 		</StackLayout>
 
 	</StackLayout>
