@@ -232,3 +232,38 @@ export function test_query_match_one_child_group() {
     let expected = new Map<selector.Node, selector.Changes>().set(prod, { attributes: new Set(["special"])} );
     TKUnit.assertDeepEqual(match.changeMap, expected);
 }
+
+export function test_query_match_one_sibling_group() {
+    let {map} = create(`list button:highlighted+button:disabled { color: red; }`);
+    let list, button, disabledButton;
+
+    list = {
+        cssType: "list",
+        toString,
+        getChildIndex: () => 1,
+        getChildAt: () => button
+    };
+
+    button = {
+        cssType: "button",
+        cssPseudoClasses: new Set<string>(["highlighted"]),
+        toString,
+        parent: list
+    };
+
+    disabledButton = {
+        cssType: "button",
+        cssPseudoClasses: new Set<string>(["disabled"]),
+        toString,
+        parent: list
+    };
+
+    let match = map.query(disabledButton);
+    TKUnit.assertEqual(match.selectors.length, 1, "Expected match to have one selector.");
+
+    let expected = new Map<selector.Node, selector.Changes>()
+        .set(button, { pseudoClasses: new Set(["highlighted"]) })
+        .set(disabledButton, { pseudoClasses: new Set(["disabled"]) });
+
+    TKUnit.assertDeepEqual(match.changeMap, expected);
+}
