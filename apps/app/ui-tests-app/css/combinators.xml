@@ -1,0 +1,20 @@
+<Page>
+	<StackLayout>
+
+		<StackLayout class="direct-child--type">
+			<Label text="Direct child test by type"/>
+			<Button text="I'm a direct child!"/>
+			<StackLayout>
+				<Button text="I'm not!"/>
+			</StackLayout>
+		</StackLayout>
+		<StackLayout class="direct-child--class">
+			<Label text="Direct child test by class"/>
+			<Button class="test-child" text="I'm a direct child!"/>
+			<StackLayout>
+				<Button class="test-child" text="I'm not!"/>
+			</StackLayout>
+		</StackLayout>
+
+	</StackLayout>
+</Page>

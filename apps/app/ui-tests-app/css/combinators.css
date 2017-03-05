@@ -1,0 +1,9 @@
+.direct-child--type > Button {
+  background-color: red;
+  color: white;
+}
+
+.direct-child--class > .test-child {
+  background-color: blue;
+  color: white;
+}
