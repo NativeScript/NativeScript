@@ -1,15 +1,22 @@
-import { PercentLength, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
-import { ad as androidBackground } from "ui/styling/background";
+// Definitions.
+import { Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
+import { GestureTypes, GestureEventData } from "ui/gestures";
+
+// Types.
+import { Background, ad as androidBackground } from "ui/styling/background";
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
-    minWidthProperty, minHeightProperty, Length,
-    widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
-    marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
-    rotateProperty, scaleXProperty, scaleYProperty,
-    translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    Background, GestureTypes, GestureEventData,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility, HorizontalAlignment, VerticalAlignment
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-common";
+
+import {
+    Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
+    visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
+    minWidthProperty, minHeightProperty, widthProperty, heightProperty, 
+    marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, 
+    rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, 
+    zIndexProperty, backgroundInternalProperty
+} from "ui/styling/style-properties";
 
 export * from "./view-common";
 
@@ -328,28 +335,28 @@ export class View extends ViewCommon {
         let nativeVisibility = this.nativeView.getVisibility();
         switch (nativeVisibility) {
             case android.view.View.VISIBLE:
-                return Visibility.VISIBLE;
+                return "visible";
             case android.view.View.INVISIBLE:
-                return Visibility.HIDDEN;
+                return "hidden";
             case android.view.View.GONE:
-                return Visibility.COLLAPSE;
+                return "collapse";
             default:
                 throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
         }
     }
     set [visibilityProperty.native](value: Visibility) {
         switch (value) {
-            case Visibility.VISIBLE:
+            case "visible":
                 this.nativeView.setVisibility(android.view.View.VISIBLE);
                 break;
-            case Visibility.HIDDEN:
+            case "hidden":
                 this.nativeView.setVisibility(android.view.View.INVISIBLE);
                 break;
-            case Visibility.COLLAPSE:
+            case "collapse":
                 this.nativeView.setVisibility(android.view.View.GONE);
                 break;
             default:
-                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);
         }
     }
 
@@ -448,6 +455,64 @@ export class View extends ViewCommon {
     }
 }
 
+export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
+    private _viewGroup: android.view.ViewGroup;
+
+    get android(): android.view.ViewGroup {
+        return this._viewGroup;
+    }
+
+    get _nativeView(): android.view.ViewGroup {
+        return this._viewGroup;
+    }
+
+    public _createNativeView() {
+        this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
+    }
+
+    public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {
+        super._addViewToNativeVisualTree(child);
+
+        if (this._nativeView && child.nativeView) {
+            if (traceEnabled()) {
+                traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
+            }
+            this._nativeView.addView(child.nativeView, atIndex);
+            if (child instanceof View) {
+                this._updateNativeLayoutParams(child);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    public _updateNativeLayoutParams(child: View): void {
+        this._setChildMinWidthNative(child);
+        this._setChildMinHeightNative(child);
+    }
+
+    public _setChildMinWidthNative(child: View): void {
+        child._minWidthNative = child.minWidth;
+    }
+
+    public _setChildMinHeightNative(child: View): void {
+        child._minHeightNative = child.minHeight;
+    }
+
+    public _removeViewFromNativeVisualTree(child: ViewCommon): void {
+        super._removeViewFromNativeVisualTree(child);
+
+        if (this._nativeView && child._nativeView) {
+            this._nativeView.removeView(child._nativeView);
+            if (traceEnabled()) {
+                traceWrite(`${this}._nativeView.removeView(${child}._nativeView)`, traceCategories.VisualTreeEvents);
+                traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
+            }
+        }
+    }
+}
+
 type NativeSetter = { (view: android.view.View, value: number): void };
 type NativeGetter = { (view: android.view.View): number };
 const percentNotSupported = (view: android.view.View, value: number) => { throw new Error("PercentLength is not supported."); };
@@ -458,7 +523,7 @@ interface NativePercentLengthPropertyOptions {
     setPixels: NativeSetter;
     setPercent?: NativeSetter
 }
-function createNativePercentLengthProperty({key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported}: NativePercentLengthPropertyOptions) {
+function createNativePercentLengthProperty({ key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported }: NativePercentLengthPropertyOptions) {
     Object.defineProperty(View.prototype, key, {
         get: function (this: View): PercentLength {
             const value = getPixels(this.nativeView);
@@ -541,61 +606,3 @@ createNativePercentLengthProperty({
     getPixels: org.nativescript.widgets.ViewHelper.getMinHeight,
     setPixels: org.nativescript.widgets.ViewHelper.setMinHeight
 });
-
-export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
-    private _viewGroup: android.view.ViewGroup;
-
-    get android(): android.view.ViewGroup {
-        return this._viewGroup;
-    }
-
-    get _nativeView(): android.view.ViewGroup {
-        return this._viewGroup;
-    }
-
-    public _createNativeView() {
-        this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
-    }
-
-    public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {
-        super._addViewToNativeVisualTree(child);
-
-        if (this._nativeView && child.nativeView) {
-            if (traceEnabled()) {
-                traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
-            }
-            this._nativeView.addView(child.nativeView, atIndex);
-            if (child instanceof View) {
-                this._updateNativeLayoutParams(child);
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    public _updateNativeLayoutParams(child: View): void {
-        this._setChildMinWidthNative(child);
-        this._setChildMinHeightNative(child);
-    }
-
-    public _setChildMinWidthNative(child: View): void {
-        child._minWidthNative = child.minWidth;
-    }
-
-    public _setChildMinHeightNative(child: View): void {
-        child._minHeightNative = child.minHeight;
-    }
-
-    public _removeViewFromNativeVisualTree(child: ViewCommon): void {
-        super._removeViewFromNativeVisualTree(child);
-
-        if (this._nativeView && child._nativeView) {
-            this._nativeView.removeView(child._nativeView);
-            if (traceEnabled()) {
-                traceWrite(`${this}._nativeView.removeView(${child}._nativeView)`, traceCategories.VisualTreeEvents);
-                traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
-            }
-        }
-    }
-}

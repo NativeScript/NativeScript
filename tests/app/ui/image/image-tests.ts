@@ -5,6 +5,7 @@ import { isIOS, isAndroid } from "platform";
 import { PropertyChangeData } from "data/observable";
 import * as utils from "utils/utils";
 import * as TKUnit from "../../TKUnit";
+import { getColor } from "../helper";
 
 // >> img-require
 import * as ImageModule from "ui/image";
@@ -384,7 +385,7 @@ export const test_tintColor = function () {
             TKUnit.assert(tintColor === null, "tintColor expected to be set to null");
         }
         else if (image.ios) {
-            const imageColor = utils.ios.getColor(testImage.ios.tintColor);
+            const imageColor = getColor(testImage.ios.tintColor);
             TKUnit.assert(!imageColor.equals(colorRed), "imageColor expected to be different than tintColor");
         }
         image.tintColor = colorRed;
@@ -393,7 +394,7 @@ export const test_tintColor = function () {
             TKUnit.assert(testImage.android.getColorFilter() !== null, "tintColor expected to be set to a nonnull value");
         }
         else if (image.ios) {
-            const imageColor = utils.ios.getColor(testImage.ios.tintColor);
+            const imageColor = getColor(testImage.ios.tintColor);
             TKUnit.assert(imageColor.equals(colorRed), "tintColor expected to be set to: " + colorRed);
         }
     };

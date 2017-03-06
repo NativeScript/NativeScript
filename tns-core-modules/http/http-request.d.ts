@@ -1,6 +1,7 @@
 ﻿//@private
 
 declare module "http/http-request" {
-    import * as http from "http";
-    export var request: (options: http.HttpRequestOptions) => Promise<http.HttpResponse>;
+    import { HttpResponse, HttpRequestOptions, Headers } from "http";
+    export var request: (options: HttpRequestOptions) => Promise<HttpResponse>;
+    export function addHeader(headers: Headers, key: string, value: string): void;
 }

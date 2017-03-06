@@ -1,9 +1,11 @@
-﻿import {
+﻿import { Font } from "ui/styling/font";
+
+import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
-    whiteSpaceProperty, Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
+    whiteSpaceProperty, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    layout, Span
+    layout, Span, Color
 } from "./text-base-common";
 
 import { _isSet as isSet } from "ui/core/properties";

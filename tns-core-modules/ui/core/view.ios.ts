@@ -1,11 +1,19 @@
-﻿import { Point, View as ViewDefinition } from "ui/core/view";
-import { ios } from "ui/styling/background";
+﻿// Definitions.
+import { Point, View as ViewDefinition } from "ui/core/view";
+
+import { ios, Background } from "ui/styling/background";
 import {
-    ViewCommon, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
-    rotateProperty, scaleXProperty, scaleYProperty,
-    translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    clipPathProperty, layout, traceEnabled, traceWrite, traceCategories, Background, Visibility, Length
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, 
+    traceEnabled, traceWrite, traceCategories 
 } from "./view-common";
+
+import {
+    Visibility, Length,
+    visibilityProperty, opacityProperty,
+    rotateProperty, scaleXProperty, scaleYProperty,
+    translateXProperty, translateYProperty, zIndexProperty,
+    backgroundInternalProperty, clipPathProperty
+} from "ui/styling/style-properties";
 
 export * from "./view-common";
 

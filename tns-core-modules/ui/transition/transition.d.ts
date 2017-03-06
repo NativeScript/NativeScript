@@ -21,7 +21,7 @@
     //@private
     export function _clearBackwardTransitions(fragment: any): void;
     export function _clearForwardTransitions(fragment: any): void;
-    export function _setAndroidFragmentTransitions(navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void;
+    export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: android.app.Fragment, newFragment: android.app.Fragment, fragmentTransaction: android.app.FragmentTransaction): void;
     export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
     export function _onFragmentShown(fragment: any, isBack: boolean): void;
     export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boolean): void;

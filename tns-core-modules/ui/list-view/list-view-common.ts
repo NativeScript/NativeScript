@@ -1,5 +1,5 @@
 ﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, lengthComparer, Observable } from "ui/core/view";
+import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable } from "ui/core/view";
 import { parse, parseMultipleTemplates } from "ui/builder";
 import { Label } from "ui/label";
 import { ObservableArray, ChangedData } from "data/observable-array";
@@ -171,7 +171,7 @@ const defaultRowHeight: Length = "auto";
  * Represents the observable property backing the rowHeight property of each ListView instance.
  */
 export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
-    name: "rowHeight", defaultValue: defaultRowHeight, equalityComparer: lengthComparer,
+    name: "rowHeight", defaultValue: defaultRowHeight, equalityComparer: Length.equals,
     coerceValue: (target, value) => {
         // We coerce to default value if we don't have display density.
         return target._nativeView ? value : defaultRowHeight;

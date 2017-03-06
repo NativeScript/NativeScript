@@ -1,5 +1,12 @@
 ﻿declare module "ui/core/bindable" {
     import { ViewBase } from "ui/core/view-base";
+    import { Observable, WrappedValue, PropertyChangeData, EventData } from "data/observable";
+    import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType, isCategorySet } from "trace";
+
+    export {
+        Observable, WrappedValue, PropertyChangeData, EventData,
+        traceEnabled, traceWrite, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet
+    };
 
     /**
      * The options object used in the Bindable.bind method.
@@ -47,4 +54,7 @@
         public sourceIsBindingContext: boolean;
         public updateTwoWay(value: any);
     }
+
+    export function getEventOrGestureName(name: string): string;
+    export function isEventOrGesture(name: string, view: ViewBase): boolean;
 }

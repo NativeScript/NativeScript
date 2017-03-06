@@ -1,8 +1,9 @@
 ﻿import {
-    ButtonBase, TouchGestureEventData, GestureTypes, TouchAction,
-    PseudoClassHandler,
+    ButtonBase, PseudoClassHandler,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty
 } from "./button-common";
+
+import { TouchGestureEventData, GestureTypes, TouchAction } from "ui/gestures";
 
 export * from "./button-common";
 

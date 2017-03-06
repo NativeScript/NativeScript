@@ -2,12 +2,12 @@
  * Contains the action bar related classes.
  */
 declare module "ui/action-bar" {
-    import { EventData, ViewBase, View, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
+    import { EventData, ViewBase, View } from "ui/core/view";
     
     /**
      * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).
      */
-    export class ActionBar extends View implements AddArrayFromBuilder, AddChildFromBuilder {
+    export class ActionBar extends View {
 
         /**
          * Gets or sets the action bar title.
@@ -42,9 +42,6 @@ declare module "ui/action-bar" {
         //@private
         _isEmpty(): boolean;
         //@endprivate
-
-        _addArrayFromBuilder(name: string, value: Array<any>): void;
-        _addChildFromBuilder(name: string, value: any): void;
     }
 
     /**

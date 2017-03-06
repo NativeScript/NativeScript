@@ -1,15 +1,19 @@
-﻿import {
+﻿// Definitions.
+import {
     CubicBezierAnimationCurve as CubicBezierAnimationCurveDefinition,
     AnimationPromise as AnimationPromiseDefinition,
     Animation as AnimationBaseDefinition,
     AnimationDefinition,
     Pair
 } from "ui/animation";
+import { View } from "ui/core/view";
+
+// Types.
+import { Color } from "color";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
+
+export { Color, traceEnabled, traceWrite, traceCategories };
 export { AnimationPromise } from "ui/animation";
-
-import { View, Color, traceEnabled, traceWrite, traceCategories } from "ui/core/view";
-
-export * from "ui/core/view";
 
 export module Properties {
     export var opacity = "opacity";

@@ -1,5 +1,8 @@
 import { Style as StyleDefinition } from "ui/styling/style";
-import { Length, PercentLength, Color, Background, Font, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
+import { Color } from "color";
+import { Font } from "ui/styling/font";
+import { Background } from "ui/styling/background";
+import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
 import { Observable } from "data/observable";
 
 import {
@@ -299,10 +302,3 @@ Style.prototype.effectiveBorderTopWidth = 0;
 Style.prototype.effectiveBorderRightWidth = 0;
 Style.prototype.effectiveBorderBottomWidth = 0;
 Style.prototype.effectiveBorderLeftWidth = 0;
-// Property registration
-
-// register default shorthand callbacks.
-// styleProperty.registerShorthandCallback("font", onFontChanged);
-// styleProperty.registerShorthandCallback("margin", onMarginChanged);
-// styleProperty.registerShorthandCallback("padding", onPaddingChanged);
-// styleProperty.registerShorthandCallback("transform", onTransformChanged);

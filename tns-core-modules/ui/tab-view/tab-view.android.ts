@@ -1,9 +1,11 @@
+import { Font } from "ui/styling/font";
+
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, View, layout, Color, Font,
-    traceCategory, traceEnabled, traceWrite, initNativeView
+    fontSizeProperty, fontInternalProperty, View, layout,
+    traceCategory, traceEnabled, traceWrite, initNativeView, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
@@ -376,7 +378,7 @@ export class TabView extends TabViewBase {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
-            this._tabLayout.setBackground(value.newDrawable());
+            this._tabLayout.setBackground(value ? value.newDrawable() : null);
         }
     }
 
@@ -384,7 +386,7 @@ export class TabView extends TabViewBase {
         return this._tabLayout.getTabTextColor();
     }
     set [tabTextColorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         this._tabLayout.setTabTextColor(color);
     }
 
@@ -392,7 +394,7 @@ export class TabView extends TabViewBase {
         return this._tabLayout.getSelectedTabTextColor();
     }
     set [selectedTabTextColorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         this._tabLayout.setSelectedTabTextColor(color);
     }
 
@@ -401,7 +403,7 @@ export class TabView extends TabViewBase {
     }
     set [androidSelectedTabHighlightColorProperty.native](value: number | Color) {
         let tabLayout = this._tabLayout;
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);
     }
 }

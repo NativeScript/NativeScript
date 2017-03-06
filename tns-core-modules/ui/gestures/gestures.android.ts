@@ -1,7 +1,10 @@
-﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
+﻿// Definitions.
+import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
+import { View, EventData } from "ui/core/view";
+
+// Types.
 import {
-    GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection,
-    View, EventData
+    GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection
 } from "./gestures-common";
 
 // Import layout from utils directly to avoid circular references

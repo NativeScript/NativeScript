@@ -239,13 +239,13 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
             actualTextSize = testLabel.ios.font.pointSize;
             TKUnit.assertEqual(actualTextSize, fontSize, "Wrong native FontSize");
 
-            normalColor = utils.ios.getColor(testLabel.ios.textColor);
+            normalColor = helper.getColor(testLabel.ios.textColor);
             expColor = new colorModule.Color(color);
             TKUnit.assertEqual(normalColor.hex, expColor.hex);
 
             const cgColor = (<UILabel>testLabel.ios).layer.backgroundColor;
             const uiColor = UIColor.colorWithCGColor(cgColor);
-            actualBackgroundColor = utils.ios.getColor(uiColor);
+            actualBackgroundColor = helper.getColor(uiColor);
             expBackgroundColor = new colorModule.Color(backgroundColor);
             TKUnit.assertEqual(actualBackgroundColor.hex, expBackgroundColor.hex);
         }

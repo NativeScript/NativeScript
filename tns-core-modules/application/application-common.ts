@@ -14,7 +14,6 @@ import "globals";
 
 import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { NavigationEntry } from "ui/frame";
-import "../bundle-entry-points";
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";

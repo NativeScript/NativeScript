@@ -1,3 +1,4 @@
+// Definitions.
 import {
     KeyframeDeclaration as KeyframeDeclarationDefinition,
     KeyframeInfo as KeyframeInfoDefinition,
@@ -5,19 +6,17 @@ import {
     KeyframeAnimation as KeyframeAnimationDefinition
 } from "ui/animation/keyframe-animation";
 
-import {
-    View,
-    backgroundColorProperty,
-    scaleXProperty,
-    scaleYProperty,
-    translateXProperty,
-    translateYProperty,
-    rotateProperty,
-    opacityProperty,
-    unsetValue,
-    Color
-} from "ui/core/view";
+import { View, Color } from "ui/core/view";
+
+// Types.
+import { unsetValue } from "ui/core/properties";
 import { Animation } from "ui/animation";
+import {
+    backgroundColorProperty,
+    scaleXProperty, scaleYProperty,
+    translateXProperty, translateYProperty,
+    rotateProperty, opacityProperty
+} from "ui/styling/style-properties";
 
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;

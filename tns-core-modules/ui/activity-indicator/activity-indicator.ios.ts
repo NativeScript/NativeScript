@@ -1,5 +1,4 @@
-import { ActivityIndicatorBase, busyProperty, colorProperty } from "./activity-indicator-common";
-import { Color } from "color";
+import { ActivityIndicatorBase, busyProperty, colorProperty, Color } from "./activity-indicator-common";
 
 export * from "./activity-indicator-common";
 

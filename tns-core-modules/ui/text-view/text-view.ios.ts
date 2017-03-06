@@ -2,10 +2,10 @@
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, _updateCharactersInRangeReplacementString
-
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, 
+    Length, _updateCharactersInRangeReplacementString, Color
 } from "ui/editable-text-base";
-import { Color } from "color";
+
 import { ios } from "utils/utils";
 
 export * from "ui/editable-text-base";

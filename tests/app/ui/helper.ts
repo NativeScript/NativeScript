@@ -11,11 +11,27 @@ import * as formattedStringModule from "text/formatted-string";
 import * as spanModule from "text/span";
 import { ActionBar } from "ui/action-bar";
 import { unsetValue } from "ui/core/view";
+import { Color } from "color";
 
 var DELTA = 0.1;
 
 export var ASYNC = 0.2;
 export var MEMORY_ASYNC = 2;
+
+export function getColor(uiColor: UIColor): Color {
+    var redRef = new interop.Reference<number>();
+    var greenRef = new interop.Reference<number>();
+    var blueRef = new interop.Reference<number>();
+    var alphaRef = new interop.Reference<number>();
+
+    uiColor.getRedGreenBlueAlpha(redRef, greenRef, blueRef, alphaRef);
+    var red = redRef.value * 255;
+    var green = greenRef.value * 255;
+    var blue = blueRef.value * 255;
+    var alpha = alphaRef.value * 255;
+
+    return new Color(alpha, red, green, blue);
+}
 
 function clearPage(): void {
     let newPage = getCurrentPage();

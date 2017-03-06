@@ -9,7 +9,10 @@
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "watch": true,
-            "stopOnEntry": true
+            "stopOnEntry": true,
+            "tnsArgs": [
+                "--sync-all-files"
+            ]
         },
         {
             "name": "Attach on iOS",
@@ -28,7 +31,10 @@
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "watch": true,
-            "stopOnEntry": true
+            "stopOnEntry": false,
+            "tnsArgs": [
+                "--sync-all-files"
+            ]
         },
         {
             "name": "Attach on Android",

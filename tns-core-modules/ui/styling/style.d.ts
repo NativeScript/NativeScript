@@ -1,7 +1,9 @@
 declare module "ui/styling/style" {
-    import { Length, PercentLength, Color, Background, Font, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "ui/core/view";
+    import { Color } from "color";
+    import { Background } from "ui/styling/background";
+    import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
     import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
-    import { FontStyle, FontWeight } from "ui/styling/font";
+    import { Font, FontStyle, FontWeight } from "ui/styling/font";
 
     export interface Thickness {
         left: number;

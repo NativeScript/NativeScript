@@ -1,9 +1,8 @@
-﻿import { topmost } from "ui/frame";
+﻿// Deifinitions.
+import { View } from "ui/core/view";
+import { Color } from "color";
 import { Page } from "ui/page";
-import { Button } from "ui/button";
-import { TextField } from "ui/text-field";
-import { Label } from "ui/label";
-import { View, Color } from "ui/core/view";
+import * as frameModule from "ui/frame";
 
 export const STRING = "string";
 export const PROMPT = "Prompt";
@@ -28,12 +27,17 @@ export module inputType {
     export const password: string = "password";
 }
 
+let frame: typeof frameModule;
 export function getCurrentPage(): Page {
-    let topmostFrame = topmost();
+    if (!frame) {
+        frame = require("ui/frame");
+    }
+
+    let topmostFrame = frame.topmost();
     if (topmostFrame) {
         return topmostFrame.currentPage;
     }
-
+    
     return undefined;
 }
 
@@ -48,26 +52,30 @@ function applySelectors(view: View) {
 }
 
 let buttonColor: Color;
+let buttonBackgroundColor: Color;
+
+function getButtonColors(): void {
+    const Button = require("ui/button").Button;
+    const btn = new Button();
+    applySelectors(btn);
+    buttonColor = btn.color;
+    buttonBackgroundColor = btn.backgroundColor;
+    btn.onUnloaded();
+}
+
 // NOTE: This will fail if app.css is changed.
 export function getButtonColor(): Color {
     if (!buttonColor) {
-        let btn = new Button();
-        applySelectors(btn);
-        buttonColor = btn.color;
-        btn.onUnloaded();
+        getButtonColors();
     }
 
     return buttonColor;
 }
 
-let buttonBackgroundColor: Color;
 // NOTE: This will fail if app.css is changed.
 export function getButtonBackgroundColor(): Color {
     if (!buttonBackgroundColor) {
-        let btn = new Button();
-        applySelectors(btn);
-        buttonBackgroundColor = btn.backgroundColor;
-        btn.onUnloaded();
+        getButtonColors();
     }
 
     return buttonBackgroundColor;
@@ -76,7 +84,8 @@ export function getButtonBackgroundColor(): Color {
 let textFieldColor: Color;
 export function getTextFieldColor(): Color {
     if (!textFieldColor) {
-        let tf = new TextField();
+        const TextField = require("ui/text-field").TextField;
+        const tf = new TextField();
         applySelectors(tf);
         textFieldColor = tf.color;
         tf.onUnloaded();
@@ -89,6 +98,7 @@ let labelColor: Color;
 // NOTE: This will fail if app.css is changed.
 export function getLabelColor(): Color {
     if (!labelColor) {
+        const Label = require("ui/label").Label;
         let lbl = new Label();
         applySelectors(lbl);
         labelColor = lbl.color;

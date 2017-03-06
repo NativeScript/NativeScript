@@ -1,7 +1,6 @@
 import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
-import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout } from "./action-bar-common";
+import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout, Color } from "./action-bar-common";
 import { ImageSource, fromFileOrResource } from "image-source";
-import { Color } from "color";
 
 export * from "./action-bar-common";
 
@@ -58,6 +57,18 @@ export class ActionBar extends ActionBarBase {
         }
 
         return null;
+    }
+
+    public _addChildFromBuilder(name: string, value: any) {
+        if (value instanceof NavigationButton) {
+            this.navigationButton = value;
+        }
+        else if (value instanceof ActionItem) {
+            this.actionItems.addItem(value);
+        }
+        else if (value instanceof View) {
+            this.titleView = value;
+        }
     }
 
     public update() {

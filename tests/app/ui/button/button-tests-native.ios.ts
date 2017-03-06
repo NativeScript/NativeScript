@@ -1,7 +1,7 @@
 ﻿import * as buttonModule from "ui/button";
 import * as colorModule from "color";
-import * as utilsModule from "utils/utils";
 import * as enums from "ui/enums";
+import { getColor } from "../helper";
 
 export function getNativeText(button: buttonModule.Button): string {
     return button.ios.titleForState(UIControlState.Normal);
@@ -16,11 +16,11 @@ export function getNativeFontSize(button: buttonModule.Button): number {
 }
 
 export function getNativeColor(button: buttonModule.Button): colorModule.Color {
-    return utilsModule.ios.getColor(button.ios.titleColorForState(UIControlState.Normal));
+    return getColor(button.ios.titleColorForState(UIControlState.Normal));
 }
 
 export function getNativeBackgroundColor(button: buttonModule.Button): colorModule.Color {
-    return utilsModule.ios.getColor(button.ios.backgroundColor);
+    return getColor(button.ios.backgroundColor);
 }
 
 export function getNativeTextAlignment(button: buttonModule.Button): string {

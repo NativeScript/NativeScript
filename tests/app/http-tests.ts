@@ -3,6 +3,8 @@ import * as TKUnit from "./TKUnit";
 import * as http from "http";
 import * as types from "utils/types";
 import * as fs from "file-system";
+import { addHeader } from "http/http-request";
+
 require("globals");
 
 // >> http-require
@@ -512,10 +514,10 @@ export var test_request_headersWithSameKeyAddedProperly = function (done) {
     var value1 = "value1";
     var value2 = "value2";
 
-    var headers = {};
+    var headers: http.Headers = {};
 
-    (<any>http).addHeader(headers, keyName, value1);
-    (<any>http).addHeader(headers, keyName, value2);
+    addHeader(headers, keyName, value1);
+    addHeader(headers, keyName, value2);
 
     try {
         TKUnit.assertTrue(Array.isArray(headers[keyName]));

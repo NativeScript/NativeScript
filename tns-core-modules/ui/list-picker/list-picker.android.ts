@@ -146,7 +146,6 @@ export class ListPicker extends ListPickerBase {
             textColor: this._editText ? this._editText.getTextColors().getDefaultColor() : -1
         }
     }
-
     set [colorProperty.native](value: { wheelColor: number, textColor: number } | Color) {
         let color: number;
         let wheelColor: number;

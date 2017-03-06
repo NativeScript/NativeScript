@@ -1,7 +1,7 @@
-﻿import {
+﻿import { Background } from "ui/styling/background";
+import {
     SliderBase, valueProperty, minValueProperty, maxValueProperty,
-    colorProperty, backgroundColorProperty, backgroundInternalProperty,
-    Color, Background
+    colorProperty, backgroundColorProperty, backgroundInternalProperty, Color
 } from "./slider-common";
 
 export * from "./slider-common";
@@ -26,10 +26,10 @@ function initializeSeekBarChangeListener(): void {
 
         onProgressChanged(seekBar: android.widget.SeekBar, progress: number, fromUser: boolean): void {
             const owner = this.owner;
-                if (!owner._supressNativeValue) {
-                    let newValue: number = seekBar.getProgress() + owner.minValue;
-                    valueProperty.nativeValueChange(owner, newValue);
-                }
+            if (!owner._supressNativeValue) {
+                let newValue: number = seekBar.getProgress() + owner.minValue;
+                valueProperty.nativeValueChange(owner, newValue);
+            }
         }
 
         onStartTrackingTouch(seekBar: android.widget.SeekBar): void {

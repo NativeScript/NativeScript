@@ -99,7 +99,7 @@ export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinit
 }
 
 export class NavigationButton extends ActionItem {
-
+    //
 }
 
 export class ActionBar extends ActionBarBase {
@@ -121,6 +121,18 @@ export class ActionBar extends ActionBarBase {
 
     get _nativeView(): android.support.v7.widget.Toolbar {
         return this._toolbar;
+    }
+
+    public _addChildFromBuilder(name: string, value: any) {
+        if (value instanceof NavigationButton) {
+            this.navigationButton = value;
+        }
+        else if (value instanceof ActionItem) {
+            this.actionItems.addItem(value);
+        }
+        else if (value instanceof View) {
+            this.titleView = value;
+        }
     }
 
     public _createNativeView() {

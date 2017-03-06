@@ -1,6 +1,6 @@
 ﻿import { 
-    TextFieldBase, Color, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
-    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString
+    TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
+    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color
 } from "./text-field-common";
 
 export * from "./text-field-common";

@@ -1,5 +1,4 @@
-﻿import { Color } from "color";
-import * as fsModule from "file-system";
+﻿import * as fsModule from "file-system";
 import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
 } from "trace";
@@ -56,21 +55,6 @@ export module ios {
 
             return arr;
         }
-    }
-
-    export function getColor(uiColor: UIColor): Color {
-        var redRef = new interop.Reference<number>();
-        var greenRef = new interop.Reference<number>();
-        var blueRef = new interop.Reference<number>();
-        var alphaRef = new interop.Reference<number>();
-
-        uiColor.getRedGreenBlueAlpha(redRef, greenRef, blueRef, alphaRef);
-        var red = redRef.value * 255;
-        var green = greenRef.value * 255;
-        var blue = blueRef.value * 255;
-        var alpha = alphaRef.value * 255;
-
-        return new Color(alpha, red, green, blue);
     }
 
     export function isLandscape(): boolean {

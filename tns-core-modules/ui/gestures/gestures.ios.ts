@@ -1,5 +1,9 @@
-﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from "ui/gestures";
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, View, EventData } from "./gestures-common";
+﻿// Definitions.
+import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from "ui/gestures";
+import { View, EventData } from "ui/core/view";
+
+// Types.
+import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
 import { ios } from "utils/utils";
 import getter = ios.getter;
 
@@ -20,6 +24,9 @@ class UIGestureRecognizerDelegateImpl extends NSObject implements UIGestureRecog
 let recognizerDelegateInstance: UIGestureRecognizerDelegateImpl = <UIGestureRecognizerDelegateImpl>UIGestureRecognizerDelegateImpl.new();
 
 class UIGestureRecognizerImpl extends NSObject {
+    public static ObjCExposedMethods = {
+        "recognize": { returns: interop.types.void, params: [UIGestureRecognizer] }
+    };
 
     private _owner: WeakRef<GesturesObserver>;
     private _type: any;
@@ -41,10 +48,6 @@ class UIGestureRecognizerImpl extends NSObject {
 
         return handler;
     }
-
-    public static ObjCExposedMethods = {
-        "recognize": { returns: interop.types.void, params: [UIGestureRecognizer] }
-    };
 
     public recognize(recognizer: UIGestureRecognizer): void {
         let owner = this._owner.get();
