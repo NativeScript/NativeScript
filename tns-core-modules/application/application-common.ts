@@ -1,16 +1,11 @@
-﻿import { Observable, EventData } from "data/observable";
+﻿// Require globals first so that snapshot takes __extends function.
+require("globals");
+
+import { Observable, EventData } from "data/observable";
 
 const events = new Observable();
-function __export(m) {
-    for (var p in m)  { if (!exports.hasOwnProperty(p)) { exports[p] = m[p]; } }
-}
-
-__export(events);
-
-export { Observable };
-
-// NOTE: This requires modules that requires application.on so the above should be done before globals is required.
-import "globals";
+// First merge all functions from events into application-common so that later appModule.on will be defined.
+global.moduleMerge(events, exports);
 
 import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { NavigationEntry } from "ui/frame";
