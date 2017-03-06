@@ -120,8 +120,8 @@ export class View extends ViewCommon {
             }
 
             let nativeSize = view.sizeThatFits(CGSizeMake(width, height));
-            nativeWidth = nativeSize.width;
-            nativeHeight = nativeSize.height;
+            nativeWidth = layout.toDevicePixels(nativeSize.width);
+            nativeHeight = layout.toDevicePixels(nativeSize.height);
         }
 
         let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
@@ -165,7 +165,7 @@ export class View extends ViewCommon {
 
         let nativeView = this.nativeView;
 
-        let frame = CGRectMake(left, top, right - left, bottom - top);
+        let frame = CGRectMake(layout.toDeviceIndependentPixels(left), layout.toDeviceIndependentPixels(top), layout.toDeviceIndependentPixels(right - left), layout.toDeviceIndependentPixels(bottom - top));
         this._setNativeViewFrame(nativeView, frame);
     }
 

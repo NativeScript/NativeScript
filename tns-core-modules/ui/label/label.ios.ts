@@ -85,14 +85,14 @@ export class Label extends TextBase implements LabelDefinition {
                 | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
             let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
-            let labelWidth = nativeSize.width;
+            let labelWidth = layout.toDevicePixels(nativeSize.width);
 
             if (this.textWrap) {
                 labelWidth = Math.min(labelWidth, width);
             }
 
             let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
-            let measureHeight = Math.max(nativeSize.height, this.effectiveMinHeight);
+            let measureHeight = Math.max(layout.toDevicePixels(nativeSize.height), this.effectiveMinHeight);
 
             let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

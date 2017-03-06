@@ -18,7 +18,8 @@ export module ios {
         }
 
         var statusFrame = app.statusBarFrame;
-        return Math.min(statusFrame.size.width, statusFrame.size.height);
+        let min = Math.min(statusFrame.size.width, statusFrame.size.height);
+        return utils.layout.toDevicePixels(min);
     }
 
     export function _layoutRootView(rootView: View, parentBounds: CGRect) {
@@ -27,8 +28,8 @@ export module ios {
         }
 
         let size = parentBounds.size;
-        let width = size.width;
-        let height = size.height;
+        let width = utils.layout.toDevicePixels(size.width);
+        let height = utils.layout.toDevicePixels(size.height);
 
         var superview = (<UIView>rootView._nativeView).superview;
         var superViewRotationRadians;
@@ -38,8 +39,8 @@ export module ios {
 
         if (utils.ios.MajorVersion < 8 && utils.ios.isLandscape() && !superViewRotationRadians) {
             // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
-            width = size.height;
-            height = size.width;
+            width = utils.layout.toDevicePixels(size.width);
+            height = utils.layout.toDevicePixels(size.height);
         }
 
         var origin = parentBounds.origin;

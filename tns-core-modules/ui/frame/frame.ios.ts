@@ -369,7 +369,7 @@ export class Frame extends FrameBase {
             !this._ios.controller ||
             !this._ios.controller.navigationBar ||
             this._ios.controller.navigationBar.hidden ||
-            this._ios.controller.navigationBar.frame.origin.y === statusBarHeight) {
+            utils.layout.toDevicePixels(this._ios.controller.navigationBar.frame.origin.y) === statusBarHeight) {
             return;
         }
 
@@ -380,10 +380,10 @@ export class Frame extends FrameBase {
         this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.None;
         this._ios.controller.navigationBar.removeConstraints((<any>this)._ios.controller.navigationBar.constraints);
         this._ios.controller.navigationBar.frame = CGRectMake(
-            this._ios.controller.navigationBar.frame.origin.x,
-            statusBarHeight,
-            this._ios.controller.navigationBar.frame.size.width,
-            this._ios.controller.navigationBar.frame.size.height);
+            utils.layout.toDeviceIndependentPixels(this._ios.controller.navigationBar.frame.origin.x),
+            utils.layout.toDeviceIndependentPixels(statusBarHeight),
+            utils.layout.toDeviceIndependentPixels(this._ios.controller.navigationBar.frame.size.width),
+            utils.layout.toDeviceIndependentPixels(this._ios.controller.navigationBar.frame.size.height));
     }
 }
 

@@ -248,8 +248,8 @@ export class ActionBar extends ActionBarBase {
                 let navBarSize = navBar.sizeThatFits(CGSizeMake(
                     (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
                     (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
-                navBarWidth = navBarSize.width;
-                navBarHeight = navBarSize.height;
+                navBarWidth = layout.toDevicePixels(navBarSize.width);
+                navBarHeight = layout.toDevicePixels(navBarSize.height);
             }
         }
 

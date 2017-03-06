@@ -347,9 +347,10 @@ export class TabView extends TabViewBase {
     }
 
     private static measureHelper(nativeView: UIView, width: number, widthMode: number, height: number, heightMode: number): CGSize {
-        return nativeView.sizeThatFits(CGSizeMake(
+        const size = nativeView.sizeThatFits(CGSizeMake(
             (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
             (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
+        return { width: layout.toDevicePixels(size.width), height: layout.toDevicePixels(size.height) };
     }
 
     private _updateIOSTabBarColorsAndFonts(): void {
