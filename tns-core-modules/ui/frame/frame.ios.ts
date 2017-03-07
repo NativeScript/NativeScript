@@ -6,6 +6,7 @@ import { Page } from "ui/page";
 import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
 import { _createIOSAnimatedTransitioning } from "ui/transition";
 import * as uiUtils from "ui/utils";
+import * as utils from "utils/utils";
 
 export * from "./frame-common";
 

@@ -174,7 +174,7 @@ export class GridLayout extends GridLayoutBase {
 
             actualLength = offset - roundedOffset;
             roundedLength = Math.round(actualLength);
-            columnGroup.rowOrColumn._actualLength = roundedLength;
+            columnGroup.rowOrColumn._actualLength = layout.toDeviceIndependentPixels(roundedLength);
             roundedOffset += roundedLength;
 
             this.columnOffsets.push(roundedOffset);
@@ -191,7 +191,7 @@ export class GridLayout extends GridLayoutBase {
 
             actualLength = offset - roundedOffset;
             roundedLength = Math.round(actualLength);
-            rowGroup.rowOrColumn._actualLength = roundedLength;
+            rowGroup.rowOrColumn._actualLength = layout.toDeviceIndependentPixels(roundedLength);
             roundedOffset += roundedLength;
 
             this.rowOffsets.push(roundedOffset);
@@ -417,7 +417,7 @@ class MeasureHelper {
                 measureSpec.starColumnsCount += columnGroup.rowOrColumn.value;
             }
             else if (columnGroup.getIsAbsolute()) {
-                measureSpec.pixelWidth += columnGroup.rowOrColumn.value;
+                measureSpec.pixelWidth += layout.toDevicePixels(columnGroup.rowOrColumn.value);
             }
         }
 
@@ -442,7 +442,7 @@ class MeasureHelper {
                 measureSpec.starRowsCount += rowGroup.rowOrColumn.value;
             }
             else if (rowGroup.getIsAbsolute()) {
-                measureSpec.pixelHeight += rowGroup.rowOrColumn.value;
+                measureSpec.pixelHeight += layout.toDevicePixels(rowGroup.rowOrColumn.value);
             }
         }
 

@@ -5,6 +5,7 @@ import * as color from "color";
 import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
 import * as button from "ui/button";
+import * as utils from "utils/utils";
 
 global.moduleMerge(commonTests, exports);
 
@@ -21,7 +22,7 @@ class MyGrid extends grid.GridLayout {
 }
 
 export function getUniformNativeBorderWidth(v: view.View): number {
-    return (<UIView>v.ios).layer.borderWidth;
+    return utils.layout.toDevicePixels((<UIView>v.ios).layer.borderWidth);
 }
 
 export function checkUniformNativeBorderColor(v: view.View): boolean {

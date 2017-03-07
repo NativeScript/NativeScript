@@ -189,8 +189,8 @@ export class View extends ViewCommon {
 
         let pointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
         return {
-            x: layout.toDeviceIndependentPixels(pointInWindow.x),
-            y: layout.toDeviceIndependentPixels(pointInWindow.y),
+            x: pointInWindow.x,
+            y: pointInWindow.y
         };
     }
 
@@ -202,8 +202,8 @@ export class View extends ViewCommon {
         let pointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
         let pointOnScreen = this.nativeView.window.convertPointToWindow(pointInWindow, null);
         return {
-            x: layout.toDeviceIndependentPixels(pointOnScreen.x),
-            y: layout.toDeviceIndependentPixels(pointOnScreen.y),
+            x: pointOnScreen.x,
+            y: pointOnScreen.y
         };
     }
 
@@ -217,8 +217,8 @@ export class View extends ViewCommon {
         let myPointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
         let otherPointInWindow = otherView.nativeView.convertPointToView(otherView.nativeView.bounds.origin, null);
         return {
-            x: layout.toDeviceIndependentPixels(myPointInWindow.x - otherPointInWindow.x),
-            y: layout.toDeviceIndependentPixels(myPointInWindow.y - otherPointInWindow.y),
+            x: myPointInWindow.x - otherPointInWindow.x,
+            y: myPointInWindow.y - otherPointInWindow.y
         };
     }
 

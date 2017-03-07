@@ -18,8 +18,8 @@ class UIScrollViewDelegateImpl extends NSObject implements UIScrollViewDelegate 
             owner.notify(<ScrollEventData>{
                 object: owner,
                 eventName: ScrollViewBase.scrollEvent,
-                scrollX: owner.horizontalOffset / layout.getDisplayDensity(),
-                scrollY: owner.verticalOffset / layout.getDisplayDensity()
+                scrollX: owner.horizontalOffset,
+                scrollY: owner.verticalOffset
             });
         }
     }
@@ -60,7 +60,7 @@ export class ScrollView extends ScrollViewBase {
             return 0;
         }
 
-        return Math.max(0, this.nativeView.contentSize.width - this.nativeView.bounds.size.width) / layout.getDisplayDensity();
+        return Math.max(0, this.nativeView.contentSize.width - this.nativeView.bounds.size.width);
     }
 
     get scrollableHeight(): number {
@@ -68,7 +68,7 @@ export class ScrollView extends ScrollViewBase {
             return 0;
         }
 
-        return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height) / layout.getDisplayDensity();
+        return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height);
     }
 
     get ios(): UIView {
@@ -116,7 +116,10 @@ export class ScrollView extends ScrollViewBase {
                 childSize = View.measureChild(this, child, layout.makeMeasureSpec(0, layout.UNSPECIFIED), heightMeasureSpec);
             }
 
-            this.nativeView.contentSize = CGSizeMake(childSize.measuredWidth, childSize.measuredHeight);
+            let w = layout.toDeviceIndependentPixels(childSize.measuredWidth);
+            let h = layout.toDeviceIndependentPixels(childSize.measuredHeight);
+            this.nativeView.contentSize = CGSizeMake(w, h);
+
             this._contentMeasuredWidth = Math.max(childSize.measuredWidth, this.effectiveMinWidth * density);
             this._contentMeasuredHeight = Math.max(childSize.measuredHeight, this.effectiveMinHeight * density);
         }
