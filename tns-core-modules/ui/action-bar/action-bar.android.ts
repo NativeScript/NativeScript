@@ -15,6 +15,35 @@ function generateItemId(): number {
     return actionItemIdGenerator;
 }
 
+interface MenuItemClickListener {
+    new (owner: ActionBar): android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+}
+
+let appResources: android.content.res.Resources;
+let MenuItemClickListener: MenuItemClickListener;
+
+function initializeMenuItemClickListener(): void {
+    if (MenuItemClickListener) {
+        return;
+    }
+
+    @Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
+    class MenuItemClickListenerImpl extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
+        constructor(public owner: ActionBar) {
+            super();
+            return global.__native(this);
+        }
+
+        onMenuItemClick(item: android.view.IMenuItem): boolean {
+            let itemId = item.getItemId();
+            return this.owner._onAndroidItemSelected(itemId);
+        }
+    }
+
+    MenuItemClickListener = MenuItemClickListenerImpl;
+    appResources = application.android.context.getResources();
+}
+
 export class ActionItem extends ActionItemBase {
     private _androidPosition: AndroidActionItemSettings = {
         position: "actionBar",
@@ -70,37 +99,16 @@ export class AndroidActionBarSettings implements AndroidActionBarSettingsDefinit
 }
 
 export class NavigationButton extends ActionItem {
-
-}
-
-@Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
-class MenuItemClickListener extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
-    constructor(public owner: WeakRef<ActionBar>) {
-        super();
-        return global.__native(this);
-    }
-
-    onMenuItemClick(item: android.view.IMenuItem): boolean {
-        let owner = this.owner.get();
-        if (!owner) {
-            return false;
-        }
-
-        let itemId = item.getItemId();
-        return owner._onAndroidItemSelected(itemId);
-    }
+    //
 }
 
 export class ActionBar extends ActionBarBase {
-    private _appResources: android.content.res.Resources;
     private _android: AndroidActionBarSettings;
     private _toolbar: android.support.v7.widget.Toolbar;
     private _menuItemClickListener: android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 
     constructor() {
         super();
-
-        this._appResources = application.android.context.getResources();
         this._android = new AndroidActionBarSettings(this);
     }
 
@@ -115,9 +123,22 @@ export class ActionBar extends ActionBarBase {
         return this._toolbar;
     }
 
+    public _addChildFromBuilder(name: string, value: any) {
+        if (value instanceof NavigationButton) {
+            this.navigationButton = value;
+        }
+        else if (value instanceof ActionItem) {
+            this.actionItems.addItem(value);
+        }
+        else if (value instanceof View) {
+            this.titleView = value;
+        }
+    }
+
     public _createNativeView() {
+        initializeMenuItemClickListener();
         this._toolbar = new android.support.v7.widget.Toolbar(this._context);
-        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(new WeakRef(this));
+        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(this);
         this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
     }
 
@@ -191,7 +212,7 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (navButton.icon) {
-                let drawableOrId = getDrawableOrResourceId(navButton.icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(navButton.icon, appResources);
                 this.nativeView.setNavigationIcon(drawableOrId);
             }
 
@@ -215,7 +236,7 @@ export class ActionBar extends ActionBarBase {
         if (visibility) {
             let icon = this.android.icon;
             if (icon !== undefined) {
-                let drawableOrId = getDrawableOrResourceId(icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(icon, appResources);
                 if (drawableOrId) {
                     this.nativeView.setLogo(drawableOrId);
                 }
@@ -270,7 +291,7 @@ export class ActionBar extends ActionBarBase {
                 }
             }
             else if (item.icon) {
-                let drawableOrId = getDrawableOrResourceId(item.icon, this._appResources);
+                let drawableOrId = getDrawableOrResourceId(item.icon, appResources);
                 if (drawableOrId) {
                     menuItem.setIcon(drawableOrId);
                 }
@@ -342,7 +363,7 @@ export class ActionBar extends ActionBarBase {
         return defaultTitleTextColor;
     }
     set [colorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;   
+        let color = value instanceof Color ? value.android : value;
         this.nativeView.setTitleTextColor(color);
     }
 }

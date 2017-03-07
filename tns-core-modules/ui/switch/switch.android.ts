@@ -4,19 +4,31 @@
 
 export * from "./switch-common";
 
-@Interfaces([android.widget.CompoundButton.OnCheckedChangeListener])
-class CheckedChangeListener extends java.lang.Object implements android.widget.CompoundButton.OnCheckedChangeListener {
-    constructor(private owner: WeakRef<Switch>) {
-        super();
-        return global.__native(this);
+interface CheckedChangeListener {
+    new (owner: Switch): android.widget.CompoundButton.OnCheckedChangeListener;
+}
+
+let CheckedChangeListener: CheckedChangeListener;
+
+function initializeCheckedChangeListener(): void {
+    if (CheckedChangeListener) {
+        return;
     }
 
-    onCheckedChanged(buttonView: android.widget.CompoundButton, isChecked: boolean): void {
-        let owner = this.owner.get();
-        if (owner) {
+    @Interfaces([android.widget.CompoundButton.OnCheckedChangeListener])
+    class CheckedChangeListenerImpl extends java.lang.Object implements android.widget.CompoundButton.OnCheckedChangeListener {
+        constructor(private owner: Switch) {
+            super();
+            return global.__native(this);
+        }
+
+        onCheckedChanged(buttonView: android.widget.CompoundButton, isChecked: boolean): void {
+            const owner = this.owner;
             checkedProperty.nativeValueChange(owner, isChecked);
         }
     }
+
+    CheckedChangeListener = CheckedChangeListenerImpl;
 }
 
 export class Switch extends SwitchBase {
@@ -29,8 +41,9 @@ export class Switch extends SwitchBase {
     }
 
     public _createNativeView() {
+        initializeCheckedChangeListener();
         this._android = new android.widget.Switch(this._context);
-        this.listener = this.listener || new CheckedChangeListener(new WeakRef(this));
+        this.listener = this.listener || new CheckedChangeListener(this);
         this._android.setOnCheckedChangeListener(this.listener);
     }
 

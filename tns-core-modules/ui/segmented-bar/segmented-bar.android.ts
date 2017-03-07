@@ -1,6 +1,7 @@
-﻿import {
+﻿import { Font } from "ui/styling/font";
+import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, fontSizeProperty, Color, Font, initNativeView
+    colorProperty, fontInternalProperty, fontSizeProperty, Color, initNativeView
 } from "./segmented-bar-common";
 
 export * from "./segmented-bar-common";
@@ -10,40 +11,77 @@ const R_ID_TABCONTENT = 0x01020011;
 const R_ATTR_STATE_SELECTED = 0x010100a1;
 const TITLE_TEXT_VIEW_ID = 16908310; // http://developer.android.com/reference/android/R.id.html#title
 
+interface TabChangeListener {
+    new (owner: SegmentedBar): android.widget.TabHost.OnTabChangeListener;
+}
+
+interface TabContentFactory {
+    new (owner: SegmentedBar): android.widget.TabHost.TabContentFactory;
+}
+
+interface TabHost {
+    new (context: android.content.Context, attrs: android.util.AttributeSet): android.widget.TabHost;
+}
+
 let apiLevel: number;
-// TODO: Move this into widgets.
-let SegmentedBarColorDrawableClass;
-function ensureSegmentedBarColorDrawableClass() {
-    if (SegmentedBarColorDrawableClass) {
+
+let TabHost: TabHost;
+let TabChangeListener: TabChangeListener;
+let TabContentFactory: TabContentFactory;
+
+function initializeNativeClasses(): void {
+    if (TabChangeListener) {
         return;
     }
 
-    apiLevel = android.os.Build.VERSION.SDK_INT;
-
-    class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
-        constructor(arg: any) {
-            super(arg);
-
+    @Interfaces([android.widget.TabHost.OnTabChangeListener])
+    class TabChangeListenerImpl extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
+        constructor(private owner: SegmentedBar) {
+            super();
             return global.__native(this);
         }
 
-        public draw(canvas: android.graphics.Canvas): void {
-            let p = new android.graphics.Paint();
-            p.setColor(this.getColor());
-            p.setStyle(android.graphics.Paint.Style.FILL);
-            canvas.drawRect(0, this.getBounds().height() - 15, this.getBounds().width(), this.getBounds().height(), p);
+        onTabChanged(id: string): void {
+            const owner = this.owner;
+            if (owner.shouldChangeSelectedIndex()) {
+                owner.selectedIndex = parseInt(id);
+            }
         }
     }
 
-    SegmentedBarColorDrawableClass = SegmentedBarColorDrawable;
-}
+    @Interfaces([android.widget.TabHost.TabContentFactory])
+    class TabContentFactoryImpl extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
+        constructor(private owner: SegmentedBar) {
+            super();
+            return global.__native(this);
+        }
 
-function setBackground(view: android.view.View, background: android.graphics.drawable.Drawable): void {
-    if (apiLevel >= 16) {
-        view.setBackground(background);
-    } else {
-        view.setBackgroundDrawable(background);
+        createTabContent(tag: string): android.view.View {
+            const tv = new android.widget.TextView(this.owner._context);
+            // This is collapsed by default and made visible 
+            // by android when TabItem becomes visible/selected.
+            // TODO: Try commenting visibility change.
+            tv.setVisibility(android.view.View.GONE);
+            tv.setMaxLines(1);
+            tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            return tv;
+        }
     }
+
+    class TabHostImpl extends android.widget.TabHost {
+        constructor(context: android.content.Context, attrs: android.util.AttributeSet) {
+            super(context, attrs);
+            return global.__native(this);
+        }
+
+        protected onAttachedToWindow(): void {
+            // overriden to remove the code that will steal the focus from edit fields.
+        }
+    }
+
+    TabHost = TabHostImpl;
+    TabChangeListener = TabChangeListenerImpl;
+    TabContentFactory = TabContentFactoryImpl;
 }
 
 export class SegmentedBarItem extends SegmentedBarItemBase {
@@ -122,59 +160,20 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
             if (apiLevel > 21 && backgroundDrawable && typeof backgroundDrawable.setColorFilter === "function") {
                 const newDrawable = backgroundDrawable.getConstantState().newDrawable();
                 newDrawable.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN);
-                setBackground(viewGroup, newDrawable);
+                org.nativescript.widgets.ViewHelper.setBackground(viewGroup, newDrawable);
             } else {
                 const stateDrawable = new android.graphics.drawable.StateListDrawable();
 
                 let arr = Array.create("int", 1);
                 arr[0] = R_ATTR_STATE_SELECTED;
-                let colorDrawable: android.graphics.drawable.ColorDrawable = new SegmentedBarColorDrawableClass(color);
+                let colorDrawable: android.graphics.drawable.ColorDrawable = new org.nativescript.widgets.SegmentedBarColorDrawable(color);
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, viewGroup.getRight(), viewGroup.getBottom());
-                
-                setBackground(viewGroup, stateDrawable);
+
+                org.nativescript.widgets.ViewHelper.setBackground(viewGroup, stateDrawable);
             }
         } else {
-            setBackground(viewGroup, value.newDrawable());
-        }
-    }
-}
-
-@Interfaces([android.widget.TabHost.OnTabChangeListener])
-class TabChangeListener extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
-    constructor(private owner: WeakRef<SegmentedBar>) {
-        super();
-        return global.__native(this);
-    }
-
-    onTabChanged(id: string): void {
-        let owner = this.owner.get();
-        if (owner && owner.shouldChangeSelectedIndex()) {
-            owner.selectedIndex = parseInt(id);
-        }
-    }
-}
-
-@Interfaces([android.widget.TabHost.TabContentFactory])
-class TabContentFactory extends java.lang.Object implements android.widget.TabHost.TabContentFactory {
-    constructor(private owner: WeakRef<SegmentedBar>) {
-        super();
-        return global.__native(this);
-    }
-
-    createTabContent(tag: string): android.view.View {
-        let owner = this.owner.get();
-        if (owner) {
-            let tv = new android.widget.TextView(owner._context);
-            // This is collapsed by default and made visible 
-            // by android when TabItem becomes visible/selected.
-            // TODO: Try commenting visibility change.
-            tv.setVisibility(android.view.View.GONE);
-            tv.setMaxLines(1);
-            tv.setEllipsize(android.text.TextUtils.TruncateAt.END);
-            return tv;
-        } else {
-            throw new Error(`Invalid owner: ${this.owner}`);
+            org.nativescript.widgets.ViewHelper.setBackground(viewGroup, value.newDrawable());
         }
     }
 }
@@ -190,14 +189,12 @@ export class SegmentedBar extends SegmentedBarBase {
     }
 
     public _createNativeView() {
-        ensureTabHostClass();
-        ensureSegmentedBarColorDrawableClass();
+        initializeNativeClasses();
 
-        let weakRef = new WeakRef(this);
-        this._android = new TabHostClass(this._context, null);
+        this._android = new TabHost(this._context, null);
 
-        this.listener = this.listener || new TabChangeListener(weakRef);
-        this.tabContentFactory = this.tabContentFactory || new TabContentFactory(weakRef);
+        this.listener = this.listener || new TabChangeListener(this);
+        this.tabContentFactory = this.tabContentFactory || new TabContentFactory(this);
 
         const tabHostLayout = new android.widget.LinearLayout(this._context);
         tabHostLayout.setOrientation(android.widget.LinearLayout.VERTICAL);
@@ -250,25 +247,4 @@ export class SegmentedBar extends SegmentedBarBase {
             newItems.forEach((item, i, arr) => this.insertTab(item, i));
         }
     }
-}
-
-let TabHostClass;
-function ensureTabHostClass() {
-    if (TabHostClass) {
-        return;
-    }
-
-    class OurTabHost extends android.widget.TabHost {
-        constructor(context: any, attrs: any) {
-            super(context, attrs);
-
-            return global.__native(this);
-        }
-
-        protected onAttachedToWindow(): void {
-            // overriden to remove the code that will steal the focus from edit fields.
-        }
-    }
-
-    TabHostClass = OurTabHost;
 }

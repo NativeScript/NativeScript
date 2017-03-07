@@ -1,12 +1,14 @@
-﻿import { isString, isDefined, isFunction } from "utils/types";
-import { Page } from "ui/page";
-import { View, isEventOrGesture } from "ui/core/view";
+﻿// Deifinitions.
 import { ComponentModule } from "ui/builder/component-builder";
+import { View } from "ui/core/view";
+
+// Types.
+import { isEventOrGesture } from "ui/core/bindable";
 import { File, path, knownFolders } from "file-system";
 import { getBindingOptions, bindingConstants } from "./binding-builder";
 import { resolveFileName } from "file-system/file-name-resolver";
 import * as debugModule from "utils/debug";
-import * as platformModule from "platform";
+import * as platform from "platform";
 
 const UI_PATH = "ui/";
 const MODULES = {
@@ -21,13 +23,6 @@ const MODULES = {
 const CODEFILE = "codeFile";
 const CSSFILE = "cssFile";
 const IMPORT = "import";
-
-let platform: typeof platformModule;
-function ensurePlatform() {
-    if (!platform) {
-        platform = require("platform");
-    }
-}
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object, moduleNamePath?: string): ComponentModule {
     var instance: View;
@@ -88,7 +83,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
             (<any>instance).exports = exports;
         }
 
-        if (instance instanceof Page) {
+        // if (instance instanceof Page) {
             if (attributes[CODEFILE]) {
                 let codeFilePath = attributes[CODEFILE].trim();
                 if (codeFilePath.indexOf("~/") === 0) {
@@ -104,26 +99,26 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 }
             }
 
-            if (attributes[CSSFILE]) {
+            if (attributes[CSSFILE] && typeof (<any>instance).addCssFile === "function") {
                 let cssFilePath = attributes[CSSFILE].trim();
                 if (cssFilePath.indexOf("~/") === 0) {
                     cssFilePath = path.join(knownFolders.currentApp().path, cssFilePath.replace("~/", ""));
                 }
                 if (File.exists(cssFilePath)) {
-                    instance.addCssFile(cssFilePath);
+                    (<any>instance).addCssFile(cssFilePath);
                     cssApplied = true;
                 } else {
                     throw new Error(`Css file with path "${cssFilePath}" cannot be found!`);
                 }
             }
-        }
+        // }
     }
 
-    if (instance instanceof Page) {
+    if (typeof (<any>instance).addCssFile === "function") {//instance instanceof Page) {
         if (moduleNamePath && !cssApplied) {
             let cssFilePath = resolveFileName(moduleNamePath, "css");
             if (cssFilePath) {
-                instance.addCssFile(cssFilePath);
+                (<any>instance).addCssFile(cssFilePath);
                 cssApplied = true;
             }
         }
@@ -131,7 +126,7 @@ export function getComponentModule(elementName: string, namespace: string, attri
         if (!cssApplied) {
             // Called only to apply application css.
             // If we have page css (through file or cssAttribute) we have appCss applied.
-            instance._refreshCss();
+            (<any>instance)._refreshCss();
         }
     }
 
@@ -142,8 +137,6 @@ export function getComponentModule(elementName: string, namespace: string, attri
 
             if (attr.indexOf(":") !== -1) {
                 var platformName = attr.split(":")[0].trim();
-
-                ensurePlatform();
 
                 if (platformName.toLowerCase() === platform.device.os.toLowerCase()) {
                     attr = attr.split(":")[1].trim();
@@ -158,12 +151,12 @@ export function getComponentModule(elementName: string, namespace: string, attri
                 const subPropName = properties[properties.length - 1];
 
                 for (let i = 0; i < properties.length - 1; i++) {
-                    if (isDefined(subObj)) {
+                    if (subObj !== undefined && subObj !== null) {
                         subObj = subObj[properties[i]];
                     }
                 }
 
-                if (isDefined(subObj)) {
+                if (subObj !== undefined && subObj !== null) {
                     setPropertyValue(subObj, instanceModule, exports, subPropName, attrValue);
                 }
             } else {
@@ -193,11 +186,11 @@ export function setPropertyValue(instance: View, instanceModule: Object, exports
         var handler = exports && exports[propertyValue];
 
         // Check if the handler is function and add it to the instance for specified event name.
-        if (isFunction(handler)) {
+        if (typeof handler === "function") {
             instance.on(propertyName, handler);
         }
     }
-    else if (isKnownFunction(propertyName, instance) && isFunction(exports && exports[propertyValue])) {
+    else if (isKnownFunction(propertyName, instance) && exports && typeof exports[propertyValue] === "function") {
         instance[propertyName] = exports[propertyValue];
     }
     else {
@@ -218,7 +211,7 @@ function getBindingExpressionFromAttribute(value: string): string {
 function isBinding(value: any): boolean {
     var isBinding;
 
-    if (isString(value)) {
+    if (typeof value === "string") {
         var str = value.trim();
         isBinding = str.indexOf("{{") === 0 && str.lastIndexOf("}}") === str.length - 2;
     }

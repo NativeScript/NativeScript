@@ -1,10 +1,9 @@
 ﻿import { AnimationDefinition } from "ui/animation";
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
-    AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise,
     opacityProperty, backgroundColorProperty, rotateProperty,
-    translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, Color, traceWrite, traceEnabled, traceCategories
-} from "./animation-common";
+    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
+} from "ui/styling/style-properties";
 
 import { CacheLayerType, layout } from "utils/utils";
 import lazy from "utils/lazy";

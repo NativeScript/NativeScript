@@ -1,7 +1,7 @@
 ﻿import * as labelModule from "ui/label";
 import * as enums from "ui/enums";
 import * as colorModule from "color";
-import * as utilsModule from "utils/utils";
+import { getColor } from "../helper";
 
 export function getNativeTextAlignment(label: labelModule.Label): string {
     switch (label.ios.textAlignment) {
@@ -22,5 +22,5 @@ export function getNativeBackgroundColor(label: labelModule.Label): colorModule.
         return undefined;
     }
     var uiColor = UIColor.colorWithCGColor(layer.backgroundColor);
-    return utilsModule.ios.getColor(uiColor);
+    return getColor(uiColor);
 }

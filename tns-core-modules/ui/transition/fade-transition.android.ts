@@ -2,7 +2,7 @@
 
 export class FadeTransition extends Transition {
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        let alphaValues = Array.create("float", 2);
+        const alphaValues = Array.create("float", 2);
         switch (transitionType) {
             case AndroidTransitionType.enter:
             case AndroidTransitionType.popEnter:
@@ -15,11 +15,13 @@ export class FadeTransition extends Transition {
                 alphaValues[1] = 0;
                 break;
         }
-        let animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", alphaValues);
-        let duration = this.getDuration();
+
+        const animator = android.animation.ObjectAnimator.ofFloat(null, "alpha", alphaValues);
+        const duration = this.getDuration();
         if (duration !== undefined) {
             animator.setDuration(duration);
         }
+
         animator.setInterpolator(this.getCurve());
         return animator;
     }

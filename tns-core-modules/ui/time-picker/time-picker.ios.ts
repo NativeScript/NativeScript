@@ -1,7 +1,8 @@
-﻿import { TimePickerBase, timeProperty, 
+﻿import {
+    TimePickerBase, timeProperty,
     minuteProperty, minMinuteProperty, maxMinuteProperty,
-    hourProperty, minHourProperty, maxHourProperty, colorProperty } from "./time-picker-common";
-import { Color } from "color";
+    hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
+} from "./time-picker-common";
 
 import { ios } from "utils/utils";
 import getter = ios.getter;
@@ -99,11 +100,12 @@ export class TimePicker extends TimePickerBase {
         this.nativeView.minuteInterval = value;
     }
 
-    get [colorProperty.native](): Color {
-        return ios.getColor(this.nativeView.valueForKey("textColor"));
+    get [colorProperty.native](): UIColor {
+        return this.nativeView.valueForKey("textColor");
     }
-    set [colorProperty.native](value: Color) {
-        this.nativeView.setValueForKey(value.ios, "textColor");
+    set [colorProperty.native](value: Color | UIColor) {
+        const color = value instanceof Color ? value.ios : value;
+        this.nativeView.setValueForKey(color, "textColor");
     }
 }
 

@@ -1,32 +1,11 @@
 declare module "ui/core/view" {
-    import { GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction } from "ui/gestures";
-    import {
-        ViewBase, Property, CssProperty, CssAnimationProperty, InheritedCssProperty, Style, EventData, ShorthandProperty
-    } from "ui/core/view-base";
-    import { Background } from "ui/styling/background";
-    import { Font, FontWeight, FontStyle } from "ui/styling/font";
-    import { Color } from "color";
-
-    export {
-        GestureTypes, GesturesObserver, GestureEventData, TouchGestureEventData, TouchAction,
-        Background, Font, Color
-    }
+    import { ViewBase, Property, EventData, Color } from "ui/core/view-base";
     import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
-
+    import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "ui/styling/style-properties";
+    import { GestureTypes, GestureEventData, GesturesObserver } from "ui/gestures";
+    
     export * from "ui/core/view-base";
-
-    export const zeroLength: Length;
-
-    /**
-     * Converts string into boolean value.
-     * Throws error if value is not 'true' or 'false'.
-     */
-    export function booleanConverter(v: string): boolean;
-
-    /**
-     * Compares two Length objects.
-     */
-    export function lengthComparer(x: Length, y: Length): boolean;
+    export * from "ui/styling/style-properties";
 
     export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
@@ -60,43 +39,6 @@ declare module "ui/core/view" {
          * Represents the height of the size.
          */
         height: number;
-    }
-
-    export type Length = "auto" | number | {
-        readonly unit: "dip" | "px";
-        readonly value: number;
-    }
-    export namespace Length {
-        export function parse(text: string): Length;
-        export function equals(a: Length, b: Length): boolean;
-        /**
-         * Converts Length unit to device pixels.
-         * @param length The Length to convert.
-         * @param auto Value to use for conversion of "auto".
-         */
-        export function toDevicePixels(length: Length, auto: number): number;
-        export function convertToString(length: Length): string;
-
-    }
-
-    export type PercentLength = "auto" | number | {
-        readonly unit: "%" | "dip" | "px";
-        /**
-         * Length value. When unit is "%" the value is normalized (ex. for 5% the value is 0.05)
-         */
-        readonly value: number;
-    }
-    export namespace PercentLength {
-        export function parse(text: string): PercentLength;
-        export function equals(a: PercentLength, b: PercentLength): boolean;
-        /**
-         * Converts PercentLength unit to device pixels.
-         * @param length The PercentLength to convert.
-         * @param auto Value to use for conversion of "auto".
-         * @param parentAvailableWidth Value to use as base when converting percent unit.
-         */
-        export function toDevicePixels(length: PercentLength, auto: number, parentAvailableWidth: number): number;
-        export function convertToString(length: PercentLength): string;
     }
 
     /**
@@ -564,23 +506,6 @@ declare module "ui/core/view" {
         _minHeightNative: Length;
         //@endprivate
 
-        public effectiveMinWidth: number;
-        public effectiveMinHeight: number;
-        public effectiveWidth: number;
-        public effectiveHeight: number;
-        public effectiveMarginTop: number;
-        public effectiveMarginRight: number;
-        public effectiveMarginBottom: number;
-        public effectiveMarginLeft: number;
-        public effectivePaddingTop: number;
-        public effectivePaddingRight: number;
-        public effectivePaddingBottom: number;
-        public effectivePaddingLeft: number;
-        public effectiveBorderTopWidth: number;
-        public effectiveBorderRightWidth: number;
-        public effectiveBorderBottomWidth: number;
-        public effectiveBorderLeftWidth: number;
-
         /**
          * __Obsolete:__ There is a new property system that does not rely on _getValue.
          */
@@ -668,131 +593,9 @@ declare module "ui/core/view" {
         _applyXmlAttribute(attributeName: string, attrValue: any): boolean;
     }
 
-    export namespace layout {
-        export const UNSPECIFIED: number;
-        export const EXACTLY: number;
-        export const AT_MOST: number;
-
-        export const MEASURED_HEIGHT_STATE_SHIFT: number;
-        export const MEASURED_STATE_TOO_SMALL: number;
-        export const MEASURED_STATE_MASK: number;
-        export const MEASURED_SIZE_MASK: number;
-
-        export function getMeasureSpecMode(spec: number): number;
-        export function getMeasureSpecSize(spec: number): number;
-        export function getDisplayDensity(): number;
-        export function makeMeasureSpec(size: number, mode: number): number;
-        export function toDevicePixels(value: number): number;
-        export function toDeviceIndependentPixels(value: number): number;
-        export function measureSpecToString(measureSpec: number): string;
-    }
-
     export const automationTextProperty: Property<View, string>;
     export const originXProperty: Property<View, number>;
     export const originYProperty: Property<View, number>;
     export const isEnabledProperty: Property<View, boolean>;
     export const isUserInteractionEnabledProperty: Property<View, boolean>;
-
-    export const rotateProperty: CssAnimationProperty<Style, number>;
-    export const scaleXProperty: CssAnimationProperty<Style, number>;
-    export const scaleYProperty: CssAnimationProperty<Style, number>;
-    export const translateXProperty: CssAnimationProperty<Style, Length>;
-    export const translateYProperty: CssAnimationProperty<Style, Length>;
-
-    export const clipPathProperty: CssProperty<Style, string>;
-    export const colorProperty: InheritedCssProperty<Style, Color>;
-
-    export const backgroundColorProperty: CssAnimationProperty<Style, Color>;
-    export const backgroundImageProperty: CssProperty<Style, string>;
-    export const backgroundRepeatProperty: CssProperty<Style, BackgroundRepeat>;
-    export const backgroundSizeProperty: CssProperty<Style, string>;
-    export const backgroundPositionProperty: CssProperty<Style, string>;
-
-    export const borderColorProperty: ShorthandProperty<Style, string | Color>;
-    export const borderTopColorProperty: CssProperty<Style, Color>;
-    export const borderRightColorProperty: CssProperty<Style, Color>;
-    export const borderBottomColorProperty: CssProperty<Style, Color>;
-    export const borderLeftColorProperty: CssProperty<Style, Color>;
-
-    export const borderWidthProperty: ShorthandProperty<Style, string | Length>;
-    export const borderTopWidthProperty: CssProperty<Style, Length>;
-    export const borderRightWidthProperty: CssProperty<Style, Length>;
-    export const borderBottomWidthProperty: CssProperty<Style, Length>;
-    export const borderLeftWidthProperty: CssProperty<Style, Length>;
-
-    export const borderRadiusProperty: ShorthandProperty<Style, string | Length>;
-    export const borderTopLeftRadiusProperty: CssProperty<Style, Length>;
-    export const borderTopRightRadiusProperty: CssProperty<Style, Length>;
-    export const borderBottomRightRadiusProperty: CssProperty<Style, Length>;
-    export const borderBottomLeftRadiusProperty: CssProperty<Style, Length>;
-
-    export const zIndexProperty: CssProperty<Style, number>;
-    export const visibilityProperty: CssProperty<Style, Visibility>;
-    export const opacityProperty: CssAnimationProperty<Style, number>;
-
-    export const minWidthProperty: CssProperty<Style, Length>;
-    export const minHeightProperty: CssProperty<Style, Length>;
-    export const widthProperty: CssProperty<Style, Length>;
-    export const heightProperty: CssProperty<Style, Length>;
-    export const marginProperty: ShorthandProperty<Style, string | PercentLength>;
-    export const marginLeftProperty: CssProperty<Style, PercentLength>;
-    export const marginRightProperty: CssProperty<Style, PercentLength>;
-    export const marginTopProperty: CssProperty<Style, PercentLength>;
-    export const marginBottomProperty: CssProperty<Style, PercentLength>;
-
-    export const paddingProperty: ShorthandProperty<Style, string | Length>;
-    export const paddingLeftProperty: CssProperty<Style, Length>;
-    export const paddingRightProperty: CssProperty<Style, Length>;
-    export const paddingTopProperty: CssProperty<Style, Length>;
-    export const paddingBottomProperty: CssProperty<Style, Length>;
-
-    export const horizontalAlignmentProperty: CssProperty<Style, HorizontalAlignment>;
-    export const verticalAlignmentProperty: CssProperty<Style, VerticalAlignment>;
-
-    export const fontSizeProperty: InheritedCssProperty<Style, number>;
-    export const fontFamilyProperty: InheritedCssProperty<Style, string>;
-    export const fontStyleProperty: InheritedCssProperty<Style, FontStyle>;
-    export const fontWeightProperty: InheritedCssProperty<Style, FontWeight>;
-
-    export const backgroundInternalProperty: CssProperty<Style, Background>;
-    export const fontInternalProperty: InheritedCssProperty<Style, Font>;
-
-    export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
-    export namespace BackgroundRepeat {
-        export const REPEAT: "repeat";
-        export const REPEAT_X: "repeat-x";
-        export const REPEAT_Y: "repeat-y";
-        export const NO_REPEAT: "no-repeat";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): BackgroundRepeat;
-    }
-
-    export type Visibility = "visible" | "hidden" | "collapse";
-    export namespace Visibility {
-        export const VISIBLE: "visible";
-        export const HIDDEN: "hidden";
-        export const COLLAPSE: "collapse";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): Visibility;
-    }
-
-    export type HorizontalAlignment = "left" | "center" | "right" | "stretch";
-    export namespace HorizontalAlignment {
-        export const LEFT: "left";
-        export const CENTER: "center";
-        export const RIGHT: "right";
-        export const STRETCH: "stretch";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): HorizontalAlignment;
-    }
-
-    export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch";
-    export namespace VerticalAlignment {
-        export const TOP: "top";
-        export const MIDDLE: "middle";
-        export const BOTTOM: "bottom";
-        export const STRETCH: "stretch";
-        export function isValid(value: any): boolean;
-        export function parse(value: string): VerticalAlignment;
-    }
 }

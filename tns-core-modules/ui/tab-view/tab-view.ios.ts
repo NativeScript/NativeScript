@@ -1,7 +1,9 @@
-﻿import {
+﻿import { Font } from "ui/styling/font";
+
+import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    Font, View, fontInternalProperty, layout, Color, traceEnabled, traceWrite, traceCategories
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
 } from "./tab-view-common"
 
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
@@ -397,7 +399,7 @@ export class TabView extends TabViewBase {
     get [tabTextColorProperty.native](): UIColor {
         return null;
     }
-    set [tabTextColorProperty.native](value: UIColor) {
+    set [tabTextColorProperty.native](value: UIColor | Color) {
         this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
     }

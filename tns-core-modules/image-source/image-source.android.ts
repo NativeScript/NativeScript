@@ -1,10 +1,21 @@
-﻿import { ImageSource as ImageSourceDeifinition } from "image-source";
+﻿// Definitions.
+import { ImageSource as ImageSourceDefinition } from "image-source";
+import { ImageAsset } from "image-asset";
+import * as httpModule from "http";
 
-export * from "./image-source-common";
-import * as fs from "file-system";
-import * as imageAssetModule from "image-asset";
-
+// Types.
+import { path as fsPath, knownFolders } from "file-system";
+import { isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
 import { getNativeApplication } from "application";
+
+export { isFileOrResourcePath };
+
+let http: typeof httpModule;
+function ensureHttp() {
+    if (!http) {
+        http = require("http");
+    }
+}
 
 let application: android.app.Application;
 let resources: android.content.res.Resources;
@@ -24,11 +35,11 @@ function getResources() {
     return resources;
 }
 
-export class ImageSource implements ImageSourceDeifinition {
+export class ImageSource implements ImageSourceDefinition {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
 
-    public fromAsset(asset: imageAssetModule.ImageAsset): Promise<ImageSource> {
+    public fromAsset(asset: ImageAsset): Promise<ImageSource> {
         return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
@@ -87,7 +98,7 @@ export class ImageSource implements ImageSourceDeifinition {
     public loadFromFile(path: string): boolean {
         let fileName = typeof path === "string" ? path.trim() : "";
         if (fileName.indexOf("~/") === 0) {
-            fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
+            fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
         }
 
         this.setRotationAngleFromFile(fileName);
@@ -198,4 +209,50 @@ function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitma
         default:
             return android.graphics.Bitmap.CompressFormat.PNG;
     }
+}
+
+export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
+    const image = new ImageSource();
+    return image.fromAsset(asset);
+}
+
+export function fromResource(name: string): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromResource(name) ? image : null;
+}
+
+export function fromFile(path: string): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromFile(path) ? image : null;
+}
+
+export function fromData(data: any): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromData(data) ? image : null;
+}
+
+export function fromBase64(source: string): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromBase64(source) ? image : null;
+}
+
+export function fromNativeSource(source: any): ImageSource {
+    const image = new ImageSource();
+    return image.setNativeSource(source) ? image : null;
+}
+
+export function fromUrl(url: string): Promise<ImageSource> {
+    ensureHttp();
+    return http.getImage(url);
+}
+
+export function fromFileOrResource(path: string): ImageSource {
+    if (!isFileOrResourcePath(path)) {
+        throw new Error("Path \"" + "\" is not a valid file or resource.");
+    }
+
+    if (path.indexOf(RESOURCE_PREFIX) === 0) {
+        return fromResource(path.substr(RESOURCE_PREFIX.length));
+    }
+    return fromFile(path);
 }

@@ -1,6 +1,6 @@
 ﻿import * as textViewModule from "ui/text-view";
 import * as colorModule from "color";
-import * as utilsModule from "utils/utils";
+import { getColor } from "../helper";
 import * as enums from "ui/enums";
 
 export function getNativeText(textView: textViewModule.TextView): string {
@@ -25,11 +25,11 @@ export function getNativeFontSize(textView: textViewModule.TextView): number {
 }
 
 export function getNativeColor(textView: textViewModule.TextView): colorModule.Color {
-    return utilsModule.ios.getColor(textView.ios.textColor);
+    return getColor(textView.ios.textColor);
 }
 
 export function getNativeBackgroundColor(textView: textViewModule.TextView): colorModule.Color {
-    return utilsModule.ios.getColor(textView.ios.backgroundColor);
+    return getColor(textView.ios.backgroundColor);
 }
 
 export function getNativeTextAlignment(textView: textViewModule.TextView): string {

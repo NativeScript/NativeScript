@@ -2,7 +2,7 @@
  * iOS specific http request implementation.
  */
 
-import * as http from "http";
+import { HttpRequestOptions, HttpResponse, Headers } from "http";
 
 import * as types from "utils/types";
 import * as imageSourceModule from "image-source";
@@ -12,6 +12,11 @@ import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 
 import * as domainDebugger from "./../debugger/debugger";
+
+export const enum HttpResponseEncoding {
+    UTF8,
+    GBK
+}
 
 var device = utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
 
@@ -59,8 +64,8 @@ function ensureImageSource() {
     }
 }
 
-export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
-    return new Promise<http.HttpResponse>((resolve, reject) => {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
+    return new Promise<HttpResponse>((resolve, reject) => {
 
         try {
             var network = domainDebugger.getNetwork();
@@ -101,12 +106,12 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                     if (error) {
                         reject(new Error(error.localizedDescription));
                     } else {
-                        var headers: http.Headers = {};
+                        var headers: Headers = {};
                         if (response && response.allHeaderFields) {
                             var headerFields = response.allHeaderFields;
 
                             headerFields.enumerateKeysAndObjectsUsingBlock((key, value, stop) => {
-                                (<any>http).addHeader(headers, key, value);
+                                addHeader(headers, key, value);
                             });
                         }
 
@@ -128,10 +133,8 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                         resolve({
                             content: {
                                 raw: data,
-                                toString: (encoding?: http.HttpResponseEncoding) => { return NSDataToString(data, encoding); },
-                                toJSON: (encoding?: http.HttpResponseEncoding) => {
-                                    return parseJSON(NSDataToString(data, encoding));
-                                },
+                                toString: (encoding?: any) => NSDataToString(data, encoding),
+                                toJSON: (encoding?: any) => parseJSON(NSDataToString(data, encoding)),
                                 toImage: () => {
                                     ensureImageSource();
                                     return new Promise((resolve, reject) => {
@@ -180,10 +183,22 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     });
 }
 
-function NSDataToString(data: any, encoding?: http.HttpResponseEncoding): string {
+function NSDataToString(data: any, encoding?: HttpResponseEncoding): string {
     let code = 4; //UTF8
-    if (encoding === http.HttpResponseEncoding.GBK) {
+    if (encoding === HttpResponseEncoding.GBK) {
         code = 1586;
     }
     return NSString.alloc().initWithDataEncoding(data, code).toString();
+}
+
+export function addHeader(headers: Headers, key: string, value: string): void {
+    if (!headers[key]) {
+        headers[key] = value;
+    } else if (Array.isArray(headers[key])) {
+        (<string[]>headers[key]).push(value);
+    } else {
+        let values: string[] = [<string>headers[key]];
+        values.push(value);
+        headers[key] = values;
+    }
 }

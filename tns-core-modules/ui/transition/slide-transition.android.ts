@@ -2,8 +2,8 @@
 import * as platform from "platform";
 import lazy from "utils/lazy";
 
-let screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
-let screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);
+const screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
+const screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);
 
 export class SlideTransition extends transition.Transition {
     private _direction: string;
@@ -14,7 +14,7 @@ export class SlideTransition extends transition.Transition {
     }
 
     public createAndroidAnimator(transitionType: string): android.animation.Animator {
-        let translationValues = Array.create("float", 2);
+        const translationValues = Array.create("float", 2);
         switch (this._direction) {
             case "left":
                 switch (transitionType) {
@@ -105,8 +105,8 @@ export class SlideTransition extends transition.Transition {
             prop = "translationY";
         }
 
-        let animator = android.animation.ObjectAnimator.ofFloat(null, prop, translationValues);
-        let duration = this.getDuration();
+        const animator = android.animation.ObjectAnimator.ofFloat(null, prop, translationValues);
+        const duration = this.getDuration();
         if (duration !== undefined) {
             animator.setDuration(duration);
         }

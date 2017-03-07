@@ -1,10 +1,10 @@
-﻿import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from "ui/frame";
-import { FrameBase } from "./frame-common";
-import { Page, View, traceEnabled, traceWrite, traceCategories, isCategorySet } from "ui/page";
+﻿// Definitions.
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from "ui/frame";
+import { Page } from "ui/page";
 
-import * as transitionModule from "ui/transition";
-import * as application from "application";
-import * as utils from "utils/utils";
+//Types.
+import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
+import { _createIOSAnimatedTransitioning } from "ui/transition";
 import * as uiUtils from "ui/utils";
 
 export * from "./frame-common";
@@ -272,11 +272,11 @@ export class Frame extends FrameBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let width = utils.layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = utils.layout.getMeasureSpecMode(widthMeasureSpec);
+        let width = layout.getMeasureSpecSize(widthMeasureSpec);
+        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = utils.layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = utils.layout.getMeasureSpecMode(heightMeasureSpec);
+        let height = layout.getMeasureSpecSize(heightMeasureSpec);
+        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         this._widthMeasureSpec = widthMeasureSpec;
         this._heightMeasureSpec = heightMeasureSpec;
@@ -298,10 +298,10 @@ export class Frame extends FrameBase {
         // If background does not span under statusbar - reduce available height.
         let heightSpec: number = this._heightMeasureSpec;
         if (page && !page.backgroundSpanUnderStatusBar && !this.parent) {
-            let height = utils.layout.getMeasureSpecSize(this._heightMeasureSpec);
-            let heightMode = utils.layout.getMeasureSpecMode(this._heightMeasureSpec);
+            let height = layout.getMeasureSpecSize(this._heightMeasureSpec);
+            let heightMode = layout.getMeasureSpecMode(this._heightMeasureSpec);
             let statusBarHeight = uiUtils.ios.getStatusBarHeight();
-            heightSpec = utils.layout.makeMeasureSpec(height - statusBarHeight, heightMode);
+            heightSpec = layout.makeMeasureSpec(height - statusBarHeight, heightMode);
         }
 
         return View.measureChild(this, page, this._widthMeasureSpec, heightSpec);
@@ -465,7 +465,7 @@ class UINavigationControllerAnimatedDelegate extends NSObject implements UINavig
         }
 
         let curve = _getNativeCurve(navigationTransition);
-        let animationController = transitionModule._createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
+        let animationController = _createIOSAnimatedTransitioning(navigationTransition, curve, operation, fromVC, toVC);
         return animationController;
     }
 }

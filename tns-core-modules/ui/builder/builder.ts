@@ -1,14 +1,19 @@
-﻿import { debug, ScopeError, SourceError, Source } from "utils/debug";
+﻿// Definitions.
+import { LoadOptions } from "ui/builder";
+import { View, ViewBase, Template, KeyedTemplate } from "ui/core/view";
+
+// Types.
+import { debug, ScopeError, SourceError, Source } from "utils/debug";
 import * as xml from "xml";
-import { View, Template, KeyedTemplate } from "ui/core/view";
 import { File, path, knownFolders } from "file-system";
-import { isString, isFunction, isDefined } from "utils/types";
+import { isString, isDefined } from "utils/types";
 import { ComponentModule, setPropertyValue, getComponentModule } from "ui/builder/component-builder";
 import { platformNames, device } from "platform";
-import { LoadOptions } from "ui/builder";
-import { Page } from "ui/page";
 import { resolveFileName } from "file-system/file-name-resolver";
 import * as traceModule from "trace";
+
+const ios = platformNames.ios.toLowerCase();
+const android = platformNames.android.toLowerCase();
 
 const defaultNameSpaceMatcher = /tns\.xsd$/i;
 
@@ -20,22 +25,15 @@ function ensureTrace() {
 }
 
 export function parse(value: string | Template, context: any): View {
-    if (isString(value)) {
-        var viewToReturn: View;
-
-        if (context instanceof View) {
-            context = getExports(context);
-        }
-
-        var componentModule = parseInternal(<string>value, context);
-
-        if (componentModule) {
-            viewToReturn = componentModule.component;
-        }
-
-        return viewToReturn;
-    } else if (isFunction(value)) {
+    if (typeof value === "function") {
         return (<Template>value)();
+    } else {
+        const exports = context ? getExports(context) : undefined;
+        const componentModule = parseInternal(value, exports);
+        if (componentModule) {
+            return componentModule.component;
+        }
+        return undefined;
     }
 }
 
@@ -62,7 +60,7 @@ function parseInternal(value: string, context: any, uri?: string, moduleNamePath
     return ui.rootComponentModule;
 }
 
-function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: Page): ComponentModule {
+function loadCustomComponent(componentPath: string, componentName?: string, attributes?: Object, context?: Object, parentPage?: View): ComponentModule {
     if (!parentPage && context) {
         // Read the parent page that was passed down below
         // https://github.com/NativeScript/NativeScript/issues/1639
@@ -119,8 +117,8 @@ function loadCustomComponent(componentPath: string, componentName?: string, attr
     // Add component CSS file if exists.
     var cssFilePath = resolveFileName(fullComponentPathFilePathWithoutExt, "css");
     if (cssFilePath) {
-        if (parentPage) {
-            parentPage.addCssFile(cssFilePath);
+        if (parentPage && typeof (<any>parentPage).addCssFile === "function") {
+            (<any>parentPage).addCssFile(cssFilePath);
         } else {
             ensureTrace();
 
@@ -155,7 +153,7 @@ export function load(pathOrOptions: string | LoadOptions, context?: any): View {
     return viewToReturn;
 }
 
-export function loadPage(moduleNamePath: string, fileName: string, context?: any): Page {
+export function loadPage(moduleNamePath: string, fileName: string, context?: any): View {
     var componentModule: ComponentModule;
 
     // Check if the XML file exists.
@@ -173,7 +171,7 @@ export function loadPage(moduleNamePath: string, fileName: string, context?: any
         (<any>componentModule.component).exports = context;
     }
 
-    return (<Page>componentModule.component);
+    return componentModule.component;
 }
 
 function loadInternal(fileName: string, context?: any): ComponentModule {
@@ -197,14 +195,20 @@ function loadInternal(fileName: string, context?: any): ComponentModule {
     return componentModule;
 }
 
-function getExports(instance: View): any {
-    var parent = instance.parent;
+function getExports(instance: ViewBase): any {
+    const isView = !!instance._domId;
+    if (!isView) {
+        return (<any>instance).exports || instance;
+    }
 
-    while (parent && (<any>parent).exports === undefined) {
+    let exportObject = (<any>instance).exports;
+    let parent = instance.parent;
+    while (exportObject === undefined && parent) {
+        exportObject = (<any>parent).exports;
         parent = parent.parent;
     }
 
-    return parent ? (<any>parent).exports : undefined;
+    return exportObject;
 }
 
 namespace xml2ui {
@@ -316,8 +320,12 @@ namespace xml2ui {
         }
 
         private static isPlatform(value: string): boolean {
-            return value && (value.toLowerCase() === platformNames.android.toLowerCase()
-                || value.toLowerCase() === platformNames.ios.toLowerCase());
+            if (value) {
+                const toLower = value.toLowerCase();
+                return toLower === android || toLower === ios;
+            }
+
+            return false;
         }
 
         private static isCurentPlatform(value: string): boolean {
@@ -514,7 +522,7 @@ namespace xml2ui {
 
         private context: any;
 
-        private currentPage: Page;
+        private currentRootView: View;
         private parents = new Array<ComponentModule>();
         private complexProperties = new Array<ComponentParser.ComplexProperty>();
 
@@ -575,7 +583,7 @@ namespace xml2ui {
 
                     if (args.prefix && args.namespace) {
                         // Custom components
-                        componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentPage);
+                        componentModule = loadCustomComponent(args.namespace, args.elementName, args.attributes, this.context, this.currentRootView);
                     } else {
                         // Default components
                         let namespace = args.namespace;
@@ -599,11 +607,11 @@ namespace xml2ui {
                             // Set root component.
                             this.rootComponentModule = componentModule;
 
-                            if (this.rootComponentModule && this.rootComponentModule.component instanceof Page) {
-                                this.currentPage = <Page>this.rootComponentModule.component;
+                            if (this.rootComponentModule) {
+                                this.currentRootView = this.rootComponentModule.component;
 
-                                if ((<any>this.currentPage).exports) {
-                                    this.context = (<any>this.currentPage).exports;
+                                if ((<any>this.currentRootView).exports) {
+                                    this.context = (<any>this.currentRootView).exports;
                                 }
                             }
                         }

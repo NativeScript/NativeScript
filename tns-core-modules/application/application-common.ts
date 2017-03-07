@@ -1,14 +1,16 @@
-﻿require("globals");
+﻿// Require globals first so that snapshot takes __extends function.
+require("globals");
 
-import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { Observable, EventData } from "data/observable";
-import { NavigationEntry } from "ui/frame";
-import "../bundle-entry-points";
 
 const events = new Observable();
+// First merge all functions from events into application-common so that later appModule.on will be defined.
 global.moduleMerge(events, exports);
 
 export { Observable };
+
+import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
+import { NavigationEntry } from "ui/frame";
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";

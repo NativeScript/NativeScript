@@ -1,6 +1,6 @@
 ﻿import * as textFieldModule from "ui/text-field";
 import * as colorModule from "color";
-import * as utilsModule from "utils/utils";
+import { getColor } from "../helper";
 import * as enums from "ui/enums";
 
 export function getNativeText(textField: textFieldModule.TextField): string {
@@ -20,15 +20,15 @@ export function getNativeFontSize(textField: textFieldModule.TextField): number 
 }
 
 export function getNativeColor(textField: textFieldModule.TextField): colorModule.Color {
-    return utilsModule.ios.getColor(textField.ios.textColor);
+    return getColor(textField.ios.textColor);
 }
 
 export function getNativePlaceholderColor(textField: textFieldModule.TextField): colorModule.Color {
-    return utilsModule.ios.getColor(textField.ios.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null));
+    return getColor(textField.ios.attributedPlaceholder.attributeAtIndexEffectiveRange(NSForegroundColorAttributeName, 0, null));
 }
 
 export function getNativeBackgroundColor(textField: textFieldModule.TextField): colorModule.Color {
-    return utilsModule.ios.getColor(textField.ios.backgroundColor);
+    return getColor(textField.ios.backgroundColor);
 }
 
 export function getNativeTextAlignment(textField: textFieldModule.TextField): string {

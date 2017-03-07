@@ -1,7 +1,10 @@
-import { WrappedValue } from "data/observable";
-import { ViewBase } from "./view-base";
-import { Style } from "ui/styling/style";
+// Definitions.
 import * as definitions from "ui/core/view-base";
+import { ViewBase } from "./view-base";
+
+// Types.
+import { WrappedValue } from "data/observable";
+import { Style } from "ui/styling/style";
 
 export { Style };
 

@@ -1,21 +1,30 @@
-﻿import * as definition from "image-source";
-import * as types from "utils/types";
-import * as fs from "file-system";
-import * as common from "./image-source-common";
-import * as enums from "ui/enums";
-import * as imageAssetModule from "image-asset";
+﻿// Definitions.
+import { ImageSource as ImageSourceDefinition } from "image-source";
+import { ImageAsset } from "image-asset";
+import * as httpModule from "http";
 
-global.moduleMerge(common, exports);
+// Types.
+import { path as fsPath, knownFolders } from "file-system";
+import { isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
 
-export class ImageSource implements definition.ImageSource {
+export { isFileOrResourcePath };
+
+let http: typeof httpModule;
+function ensureHttp() {
+    if (!http) {
+        http = require("http");
+    }
+}
+
+export class ImageSource implements ImageSourceDefinition {
     public android: android.graphics.Bitmap;
     public ios: UIImage;
 
-    public fromAsset(asset: imageAssetModule.ImageAsset) {
-        return new Promise<definition.ImageSource>((resolve, reject) => {
+    public fromAsset(asset: ImageAsset) {
+        return new Promise<ImageSource>((resolve, reject) => {
             asset.getImageAsync((image, err) => {
                 if (image) {
-                    resolve(common.fromNativeSource(image));
+                    resolve(fromNativeSource(image));
                 }
                 else {
                     reject(err);
@@ -50,26 +59,14 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromFile(path: string): boolean {
-        var fileName = types.isString(path) ? path.trim() : "";
-
-        if (fileName.indexOf("~/") === 0) {
-            fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
-        }
-
-        this.ios = UIImage.imageWithContentsOfFile(fileName);
+        this.ios = UIImage.imageWithContentsOfFile(getFileName(path));
         return this.ios != null;
     }
 
     public fromFile(path: string): Promise<boolean> {
         return new Promise<boolean>((resolve, reject) => {
             try {
-                var fileName = types.isString(path) ? path.trim() : "";
-
-                if (fileName.indexOf("~/") === 0) {
-                    fileName = fs.path.join(fs.knownFolders.currentApp().path, fileName.replace("~/", ""));
-                }
-
-                (<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(fileName, image => {
+                (<any>UIImage).tns_decodeImageWidthContentsOfFileCompletion(getFileName(path), image => {
                     this.ios = image;
                     resolve(true);
                 });
@@ -98,8 +95,8 @@ export class ImageSource implements definition.ImageSource {
     }
 
     public loadFromBase64(source: string): boolean {
-        if (types.isString(source)) {
-            var data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
+        if (typeof source === "string") {
+            const data = NSData.alloc().initWithBase64EncodedStringOptions(source, NSDataBase64DecodingOptions.IgnoreUnknownCharacters);
             this.ios = UIImage.imageWithData(data);
         }
 
@@ -128,13 +125,12 @@ export class ImageSource implements definition.ImageSource {
         return source != null;
     }
 
-    public saveToFile(path: string, format: string, quality?: number): boolean {
+    public saveToFile(path: string, format: "png" | "jpeg" | "jpg", quality?: number): boolean {
         if (!this.ios) {
             return false;
         }
 
-        var data = getImageData(this.ios, format, quality);
-
+        const data = getImageData(this.ios, format, quality);
         if (data) {
             return data.writeToFileAtomically(path, true);
         }
@@ -142,14 +138,13 @@ export class ImageSource implements definition.ImageSource {
         return false;
     }
 
-    public toBase64String(format: string, quality?: number): string {
-        var res = null;
+    public toBase64String(format: "png" | "jpeg" | "jpg", quality?: number): string {
+        let res = null;
         if (!this.ios) {
             return res;
         }
 
-        var data = getImageData(this.ios, format, quality);
-
+        const data = getImageData(this.ios, format, quality);
         if (data) {
             res = data.base64Encoding();
         }
@@ -179,15 +174,69 @@ export class ImageSource implements definition.ImageSource {
     }
 }
 
-function getImageData(instance: UIImage, format: string, quality = 1.0): NSData {
+function getFileName(path: string): string {
+    let fileName = typeof path === "string" ? path.trim() : "";
+    if (fileName.indexOf("~/") === 0) {
+        fileName = fsPath.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+    }
+    return fileName;
+}
+
+function getImageData(instance: UIImage, format: "png" | "jpeg" | "jpg", quality = 1.0): NSData {
     var data = null;
     switch (format) {
-        case enums.ImageFormat.png: // PNG
+        case "png": // PNG
             data = UIImagePNGRepresentation(instance);
             break;
-        case enums.ImageFormat.jpeg || enums.ImageFormat.jpg: // JPEG
+        case "jpeg" || "jpg": // JPEG
             data = UIImageJPEGRepresentation(instance, quality);
             break;
     }
     return data;
+}
+
+export function fromAsset(asset: ImageAsset): Promise<ImageSource> {
+    const image = new ImageSource();
+    return image.fromAsset(asset);
+}
+
+export function fromResource(name: string): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromResource(name) ? image : null;
+}
+
+export function fromFile(path: string): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromFile(path) ? image : null;
+}
+
+export function fromData(data: any): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromData(data) ? image : null;
+}
+
+export function fromBase64(source: string): ImageSource {
+    const image = new ImageSource();
+    return image.loadFromBase64(source) ? image : null;
+}
+
+export function fromNativeSource(source: any): ImageSource {
+    const image = new ImageSource();
+    return image.setNativeSource(source) ? image : null;
+}
+
+export function fromUrl(url: string): Promise<ImageSource> {
+    ensureHttp();
+    return http.getImage(url);
+}
+
+export function fromFileOrResource(path: string): ImageSource {
+    if (!isFileOrResourcePath(path)) {
+        throw new Error("Path \"" + "\" is not a valid file or resource.");
+    }
+
+    if (path.indexOf(RESOURCE_PREFIX) === 0) {
+        return fromResource(path.substr(RESOURCE_PREFIX.length));
+    }
+    return fromFile(path);
 }

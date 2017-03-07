@@ -5,27 +5,41 @@ export * from "ui/layouts/layout-base";
 
 const OWNER = Symbol("_owner");
 
-var NativeViewGroupClass;
-function ensureNativeViewGroupClass() {
-    if (NativeViewGroupClass) {
+interface NativeViewGroup {
+    new (context: android.content.Context): android.view.ViewGroup;
+}
+
+let NativeViewGroup: NativeViewGroup;
+function initializeNativeViewGroup() {
+    if (NativeViewGroup) {
         return;
     }
 
-    NativeViewGroupClass = (<any>android.view.ViewGroup).extend({
-        onMeasure: function (widthMeasureSpec, heightMeasureSpec) {
+    class NativeViewGroupImpl extends android.view.ViewGroup {
+        constructor(context: android.content.Context) {
+            super(context);
+            return global.__native(this);
+        }
+
+        onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
             const owner: View = this[OWNER];
             owner.onMeasure(widthMeasureSpec, heightMeasureSpec);
             this.setMeasuredDimension(owner.getMeasuredWidth(), owner.getMeasuredHeight());
-        },
-        onLayout: function (changed: boolean, left: number, top: number, right: number, bottom: number): void {
+        }
+
+        onLayout(changed: boolean, left: number, top: number, right: number, bottom: number): void {
             const owner: View = this[OWNER];
             owner.onLayout(left, top, right, bottom);
         }
-    });
+    }
+
+    NativeViewGroup = NativeViewGroupImpl;
 }
 
 export class Layout extends LayoutBase implements LayoutDefinition {
     private _viewGroup: android.view.ViewGroup;
+    _measuredWidth: number;
+    _measuredHeight: number;
 
     get android(): android.view.ViewGroup {
         return this._viewGroup;
@@ -36,8 +50,8 @@ export class Layout extends LayoutBase implements LayoutDefinition {
     }
 
     public _createNativeView() {
-        ensureNativeViewGroupClass();
-        this._viewGroup = new NativeViewGroupClass(this._context);
+        initializeNativeViewGroup();
+        this._viewGroup = new NativeViewGroup(this._context);
         this._viewGroup[OWNER] = this;
     }
 
@@ -76,5 +90,24 @@ export class Layout extends LayoutBase implements LayoutDefinition {
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
         // Don't call super because it will trigger layout again.
+    }
+
+    // NOTE: overriden so we cache measuredWidth & measuredHeight.
+    public setMeasuredDimension(measuredWidth: number, measuredHeight: number): void {
+        super.setMeasuredDimension(measuredWidth, measuredHeight);
+        this._measuredWidth = measuredWidth;
+        this._measuredHeight = measuredHeight;
+    }
+
+    // NOTE: base implementation use the nativeView.getMeasuredWidth which should
+    // not be called while we are in onMeasure.
+    public getMeasuredWidth(): number {
+        return this._measuredWidth;
+    }
+
+    // NOTE: base implementation use the nativeView.getMeasuredWidth which should
+    // not be called while we are in onMeasure.
+    public getMeasuredHeight(): number {
+        return this._measuredHeight;
     }
 }

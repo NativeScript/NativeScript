@@ -1,4 +1,5 @@
-import { ViewBase, resetCSSProperties } from "ui/core/view-base";
+import { ViewBase } from "ui/core/view-base";
+import { resetCSSProperties } from "ui/core/properties";
 import { SyntaxTree, Keyframes, parse as parseCss, Node } from "css";
 import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes } from "ui/styling/css-selector";
 import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";

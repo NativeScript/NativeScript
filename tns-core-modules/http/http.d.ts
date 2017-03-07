@@ -122,6 +122,7 @@ declare module "http" {
     UTF8,
     GBK
   }
+  
   /**
    * Encapsulates the content of an HttpResponse.
    */

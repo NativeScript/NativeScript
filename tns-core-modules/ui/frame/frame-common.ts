@@ -1,12 +1,17 @@
-﻿import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from "ui/frame";
-import { Page, View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "ui/page";
-import { isString, isFunction, isDefined } from "utils/types";
+﻿// Definitions.
+import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from "ui/frame";
+import { Page } from "ui/page";
+
+// Types.
+import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "ui/core/view";
 import { resolveFileName } from "file-system/file-name-resolver";
-import * as fs from "file-system";
-import * as builder from "ui/builder";
+import { knownFolders, path } from "file-system";
+import { parse, loadPage } from "ui/builder";
 import * as application from "application";
 
-export * from "ui/page";
+export { application };
+
+export * from "ui/core/view";
 
 function onLivesync(args: EventData): void {
     // give time to allow fileNameResolver & css to reload.
@@ -22,7 +27,7 @@ function onLivesync(args: EventData): void {
             reloadPage();
         } catch (ex) {
             // Show the error as modal page, save reference to the page in global context.
-            g.errorPage = builder.parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
+            g.errorPage = parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
             g.errorPage.showModal();
         }
     });
@@ -33,13 +38,11 @@ let frameStack: Array<FrameBase> = [];
 
 function buildEntryFromArgs(arg: any): NavigationEntry {
     let entry: NavigationEntry;
-    if (arg instanceof Page) {
-        throw new Error("Navigating to a Page instance is no longer supported. Please navigate by using either a module name or a page factory function.");
-    } else if (isString(arg)) {
+    if (typeof arg === "string") {
         entry = {
             moduleName: arg
         };
-    } else if (isFunction(arg)) {
+    } else if (typeof arg === "function") {
         entry = {
             create: arg
         }
@@ -77,15 +80,15 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
     if (entry.create) {
         page = entry.create();
 
-        if (!(page && page instanceof Page)) {
+        if (!page) {
             throw new Error("Failed to create Page with entry.create() function.");
         }
     }
     else if (entry.moduleName) {
         // Current app full path.
-        let currentAppPath = fs.knownFolders.currentApp().path;
+        let currentAppPath = knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
-        let moduleNamePath = fs.path.join(currentAppPath, entry.moduleName);
+        let moduleNamePath = path.join(currentAppPath, entry.moduleName);
 
         let moduleExports;
         // web-pack case where developers register their page JS file manually.
@@ -123,7 +126,7 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
             page = pageFromBuilder(moduleNamePath, moduleExports);
         }
 
-        if (!(page && page instanceof Page)) {
+        if (!page) {
             throw new Error("Failed to load Page from entry.moduleName: " + entry.moduleName);
         }
     }
@@ -142,7 +145,7 @@ function pageFromBuilder(moduleNamePath: string, moduleExports: any): Page {
         }
 
         // Or check if the file exists in the app modules and load the page from XML.
-        page = builder.loadPage(moduleNamePath, fileName, moduleExports);
+        page = loadPage(moduleNamePath, fileName, moduleExports);
     }
 
     // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
@@ -324,7 +327,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         }
 
         let backstackVisibleValue = entry.entry.backstackVisible;
-        let backstackHidden = isDefined(backstackVisibleValue) && !backstackVisibleValue;
+        let backstackHidden = backstackVisibleValue !== undefined && !backstackVisibleValue;
 
         return !backstackHidden;
     }
@@ -458,11 +461,11 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _getIsAnimatedNavigation(entry: NavigationEntry): boolean {
-        if (entry && isDefined(entry.animated)) {
+        if (entry && entry.animated !== undefined) {
             return entry.animated;
         }
 
-        if (isDefined(this.animated)) {
+        if (this.animated !== undefined) {
             return this.animated;
         }
 
@@ -471,20 +474,20 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 
         if (entry) {
-            if (isIOS && isDefined(entry.transitioniOS)) {
+            if (isIOS && entry.transitioniOS !== undefined) {
                 return entry.transitioniOS;
             }
 
-            if (isAndroid && isDefined(entry.transitionAndroid)) {
+            if (isAndroid && entry.transitionAndroid !== undefined) {
                 return entry.transitionAndroid;
             }
 
-            if (isDefined(entry.transition)) {
+            if (entry.transition !== undefined) {
                 return entry.transition;
             }
         }
 
-        if (isDefined(this.transition)) {
+        if (this.transition !== undefined) {
             return this.transition;
         }
 

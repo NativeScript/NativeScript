@@ -1,9 +1,11 @@
 import { AnimationDefinition } from "ui/animation";
+import { View } from "ui/core/view";
+
+import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
-    AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, View, opacityProperty, backgroundColorProperty, rotateProperty,
-    translateXProperty, translateYProperty,
-    scaleXProperty, scaleYProperty, traceEnabled, traceWrite, traceCategories, Length
-} from "./animation-common";
+    Length, opacityProperty, backgroundColorProperty, rotateProperty,
+    translateXProperty, translateYProperty, scaleXProperty, scaleYProperty
+} from "ui/styling/style-properties";
 
 import { ios } from "utils/utils";
 

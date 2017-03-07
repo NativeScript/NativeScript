@@ -1,11 +1,10 @@
 ﻿import {
     PageBase, View, layout,
     actionBarHiddenProperty, statusBarStyleProperty,
-    traceEnabled, traceWrite, traceCategories, PercentLength
+    traceEnabled, traceWrite, traceCategories, PercentLength, Color
 } from "./page-common";
 import { ios as iosApp } from "application";
 import { device } from "platform";
-import { Color } from "color";
 import * as uiUtils from "ui/utils";
 
 export * from "./page-common";

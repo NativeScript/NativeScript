@@ -1,18 +1,25 @@
+// Definitions.
 import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
-import { Observable, EventData, PropertyChangeData } from "data/observable";
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "./properties";
-import { Binding, BindingOptions } from "ui/core/bindable";
-import { isIOS, isAndroid } from "platform";
-import { fromString as gestureFromString } from "ui/gestures";
+import { Page } from "ui/page";
 import { SelectorCore } from "ui/styling/css-selector";
+import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
+import { Length } from "../styling/style-properties";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet } from "trace";
-
-import { Page } from "ui/page";
+// Types.
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "./properties";
+import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "ui/core/bindable";
+import { isIOS, isAndroid } from "platform";
+import { layout } from "utils/utils";
 
 // TODO: Remove this import!
 import * as types from "utils/types";
+
+import { Color } from "color";
+
+export { isIOS, isAndroid, layout, Color };
+export * from "ui/core/bindable";
+export * from "./properties";
 
 import * as ssm from "ui/styling/style-scope";
 let styleScopeModule: typeof ssm;
@@ -21,12 +28,6 @@ function ensureStyleScopeModule() {
         styleScopeModule = require("ui/styling/style-scope");
     }
 }
-
-export {
-    Observable, EventData, Binding, BindingOptions, isIOS, isAndroid,
-    gestureFromString, traceEnabled, traceWrite, traceCategories, traceNotifyEvent, isCategorySet
-};
-export * from "./properties";
 
 let defaultBindingSource = {};
 
@@ -45,24 +46,6 @@ export function getAncestor(view: ViewBaseDefinition, criterion: string | Functi
     }
 
     return null;
-}
-
-export function getEventOrGestureName(name: string): string {
-    return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
-}
-
-// TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
-// in controls. They will just override this one and provide their own event support.
-export function isEventOrGesture(name: string, view: ViewBaseDefinition): boolean {
-    if (typeof name === "string") {
-        let eventOrGestureName = getEventOrGestureName(name);
-        let evt = `${eventOrGestureName}Event`;
-
-        return view.constructor && evt in view.constructor ||
-            gestureFromString(eventOrGestureName.toLowerCase()) !== undefined;
-    }
-
-    return false;
 }
 
 export function getViewById(view: ViewBaseDefinition, id: string): ViewBaseDefinition {
@@ -106,9 +89,12 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
     view.eachChild(localCallback);
 }
 
-let viewIdCounter = 0;
+let viewIdCounter = 1;
 
 export class ViewBase extends Observable implements ViewBaseDefinition {
+    public static loadedEvent = "loaded";
+    public static unloadedEvent = "unloaded";
+
     public recycleNativeView: boolean;
 
     private _style: Style;
@@ -130,6 +116,45 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public _isAddedToNativeVisualTree: boolean;
     public _cssState: ssm.CssState;
     public _styleScope: ssm.StyleScope;
+
+    // Dynamic properties.
+    left: Length;
+    top: Length;
+    effectiveLeft: number;
+    effectiveTop: number;
+    dock: "left" | "top" | "right" | "bottom";
+    row: number;
+    col: number;
+    rowSpan: number;
+    colSpan: number;
+
+    order: Order;
+    flexGrow: FlexGrow;
+    flexShrink: FlexShrink;
+    flexWrapBefore: FlexWrapBefore;
+    alignSelf: AlignSelf;
+
+    _oldLeft: number;
+    _oldTop: number;
+    _oldRight: number;
+    _oldBottom: number;
+
+    public effectiveMinWidth: number;
+    public effectiveMinHeight: number;
+    public effectiveWidth: number;
+    public effectiveHeight: number;
+    public effectiveMarginTop: number;
+    public effectiveMarginRight: number;
+    public effectiveMarginBottom: number;
+    public effectiveMarginLeft: number;
+    public effectivePaddingTop: number;
+    public effectivePaddingRight: number;
+    public effectivePaddingBottom: number;
+    public effectivePaddingLeft: number;
+    public effectiveBorderTopWidth: number;
+    public effectiveBorderRightWidth: number;
+    public effectiveBorderBottomWidth: number;
+    public effectiveBorderLeftWidth: number;
 
     constructor() {
         super();
@@ -186,6 +211,12 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
 
         return null;
+    }
+
+    // Overriden so we don't raise `poropertyChange`
+    // The property will raise its own event.
+    public set(name: string, value: any) {
+        this[name] = WrappedValue.unwrap(value);
     }
 
     public onLoaded() {
@@ -474,7 +505,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (this._context) {
             view._setupUI(this._context, atIndex);
         }
-        
+
         if (this._isLoaded) {
             view.onLoaded();
         }
@@ -682,6 +713,28 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
 ViewBase.prototype.isCollapsed = false;
 
+ViewBase.prototype._oldLeft = 0;
+ViewBase.prototype._oldTop = 0;
+ViewBase.prototype._oldRight = 0;
+ViewBase.prototype._oldBottom = 0;
+
+ViewBase.prototype.effectiveMinWidth = 0;
+ViewBase.prototype.effectiveMinHeight = 0;
+ViewBase.prototype.effectiveWidth = 0;
+ViewBase.prototype.effectiveHeight = 0;
+ViewBase.prototype.effectiveMarginTop = 0;
+ViewBase.prototype.effectiveMarginRight = 0;
+ViewBase.prototype.effectiveMarginBottom = 0;
+ViewBase.prototype.effectiveMarginLeft = 0;
+ViewBase.prototype.effectivePaddingTop = 0;
+ViewBase.prototype.effectivePaddingRight = 0;
+ViewBase.prototype.effectivePaddingBottom = 0;
+ViewBase.prototype.effectivePaddingLeft = 0;
+ViewBase.prototype.effectiveBorderTopWidth = 0;
+ViewBase.prototype.effectiveBorderRightWidth = 0;
+ViewBase.prototype.effectiveBorderBottomWidth = 0;
+ViewBase.prototype.effectiveBorderLeftWidth = 0;
+
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
 
@@ -710,3 +763,14 @@ function resetStyles(view: ViewBase): void {
 
 export const idProperty = new Property<ViewBase, string>({ name: "id", valueChanged: (view, oldValue, newValue) => resetStyles(view) });
 idProperty.register(ViewBase);
+
+export function booleanConverter(v: string): boolean {
+    let lowercase = (v + '').toLowerCase();
+    if (lowercase === "true") {
+        return true;
+    } else if (lowercase === "false") {
+        return false;
+    }
+
+    throw new Error(`Invalid boolean: ${v}`);
+}

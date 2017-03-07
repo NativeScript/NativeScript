@@ -1,12 +1,14 @@
-﻿import {
+﻿// Definitions.
+import {
     AndroidFrame as AndroidFrameDefinition, BackstackEntry,
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
 } from "ui/frame";
-import { FrameBase, NavigationContext, stack, goBack } from "./frame-common";
-import { Page, View, Observable, traceEnabled, traceWrite, traceCategories } from "ui/page";
+import { Page } from "ui/page";
+
+// Types.
+import { FrameBase, application, NavigationContext, stack, goBack, View, Observable, traceEnabled, traceWrite, traceCategories } from "./frame-common";
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
 import * as transitionModule from "ui/transition";
-import * as application from "application";
 
 export * from "./frame-common";
 
@@ -182,7 +184,7 @@ export class Frame extends FrameBase {
             transitionModule._clearForwardTransitions(currentFragment);
 
             if (animated && navigationTransition) {
-                transitionModule._setAndroidFragmentTransitions(navigationTransition, currentFragment, newFragment, fragmentTransaction);
+                transitionModule._setAndroidFragmentTransitions(this.android.cachePagesOnNavigate, navigationTransition, currentFragment, newFragment, fragmentTransaction);
             }
         }
 

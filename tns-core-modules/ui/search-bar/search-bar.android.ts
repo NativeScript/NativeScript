@@ -1,5 +1,6 @@
-﻿import {
-    SearchBarBase, Font, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
+﻿import { Font } from "ui/styling/font";
+import {
+    SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty
 } from "./search-bar-common";
 import { ad } from "utils/utils";
@@ -9,16 +10,31 @@ export * from "./search-bar-common";
 const SEARCHTEXT = Symbol("searchText");
 const QUERY = Symbol("query");
 
-@Interfaces([android.widget.SearchView.OnQueryTextListener])
-class QueryTextListener extends java.lang.Object implements android.widget.SearchView.OnQueryTextListener {
-    constructor(private owner: WeakRef<SearchBar>) {
-        super();
-        return global.__native(this);
+interface QueryTextListener {
+    new (owner: SearchBar): android.widget.SearchView.OnQueryTextListener;
+}
+
+interface CloseListener {
+    new (owner: SearchBar): android.widget.SearchView.OnCloseListener;
+}
+
+let QueryTextListener: QueryTextListener;
+let CloseListener: CloseListener;
+
+function initializeNativeClasses(): void {
+    if (QueryTextListener) {
+        return;
     }
 
-    onQueryTextChange(newText: string): boolean {
-        let owner = this.owner.get();
-        if (owner) {
+    @Interfaces([android.widget.SearchView.OnQueryTextListener])
+    class QueryTextListenerImpl extends java.lang.Object implements android.widget.SearchView.OnQueryTextListener {
+        constructor(private owner: SearchBar) {
+            super();
+            return global.__native(this);
+        }
+
+        onQueryTextChange(newText: string): boolean {
+            const owner = this.owner;
             textProperty.nativeValueChange(owner, newText);
 
             // This code is needed since sometimes OnCloseListener is not called!
@@ -27,37 +43,36 @@ class QueryTextListener extends java.lang.Object implements android.widget.Searc
             }
 
             this[SEARCHTEXT] = newText;
+            return true;
         }
-        return true;
-    }
 
-    onQueryTextSubmit(query: string): boolean {
-        let owner = this.owner.get();
-        if (owner) {
+        onQueryTextSubmit(query: string): boolean {
+            const owner = this.owner;
             // This code is needed since onQueryTextSubmit is called twice with same query!
             if (query !== "" && this[QUERY] !== query) {
                 owner._emit(SearchBarBase.submitEvent);
             }
+
             this[QUERY] = query;
+            return true;
         }
-        return true;
-    }
-}
-
-@Interfaces([android.widget.SearchView.OnCloseListener])
-class CloseListener extends java.lang.Object implements android.widget.SearchView.OnCloseListener {
-    constructor(private owner: WeakRef<SearchBar>) {
-        super();
-        return global.__native(this);
     }
 
-    onClose(): boolean {
-        let owner = this.owner.get();
-        if (owner) {
-            owner._emit(SearchBarBase.clearEvent);
+    @Interfaces([android.widget.SearchView.OnCloseListener])
+    class CloseListenerImpl extends java.lang.Object implements android.widget.SearchView.OnCloseListener {
+        constructor(private owner: SearchBar) {
+            super();
+            return global.__native(this);
         }
-        return true;
+
+        onClose(): boolean {
+            this.owner._emit(SearchBarBase.clearEvent);
+            return true;
+        }
     }
+
+    QueryTextListener = QueryTextListenerImpl;
+    CloseListener = CloseListenerImpl;
 }
 
 export class SearchBar extends SearchBarBase {
@@ -79,14 +94,15 @@ export class SearchBar extends SearchBarBase {
     }
 
     public _createNativeView() {
+        initializeNativeClasses();
         this._android = new android.widget.SearchView(this._context);
 
         this._android.setIconified(false);
 
-        this._queryTextListener = this._queryTextListener || new QueryTextListener(new WeakRef(this));
+        this._queryTextListener = this._queryTextListener || new QueryTextListener(this);
         this._android.setOnQueryTextListener(this._queryTextListener);
 
-        this._closeListener = this._closeListener || new CloseListener(new WeakRef(this));
+        this._closeListener = this._closeListener || new CloseListener(this);
         this._android.setOnCloseListener(this._closeListener);
     }
 

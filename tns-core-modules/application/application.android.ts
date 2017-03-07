@@ -158,14 +158,6 @@ global.__onLiveSync = function () {
     livesync();
 };
 
-declare namespace com {
-    namespace tns {
-        class NativeScriptApplication extends android.app.Application {
-            static getInstance(): NativeScriptApplication;
-        }
-    }
-}
-
 function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
@@ -305,4 +297,12 @@ function ensureBroadCastReceiverClass() {
     }
 
     BroadcastReceiverClass = BroadcastReceiver;
+}
+
+declare namespace com {
+    namespace tns {
+        class NativeScriptApplication extends android.app.Application {
+            static getInstance(): NativeScriptApplication;
+        }
+    }
 }

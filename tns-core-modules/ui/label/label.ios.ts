@@ -1,6 +1,7 @@
 ﻿import { Label as LabelDefinition } from "ui/label";
+import { Background } from "ui/styling/background";
 import {
-    Background, TextBase, View, layout, backgroundInternalProperty,
+    TextBase, View, layout, backgroundInternalProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
     Length, WhiteSpace

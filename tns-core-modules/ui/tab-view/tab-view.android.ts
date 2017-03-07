@@ -1,9 +1,11 @@
+import { Font } from "ui/styling/font";
+
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty,
     androidSelectedTabHighlightColorProperty, androidOffscreenTabLimitProperty,
-    fontSizeProperty, fontInternalProperty, View, layout, Color, Font,
-    traceCategory, traceEnabled, traceWrite, initNativeView
+    fontSizeProperty, fontInternalProperty, View, layout,
+    traceCategory, traceEnabled, traceWrite, initNativeView, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
 import { fromFileOrResource } from "image-source";
@@ -16,70 +18,23 @@ const ACCENT_COLOR = "colorAccent";
 const PRIMARY_COLOR = "colorPrimary";
 const DEFAULT_ELEVATION = 4;
 
-let defaultAccentColor: number = undefined;
-function getDefaultAccentColor(context: android.content.Context): number {
-    if (defaultAccentColor === undefined) {
-        //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
-        defaultAccentColor = ad.resources.getPalleteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
-    }
-    return defaultAccentColor;
+interface PagerAdapter {
+    new (owner: TabView, items: Array<TabViewItem>): android.support.v4.view.PagerAdapter;
 }
 
-export class TabViewItem extends TabViewItemBase {
-    public nativeView: android.widget.TextView;
-    public tabItemSpec: org.nativescript.widgets.TabItemSpec;
-    public index: number;
-
-    public setNativeView(textView: android.widget.TextView): void {
-        this.nativeView = textView;
-        if (textView) {
-            initNativeView(this);
-        }
-    }
-
-    public _update(): void {
-        const tv = this.nativeView;
-        if (tv) {
-            const tabLayout = <org.nativescript.widgets.TabLayout>tv.getParent();
-            tabLayout.updateItemAt(this.index, this.tabItemSpec);
-        }
-    }
-
-    get [fontSizeProperty.native](): { nativeSize: number } {
-        return { nativeSize: this.nativeView.getTextSize() };
-    }
-    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
-        if (typeof value === "number") {
-            this.nativeView.setTextSize(value);
-        } else {
-            this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
-        }
-    }
-
-    get [fontInternalProperty.native](): android.graphics.Typeface {
-        return this.nativeView.getTypeface();
-    }
-    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
-        this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
-    }
-
-    get [textTransformProperty.native](): TextTransform {
-        return "none";
-    }
-    set [textTransformProperty.native](value: TextTransform) {
-        const tv = this.nativeView;
-        const result = getTransformedText(this.title, value);
-        tv.setText(result);
-    }
+interface PageChangedListener {
+    new (owner: TabView): android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
 }
 
-let PagerAdapterClass;
-function ensurePagerAdapterClass() {
-    if (PagerAdapterClass) {
+let PagerAdapter: PagerAdapter;
+let PageChangedListener: PageChangedListener;
+
+function initializeNativeClasses() {
+    if (PagerAdapter) {
         return;
     }
 
-    class PagerAdapterClassInner extends android.support.v4.view.PagerAdapter {
+    class PagerAdapterImpl extends android.support.v4.view.PagerAdapter {
         private owner: TabView;
         private items: Array<TabViewItem>;
 
@@ -160,8 +115,8 @@ function ensurePagerAdapterClass() {
                 traceWrite("TabView.PagerAdapter.saveState", traceCategory);
             }
 
-            let owner: TabView = this.owner;
-            if (!owner || owner._childrenCount === 0) {
+            const owner: TabView = this.owner;
+            if (owner._childrenCount === 0) {
                 return null;
             }
 
@@ -194,16 +149,7 @@ function ensurePagerAdapterClass() {
         }
     };
 
-    PagerAdapterClass = PagerAdapterClassInner;
-}
-
-let PageChangedListenerClass;
-function ensurePageChangedListenerClass() {
-    if (PageChangedListenerClass) {
-        return;
-    }
-
-    class PageChangedListener extends android.support.v4.view.ViewPager.SimpleOnPageChangeListener {
+    class PageChangedListenerImpl extends android.support.v4.view.ViewPager.SimpleOnPageChangeListener {
         private _owner: TabView;
         constructor(owner: TabView) {
             super();
@@ -216,7 +162,8 @@ function ensurePageChangedListenerClass() {
         }
     }
 
-    PageChangedListenerClass = PageChangedListener;
+    PagerAdapter = PagerAdapterImpl;
+    PageChangedListener = PageChangedListenerImpl;
 }
 
 function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemSpec {
@@ -236,6 +183,63 @@ function createTabItemSpec(item: TabViewItem): org.nativescript.widgets.TabItemS
     }
 
     return result;
+}
+
+let defaultAccentColor: number = undefined;
+function getDefaultAccentColor(context: android.content.Context): number {
+    if (defaultAccentColor === undefined) {
+        //Fallback color: https://developer.android.com/samples/SlidingTabsColors/src/com.example.android.common/view/SlidingTabStrip.html
+        defaultAccentColor = ad.resources.getPalleteColor(ACCENT_COLOR, context) || 0xFF33B5E5;
+    }
+    return defaultAccentColor;
+}
+
+export class TabViewItem extends TabViewItemBase {
+    public nativeView: android.widget.TextView;
+    public tabItemSpec: org.nativescript.widgets.TabItemSpec;
+    public index: number;
+
+    public setNativeView(textView: android.widget.TextView): void {
+        this.nativeView = textView;
+        if (textView) {
+            initNativeView(this);
+        }
+    }
+
+    public _update(): void {
+        const tv = this.nativeView;
+        if (tv) {
+            const tabLayout = <org.nativescript.widgets.TabLayout>tv.getParent();
+            tabLayout.updateItemAt(this.index, this.tabItemSpec);
+        }
+    }
+
+    get [fontSizeProperty.native](): { nativeSize: number } {
+        return { nativeSize: this.nativeView.getTextSize() };
+    }
+    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+        if (typeof value === "number") {
+            this.nativeView.setTextSize(value);
+        } else {
+            this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
+        }
+    }
+
+    get [fontInternalProperty.native](): android.graphics.Typeface {
+        return this.nativeView.getTypeface();
+    }
+    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+        this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
+    }
+
+    get [textTransformProperty.native](): TextTransform {
+        return "none";
+    }
+    set [textTransformProperty.native](value: TextTransform) {
+        const tv = this.nativeView;
+        const result = getTransformedText(this.title, value);
+        tv.setText(result);
+    }
 }
 
 export class TabView extends TabViewBase {
@@ -264,6 +268,7 @@ export class TabView extends TabViewBase {
     }
 
     public _createNativeView() {
+        initializeNativeClasses();
         if (traceEnabled()) {
             traceWrite("TabView._createUI(" + this + ");", traceCategory);
         }
@@ -298,8 +303,7 @@ export class TabView extends TabViewBase {
         this._viewPager.setLayoutParams(lp);
         this._grid.addView(this._viewPager);
 
-        ensurePageChangedListenerClass();
-        this._pageChagedListener = new PageChangedListenerClass(this);
+        this._pageChagedListener = new PageChangedListener(this);
         (<any>this._viewPager).addOnPageChangeListener(this._pageChagedListener);
         this.nativeView = this._viewPager;
         this._nativeView = this._viewPager;
@@ -331,9 +335,8 @@ export class TabView extends TabViewBase {
             tabItems.push(tabItemSpec);
         });
 
-        ensurePagerAdapterClass();
         // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
-        this._pagerAdapter = new PagerAdapterClass(this, items);
+        this._pagerAdapter = new PagerAdapter(this, items);
         this._viewPager.setAdapter(this._pagerAdapter);
 
         const tabLayout = this._tabLayout;
@@ -375,7 +378,7 @@ export class TabView extends TabViewBase {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
-            this._tabLayout.setBackground(value.newDrawable());
+            this._tabLayout.setBackground(value ? value.newDrawable() : null);
         }
     }
 
@@ -383,7 +386,7 @@ export class TabView extends TabViewBase {
         return this._tabLayout.getTabTextColor();
     }
     set [tabTextColorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         this._tabLayout.setTabTextColor(color);
     }
 
@@ -391,7 +394,7 @@ export class TabView extends TabViewBase {
         return this._tabLayout.getSelectedTabTextColor();
     }
     set [selectedTabTextColorProperty.native](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         this._tabLayout.setSelectedTabTextColor(color);
     }
 
@@ -400,7 +403,7 @@ export class TabView extends TabViewBase {
     }
     set [androidSelectedTabHighlightColorProperty.native](value: number | Color) {
         let tabLayout = this._tabLayout;
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);
     }
 }

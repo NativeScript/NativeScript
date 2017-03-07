@@ -1,16 +1,7 @@
 ﻿declare module "utils/utils" {
-    import * as colorModule from "color";
-
     export var RESOURCE_PREFIX: string;
 
     //@private
-    /**
-     * Used by various android event listener implementations
-     */
-    interface Owned {
-        owner: any;
-    }
-    
     /**
      * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType. 
      */
@@ -159,17 +150,6 @@
          */
         export function getter<T>(_this: any, propertyValue: T | {(): T}): T;
 
-        // Common properties between UILabel, UITextView and UITextField 
-        export interface TextUIView {
-            font: any;
-            textAlignment: number;
-            textColor: any;
-            text: string;
-            attributedText: any;
-            lineBreakMode: number;
-            numberOfLines: number;
-        }
-
         /**
          * Utility module dealing with some iOS collections.
          */
@@ -187,14 +167,10 @@
         }
 
         /**
-         * Gets NativeScript color from [UIColor](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIColor_Class/).
-         * @param uiColor - UIColor instance used to create a NativeScript color.
-         */
-        export function getColor(uiColor: any /* UIColor */): colorModule.Color;
-        /**
          * Gets an information about if current mode is Landscape.
          */
         export function isLandscape(): boolean;
+        
         /**
          * Gets the iOS device major version (for 8.1 will return 8).
          */
@@ -240,7 +216,7 @@
      * Converts string value to number or boolean.
      * @param value The original value. 
      */
-    export function convertString(value: any): any
+    export function convertString(value: string): boolean | number;
 
     /**
      * Sorts an array by using merge sort algoritm (which ensures stable sort since the built-in Array.sort() does not promise a stable sort).

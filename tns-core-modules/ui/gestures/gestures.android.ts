@@ -1,11 +1,228 @@
-﻿import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
-import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection, 
-    View, EventData } from "./gestures-common";
+﻿// Definitions.
+import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData } from "ui/gestures";
+import { View, EventData } from "ui/core/view";
+
+// Types.
+import {
+    GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection
+} from "./gestures-common";
 
 // Import layout from utils directly to avoid circular references
 import { layout } from "utils/utils";
 
 export * from "./gestures-common";
+
+interface TapAndDoubleTapGestureListener {
+    new (observer: GesturesObserver, target: View, type: number): android.view.GestureDetector.SimpleOnGestureListener;
+}
+
+let TapAndDoubleTapGestureListener: TapAndDoubleTapGestureListener;
+function initializeTapAndDoubleTapGestureListener() {
+    if (TapAndDoubleTapGestureListener) {
+        return;
+    }
+
+    class TapAndDoubleTapGestureListenerImpl extends android.view.GestureDetector.SimpleOnGestureListener {
+        private _observer: GesturesObserver;
+        private _target: View;
+        private _type: number;
+
+        constructor(observer: GesturesObserver, target: View, type: number) {
+            super();
+
+            this._observer = observer;
+            this._target = target;
+            this._type = type;
+            return global.__native(this);
+        }
+
+        public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
+            if (this._type & GestureTypes.tap) {
+                let args = _getArgs(GestureTypes.tap, this._target, motionEvent);
+                _executeCallback(this._observer, args);
+            }
+            return true;
+        }
+
+        public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
+            if (this._type & GestureTypes.doubleTap) {
+                let args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
+                _executeCallback(this._observer, args);
+            }
+            return true;
+        }
+
+        public onDown(motionEvent: android.view.MotionEvent): boolean {
+            return true;
+        }
+
+        public onLongPress(motionEvent: android.view.MotionEvent): void {
+            if (this._type & GestureTypes.longPress) {
+                let args = _getArgs(GestureTypes.longPress, this._target, motionEvent);
+                _executeCallback(this._observer, args);
+            }
+        }
+    }
+
+    TapAndDoubleTapGestureListener = TapAndDoubleTapGestureListenerImpl;
+}
+
+interface PinchGestureListener {
+    new (observer: GesturesObserver, target: View): android.view.ScaleGestureDetector.SimpleOnScaleGestureListener;
+}
+
+let PinchGestureListener: PinchGestureListener;
+function initializePinchGestureListener() {
+    if (PinchGestureListener) {
+        return;
+    }
+
+    class PinchGestureListenerImpl extends android.view.ScaleGestureDetector.SimpleOnScaleGestureListener {
+        private _observer: GesturesObserver;
+        private _target: View;
+        private _scale: number;
+        private _density: number;
+
+        constructor(observer: GesturesObserver, target: View) {
+            super();
+
+            this._observer = observer;
+            this._target = target;
+            this._density = layout.getDisplayDensity();
+
+            return global.__native(this);
+        }
+
+        public onScaleBegin(detector: android.view.ScaleGestureDetector): boolean {
+            this._scale = detector.getScaleFactor();
+
+            let args = new PinchGestureEventData(
+                this._target,
+                detector,
+                this._scale,
+                this._target,
+                GestureStateTypes.began);
+
+            _executeCallback(this._observer, args);
+
+            return true;
+        }
+
+        public onScale(detector: android.view.ScaleGestureDetector): boolean {
+            this._scale *= detector.getScaleFactor();
+
+            let args = new PinchGestureEventData(
+                this._target,
+                detector,
+                this._scale,
+                this._target,
+                GestureStateTypes.changed);
+
+            _executeCallback(this._observer, args);
+            return true;
+        }
+
+        public onScaleEnd(detector: android.view.ScaleGestureDetector): void {
+            this._scale *= detector.getScaleFactor();
+
+            let args = new PinchGestureEventData(
+                this._target,
+                detector,
+                this._scale,
+                this._target,
+                GestureStateTypes.ended);
+
+            _executeCallback(this._observer, args);
+        }
+    }
+
+    PinchGestureListener = PinchGestureListenerImpl;
+}
+
+interface SwipeGestureListener {
+    new (observer: GesturesObserver, target: View): android.view.GestureDetector.SimpleOnGestureListener;
+}
+
+let SwipeGestureListener: SwipeGestureListener;
+function initializeSwipeGestureListener() {
+    if (SwipeGestureListener) {
+        return;
+    }
+
+    class SwipeGestureListenerImpl extends android.view.GestureDetector.SimpleOnGestureListener {
+        private _observer: GesturesObserver;
+        private _target: View;
+
+        constructor(observer: GesturesObserver, target: View) {
+            super();
+
+            this._observer = observer;
+            this._target = target;
+
+            return global.__native(this);
+        }
+
+        public onDown(motionEvent: android.view.MotionEvent): boolean {
+            return true;
+        }
+
+        public onFling(initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent, velocityX: number, velocityY: number): boolean {
+            let result = false;
+            let args: SwipeGestureEventData;
+            try {
+                let deltaY = currentEvent.getY() - initialEvent.getY();
+                let deltaX = currentEvent.getX() - initialEvent.getX();
+
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+
+                    if (Math.abs(deltaX) > SWIPE_THRESHOLD
+                        && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+
+                        if (deltaX > 0) {
+
+                            args = _getSwipeArgs(SwipeDirection.right, this._target, initialEvent, currentEvent);
+                            _executeCallback(this._observer, args);
+
+                            result = true;
+                        } else {
+
+                            args = _getSwipeArgs(SwipeDirection.left, this._target, initialEvent, currentEvent);
+                            _executeCallback(this._observer, args);
+
+                            result = true;
+                        }
+                    }
+
+                } else {
+
+                    if (Math.abs(deltaY) > SWIPE_THRESHOLD
+                        && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+
+                        if (deltaY > 0) {
+
+                            args = _getSwipeArgs(SwipeDirection.down, this._target, initialEvent, currentEvent);
+                            _executeCallback(this._observer, args);
+
+                            result = true;
+                        } else {
+
+                            args = _getSwipeArgs(SwipeDirection.up, this._target, initialEvent, currentEvent);
+                            _executeCallback(this._observer, args);
+
+                            result = true;
+                        }
+                    }
+                }
+            } catch (ex) {
+                //
+            }
+
+            return result;
+        }
+    }
+
+    SwipeGestureListener = SwipeGestureListenerImpl;
+}
 
 const SWIPE_THRESHOLD = 100;
 const SWIPE_VELOCITY_THRESHOLD = 100;
@@ -78,18 +295,18 @@ export class GesturesObserver extends GesturesObserverBase {
         this._detach();
 
         if (type & GestureTypes.tap || type & GestureTypes.doubleTap || type & GestureTypes.longPress) {
-            ensureTapAndDoubleTapGestureListenerClass();
-            this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListenerClass(this, this.target, type));
+            initializeTapAndDoubleTapGestureListener();
+            this._simpleGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new TapAndDoubleTapGestureListener(this, this.target, type));
         }
 
         if (type & GestureTypes.pinch) {
-            ensurePinchGestureListenerClass();
-            this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListenerClass(this, this.target));
+            initializePinchGestureListener();
+            this._scaleGestureDetector = new android.view.ScaleGestureDetector(target._context, new PinchGestureListener(this, this.target));
         }
 
         if (type & GestureTypes.swipe) {
-            ensureSwipeGestureListenerClass();
-            this._swipeGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new SwipeGestureListenerClass(this, this.target));
+            initializeSwipeGestureListener();
+            this._swipeGestureDetector = new android.support.v4.view.GestureDetectorCompat(target._context, new SwipeGestureListener(this, this.target));
         }
 
         if (type & GestureTypes.pan) {
@@ -182,57 +399,6 @@ function _executeCallback(observer: GesturesObserver, args: GestureEventData) {
     }
 }
 
-let TapAndDoubleTapGestureListenerClass;
-function ensureTapAndDoubleTapGestureListenerClass() {
-    if (TapAndDoubleTapGestureListenerClass) {
-        return;
-    }
-
-    class TapAndDoubleTapGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
-        private _observer: GesturesObserver;
-        private _target: View;
-        private _type: number;
-
-        constructor(observer: GesturesObserver, target: View, type: number) {
-            super();
-
-            this._observer = observer;
-            this._target = target;
-            this._type = type;
-            return global.__native(this);
-        }
-
-        public onSingleTapUp(motionEvent: android.view.MotionEvent): boolean {
-            if (this._type & GestureTypes.tap) {
-                let args = _getArgs(GestureTypes.tap, this._target, motionEvent);
-                _executeCallback(this._observer, args);
-            }
-            return true;
-        }
-
-        public onDoubleTap(motionEvent: android.view.MotionEvent): boolean {
-            if (this._type & GestureTypes.doubleTap) {
-                let args = _getArgs(GestureTypes.doubleTap, this._target, motionEvent);
-                _executeCallback(this._observer, args);
-            }
-            return true;
-        }
-
-        public onDown(motionEvent: android.view.MotionEvent): boolean {
-            return true;
-        }
-
-        public onLongPress(motionEvent: android.view.MotionEvent): void {
-            if (this._type & GestureTypes.longPress) {
-                let args = _getArgs(GestureTypes.longPress, this._target, motionEvent);
-                _executeCallback(this._observer, args);
-            }
-        }
-    }
-
-    TapAndDoubleTapGestureListenerClass = TapAndDoubleTapGestureListener;
-}
-
 class PinchGestureEventData implements PinchGestureEventData {
     public type = GestureTypes.pinch;
     public eventName = toString(GestureTypes.pinch);
@@ -253,155 +419,6 @@ class PinchGestureEventData implements PinchGestureEventData {
     getFocusY(): number {
         return this.android.getFocusY() / layout.getDisplayDensity();
     }
-}
-
-let PinchGestureListenerClass;
-function ensurePinchGestureListenerClass() {
-    if (PinchGestureListenerClass) {
-        return;
-    }
-
-    class PinchGestureListener extends android.view.ScaleGestureDetector.SimpleOnScaleGestureListener {
-        private _observer: GesturesObserver;
-        private _target: View;
-        private _scale: number;
-        private _density: number;
-
-        constructor(observer: GesturesObserver, target: View) {
-            super();
-
-            this._observer = observer;
-            this._target = target;
-            this._density = layout.getDisplayDensity();
-
-            return global.__native(this);
-        }
-
-        public onScaleBegin(detector: android.view.ScaleGestureDetector): boolean {
-            this._scale = detector.getScaleFactor();
-
-            let args = new PinchGestureEventData(
-                this._target,
-                detector,
-                this._scale,
-                this._target,
-                GestureStateTypes.began);
-
-            _executeCallback(this._observer, args);
-
-            return true;
-        }
-
-        public onScale(detector: android.view.ScaleGestureDetector): boolean {
-            this._scale *= detector.getScaleFactor();
-
-            let args = new PinchGestureEventData(
-                this._target,
-                detector,
-                this._scale,
-                this._target,
-                GestureStateTypes.changed);
-
-            _executeCallback(this._observer, args);
-            return true;
-        }
-
-        public onScaleEnd(detector: android.view.ScaleGestureDetector): void {
-            this._scale *= detector.getScaleFactor();
-
-            let args = new PinchGestureEventData(
-                this._target,
-                detector,
-                this._scale,
-                this._target,
-                GestureStateTypes.ended);
-
-            _executeCallback(this._observer, args);
-        }
-    }
-
-    PinchGestureListenerClass = PinchGestureListener;
-}
-
-let SwipeGestureListenerClass;
-function ensureSwipeGestureListenerClass() {
-    if (SwipeGestureListenerClass) {
-        return;
-    }
-
-    class SwipeGestureListener extends android.view.GestureDetector.SimpleOnGestureListener {
-        private _observer: GesturesObserver;
-        private _target: View;
-
-        constructor(observer: GesturesObserver, target: View) {
-            super();
-
-            this._observer = observer;
-            this._target = target;
-
-            return global.__native(this);
-        }
-
-        public onDown(motionEvent: android.view.MotionEvent): boolean {
-            return true;
-        }
-
-        public onFling(initialEvent: android.view.MotionEvent, currentEvent: android.view.MotionEvent, velocityX: number, velocityY: number): boolean {
-            let result = false;
-            let args: SwipeGestureEventData;
-            try {
-                let deltaY = currentEvent.getY() - initialEvent.getY();
-                let deltaX = currentEvent.getX() - initialEvent.getX();
-
-                if (Math.abs(deltaX) > Math.abs(deltaY)) {
-
-                    if (Math.abs(deltaX) > SWIPE_THRESHOLD
-                        && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
-
-                        if (deltaX > 0) {
-
-                            args = _getSwipeArgs(SwipeDirection.right, this._target, initialEvent, currentEvent);
-                            _executeCallback(this._observer, args);
-
-                            result = true;
-                        } else {
-
-                            args = _getSwipeArgs(SwipeDirection.left, this._target, initialEvent, currentEvent);
-                            _executeCallback(this._observer, args);
-
-                            result = true;
-                        }
-                    }
-
-                } else {
-
-                    if (Math.abs(deltaY) > SWIPE_THRESHOLD
-                        && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
-
-                        if (deltaY > 0) {
-
-                            args = _getSwipeArgs(SwipeDirection.down, this._target, initialEvent, currentEvent);
-                            _executeCallback(this._observer, args);
-
-                            result = true;
-                        } else {
-
-                            args = _getSwipeArgs(SwipeDirection.up, this._target, initialEvent, currentEvent);
-                            _executeCallback(this._observer, args);
-
-                            result = true;
-                        }
-                    }
-                }
-            } catch (ex) {
-                //
-            }
-
-            return result;
-        }
-    }
-
-    SwipeGestureListenerClass = SwipeGestureListener;
 }
 
 class CustomPanGestureDetector {

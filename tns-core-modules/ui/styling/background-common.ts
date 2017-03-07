@@ -1,6 +1,10 @@
+// Deifinitions.
 import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
-import { Color, BackgroundRepeat } from "ui/core/view";
+import { BackgroundRepeat } from "ui/core/view";
 import { ImageSource } from "image-source";
+
+// Types.
+import { Color } from "color";
 import { CSSValue, parse as cssParse } from "css-value";
 
 export class Background implements BackgroundDefinition {

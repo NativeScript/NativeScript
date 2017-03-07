@@ -10,17 +10,17 @@ const SYSTEM_UI_FLAG_LIGHT_STATUS_BAR = 0x00002000;
 const STATUS_BAR_LIGHT_BCKG = -657931;
 const STATUS_BAR_DARK_BCKG = 1711276032;
 
-interface DialogFragmentClass {
+interface DialogFragment {
     new (owner: Page, fullscreen: boolean, shownCallback: () => void, dismissCallback: () => void): android.app.DialogFragment;
 }
-let DialogFragmentClass: DialogFragmentClass;
+let DialogFragment: DialogFragment;
 
-function ensureDialogFragmentClass() {
-    if (DialogFragmentClass) {
+function initializeDialogFragment() {
+    if (DialogFragment) {
         return;
     }
 
-    class DialogFragmentClassInner extends android.app.DialogFragment {
+    class DialogFragmentImpl extends android.app.DialogFragment {
         constructor(
             private _owner: Page,
             private _fullscreen: boolean,
@@ -83,7 +83,7 @@ function ensureDialogFragmentClass() {
 
     };
 
-    DialogFragmentClass = DialogFragmentClassInner;
+    DialogFragment = DialogFragmentImpl;
 }
 
 export class Page extends PageBase {
@@ -158,9 +158,9 @@ export class Page extends PageBase {
         this._setupUI(parent._context);
         this._isAddedToNativeVisualTree = true;
 
-        ensureDialogFragmentClass();
+        initializeDialogFragment();
 
-        this._dialogFragment = new DialogFragmentClass(this, !!fullscreen, () => this._raiseShownModallyEvent(), () => this.closeModal());
+        this._dialogFragment = new DialogFragment(this, !!fullscreen, () => this._raiseShownModallyEvent(), () => this.closeModal());
 
         super._raiseShowingModallyEvent();
 

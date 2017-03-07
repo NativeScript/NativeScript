@@ -490,6 +490,18 @@
                 public static getLetterspacing(view: android.view.View): number;
                 public static setLetterspacing(view: android.view.View, value: number): void;
 
+                public static setBackground(view: android.view.View, background: android.graphics.drawable.Drawable): void;
+            }
+
+            export class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {
+                public onTouch(view: android.view.View, motionEvent: android.view.MotionEvent): boolean;
+            }
+
+            export class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
+            }
+
+            export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
+                constructor(family: string, typeface: android.graphics.Typeface);
             }
         }
     }

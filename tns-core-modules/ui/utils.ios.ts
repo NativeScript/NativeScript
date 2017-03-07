@@ -1,4 +1,4 @@
-﻿import {View} from "ui/core/view";
+﻿import { View } from "ui/core/view";
 import * as utils from "utils/utils";
 import getter = utils.ios.getter;
 

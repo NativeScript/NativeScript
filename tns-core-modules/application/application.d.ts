@@ -7,37 +7,160 @@ declare module "application" {
     /**
      * String value used when hooking to launch event.
      */
-    export var launchEvent: string;
+    export const launchEvent: string;
 
     /**
      * String value used when hooking to uncaughtError event.
      */
-    export var uncaughtErrorEvent: string;
+    export const uncaughtErrorEvent: string;
 
     /**
      * String value used when hooking to suspend event.
      */
-    export var suspendEvent: string;
+    export const suspendEvent: string;
 
     /**
      * String value used when hooking to resume event.
      */
-    export var resumeEvent: string;
+    export const resumeEvent: string;
 
     /**
      * String value used when hooking to exitevent.
      */
-    export var exitEvent: string;
+    export const exitEvent: string;
 
     /**
      * String value used when hooking to lowMemory event.
      */
-    export var lowMemoryEvent: string;
+    export const lowMemoryEvent: string;
 
     /**
      * String value used when hooking to orientationChanged event.
      */
-    export var orientationChangedEvent: string;
+    export const orientationChangedEvent: string;
+
+    /**
+     * The main page path (without the file extension) for the application starting from the application root. 
+     * For example if you have page called "main.js" in a folder called "subFolder" and your root folder is "app" you can specify mainModule like this:
+     * var application = require("application");
+     * application.mainModule = "app/subFolder/main";
+     * application.start();
+     */
+    export let mainModule: string;
+
+    /**
+     * The main navigation entry to be used when loading the main Page.
+     */
+    export let mainEntry: NavigationEntry;
+
+	/**
+	 * An application level static resources.
+	 */
+    export let resources: any;
+
+    /**
+     * The application level css file name (starting from the application root). Used to set css across all pages.
+     * Css will be applied for every page and page css will be applied after.
+     */
+    export let cssFile: string;
+
+    /**
+     * Sets application level static resources.
+     */
+    export function setResources(resources: any);
+
+    /**
+     * Sets css file name for the application. 
+     */
+    export function setCssFileName(cssFile: string): void;
+
+    export function addCss(cssText: string): void;
+
+    /**
+     * Notifies all the registered listeners for the event provided in the data.eventName.
+     * @param data The data associated with the event.
+     */
+    export function notify(data: any): void;
+
+    /**
+     * Call this method to start the application. Important: All code after this method call will not be executed!
+     */
+    export function start(entry?: NavigationEntry);
+
+    /**
+     * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
+     * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend"). 
+     * @param callback - Callback function which will be executed when event is raised.
+     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+     */
+    export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
+
+    /**
+     * Shortcut alias to the removeEventListener method.
+     * @param eventNames - String corresponding to events (e.g. "onLaunch").
+     * @param callback - Callback function which will be removed.
+     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
+     */
+    export function off(eventNames: string, callback?: any, thisArg?: any);
+
+    /**
+     * This event is raised when application css is changed.
+     */
+    export function on(event: "cssChanged", callback: (args: CssChangedEventData) => void, thisArg?: any);
+
+    /**
+     * Event raised then livesync operation is performed.
+     */
+    export function on(event: "livesync", callback: (args: EventData) => void);
+
+    /**
+     * This event is raised on application launchEvent.
+     */
+    export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised when the Application is suspended.
+     */
+    export function on(event: "suspend", callback: (args: ApplicationEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised when the Application is resumed after it has been suspended.
+     */
+    export function on(event: "resume", callback: (args: ApplicationEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised when the Application is about to exitEvent.
+     */
+    export function on(event: "exit", callback: (args: ApplicationEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised when there is low memory on the target device.
+     */
+    export function on(event: "lowMemory", callback: (args: ApplicationEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised when an uncaught error occurs while the application is running.
+     */
+    export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventData) => void, thisArg?: any);
+
+    /**
+     * This event is raised the orientation of the current device has changed.
+     */
+    export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
+
+    /**
+     * This is the Android-specific application object instance.
+     * Encapsulates methods and properties specific to the Android platform.
+     * Will be undefined when TargetOS is iOS.
+     */
+    export const android: AndroidApplication;
+
+    /**
+     * This is the iOS-specific application object instance.
+     * Encapsulates methods and properties specific to the iOS platform.
+     * Will be undefined when TargetOS is Android.
+     */
+    export const ios: iOSApplication;
 
     /**
      * An extended JavaScript Error which will have the nativeError property initialized in case the error is caused by executing platform-specific code.
@@ -111,135 +234,6 @@ declare module "application" {
         cssFile?: string;
         cssText?: string;
     }
-
-    /**
-     * The main page path (without the file extension) for the application starting from the application root. 
-     * For example if you have page called "main.js" in a folder called "subFolder" and your root folder is "app" you can specify mainModule like this:
-     * var application = require("application");
-     * application.mainModule = "app/subFolder/main";
-     * application.start();
-     */
-    export var mainModule: string;
-
-    /**
-     * The main navigation entry to be used when loading the main Page.
-     */
-    export var mainEntry: NavigationEntry;
-
-	/**
-	 * An application level static resources.
-	 */
-    export var resources: any;
-
-    /**
-     * Sets application level static resources.
-     */
-    export function setResources(resources: any);
-
-    /**
-     * The application level css file name (starting from the application root). Used to set css across all pages.
-     * Css will be applied for every page and page css will be applied after.
-     */
-    export var cssFile: string;
-
-    /**
-     * Sets css file name for the application. 
-     */
-    export function setCssFileName(cssFile: string): void;
-
-    export function addCss(cssText: string): void;
-
-    /**
-     * This event is raised when application css is changed.
-     */
-    export function on(event: "cssChanged", callback: (args: CssChangedEventData) => void, thisArg?: any);
-
-    /**
-     * Event raised then livesync operation is performed.
-     */
-    export function on(event: "livesync", callback: (args: EventData) => void);
-
-    /**
-     * Call this method to start the application. Important: All code after this method call will not be executed!
-     */
-    export function start(entry?: NavigationEntry);
-
-    /**
-     * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
-     * @param eventNames - String corresponding to events (e.g. "onLaunch"). Optionally could be used more events separated by `,` (e.g. "onLaunch", "onSuspend"). 
-     * @param callback - Callback function which will be executed when event is raised.
-     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
-     */
-    export function on(eventNames: string, callback: (data: any) => void, thisArg?: any);
-
-    /**
-     * Shortcut alias to the removeEventListener method.
-     * @param eventNames - String corresponding to events (e.g. "onLaunch").
-     * @param callback - Callback function which will be removed.
-     * @param thisArg - An optional parameter which will be used as `this` context for callback execution.
-     */
-    export function off(eventNames: string, callback?: any, thisArg?: any);
-
-    /**
-     * Notifies all the registered listeners for the event provided in the data.eventName.
-     * @param data The data associated with the event.
-     */
-    export function notify(data: any): void;
-
-    /**
-     * Checks whether a listener is registered for the specified event name.
-     * @param eventName The name of the event to check for.
-     */
-    export function hasListeners(eventName: string): boolean;
-
-    /**
-     * This event is raised on application launchEvent.
-     */
-    export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised when the Application is suspended.
-     */
-    export function on(event: "suspend", callback: (args: ApplicationEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised when the Application is resumed after it has been suspended.
-     */
-    export function on(event: "resume", callback: (args: ApplicationEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised when the Application is about to exitEvent.
-     */
-    export function on(event: "exit", callback: (args: ApplicationEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised when there is low memory on the target device.
-     */
-    export function on(event: "lowMemory", callback: (args: ApplicationEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised when an uncaught error occurs while the application is running.
-     */
-    export function on(event: "uncaughtError", callback: (args: UnhandledErrorEventData) => void, thisArg?: any);
-
-    /**
-     * This event is raised the orientation of the current device has changed.
-     */
-    export function on(event: "orientationChanged", callback: (args: OrientationChangedEventData) => void, thisArg?: any);
-
-    /**
-     * This is the Android-specific application object instance.
-     * Encapsulates methods and properties specific to the Android platform.
-     * Will be undefined when TargetOS is iOS.
-     */
-    export let android: AndroidApplication;
-
-    /**
-     * This is the iOS-specific application object instance.
-     * Encapsulates methods and properties specific to the iOS platform.
-     * Will be undefined when TargetOS is Android.
-     */
-    export let ios: iOSApplication;
 
     /**
      * Data for the Android activity events.

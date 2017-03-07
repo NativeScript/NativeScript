@@ -185,16 +185,16 @@ export class Observable implements ObservableDefinition {
 }
 
 class ObservableFromObject extends Observable {
-    public _map: Map<string, Object> = new Map<string, Object>();
+    public _map = {};
 
     public set(name: string, value: any) {
-        const currentValue = this._map.get(name);
+        const currentValue = this._map[name];
         if (currentValue === value) {
             return;
         }
 
         const newValue = WrappedValue.unwrap(value);
-        this._map.set(name, newValue);
+        this._map[name] = newValue;
         this.notifyPropertyChange(name, newValue);
     }
 }
@@ -202,7 +202,7 @@ class ObservableFromObject extends Observable {
 function defineNewProperty(target: ObservableFromObject, propertyName: string): void {
     Object.defineProperty(target, propertyName, {
         get: function () {
-            return target._map.get(propertyName);
+            return target._map[propertyName];
         },
         set: function (value) {
             target.set(propertyName, value);

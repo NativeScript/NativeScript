@@ -1,15 +1,22 @@
-import { PercentLength, Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
-import { ad as androidBackground } from "ui/styling/background";
+// Definitions.
+import { Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
+import { GestureTypes, GestureEventData } from "ui/gestures";
+
+// Types.
+import { Background, ad as androidBackground } from "ui/styling/background";
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, visibilityProperty, opacityProperty,
-    minWidthProperty, minHeightProperty, Length,
-    widthProperty, heightProperty, marginLeftProperty, marginTopProperty,
-    marginRightProperty, marginBottomProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
-    rotateProperty, scaleXProperty, scaleYProperty,
-    translateXProperty, translateYProperty, zIndexProperty, backgroundInternalProperty,
-    Background, GestureTypes, GestureEventData,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, Visibility, HorizontalAlignment, VerticalAlignment
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent
 } from "./view-common";
+
+import {
+    Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
+    visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
+    minWidthProperty, minHeightProperty, widthProperty, heightProperty, 
+    marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, 
+    rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, 
+    zIndexProperty, backgroundInternalProperty
+} from "ui/styling/style-properties";
 
 export * from "./view-common";
 
@@ -17,49 +24,53 @@ const ANDROID = "_android";
 const NATIVE_VIEW = "_nativeView";
 const VIEW_GROUP = "_viewGroup";
 
-// TODO: Move this class into widgets.
-@Interfaces([android.view.View.OnTouchListener])
-class DisableUserInteractionListener extends java.lang.Object implements android.view.View.OnTouchListener {
-    constructor() {
-        super();
-        return global.__native(this);
-    }
-
-    onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
-        return true;
-    }
+interface TouchListener {
+    new (owner: View): android.view.View.OnTouchListener;
 }
 
-@Interfaces([android.view.View.OnTouchListener])
-class TouchListener extends java.lang.Object implements android.view.View.OnTouchListener {
-    constructor(private owner: WeakRef<View>) {
-        super();
-        return global.__native(this);
+let TouchListener: TouchListener;
+let disableUserInteractionListener: org.nativescript.widgets.DisableUserInteractionListener;
+
+function initializeDisabledListener(): void {
+    if (disableUserInteractionListener) {
+        return;
     }
 
-    onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
-        let owner = this.owner.get();
-        if (!owner) {
-            return false;
+    disableUserInteractionListener = new org.nativescript.widgets.DisableUserInteractionListener();
+}
+
+function initializeTouchListener(): void {
+    if (TouchListener) {
+        return;
+    }
+
+    @Interfaces([android.view.View.OnTouchListener])
+    class TouchListenerImpl extends java.lang.Object implements android.view.View.OnTouchListener {
+        constructor(private owner: View) {
+            super();
+            return global.__native(this);
         }
 
-        for (let type in owner._gestureObservers) {
-            let list = owner._gestureObservers[type];
-            for (let i = 0; i < list.length; i++) {
-                list[i].androidOnTouchEvent(event);
+        onTouch(view: android.view.View, event: android.view.MotionEvent): boolean {
+            const owner = this.owner;
+            for (let type in owner._gestureObservers) {
+                let list = owner._gestureObservers[type];
+                list.forEach(element => {
+                    element.androidOnTouchEvent(event);
+                });
             }
-        }
 
-        let nativeView = owner._nativeView;
-        if (!nativeView || !nativeView.onTouchEvent) {
-            return false;
-        }
+            let nativeView = owner._nativeView;
+            if (!nativeView || !nativeView.onTouchEvent) {
+                return false;
+            }
 
-        return nativeView.onTouchEvent(event);
+            return nativeView.onTouchEvent(event);
+        }
     }
-}
 
-const disableUserInteractionListener = new DisableUserInteractionListener();
+    TouchListener = TouchListenerImpl;
+}
 
 export class View extends ViewCommon {
     private touchListenerIsSet: boolean;
@@ -101,7 +112,8 @@ export class View extends ViewCommon {
                 this._nativeView.setClickable(true);
             }
 
-            this.touchListener = this.touchListener || new TouchListener(new WeakRef(this));
+            initializeTouchListener();
+            this.touchListener = this.touchListener || new TouchListener(this);
             this._nativeView.setOnTouchListener(this.touchListener);
         }
     }
@@ -311,6 +323,7 @@ export class View extends ViewCommon {
     }
     set [isUserInteractionEnabledProperty.native](value: boolean) {
         if (!value) {
+            initializeDisabledListener();
             // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
             this._nativeView.setOnTouchListener(disableUserInteractionListener);
         } else {
@@ -322,28 +335,28 @@ export class View extends ViewCommon {
         let nativeVisibility = this.nativeView.getVisibility();
         switch (nativeVisibility) {
             case android.view.View.VISIBLE:
-                return Visibility.VISIBLE;
+                return "visible";
             case android.view.View.INVISIBLE:
-                return Visibility.HIDDEN;
+                return "hidden";
             case android.view.View.GONE:
-                return Visibility.COLLAPSE;
+                return "collapse";
             default:
                 throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
         }
     }
     set [visibilityProperty.native](value: Visibility) {
         switch (value) {
-            case Visibility.VISIBLE:
+            case "visible":
                 this.nativeView.setVisibility(android.view.View.VISIBLE);
                 break;
-            case Visibility.HIDDEN:
+            case "hidden":
                 this.nativeView.setVisibility(android.view.View.INVISIBLE);
                 break;
-            case Visibility.COLLAPSE:
+            case "collapse":
                 this.nativeView.setVisibility(android.view.View.GONE);
                 break;
             default:
-                throw new Error(`Invalid visibility value: ${value}. Valid values are: "${Visibility.VISIBLE}", "${Visibility.HIDDEN}", "${Visibility.COLLAPSE}".`);
+                throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);
         }
     }
 
@@ -442,102 +455,6 @@ export class View extends ViewCommon {
     }
 }
 
-type NativeSetter = { (view: android.view.View, value: number): void };
-type NativeGetter = { (view: android.view.View): number };
-const percentNotSupported = (view: android.view.View, value: number) => { throw new Error("PercentLength is not supported."); };
-interface NativePercentLengthPropertyOptions {
-    key: string | symbol;
-    auto?: number;
-    getPixels: NativeGetter;
-    setPixels: NativeSetter;
-    setPercent?: NativeSetter
-}
-function createNativePercentLengthProperty({key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported}: NativePercentLengthPropertyOptions) {
-    Object.defineProperty(View.prototype, key, {
-        get: function (this: View): PercentLength {
-            const value = getPixels(this.nativeView);
-            if (value == auto) { // tslint:disable-line
-                return "auto";
-            } else {
-                return { value, unit: "px" };
-            }
-        },
-        set: function (this: View, length: PercentLength) {
-            if (length == "auto") { // tslint:disable-line
-                setPixels(this.nativeView, auto);
-            } else if (typeof length === "number") {
-                setPixels(this.nativeView, length * layout.getDisplayDensity());
-            } else if (length.unit == "dip") { // tslint:disable-line
-                setPixels(this.nativeView, length.value * layout.getDisplayDensity());
-            } else if (length.unit == "px") { // tslint:disable-line
-                setPixels(this.nativeView, length.value);
-            } else if (length.unit == "%") { // tslint:disable-line
-                setPercent(this.nativeView, length.value);
-            } else {
-                throw new Error(`Unsupported PercentLength ${length}`);
-            }
-        }
-    });
-}
-
-const ViewHelper = org.nativescript.widgets.ViewHelper;
-
-createNativePercentLengthProperty({
-    key: marginTopProperty.native,
-    getPixels: ViewHelper.getMarginTop,
-    setPixels: ViewHelper.setMarginTop,
-    setPercent: ViewHelper.setMarginTopPercent
-});
-
-createNativePercentLengthProperty({
-    key: marginRightProperty.native,
-    getPixels: ViewHelper.getMarginRight,
-    setPixels: ViewHelper.setMarginRight,
-    setPercent: ViewHelper.setMarginRightPercent
-});
-
-createNativePercentLengthProperty({
-    key: marginBottomProperty.native,
-    getPixels: ViewHelper.getMarginBottom,
-    setPixels: ViewHelper.setMarginBottom,
-    setPercent: ViewHelper.setMarginBottomPercent
-});
-
-createNativePercentLengthProperty({
-    key: marginLeftProperty.native,
-    getPixels: ViewHelper.getMarginLeft,
-    setPixels: ViewHelper.setMarginLeft,
-    setPercent: ViewHelper.setMarginLeftPercent
-});
-
-createNativePercentLengthProperty({
-    key: widthProperty.native,
-    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: ViewHelper.getWidth,
-    setPixels: ViewHelper.setWidth,
-    setPercent: ViewHelper.setWidthPercent
-});
-
-createNativePercentLengthProperty({
-    key: heightProperty.native,
-    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: ViewHelper.getHeight,
-    setPixels: ViewHelper.setHeight,
-    setPercent: ViewHelper.setHeightPercent
-});
-
-createNativePercentLengthProperty({
-    key: "_minWidthNative",
-    getPixels: ViewHelper.getMinWidth,
-    setPixels: ViewHelper.setMinWidth
-});
-
-createNativePercentLengthProperty({
-    key: "_minHeightNative",
-    getPixels: ViewHelper.getMinHeight,
-    setPixels: ViewHelper.setMinHeight
-});
-
 export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
     private _viewGroup: android.view.ViewGroup;
 
@@ -595,3 +512,97 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         }
     }
 }
+
+type NativeSetter = { (view: android.view.View, value: number): void };
+type NativeGetter = { (view: android.view.View): number };
+const percentNotSupported = (view: android.view.View, value: number) => { throw new Error("PercentLength is not supported."); };
+interface NativePercentLengthPropertyOptions {
+    key: string | symbol;
+    auto?: number;
+    getPixels: NativeGetter;
+    setPixels: NativeSetter;
+    setPercent?: NativeSetter
+}
+function createNativePercentLengthProperty({ key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported }: NativePercentLengthPropertyOptions) {
+    Object.defineProperty(View.prototype, key, {
+        get: function (this: View): PercentLength {
+            const value = getPixels(this.nativeView);
+            if (value == auto) { // tslint:disable-line
+                return "auto";
+            } else {
+                return { value, unit: "px" };
+            }
+        },
+        set: function (this: View, length: PercentLength) {
+            if (length == "auto") { // tslint:disable-line
+                setPixels(this.nativeView, auto);
+            } else if (typeof length === "number") {
+                setPixels(this.nativeView, length * layout.getDisplayDensity());
+            } else if (length.unit == "dip") { // tslint:disable-line
+                setPixels(this.nativeView, length.value * layout.getDisplayDensity());
+            } else if (length.unit == "px") { // tslint:disable-line
+                setPixels(this.nativeView, length.value);
+            } else if (length.unit == "%") { // tslint:disable-line
+                setPercent(this.nativeView, length.value);
+            } else {
+                throw new Error(`Unsupported PercentLength ${length}`);
+            }
+        }
+    });
+}
+
+createNativePercentLengthProperty({
+    key: marginTopProperty.native,
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginTop,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginTop,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginTopPercent
+});
+
+createNativePercentLengthProperty({
+    key: marginRightProperty.native,
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginRight,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginRight,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginRightPercent
+});
+
+createNativePercentLengthProperty({
+    key: marginBottomProperty.native,
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginBottom,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginBottom,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginBottomPercent
+});
+
+createNativePercentLengthProperty({
+    key: marginLeftProperty.native,
+    getPixels: org.nativescript.widgets.ViewHelper.getMarginLeft,
+    setPixels: org.nativescript.widgets.ViewHelper.setMarginLeft,
+    setPercent: org.nativescript.widgets.ViewHelper.setMarginLeftPercent
+});
+
+createNativePercentLengthProperty({
+    key: widthProperty.native,
+    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+    getPixels: org.nativescript.widgets.ViewHelper.getWidth,
+    setPixels: org.nativescript.widgets.ViewHelper.setWidth,
+    setPercent: org.nativescript.widgets.ViewHelper.setWidthPercent
+});
+
+createNativePercentLengthProperty({
+    key: heightProperty.native,
+    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+    getPixels: org.nativescript.widgets.ViewHelper.getHeight,
+    setPixels: org.nativescript.widgets.ViewHelper.setHeight,
+    setPercent: org.nativescript.widgets.ViewHelper.setHeightPercent
+});
+
+createNativePercentLengthProperty({
+    key: "_minWidthNative",
+    getPixels: org.nativescript.widgets.ViewHelper.getMinWidth,
+    setPixels: org.nativescript.widgets.ViewHelper.setMinWidth
+});
+
+createNativePercentLengthProperty({
+    key: "_minHeightNative",
+    getPixels: org.nativescript.widgets.ViewHelper.getMinHeight,
+    setPixels: org.nativescript.widgets.ViewHelper.setMinHeight
+});

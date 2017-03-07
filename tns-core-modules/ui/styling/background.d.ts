@@ -1,6 +1,7 @@
 declare module "ui/styling/background" {
     import { ImageSource } from "image-source";
-    import { View, Color, BackgroundRepeat } from "ui/core/view";
+    import { Color } from "color";
+    import { View, BackgroundRepeat } from "ui/core/view";
 
     export interface BackgroundDrawParams {
         repeatX: boolean;

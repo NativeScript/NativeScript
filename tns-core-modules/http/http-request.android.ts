@@ -6,7 +6,12 @@ import * as platformModule from "platform";
 import * as fsModule from "file-system";
 
 // this is imported for definition purposes only
-import * as http from "http";
+import { Headers, HttpRequestOptions, HttpResponse } from "http";
+
+export const enum HttpResponseEncoding {
+    UTF8,
+    GBK
+}
 
 function parseJSON(source: string): any {
     var src = source.trim();
@@ -58,7 +63,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     }
 
     // read the headers
-    var headers: http.Headers = {};
+    var headers: Headers = {};
     if (result.headers) {
         var jHeaders = result.headers;
         var length = jHeaders.size();
@@ -66,15 +71,14 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
         var pair: org.nativescript.widgets.Async.Http.KeyValuePair;
         for (i = 0; i < length; i++) {
             pair = jHeaders.get(i);
-
-            (<any>http).addHeader(headers, pair.key, pair.value);
+            addHeader(headers, pair.key, pair.value);
         }
     }
 
     callbacks.resolveCallback({
         content: {
             raw: result.raw,
-            toString: (encoding?: http.HttpResponseEncoding) => {
+            toString: (encoding?: HttpResponseEncoding) => {
                 let str: string;
                 if (encoding) {
                     str = decodeResponse(result.raw, encoding);
@@ -87,7 +91,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                     throw new Error("Response content may not be converted to string");
                 }
             },
-            toJSON: (encoding?: http.HttpResponseEncoding) => {
+            toJSON: (encoding?: HttpResponseEncoding) => {
                 let str: string;
                 if (encoding) {
                     str = decodeResponse(result.raw, encoding);
@@ -136,7 +140,7 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
     });
 }
 
-function buildJavaOptions(options: http.HttpRequestOptions) {
+function buildJavaOptions(options: HttpRequestOptions) {
     if (typeof options.url !== "string") {
         throw new Error("Http request must provide a valid url.");
     }
@@ -179,13 +183,13 @@ function buildJavaOptions(options: http.HttpRequestOptions) {
     return javaOptions;
 }
 
-export function request(options: http.HttpRequestOptions): Promise<http.HttpResponse> {
+export function request(options: HttpRequestOptions): Promise<HttpResponse> {
     if (options === undefined || options === null) {
         // TODO: Shouldn't we throw an error here - defensive programming
         return;
     }
-    return new Promise<http.HttpResponse>((resolve, reject) => {
 
+    return new Promise<HttpResponse>((resolve, reject) => {
         try {
             // initialize the options
             var javaOptions = buildJavaOptions(options);
@@ -210,10 +214,22 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
     });
 }
 
-function decodeResponse(raw: any, encoding?: http.HttpResponseEncoding) {
+function decodeResponse(raw: any, encoding?: HttpResponseEncoding) {
     let charsetName = "UTF-8";
-    if (encoding === http.HttpResponseEncoding.GBK) {
+    if (encoding === HttpResponseEncoding.GBK) {
         charsetName = 'GBK';
     }
     return raw.toString(charsetName)
+}
+
+export function addHeader(headers: Headers, key: string, value: string): void {
+    if (!headers[key]) {
+        headers[key] = value;
+    } else if (Array.isArray(headers[key])) {
+        (<string[]>headers[key]).push(value);
+    } else {
+        let values: string[] = [<string>headers[key]];
+        values.push(value);
+        headers[key] = values;
+    }
 }

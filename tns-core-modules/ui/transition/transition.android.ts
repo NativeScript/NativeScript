@@ -1,6 +1,9 @@
-﻿import { Transition as TransitionDefinition } from "ui/transition";
-import { NavigationTransition, BackstackEntry, topmost } from "ui/frame";
+﻿// Definitions.
+import { Transition as TransitionDefinition } from "ui/transition";
 import { Page } from "ui/page";
+import { NavigationTransition, BackstackEntry } from "ui/frame";
+
+// Types.
 import { getClass } from "utils/types";
 import { device } from "platform";
 import { _resolveAnimationCurve } from "ui/animation";
@@ -45,10 +48,10 @@ interface ExpandedFragment {
     isDestroyed: boolean;
 }
 
-let enterFakeResourceId = -10;
-let exitFakeResourceId = -20;
-let popEnterFakeResourceId = -30;
-let popExitFakeResourceId = -40;
+const enterFakeResourceId = -10;
+const exitFakeResourceId = -20;
+const popEnterFakeResourceId = -30;
+const popExitFakeResourceId = -40;
 
 export module AndroidTransitionType {
     export const enter: string = "enter";
@@ -129,7 +132,7 @@ export function _clearForwardTransitions(fragment: any): void {
     }
 }
 
-export function _setAndroidFragmentTransitions(navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void {
+export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: android.app.FragmentTransaction): void {
     traceWrite(`Setting Android Fragment Transitions...`, traceCategories.Transition);
     let name;
     if (navigationTransition.name) {
@@ -142,7 +145,7 @@ export function _setAndroidFragmentTransitions(navigationTransition: NavigationT
     // The exit transition of the current fragment ends immediately, the page UI is removed from the visual tree
     // and a white spot is left in its place making the transition ugly. 
     // So we will use the "old" pre-Lollipop transitions in this particular case.
-    if (topmost().android.cachePagesOnNavigate && _sdkVersion() === 23) {
+    if (cachePagesOnNavigate && _sdkVersion() === 23) {
         useLollipopTransition = false;
     }
 

@@ -2,21 +2,33 @@
 
 export * from "./time-picker-common";
 
-@Interfaces([android.widget.TimePicker.OnTimeChangedListener])
-class TimeChangedListener extends java.lang.Object implements android.widget.TimePicker.OnTimeChangedListener {
-    constructor(public owner: WeakRef<TimePicker>) {
-        super();
-        return global.__native(this);
+interface TimeChangedListener {
+    new (owner: TimePicker): android.widget.TimePicker.OnTimeChangedListener;
+}
+
+let TimeChangedListener: TimeChangedListener;
+
+function initializeTimeChangedListener(): void {
+    if (TimeChangedListener) {
+        return;
     }
 
-    onTimeChanged(picker: android.widget.TimePicker, hour: number, minute: number): void {
-        let timePicker = this.owner.get();
-        if (timePicker) {
+    @Interfaces([android.widget.TimePicker.OnTimeChangedListener])
+    class TimeChangedListenerImpl extends java.lang.Object implements android.widget.TimePicker.OnTimeChangedListener {
+        constructor(public owner: TimePicker) {
+            super();
+            return global.__native(this);
+        }
+
+        onTimeChanged(picker: android.widget.TimePicker, hour: number, minute: number): void {
+            const timePicker = this.owner;
             let validTime = getValidTime(timePicker, hour, minute);
             timePicker._setNativeValueSilently(validTime.hour, validTime.minute);
             timeProperty.nativeValueChange(timePicker, new Date(0, 0, 0, validTime.hour, validTime.minute));
         }
     }
+
+    TimeChangedListener = TimeChangedListenerImpl;
 }
 
 export class TimePicker extends TimePickerBase {
@@ -24,8 +36,9 @@ export class TimePicker extends TimePickerBase {
     private _listener: android.widget.TimePicker.OnTimeChangedListener;
 
     public _createNativeView() {
+        initializeTimeChangedListener();
         this._android = new android.widget.TimePicker(this._context);
-        this._listener = this._listener || new TimeChangedListener(new WeakRef(this));
+        this._listener = this._listener || new TimeChangedListener(this);
         this._android.setOnTimeChangedListener(this._listener);
 
         let c = java.util.Calendar.getInstance();

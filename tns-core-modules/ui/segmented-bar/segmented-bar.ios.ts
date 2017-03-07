@@ -1,6 +1,7 @@
-﻿import {
+﻿import { Font } from "ui/styling/font";
+import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, Color, Font
+    colorProperty, fontInternalProperty, Color
 } from "./segmented-bar-common";
 
 import { ios } from "utils/utils";

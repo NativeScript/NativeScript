@@ -1,22 +1,29 @@
 ﻿import { BindingOptions } from "ui/core/bindable";
-import { Observable, PropertyChangeData } from "data/observable";
+import { ViewBase } from "ui/core/view-base";
+
+import { unsetValue } from "ui/core/properties";
+import { Observable, WrappedValue, PropertyChangeData, EventData } from "data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
-import types = require("utils/types");
-import bindingBuilder = require("../builder/binding-builder");
-import { ViewBase, isEventOrGesture, unsetValue } from "ui/core/view-base";
+import { bindingConstants, parentsRegex } from "../builder/binding-builder";
+import { escapeRegexSymbols } from "utils/utils";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet, messageType as traceMessageType } from "trace";
+import * as types from "utils/types";
+
 import * as application from "application";
 import * as polymerExpressions from "js-libs/polymer-expressions";
-import * as utils from "utils/utils";
 
-import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
+export {
+    Observable, WrappedValue, PropertyChangeData, EventData,
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet
+};
 
-let contextKey = "context";
+const contextKey = "context";
 // this regex is used to get parameters inside [] for example:
 // from $parents['ListView'] will return 'ListView'
 // from $parents[1] will return 1
-let paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
+const paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
 
-let bc = bindingBuilder.bindingConstants;
+const bc = bindingConstants;
 
 const emptyArray = [];
 function getProperties(property: string): Array<string> {
@@ -25,8 +32,8 @@ function getProperties(property: string): Array<string> {
         // first replace all '$parents[..]' with a safe string
         // second removes all ] since they are not important for property access and not needed 
         // then split properties either on '.' or '['
-        let parentsMatches = property.match(bindingBuilder.parentsRegex);
-        result = property.replace(bindingBuilder.parentsRegex, "parentsMatch")
+        const parentsMatches = property.match(parentsRegex);
+        result = property.replace(parentsRegex, "parentsMatch")
             .replace(/\]/g, "")
             .split(/\.|\[/);
 
@@ -39,6 +46,35 @@ function getProperties(property: string): Array<string> {
     }
 
     return result;
+}
+
+export function getEventOrGestureName(name: string): string {
+    return name.indexOf("on") === 0 ? name.substr(2, name.length - 2) : name;
+}
+
+// NOTE: method fromString from "ui/gestures";
+export function isGesture(eventOrGestureName: string): boolean {
+    let t = eventOrGestureName.trim().toLowerCase();
+    return t === "tap" 
+        || t === "doubletap"
+        || t === "pinch"
+        || t === "pan"
+        || t === "swipe"
+        || t === "rotation"
+        || t === "longpress"
+        || t === "touch";
+}
+
+// TODO: Make this instance function so that we dont need public statc tapEvent = "tap"
+// in controls. They will just override this one and provide their own event support.
+export function isEventOrGesture(name: string, view: ViewBase): boolean {
+    if (typeof name === "string") {
+        let eventOrGestureName = getEventOrGestureName(name);
+        let evt = `${eventOrGestureName}Event`;
+
+        return view.constructor && evt in view.constructor || isGesture(eventOrGestureName.toLowerCase());
+    }
+    return false;
 }
 
 export class Binding {
@@ -82,8 +118,9 @@ export class Binding {
     public loadedHandlerVisualTreeBinding(args) {
         let target = args.object;
         target.off("loaded", this.loadedHandlerVisualTreeBinding, this);
-        if (!types.isNullOrUndefined(target.bindingContext)) {
-            this.update(target.bindingContext);
+        const context = target.bindingContext;
+        if (context !== undefined && context !== null) {
+            this.update(context);
         }
     };
 
@@ -262,7 +299,7 @@ export class Binding {
         // text="{{ sourceProperty = $parents['ListView'].test, expression = $parents['ListView'].test + 2}}"
         // update expression will be '$newPropertyValue + 2'
         // then on expression execution the new value will be taken and target property will be updated with the value of the expression.
-        let escapedSourceProperty = utils.escapeRegexSymbols(this.options.sourceProperty);
+        let escapedSourceProperty = escapeRegexSymbols(this.options.sourceProperty);
         let expRegex = new RegExp(escapedSourceProperty, 'g');
         let resultExp = this.options.expression.replace(expRegex, bc.newPropertyValueKey);
         return resultExp;
@@ -421,7 +458,7 @@ export class Binding {
             }
         }
 
-        let parentsArray = expression.match(bindingBuilder.parentsRegex);
+        let parentsArray = expression.match(parentsRegex);
         if (parentsArray) {
             for (let i = 0; i < parentsArray.length; i++) {
                 parentViewAndIndex = this.getParentView(this.target.get(), parentsArray[i]);
@@ -486,7 +523,7 @@ export class Binding {
     }
 
     private getParentView(target: any, property: string): { view: ViewBase, index: number } {
-        if (!target || !(target instanceof ViewBase)) {
+        if (!target) {
             return { view: null, index: null };
         }
 
@@ -545,20 +582,17 @@ export class Binding {
         this.updating = true;
 
         try {
-            const isView = optionsInstance instanceof ViewBase
-            if (isView &&
-                isEventOrGesture(options.property, <any>optionsInstance) &&
+            if (isEventOrGesture(options.property, <any>optionsInstance) &&
                 types.isFunction(value)) {
                 // calling off method with null as handler will remove all handlers for options.property event
                 optionsInstance.off(options.property, null, optionsInstance.bindingContext);
                 optionsInstance.on(options.property, value, optionsInstance.bindingContext);
-            } else if (!isView && optionsInstance instanceof Observable) {
+            } else if (optionsInstance instanceof Observable) {
                 optionsInstance.set(options.property, value);
             } else {
                 optionsInstance[options.property] = value;
             }
-        }
-        catch (ex) {
+        } catch (ex) {
             traceWrite("Binding error while setting property " + options.property + " of " + optionsInstance + ": " + ex,
                 traceCategories.Binding,
                 traceMessageType.error);

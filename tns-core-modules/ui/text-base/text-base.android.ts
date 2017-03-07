@@ -1,9 +1,11 @@
-﻿import {
+﻿import { Font } from "ui/styling/font";
+
+import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
-    whiteSpaceProperty, Font, Color, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
+    whiteSpaceProperty, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    layout, Span
+    layout, Span, Color
 } from "./text-base-common";
 
 import { _isSet as isSet } from "ui/core/properties";
@@ -331,8 +333,7 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
     const fontFamily = span.fontFamily;
     if (fontFamily) {
         const font = new Font(fontFamily, 0, (italic) ? "italic" : "normal", (bold) ? "bold" : "normal");
-        ensureCustomTypefaceSpanClass();
-        const typefaceSpan: android.text.style.TypefaceSpan = new CustomTypefaceSpanClass(fontFamily, font.getAndroidTypeface());
+        const typefaceSpan: android.text.style.TypefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(fontFamily, font.getAndroidTypeface());
         ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
@@ -375,49 +376,4 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
             ssb.setSpan(new android.text.style.StrikethroughSpan(), start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
-}
-
-var CustomTypefaceSpanClass;
-function ensureCustomTypefaceSpanClass() {
-    if (CustomTypefaceSpanClass) {
-        return;
-    }
-
-    // TODO: Move this class in widgets.
-    class CustomTypefaceSpan extends android.text.style.TypefaceSpan {
-        private typeface: android.graphics.Typeface;
-
-        constructor(family: string, typeface: android.graphics.Typeface) {
-            super(family);
-            this.typeface = typeface;
-            return global.__native(this);
-        }
-
-        public updateDrawState(ds: android.text.TextPaint): void {
-            this.applyCustomTypeFace(ds);
-        }
-
-        public updateMeasureState(paint: android.text.TextPaint): void {
-            this.applyCustomTypeFace(paint);
-        }
-
-        private applyCustomTypeFace(paint: android.text.TextPaint) {
-            const old = paint.getTypeface();
-            const oldStyle = old === null ? 0 : old.getStyle();
-
-            const typeface = this.typeface;
-            let fake = oldStyle & ~typeface.getStyle();
-            if ((fake & android.graphics.Typeface.BOLD) !== 0) {
-                paint.setFakeBoldText(true);
-            }
-
-            if ((fake & android.graphics.Typeface.ITALIC) !== 0) {
-                paint.setTextSkewX(-0.25);
-            }
-
-            paint.setTypeface(typeface);
-        }
-    }
-
-    CustomTypefaceSpanClass = CustomTypefaceSpan;
 }
