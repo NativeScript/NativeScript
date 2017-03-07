@@ -17,7 +17,7 @@ export module ad {
         return SDK;
     }
 
-    let _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable>();
+    let _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable.ConstantState>();
 
     function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
         return (
@@ -37,6 +37,12 @@ export module ad {
         let background = view.style.backgroundInternal;
         let backgroundDrawable = nativeView.getBackground();
         let cache = <CacheLayerType>view._nativeView;
+        let viewClass = getClass(view);
+
+        // always cache the default background constant state.
+        if (!_defaultBackgrounds.has(viewClass) && !isNullOrUndefined(backgroundDrawable)) {
+            _defaultBackgrounds.set(viewClass, backgroundDrawable.getConstantState());
+        }
 
         if (isSetColorFilterOnlyWidget(nativeView)
             && !isNullOrUndefined(backgroundDrawable)
@@ -54,19 +60,9 @@ export module ad {
         }
         else if (!background.isEmpty()) {
             if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
-                let viewClass = getClass(view);
-                if (!isSetColorFilterOnlyWidget(nativeView) && !_defaultBackgrounds.has(viewClass)) {
-                    _defaultBackgrounds.set(viewClass, nativeView.getBackground());
-                }
-
                 backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
                 refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
-
-                if (getSDK() >= 16) {
-                    nativeView.setBackground(backgroundDrawable);
-                } else {
-                    nativeView.setBackgroundDrawable(backgroundDrawable);
-                }
+                org.nativescript.widgets.ViewHelper.setBackground(nativeView, backgroundDrawable);
             }
             else {
                 refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
@@ -83,16 +79,8 @@ export module ad {
             }
         }
         else {
-            // reset the value with the default native value
-            if (nativeView instanceof android.widget.Button) {
-                let nativeButton = new android.widget.Button(nativeView.getContext());
-                org.nativescript.widgets.ViewHelper.setBackground(nativeView, nativeButton.getBackground());
-            }
-            else {
-                let viewClass = getClass(view);
-                if (_defaultBackgrounds.has(viewClass)) {
-                    org.nativescript.widgets.ViewHelper.setBackground(nativeView, _defaultBackgrounds.get(viewClass));
-                }
+            if (_defaultBackgrounds.has(viewClass)) {
+                org.nativescript.widgets.ViewHelper.setBackground(nativeView, _defaultBackgrounds.get(viewClass).newDrawable());
             }
 
             if (cache.layerType !== undefined) {
