@@ -1,6 +1,7 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
 import {
-    ContentView, View, eachDescendant, Property, Color, isIOS, booleanConverter, resetCSSProperties
+    ContentView, View, eachDescendant, Property, CssProperty, Color, isIOS,
+    booleanConverter, resetCSSProperties, Style
 } from "ui/content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
 import { ActionBar } from "ui/action-bar";
@@ -303,11 +304,12 @@ enableSwipeBackNavigationProperty.register(PageBase);
 /**
  * Property backing statusBarStyle.
  */
-export const statusBarStyleProperty = new Property<PageBase, "light" | "dark">({ name: "statusBarStyle" });
-statusBarStyleProperty.register(PageBase);
+export const statusBarStyleProperty = new CssProperty<Style, "light" | "dark">({ name: "statusBarStyle", cssName: "status-bar-style" });
+statusBarStyleProperty.register(Style);
 
 /**
  * Property backing androidStatusBarBackground.
  */
-export const androidStatusBarBackgroundProperty = new Property<PageBase, Color>({ name: "androidStatusBarBackground", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
-androidStatusBarBackgroundProperty.register(PageBase);
+export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>({ name: "androidStatusBarBackground", cssName:"android-status-bar-background", 
+    equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+androidStatusBarBackgroundProperty.register(Style);
