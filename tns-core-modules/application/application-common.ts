@@ -7,6 +7,8 @@ const events = new Observable();
 // First merge all functions from events into application-common so that later appModule.on will be defined.
 global.moduleMerge(events, exports);
 
+export { Observable };
+
 import { NativeScriptError, UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
 import { NavigationEntry } from "ui/frame";
 
