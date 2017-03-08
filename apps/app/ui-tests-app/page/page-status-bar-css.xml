@@ -16,19 +16,19 @@
             <Button text="22" tap="applyTapOnStyledActionBar" tag="status-bar-style: dark;" style.fontSize="8" width="40" height="40"  automationText="dark-abb-ruby" />
 
             <!-- status-bar-style - page - background -->
-            <Button text="51" tap="applyTap" tag="status-bar-style: light;background-color: #E0115F;" style.fontSize="8" width="40" height="40"  automationText="light-bckg-ruby" />
+            <Button text="51" tap="applyTap" tag="status-bar-style: light; background-color: #E0115F;" style.fontSize="8" width="40" height="40"  automationText="light-bckg-ruby" />
             <Button text="52" tap="applyTap" tag="status-bar-style: dark; background-color: #E0115F;" style.fontSize="8" width="40" height="40"  automationText="dark-bckg-ruby" />
 
             <!-- status-bar-style - page - and - action-bar - background -->
             <Button text="61" tap="applyTapOnStyledActionBar" tag="status-bar-style: light;background-color: #E0115F;" style.fontSize="8" width="40" height="40"  automationText="light-bckg-yellow-abbckg-ruby" />
-            <Button text="62" tap="applyTapOnStyledActionBar" tag="status-bar-style: dark; ;background-color: #E0115F;" style.fontSize="8" width="40" height="40"  automationText="dark-bckg-yellow-abbckg-ruby" />
+            <Button text="62" tap="applyTapOnStyledActionBar" tag="status-bar-style: dark;background-color: #E0115F;" style.fontSize="8" width="40" height="40"  automationText="dark-bckg-yellow-abbckg-ruby" />
 
             <!-- status-bar-style - action-bar - hidden - and - backgroundSpanUnderStatusBar -->
             <Button text="71" tap="applyTapWithSpan" tag="status-bar-style: light;background-color: yellow" style.fontSize="8" width="40" height="40"  automationText="dark-bckg-yellow-bckgsusb-true" />
-            <Button text="72" tap="applyTapOnStyledActionBarAndSpan" tag="status-bar-style: light;background-color: yellow;" style.fontSize="8" width="40" height="40" automationText="light-bckg-yellow-abbck-ruby-bckgsusb-true" />
+            <Button text="72" tap="applyTapOnStyledActionBarAndSpan" tag="status-bar-style: light; background-color: yellow;" style.fontSize="8" width="40" height="40" automationText="light-bckg-yellow-abbck-ruby-bckgsusb-true" />
 
             <Button text="73" tap="applyTapWithSpan" tag="status-bar-style: dark;background-color: yellow;" style.fontSize="8" width="40" height="40"  automationText="light-ab-hidden-bckgsusb-true" />
-            <Button text="74" tap="applyTapWithActionBarHiddenAndSpan" tag="status-bar-style: dark;background-color: yellow;" style.fontSize="8" width="40" height="40"  automationText="dark-ab-hidden-bckgsusb-true" />
+            <Button text="74" tap="applyTapWithActionBarHiddenAndSpan" tag="status-bar-style: dark; background-color: yellow;" style.fontSize="8" width="40" height="40"  automationText="dark-ab-hidden-bckgsusb-true" />
 
         </WrapLayout>
 
