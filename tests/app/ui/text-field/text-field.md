@@ -13,8 +13,8 @@ Using a TextField requires the text-field module.
 ```XML
  <Page loaded="pageLoaded">
   <StackLayout orientation="vertical">
-    {%raw%}<TextView text="{{ someProperty }}" />
-    <TextView text="{{ someProperty }}" />{%endraw%}
+    {%raw%}<TextField text="{{ someProperty }}" />
+    <TextField text="{{ someProperty }}" />{%endraw%}
   </StackLayout>
  </Page>
 ```
