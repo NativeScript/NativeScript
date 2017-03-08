@@ -37,12 +37,6 @@ export module ios {
             superViewRotationRadians = atan2f(superview.transform.b, superview.transform.a);
         }
 
-        if (utils.ios.MajorVersion < 8 && utils.ios.isLandscape() && !superViewRotationRadians) {
-            // in iOS 7 when in landscape we switch width with height because on device they don't change even when rotated.
-            width = utils.layout.toDevicePixels(size.width);
-            height = utils.layout.toDevicePixels(size.height);
-        }
-
         var origin = parentBounds.origin;
         var left = origin.x;
         var top = origin.y;
