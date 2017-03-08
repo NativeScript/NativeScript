@@ -13,6 +13,59 @@ import { FontWeight, FontStyle } from "ui/styling/font";
 
 export * from "./text-base-common";
 
+interface TextTransformation {
+    new (owner: TextBase): android.text.method.TransformationMethod;
+}
+
+let TextTransformation: TextTransformation;
+
+function initializeTextTransformation(): void {
+    if (TextTransformation) {
+        return;
+    }
+
+    @Interfaces([android.text.method.TransformationMethod])
+    class TextTransformationImpl extends android.text.method.ReplacementTransformationMethod implements android.text.method.TransformationMethod {
+        constructor(public textBase: TextBase) {
+            super();
+            return global.__native(this);
+        }
+
+        protected getOriginal(): native.Array<string> {
+            return convertStringToNativeCharArray(this.textBase.formattedText ? this.textBase.formattedText.toString() : this.textBase.text);
+        }
+
+        protected getReplacement(): native.Array<string> {
+            let replacementString: string = "";
+            const formattedText = this.textBase.formattedText;
+            const textTransform = this.textBase.textTransform;
+            if (formattedText) {
+                for (let i = 0, length = formattedText.spans.length; i < length; i++) {
+                    let span = formattedText.spans.getItem(i);
+                    replacementString += getTransformedText(span.text, textTransform);
+                }
+            }
+            else {
+                replacementString = getTransformedText(this.textBase.text, textTransform);
+            }
+
+            return convertStringToNativeCharArray(replacementString);
+        }
+
+        public getTransformation(charSeq: any, view: android.view.View): any {
+            const formattedText = this.textBase.formattedText;
+            if (formattedText) {
+                return createSpannableStringBuilder(formattedText);
+            }
+            else {
+                return getTransformedText(this.textBase.text, this.textBase.textTransform);
+            }
+        }
+    }
+
+    TextTransformation = TextTransformationImpl;
+}
+
 export class TextBase extends TextBaseCommon {
     _nativeView: android.widget.TextView;
 
@@ -30,10 +83,12 @@ export class TextBase extends TextBaseCommon {
         return null;
     }
     set [formattedTextProperty.native](value: FormattedString) {
+        initializeTextTransformation();
+
         let spannableStringBuilder = createSpannableStringBuilder(value);
         this._nativeView.setText(<any>spannableStringBuilder);
         textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
-
+        
         if (spannableStringBuilder && this._nativeView instanceof android.widget.Button &&
             !(this._nativeView.getTransformationMethod() instanceof TextTransformation)) {
             // Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method 
@@ -50,6 +105,7 @@ export class TextBase extends TextBaseCommon {
         return this._nativeView.getTransformationMethod();
     }
     set [textTransformProperty.native](value: TextTransform | android.text.method.TransformationMethod) {
+        initializeTextTransformation();
         if (typeof value === "string") {
             this._nativeView.setTransformationMethod(new TextTransformation(this));
         } else {
@@ -167,7 +223,6 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    //LetterSpacing
     get [letterSpacingProperty.native](): number {
         return org.nativescript.widgets.ViewHelper.getLetterspacing(this._nativeView);
     }
@@ -175,75 +230,32 @@ export class TextBase extends TextBaseCommon {
         org.nativescript.widgets.ViewHelper.setLetterspacing(this._nativeView, value);
     }
 
-    //PaddingTop
     get [paddingTopProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingTop, unit: "px" }
     }
     set [paddingTopProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
-    //PaddingRight
     get [paddingRightProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingRight, unit: "px" }
     }
     set [paddingRightProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
-    //PaddingBottom
     get [paddingBottomProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingBottom, unit: "px" }
     }
     set [paddingBottomProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
-    //PaddingLeft
     get [paddingLeftProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingLeft, unit: "px" }
     }
     set [paddingLeftProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
-    }
-}
-
-@Interfaces([android.text.method.TransformationMethod])
-class TextTransformation extends android.text.method.ReplacementTransformationMethod {
-    constructor(public textBase: TextBase) {
-        super();
-        return global.__native(this);
-    }
-
-    protected getOriginal(): native.Array<string> {
-        return convertStringToNativeCharArray(this.textBase.formattedText ? this.textBase.formattedText.toString() : this.textBase.text);
-    }
-
-    protected getReplacement(): native.Array<string> {
-        let replacementString: string = "";
-        const formattedText = this.textBase.formattedText;
-        const textTransform = this.textBase.textTransform;
-        if (formattedText) {
-            for (let i = 0, length = formattedText.spans.length; i < length; i++) {
-                let span = formattedText.spans.getItem(i);
-                replacementString += getTransformedText(span.text, textTransform);
-            }
-        }
-        else {
-            replacementString = getTransformedText(this.textBase.text, textTransform);
-        }
-
-        return convertStringToNativeCharArray(replacementString);
-    }
-
-    public getTransformation(charSeq: any, view: android.view.View): any {
-        const formattedText = this.textBase.formattedText;
-        if (formattedText) {
-            return createSpannableStringBuilder(formattedText);
-        }
-        else {
-            return getTransformedText(this.textBase.text, this.textBase.textTransform);
-        }
     }
 }
 

@@ -12,9 +12,9 @@ import {
 import {
     Length, PercentLength, Visibility, HorizontalAlignment, VerticalAlignment,
     visibilityProperty, opacityProperty, horizontalAlignmentProperty, verticalAlignmentProperty,
-    minWidthProperty, minHeightProperty, widthProperty, heightProperty, 
-    marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty, 
-    rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty, 
+    minWidthProperty, minHeightProperty, widthProperty, heightProperty,
+    marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
+    rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty
 } from "ui/styling/style-properties";
 
@@ -523,9 +523,17 @@ interface NativePercentLengthPropertyOptions {
     setPixels: NativeSetter;
     setPercent?: NativeSetter
 }
-function createNativePercentLengthProperty({ key, auto = 0, getPixels, setPixels, setPercent = percentNotSupported }: NativePercentLengthPropertyOptions) {
+function createNativePercentLengthProperty(options: NativePercentLengthPropertyOptions) {
+    const { key, auto = 0 } = options;
+    let setPixels, getPixels, setPercent;
     Object.defineProperty(View.prototype, key, {
         get: function (this: View): PercentLength {
+            if (options) {
+                setPixels = options.setPixels;
+                getPixels = options.getPixels;
+                setPercent = options.setPercent || percentNotSupported;
+                options = null;
+            }
             const value = getPixels(this.nativeView);
             if (value == auto) { // tslint:disable-line
                 return "auto";
@@ -534,6 +542,12 @@ function createNativePercentLengthProperty({ key, auto = 0, getPixels, setPixels
             }
         },
         set: function (this: View, length: PercentLength) {
+            if (options) {
+                setPixels = options.setPixels;
+                getPixels = options.getPixels;
+                setPercent = options.setPercent || percentNotSupported;
+                options = null;
+            }
             if (length == "auto") { // tslint:disable-line
                 setPixels(this.nativeView, auto);
             } else if (typeof length === "number") {
@@ -553,56 +567,56 @@ function createNativePercentLengthProperty({ key, auto = 0, getPixels, setPixels
 
 createNativePercentLengthProperty({
     key: marginTopProperty.native,
-    getPixels: org.nativescript.widgets.ViewHelper.getMarginTop,
-    setPixels: org.nativescript.widgets.ViewHelper.setMarginTop,
-    setPercent: org.nativescript.widgets.ViewHelper.setMarginTopPercent
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginTop },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginTop },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginTopPercent }
 });
 
 createNativePercentLengthProperty({
     key: marginRightProperty.native,
-    getPixels: org.nativescript.widgets.ViewHelper.getMarginRight,
-    setPixels: org.nativescript.widgets.ViewHelper.setMarginRight,
-    setPercent: org.nativescript.widgets.ViewHelper.setMarginRightPercent
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginRight },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginRight },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginRightPercent }
 });
 
 createNativePercentLengthProperty({
     key: marginBottomProperty.native,
-    getPixels: org.nativescript.widgets.ViewHelper.getMarginBottom,
-    setPixels: org.nativescript.widgets.ViewHelper.setMarginBottom,
-    setPercent: org.nativescript.widgets.ViewHelper.setMarginBottomPercent
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginBottom },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginBottom },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginBottomPercent }
 });
 
 createNativePercentLengthProperty({
     key: marginLeftProperty.native,
-    getPixels: org.nativescript.widgets.ViewHelper.getMarginLeft,
-    setPixels: org.nativescript.widgets.ViewHelper.setMarginLeft,
-    setPercent: org.nativescript.widgets.ViewHelper.setMarginLeftPercent
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginLeft },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginLeft },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginLeftPercent }
 });
 
 createNativePercentLengthProperty({
     key: widthProperty.native,
-    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: org.nativescript.widgets.ViewHelper.getWidth,
-    setPixels: org.nativescript.widgets.ViewHelper.setWidth,
-    setPercent: org.nativescript.widgets.ViewHelper.setWidthPercent
+    auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getWidth },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setWidth },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setWidthPercent }
 });
 
 createNativePercentLengthProperty({
     key: heightProperty.native,
-    auto: android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    getPixels: org.nativescript.widgets.ViewHelper.getHeight,
-    setPixels: org.nativescript.widgets.ViewHelper.setHeight,
-    setPercent: org.nativescript.widgets.ViewHelper.setHeightPercent
+    auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getHeight },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setHeight },
+    get setPercent() { return org.nativescript.widgets.ViewHelper.setHeightPercent }
 });
 
 createNativePercentLengthProperty({
     key: "_minWidthNative",
-    getPixels: org.nativescript.widgets.ViewHelper.getMinWidth,
-    setPixels: org.nativescript.widgets.ViewHelper.setMinWidth
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getMinWidth },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMinWidth }
 });
 
 createNativePercentLengthProperty({
     key: "_minHeightNative",
-    getPixels: org.nativescript.widgets.ViewHelper.getMinHeight,
-    setPixels: org.nativescript.widgets.ViewHelper.setMinHeight
+    get getPixels() { return org.nativescript.widgets.ViewHelper.getMinHeight },
+    get setPixels() { return org.nativescript.widgets.ViewHelper.setMinHeight }
 });

@@ -156,6 +156,11 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public effectiveBorderBottomWidth: number;
     public effectiveBorderLeftWidth: number;
 
+    public _defaultPaddingTop: number;
+    public _defaultPaddingRight: number;
+    public _defaultPaddingBottom: number;
+    public _defaultPaddingLeft: number;
+
     constructor() {
         super();
         this._domId = viewIdCounter++;
@@ -579,6 +584,25 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._createNativeView();
         this.nativeView = (<any>this)._nativeView;
 
+        if (isAndroid) {
+            const nativeView = <android.view.View>this.nativeView;
+            const background = nativeView.getBackground();
+            if (background) {
+                let result = new android.graphics.Rect();
+                background.getPadding(result);
+
+                this.effectivePaddingTop = this._defaultPaddingTop = result.top;
+                this.effectivePaddingRight = this._defaultPaddingRight = result.right;
+                this.effectivePaddingBottom = this._defaultPaddingBottom = result.bottom;
+                this.effectivePaddingLeft = this._defaultPaddingLeft = result.left;
+            } else {
+                this.effectivePaddingTop = this._defaultPaddingTop = nativeView.getPaddingTop();
+                this.effectivePaddingRight = this._defaultPaddingRight = nativeView.getPaddingRight();
+                this.effectivePaddingBottom = this._defaultPaddingBottom = nativeView.getPaddingBottom();
+                this.effectivePaddingLeft = this._defaultPaddingLeft = nativeView.getPaddingLeft();
+            }
+        }
+
         this._initNativeView();
 
         if (this.parent) {
@@ -734,6 +758,10 @@ ViewBase.prototype.effectiveBorderTopWidth = 0;
 ViewBase.prototype.effectiveBorderRightWidth = 0;
 ViewBase.prototype.effectiveBorderBottomWidth = 0;
 ViewBase.prototype.effectiveBorderLeftWidth = 0;
+ViewBase.prototype._defaultPaddingTop = 0;
+ViewBase.prototype._defaultPaddingRight = 0;
+ViewBase.prototype._defaultPaddingBottom = 0;
+ViewBase.prototype._defaultPaddingLeft = 0;
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);

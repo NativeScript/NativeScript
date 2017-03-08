@@ -1,4 +1,4 @@
-﻿import { 
+﻿import {
     LayoutBaseCommon, clipToBoundsProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length
 } from "./layout-base-common";
@@ -25,33 +25,29 @@ export class LayoutBase extends LayoutBaseCommon {
         console.warn(`clipToBounds with value false is not supported on Android. You can use this.android.getParent().setClipChildren(false) as an alternative`);
     }
 
-    //PaddingTop
     get [paddingTopProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingTop(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingTop, unit: "px" }
     }
     set [paddingTopProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
-    //PaddingRight
     get [paddingRightProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingRight(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingRight, unit: "px" }
     }
     set [paddingRightProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
-    //PaddingBottom
     get [paddingBottomProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingBottom(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingBottom, unit: "px" }
     }
     set [paddingBottomProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
-    //PaddingLeft
     get [paddingLeftProperty.native](): Length {
-        return { value: org.nativescript.widgets.ViewHelper.getPaddingLeft(this.nativeView), unit: "px" };
+        return { value: this._defaultPaddingLeft, unit: "px" }
     }
     set [paddingLeftProperty.native](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
