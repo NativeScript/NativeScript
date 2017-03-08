@@ -36,7 +36,7 @@ export module ios {
             const layer = nativeView.layer;
             const borderColor = background.getUniformBorderColor();
             layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
-            layer.borderWidth = background.getUniformBorderWidth();
+            layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
             layer.cornerRadius = background.getUniformBorderRadius();
         }
         else {
@@ -177,10 +177,10 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
         right: layerSize.width
     };
 
-    const top = background.borderTopWidth;
-    const right = background.borderRightWidth;
-    const bottom = background.borderBottomWidth;
-    const left = background.borderLeftWidth;
+    const top = layout.toDeviceIndependentPixels(background.borderTopWidth);
+    const right = layout.toDeviceIndependentPixels(background.borderRightWidth);
+    const bottom = layout.toDeviceIndependentPixels(background.borderBottomWidth);
+    const left = layout.toDeviceIndependentPixels(background.borderLeftWidth);
 
     const lto: Point = { x: nativeViewLayerBounds.left, y: nativeViewLayerBounds.top };// left-top-outside
     const lti: Point = { x: nativeViewLayerBounds.left + left, y: nativeViewLayerBounds.top + top }; // left-top-inside

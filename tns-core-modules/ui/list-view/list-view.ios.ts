@@ -141,7 +141,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
             height = owner._prepareCell(cell, indexPath);
         }
 
-        return height;
+        return layout.toDeviceIndependentPixels(height);
     }
 }
 

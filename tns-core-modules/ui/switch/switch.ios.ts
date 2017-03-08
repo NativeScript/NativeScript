@@ -56,8 +56,8 @@ export class Switch extends SwitchBase {
         this.width = nativeSize.width;
         this.height = nativeSize.height;
 
-        let widthAndState = layout.makeMeasureSpec(nativeSize.width, layout.EXACTLY);
-        let heightAndState = layout.makeMeasureSpec(nativeSize.height, layout.EXACTLY);
+        let widthAndState = layout.makeMeasureSpec(layout.toDevicePixels(nativeSize.width), layout.EXACTLY);
+        let heightAndState = layout.makeMeasureSpec(layout.toDevicePixels(nativeSize.height), layout.EXACTLY);
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 

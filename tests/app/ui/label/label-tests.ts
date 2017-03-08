@@ -139,8 +139,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
 
         if (label.ios) {
             this.waitUntilTestElementLayoutIsValid();
-
-            const expectedValue = 3;
+            let expectedValue = NSString.stringWithString("i").sizeWithAttributes(<any>{
+                [NSFontAttributeName]: UIFont.systemFontOfSize(9)
+            }).width;
+            expectedValue = Math.ceil(utils.layout.toDevicePixels(expectedValue));
             const measuredWidth = label.getMeasuredWidth();
             TKUnit.assertEqual(measuredWidth, expectedValue, "measuredWidth should not be rounded down.");
         }
