@@ -94,7 +94,7 @@ export module ad {
     /**
      * Hides the soft input method, ususally a soft keyboard.
      */
-    export function dismissSoftInput(nativeView: any /* android.view.View */): void;
+    export function dismissSoftInput(nativeView?: any /* android.view.View */): void;
 
     /**
      * Shows the soft input method, ususally a soft keyboard.

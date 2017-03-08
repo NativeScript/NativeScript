@@ -4,7 +4,7 @@
 
 export * from "./utils-common";
 
-import { getNativeApplication } from "application";
+import { getNativeApplication, android as androidApp } from "application";
 
 export module layout {
     let density: number;
@@ -98,10 +98,19 @@ export module ad {
         }
     }
 
-    export function dismissSoftInput(nativeView: android.view.View): void {
+    export function dismissSoftInput(nativeView?: android.view.View): void {
         const inputManager = getInputMethodManager();
-        if (inputManager && nativeView instanceof android.view.View && inputManager.isActive(nativeView)) {
-            inputManager.hideSoftInputFromWindow(nativeView.getWindowToken(), 0);
+        let windowToken: android.os.IIBinder;
+
+        if (nativeView instanceof android.view.View) {
+            windowToken = nativeView.getWindowToken()
+        } else if (androidApp.foregroundActivity instanceof android.app.Activity) {
+            const currentFocus = androidApp.foregroundActivity.getCurrentFocus();
+            windowToken = currentFocus ? currentFocus.getWindowToken() : null;
+        }
+
+        if (inputManager && windowToken) {
+            inputManager.hideSoftInputFromWindow(windowToken, 0);
         }
     }
 
