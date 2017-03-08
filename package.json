@@ -33,7 +33,7 @@
   },
   "scripts": {
     "setup": "npm run dev-link-tns-platform-declarations && npm run dev-link-tns-core-modules && npm run dev-link-tests && npm run dev-link-apps",
-    "tsc": "node  --max_old_space_size=4096 ./node_modules/.bin/tsc",
+    "tsc": "node  --max_old_space_size=4096 ./node_modules/typescript/bin/tsc",
     "compile-all": "npm run tsc -- -p tsconfig.json --outDir bin/dist",
     "compile-check-base-dts": "npm run tsc -- -p tsconfig.base-dts.json",
     "compile-node-tests": "npm run tsc -- -p tsconfig.node-tests.json --outDir bin/dist/node-tests",
