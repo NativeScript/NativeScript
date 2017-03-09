@@ -11,7 +11,8 @@ export class Progress extends ProgressBase {
     private _android: android.widget.ProgressBar;
 
     public _createNativeView() {
-        this._android = new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
+        const progressBar = this._android = new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
+        return progressBar;
     }
 
     get android(): android.widget.ProgressBar {

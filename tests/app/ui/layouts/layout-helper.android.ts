@@ -87,6 +87,7 @@ export class MyButton extends Button implements def.MyButton {
 
     public _createNativeView() {
         this._layout = new NativeButton(this._context, this);
+        return this._layout;
     }
 
     public measureCount: number = 0;
@@ -140,6 +141,7 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 
     public _createNativeView() {
         this._layout = new NativeStackLayout(this._context, this);
+        return this._layout;
     }
 
     public measureCount: number = 0;
@@ -193,6 +195,7 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
 
     public _createNativeView() {
         this._layout = new NativeGridLayout(this._context, this);
+        return this._layout;
     }
 
     public measureCount: number = 0;

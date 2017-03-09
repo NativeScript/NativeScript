@@ -64,6 +64,10 @@ export abstract class ViewBase extends Observable {
     _oldTop: number;
     _oldRight: number;
     _oldBottom: number;
+    _defaultPaddingTop: number;
+    _defaultPaddingRight: number;
+    _defaultPaddingBottom: number;
+    _defaultPaddingLeft: number;
     //@endprivate
 
     public effectiveMinWidth: number;
@@ -180,7 +184,7 @@ export abstract class ViewBase extends Observable {
     public cssPseudoClasses: Set<string>;
 
     public _goToVisualState(state: string): void;
-    public _applyXmlAttribute(attribute, value): boolean; 
+    public _applyXmlAttribute(attribute, value): boolean;
     public setInlineStyle(style: string): void;
 
     _context: any /* android.content.Context */;
@@ -200,7 +204,7 @@ export abstract class ViewBase extends Observable {
     /**
      * Creates a native view
      */
-    _createNativeView(): void;
+    _createNativeView(): Object;
 
     /**
      * Clean up references to the native view.

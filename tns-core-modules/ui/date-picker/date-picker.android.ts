@@ -60,10 +60,11 @@ export class DatePicker extends DatePickerBase {
 
     public _createNativeView() {
         initializeDateChangedListener();
-        this._android = new android.widget.DatePicker(this._context);
-        this._android.setCalendarViewShown(false);
+        const picker = this._android = new android.widget.DatePicker(this._context);
+        picker.setCalendarViewShown(false);
         this._listener = this._listener = new DateChangedListener(this);
-        this._android.init(0, 0, 0, this._listener);
+        picker.init(0, 0, 0, this._listener);
+        return picker;
     }
 
     private updateNativeDate(): void {

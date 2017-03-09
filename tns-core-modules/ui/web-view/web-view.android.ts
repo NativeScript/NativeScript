@@ -102,6 +102,7 @@ export class WebView extends WebViewBase {
         this._android.getSettings().setJavaScriptEnabled(true);
         this._android.getSettings().setBuiltInZoomControls(true);
         this._android.setWebViewClient(this._webViewClient);
+        return this._android;
     }
 
     public _resetNativeView() {

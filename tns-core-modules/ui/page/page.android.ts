@@ -1,4 +1,4 @@
-﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty, HorizontalAlignment, VerticalAlignment } from "./page-common";
+﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
 import { ActionBar } from "ui/action-bar";
 import { GridLayout } from "ui/layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
@@ -35,8 +35,8 @@ function initializeDialogFragment() {
             dialog.requestWindowFeature(android.view.Window.FEATURE_NO_TITLE);
 
             // Hide actionBar and adjust alignment based on _fullscreen value.
-            this._owner.horizontalAlignment = this._fullscreen ? HorizontalAlignment.STRETCH : HorizontalAlignment.CENTER;
-            this._owner.verticalAlignment = this._fullscreen ? VerticalAlignment.STRETCH : VerticalAlignment.MIDDLE;
+            this._owner.horizontalAlignment = this._fullscreen ? "stretch" : "center";
+            this._owner.verticalAlignment = this._fullscreen ? "stretch" : "middle";
             this._owner.actionBarHidden = true;
 
             const nativeView = <android.view.View>this._owner._nativeView;
@@ -103,10 +103,11 @@ export class Page extends PageBase {
     }
 
     public _createNativeView() {
-        this._grid = new org.nativescript.widgets.GridLayout(this._context);
+        const layout = this._grid = new org.nativescript.widgets.GridLayout(this._context);
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
         this.nativeView.setBackgroundColor(new Color("white").android);
+        return layout;
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {

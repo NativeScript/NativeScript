@@ -74,6 +74,7 @@ function loadCss(cssFile?: string): RuleSet[] {
 
 application.on("cssChanged", onCssChanged);
 application.on("livesync", onLiveSync);
+application.on("launch", () => loadCss(application.getCssFileName()));
 
 let pattern: RegExp = /('|")(.*?)\1/;
 
@@ -371,5 +372,3 @@ class InlineSelector extends SelectorCore {
     public ruleset: RuleSet;
     public match(node: Node): boolean { return true; }
 }
-
-loadCss(application.getCssFileName());

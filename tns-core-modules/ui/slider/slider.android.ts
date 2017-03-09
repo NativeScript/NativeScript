@@ -54,6 +54,7 @@ export class Slider extends SliderBase {
         this.changeListener = this.changeListener || new SeekBarChangeListener(this);
         this._android = new android.widget.SeekBar(this._context);
         this._android.setOnSeekBarChangeListener(this.changeListener);
+        return this._android;
     }
 
     get android(): android.widget.SeekBar {

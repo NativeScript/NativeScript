@@ -45,6 +45,7 @@ export class Switch extends SwitchBase {
         this._android = new android.widget.Switch(this._context);
         this.listener = this.listener || new CheckedChangeListener(this);
         this._android.setOnCheckedChangeListener(this.listener);
+        return this._android;
     }
 
     get [checkedProperty.native](): boolean {

@@ -29,7 +29,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
     }
 
     public _createNativeView() {
-        // 
+        return undefined;
     }
 
     public _getNativeViewsCount(): number {

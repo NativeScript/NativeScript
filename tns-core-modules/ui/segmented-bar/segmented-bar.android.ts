@@ -211,6 +211,7 @@ export class SegmentedBar extends SegmentedBarBase {
         this._android.addView(tabHostLayout);
         this._android.setup();
         this._android.setOnTabChangedListener(this.listener);
+        return this._android;
     }
 
     get android(): android.widget.TabHost {

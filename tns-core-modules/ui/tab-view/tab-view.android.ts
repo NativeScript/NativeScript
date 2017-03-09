@@ -307,6 +307,7 @@ export class TabView extends TabViewBase {
         (<any>this._viewPager).addOnPageChangeListener(this._pageChagedListener);
         this.nativeView = this._viewPager;
         this._nativeView = this._viewPager;
+        return this._grid;
     }
 
     private setElevation() {

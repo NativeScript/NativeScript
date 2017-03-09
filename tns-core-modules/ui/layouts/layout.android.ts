@@ -51,8 +51,9 @@ export class Layout extends LayoutBase implements LayoutDefinition {
 
     public _createNativeView() {
         initializeNativeViewGroup();
-        this._viewGroup = new NativeViewGroup(this._context);
+        const layout = this._viewGroup = new NativeViewGroup(this._context);
         this._viewGroup[OWNER] = this;
+        return layout;
     }
 
     public _disposeNativeView() {

@@ -454,7 +454,7 @@
                 public static getVerticalAlignment(view: android.view.View): string;
                 public static setVerticalAlignment(view: android.view.View, value: string): void;
 
-                public static getPadding(view: android.view.View): { left: number, top: number, right: number, bottom: number };
+                public static getPadding(view: android.view.View): android.graphics.Rect;
                 public static setPadding(view: android.view.View, left: number, top: number, right: number, bottom: number): void;
 
                 public static getPaddingLeft(view: android.view.View): number;

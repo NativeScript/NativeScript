@@ -137,9 +137,10 @@ export class ActionBar extends ActionBarBase {
 
     public _createNativeView() {
         initializeMenuItemClickListener();
-        this._toolbar = new android.support.v7.widget.Toolbar(this._context);
+        const toolbar = this._toolbar = new android.support.v7.widget.Toolbar(this._context);
         this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(this);
         this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
+        return toolbar;
     }
 
     public onLoaded() {

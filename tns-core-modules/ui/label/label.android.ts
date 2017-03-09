@@ -18,6 +18,7 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     public _createNativeView() {
-        this._android = new android.widget.TextView(this._context);
+        const textView = this._android = new android.widget.TextView(this._context);
+        return textView;
     }
 }

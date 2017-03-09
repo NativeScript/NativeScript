@@ -3,14 +3,14 @@ import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Page } from "ui/page";
 import { SelectorCore } from "ui/styling/css-selector";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
-import { Length } from "../../styling/style-properties";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
 // Types.
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView, _isSet } from "../properties";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { layout } from "utils/utils";
+import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 
 // TODO: Remove this import!
 import * as types from "utils/types";
@@ -155,6 +155,11 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     public effectiveBorderRightWidth: number;
     public effectiveBorderBottomWidth: number;
     public effectiveBorderLeftWidth: number;
+
+    public _defaultPaddingTop: number;
+    public _defaultPaddingRight: number;
+    public _defaultPaddingBottom: number;
+    public _defaultPaddingLeft: number;
 
     constructor() {
         super();
@@ -544,8 +549,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    public _createNativeView() {
-        //
+    public _createNativeView(): Object {
+        return undefined;
     }
 
     public _disposeNativeView() {
@@ -575,9 +580,40 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._context = context;
         traceNotifyEvent(this, "_onContextChanged");
 
-        // TODO: refactor createUI to return native view
-        this._createNativeView();
-        this.nativeView = (<any>this)._nativeView;
+        if (isAndroid) {
+            const native: any = this._createNativeView();
+            const nativeView: android.view.View = this.nativeView = native;
+            if (nativeView) {
+                let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
+                if (result === undefined) {
+                    result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
+                    (<any>nativeView).defaultPaddings = result;
+                }
+
+                this._defaultPaddingTop = result.top;
+                this._defaultPaddingRight = result.right;
+                this._defaultPaddingBottom = result.bottom;
+                this._defaultPaddingLeft = result.left;
+
+                const style = this.style;
+                if (!_isSet(paddingTopProperty, style)) {
+                    this.effectivePaddingTop = this._defaultPaddingTop;
+                }
+                if (!_isSet(paddingRightProperty, style)) {
+                    this.effectivePaddingRight = this._defaultPaddingRight;
+                }
+                if (!_isSet(paddingBottomProperty, style)) {
+                    this.effectivePaddingBottom = this._defaultPaddingBottom;
+                }
+                if (!_isSet(paddingLeftProperty, style)) {
+                    this.effectivePaddingLeft = this._defaultPaddingLeft;
+                }
+            }
+        } else {
+            // TODO: Implement _createNativeView for iOS
+            this._createNativeView();
+            this.nativeView = (<any>this)._nativeView;
+        }
 
         this._initNativeView();
 
@@ -734,6 +770,10 @@ ViewBase.prototype.effectiveBorderTopWidth = 0;
 ViewBase.prototype.effectiveBorderRightWidth = 0;
 ViewBase.prototype.effectiveBorderBottomWidth = 0;
 ViewBase.prototype.effectiveBorderLeftWidth = 0;
+ViewBase.prototype._defaultPaddingTop = 0;
+ViewBase.prototype._defaultPaddingRight = 0;
+ViewBase.prototype._defaultPaddingBottom = 0;
+ViewBase.prototype._defaultPaddingLeft = 0;
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);

@@ -86,7 +86,8 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
 
 application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
     console.log("NativeScriptError: " + args.error);
-    console.log(args.error.stack);
+    console.log((<any>args.error).nativeException);
+    console.log((<any>args.error).stackTrace);
 });
 
 // Android activity events

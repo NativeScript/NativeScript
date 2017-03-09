@@ -81,22 +81,21 @@ export class ListPicker extends ListPickerBase {
 
     public _createNativeView() {
         initializeNativeClasses();
-        this._android = new android.widget.NumberPicker(this._context);
+        const picker = this._android = new android.widget.NumberPicker(this._context);
         let editText = getEditText(this._android);
         this._editText = editText;
-        this._selectorWheelPaint = getSelectorWheelPaint(this._android);
+        this._selectorWheelPaint = getSelectorWheelPaint(picker);
 
-        this._android.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
-
-        this._android.setMinValue(0);
-        this._android.setMaxValue(0);
-        this._android.setValue(0);
+        picker.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+        picker.setMinValue(0);
+        picker.setMaxValue(0);
+        picker.setValue(0);
 
         this._formatter = this._formatter || new Formatter(this);
-        this._android.setFormatter(this._formatter);
+        picker.setFormatter(this._formatter);
 
         this._valueChangedListener = this._valueChangedListener || new ValueChangeListener(this);
-        this._android.setOnValueChangedListener(this._valueChangedListener);
+        picker.setOnValueChangedListener(this._valueChangedListener);
 
         if (editText) {
             //Fix the disappearing selected item.
@@ -107,8 +106,8 @@ export class ListPicker extends ListPickerBase {
             editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
         }
 
-        this._android.setWrapSelectorWheel(false);
-        this.nativeView = this._android;
+        picker.setWrapSelectorWheel(false);
+        return picker;
     }
 
     private _fixNumberPickerRendering() {
@@ -119,7 +118,7 @@ export class ListPicker extends ListPickerBase {
             this._editText.setFilters([]);
             this._editText.invalidate(); //Force the EditText to redraw
         }
-        this.android.invalidate();
+        this._android.invalidate();
     }
 
     get [selectedIndexProperty.native](): number {

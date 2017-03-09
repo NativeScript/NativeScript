@@ -83,6 +83,7 @@ export class ScrollView extends ScrollViewBase {
         }
 
         this._android.setId(this._androidViewId);
+        return this._android;
     }
 
     public _onOrientationChanged() {

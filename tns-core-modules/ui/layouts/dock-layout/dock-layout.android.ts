@@ -55,7 +55,8 @@ export class DockLayout extends DockLayoutBase {
     }
 
     public _createNativeView() {
-        this._layout = new org.nativescript.widgets.DockLayout(this._context);
+        const layout = this._layout = new org.nativescript.widgets.DockLayout(this._context);
+        return layout;
     }
 
     get [stretchLastChildProperty.native](): boolean {
