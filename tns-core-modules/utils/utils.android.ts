@@ -105,8 +105,8 @@ export module ad {
         if (nativeView instanceof android.view.View) {
             windowToken = nativeView.getWindowToken()
         } else if (androidApp.foregroundActivity instanceof android.app.Activity) {
-            const currentFocus = androidApp.foregroundActivity.getCurrentFocus();
-            windowToken = currentFocus ? currentFocus.getWindowToken() : null;
+            const decorView = androidApp.foregroundActivity.getWindow().getDecorView();
+            windowToken = decorView ? decorView.getWindowToken() : null;
         }
 
         if (inputManager && windowToken) {
