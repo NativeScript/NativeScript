@@ -323,15 +323,13 @@ export class ActionBar extends ActionBarBase {
     }
 
     get [backgroundColorProperty.native](): UIColor {
-        let navBar = this.navBar;
-        if (navBar) {
-            return navBar.barTintColor;
-        }
+        // This getter is never called.
+        // CssAnimationProperty use default value form their constructor.
         return null;
     }
     set [backgroundColorProperty.native](value: UIColor | Color) {
         let navBar = this.navBar;
-        if (navBar && value) {
+        if (navBar) {
             let color = value instanceof Color ? value.ios : value;
             navBar.barTintColor = color;
         }
