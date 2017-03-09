@@ -43,8 +43,9 @@ export class Button extends ButtonBase {
 
     public _createNativeView() {
         initializeClickListener();
-        this._button = new android.widget.Button(this._context);
+        const button = this._button = new android.widget.Button(this._context);
         this._button.setOnClickListener(new ClickListener(this));
+        return button;
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")

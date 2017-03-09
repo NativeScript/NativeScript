@@ -467,7 +467,8 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     }
 
     public _createNativeView() {
-        this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
+        const viewGroup = this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
+        return viewGroup;
     }
 
     public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {

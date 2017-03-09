@@ -16,10 +16,9 @@ import * as ImageSourceModule from "image-source";
 import * as ViewModule from "ui/core/view";
 import * as helper from "../helper";
 import * as ObservableModule from "data/observable";
-import * as fs from "file-system";
 import * as color from "color";
 
-const imagePath = fs.path.join(__dirname, "../../logo.png");
+const imagePath = "~/logo.png";
 
 if (isAndroid) {
     const imageModule = require("ui/image");
@@ -33,19 +32,16 @@ export const test_Image_Members = function () {
     TKUnit.assert(image.isLoading === false, "Image.isLoading is default value should be false.");
 };
 
-/* TODO: We need a way to programmatically add an image to resources and then load it from, otherwise we do not know if there is such resource in the target native app.
-export const test_settingImageSource = function () {
+export const test_setting_src_to_resource = function () {
     // >> img-create
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromResource("logo");
+    image.src = "res://icon";
     // << img-create
-    
-    const testFunc = function (views: Array<ViewModule.View>) {
-        const testImage = <ImageModule.Image> views[0];
 
-        const desiredSize = testImage._measureNativeView(new geometry.Size(100, 100));
-        const width = desiredSize.width;
-        const height = desiredSize.height;
+    const testFunc = function (views: Array<ViewModule.View>) {
+        TKUnit.waitUntilReady(() => image.isLayoutValid);
+        const width = image.getMeasuredWidth();
+        const height = image.getMeasuredHeight();
 
         TKUnit.assert(width > 0, "Width should be greater than 0.");
         TKUnit.assert(height > 0, "Height should be greater than 0.");
@@ -53,7 +49,6 @@ export const test_settingImageSource = function () {
 
     helper.buildUIAndRunTest(image, testFunc);
 }
-*/
 
 const IMAGE_LOADED_EVENT = "isLoadingChange";
 
@@ -105,7 +100,7 @@ export const test_SettingImageSrcToURL_async = function (done) {
     runImageTestAsync(image, image.src, done);
 };
 
-export const test_SettingImageSrcToFileWithinApp_sync  = function () {
+export const test_SettingImageSrcToFileWithinApp_sync = function () {
     // >> img-create-local
     const image = new ImageModule.Image();
     image.src = "~/logo.png";
@@ -174,7 +169,6 @@ export const __test_SettingImageSrcTwiceMustNotMismatch = function (done) {
 export const test_SettingStretch_AspectFit = function () {
     // >> img-set-stretch
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromFile(imagePath);
     // There are 4 modes of stretching none, fill, aspectFill, aspectFit
     // The default value is aspectFit.
     // Image stretch can be set by using ImageModule.stretch enum.
@@ -182,17 +176,10 @@ export const test_SettingStretch_AspectFit = function () {
     // << img-set-stretch
 
     const testFunc = function (views: Array<ViewModule.View>) {
-        const testImage = <ImageModule.Image>views[0];
-
         if (image.android) {
-            const actualScaleType = testImage.android.getScaleType();
-            const expectedScaleType = android.widget.ImageView.ScaleType.FIT_CENTER;
-            TKUnit.assertEqual(actualScaleType, expectedScaleType, "actualScaleType");
-        }
-        else if (image.ios) {
-            const actualContentMode = testImage.ios.contentMode;
-            const expectedContentMode = UIViewContentMode.ScaleAspectFit;
-            TKUnit.assertEqual(actualContentMode, expectedContentMode, "actualContentMode");
+            TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.FIT_CENTER);
+        } else if (image.ios) {
+            TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleAspectFit);
         }
     };
 
@@ -201,20 +188,11 @@ export const test_SettingStretch_AspectFit = function () {
 
 export const test_SettingStretch_Default = function () {
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromFile(imagePath);
-
     const testFunc = function (views: Array<ViewModule.View>) {
-        const testImage = <ImageModule.Image>views[0];
-
         if (image.android) {
-            const actualScaleType = testImage.android.getScaleType();
-            const expectedScaleType = android.widget.ImageView.ScaleType.FIT_CENTER;
-            TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
-        }
-        else if (image.ios) {
-            const actualContentMode = testImage.ios.contentMode;
-            const expectedContentMode = UIViewContentMode.ScaleAspectFit;
-            TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
+            TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.FIT_CENTER);
+        } else if (image.ios) {
+            TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleAspectFit);
         }
     };
 
@@ -223,21 +201,13 @@ export const test_SettingStretch_Default = function () {
 
 export const test_SettingStretch_AspectFill = function () {
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromFile(imagePath);
     image.stretch = "aspectFill";
 
     const testFunc = function (views: Array<ViewModule.View>) {
-        const testImage = <ImageModule.Image>views[0];
-
         if (image.android) {
-            const actualScaleType = testImage.android.getScaleType();
-            const expectedScaleType = android.widget.ImageView.ScaleType.CENTER_CROP;
-            TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
-        }
-        else if (image.ios) {
-            const actualContentMode = testImage.ios.contentMode;
-            const expectedContentMode = UIViewContentMode.ScaleAspectFill;
-            TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
+            TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.CENTER_CROP);
+        } else if (image.ios) {
+            TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleAspectFill);
         }
     };
 
@@ -246,21 +216,14 @@ export const test_SettingStretch_AspectFill = function () {
 
 export const test_SettingStretch_Fill = function () {
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromFile(imagePath);
     image.stretch = "fill";
 
     const testFunc = function (views: Array<ViewModule.View>) {
-        const testImage = <ImageModule.Image>views[0];
 
         if (image.android) {
-            const actualScaleType = testImage.android.getScaleType();
-            const expectedScaleType = android.widget.ImageView.ScaleType.FIT_XY;
-            TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
-        }
-        else if (image.ios) {
-            const actualContentMode = testImage.ios.contentMode;
-            const expectedContentMode = UIViewContentMode.ScaleToFill;
-            TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
+            TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.FIT_XY);
+        } else if (image.ios) {
+            TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.ScaleToFill);
         }
     };
 
@@ -269,21 +232,13 @@ export const test_SettingStretch_Fill = function () {
 
 export const test_SettingStretch_none = function () {
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromFile(imagePath);
     image.stretch = "none";
 
     const testFunc = function (views: Array<ViewModule.View>) {
-        const testImage = <ImageModule.Image>views[0];
-
         if (image.android) {
-            const actualScaleType = testImage.android.getScaleType();
-            const expectedScaleType = android.widget.ImageView.ScaleType.MATRIX;
-            TKUnit.assert(actualScaleType === expectedScaleType, "Expected: " + expectedScaleType + ", Actual: " + actualScaleType);
-        }
-        else if (image.ios) {
-            const actualContentMode = testImage.ios.contentMode;
-            const expectedContentMode = UIViewContentMode.TopLeft;
-            TKUnit.assert(actualContentMode === expectedContentMode, "Expected: " + expectedContentMode + ", Actual: " + actualContentMode);
+            TKUnit.assertEqual(image.android.getScaleType(), android.widget.ImageView.ScaleType.MATRIX);
+        } else if (image.ios) {
+            TKUnit.assertEqual(image.ios.contentMode, UIViewContentMode.TopLeft);
         }
     };
 
@@ -375,7 +330,7 @@ export const test_DimensionsAreRoundedAfterScale = function () {
 export const test_tintColor = function () {
     const colorRed = new color.Color("red");
     const image = new ImageModule.Image();
-    image.imageSource = ImageSourceModule.fromFile(imagePath);
+    image.src = imagePath;
 
     const testFunc = function (views: Array<ViewModule.View>) {
         const testImage = <ImageModule.Image>views[0];

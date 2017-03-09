@@ -204,7 +204,7 @@ export abstract class ViewBase extends Observable {
     /**
      * Creates a native view
      */
-    _createNativeView(): void;
+    _createNativeView(): Object;
 
     /**
      * Clean up references to the native view.

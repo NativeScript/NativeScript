@@ -6,9 +6,10 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     _progressBar: android.widget.ProgressBar;
 
     public _createNativeView() {
-        this._progressBar = new android.widget.ProgressBar(this._context);
+        const progressBar = this._progressBar = new android.widget.ProgressBar(this._context);
         this._progressBar.setVisibility(android.view.View.INVISIBLE);
         this._progressBar.setIndeterminate(true);
+        return progressBar;
     }
 
     get android(): android.widget.ProgressBar {

@@ -104,6 +104,7 @@ export class SearchBar extends SearchBarBase {
 
         this._closeListener = this._closeListener || new CloseListener(this);
         this._android.setOnCloseListener(this._closeListener);
+        return this._android;
     }
 
     get android(): android.widget.SearchView {

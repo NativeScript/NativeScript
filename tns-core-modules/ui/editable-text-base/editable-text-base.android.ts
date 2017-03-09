@@ -134,14 +134,15 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     public _createNativeView() {
         initializeEditTextListeners();
-        this._android = new android.widget.EditText(this._context);
+        const editText = this._android = new android.widget.EditText(this._context);
         this._configureEditText();
-        this._keyListenerCache = this.android.getKeyListener();
+        this._keyListenerCache = editText.getKeyListener();
 
         this._editTextListeners = this._editTextListeners || new EditTextListeners(this);
-        this._android.addTextChangedListener(this._editTextListeners);
-        this._android.setOnFocusChangeListener(this._editTextListeners);
-        this._android.setOnEditorActionListener(this._editTextListeners);
+        editText.addTextChangedListener(this._editTextListeners);
+        editText.setOnFocusChangeListener(this._editTextListeners);
+        editText.setOnEditorActionListener(this._editTextListeners);
+        return editText;
     }
 
     public _resetNativeView(force?: boolean) {

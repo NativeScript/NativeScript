@@ -662,10 +662,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return { boundsChanged, sizeChanged };
     }
 
-    public _createNativeView() {
-        //
-    }
-
     public eachChild(callback: (child: ViewBase) => boolean): void {
         this.eachChildView(<any>callback);
     }

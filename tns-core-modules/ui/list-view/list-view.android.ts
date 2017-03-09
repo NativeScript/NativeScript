@@ -50,7 +50,7 @@ export class ListView extends ListViewBase {
 
     public _createNativeView() {
         initializeItemClickListener();
-        this._android = new android.widget.ListView(this._context);
+        const listView = this._android = new android.widget.ListView(this._context);
         this._android.setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
         this.updateEffectiveRowHeight();
 
@@ -66,6 +66,7 @@ export class ListView extends ListViewBase {
 
         this._itemClickListener = this._itemClickListener || new ItemClickListener(this);
         this.android.setOnItemClickListener(this._itemClickListener);
+        return listView;
     }
 
     get android(): android.widget.ListView {

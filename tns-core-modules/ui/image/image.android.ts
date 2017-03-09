@@ -65,7 +65,8 @@ export class Image extends ImageBase {
             initImageCache(this._context);
         }
 
-        this._android = new org.nativescript.widgets.ImageView(this._context);
+        const imageView = this._android = new org.nativescript.widgets.ImageView(this._context);
+        return imageView;
     }
 
     public _createImageSourceFromSrc() {

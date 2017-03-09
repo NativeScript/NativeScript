@@ -3,14 +3,14 @@ import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
 import { Page } from "ui/page";
 import { SelectorCore } from "ui/styling/css-selector";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
-import { Length } from "../../styling/style-properties";
 import { KeyframeAnimation } from "ui/animation/keyframe-animation";
 
 // Types.
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView, _isSet } from "../properties";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "ui/core/bindable";
 import { isIOS, isAndroid } from "platform";
 import { layout } from "utils/utils";
+import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 
 // TODO: Remove this import!
 import * as types from "utils/types";
@@ -549,8 +549,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    public _createNativeView() {
-        //
+    public _createNativeView(): Object {
+        return undefined;
     }
 
     public _disposeNativeView() {
@@ -580,27 +580,39 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._context = context;
         traceNotifyEvent(this, "_onContextChanged");
 
-        // TODO: refactor createUI to return native view
-        this._createNativeView();
-        this.nativeView = (<any>this)._nativeView;
-
         if (isAndroid) {
-            const nativeView = <android.view.View>this.nativeView;
-            const background = nativeView.getBackground();
-            if (background) {
-                let result = new android.graphics.Rect();
-                background.getPadding(result);
+            const native: any = this._createNativeView();
+            const nativeView: android.view.View = this.nativeView = native;
+            if (nativeView) {
+                let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
+                if (result === undefined) {
+                    result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
+                    (<any>nativeView).defaultPaddings = result;
+                }
 
-                this.effectivePaddingTop = this._defaultPaddingTop = result.top;
-                this.effectivePaddingRight = this._defaultPaddingRight = result.right;
-                this.effectivePaddingBottom = this._defaultPaddingBottom = result.bottom;
-                this.effectivePaddingLeft = this._defaultPaddingLeft = result.left;
-            } else {
-                this.effectivePaddingTop = this._defaultPaddingTop = nativeView.getPaddingTop();
-                this.effectivePaddingRight = this._defaultPaddingRight = nativeView.getPaddingRight();
-                this.effectivePaddingBottom = this._defaultPaddingBottom = nativeView.getPaddingBottom();
-                this.effectivePaddingLeft = this._defaultPaddingLeft = nativeView.getPaddingLeft();
+                this._defaultPaddingTop = result.top;
+                this._defaultPaddingRight = result.right;
+                this._defaultPaddingBottom = result.bottom;
+                this._defaultPaddingLeft = result.left;
+
+                const style = this.style;
+                if (!_isSet(paddingTopProperty, style)) {
+                    this.effectivePaddingTop = this._defaultPaddingTop;
+                }
+                if (!_isSet(paddingRightProperty, style)) {
+                    this.effectivePaddingRight = this._defaultPaddingRight;
+                }
+                if (!_isSet(paddingBottomProperty, style)) {
+                    this.effectivePaddingBottom = this._defaultPaddingBottom;
+                }
+                if (!_isSet(paddingLeftProperty, style)) {
+                    this.effectivePaddingLeft = this._defaultPaddingLeft;
+                }
             }
+        } else {
+            // TODO: Implement _createNativeView for iOS
+            this._createNativeView();
+            this.nativeView = (<any>this)._nativeView;
         }
 
         this._initNativeView();

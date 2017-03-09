@@ -103,11 +103,12 @@ export class GridLayout extends GridLayoutBase {
     }
 
     public _createNativeView() {
-        this._layout = new org.nativescript.widgets.GridLayout(this._context);
+        const layout = this._layout = new org.nativescript.widgets.GridLayout(this._context);
 
         // Update native GridLayout
         this.getRows().forEach((itemSpec: ItemSpec, index, rows) => { this._onRowAdded(itemSpec); }, this);
         this.getColumns().forEach((itemSpec: ItemSpec, index, rows) => { this._onColumnAdded(itemSpec); }, this);
+        return layout;
     }
 
     public _onRowAdded(itemSpec: ItemSpec) {

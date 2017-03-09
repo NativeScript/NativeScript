@@ -52,6 +52,7 @@ export class AbsoluteLayout extends AbsoluteLayoutBase {
     }
 
     public _createNativeView() {
-        this._layout = new org.nativescript.widgets.AbsoluteLayout(this._context);
+        const layout = this._layout = new org.nativescript.widgets.AbsoluteLayout(this._context);
+        return layout;
     }
 }

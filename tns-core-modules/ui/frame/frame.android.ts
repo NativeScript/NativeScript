@@ -297,7 +297,7 @@ export class Frame extends FrameBase {
     }
 
     public _createNativeView() {
-        let root = new org.nativescript.widgets.ContentLayout(this._context);
+        const root = new org.nativescript.widgets.ContentLayout(this._context);
         if (this._containerViewId < 0) {
             this._containerViewId = android.view.View.generateViewId();
         }
@@ -305,6 +305,7 @@ export class Frame extends FrameBase {
         this._android.rootViewGroup = root;
         this._android.rootViewGroup.setId(this._containerViewId);
         this._android.rootViewGroup.addOnAttachStateChangeListener(this._listener);
+        return root;
     }
 
     private onNativeViewAttachedToWindow(view: android.view.View): void {

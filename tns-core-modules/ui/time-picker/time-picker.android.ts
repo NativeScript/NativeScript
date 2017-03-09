@@ -52,6 +52,7 @@ export class TimePicker extends TimePickerBase {
 
         let validTime = getValidTime(this, this.hour, this.minute);
         this._setNativeValueSilently(validTime.hour, validTime.minute);
+        return this._android;
     }
 
     get android(): android.widget.TimePicker {

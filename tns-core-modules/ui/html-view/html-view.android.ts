@@ -12,10 +12,11 @@ export class HtmlView extends HtmlViewBase {
     }
 
     public _createNativeView() {
-        this._android = new android.widget.TextView(this._context);
+        const textView = this._android = new android.widget.TextView(this._context);
         // This makes the html <a href...> work
-        this._android.setLinksClickable(true);
-        this._android.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+        textView.setLinksClickable(true);
+        textView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+        return textView;
     }
 
     get [htmlProperty.native](): string {

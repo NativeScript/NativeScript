@@ -14,7 +14,8 @@ export class StackLayout extends StackLayoutBase {
     }
 
     public _createNativeView() {
-        this._layout = new org.nativescript.widgets.StackLayout(this._context);
+         const layout = this._layout = new org.nativescript.widgets.StackLayout(this._context);
+         return layout;
     }
 
     get [orientationProperty.native](): "horizontal" | "vertical" {

@@ -135,7 +135,8 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     get _nativeView(): org.nativescript.widgets.FlexboxLayout { return this._layout; }
 
     public _createNativeView() {
-        this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
+        const layout = this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
+        return layout;
     }
 
     get [flexDirectionProperty.native](): FlexDirection {
