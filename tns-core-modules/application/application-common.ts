@@ -20,7 +20,7 @@ export const lowMemoryEvent = "lowMemory";
 export const uncaughtErrorEvent = "uncaughtError";
 export const orientationChangedEvent = "orientationChanged";
 
-export let cssFile: string = "app.css";
+let cssFile: string = "app.css";
 
 export let mainModule: string;
 export let mainEntry: NavigationEntry;
@@ -48,8 +48,12 @@ export function livesync() {
 }
 
 export function setCssFileName(cssFileName: string) {
-    exports.cssFile = cssFileName;
+    cssFile = cssFileName;
     events.notify(<CssChangedEventData>{ eventName: "cssChanged", object: app, cssFile: cssFileName });
+}
+
+export function getCssFileName(): string {
+    return cssFile;
 }
 
 export function addCss(cssText: string): void {

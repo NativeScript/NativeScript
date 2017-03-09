@@ -372,4 +372,4 @@ class InlineSelector extends SelectorCore {
     public match(node: Node): boolean { return true; }
 }
 
-loadCss(application.cssFile);
+loadCss(application.getCssFileName());
