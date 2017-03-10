@@ -91,8 +91,8 @@ class UIViewControllerImpl extends UIViewController {
 
             let frame = isFullScreen ? getter(UIScreen, UIScreen.mainScreen).bounds : this.view.frame;
             let size = frame.size;
-            let width = size.width;
-            let height = size.height;
+            let width = layout.toDevicePixels(size.width);
+            let height = layout.toDevicePixels(size.height);
             let mode: number = layout.EXACTLY;
 
             let superViewRotationRadians;
