@@ -87,7 +87,7 @@ if (platform.device.os === platform.platformNames.ios) {
         helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
             var textView = <textViewModule.TextView>views[0];
             textView.color = new colorModule.Color("red");
-            TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.tintColor.CGColor, "textView.color");
+            TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.textColor.CGColor, "textView.color");
         });
     }
 }

@@ -1,12 +1,10 @@
 ﻿import { TextView as TextViewDefinition } from ".";
 import {
-    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty,
+    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, 
     Length, _updateCharactersInRangeReplacementString, Color, layout
 } from "../editable-text-base";
-
-import { ios } from "../../utils/utils";
 
 export * from "../editable-text-base";
 
@@ -108,18 +106,44 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         }
     }
 
+    private _refreshColor() {
+        if (this._isShowingHint) {
+            const placeholderColor = this.style.placeholderColor;
+            const color = this.style.color;
+
+            if (placeholderColor) {
+                this.nativeView.textColor = placeholderColor.ios;
+            } else if (color) {
+                // Use semi-transparent vesion of color for back-compatibility 
+                this.nativeView.textColor = color.ios.colorWithAlphaComponent(0.22);
+            } else {
+                this.nativeView.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
+            }
+        } else {
+            const color = this.style.color;
+
+            if (color) {
+                this.nativeView.textColor = color.ios;
+            } else {
+                this.nativeView.textColor = UIColor.blackColor;
+            }
+        }
+    }
+
     public showHint(hint: string) {
         const nativeView = this.nativeView;
-        nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
+
+        this._isShowingHint = true;
+        this._refreshColor();
+
         const hintAsString: string = (hint === null || hint === undefined) ? '' : hint.toString();
         nativeView.text = hintAsString;
-        this._isShowingHint = true;
     }
 
     public showText() {
-        this.nativeView.textColor = this.color ? this.color.ios : null;
-        this._setNativeText();
         this._isShowingHint = false;
+        this._refreshColor();
+        this._setNativeText();
     }
 
     get [textProperty.native](): string {
@@ -144,23 +168,18 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 
     get [colorProperty.native](): UIColor {
-        let textView = this.nativeView;
-        if (this._isShowingHint && textView.textColor) {
-            return textView.textColor.colorWithAlphaComponent(1);
-        }
-        else {
-            return textView.textColor;
-        }
+        return null;
     }
-    set [colorProperty.native](color: UIColor | Color) {
-        let textView = this.nativeView;
-        let uiColor = color instanceof Color ? color.ios : color;
-        if (this._isShowingHint && uiColor) {
-            textView.textColor = uiColor.colorWithAlphaComponent(0.22);
-        } else {
-            textView.textColor = uiColor;
-            textView.tintColor = uiColor;
-        }
+    set [colorProperty.native](color: Color) {
+        this._refreshColor();
+
+    }
+
+    get [placeholderColorProperty.native](): Color {
+        return null;
+    }
+    set [placeholderColorProperty.native](value: Color) {
+        this._refreshColor();
     }
 
     get [borderTopWidthProperty.native](): Length {
@@ -246,7 +265,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
-    
+
     get [paddingLeftProperty.native](): Length {
         return {
             value: this.nativeView.textContainerInset.left,
