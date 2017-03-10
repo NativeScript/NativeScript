@@ -34,7 +34,7 @@ export function checkUniformNativeBorderColor(v: view.View): boolean {
 }
 
 export function getUniformNativeCornerRadius(v: view.View): number {
-    return (<UIView>v.ios).layer.cornerRadius;
+    return utils.layout.toDevicePixels((<UIView>v.ios).layer.cornerRadius);
 }
 
 export function checkNativeBackgroundColor(v: view.View): boolean {
