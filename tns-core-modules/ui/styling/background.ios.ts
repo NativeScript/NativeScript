@@ -37,7 +37,7 @@ export module ios {
             const borderColor = background.getUniformBorderColor();
             layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
             layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
-            layer.cornerRadius = background.getUniformBorderRadius();
+            layer.cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
         }
         else {
             drawNonUniformBorders(nativeView, background);
