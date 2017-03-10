@@ -129,6 +129,7 @@ export class Label extends TextBase implements LabelDefinition {
             value = uiColor ? uiColor.CGColor : null;
         }
 
+        this._setNativeClipToBounds();
         this.nativeView.layer.backgroundColor = value;
     }
 
