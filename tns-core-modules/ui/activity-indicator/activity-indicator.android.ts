@@ -1,4 +1,4 @@
-﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility } from "./activity-indicator-common";
+﻿import { ActivityIndicatorBase, busyProperty, colorProperty, visibilityProperty, Visibility, Color } from "./activity-indicator-common";
 
 export * from "./activity-indicator-common";
 
@@ -47,12 +47,12 @@ export class ActivityIndicator extends ActivityIndicatorBase {
     get [colorProperty.native](): number {
         return -1;
     }
-    set [colorProperty.native](value: number) {
-        if (value < 0) {
-            this._progressBar.getIndeterminateDrawable().clearColorFilter();
+    set [colorProperty.native](value: number | Color) {
+        if (value instanceof Color) {
+            this._progressBar.getIndeterminateDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         }
         else {
-            this._progressBar.getIndeterminateDrawable().setColorFilter(value, android.graphics.PorterDuff.Mode.SRC_IN);
+            this._progressBar.getIndeterminateDrawable().clearColorFilter();
         }
     }
 }
