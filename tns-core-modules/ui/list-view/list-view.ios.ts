@@ -17,6 +17,20 @@ const DEFAULT_HEIGHT = 44;
 const infinity = layout.makeMeasureSpec(0, layout.UNSPECIFIED);
 
 class ListViewCell extends UITableViewCell {
+    public static initWithEmptyBackground(): ListViewCell {
+        const cell = <ListViewCell>ListViewCell.new();
+        // Clear background by default - this will make cells transparent 
+        cell.backgroundColor = null;
+        return cell;
+    }
+
+    initWithStyleReuseIdentifier(style: UITableViewCellStyle, reuseIdentifier: string): this {
+        const cell = <this>super.initWithStyleReuseIdentifier(style, reuseIdentifier);
+        // Clear background by default - this will make cells transparent 
+        cell.backgroundColor = null;
+        return cell;
+    }
+
     public willMoveToSuperview(newSuperview: UIView): void {
         let parent = <ListView>(this.view ? this.view.parent : null);
 
@@ -62,7 +76,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
         let cell: ListViewCell;
         if (owner) {
             let template = owner._getItemTemplate(indexPath.row);
-            cell = <ListViewCell>(tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.new());
+            cell = <ListViewCell>(tableView.dequeueReusableCellWithIdentifier(template.key) || ListViewCell.initWithEmptyBackground());
             owner._prepareCell(cell, indexPath);
 
             let cellView: View = cell.view;
@@ -76,7 +90,7 @@ class DataSource extends NSObject implements UITableViewDataSource {
             }
         }
         else {
-            cell = <ListViewCell>ListViewCell.new();
+            cell = <ListViewCell>ListViewCell.initWithEmptyBackground();
         }
         return cell;
     }
@@ -134,7 +148,7 @@ class UITableViewDelegateImpl extends NSObject implements UITableViewDelegate {
             const template = owner._getItemTemplate(indexPath.row);
             let cell = this._measureCellMap.get(template.key);
             if (!cell) {
-                cell = (<any>tableView.dequeueReusableCellWithIdentifier(template.key)) || ListViewCell.new();
+                cell = (<any>tableView.dequeueReusableCellWithIdentifier(template.key)) || ListViewCell.initWithEmptyBackground();
                 this._measureCellMap.set(template.key, cell);
             }
 
