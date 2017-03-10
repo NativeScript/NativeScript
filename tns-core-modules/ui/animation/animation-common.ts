@@ -5,15 +5,15 @@ import {
     Animation as AnimationBaseDefinition,
     AnimationDefinition,
     Pair
-} from "ui/animation";
-import { View } from "ui/core/view";
+} from ".";
+import { View } from "../core/view";
 
 // Types.
-import { Color } from "color";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
+import { Color } from "../../color";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
 
 export { Color, traceEnabled, traceWrite, traceCategories };
-export { AnimationPromise } from "ui/animation";
+export { AnimationPromise } from ".";
 
 export module Properties {
     export var opacity = "opacity";

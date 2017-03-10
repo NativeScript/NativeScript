@@ -1,12 +1,12 @@
-import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "ui/core/view";
-import { Color } from "color";
-import { Background } from "ui/styling/background";
-import { Font, FontStyle, FontWeight } from "ui/styling/font";
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
+import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "../../core/view";
+import { Color } from "../../../color";
+import { Background } from "../background";
+import { Font, FontStyle, FontWeight } from "../font";
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
-} from "ui/layouts/flexbox-layout"
+} from "../../layouts/flexbox-layout"
 
 export interface Thickness {
     left: number;

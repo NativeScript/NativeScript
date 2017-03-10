@@ -1,20 +1,20 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as pagesModule from "ui/page";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as pagesModule from "tns-core-modules/ui/page";
 import * as textViewTestsNative from "./text-view-tests-native";
-import * as colorModule from "color";
-import * as enums from "ui/enums";
-import * as platform from "platform";
+import * as colorModule from "tns-core-modules/color";
+import * as enums from "tns-core-modules/ui/enums";
+import * as platform from "tns-core-modules/platform";
 
 // >> require-textmodules
-import * as textViewModule from "ui/text-view";
+import * as textViewModule from "tns-core-modules/ui/text-view";
 // << require-textmodules
 
 // Other frequently used modules when working with buttons include:
-import * as bindable from "ui/core/bindable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 // >> require-observable-textview
-import * as observable from "data/observable";
+import * as observable from "tns-core-modules/data/observable";
 // << require-observable-textview
 
 // >> text-view-xml

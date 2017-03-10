@@ -1,18 +1,18 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, Property, Style } from "ui/core/view";
-import { topmost } from "ui/frame";
-import { Page } from "ui/page";
-import { Button } from "ui/button";
-import { Label } from "ui/label";
-import { Color } from "color";
-import { Layout } from "ui/layouts/layout";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { AbsoluteLayout } from "ui/layouts/absolute-layout";
-import * as utils from "utils/utils";
-import * as types from "utils/types";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, Property, Style } from "tns-core-modules/ui/core/view";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
+import { Button } from "tns-core-modules/ui/button";
+import { Label } from "tns-core-modules/ui/label";
+import { Color } from "tns-core-modules/color";
+import { Layout } from "tns-core-modules/ui/layouts/layout";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
+import * as utils from "tns-core-modules/utils/utils";
+import * as types from "tns-core-modules/utils/types";
 import * as helper from "../../ui/helper";
-import * as observable from "data/observable";
-import * as bindable from "ui/core/bindable";
+import * as observable from "tns-core-modules/data/observable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
 
 export function test_eachDescendant() {

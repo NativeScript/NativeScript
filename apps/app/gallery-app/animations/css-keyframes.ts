@@ -1,4 +1,4 @@
-import { View, EventData } from "ui/core/view";
+import { View, EventData } from "tns-core-modules/ui/core/view";
 
 export function setClass(args: EventData) {
     const btn = (<View & { tag: any }>args.object);

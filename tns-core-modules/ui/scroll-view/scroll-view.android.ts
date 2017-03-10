@@ -1,4 +1,4 @@
-﻿import { ScrollEventData } from "ui/scroll-view";
+﻿import { ScrollEventData } from ".";
 import { ScrollViewBase, layout } from "./scroll-view-common";
 
 export * from "./scroll-view-common";

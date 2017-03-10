@@ -1,9 +1,9 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty
 } from "./search-bar-common";
-import { ad } from "utils/utils";
+import { ad } from "../../utils/utils";
 
 export * from "./search-bar-common";
 

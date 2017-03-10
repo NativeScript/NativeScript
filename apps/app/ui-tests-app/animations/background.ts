@@ -1,7 +1,7 @@
-import * as observable from "data/observable";
-import * as pages from "ui/page";
-import * as viewModule from "ui/core/view";
-import * as color from "color";
+import * as observable from "tns-core-modules/data/observable";
+import * as pages from "tns-core-modules/ui/page";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as color from "tns-core-modules/color";
 
 var view: viewModule.View;
 

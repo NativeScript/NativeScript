@@ -1,9 +1,9 @@
 ﻿/**
  * View that can host another view.
  */
-import { View, AddChildFromBuilder } from "ui/core/view";
+import { View, AddChildFromBuilder } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 /**
  * Represents a View that has a single child - content.

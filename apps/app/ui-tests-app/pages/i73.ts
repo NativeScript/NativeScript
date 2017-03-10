@@ -1,6 +1,6 @@
-﻿import * as pages from "ui/page";
-import * as button from "ui/button";
-import * as stackModule from "ui/layouts/stack-layout";
+﻿import * as pages from "tns-core-modules/ui/page";
+import * as button from "tns-core-modules/ui/button";
+import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 
 export function createPage() {
 

@@ -1,8 +1,8 @@
-﻿import { Label } from "ui/label";
-import { Button } from "ui/button";
-import { TextField } from "ui/text-field";
-import { TextView } from "ui/text-view";
-import { Page } from "ui/page";
+﻿import { Label } from "tns-core-modules/ui/label";
+import { Button } from "tns-core-modules/ui/button";
+import { TextField } from "tns-core-modules/ui/text-field";
+import { TextView } from "tns-core-modules/ui/text-view";
+import { Page } from "tns-core-modules/ui/page";
 
 export function onChangeText(args) {
     const page = <Page>args.object.page;

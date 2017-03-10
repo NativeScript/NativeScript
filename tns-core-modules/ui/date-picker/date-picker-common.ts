@@ -1,7 +1,7 @@
-﻿import { DatePicker as DatePickerDefinition } from "ui/date-picker";
-import { View, Property } from "ui/core/view";
+﻿import { DatePicker as DatePickerDefinition } from ".";
+import { View, Property } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class DatePickerBase extends View implements DatePickerDefinition {
     public year: number;

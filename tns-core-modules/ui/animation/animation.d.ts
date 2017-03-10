@@ -1,4 +1,4 @@
-﻿import { View, Color } from "ui/core/view";
+﻿import { View, Color } from "../core/view";
 
 /**
  * Defines animation options for the View.animate method.

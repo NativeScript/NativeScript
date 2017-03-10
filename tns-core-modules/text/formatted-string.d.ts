@@ -1,12 +1,12 @@
 ﻿/**
  * Contains the FormattedString and Span classes, which are used to create a formatted (rich text) strings.
  */
-import { Span } from "text/span";
-import { ObservableArray } from "data/observable-array";
-import { ViewBase } from "ui/core/view";
-import { Color } from "color";
-import { FontStyle, FontWeight } from "ui/styling/font";
-import { TextDecoration } from "ui/text-base";
+import { Span } from "./span";
+import { ObservableArray } from "../data/observable-array";
+import { ViewBase } from "../ui/core/view";
+import { Color } from "../color";
+import { FontStyle, FontWeight } from "../ui/styling/font";
+import { TextDecoration } from "../ui/text-base";
 
 export { Span };
 

@@ -1,20 +1,20 @@
-import { Property, InheritedProperty, Style } from "ui/core/properties";
-import { BindingOptions, Observable } from "ui/core/bindable";
+import { Property, InheritedProperty, Style } from "../properties";
+import { BindingOptions, Observable } from "../bindable";
 
-import { SelectorCore } from "ui/styling/css-selector";
-import { isIOS, isAndroid } from "platform";
+import { SelectorCore } from "../../styling/css-selector";
+import { isIOS, isAndroid } from "../../../platform";
 
-import { KeyframeAnimation } from "ui/animation/keyframe-animation";
-import { Page } from "ui/page";
-import { layout } from "utils/utils";
+import { KeyframeAnimation } from "../../animation/keyframe-animation";
+import { Page } from "../../page";
+import { layout } from "../../../utils/utils";
 
-import { Color } from "color";
-import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
+import { Color } from "../../../color";
+import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
 
 export { isIOS, isAndroid, layout, Color };
-export * from "ui/core/properties";
-export * from "ui/core/bindable";
+export * from "../properties";
+export * from "../bindable";
 
 /**
  * Iterates through all child views (via visual tree) and executes a function.

@@ -1,7 +1,7 @@
-﻿import { WrapLayout as WrapLayoutDefinition } from "ui/layouts/wrap-layout";
-import { LayoutBase, Property, isIOS, Length, zeroLength } from "ui/layouts/layout-base";
+﻿import { WrapLayout as WrapLayoutDefinition } from ".";
+import { LayoutBase, Property, isIOS, Length, zeroLength } from "../layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "../layout-base";
 
 export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
     public orientation: "horizontal" | "vertical";

@@ -1,4 +1,4 @@
-﻿import { Background } from "ui/styling/background";
+﻿import { Background } from "../styling/background";
 import {
     SliderBase, valueProperty, minValueProperty, maxValueProperty,
     colorProperty, backgroundColorProperty, backgroundInternalProperty, Color

@@ -1,10 +1,10 @@
 ﻿// Definitions.
-import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from "ui/gestures";
-import { View, EventData } from "ui/core/view";
+import { GestureEventData, SwipeGestureEventData, PanGestureEventData, RotationGestureEventData, PinchGestureEventData } from ".";
+import { View, EventData } from "../core/view";
 
 // Types.
 import { GesturesObserverBase, toString, TouchAction, GestureStateTypes, GestureTypes, SwipeDirection } from "./gestures-common";
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 import getter = ios.getter;
 
 export * from "./gestures-common";

@@ -1,8 +1,8 @@
 ﻿/**
  * Contains the Cache class, which handles image download requests and caches the already downloaded images.
  */
-import * as observable from "data/observable";
-import * as imageSource from "image-source";
+import * as observable from "../../data/observable";
+import * as imageSource from "../../image-source";
 
 /**
  * Represents a single download request.

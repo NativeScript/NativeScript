@@ -1,6 +1,6 @@
-import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
+import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout, Color } from "./action-bar-common";
-import { ImageSource, fromFileOrResource } from "image-source";
+import { ImageSource, fromFileOrResource } from "../../image-source";
 
 export * from "./action-bar-common";
 

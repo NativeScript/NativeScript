@@ -1,22 +1,22 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as pagesModule from "ui/page";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as pagesModule from "tns-core-modules/ui/page";
 import * as textFieldTestsNative from "./text-field-tests-native";
-import * as colorModule from "color";
-import * as enums from "ui/enums";
-import * as platform from "platform";
-import * as formattedStringModule from "text/formatted-string";
-import * as spanModule from "text/span";
+import * as colorModule from "tns-core-modules/color";
+import * as enums from "tns-core-modules/ui/enums";
+import * as platform from "tns-core-modules/platform";
+import * as formattedStringModule from "tns-core-modules/text/formatted-string";
+import * as spanModule from "tns-core-modules/text/span";
 
 // >> require-textfield
-import * as textFieldModule from "ui/text-field";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
 // << require-textfield
 // Other frequently used modules when working with buttons include:
 
-import * as bindable from "ui/core/bindable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 // >> require-observable-textfield
-import * as observable from "data/observable";
+import * as observable from "tns-core-modules/data/observable";
 // << require-observable-textfield
 
 // ### Binding two TextFields text property to observable view-model property.

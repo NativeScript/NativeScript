@@ -1,12 +1,12 @@
-import { EventData } from 'data/observable';
-import { ObservableArray } from "data/observable-array";
-import { View, KeyedTemplate } from "ui/core/view";
-import { Page } from 'ui/page';
+import { EventData } from "tns-core-modules/data/observable";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
+import { View, KeyedTemplate } from "tns-core-modules/ui/core/view";
+import { Page } from "tns-core-modules/ui/page";
 import { ViewModel, Item } from './main-view-model';
-import { ListView } from "ui/list-view";
-import { Label } from "ui/label";
-import { GridLayout } from "ui/layouts/grid-layout";
-import { Color } from "color";
+import { ListView } from "tns-core-modules/ui/list-view";
+import { Label } from "tns-core-modules/ui/label";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { Color } from "tns-core-modules/color";
 
 export function selectItemTemplate(item: Item, index: number, items: ObservableArray<Item>): string {
     return item.id % 10 === 0 ? "red" : item.id % 2 === 0 ? "green" : "yellow"; 

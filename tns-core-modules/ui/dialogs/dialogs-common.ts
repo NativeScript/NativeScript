@@ -1,8 +1,8 @@
 ﻿// Deifinitions.
-import { View } from "ui/core/view";
-import { Color } from "color";
-import { Page } from "ui/page";
-import * as frameModule from "ui/frame";
+import { View } from "../core/view";
+import { Color } from "../../color";
+import { Page } from "../page";
+import * as frameModule from "../frame";
 
 export const STRING = "string";
 export const PROMPT = "Prompt";

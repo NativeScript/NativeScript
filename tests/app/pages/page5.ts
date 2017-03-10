@@ -1,10 +1,10 @@
-﻿import * as gridModule from "ui/layouts/grid-layout";
-import * as pages from "ui/page";
-import * as buttons from "ui/button";
-import * as app from "application";
-import * as platform from "platform";
+﻿import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as pages from "tns-core-modules/ui/page";
+import * as buttons from "tns-core-modules/ui/button";
+import * as app from "tns-core-modules/application";
+import * as platform from "tns-core-modules/platform";
 
-import * as utils from "utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 function printDeviceInfoAndroid() {
     console.log("android.os.Build.DEVICE = " + android.os.Build.DEVICE);                     //android.os.Build.DEVICE = hammerhead

@@ -1,6 +1,6 @@
-import { Pair } from "ui/animation";
-import { Color } from "color";
-import { KeyframeAnimationInfo, KeyframeInfo, KeyframeDeclaration } from "ui/animation/keyframe-animation";
+import { Pair } from "../animation";
+import { Color } from "../../color";
+import { KeyframeAnimationInfo, KeyframeInfo, KeyframeDeclaration } from "../animation/keyframe-animation";
 import { timeConverter, numberConverter, transformConverter, animationTimingFunctionConverter } from "../styling/converters";
 
 interface TransformInfo {

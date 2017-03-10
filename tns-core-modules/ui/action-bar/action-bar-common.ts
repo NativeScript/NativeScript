@@ -3,11 +3,11 @@
     ActionItems as ActionItemsDefinition,
     ActionItem as ActionItemDefinition,
     NavigationButton, IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings
-} from "ui/action-bar";
+} from ".";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
-import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty } from "ui/core/view";
+import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty } from "../core/view";
 
 export module knownCollections {
     export var actionItems = "actionItems";

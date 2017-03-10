@@ -1,4 +1,4 @@
-﻿import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from "data/observable";
+﻿import { Observable as ObservableDefinition, WrappedValue as WrappedValueDefinition, EventData, PropertyChangeData } from ".";
 
 interface ListenerEntry {
     callback: (data: EventData) => void;

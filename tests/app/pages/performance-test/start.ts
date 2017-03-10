@@ -1,5 +1,5 @@
-﻿import * as frame from "ui/frame";
-import * as observable from "data/observable";
+﻿import * as frame from "tns-core-modules/ui/frame";
+import * as observable from "tns-core-modules/data/observable";
 
 declare function __startCPUProfiler(name: string);
 

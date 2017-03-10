@@ -1,6 +1,6 @@
-﻿import * as datePickerModule from "ui/date-picker";
+﻿import * as datePickerModule from "tns-core-modules/ui/date-picker";
 
-import * as utils from "utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 export function getNativeYear(datePicker: datePickerModule.DatePicker): number {
     return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, datePicker.ios.date).year;

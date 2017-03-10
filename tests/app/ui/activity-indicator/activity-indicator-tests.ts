@@ -1,12 +1,12 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as imageModule from "ui/image";
-import * as platform from "platform";
-import * as color from "color";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as imageModule from "tns-core-modules/ui/image";
+import * as platform from "tns-core-modules/platform";
+import * as color from "tns-core-modules/color";
 
 // >> activity-indicator-require
-import * as activityIndicatorModule from "ui/activity-indicator";
+import * as activityIndicatorModule from "tns-core-modules/ui/activity-indicator";
 // << activity-indicator-require
 
 export function test_default_TNS_values() {

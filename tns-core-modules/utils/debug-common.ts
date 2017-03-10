@@ -1,4 +1,4 @@
-import { knownFolders } from "file-system"
+import { knownFolders } from "../file-system"
 
 export var debug = true;
 

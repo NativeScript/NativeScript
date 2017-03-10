@@ -1,16 +1,16 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import { Button } from "ui/button";
-import { Label } from "ui/label";
-import { TextField } from "ui/text-field";
-import { TextView } from "ui/text-view";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { Page } from "ui/page";
-import { Color } from "color";
-import { isAndroid, isIOS } from "platform";
-import { View } from "ui/core/view";
-import { Length, PercentLength } from "ui/core/view";
-import * as fontModule from "ui/styling/font";
+import { Button } from "tns-core-modules/ui/button";
+import { Label } from "tns-core-modules/ui/label";
+import { TextField } from "tns-core-modules/ui/text-field";
+import { TextView } from "tns-core-modules/ui/text-view";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { Page } from "tns-core-modules/ui/page";
+import { Color } from "tns-core-modules/color";
+import { isAndroid, isIOS } from "tns-core-modules/platform";
+import { View } from "tns-core-modules/ui/core/view";
+import { Length, PercentLength } from "tns-core-modules/ui/core/view";
+import * as fontModule from "tns-core-modules/ui/styling/font";
 
 let testBtn: Button;
 let testPage: Page;

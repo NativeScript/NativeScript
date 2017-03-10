@@ -1,7 +1,7 @@
-﻿import { TimePicker as TimePickerDefinition } from "ui/time-picker";
-import { View, Property } from "ui/core/view";
+﻿import { TimePicker as TimePickerDefinition } from ".";
+import { View, Property } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 interface Time {
     hour: number;

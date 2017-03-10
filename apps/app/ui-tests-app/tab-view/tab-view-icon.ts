@@ -1,6 +1,6 @@
-import { EventData } from "data/observable";
-import { Button } from "ui/button";
-import { TabView } from "ui/tab-view";
+import { EventData } from "tns-core-modules/data/observable";
+import { Button } from "tns-core-modules/ui/button";
+import { TabView } from "tns-core-modules/ui/tab-view";
 
 let iconModes = ["automatic", "alwaysOriginal", "alwaysTemplate", undefined];
 

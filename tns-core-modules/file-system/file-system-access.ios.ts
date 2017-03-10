@@ -1,7 +1,7 @@
-﻿import * as textModule from "text";
-import * as utilsModule from "utils/utils";
+﻿import * as textModule from "../text";
+import * as utilsModule from "../utils/utils";
 
-import * as utils from "utils/utils";
+import * as utils from "../utils/utils";
 
 // TODO: Implement all the APIs receiving callback using async blocks
 // TODO: Check whether we need try/catch blocks for the iOS implementation

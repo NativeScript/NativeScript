@@ -10,13 +10,13 @@
  
 */
 
-import * as Application from "application";
-import * as timer from "timer";
-import * as trace from "trace";
-import * as types from "utils/types";
-import * as platform from "platform";
+import * as Application from "tns-core-modules/application";
+import * as timer from "tns-core-modules/timer";
+import * as trace from "tns-core-modules/trace";
+import * as types from "tns-core-modules/utils/types";
+import * as platform from "tns-core-modules/platform";
 
-import * as utils from "utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 var sdkVersion = parseInt(platform.device.sdkVersion);
 

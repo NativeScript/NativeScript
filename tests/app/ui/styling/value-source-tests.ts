@@ -1,9 +1,9 @@
-import * as color from "color";
-import * as button from "ui/button";
-import * as stack from "ui/layouts/stack-layout";
+import * as color from "tns-core-modules/color";
+import * as button from "tns-core-modules/ui/button";
+import * as stack from "tns-core-modules/ui/layouts/stack-layout";
 import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
-import { unsetValue } from "ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/view";
 
 export var test_value_Inherited_stronger_than_Default = function () {
     let page = helper.getCurrentPage();

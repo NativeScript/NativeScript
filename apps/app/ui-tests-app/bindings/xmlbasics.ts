@@ -1,7 +1,7 @@
-﻿import * as buttonModule from "ui/button";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as textFieldModule from "ui/text-field";
-import * as observable from "data/observable";
+﻿import * as buttonModule from "tns-core-modules/ui/button";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
+import * as observable from "tns-core-modules/data/observable";
 
 export function stack0Loaded(args: observable.EventData) {
     var source = new observable.Observable();

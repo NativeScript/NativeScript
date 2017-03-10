@@ -3,7 +3,7 @@
 /**
  * Contains the ObservableArray class, which is capable of detecting and responding to changes of a collection of objects.
  */
-import * as observable from "data/observable";
+import * as observable from "../observable";
 
 /**
  * Event args for "changed" event.

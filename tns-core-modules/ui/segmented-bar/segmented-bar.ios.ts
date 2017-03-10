@@ -1,10 +1,10 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
     colorProperty, fontInternalProperty, Color
 } from "./segmented-bar-common";
 
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 
 export * from "./segmented-bar-common";
 

@@ -1,6 +1,6 @@
-﻿import { ViewBase } from "ui/core/view-base";
-import { Observable, WrappedValue, PropertyChangeData, EventData } from "data/observable";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType, isCategorySet } from "trace";
+﻿import { ViewBase } from "../view-base";
+import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType, isCategorySet } from "../../../trace";
 
 export {
     Observable, WrappedValue, PropertyChangeData, EventData,

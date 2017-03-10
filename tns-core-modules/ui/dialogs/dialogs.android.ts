@@ -1,9 +1,9 @@
 ﻿/**
  * Android specific dialogs functions implementation.
  */
-import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from "ui/dialogs";
+import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
 import { getLabelColor, getButtonColor, getButtonBackgroundColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
-import { android as androidApp } from "application";
+import { android as androidApp } from "../../application";
 
 export * from "./dialogs-common";
 

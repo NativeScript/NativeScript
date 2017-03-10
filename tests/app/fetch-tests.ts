@@ -1,6 +1,6 @@
 /* tslint:disable:no-unused-variable */
 import * as TKUnit from "./TKUnit";
-import * as types from "utils/types";
+import * as types from "tns-core-modules/utils/types";
 
 export var test_fetch_defined = function () {
     TKUnit.assert(types.isDefined((fetch)), "Method fetch() should be defined!");

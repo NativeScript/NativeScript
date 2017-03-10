@@ -1,7 +1,7 @@
-﻿import { ActivityIndicator as ActivityIndicatorDefinition } from "ui/activity-indicator";
-import { View, Property, booleanConverter } from "ui/core/view";
+﻿import { ActivityIndicator as ActivityIndicatorDefinition } from ".";
+import { View, Property, booleanConverter } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class ActivityIndicatorBase extends View implements ActivityIndicatorDefinition {
     public busy: boolean;

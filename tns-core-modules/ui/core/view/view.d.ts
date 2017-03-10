@@ -1,11 +1,11 @@
 ///<reference path="../../../tns-core-modules.d.ts" /> Include global typings
-import { ViewBase, Property, EventData, Color } from "ui/core/view-base";
-import { Animation, AnimationDefinition, AnimationPromise } from "ui/animation";
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "ui/styling/style-properties";
-import { GestureTypes, GestureEventData, GesturesObserver } from "ui/gestures";
+import { ViewBase, Property, EventData, Color } from "../view-base";
+import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
+import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
+import { GestureTypes, GestureEventData, GesturesObserver } from "../../gestures";
 
-export * from "ui/core/view-base";
-export * from "ui/styling/style-properties";
+export * from "../view-base";
+export * from "../../styling/style-properties";
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 

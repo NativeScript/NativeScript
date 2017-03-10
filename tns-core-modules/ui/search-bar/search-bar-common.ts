@@ -1,7 +1,7 @@
-﻿import { SearchBar as SearchBarDefinition } from "ui/search-bar";
-import { View, Property, Color, isIOS } from "ui/core/view";
+﻿import { SearchBar as SearchBarDefinition } from ".";
+import { View, Property, Color, isIOS } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export abstract class SearchBarBase extends View implements SearchBarDefinition {
     public static submitEvent = "submit";

@@ -2,11 +2,11 @@
     PropertyMetadata as PropertyMetadataDefinition, Property as PropertyDefinition, PropertyEntry as PropertyEntryDefinition,
     DependencyObservable as DependencyObservableDefinition, NativeValueResult,
     PropertyChangedCallback, PropertyValidationCallback, PropertyEqualityComparer
-} from "ui/core/dependency-observable";
-import { Observable, WrappedValue } from "data/observable";
-import { getClassInfo, isString } from "utils/types";
+} from ".";
+import { Observable, WrappedValue } from "../../../data/observable";
+import { getClassInfo, isString } from "../../../utils/types";
 
-import { unsetValue } from "ui/core/properties";
+import { unsetValue } from "../properties";
 
 // use private variables in the scope of the module rather than static members of the class since a member is still accessible through JavaScript and may be changed.
 var propertyFromKey = {};

@@ -1,14 +1,14 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import * as app from "application";
-import * as button from "ui/button";
-import * as enums from "ui/enums";
+import * as app from "tns-core-modules/application";
+import * as button from "tns-core-modules/ui/button";
+import * as enums from "tns-core-modules/ui/enums";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
-import {Page} from "ui/page";
-import * as frame from "ui/frame";
+import {Page} from "tns-core-modules/ui/page";
+import * as frame from "tns-core-modules/ui/frame";
 
 // >> article-require-scrollview-module
-import * as scrollViewModule from "ui/scroll-view";
+import * as scrollViewModule from "tns-core-modules/ui/scroll-view";
 // << article-require-scrollview-module
 
 class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {

@@ -1,7 +1,7 @@
-import * as frameModule from "ui/frame";
+import * as frameModule from "tns-core-modules/ui/frame";
 import * as TKUnit from "../../TKUnit";
-import * as uiUtils from "ui/utils";
-import { PercentLength, unsetValue } from "ui/core/view";
+import * as uiUtils from "tns-core-modules/ui/utils";
+import { PercentLength, unsetValue } from "tns-core-modules/ui/core/view";
 
 export function test_percent_width_and_height_set_to_page_support() {
     let topFrame = frameModule.topmost();

@@ -1,14 +1,14 @@
-import * as btns from "ui/button";
-import * as pages from "ui/page";
-import * as stacks from "ui/layouts/stack-layout";
-import * as scroll from "ui/scroll-view";
-import * as textView from "ui/text-view";
-import * as labels from "ui/label";
-import * as trace from "trace";
-import * as gridModule from "ui/layouts/grid-layout";
-import * as sliders from "ui/slider";
-import * as switches from "ui/switch";
-import * as bindable from "ui/core/bindable";
+import * as btns from "tns-core-modules/ui/button";
+import * as pages from "tns-core-modules/ui/page";
+import * as stacks from "tns-core-modules/ui/layouts/stack-layout";
+import * as scroll from "tns-core-modules/ui/scroll-view";
+import * as textView from "tns-core-modules/ui/text-view";
+import * as labels from "tns-core-modules/ui/label";
+import * as trace from "tns-core-modules/trace";
+import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as sliders from "tns-core-modules/ui/slider";
+import * as switches from "tns-core-modules/ui/switch";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 
 trace.enable();
 //trace.setCategories(trace.categories.Style + " ," + trace.categories.Binding);

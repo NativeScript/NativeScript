@@ -1,7 +1,7 @@
-﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from "ui/layouts/absolute-layout";
-import { LayoutBase, View, Property, Length, zeroLength } from "ui/layouts/layout-base";
+﻿import { AbsoluteLayout as AbsoluteLayoutDefinition } from ".";
+import { LayoutBase, View, Property, Length, zeroLength } from "../layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "../layout-base";
 
 View.prototype.effectiveLeft = 0;
 View.prototype.effectiveTop = 0;

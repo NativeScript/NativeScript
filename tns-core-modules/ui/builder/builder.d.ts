@@ -1,5 +1,5 @@
-﻿import { View, Template, KeyedTemplate } from "ui/core/view";
-import { Page } from "ui/page";
+﻿import { View, Template, KeyedTemplate } from "../core/view";
+import { Page } from "../page";
 
 export function loadPage(moduleNamePath: string, fileName: string, moduleExports?: any): Page;
 export function load(fileName: string, exports?: any): View;

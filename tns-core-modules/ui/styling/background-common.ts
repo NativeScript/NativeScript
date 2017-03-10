@@ -1,11 +1,11 @@
 // Deifinitions.
-import { Background as BackgroundDefinition, BackgroundDrawParams } from "ui/styling/background";
-import { BackgroundRepeat } from "ui/core/view";
-import { ImageSource } from "image-source";
+import { Background as BackgroundDefinition, BackgroundDrawParams } from "./background";
+import { BackgroundRepeat } from "../core/view";
+import { ImageSource } from "../../image-source";
 
 // Types.
-import { Color } from "color";
-import { CSSValue, parse as cssParse } from "css-value";
+import { Color } from "../../color";
+import { CSSValue, parse as cssParse } from "../../css-value";
 
 export class Background implements BackgroundDefinition {
     public static default = new Background();

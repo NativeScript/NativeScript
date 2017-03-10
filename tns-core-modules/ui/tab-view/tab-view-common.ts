@@ -1,10 +1,10 @@
-﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from "ui/tab-view";
+﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
     Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder
-} from "ui/core/view";
+} from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export const traceCategory = "TabView";
 

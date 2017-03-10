@@ -1,7 +1,7 @@
 ﻿import { FontBase, parseFontFamily, genericFontFamilies, FontWeight } from "./font-common";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
-import * as application from "application";
-import * as fs from "file-system";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
+import * as application from "../../application";
+import * as fs from "../../file-system";
 
 export * from "./font-common";
 

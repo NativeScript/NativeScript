@@ -1,5 +1,5 @@
-import { ViewBase } from "ui/core/view-base";
-import { Style } from "ui/styling/style";
+import { ViewBase } from "../view-base";
+import { Style } from "../../styling/style";
 
 export { Style };
 

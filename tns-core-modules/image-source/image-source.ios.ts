@@ -1,11 +1,11 @@
 ﻿// Definitions.
-import { ImageSource as ImageSourceDefinition } from "image-source";
-import { ImageAsset } from "image-asset";
+import { ImageSource as ImageSourceDefinition } from ".";
+import { ImageAsset } from "../image-asset";
 import * as httpModule from "../http";
 
 // Types.
-import { path as fsPath, knownFolders } from "file-system";
-import { isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
+import { path as fsPath, knownFolders } from "../file-system";
+import { isFileOrResourcePath, RESOURCE_PREFIX } from "../utils/utils";
 
 export { isFileOrResourcePath };
 

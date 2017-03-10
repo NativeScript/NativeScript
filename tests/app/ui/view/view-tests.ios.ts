@@ -1,11 +1,11 @@
 import * as commonTests from "./view-tests-common";
-import * as view from "ui/core/view";
-import * as grid from "ui/layouts/grid-layout";
-import * as color from "color";
+import * as view from "tns-core-modules/ui/core/view";
+import * as grid from "tns-core-modules/ui/layouts/grid-layout";
+import * as color from "tns-core-modules/color";
 import * as helper from "../helper";
 import * as TKUnit from "../../TKUnit";
-import * as button from "ui/button";
-import * as utils from "utils/utils";
+import * as button from "tns-core-modules/ui/button";
+import * as utils from "tns-core-modules/utils/utils";
 
 global.moduleMerge(commonTests, exports);
 

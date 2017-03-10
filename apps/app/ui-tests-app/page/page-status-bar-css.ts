@@ -1,7 +1,7 @@
-import { Color } from "color";
-import { Page } from "ui/page";
-import { View } from "ui/core/view";
-import { unsetValue } from "ui/core/properties";
+import { Color } from "tns-core-modules/color";
+import { Page } from "tns-core-modules/ui/page";
+import { View } from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/properties";
 
 export function applyTap(args) {
     let page = <Page>(<View>args.object).page;

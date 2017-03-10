@@ -1,7 +1,7 @@
-﻿import { HtmlView as HtmlViewDefinition } from "ui/html-view";
-import { View, Property } from "ui/core/view";
+﻿import { HtmlView as HtmlViewDefinition } from ".";
+import { View, Property } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class HtmlViewBase extends View implements HtmlViewDefinition {
     public html: string;

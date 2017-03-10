@@ -1,4 +1,4 @@
-﻿import { iOSApplication as IOSApplicationDefinition, LaunchEventData, ApplicationEventData, OrientationChangedEventData } from "application";
+﻿import { iOSApplication as IOSApplicationDefinition, LaunchEventData, ApplicationEventData, OrientationChangedEventData } from ".";
 
 import {
     notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
@@ -8,9 +8,9 @@ import {
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { Frame, View, NavigationEntry } from "ui/frame";
-import { ios } from "ui/utils";
-import * as utils from "utils/utils";
+import { Frame, View, NavigationEntry } from "../ui/frame";
+import { ios } from "../ui/utils";
+import * as utils from "../utils/utils";
 
 class Responder extends UIResponder {
     //

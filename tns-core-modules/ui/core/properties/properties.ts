@@ -1,10 +1,10 @@
 // Definitions.
-import * as definitions from "ui/core/view-base";
+import * as definitions from "../view-base";
 import { ViewBase } from "../view-base";
 
 // Types.
-import { WrappedValue } from "data/observable";
-import { Style } from "ui/styling/style";
+import { WrappedValue } from "../../../data/observable";
+import { Style } from "../../styling/style";
 
 export { Style };
 

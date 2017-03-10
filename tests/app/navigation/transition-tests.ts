@@ -1,11 +1,11 @@
 ﻿import * as TKUnit from "../TKUnit";
 import * as helper from "../ui/helper";
-import * as platform from "platform";
-import * as trace from "trace";
-import { Color } from "color";
-import { NavigationEntry, NavigationTransition, topmost as topmostFrame } from "ui/frame";
-import { Page } from "ui/page";
-import { AnimationCurve } from "ui/enums"
+import * as platform from "tns-core-modules/platform";
+import * as trace from "tns-core-modules/trace";
+import { Color } from "tns-core-modules/color";
+import { NavigationEntry, NavigationTransition, topmost as topmostFrame } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
+import { AnimationCurve } from "tns-core-modules/ui/enums"
 
 function _testTransition(navigationTransition: NavigationTransition) {
     var testId = `Transition[${JSON.stringify(navigationTransition)}]`;

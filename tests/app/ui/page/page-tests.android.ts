@@ -1,10 +1,10 @@
-﻿import * as PageModule from "ui/page";
+﻿import * as PageModule from "tns-core-modules/ui/page";
 import * as TKUnit from "../../TKUnit";
-import * as LabelModule from "ui/label";
+import * as LabelModule from "tns-core-modules/ui/label";
 import * as PageTestCommon from "./page-tests-common";
 import * as helper from "../helper";
-import * as frame from "ui/frame";
-import * as types from "utils/types";
+import * as frame from "tns-core-modules/ui/frame";
+import * as types from "tns-core-modules/utils/types";
 
 global.moduleMerge(PageTestCommon, exports);
 

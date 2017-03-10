@@ -1,15 +1,15 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as builder from "ui/builder";
-import * as fs from "file-system";
-import { Label } from "ui/label";
-import { Button } from "ui/button";
-import { Page } from "ui/page";
-import { View } from "ui/core/view";
-import { fromObject } from "data/observable";
+import * as builder from "tns-core-modules/ui/builder";
+import * as fs from "tns-core-modules/file-system";
+import { Label } from "tns-core-modules/ui/label";
+import { Button } from "tns-core-modules/ui/button";
+import { Page } from "tns-core-modules/ui/page";
+import { View } from "tns-core-modules/ui/core/view";
+import { fromObject } from "tns-core-modules/data/observable";
 
 // >> actionbar-common-require
-import * as actionBarModule from "ui/action-bar";
+import * as actionBarModule from "tns-core-modules/ui/action-bar";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {

@@ -1,6 +1,6 @@
-﻿import * as definition from "ui/image-cache";
-import * as observable from "data/observable";
-import * as imageSource from "image-source";
+﻿import * as definition from ".";
+import * as observable from "../../data/observable";
+import * as imageSource from "../../image-source";
 
 export interface DownloadRequest {
     url: string;

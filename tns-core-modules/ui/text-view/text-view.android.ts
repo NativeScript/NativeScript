@@ -1,7 +1,7 @@
-﻿import { TextView as TextViewDefinition } from "ui/text-view";
-import { EditableTextBase } from "ui/editable-text-base";
+﻿import { TextView as TextViewDefinition } from ".";
+import { EditableTextBase } from "../editable-text-base";
 
-export * from "ui/text-base";
+export * from "../text-base";
 
 export class TextView extends EditableTextBase implements TextViewDefinition {
     public _configureEditText() {

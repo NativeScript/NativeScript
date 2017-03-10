@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the TabView class, which represents a standard content component with tabs.
  */
-import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "ui/core/view";
+import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
 
 /**
  * Represents a tab view entry.

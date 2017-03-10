@@ -1,14 +1,14 @@
-﻿import { TextView as TextViewDefinition } from "ui/text-view";
+﻿import { TextView as TextViewDefinition } from ".";
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, 
     Length, _updateCharactersInRangeReplacementString, Color, layout
-} from "ui/editable-text-base";
+} from "../editable-text-base";
 
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 
-export * from "ui/editable-text-base";
+export * from "../editable-text-base";
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static ObjCProtocols = [UITextViewDelegate];

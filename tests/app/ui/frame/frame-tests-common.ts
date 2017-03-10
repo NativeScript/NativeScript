@@ -1,10 +1,10 @@
 ﻿// >> frame-require
-import * as frameModule from "ui/frame";
+import * as frameModule from "tns-core-modules/ui/frame";
 var topmost = frameModule.topmost();
 // << frame-require
 
-import * as labelModule from "ui/label";
-import * as pagesModule from "ui/page";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as pagesModule from "tns-core-modules/ui/page";
 
 export var ignore_test_DummyTestForSnippetOnly0 = function () {
     // >> frame-navigating

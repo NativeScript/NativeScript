@@ -1,6 +1,6 @@
-﻿import * as transition from "ui/transition";
-import * as platform from "platform";
-import lazy from "utils/lazy";
+﻿import * as transition from "./transition";
+import * as platform from "../../platform";
+import lazy from "../../utils/lazy";
 
 const screenWidth = lazy(() => platform.screen.mainScreen.widthPixels);
 const screenHeight = lazy(() => platform.screen.mainScreen.heightPixels);

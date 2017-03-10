@@ -1,7 +1,7 @@
-﻿import * as frame from "ui/frame";
-import * as pages from "ui/page";
-import * as buttonModule from "ui/button";
-import * as tabViewModule from "ui/tab-view";
+﻿import * as frame from "tns-core-modules/ui/frame";
+import * as pages from "tns-core-modules/ui/page";
+import * as buttonModule from "tns-core-modules/ui/button";
+import * as tabViewModule from "tns-core-modules/ui/tab-view";
 
 export function createPage() {
     var tab = new tabViewModule.TabView();

@@ -1,7 +1,7 @@
-﻿import * as fsModule from "file-system";
+﻿import * as fsModule from "../file-system";
 import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
-} from "trace";
+} from "../trace";
 
 export * from "./utils-common";
 

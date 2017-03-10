@@ -1,7 +1,7 @@
-﻿import { Label as LabelDefinition } from "ui/label";
-import { TextBase, WhiteSpace } from "ui/text-base";
+﻿import { Label as LabelDefinition } from ".";
+import { TextBase, WhiteSpace } from "../text-base";
 
-export * from "ui/text-base";
+export * from "../text-base";
 
 export class Label extends TextBase implements LabelDefinition {
     private _android: android.widget.TextView;

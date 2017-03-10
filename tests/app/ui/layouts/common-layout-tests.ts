@@ -1,8 +1,8 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
-import {LayoutBase, unsetValue, PercentLength} from "ui/layouts/layout-base";
-import * as platform from "platform";
+import {LayoutBase, unsetValue, PercentLength} from "tns-core-modules/ui/layouts/layout-base";
+import * as platform from "tns-core-modules/platform";
 
 function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
     var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();

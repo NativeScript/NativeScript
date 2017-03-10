@@ -2,23 +2,23 @@
 import * as testModule from "../../ui-test";
 
 //>> label-require
-import * as LabelModule from "ui/label";
+import * as LabelModule from "tns-core-modules/ui/label";
 // << label-require
 
-import * as types from "utils/types";
-import * as colorModule from "color";
-import * as utils from "utils/utils";
-import * as observableModule from "data/observable";
-import * as bindable from "ui/core/bindable";
-import * as enums from "ui/enums";
+import * as types from "tns-core-modules/utils/types";
+import * as colorModule from "tns-core-modules/color";
+import * as utils from "tns-core-modules/utils/utils";
+import * as observableModule from "tns-core-modules/data/observable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
+import * as enums from "tns-core-modules/ui/enums";
 import * as labelTestsNative from "./label-tests-native";
-import * as fs from "file-system";
+import * as fs from "tns-core-modules/file-system";
 
-import { StackLayout } from "ui/layouts/stack-layout";
-import { GridLayout } from "ui/layouts/grid-layout";
-import { isIOS, isAndroid } from "platform";
-import { Label } from "ui/label";
-import { LayoutBase } from "ui/layouts/layout-base";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { Label } from "tns-core-modules/ui/label";
+import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 import * as helper from "../helper";
 
 export class LabelTest extends testModule.UITest<LabelModule.Label> {

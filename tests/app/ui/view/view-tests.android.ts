@@ -1,14 +1,14 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as commonTests from "./view-tests-common";
 import * as helper from "../../ui/helper";
-import * as view from "ui/core/view";
-import * as button from "ui/button";
-import * as types from "utils/types";
-import * as stack from "ui/layouts/stack-layout";
-import * as labelModule from "ui/label";
-import * as frame from "ui/frame";
-import * as trace from "trace";
-import { Color } from "color";
+import * as view from "tns-core-modules/ui/core/view";
+import * as button from "tns-core-modules/ui/button";
+import * as types from "tns-core-modules/utils/types";
+import * as stack from "tns-core-modules/ui/layouts/stack-layout";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as frame from "tns-core-modules/ui/frame";
+import * as trace from "tns-core-modules/trace";
+import { Color } from "tns-core-modules/color";
 // enable the trace, it is disabled by default
 trace.enable();
 

@@ -1,5 +1,5 @@
 ﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
-import { ItemsSource } from "ui/list-picker";
+import { ItemsSource } from ".";
 
 export * from "./list-picker-common";
 

@@ -1,5 +1,5 @@
-﻿import {TextView} from "ui/text-view";
-import * as gestures from "ui/gestures";
+﻿import {TextView} from "tns-core-modules/ui/text-view";
+import * as gestures from "tns-core-modules/ui/gestures";
 
 export function onTouch(args: gestures.TouchGestureEventData) {
     var msg = " touch action: " + args.action +

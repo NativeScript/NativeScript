@@ -1,6 +1,6 @@
-﻿import { View, CustomLayoutView, Property, Length } from "ui/core/view";
+﻿import { View, CustomLayoutView, Property, Length } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 /**
  * Base class for all views that supports children positioning.

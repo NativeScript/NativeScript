@@ -1,7 +1,7 @@
-﻿import * as label from "ui/label";
-import * as pages from "ui/page";
-import * as fs from "file-system";
-import * as fileResolverModule from "file-system/file-name-resolver";
+﻿import * as label from "tns-core-modules/ui/label";
+import * as pages from "tns-core-modules/ui/page";
+import * as fs from "tns-core-modules/file-system";
+import * as fileResolverModule from "tns-core-modules/file-system/file-name-resolver";
 
 export function createPage() {
     var page = new pages.Page();

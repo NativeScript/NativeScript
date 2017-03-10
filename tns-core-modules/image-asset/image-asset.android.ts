@@ -1,4 +1,4 @@
-import * as platform from "platform";
+import * as platform from "../platform";
 import * as common from "./image-asset-common";
 
 global.moduleMerge(common, exports);

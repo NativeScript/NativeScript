@@ -5,13 +5,13 @@
 // This enables cascading values - e.g. default vs. inherited vs. local.
 // Load the module using the following code:
 // ``` JavaScript
-import * as dependencyObservableModule from "ui/core/dependency-observable";
+import * as dependencyObservableModule from "tns-core-modules/ui/core/dependency-observable";
 // ```
 // </snippet>
 
 import * as TKUnit from "../TKUnit";
-import * as types from "utils/types";
-import * as observableModule from "data/observable";
+import * as types from "tns-core-modules/utils/types";
+import * as observableModule from "tns-core-modules/data/observable";
 
 var currentChangeData: dependencyObservableModule.PropertyChangeData;
 var propertyNameCount = 0;

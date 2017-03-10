@@ -1,4 +1,4 @@
-﻿import { getNativeApplication, android as androidApp} from "application";
+﻿import { getNativeApplication, android as androidApp} from "../application";
 
 export const enum connectionType {
     none = 0,

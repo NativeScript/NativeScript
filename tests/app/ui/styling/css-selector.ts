@@ -1,5 +1,5 @@
-import * as selector from "ui/styling/css-selector";
-import * as parser from "css";
+import * as selector from "tns-core-modules/ui/styling/css-selector";
+import * as parser from "tns-core-modules/css";
 import * as TKUnit from "../../TKUnit";
 
 function create(css: string, source: string = "css-selectors.ts@test"): { rules: selector.RuleSet[], map: selector.SelectorsMap } {

@@ -1,7 +1,7 @@
-﻿import { Switch as SwitchDefinition } from "ui/switch";
-import { View, Property, booleanConverter } from "ui/core/view";
+﻿import { Switch as SwitchDefinition } from ".";
+import { View, Property, booleanConverter } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class SwitchBase extends View implements SwitchDefinition {
     public checked: boolean;

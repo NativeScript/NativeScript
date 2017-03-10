@@ -1,12 +1,12 @@
 ﻿import * as PageTestCommon from "./page-tests-common";
-import {Page} from "ui/page";
+import {Page} from "tns-core-modules/ui/page";
 import * as TKUnit from "../../TKUnit";
-import {Label} from "ui/label";
+import {Label} from "tns-core-modules/ui/label";
 import * as helper from "../helper";
-import {View} from "ui/core/view";
-import {EventData} from "data/observable";
-import * as uiUtils from "ui/utils";
-import * as frame from "ui/frame";
+import {View} from "tns-core-modules/ui/core/view";
+import {EventData} from "tns-core-modules/data/observable";
+import * as uiUtils from "tns-core-modules/ui/utils";
+import * as frame from "tns-core-modules/ui/frame";
 
 global.moduleMerge(PageTestCommon, exports);
 

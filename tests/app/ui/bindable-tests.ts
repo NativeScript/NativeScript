@@ -1,20 +1,20 @@
-import { Observable, fromObject, fromObjectRecursive } from "data/observable";
-import { ViewBase } from "ui/core/view-base";
-import { BindingOptions } from "ui/core/bindable";
+import { Observable, fromObject, fromObjectRecursive } from "tns-core-modules/data/observable";
+import { ViewBase } from "tns-core-modules/ui/core/view-base";
+import { BindingOptions } from "tns-core-modules/ui/core/bindable";
 import * as TKUnit from "../TKUnit";
-import * as types from "utils/types";
+import * as types from "tns-core-modules/utils/types";
 import * as helper from "../ui/helper";
-import * as utils from "utils/utils";
-import * as bindingBuilder from "ui/builder/binding-builder";
-import * as fs from "file-system";
-import * as appModule from "application";
-import * as trace from "trace";
-import { View } from "ui/core/view";
-import { Button } from "ui/button";
-import { Page } from "ui/page";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { Label } from "ui/label";
-import { TextField } from "ui/text-field";
+import * as utils from "tns-core-modules/utils/utils";
+import * as bindingBuilder from "tns-core-modules/ui/builder/binding-builder";
+import * as fs from "tns-core-modules/file-system";
+import * as appModule from "tns-core-modules/application";
+import * as trace from "tns-core-modules/trace";
+import { View } from "tns-core-modules/ui/core/view";
+import { Button } from "tns-core-modules/ui/button";
+import { Page } from "tns-core-modules/ui/page";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { Label } from "tns-core-modules/ui/label";
+import { TextField } from "tns-core-modules/ui/text-field";
 
 // <snippet module="ui/core/bindable" title="bindable">
 // For information and examples how to use bindings please refer to special [**Data binding**](../../../../bindings.md) topic. 

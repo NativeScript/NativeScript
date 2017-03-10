@@ -1,6 +1,6 @@
-import { ImageSource } from "image-source";
-import { Color } from "color";
-import { View, BackgroundRepeat } from "ui/core/view";
+import { ImageSource } from "../../image-source";
+import { Color } from "../../color";
+import { View, BackgroundRepeat } from "../core/view";
 
 export interface BackgroundDrawParams {
     repeatX: boolean;

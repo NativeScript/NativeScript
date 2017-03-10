@@ -4,7 +4,7 @@
     hourProperty, minHourProperty, maxHourProperty, colorProperty, Color
 } from "./time-picker-common";
 
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 import getter = ios.getter;
 
 export * from "./time-picker-common";

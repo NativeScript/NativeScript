@@ -1,7 +1,7 @@
 ﻿// Require globals first so that snapshot takes __extends function.
 require("globals");
 
-import { Observable, EventData } from "data/observable";
+import { Observable, EventData } from "../data/observable";
 
 const events = new Observable();
 let launched = false;
@@ -17,8 +17,8 @@ export function hasLaunched(): boolean {
 
 export { Observable };
 
-import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
-import { NavigationEntry } from "ui/frame";
+import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from ".";
+import { NavigationEntry } from "../ui/frame";
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";

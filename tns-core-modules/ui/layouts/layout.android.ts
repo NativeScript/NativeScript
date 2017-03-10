@@ -1,7 +1,7 @@
-﻿import { Layout as LayoutDefinition } from "ui/layouts/layout";
-import { LayoutBase, View, layout, traceEnabled, traceWrite, traceCategories } from "ui/layouts/layout-base";
+﻿import { Layout as LayoutDefinition } from "./layout";
+import { LayoutBase, View, layout, traceEnabled, traceWrite, traceCategories } from "./layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "./layout-base";
 
 const OWNER = Symbol("_owner");
 

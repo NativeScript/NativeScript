@@ -1,13 +1,13 @@
-﻿import { EventData } from "data/observable";
-import { Page } from "ui/page";
-import * as buttonModule from "ui/button";
-import * as colorModule from "color";
-import * as platform from "platform";
-import * as frame from "ui/frame";
-import * as trace from "trace";
-import * as observable from "data/observable";
-import * as dialogs from "ui/dialogs";
-import { WrapLayout } from "ui/layouts/wrap-layout";
+﻿import { EventData } from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
+import * as buttonModule from "tns-core-modules/ui/button";
+import * as colorModule from "tns-core-modules/color";
+import * as platform from "tns-core-modules/platform";
+import * as frame from "tns-core-modules/ui/frame";
+import * as trace from "tns-core-modules/trace";
+import * as observable from "tns-core-modules/data/observable";
+import * as dialogs from "tns-core-modules/ui/dialogs";
+import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 
 var examples: Map<string, string> = new Map<string, string>();
 //should be removed

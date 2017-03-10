@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Repeater class, which represents a UI Repeater component.
  */
-import { LayoutBase, CustomLayoutView, Template, Property } from "ui/layouts/layout-base";
+import { LayoutBase, CustomLayoutView, Template, Property } from "../layouts/layout-base";
 
 /**
  * Represents a UI Repeater component.

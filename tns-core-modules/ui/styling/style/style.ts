@@ -1,17 +1,16 @@
-import { Style as StyleDefinition } from "ui/styling/style";
-import { Color } from "color";
-import { Font } from "ui/styling/font";
-import { Background } from "ui/styling/background";
-import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "ui/core/view";
-import { Observable } from "data/observable";
+import { Style as StyleDefinition } from ".";
+import { Color } from "../../../color";
+import { Font, FontStyle, FontWeight } from "../font";
+import { Background } from "../background";
+import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "../../core/view";
+import { Observable } from "../../../data/observable";
 
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
-} from "ui/layouts/flexbox-layout";
+} from "../../layouts/flexbox-layout";
 
-import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "ui/text-base";
-import { FontStyle, FontWeight } from "ui/styling/font";
+import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
 
 export class Style extends Observable implements StyleDefinition {
     constructor(public view: ViewBase) {

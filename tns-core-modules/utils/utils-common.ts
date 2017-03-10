@@ -1,4 +1,4 @@
-﻿import * as types from "utils/types";
+﻿import * as types from "./types";
 
 export var RESOURCE_PREFIX = "res://";
 

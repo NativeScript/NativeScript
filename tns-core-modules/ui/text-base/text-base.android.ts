@@ -1,4 +1,4 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font, FontWeight, FontStyle } from "../styling/font";
 
 import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
@@ -8,8 +8,7 @@ import {
     layout, Span, Color
 } from "./text-base-common";
 
-import { _isSet as isSet } from "ui/core/properties";
-import { FontWeight, FontStyle } from "ui/styling/font";
+import { _isSet as isSet } from "../core/properties";
 
 export * from "./text-base-common";
 

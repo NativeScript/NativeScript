@@ -1,15 +1,15 @@
-import { Color } from "color";
-import { Font, parseFont, FontStyle, FontWeight } from "ui/styling/font";
-import { isDataURI, isFileOrResourcePath, layout } from "utils/utils";
-import { Background } from "ui/styling/background";
-import { isIOS } from "platform";
+import { Color } from "../../color";
+import { Font, parseFont, FontStyle, FontWeight } from "./font";
+import { isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
+import { Background } from "./background";
+import { isIOS } from "../../platform";
 
 // TODO: Remove this and start using string as source (for android).
-import { fromFileOrResource, fromBase64, fromUrl } from "image-source";
+import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
 
-import { Style } from "ui/styling/style";
+import { Style } from "./style";
 
-import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "ui/core/properties";
+import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
 
 function equalsCommon(a: Length, b: Length): boolean;
 function equalsCommon(a: PercentLength, b: PercentLength): boolean;

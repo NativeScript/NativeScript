@@ -1,12 +1,12 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import {Label} from "ui/label";
-import {StackLayout} from "ui/layouts/stack-layout";
-import * as frameModule from "ui/frame";
-import {Page} from "ui/page";
-import {ListView, ItemEventData} from "ui/list-view";
-import {TabView, TabViewItem} from "ui/tab-view";
-import {Button} from "ui/button";
+import {Label} from "tns-core-modules/ui/label";
+import {StackLayout} from "tns-core-modules/ui/layouts/stack-layout";
+import * as frameModule from "tns-core-modules/ui/frame";
+import {Page} from "tns-core-modules/ui/page";
+import {ListView, ItemEventData} from "tns-core-modules/ui/list-view";
+import {TabView, TabViewItem} from "tns-core-modules/ui/tab-view";
+import {Button} from "tns-core-modules/ui/button";
 
 var ASYNC = 2;
 

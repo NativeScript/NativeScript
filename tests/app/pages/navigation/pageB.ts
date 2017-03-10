@@ -1,10 +1,10 @@
-﻿import * as pages from "ui/page";
-import * as frame from "ui/frame";
-import * as stackModule from "ui/layouts/stack-layout";
-import * as button from "ui/button";
-import * as text from "ui/text-field";
-import * as color from "color";
-import * as scroll from "ui/scroll-view";
+﻿import * as pages from "tns-core-modules/ui/page";
+import * as frame from "tns-core-modules/ui/frame";
+import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as button from "tns-core-modules/ui/button";
+import * as text from "tns-core-modules/ui/text-field";
+import * as color from "tns-core-modules/color";
+import * as scroll from "tns-core-modules/ui/scroll-view";
 
 export function createPage() {
     var page = new pages.Page();

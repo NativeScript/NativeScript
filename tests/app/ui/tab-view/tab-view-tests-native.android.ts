@@ -1,4 +1,4 @@
-﻿import * as tabViewModule from "ui/tab-view";
+﻿import * as tabViewModule from "tns-core-modules/ui/tab-view";
 
 export function getNativeTabCount(tabView: tabViewModule.TabView): number {
     var pagerAdapter: android.support.v4.view.PagerAdapter = (<any>tabView)._pagerAdapter;

@@ -1,4 +1,4 @@
-import * as colorModule from "color";
+import * as colorModule from "../color";
 export var RESOURCE_PREFIX: string;
 
 //@private

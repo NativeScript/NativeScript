@@ -1,15 +1,15 @@
-﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from "ui/page";
+﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
 import {
     ContentView, View, eachDescendant, Property, CssProperty, Color, isIOS,
     booleanConverter, resetCSSProperties, Style
-} from "ui/content-view";
-import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "ui/frame";
-import { ActionBar } from "ui/action-bar";
-import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
-import { StyleScope } from "ui/styling/style-scope";
-import { File, path, knownFolders } from "file-system";
+} from "../content-view";
+import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "../frame";
+import { ActionBar } from "../action-bar";
+import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
+import { StyleScope } from "../styling/style-scope";
+import { File, path, knownFolders } from "../../file-system";
 
-export * from "ui/content-view";
+export * from "../content-view";
 
 export class PageBase extends ContentView implements PageDefinition {
 

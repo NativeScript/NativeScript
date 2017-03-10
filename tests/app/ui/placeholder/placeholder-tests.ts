@@ -1,13 +1,13 @@
 ﻿import * as TKUnit from "../../TKUnit";
 // >> article-creating-view
-import * as platform from "platform";
+import * as platform from "tns-core-modules/platform";
 //var utils = require("utils/utils");
-import * as utils from "utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
+import * as viewModule from "tns-core-modules/ui/core/view";
 
 // >> article-require-placeholder-module
-import * as placeholderModule from "ui/placeholder";
+import * as placeholderModule from "tns-core-modules/ui/placeholder";
 // << article-require-placeholder-module
 
 function creatingView(args) {

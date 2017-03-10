@@ -1,7 +1,7 @@
-import { View } from "ui/core/view";
-import { isNullOrUndefined, isFunction, getClass } from "utils/types";
-import { CacheLayerType, layout } from "utils/utils";
-import { parse } from "css-value";
+import { View } from "../core/view";
+import { isNullOrUndefined, isFunction, getClass } from "../../utils/types";
+import { CacheLayerType, layout } from "../../utils/utils";
+import { parse } from "../../css-value";
 
 export * from "./background-common"
 

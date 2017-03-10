@@ -1,6 +1,6 @@
 ﻿import * as TKUnit from "./TKUnit";
-import { Observable, EventData } from "data/observable";
-import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
+import { Observable, EventData } from "tns-core-modules/data/observable";
+import { addWeakEventListener, removeWeakEventListener } from "tns-core-modules/ui/core/weak-event-listener";
 import { forceGC } from "./ui/helper";
 
 class Target {

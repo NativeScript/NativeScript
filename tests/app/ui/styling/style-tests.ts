@@ -1,16 +1,16 @@
 import * as TKUnit from "../../TKUnit";
-import * as application from "application";
-import * as buttonModule from "ui/button";
-import * as labelModule from "ui/label";
-import * as pageModule from "ui/page";
-import * as stackModule from "ui/layouts/stack-layout";
-import * as wrapModule from "ui/layouts/wrap-layout";
-import * as tabViewModule from "ui/tab-view";
+import * as application from "tns-core-modules/application";
+import * as buttonModule from "tns-core-modules/ui/button";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as pageModule from "tns-core-modules/ui/page";
+import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as wrapModule from "tns-core-modules/ui/layouts/wrap-layout";
+import * as tabViewModule from "tns-core-modules/ui/tab-view";
 import * as helper from "../../ui/helper";
-import * as types from "utils/types";
-import * as viewModule from "ui/core/view";
-import { resolveFileNameFromUrl } from "ui/styling/style-scope";
-import { unsetValue } from "ui/core/view";
+import * as types from "tns-core-modules/utils/types";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import { resolveFileNameFromUrl } from "tns-core-modules/ui/styling/style-scope";
+import { unsetValue } from "tns-core-modules/ui/core/view";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();

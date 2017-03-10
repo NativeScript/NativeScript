@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Switch class, which represents a standard switch component.
  */
-import { View, Property } from "ui/core/view";
+import { View, Property } from "../core/view";
 
 /**
  * Represents a switch component.

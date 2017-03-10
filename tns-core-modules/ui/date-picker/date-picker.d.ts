@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the DatePicker class.
  */
-import { View, Property } from "ui/core/view";
+import { View, Property } from "../core/view";
 
 export const yearProperty: Property<DatePicker, number>;
 export const monthProperty: Property<DatePicker, number>;

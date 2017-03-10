@@ -1,4 +1,4 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
@@ -6,9 +6,9 @@ import {
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
 } from "./tab-view-common"
 
-import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
-import { fromFileOrResource } from "image-source";
-import { Page } from "ui/page";
+import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
+import { fromFileOrResource } from "../../image-source";
+import { Page } from "../page";
 
 export * from "./tab-view-common";
 

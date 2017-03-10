@@ -1,6 +1,6 @@
-import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "ui/layouts/layout-base";
+import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "../layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "../layout-base";
 
 export type Basis = "auto" | number;
 

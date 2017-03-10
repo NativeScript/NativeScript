@@ -1,4 +1,4 @@
-﻿import { LayoutBase, Property, View } from "ui/layouts/layout-base";
+﻿import { LayoutBase, Property, View } from "../layout-base";
 
 /**
  * Defines row/column specific properties that apply to GridLayout elements.

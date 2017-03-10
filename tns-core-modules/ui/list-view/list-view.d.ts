@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the ListView class, which represents a standard list view widget.
  */
-import { EventData, View, Template, KeyedTemplate, Length, Property, CssProperty, Color, Style } from "ui/core/view";
+import { EventData, View, Template, KeyedTemplate, Length, Property, CssProperty, Color, Style } from "../core/view";
 
 /**
  * Known template names.

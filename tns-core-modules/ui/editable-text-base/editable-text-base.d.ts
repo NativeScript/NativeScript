@@ -1,4 +1,4 @@
-﻿import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "ui/text-base";
+﻿import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
 
 export const keyboardTypeProperty: Property<EditableTextBase, string>;
 export const returnKeyTypeProperty: Property<EditableTextBase, string>;
@@ -59,4 +59,4 @@ export class EditableTextBase extends TextBase {
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
 //@endprivate
 
-export * from "ui/text-base";
+export * from "../text-base";
