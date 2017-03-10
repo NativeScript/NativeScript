@@ -1,17 +1,17 @@
-﻿import * as view from "ui/core/view";
-import * as frame from "ui/frame";
-import * as page from "ui/page";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as button from "ui/button";
+﻿import * as view from "tns-core-modules/ui/core/view";
+import * as frame from "tns-core-modules/ui/frame";
+import * as page from "tns-core-modules/ui/page";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as button from "tns-core-modules/ui/button";
 import * as TKUnit from "../TKUnit";
-import * as utils from "utils/utils";
-import * as platform from "platform";
-import * as colorModule from "color";
-import * as formattedStringModule from "text/formatted-string";
-import * as spanModule from "text/span";
-import { ActionBar } from "ui/action-bar";
-import { unsetValue } from "ui/core/view";
-import { Color } from "color";
+import * as utils from "tns-core-modules/utils/utils";
+import * as platform from "tns-core-modules/platform";
+import * as colorModule from "tns-core-modules/color";
+import * as formattedStringModule from "tns-core-modules/text/formatted-string";
+import * as spanModule from "tns-core-modules/text/span";
+import { ActionBar } from "tns-core-modules/ui/action-bar";
+import { unsetValue } from "tns-core-modules/ui/core/view";
+import { Color } from "tns-core-modules/color";
 
 var DELTA = 0.1;
 

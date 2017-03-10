@@ -1,7 +1,7 @@
-﻿import { StackLayout as StackLayoutDefinition } from "ui/layouts/stack-layout";
-import { LayoutBase, Property, isIOS } from "ui/layouts/layout-base";
+﻿import { StackLayout as StackLayoutDefinition } from ".";
+import { LayoutBase, Property, isIOS } from "../layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "../layout-base";
 
 export class StackLayoutBase extends LayoutBase implements StackLayoutDefinition {
     public orientation: "horizontal" | "vertical";

@@ -1,6 +1,6 @@
-﻿import * as application from "application";
+﻿import * as application from "tns-core-modules/application";
 
-import * as trace from "trace";
+import * as trace from "tns-core-modules/trace";
 trace.enable();
 trace.setCategories(trace.categories.concat(
     trace.categories.Layout

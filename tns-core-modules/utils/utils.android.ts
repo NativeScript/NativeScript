@@ -1,10 +1,10 @@
 ﻿import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
-} from "trace";
+} from "../trace";
 
 export * from "./utils-common";
 
-import { getNativeApplication, android as androidApp } from "application";
+import { getNativeApplication, android as androidApp } from "../application";
 
 export module layout {
     let density: number;

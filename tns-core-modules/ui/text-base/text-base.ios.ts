@@ -1,12 +1,11 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font, FontWeight, FontStyle } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, FormattedString,
     TextDecoration, TextAlignment, TextTransform, Span, Color
 } from "./text-base-common";
 
-import { _isSet as isSet } from "ui/core/properties";
-import { FontWeight, FontStyle } from "ui/styling/font";
+import { _isSet as isSet } from "../core/properties";
 
 export * from "./text-base-common";
 

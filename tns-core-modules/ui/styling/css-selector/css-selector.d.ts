@@ -1,4 +1,4 @@
-﻿import * as parser from "css";
+﻿import * as parser from "../../../css";
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.

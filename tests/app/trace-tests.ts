@@ -1,5 +1,5 @@
 ﻿// >> trace-require
-import * as trace from "trace";
+import * as trace from "tns-core-modules/trace";
 // << trace-require
 
 export var test_DummyTestForSnippetOnly0 = function () {

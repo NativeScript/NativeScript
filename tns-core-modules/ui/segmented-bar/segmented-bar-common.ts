@@ -1,10 +1,10 @@
-﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from "ui/segmented-bar";
+﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
     Property, CoercibleProperty, InheritedCssProperty, Color, Style
-} from "ui/core/view";
+} from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export module knownCollections {
     export var items = "items";

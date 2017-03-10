@@ -1,6 +1,6 @@
-﻿import * as observable from "data/observable";
-import * as view from "ui/core/view";
-import * as label from "ui/label";
+﻿import * as observable from "tns-core-modules/data/observable";
+import * as view from "tns-core-modules/ui/core/view";
+import * as label from "tns-core-modules/ui/label";
 
 var count = 0;
 export function buttonTap2(args: observable.EventData) {

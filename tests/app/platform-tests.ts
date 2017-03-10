@@ -1,9 +1,9 @@
 ﻿import * as TKUnit from "./TKUnit";
-import * as app from "application";
-import { isIOS, isAndroid } from "platform";
+import * as app from "tns-core-modules/application";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
 
 // >> platform-require
-import * as platformModule from "platform";
+import * as platformModule from "tns-core-modules/platform";
 // << platform-require
 
 export function test_setTimeout_isDefined() {

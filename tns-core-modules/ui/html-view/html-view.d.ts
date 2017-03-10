@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the HtmlView class, which represents a standard html view widget.
  */
-import { View, Property } from "ui/core/view";
+import { View, Property } from "../core/view";
 
 /**
  * Represents a view with html content. Use this component instead WebView when you want to show just static HTML content.

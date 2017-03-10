@@ -3,13 +3,13 @@
     actionBarHiddenProperty, statusBarStyleProperty,
     traceEnabled, traceWrite, traceCategories, PercentLength, Color
 } from "./page-common";
-import { ios as iosApp } from "application";
-import { device } from "platform";
-import * as uiUtils from "ui/utils";
+import { ios as iosApp } from "../../application";
+import { device } from "../../platform";
+import * as uiUtils from "../utils";
 
 export * from "./page-common";
 
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 import getter = ios.getter;
 
 const ENTRY = "_entry";

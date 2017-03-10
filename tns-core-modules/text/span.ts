@@ -1,8 +1,8 @@
-﻿import { Color } from "color";
-import { Span as SpanDefinition } from "text/span";
-import { ViewBase } from "ui/core/view";
-import { FontStyle, FontWeight, } from "ui/styling/font";
-import { TextDecoration } from "ui/text-base";
+﻿import { Color } from "../color";
+import { Span as SpanDefinition } from "./span";
+import { ViewBase } from "../ui/core/view";
+import { FontStyle, FontWeight, } from "../ui/styling/font";
+import { TextDecoration } from "../ui/text-base";
 
 export class Span extends ViewBase implements SpanDefinition {
     private _text: string;

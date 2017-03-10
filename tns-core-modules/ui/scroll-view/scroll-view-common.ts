@@ -1,7 +1,7 @@
-﻿import { ScrollView as ScrollViewDefinition } from "ui/scroll-view";
-import { ContentView, Property } from "ui/content-view";
+﻿import { ScrollView as ScrollViewDefinition } from ".";
+import { ContentView, Property } from "../content-view";
 
-export * from "ui/content-view";
+export * from "../content-view";
 
 export abstract class ScrollViewBase extends ContentView implements ScrollViewDefinition {
     private _scrollChangeCount: number = 0;

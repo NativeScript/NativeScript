@@ -1,5 +1,5 @@
-﻿import { NavigationTransition } from "ui/frame";
-import { Page } from "ui/page";
+﻿import { NavigationTransition } from "../frame";
+import { Page } from "../page";
 
 export module AndroidTransitionType {
     export const enter: string;

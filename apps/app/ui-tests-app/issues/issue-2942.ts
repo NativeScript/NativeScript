@@ -1,5 +1,5 @@
-import { ad } from "utils//utils";
-import { isAndroid } from "platform";
+import { ad } from "tns-core-modules/utils//utils";
+import { isAndroid } from "tns-core-modules/platform";
 
 export function onButtonLoaded(args) {
     if (args.object.android) {

@@ -1,9 +1,9 @@
-﻿import * as app from "application";
-import * as pageModule from "ui/page";
-import * as labelModule from "ui/label";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as textViewModule from "ui/text-view";
-import * as buttonModule from "ui/button";
+﻿import * as app from "tns-core-modules/application";
+import * as pageModule from "tns-core-modules/ui/page";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as textViewModule from "tns-core-modules/ui/text-view";
+import * as buttonModule from "tns-core-modules/ui/button";
 
 export function createPage() {
 

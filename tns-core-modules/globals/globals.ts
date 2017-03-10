@@ -20,8 +20,8 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
     }
 }
 
-import * as timerModule from "timer";
-import * as dialogsModule from "ui/dialogs";
+import * as timerModule from "../timer";
+import * as dialogsModule from "../ui/dialogs";
 
 type ModuleLoader = () => any;
 const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();

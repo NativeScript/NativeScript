@@ -1,7 +1,7 @@
-﻿import { Progress as ProgressDefinition } from "ui/progress";
-import { View, Property, CoercibleProperty } from "ui/core/view";
+﻿import { Progress as ProgressDefinition } from ".";
+import { View, Property, CoercibleProperty } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class ProgressBase extends View implements ProgressDefinition {
     public value: number;

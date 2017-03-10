@@ -1,10 +1,10 @@
 ﻿/**
  * Contains the Frame class, which represents the logical View unit that is responsible for navigation within an application.
  */
-import { Page, View, Observable, EventData } from "ui/page";
-import { Transition } from "ui/transition";
+import { Page, View, Observable, EventData } from "../page";
+import { Transition } from "../transition";
 
-export * from "ui/page";
+export * from "../page";
 
 /**
  * Represents the logical View unit that is responsible for navigation withing an application.

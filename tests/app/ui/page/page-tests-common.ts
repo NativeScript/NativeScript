@@ -1,7 +1,7 @@
 ﻿// >> article-require-page-module
-import * as pageModule from "ui/page";
+import * as pageModule from "tns-core-modules/ui/page";
 // FrameModule is needed in order to have an option to navigate to the new page.
-import * as frameModule from "ui/frame";
+import * as frameModule from "tns-core-modules/ui/frame";
 // << article-require-page-module
 
 // >> article-set-bindingcontext
@@ -12,18 +12,18 @@ function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << article-set-bindingcontext
 import * as TKUnit from "../../TKUnit";
-import * as labelModule from "ui/label";
-import { StackLayout } from "ui/layouts/stack-layout";
+import * as labelModule from "tns-core-modules/ui/label";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as helper from "../helper";
-import * as view from "ui/core/view";
-import * as observable from "data/observable";
-import { Page, ShownModallyData, NavigatedData } from "ui/page";
-import { Label } from "ui/label";
-import { EventData } from "data/observable";
-import { PercentLength } from "ui/core/view";
-import * as platform from "platform";
-import {unsetValue} from "ui/core/view";
-import { Color } from "color";
+import * as view from "tns-core-modules/ui/core/view";
+import * as observable from "tns-core-modules/data/observable";
+import { Page, ShownModallyData, NavigatedData } from "tns-core-modules/ui/page";
+import { Label } from "tns-core-modules/ui/label";
+import { EventData } from "tns-core-modules/data/observable";
+import { PercentLength } from "tns-core-modules/ui/core/view";
+import * as platform from "tns-core-modules/platform";
+import {unsetValue} from "tns-core-modules/ui/core/view";
+import { Color } from "tns-core-modules/color";
 
 export function addLabelToPage(page: Page, text?: string) {
     let label = new Label();

@@ -1,7 +1,7 @@
-﻿import { Button as ButtonDefinition } from "ui/button";
-import { TextBase, WhiteSpace } from "ui/text-base";
+﻿import { Button as ButtonDefinition } from ".";
+import { TextBase, WhiteSpace } from "../text-base";
 
-export * from "ui/text-base";
+export * from "../text-base";
 
 export abstract class ButtonBase extends TextBase implements ButtonDefinition {
     public static tapEvent = "tap";

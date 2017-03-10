@@ -1,7 +1,7 @@
 ﻿// >> image-cache-require
-import * as imageCacheModule from "ui/image-cache";
-import * as imageSource from "image-source";
-import * as fs from "file-system";
+import * as imageCacheModule from "tns-core-modules/ui/image-cache";
+import * as imageSource from "tns-core-modules/image-source";
+import * as fs from "tns-core-modules/file-system";
 // << image-cache-require
 
 export function test_DummyTestForSnippetOnly() {

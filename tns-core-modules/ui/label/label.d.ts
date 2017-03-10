@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Label class, which represents a standard label widget.
  */
-import { TextBase } from "ui/text-base";
+import { TextBase } from "../text-base";
 
 /**
  * Represents a text label.

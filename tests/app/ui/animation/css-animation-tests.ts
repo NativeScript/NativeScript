@@ -1,13 +1,13 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import * as styleScope from "ui/styling/style-scope";
-import * as keyframeAnimation from "ui/animation/keyframe-animation";
-import * as enums from "ui/enums";
+import * as styleScope from "tns-core-modules/ui/styling/style-scope";
+import * as keyframeAnimation from "tns-core-modules/ui/animation/keyframe-animation";
+import * as enums from "tns-core-modules/ui/enums";
 import * as helper from "../../ui/helper";
-import * as stackModule from "ui/layouts/stack-layout";
-import * as labelModule from "ui/label";
-import * as color from "color";
+import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as color from "tns-core-modules/color";
 
-import {SelectorCore} from "ui/styling/css-selector";
+import {SelectorCore} from "tns-core-modules/ui/styling/css-selector";
 
 //import * as styling from "ui/styling";
 

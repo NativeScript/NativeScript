@@ -1,8 +1,8 @@
 import * as TKUnit from "../TKUnit";
-import * as types from "utils/types";
+import * as types from "tns-core-modules/utils/types";
 
 // >> virtual-array-require
-import * as virtualArrayModule from "data/virtual-array";
+import * as virtualArrayModule from "tns-core-modules/data/virtual-array";
 // << virtual-array-require
 
 require("globals");

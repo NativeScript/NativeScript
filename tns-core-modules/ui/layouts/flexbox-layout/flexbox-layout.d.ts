@@ -1,4 +1,4 @@
-import { LayoutBase, View, Style, CssProperty } from "ui/layouts/layout-base";
+import { LayoutBase, View, Style, CssProperty } from "../layout-base";
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";
 export namespace FlexDirection {

@@ -1,9 +1,9 @@
-import { EventData } from "data/observable";
-import { View } from "ui/core/view";
-import { Button } from "ui/button";
-import { Color } from "color"; 
-import { TextView } from "ui/text-view";
-import { ScrollView } from "ui/scroll-view";
+import { EventData } from "tns-core-modules/data/observable";
+import { View } from "tns-core-modules/ui/core/view";
+import { Button } from "tns-core-modules/ui/button";
+import { Color } from "tns-core-modules/color"; 
+import { TextView } from "tns-core-modules/ui/text-view";
+import { ScrollView } from "tns-core-modules/ui/scroll-view";
 
 let red = new Color("red");
 let green = new Color("green");

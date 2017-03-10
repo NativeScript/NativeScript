@@ -1,8 +1,8 @@
 ﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
-import { ActionBar } from "ui/action-bar";
-import { GridLayout } from "ui/layouts/grid-layout";
+import { ActionBar } from "../action-bar";
+import { GridLayout } from "../layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
-import { device } from "platform";
+import { device } from "../../platform";
 
 export * from "./page-common";
 

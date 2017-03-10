@@ -1,5 +1,5 @@
-import { Border as BorderDefinition } from "ui/border";
-import { ContentView, View, layout } from "ui/content-view";
+import { Border as BorderDefinition } from ".";
+import { ContentView, View, layout } from "../content-view";
 
 @Deprecated
 export class Border extends ContentView implements BorderDefinition {

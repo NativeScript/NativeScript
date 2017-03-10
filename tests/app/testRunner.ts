@@ -1,13 +1,13 @@
 ﻿/* tslint:disable */
 import * as TKUnit from "./TKUnit";
-import { messageType } from "trace";
-import { topmost, Frame } from "ui/frame";
-import { TextView } from "ui/text-view";
-import { Button } from "ui/button";
-import { StackLayout } from "ui/layouts/stack-layout";
-import * as platform from "platform";
+import { messageType } from "tns-core-modules/trace";
+import { topmost, Frame } from "tns-core-modules/ui/frame";
+import { TextView } from "tns-core-modules/ui/text-view";
+import { Button } from "tns-core-modules/ui/button";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import * as platform from "tns-core-modules/platform";
 import "./ui-test";
-import * as fs from "file-system";
+import * as fs from "tns-core-modules/file-system";
 
 Frame.defaultAnimatedNavigation = false;
 

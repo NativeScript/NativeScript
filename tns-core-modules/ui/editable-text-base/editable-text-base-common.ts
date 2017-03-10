@@ -1,7 +1,7 @@
-﻿import { EditableTextBase as EditableTextBaseDefinition } from "ui/editable-text-base";
-import { TextBase, Property, CssProperty, Style, Color, booleanConverter } from "ui/text-base";
+﻿import { EditableTextBase as EditableTextBaseDefinition } from ".";
+import { TextBase, Property, CssProperty, Style, Color, booleanConverter } from "../text-base";
 
-export * from "ui/text-base";
+export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
 

@@ -1,7 +1,7 @@
-﻿import { ListPicker as ListPickerDefinition, ItemsSource } from "ui/list-picker";
-import { View, Property, CoercibleProperty } from "ui/core/view";
+﻿import { ListPicker as ListPickerDefinition, ItemsSource } from ".";
+import { View, Property, CoercibleProperty } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class ListPickerBase extends View implements ListPickerDefinition {
 

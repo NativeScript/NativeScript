@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Button class, which represents a standard button widget.
  */
-import { TextBase, EventData } from "ui/text-base";
+import { TextBase, EventData } from "../text-base";
 
 /**
  * Represents a standard Button widget.

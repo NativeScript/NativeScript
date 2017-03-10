@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the ListPicker class.
  */
-import { View, Property } from "ui/core/view";
+import { View, Property } from "../core/view";
 
 /**
  * Represents an list picker.

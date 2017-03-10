@@ -1,5 +1,5 @@
-﻿import { Observable } from "data/observable";
-import * as virtualArrayDef from "data/virtual-array";
+﻿import { Observable } from "../observable";
+import * as virtualArrayDef from ".";
 
 const CHANGE = "change";
 const UPDATE = "update";

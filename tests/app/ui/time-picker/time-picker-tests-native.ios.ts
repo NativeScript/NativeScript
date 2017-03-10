@@ -1,6 +1,6 @@
-﻿import * as timePickerModule from "ui/time-picker";
+﻿import * as timePickerModule from "tns-core-modules/ui/time-picker";
 
-import * as utils from "utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 export function getNativeHour(timePicker: timePickerModule.TimePicker): number {
     return utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitHour | NSCalendarUnit.CalendarUnitMinute, timePicker.ios.date).hour;
@@ -31,4 +31,3 @@ export function setNativeTime(timePicker: timePickerModule.TimePicker, hour: num
     timePicker.ios.setDateAnimated(utils.ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
     (<any>timePicker)._changeHandler.valueChanged(timePicker.ios);
 }
-    

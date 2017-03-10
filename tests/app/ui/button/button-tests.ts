@@ -1,19 +1,19 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as pagesModule from "ui/page";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as pagesModule from "tns-core-modules/ui/page";
 import * as buttonTestsNative from "./button-tests-native";
-import * as colorModule from "color";
-import * as formattedStringModule from "text/formatted-string";
-import * as spanModule from "text/span";
+import * as colorModule from "tns-core-modules/color";
+import * as formattedStringModule from "tns-core-modules/text/formatted-string";
+import * as spanModule from "tns-core-modules/text/span";
 
 // >> button-require
-import * as buttonModule from "ui/button";
+import * as buttonModule from "tns-core-modules/ui/button";
 // << button-require
 
 // >> button-require-others
-import * as bindable from "ui/core/bindable";
-import * as observable from "data/observable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
+import * as observable from "tns-core-modules/data/observable";
 // << button-require-others
 
 export var testSetText = function () {

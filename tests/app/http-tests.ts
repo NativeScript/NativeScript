@@ -1,9 +1,9 @@
 /* tslint:disable:no-unused-variable */
 import * as TKUnit from "./TKUnit";
 import * as http from "tns-core-modules/http";
-import * as types from "utils/types";
-import * as fs from "file-system";
-import { addHeader } from "http/http-request";
+import * as types from "tns-core-modules/utils/types";
+import * as fs from "tns-core-modules/file-system";
+import { addHeader } from "tns-core-modules/http/http-request";
 
 require("globals");
 

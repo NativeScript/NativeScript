@@ -1,6 +1,6 @@
-﻿import * as labelModule from "ui/label";
-import * as enums from "ui/enums";
-import * as colorModule from "color";
+﻿import * as labelModule from "tns-core-modules/ui/label";
+import * as enums from "tns-core-modules/ui/enums";
+import * as colorModule from "tns-core-modules/color";
 import { getColor } from "../helper";
 
 export function getNativeTextAlignment(label: labelModule.Label): string {

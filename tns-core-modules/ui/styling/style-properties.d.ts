@@ -1,7 +1,7 @@
-import { Color } from "color";
-import { Style, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from "ui/core/properties";
-import { Font, FontStyle, FontWeight } from "ui/styling/font";
-import { Background } from "ui/styling/background";
+import { Color } from "../../color";
+import { Style, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from "../core/properties";
+import { Font, FontStyle, FontWeight } from "./font";
+import { Background } from "./background";
 
 export type Length = "auto" | number | {
     readonly unit: "dip" | "px";

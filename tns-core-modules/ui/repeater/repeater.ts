@@ -1,12 +1,12 @@
-﻿import { Repeater as RepeaterDefinition, ItemsSource } from "ui/repeater";
-import { Label } from "ui/label";
-import { LayoutBase, CustomLayoutView, View, Template, Property, layout } from "ui/layouts/layout-base";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { ObservableArray, ChangedData } from "data/observable-array";
-import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
-import { parse } from "ui/builder";
+﻿import { Repeater as RepeaterDefinition, ItemsSource } from ".";
+import { Label } from "../label";
+import { LayoutBase, CustomLayoutView, View, Template, Property, layout } from "../layouts/layout-base";
+import { StackLayout } from "../layouts/stack-layout";
+import { ObservableArray, ChangedData } from "../../data/observable-array";
+import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
+import { parse } from "../builder";
 
-export * from "ui/layouts/layout-base";
+export * from "../layouts/layout-base";
 
 export module knownTemplates {
     export const itemTemplate = "itemTemplate";

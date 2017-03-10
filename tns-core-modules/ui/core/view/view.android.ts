@@ -1,9 +1,9 @@
 // Definitions.
-import { Point, CustomLayoutView as CustomLayoutViewDefinition } from "ui/core/view";
-import { GestureTypes, GestureEventData } from "ui/gestures";
+import { Point, CustomLayoutView as CustomLayoutViewDefinition } from ".";
+import { GestureTypes, GestureEventData } from "../../gestures";
 
 // Types.
-import { Background, ad as androidBackground } from "ui/styling/background";
+import { Background, ad as androidBackground } from "../../styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories, traceNotifyEvent
@@ -16,7 +16,7 @@ import {
     marginLeftProperty, marginTopProperty, marginRightProperty, marginBottomProperty,
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty
-} from "ui/styling/style-properties";
+} from "../../styling/style-properties";
 
 export * from "./view-common";
 

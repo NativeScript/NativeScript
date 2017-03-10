@@ -1,11 +1,11 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as testModule from "../../ui-test";
 import * as datePickerTestsNative from "./date-picker-tests-native";
-import * as color from "color";
-import * as platform from "platform";
+import * as color from "tns-core-modules/color";
+import * as platform from "tns-core-modules/platform";
 
 // >> date-picker-require
-import * as datePickerModule from "ui/date-picker";
+import * as datePickerModule from "tns-core-modules/ui/date-picker";
 // << date-picker-require
 
 function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {

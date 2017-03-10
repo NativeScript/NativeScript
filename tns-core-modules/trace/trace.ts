@@ -1,4 +1,4 @@
-﻿import * as definition from "trace";
+﻿import * as definition from ".";
 
 let enabled = false;
 let _categories = {};

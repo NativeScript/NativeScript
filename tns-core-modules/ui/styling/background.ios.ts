@@ -1,8 +1,8 @@
-import { Color } from "color";
-import { View, Point } from "ui/core/view";
+import { Color } from "../../color";
+import { View, Point } from "../core/view";
 import { Background } from "./background-common";
-import { ios as utilsIos } from "utils/utils";
-import { layout } from "utils/utils";
+import { ios as utilsIos } from "../../utils/utils";
+import { layout } from "../../utils/utils";
 
 export * from "./background-common";
 

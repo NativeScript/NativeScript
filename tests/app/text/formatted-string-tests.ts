@@ -1,10 +1,10 @@
 ﻿// >> formatted-string-require
-import { FormattedString } from "text/formatted-string";
-import { Span } from "text/span";
+import { FormattedString } from "tns-core-modules/text/formatted-string";
+import { Span } from "tns-core-modules/text/span";
 // << formatted-string-require
 
-import { Observable } from "data/observable";
-import { Label } from "ui/label";
+import { Observable } from "tns-core-modules/data/observable";
+import { Label } from "tns-core-modules/ui/label";
 import * as TKUnit from "../TKUnit";
 
 export function test_FormattedString_RemovesEventListeners_for_spans() {

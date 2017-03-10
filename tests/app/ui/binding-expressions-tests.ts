@@ -1,6 +1,6 @@
-﻿import * as frameModule from "ui/frame";
-import * as textFieldModule from "ui/text-field";
-import * as fs from "file-system";
+﻿import * as frameModule from "tns-core-modules/ui/frame";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
+import * as fs from "tns-core-modules/file-system";
 import * as helper from "../ui/helper";
 
 export var test_BindingExpressions_ArrayAccess = function () {

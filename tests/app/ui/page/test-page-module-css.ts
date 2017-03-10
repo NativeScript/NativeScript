@@ -1,5 +1,5 @@
-﻿import * as PageModule from "ui/page";
-import * as LabelModule from "ui/label";
+﻿import * as PageModule from "tns-core-modules/ui/page";
+import * as LabelModule from "tns-core-modules/ui/label";
 
 export class TestPageModule extends PageModule.Page {
     constructor() {

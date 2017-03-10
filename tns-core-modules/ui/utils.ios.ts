@@ -1,5 +1,5 @@
-﻿import { View } from "ui/core/view";
-import * as utils from "utils/utils";
+﻿import { View } from "./core/view";
+import * as utils from "../utils/utils";
 import getter = utils.ios.getter;
 
 export module ios {

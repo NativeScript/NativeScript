@@ -1,8 +1,8 @@
-﻿import * as pageModule from "ui/page";
-import * as gridLayoutModule from "ui/layouts/grid-layout";
-import * as listViewModule from "ui/list-view";
-import * as observable from "data/observable";
-import * as observableArr from "data/observable-array";
+﻿import * as pageModule from "tns-core-modules/ui/page";
+import * as gridLayoutModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as listViewModule from "tns-core-modules/ui/list-view";
+import * as observable from "tns-core-modules/data/observable";
+import * as observableArr from "tns-core-modules/data/observable-array";
 
 var arr = new observableArr.ObservableArray();
 for (var i = 0; i < 100; i++) {

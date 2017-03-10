@@ -1,5 +1,5 @@
-﻿import { ProxyViewContainer as ProxyViewContainerDefinition } from "ui/proxy-view-container";
-import { LayoutBase, View, traceEnabled, traceWrite, traceCategories } from "ui/layouts/layout-base";
+﻿import { ProxyViewContainer as ProxyViewContainerDefinition } from ".";
+import { LayoutBase, View, traceEnabled, traceWrite, traceCategories } from "../layouts/layout-base";
 /**
  * Proxy view container that adds all its native children directly to the parent. 
  * To be used as a logical grouping container of views.

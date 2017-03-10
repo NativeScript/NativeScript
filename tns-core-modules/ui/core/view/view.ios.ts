@@ -1,7 +1,7 @@
 ﻿// Definitions.
-import { Point, View as ViewDefinition } from "ui/core/view";
+import { Point, View as ViewDefinition } from ".";
 
-import { ios, Background } from "ui/styling/background";
+import { ios, Background } from "../../styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, 
     traceEnabled, traceWrite, traceCategories 
@@ -13,7 +13,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
-} from "ui/styling/style-properties";
+} from "../../styling/style-properties";
 
 export * from "./view-common";
 

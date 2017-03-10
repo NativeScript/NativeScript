@@ -1,10 +1,10 @@
-import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "ui/core/view";
-import { PropertyChangeData } from "data/observable";
-import { FormattedString, Span } from "text/formatted-string";
+import { TextBase as TextBaseDefinition } from ".";
+import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "../core/view";
+import { PropertyChangeData } from "../../data/observable";
+import { FormattedString, Span } from "../../text/formatted-string";
 
 export { FormattedString, Span };
-export * from "ui/core/view";
+export * from "../core/view";
 
 const CHILD_SPAN = "Span";
 const CHILD_FORMATTED_TEXT = "formattedText";

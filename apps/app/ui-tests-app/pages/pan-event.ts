@@ -1,8 +1,8 @@
-import { EventData } from "data/observable";
-import { Page } from "ui/page";
-import { PanGestureEventData } from "ui/gestures";
-import { View } from "ui/core/view";
-import { TextView } from "ui/text-view";
+import { EventData } from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
+import { PanGestureEventData } from "tns-core-modules/ui/gestures";
+import { View } from "tns-core-modules/ui/core/view";
+import { TextView } from "tns-core-modules/ui/text-view";
 
 var view: View;
 export function navigatingTo(args: EventData) {

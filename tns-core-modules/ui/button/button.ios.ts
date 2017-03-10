@@ -1,4 +1,4 @@
-﻿import { ControlStateChangeListener } from "ui/core/control-state-change";
+﻿import { ControlStateChangeListener } from "../core/control-state-change";
 import {
     ButtonBase, PseudoClassHandler, whiteSpaceProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, textAlignmentProperty,

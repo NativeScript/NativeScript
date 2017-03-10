@@ -1,14 +1,14 @@
 import testModule = require("../../ui-test");
 import TKUnit = require("../../TKUnit");
 import helper = require("../helper");
-import labelModule = require("ui/label");
-import stackLayoutModule = require("ui/layouts/stack-layout");
+import labelModule = require("tns-core-modules/ui/label");
+import stackLayoutModule = require("tns-core-modules/ui/layouts/stack-layout");
 import tabViewTestsNative = require("./tab-view-tests-native");
-import { unsetValue } from "ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/view";
 
 // Using a TabView requires the "ui/tab-view" module.
 // >> article-require-tabview-module
-import * as tabViewModule from "ui/tab-view";
+import * as tabViewModule from "tns-core-modules/ui/tab-view";
 // << article-require-tabview-module
 
 export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {

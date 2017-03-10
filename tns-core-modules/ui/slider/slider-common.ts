@@ -1,7 +1,7 @@
-﻿import { Slider as SliderDefinition } from "ui/slider";
-import { View, Property, CoercibleProperty, isIOS } from "ui/core/view";
+﻿import { Slider as SliderDefinition } from ".";
+import { View, Property, CoercibleProperty, isIOS } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 // TODO: Extract base Range class for slider and progress
 export class SliderBase extends View implements SliderDefinition {

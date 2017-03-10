@@ -3,7 +3,7 @@
     dateProperty, maxDateProperty, minDateProperty, colorProperty, Color
 } from "./date-picker-common";
 
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 
 export * from "./date-picker-common";
 

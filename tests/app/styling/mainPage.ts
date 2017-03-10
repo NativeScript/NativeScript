@@ -1,11 +1,11 @@
-import * as pagesModule from "ui/page";
-import * as enums from "ui/enums";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as buttonModule from "ui/button";
-import * as labelModule from "ui/label";
-import * as textFieldModule from "ui/text-field";
-import * as textViewModule from "ui/text-view";
-import * as colorModule from "color";
+import * as pagesModule from "tns-core-modules/ui/page";
+import * as enums from "tns-core-modules/ui/enums";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as buttonModule from "tns-core-modules/ui/button";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
+import * as textViewModule from "tns-core-modules/ui/text-view";
+import * as colorModule from "tns-core-modules/color";
 
 export function createPage() {
     var width = 200;

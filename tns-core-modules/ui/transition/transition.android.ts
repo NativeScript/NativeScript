@@ -1,15 +1,15 @@
 ﻿// Definitions.
-import { Transition as TransitionDefinition } from "ui/transition";
-import { Page } from "ui/page";
-import { NavigationTransition, BackstackEntry } from "ui/frame";
+import { Transition as TransitionDefinition } from ".";
+import { Page } from "../page";
+import { NavigationTransition, BackstackEntry } from "../frame";
 
 // Types.
-import { getClass } from "utils/types";
-import { device } from "platform";
-import { _resolveAnimationCurve } from "ui/animation";
-import lazy from "utils/lazy";
+import { getClass } from "../../utils/types";
+import { device } from "../../platform";
+import { _resolveAnimationCurve } from "../animation";
+import lazy from "../../utils/lazy";
 
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
 
 let slideTransition: any;
 function ensureSlideTransition() {

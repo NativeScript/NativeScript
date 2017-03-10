@@ -1,12 +1,12 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from "ui/frame";
-import { Page } from "ui/page";
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import { Page } from "../page";
 
 //Types.
 import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
-import { _createIOSAnimatedTransitioning } from "ui/transition";
-import * as uiUtils from "ui/utils";
-import * as utils from "utils/utils";
+import { _createIOSAnimatedTransitioning } from "../transition";
+import * as uiUtils from "../utils";
+import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
 

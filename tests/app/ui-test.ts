@@ -1,6 +1,6 @@
-﻿import { Page } from "ui/page";
-import { View } from "ui/core/view";
-import * as trace from "trace";
+﻿import { Page } from "tns-core-modules/ui/page";
+import { View } from "tns-core-modules/ui/core/view";
+import * as trace from "tns-core-modules/trace";
 import * as navHelper from "./ui/helper";
 import * as TKUnit from "./TKUnit";
 

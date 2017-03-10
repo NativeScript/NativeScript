@@ -1,5 +1,5 @@
 import * as http from "../http";
-import * as types from "utils/types";
+import * as types from "../utils/types";
 
 module XMLHttpRequestResponseType {
     export var empty = "";

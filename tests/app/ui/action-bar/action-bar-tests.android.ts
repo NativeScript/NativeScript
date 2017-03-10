@@ -1,8 +1,8 @@
 ﻿import * as actionTestsCommon from "./action-bar-tests-common";
 import * as TKUnit from "../../TKUnit";
-import { ActionItem } from "ui/action-bar";
-import { Visibility } from "ui/enums";
-import { Button } from "ui/button";
+import { ActionItem } from "tns-core-modules/ui/action-bar";
+import { Visibility } from "tns-core-modules/ui/enums";
+import { Button } from "tns-core-modules/ui/button";
 
 global.moduleMerge(actionTestsCommon, exports);
 

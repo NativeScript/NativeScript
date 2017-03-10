@@ -1,5 +1,5 @@
 ﻿// >> dialog-require
-import * as dialogs from "ui/dialogs";
+import * as dialogs from "tns-core-modules/ui/dialogs";
 // << dialog-require
 
 export function test_DummyTestForSnippetOnly0() {

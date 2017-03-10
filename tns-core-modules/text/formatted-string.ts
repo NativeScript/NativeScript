@@ -1,11 +1,11 @@
-﻿import { FormattedString as FormattedStringDefinition } from "text/formatted-string";
-import { Span } from "text/span";
-import { Observable, PropertyChangeData } from "data/observable";
-import { ObservableArray, ChangedData } from "data/observable-array";
-import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "ui/core/view";
-import { Color } from "color";
-import { FontStyle, FontWeight } from "ui/styling/font";
-import { TextDecoration } from "ui/text-base";
+﻿import { FormattedString as FormattedStringDefinition } from "./formatted-string";
+import { Span } from "./span";
+import { Observable, PropertyChangeData } from "../data/observable";
+import { ObservableArray, ChangedData } from "../data/observable-array";
+import { ViewBase, AddArrayFromBuilder, AddChildFromBuilder } from "../ui/core/view";
+import { Color } from "../color";
+import { FontStyle, FontWeight } from "../ui/styling/font";
+import { TextDecoration } from "../ui/text-base";
 
 export { Span };
 

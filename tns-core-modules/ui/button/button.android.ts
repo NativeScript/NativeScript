@@ -3,7 +3,7 @@
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty
 } from "./button-common";
 
-import { TouchGestureEventData, GestureTypes, TouchAction } from "ui/gestures";
+import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
 
 export * from "./button-common";
 

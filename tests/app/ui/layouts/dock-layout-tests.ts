@@ -1,16 +1,16 @@
-﻿import * as button from "ui/button";
-import { DockLayout } from "ui/layouts/dock-layout";
+﻿import * as button from "tns-core-modules/ui/button";
+import { DockLayout } from "tns-core-modules/ui/layouts/dock-layout";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
 
 // >> dock-layout-require
-import * as dockModule from "ui/layouts/dock-layout";
+import * as dockModule from "tns-core-modules/ui/layouts/dock-layout";
 // << dock-layout-require
 
 // >> dock-layout-others
-import * as enums from "ui/enums";
+import * as enums from "tns-core-modules/ui/enums";
 // << dock-layout-others
 
 export class DockLayoutTest extends testModule.UITest<DockLayout> {

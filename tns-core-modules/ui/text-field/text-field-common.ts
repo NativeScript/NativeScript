@@ -1,7 +1,7 @@
-﻿import { TextField as TextFieldDefinition } from "ui/text-field";
-import { EditableTextBase, Property, booleanConverter } from "ui/editable-text-base";
+﻿import { TextField as TextFieldDefinition } from ".";
+import { EditableTextBase, Property, booleanConverter } from "../editable-text-base";
 
-export * from "ui/editable-text-base";
+export * from "../editable-text-base";
 
 export class TextFieldBase extends EditableTextBase implements TextFieldDefinition {
     public static returnPressEvent = "returnPress";

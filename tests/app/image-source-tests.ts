@@ -6,11 +6,11 @@
 // var fs = require("file-system");
 // << imagesource-require-alt
 
-import * as imageSource from "image-source";
-import * as fs from "file-system";
-import * as app from "application";
+import * as imageSource from "tns-core-modules/image-source";
+import * as fs from "tns-core-modules/file-system";
+import * as app from "tns-core-modules/application";
 import * as TKUnit from "./TKUnit";
-import * as platform from "platform";
+import * as platform from "tns-core-modules/platform";
 
 var imagePath = fs.path.join(__dirname, "/logo.png");
 var smallImagePath = fs.path.join(__dirname, "/small-image.png");

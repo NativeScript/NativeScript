@@ -1,6 +1,6 @@
-﻿import * as observable from "data/observable";
-import * as observableArrayDef from "data/observable-array";
-import * as types from "utils/types";
+﻿import * as observable from "../observable";
+import * as observableArrayDef from ".";
+import * as types from "../../utils/types";
 
 export class ChangeType implements observableArrayDef.ChangeType {
     static Add = "add";

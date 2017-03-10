@@ -1,6 +1,6 @@
-﻿import * as pageModule from "ui/page";
-import * as buttonModule from "ui/button";
-import * as stackModule from "ui/layouts/stack-layout";
+﻿import * as pageModule from "tns-core-modules/ui/page";
+import * as buttonModule from "tns-core-modules/ui/button";
+import * as stackModule from "tns-core-modules/ui/layouts/stack-layout";
 
 export function createPage() {
     var page = new pageModule.Page();

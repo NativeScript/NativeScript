@@ -1,5 +1,5 @@
-﻿import * as observable from "data/observable";
-import * as trace from "trace";
+﻿import * as observable from "tns-core-modules/data/observable";
+import * as trace from "tns-core-modules/trace";
 trace.addCategories(trace.categories.Layout);
 trace.enable();
 

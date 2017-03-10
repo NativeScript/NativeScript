@@ -2,7 +2,7 @@
     ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, unsetValue, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
-import { path, knownFolders } from "file-system";
+import { path, knownFolders } from "../../file-system";
 
 export * from "./image-common";
 

@@ -1,9 +1,9 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, Color } from "ui/core/view";
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "ui/styling/style-properties";
+import { View as ViewDefinition, Point, Size, Color } from ".";
+import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 // Types.
-import { Source } from "utils/debug";
+import { Source } from "../../../utils/debug";
 
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
@@ -16,12 +16,12 @@ import {
     GestureTypes,
     GestureEventData,
     fromString as gestureFromString
-} from "ui/gestures";
+} from "../../gestures";
 
-export * from "ui/styling/style-properties";
+export * from "../../styling/style-properties";
 export * from "../view-base";
 
-import * as am from "ui/animation";
+import * as am from "../../animation";
 let animationModule: typeof am;
 function ensureAnimationModule() {
     if (!animationModule) {

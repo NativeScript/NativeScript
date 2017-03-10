@@ -1,7 +1,7 @@
-﻿import * as frame from "ui/frame";
-import * as observable from "data/observable";
+﻿import * as frame from "tns-core-modules/ui/frame";
+import * as observable from "tns-core-modules/data/observable";
 
-import * as trace from "trace";
+import * as trace from "tns-core-modules/trace";
 trace.setCategories("gestures");
 trace.enable();
 

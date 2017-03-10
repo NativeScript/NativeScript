@@ -1,14 +1,14 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import { View } from "ui/core/view";
-import { Button } from "ui/button";
-import { Page } from "ui/page";
-import { ScrollView } from "ui/scroll-view";
-import { LayoutBase } from "ui/layouts/layout-base";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { GridLayout } from "ui/layouts/grid-layout";
-import { ProxyViewContainer } from "ui/proxy-view-container";
-import { ListView } from "ui/list-view";
+import { View } from "tns-core-modules/ui/core/view";
+import { Button } from "tns-core-modules/ui/button";
+import { Page } from "tns-core-modules/ui/page";
+import { ScrollView } from "tns-core-modules/ui/scroll-view";
+import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { ProxyViewContainer } from "tns-core-modules/ui/proxy-view-container";
+import { ListView } from "tns-core-modules/ui/list-view";
 
 export function test_add_children_to_attached_proxy() {
     const outer = new StackLayout();

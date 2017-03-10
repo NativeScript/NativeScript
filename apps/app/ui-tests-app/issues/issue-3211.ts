@@ -1,4 +1,4 @@
-import { alert } from "ui/dialogs";
+import { alert } from "tns-core-modules/ui/dialogs";
 
 export function onTap() {
      var options = {

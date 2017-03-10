@@ -2,13 +2,13 @@
 import {
     AndroidFrame as AndroidFrameDefinition, BackstackEntry,
     NavigationTransition, AndroidFragmentCallbacks, AndroidActivityCallbacks
-} from "ui/frame";
-import { Page } from "ui/page";
+} from ".";
+import { Page } from "../page";
 
 // Types.
 import { FrameBase, application, NavigationContext, stack, goBack, View, Observable, traceEnabled, traceWrite, traceCategories } from "./frame-common";
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
-import * as transitionModule from "ui/transition";
+import * as transitionModule from "../transition";
 
 export * from "./frame-common";
 

@@ -1,16 +1,16 @@
 ﻿// Definitions.
-import { LoadOptions } from "ui/builder";
-import { View, ViewBase, Template, KeyedTemplate } from "ui/core/view";
+import { LoadOptions } from ".";
+import { View, ViewBase, Template, KeyedTemplate } from "../core/view";
 
 // Types.
-import { debug, ScopeError, SourceError, Source } from "utils/debug";
-import * as xml from "xml";
-import { File, path, knownFolders } from "file-system";
-import { isString, isDefined } from "utils/types";
-import { ComponentModule, setPropertyValue, getComponentModule } from "ui/builder/component-builder";
-import { platformNames, device } from "platform";
-import { resolveFileName } from "file-system/file-name-resolver";
-import * as traceModule from "trace";
+import { debug, ScopeError, SourceError, Source } from "../../utils/debug";
+import * as xml from "../../xml";
+import { File, path, knownFolders } from "../../file-system";
+import { isString, isDefined } from "../../utils/types";
+import { ComponentModule, setPropertyValue, getComponentModule } from "./component-builder";
+import { platformNames, device } from "../../platform";
+import { resolveFileName } from "../../file-system/file-name-resolver";
+import * as traceModule from "../../trace";
 
 const ios = platformNames.ios.toLowerCase();
 const android = platformNames.android.toLowerCase();

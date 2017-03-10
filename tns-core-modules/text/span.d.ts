@@ -1,7 +1,7 @@
-﻿import { Color } from "color";
-import { ViewBase } from "ui/core/view-base";
-import { FontStyle, FontWeight } from "ui/styling/font";
-import { TextDecoration } from "ui/text-base";
+﻿import { Color } from "../color";
+import { ViewBase } from "../ui/core/view-base";
+import { FontStyle, FontWeight } from "../ui/styling/font";
+import { TextDecoration } from "../ui/text-base";
 
 /**
  * A class used to create a single part of formatted string with a common text properties.

@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the ScrollView class, which represents a scrollable area that can have content that is larger than its bounds.
  */
-import { ContentView, EventData, Property } from "ui/content-view";
+import { ContentView, EventData, Property } from "../content-view";
 
 /**
  * Represents a scrollable area that can have content that is larger than its bounds.

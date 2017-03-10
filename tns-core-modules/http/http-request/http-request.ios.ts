@@ -3,11 +3,11 @@
  */
 
 import * as http from "../../http";
-import * as types from "utils/types";
-import * as imageSourceModule from "image-source";
-import * as fsModule from "file-system";
+import * as types from "../../utils/types";
+import * as imageSourceModule from "../../image-source";
+import * as fsModule from "../../file-system";
 
-import * as utils from "utils/utils";
+import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
 import * as domainDebugger from "../../debugger/debugger";

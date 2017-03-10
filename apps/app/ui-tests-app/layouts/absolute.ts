@@ -1,5 +1,5 @@
-﻿import * as pageModule from "ui/page";
-import * as absoluteLayout from "ui/layouts/absolute-layout";
+﻿import * as pageModule from "tns-core-modules/ui/page";
+import * as absoluteLayout from "tns-core-modules/ui/layouts/absolute-layout";
 import * as model from "./myview";
 
 var count = 0;

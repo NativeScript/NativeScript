@@ -1,5 +1,5 @@
-﻿import * as pages from "ui/page";
-import * as fpsModule from "fps-meter";
+﻿import * as pages from "tns-core-modules/ui/page";
+import * as fpsModule from "tns-core-modules/fps-meter";
 
 export function createPage() {
     var startTime;

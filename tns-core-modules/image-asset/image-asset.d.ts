@@ -1,4 +1,4 @@
-import { Observable } from "data/observable";
+import { Observable } from "../data/observable";
 
 export class ImageAsset extends Observable {
     constructor(asset: any);

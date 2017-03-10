@@ -1,4 +1,4 @@
-﻿import * as listPickerModule from "ui/list-picker";
+﻿import * as listPickerModule from "tns-core-modules/ui/list-picker";
 
 export function getNativeItemsCount(listPicker: listPickerModule.ListPicker): number {
     return listPicker.ios.numberOfRowsInComponent(0);

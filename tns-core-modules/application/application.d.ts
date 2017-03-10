@@ -2,7 +2,7 @@
 /**
  * Contains the application abstraction with all related methods.
  */
-import { NavigationEntry, View, Observable, EventData } from "ui/frame";
+import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 
 /**
  * String value used when hooking to launch event.

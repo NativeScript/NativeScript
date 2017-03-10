@@ -1,10 +1,10 @@
-import { WebView as WebViewDefinition, LoadEventData } from "ui/web-view";
-import { View, Property } from "ui/core/view";
-import { isFileOrResourcePath } from "utils/utils";
-import { File, knownFolders, path } from "file-system";
+import { WebView as WebViewDefinition, LoadEventData } from ".";
+import { View, Property } from "../core/view";
+import { isFileOrResourcePath } from "../../utils/utils";
+import { File, knownFolders, path } from "../../file-system";
 
 export { File, knownFolders, path };
-export * from "ui/core/view";
+export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
 

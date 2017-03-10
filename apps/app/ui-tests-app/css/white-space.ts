@@ -1,9 +1,9 @@
-﻿import * as view from "ui/core/view";
-import * as observable from "data/observable";
-import * as label from "ui/label";
-import * as button from "ui/button";
-import * as textField from "ui/text-field";
-import * as textView from "ui/text-view";
+﻿import * as view from "tns-core-modules/ui/core/view";
+import * as observable from "tns-core-modules/data/observable";
+import * as label from "tns-core-modules/ui/label";
+import * as button from "tns-core-modules/ui/button";
+import * as textField from "tns-core-modules/ui/text-field";
+import * as textView from "tns-core-modules/ui/text-view";
 
 export function butonTap(args: observable.EventData) {
     var btnChange = <view.View>args.object;

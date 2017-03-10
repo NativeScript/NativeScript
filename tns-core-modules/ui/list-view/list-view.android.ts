@@ -1,11 +1,11 @@
-﻿import { ItemEventData, ItemsSource } from "ui/list-view";
+﻿import { ItemEventData, ItemsSource } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, unsetValue, Observable, Color,
     separatorColorProperty, itemTemplatesProperty
 } from "./list-view-common";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { ProxyViewContainer } from "ui/proxy-view-container";
-import { LayoutBase } from "ui/layouts/layout-base";
+import { StackLayout } from "../layouts/stack-layout";
+import { ProxyViewContainer } from "../proxy-view-container";
+import { LayoutBase } from "../layouts/layout-base";
 
 export * from "./list-view-common";
 

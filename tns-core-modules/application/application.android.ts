@@ -1,7 +1,7 @@
 ﻿import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
     AndroidApplication as AndroidApplicationDefinition
-} from "application";
+} from ".";
 
 import {
     notify, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent,
@@ -11,7 +11,7 @@ import {
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { NavigationEntry } from "ui/frame";
+import { NavigationEntry } from "../ui/frame";
 
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";

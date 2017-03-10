@@ -1,8 +1,8 @@
-import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from "ui/action-bar";
+import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from ".";
 import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, Color } from "./action-bar-common";
-import { RESOURCE_PREFIX } from "utils/utils";
-import { fromFileOrResource } from "image-source";
-import * as application from "application";
+import { RESOURCE_PREFIX } from "../../utils/utils";
+import { fromFileOrResource } from "../../image-source";
+import * as application from "../../application";
 
 export * from "./action-bar-common";
 

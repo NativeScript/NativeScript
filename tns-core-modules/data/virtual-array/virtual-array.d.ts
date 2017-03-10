@@ -1,8 +1,8 @@
 ﻿/**
  * Contains the VirtualArray class, which is an advanced array like class that helps loading items on demand.
  */
-import * as observable from "data/observable";
-import * as observableArray from "data/observable-array";
+import * as observable from "../observable";
+import * as observableArray from "../observable-array";
 
 /**
  * Provides event args for "changed" event.

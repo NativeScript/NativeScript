@@ -1,4 +1,4 @@
-﻿import * as application from "application";
+﻿import * as application from "tns-core-modules/application";
 declare var CACurrentMediaTime;
 
 (<any>global).time = function(): number {

@@ -1,4 +1,4 @@
-﻿import { EventData, TextBase, TextDecoration } from "ui/text-base";
+﻿import { EventData, TextBase, TextDecoration } from "tns-core-modules/ui/text-base";
 
 const possibleValues = [
     TextDecoration.NONE, 

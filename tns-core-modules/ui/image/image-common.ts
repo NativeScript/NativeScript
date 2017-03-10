@@ -1,10 +1,10 @@
-﻿import { Image as ImageDefinition } from "ui/image";
-import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "ui/core/view";
-import { ImageAsset } from "image-asset";
-import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "image-source";
-import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "utils/utils";
+﻿import { Image as ImageDefinition } from ".";
+import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "../core/view";
+import { ImageAsset } from "../../image-asset";
+import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
+import { isDataURI, isFileOrResourcePath, RESOURCE_PREFIX } from "../../utils/utils";
 
-export * from "ui/core/view";
+export * from "../core/view";
 export { ImageSource, fromAsset, fromNativeSource, fromUrl, isDataURI, isFileOrResourcePath, RESOURCE_PREFIX };
 
 export abstract class ImageBase extends View implements ImageDefinition {

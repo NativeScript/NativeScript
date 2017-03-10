@@ -1,13 +1,13 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as segmentedBarTestsNative from "./segmented-bar-tests-native";
 import { buildUIAndRunTest } from "../helper";
-import { View } from "ui/core/view";
-import { BindingOptions } from "ui/core/bindable";
-import { Observable } from "data/observable";
-import { Color } from "color";
+import { View } from "tns-core-modules/ui/core/view";
+import { BindingOptions } from "tns-core-modules/ui/core/bindable";
+import { Observable } from "tns-core-modules/data/observable";
+import { Color } from "tns-core-modules/color";
 
 // >> article-require-segmentedbar-module
-import * as segmentedBarModule from "ui/segmented-bar";
+import * as segmentedBarModule from "tns-core-modules/ui/segmented-bar";
 // << article-require-segmentedbar-module
 
 function _createSegmentedBar(): segmentedBarModule.SegmentedBar {

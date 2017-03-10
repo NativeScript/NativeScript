@@ -1,4 +1,4 @@
-﻿import * as observable from "data/observable";
+﻿import * as observable from "tns-core-modules/data/observable";
 
 export function pageLoaded(args) {
     var page = args.object;

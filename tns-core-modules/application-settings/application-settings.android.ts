@@ -1,5 +1,5 @@
 ﻿import * as common from "./application-settings-common";
-import { getNativeApplication } from "application";
+import { getNativeApplication } from "../application";
 
 var sharedPreferences;
 function ensureSharedPreferences() {

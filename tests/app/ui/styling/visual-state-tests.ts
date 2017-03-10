@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import * as view from "ui/core/view";
-import * as page from "ui/page";
-import * as types from "utils/types";
+import * as view from "tns-core-modules/ui/core/view";
+import * as page from "tns-core-modules/ui/page";
+import * as types from "tns-core-modules/utils/types";
 import * as helper from "../helper";
 
 function assertInState(view: view.View, state: string, knownStates: string[]): void {

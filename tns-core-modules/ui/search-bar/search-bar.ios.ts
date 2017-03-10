@@ -1,4 +1,4 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty

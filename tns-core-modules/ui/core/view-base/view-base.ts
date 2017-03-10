@@ -1,27 +1,27 @@
 // Definitions.
-import { ViewBase as ViewBaseDefinition } from "ui/core/view-base";
-import { Page } from "ui/page";
-import { SelectorCore } from "ui/styling/css-selector";
-import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
-import { KeyframeAnimation } from "ui/animation/keyframe-animation";
+import { ViewBase as ViewBaseDefinition } from ".";
+import { Page } from "../../page";
+import { SelectorCore } from "../../styling/css-selector";
+import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
+import { KeyframeAnimation } from "../../animation/keyframe-animation";
 
 // Types.
 import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView, _isSet } from "../properties";
-import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "ui/core/bindable";
-import { isIOS, isAndroid } from "platform";
-import { layout } from "utils/utils";
+import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
+import { isIOS, isAndroid } from "../../../platform";
+import { layout } from "../../../utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 
 // TODO: Remove this import!
-import * as types from "utils/types";
+import * as types from "../../../utils/types";
 
-import { Color } from "color";
+import { Color } from "../../../color";
 
 export { isIOS, isAndroid, layout, Color };
-export * from "ui/core/bindable";
+export * from "../bindable";
 export * from "../properties";
 
-import * as ssm from "ui/styling/style-scope";
+import * as ssm from "../../styling/style-scope";
 let styleScopeModule: typeof ssm;
 function ensureStyleScopeModule() {
     if (!styleScopeModule) {

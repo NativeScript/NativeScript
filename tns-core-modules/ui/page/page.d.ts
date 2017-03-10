@@ -2,16 +2,16 @@
 /**
  * Contains the Page class, which represents a logical unit for navigation inside a Frame. 
  */
-import { ContentView, EventData, Property, Color } from "ui/content-view";
-import { Frame } from "ui/frame";
-import { ActionBar } from "ui/action-bar";
-import { KeyframeAnimationInfo } from "ui/animation/keyframe-animation";
+import { ContentView, EventData, Property, Color } from "../content-view";
+import { Frame } from "../frame";
+import { ActionBar } from "../action-bar";
+import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 
 //@private
-import * as styleScope from "ui/styling/style-scope";
+import * as styleScope from "../styling/style-scope";
 //@endprivate
 
-export * from "ui/content-view";
+export * from "../content-view";
 
 /**
  * Defines the data for the page navigation events.

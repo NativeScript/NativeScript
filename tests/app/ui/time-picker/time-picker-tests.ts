@@ -1,11 +1,11 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as testModule from "../../ui-test";
 import * as timePickerTestsNative from "./time-picker-tests-native";
-import * as color from "color";
-import * as platform from "platform";
+import * as color from "tns-core-modules/color";
+import * as platform from "tns-core-modules/platform";
 
 // >> require-time-picker
-import * as timePickerModule from "ui/time-picker";
+import * as timePickerModule from "tns-core-modules/ui/time-picker";
 // << require-time-picker
 
 function assertTime(timePicker: timePickerModule.TimePicker, expectedHour: number, expectedMinute) {

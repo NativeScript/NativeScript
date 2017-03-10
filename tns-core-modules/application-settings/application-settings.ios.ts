@@ -1,6 +1,6 @@
 ﻿import * as Common from "./application-settings-common";
 
-import * as utils from "utils/utils";
+import * as utils from "../utils/utils";
 
 var userDefaults = utils.ios.getter(NSUserDefaults, NSUserDefaults.standardUserDefaults);
 

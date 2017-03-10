@@ -1,4 +1,4 @@
-import { View } from "ui/core/view";
+import { View } from "../core/view";
 
 export interface KeyframeDeclaration {
     property: string;

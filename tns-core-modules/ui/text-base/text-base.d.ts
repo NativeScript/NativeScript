@@ -1,8 +1,8 @@
-﻿import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "ui/core/view";
-import { FormattedString } from "text/formatted-string";
+﻿import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
+import { FormattedString } from "../../text/formatted-string";
 
-export * from "ui/core/view";
-export { FormattedString } from "text/formatted-string";
+export * from "../core/view";
+export { FormattedString } from "../../text/formatted-string";
 
 export class TextBase extends View implements AddChildFromBuilder {
     /**

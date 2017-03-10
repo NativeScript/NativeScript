@@ -1,12 +1,12 @@
-import { View } from "ui/core/view";
-import { Page, NavigatedData } from "ui/page";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { ScrollView } from "ui/scroll-view";
-import { Label } from "ui/label";
-import { FontStyle, FontWeight } from "ui/enums";
-import * as typeUtils from "utils/types";
-import { Color } from "color";
-import * as font from "ui/styling/font";
+import { View } from "tns-core-modules/ui/core/view";
+import { Page, NavigatedData } from "tns-core-modules/ui/page";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { ScrollView } from "tns-core-modules/ui/scroll-view";
+import { Label } from "tns-core-modules/ui/label";
+import { FontStyle, FontWeight } from "tns-core-modules/ui/enums";
+import * as typeUtils from "tns-core-modules/utils/types";
+import { Color } from "tns-core-modules/color";
+import * as font from "tns-core-modules/ui/styling/font";
 
 const genericFontFamilies = [
     "system",

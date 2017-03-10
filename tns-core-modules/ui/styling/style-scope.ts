@@ -1,13 +1,13 @@
-import { ViewBase } from "ui/core/view-base";
-import { View } from "ui/core/view";
-import { resetCSSProperties } from "ui/core/properties";
-import { SyntaxTree, Keyframes, parse as parseCss, Node as CssNode } from "css";
-import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from "ui/styling/css-selector";
-import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
-import { File, knownFolders, path } from "file-system";
-import * as application from "application";
+import { ViewBase } from "../core/view-base";
+import { View } from "../core/view";
+import { resetCSSProperties } from "../core/properties";
+import { SyntaxTree, Keyframes, parse as parseCss, Node as CssNode } from "../../css";
+import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from "./css-selector";
+import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
+import { File, knownFolders, path } from "../../file-system";
+import * as application from "../../application";
 
-import * as kam from "ui/animation/keyframe-animation";
+import * as kam from "../animation/keyframe-animation";
 let keyframeAnimationModule: typeof kam;
 function ensureKeyframeAnimationModule() {
     if (!keyframeAnimationModule) {

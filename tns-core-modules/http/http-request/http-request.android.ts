@@ -1,9 +1,9 @@
 ﻿/**
  * Android specific http request implementation.
  */
-import * as imageSourceModule from "image-source";
-import * as platformModule from "platform";
-import * as fsModule from "file-system";
+import * as imageSourceModule from "../../image-source";
+import * as platformModule from "../../platform";
+import * as fsModule from "../../file-system";
 
 // this is imported for definition purposes only
 import * as http from "../../http";

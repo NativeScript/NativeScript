@@ -1,7 +1,7 @@
-﻿import * as gridModule from "ui/layouts/grid-layout";
-import * as sp from "ui/layouts/stack-layout";
-import * as button from "ui/button";
-import { Page } from "ui/page";
+﻿import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as sp from "tns-core-modules/ui/layouts/stack-layout";
+import * as button from "tns-core-modules/ui/button";
+import { Page } from "tns-core-modules/ui/page";
 
 export function createPage() {
     var StackLayout = new sp.StackLayout();

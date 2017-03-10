@@ -1,4 +1,4 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
     colorProperty, fontInternalProperty, fontSizeProperty, Color, initNativeView

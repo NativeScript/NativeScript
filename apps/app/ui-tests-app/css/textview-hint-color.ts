@@ -1,6 +1,6 @@
-import { Page } from "ui/page";
-import { TextView } from "ui/text-view";
-import { Color } from "color";
+import { Page } from "tns-core-modules/ui/page";
+import { TextView } from "tns-core-modules/ui/text-view";
+import { Color } from "tns-core-modules/color";
 
 export function changeTextAndColor(args) {
     const page = <Page>args.object.page;

@@ -1,9 +1,9 @@
-﻿import { Page } from "ui/page";
-import * as trace from "trace";
+﻿import { Page } from "tns-core-modules/ui/page";
+import * as trace from "tns-core-modules/trace";
 import * as tests from "../testRunner";
-import { Label } from "ui/label";
-import * as application from "application";
-import * as platform from "platform";
+import { Label } from "tns-core-modules/ui/label";
+import * as application from "tns-core-modules/application";
+import * as platform from "tns-core-modules/platform";
 
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);

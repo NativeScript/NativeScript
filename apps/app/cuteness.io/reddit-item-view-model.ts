@@ -1,5 +1,5 @@
-﻿import { Observable } from "data/observable";
-import { ImageSource, fromFile as imageSourceFromFile, fromUrl as imageSourceFromUrl } from "image-source";
+﻿import { Observable } from "tns-core-modules/data/observable";
+import { ImageSource, fromFile as imageSourceFromFile, fromUrl as imageSourceFromUrl } from "tns-core-modules/image-source";
 
 import { ItemData } from "./reddit-model";
 import { defaultThumbnailImageSource, defaultNoThumbnailImageSource, cache } from "./reddit-app-view-model";

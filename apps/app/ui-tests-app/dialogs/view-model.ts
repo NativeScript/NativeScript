@@ -1,5 +1,5 @@
-﻿import * as dialogs from "ui/dialogs";
-import * as observable from "data/observable";
+﻿import * as dialogs from "tns-core-modules/ui/dialogs";
+import * as observable from "tns-core-modules/data/observable";
 
 var name = "Harold Finch";
 

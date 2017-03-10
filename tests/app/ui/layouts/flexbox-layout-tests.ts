@@ -7,15 +7,15 @@ import {
     AlignItems,
     AlignContent,
     AlignSelf
-} from "ui/layouts/flexbox-layout";
+} from "tns-core-modules/ui/layouts/flexbox-layout";
 // << flexbox-layout-require
 
-import {View, unsetValue, Length, PercentLength} from "ui/core/view";
-import {Label} from "ui/label";
+import {View, unsetValue, Length, PercentLength} from "tns-core-modules/ui/core/view";
+import {Label} from "tns-core-modules/ui/label";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import {layout} from "utils/utils";
-import {parse} from "ui/builder";
+import {layout} from "tns-core-modules/utils/utils";
+import {parse} from "tns-core-modules/ui/builder";
 
 // TODO: Test the flexbox-layout-page.xml can be loaded and displayed
 
