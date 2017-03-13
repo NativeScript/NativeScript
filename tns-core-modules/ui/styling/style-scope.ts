@@ -34,8 +34,8 @@ let applicationCssSelectorVersion: number = 0;
 let applicationSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
-
 const animationsSymbol: symbol = Symbol("animations");
+const pattern: RegExp = /('|")(.*?)\1/;
 
 function onCssChanged(args: application.CssChangedEventData): void {
     if (args.cssText) {
@@ -84,8 +84,6 @@ if (application.hasLaunched()) {
 } else {
     application.on("launch", loadCssOnLaunch);
 }
-
-let pattern: RegExp = /('|")(.*?)\1/;
 
 export class CssState {
     constructor(private view: ViewBase, private match: SelectorsMatch<ViewBase>) {
