@@ -2,7 +2,7 @@
 import {
     ButtonBase, PseudoClassHandler, whiteSpaceProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, textAlignmentProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace, TextAlignment
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace, TextAlignment, layout
 } from "./button-common";
 
 export * from "./button-common";
@@ -73,7 +73,7 @@ export class Button extends ButtonBase {
     }
     set [borderTopWidthProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let top = this.effectivePaddingTop + this.effectiveBorderTopWidth;
+        let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
         this.nativeView.contentEdgeInsets = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
@@ -85,7 +85,7 @@ export class Button extends ButtonBase {
     }
     set [borderRightWidthProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let right = this.effectivePaddingRight + this.effectiveBorderRightWidth;
+        let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
@@ -97,7 +97,7 @@ export class Button extends ButtonBase {
     }
     set [borderBottomWidthProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let bottom = this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
+        let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
@@ -109,7 +109,7 @@ export class Button extends ButtonBase {
     }
     set [borderLeftWidthProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
+        let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
@@ -121,7 +121,7 @@ export class Button extends ButtonBase {
     }
     set [paddingTopProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let top = this.effectivePaddingTop + this.effectiveBorderTopWidth;
+        let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
         this.nativeView.contentEdgeInsets = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
@@ -133,7 +133,7 @@ export class Button extends ButtonBase {
     }
     set [paddingRightProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let right = this.effectivePaddingRight + this.effectiveBorderRightWidth;
+        let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
@@ -145,7 +145,7 @@ export class Button extends ButtonBase {
     }
     set [paddingBottomProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let bottom = this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
+        let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
@@ -157,7 +157,7 @@ export class Button extends ButtonBase {
     }
     set [paddingLeftProperty.native](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
-        let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
+        let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 

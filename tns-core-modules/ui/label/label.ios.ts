@@ -196,7 +196,7 @@ export class Label extends TextBase implements LabelDefinition {
         let nativeView = this.nativeView;
         let padding = nativeView.padding;
         nativeView.padding = {
-            top: this.effectivePaddingTop,
+            top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
             right: padding.right,
             bottom: padding.bottom,
             left: padding.left
@@ -211,7 +211,7 @@ export class Label extends TextBase implements LabelDefinition {
         let padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
-            right: this.effectivePaddingRight,
+            right: layout.toDeviceIndependentPixels(this.effectivePaddingRight),
             bottom: padding.bottom,
             left: padding.left
         };
@@ -226,7 +226,7 @@ export class Label extends TextBase implements LabelDefinition {
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
-            bottom: this.effectivePaddingBottom,
+            bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom),
             left: padding.left
         };
     }
@@ -241,7 +241,7 @@ export class Label extends TextBase implements LabelDefinition {
             top: padding.top,
             right: padding.right,
             bottom: padding.bottom,
-            left: this.effectivePaddingLeft
+            left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft)
         };
     }
 }

@@ -1,6 +1,6 @@
 ﻿import { 
     TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
-    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color
+    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
 
 export * from "./text-field-common";
@@ -107,10 +107,13 @@ class UITextFieldImpl extends UITextField {
         }
 
         const size = bounds.size;
-        return CGRectMake(owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft, owner.effectiveBorderTopWidth + owner.effectivePaddingTop,
-            size.width - (owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft + owner.effectivePaddingRight + owner.effectiveBorderRightWidth),
-            size.height - (owner.effectiveBorderTopWidth + owner.effectivePaddingTop + owner.effectivePaddingBottom + owner.effectiveBorderBottomWidth)
-        );
+
+        const x = layout.toDeviceIndependentPixels(owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft);
+        const y = layout.toDeviceIndependentPixels(owner.effectiveBorderTopWidth + owner.effectivePaddingTop);
+        const width = layout.toDeviceIndependentPixels(layout.toDevicePixels(size.width) - (owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft + owner.effectivePaddingRight + owner.effectiveBorderRightWidth));
+        const height = layout.toDeviceIndependentPixels(layout.toDevicePixels(size.height) - (owner.effectiveBorderTopWidth + owner.effectivePaddingTop + owner.effectivePaddingBottom + owner.effectiveBorderBottomWidth));
+
+        return CGRectMake(x, y, width, height);
     }
 
     public textRectForBounds(bounds: CGRect): CGRect {
