@@ -74,7 +74,16 @@ function loadCss(cssFile?: string): RuleSet[] {
 
 application.on("cssChanged", onCssChanged);
 application.on("livesync", onLiveSync);
-application.on("launch", () => loadCss(application.getCssFileName()));
+
+function loadCssOnLaunch() {
+    loadCss(application.getCssFileName());
+    application.off("launch", loadCssOnLaunch);
+}
+if (application.hasLaunched()) {
+    loadCssOnLaunch();
+} else {
+    application.on("launch", loadCssOnLaunch);
+}
 
 let pattern: RegExp = /('|")(.*?)\1/;
 
