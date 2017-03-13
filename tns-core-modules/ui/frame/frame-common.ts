@@ -32,7 +32,7 @@ function onLivesync(args: EventData): void {
         }
     });
 }
-application.on("livesync", args => onLivesync);
+application.on("livesync", onLivesync);
 
 let frameStack: Array<FrameBase> = [];
 
