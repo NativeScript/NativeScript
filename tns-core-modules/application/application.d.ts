@@ -149,6 +149,11 @@ export function on(event: "cssChanged", callback: (args: CssChangedEventData) =>
 export function on(event: "livesync", callback: (args: EventData) => void);
 
 /**
+ * Removes listener for the specified event name.
+ */
+export function off(eventNames: string, callback?: any, thisArg?: any);
+
+/**
  * Call this method to start the application. Important: All code after this method call will not be executed!
  */
 export function start(entry?: NavigationEntry);
@@ -531,3 +536,8 @@ export interface RootViewControllerImpl {
 }
 
 export function getNativeApplication(): any;
+
+/**
+ * Indicates if the application is allready launched. See also the `application.on("launch", handler)` event.
+ */
+export function hasLaunched(): boolean;

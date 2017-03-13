@@ -34,8 +34,8 @@ let applicationCssSelectorVersion: number = 0;
 let applicationSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
-
 const animationsSymbol: symbol = Symbol("animations");
+const pattern: RegExp = /('|")(.*?)\1/;
 
 function onCssChanged(args: application.CssChangedEventData): void {
     if (args.cssText) {
@@ -74,9 +74,16 @@ function loadCss(cssFile?: string): RuleSet[] {
 
 application.on("cssChanged", onCssChanged);
 application.on("livesync", onLiveSync);
-application.on("launch", () => loadCss(application.getCssFileName()));
 
-let pattern: RegExp = /('|")(.*?)\1/;
+function loadCssOnLaunch() {
+    loadCss(application.getCssFileName());
+    application.off("launch", loadCssOnLaunch);
+}
+if (application.hasLaunched()) {
+    loadCssOnLaunch();
+} else {
+    application.on("launch", loadCssOnLaunch);
+}
 
 export class CssState {
     constructor(private view: ViewBase, private match: SelectorsMatch<ViewBase>) {
