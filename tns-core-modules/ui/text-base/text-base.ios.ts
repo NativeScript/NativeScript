@@ -1,11 +1,9 @@
-﻿import { Font, FontWeight, FontStyle } from "../styling/font";
+﻿import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, FormattedString,
-    TextDecoration, TextAlignment, TextTransform, Span, Color
+    TextDecoration, TextAlignment, TextTransform, Span, Color, isBold
 } from "./text-base-common";
-
-import { _isSet as isSet } from "../core/properties";
 
 export * from "./text-base-common";
 
@@ -13,7 +11,6 @@ export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
-    //Text
     get [textProperty.native](): string {
         return '';
     }
@@ -26,7 +23,6 @@ export class TextBase extends TextBaseCommon {
         this._requestLayoutOnTextChanged();
     }
 
-    //FormattedText
     get [formattedTextProperty.native](): FormattedString {
         return null;
     }
@@ -36,7 +32,6 @@ export class TextBase extends TextBaseCommon {
         this._requestLayoutOnTextChanged();
     }
 
-    //Color
     get [colorProperty.native](): UIColor {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
@@ -57,7 +52,6 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    //FontInternal
     get [fontInternalProperty.native](): UIFont {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
@@ -72,7 +66,6 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    //TextAlignment
     get [textAlignmentProperty.native](): TextAlignment {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
@@ -104,27 +97,24 @@ export class TextBase extends TextBaseCommon {
                 break;
 
             default:
-                throw new Error(`Invalid text alignment value: ${value}. Valid values are: "${TextAlignment.LEFT}", "${TextAlignment.CENTER}", "${TextAlignment.RIGHT}".`);
+                throw new Error(`Invalid text alignment value: ${value}. Valid values are: 'left', 'center', 'right'.`);
         }
     }
 
-    //TextDecoration
     get [textDecorationProperty.native](): TextDecoration {
-        return TextDecoration.NONE;
+        return "none";
     }
     set [textDecorationProperty.native](value: TextDecoration) {
         this._setNativeText();
     }
 
-    //TextTransform
     get [textTransformProperty.native](): TextTransform {
-        return TextTransform.NONE;
+        return "none";
     }
     set [textTransformProperty.native](value: TextTransform) {
         this._setNativeText();
     }
 
-    // LetterSpacing.
     get [letterSpacingProperty.native](): number {
         return 0;
     }
@@ -142,6 +132,7 @@ export class TextBase extends TextBaseCommon {
 
     setFormattedTextDecorationAndTransform() {
         const attrText = this.createNSMutableAttributedString(this.formattedText);
+        // TODO: letterSpacing should be applied per Span.
         if (this.letterSpacing !== 0) {
             attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeView.font.pointSize, { location: 0, length: attrText.length });
         }
@@ -159,20 +150,20 @@ export class TextBase extends TextBaseCommon {
 
         let dict = new Map<string, any>();
         switch (style.textDecoration) {
-            case TextDecoration.NONE:
+            case "none":
                 break;
-            case TextDecoration.UNDERLINE:
+            case "underline":
                 dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
-            case TextDecoration.LINE_THROUGH:
+            case "line-through":
                 dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
-            case TextDecoration.UNDERLINE_LINE_THROUGH:
+            case "underline line-through":
                 dict.set(NSUnderlineStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 dict.set(NSStrikethroughStyleAttributeName, NSUnderlineStyle.StyleSingle);
                 break;
             default:
-                throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: "${TextDecoration.NONE}", "${TextDecoration.UNDERLINE}", "${TextDecoration.LINE_THROUGH}", "${TextDecoration.UNDERLINE_LINE_THROUGH}".`);
+                throw new Error(`Invalid text decoration value: ${style.textDecoration}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
         }
 
         if (style.letterSpacing !== 0) {
@@ -237,7 +228,7 @@ export class TextBase extends TextBaseCommon {
         let attrDict = <{ key: string, value: any }>{};
         const style = span.style;
         const bold = isBold(style.fontWeight);
-        const italic = style.fontStyle === FontStyle.ITALIC;
+        const italic = style.fontStyle === "italic";
 
         let fontFamily = span.fontFamily;
         let fontSize = span.fontSize;
@@ -290,24 +281,24 @@ export class TextBase extends TextBaseCommon {
         }
 
         let valueSource: typeof style;
-        if (isSet(textDecorationProperty, style)) {
+        if (textDecorationProperty.isSet(style)) {
             valueSource = style;
-        } else if (isSet(textDecorationProperty, span.parent.style)) {
+        } else if (textDecorationProperty.isSet(span.parent.style)) {
             // span.parent is FormattedString
             valueSource = span.parent.style;
-        } else if (isSet(textDecorationProperty, span.parent.parent.style)) {
+        } else if (textDecorationProperty.isSet(span.parent.parent.style)) {
             // span.parent.parent is TextBase
             valueSource = span.parent.parent.style;
         }
 
         if (valueSource) {
             const textDecorations = valueSource.textDecoration;
-            const underline = textDecorations.indexOf(TextDecoration.UNDERLINE) !== -1;
+            const underline = textDecorations.indexOf('underline') !== -1;
             if (underline) {
                 attrDict[NSUnderlineStyleAttributeName] = underline;
             }
 
-            const strikethrough = textDecorations.indexOf(TextDecoration.LINE_THROUGH) !== -1;
+            const strikethrough = textDecorations.indexOf('line-through') !== -1;
             if (strikethrough) {
                 attrDict[NSStrikethroughStyleAttributeName] = strikethrough;
             }
@@ -319,26 +310,19 @@ export class TextBase extends TextBaseCommon {
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
     switch (textTransform) {
-        case TextTransform.NONE:
+        case "none":
             return text;
-        case TextTransform.UPPERCASE:
+        case "uppercase":
             return NSStringFromNSAttributedString(text).uppercaseString;
-        case TextTransform.LOWERCASE:
+        case "lowercase":
             return NSStringFromNSAttributedString(text).lowercaseString;
-        case TextTransform.CAPITALIZE:
+        case "capitalize":
             return NSStringFromNSAttributedString(text).capitalizedString;
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: "${TextTransform.NONE}", "${TextTransform.CAPITALIZE}", "${TextTransform.UPPERCASE}, "${TextTransform.LOWERCASE}".`);
+            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: 'none', 'capitalize', 'uppercase', 'lowercase'.`);
     }
 }
 
 function NSStringFromNSAttributedString(source: NSAttributedString | string): NSString {
     return NSString.stringWithString(source instanceof NSAttributedString && source.string || <string>source);
-}
-
-function isBold(fontWeight: FontWeight): boolean {
-    return fontWeight === FontWeight.BOLD
-        || fontWeight === "700"
-        || fontWeight === FontWeight.EXTRA_BOLD
-        || fontWeight === FontWeight.BLACK;
 }

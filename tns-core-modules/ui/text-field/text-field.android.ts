@@ -1,4 +1,4 @@
-﻿import { TextFieldBase, secureProperty } from "./text-field-common";
+﻿import { TextFieldBase, secureProperty, whiteSpaceProperty, WhiteSpace } from "./text-field-common";
 
 export * from "./text-field-common";
 
@@ -19,10 +19,10 @@ export class TextField extends TextFieldBase {
         return false;
     }
     set [secureProperty.native](value: boolean) {
-        let nativeView = this.nativeView;
-        let currentInputType = nativeView.getInputType();
-        let currentClass = currentInputType & android.text.InputType.TYPE_MASK_CLASS;
-        let currentFlags = currentInputType & android.text.InputType.TYPE_MASK_FLAGS;
+        const nativeView = this.nativeView;
+        const currentInputType = nativeView.getInputType();
+        const currentClass = currentInputType & android.text.InputType.TYPE_MASK_CLASS;
+        const currentFlags = currentInputType & android.text.InputType.TYPE_MASK_FLAGS;
         let newInputType = currentInputType;
 
         // Password variations are supported only for Text and Number classes.
@@ -47,5 +47,12 @@ export class TextField extends TextFieldBase {
         }
 
         nativeView.setInputType(newInputType);
+    }
+
+    get [whiteSpaceProperty.native](): WhiteSpace {
+        return "nowrap";
+    }
+    set [whiteSpaceProperty.native](value: WhiteSpace) {
+        // Don't change it otherwise TextField will go to multiline mode.
     }
 }

@@ -3,10 +3,6 @@ import { Style } from "../../styling/style";
 
 export { Style };
 
-//@private
-export function _isSet(cssProperty: CssProperty<any, any>, instance: Style): boolean;
-//@endprivate
-
 /**
  * Value specifing that Property should be set to its initial value.
  */
@@ -29,6 +25,13 @@ export interface CssPropertyOptions<T extends Style, U> extends PropertyOptions<
     readonly cssName: string;
 }
 
+export interface ShorthandPropertyOptions<P> {
+    readonly name: string,
+    readonly cssName: string;
+    readonly converter: (value: string | P) => [CssProperty<any, any>, any][],
+    readonly getter: (this: Style) => string | P
+}
+
 export interface CssAnimationPropertyOptions<T, U> {
     readonly name: string;
     readonly cssName?: string;
@@ -38,21 +41,6 @@ export interface CssAnimationPropertyOptions<T, U> {
     readonly valueConverter?: (value: string) => U;
 }
 
-export class CssAnimationProperty<T extends Style, U> {
-    constructor(options: CssAnimationPropertyOptions<T, U>);
-
-    public readonly name: string;
-    public readonly cssName: string;
-    public readonly native: symbol;
-
-    readonly keyframe: string;
-
-    public register(cls: { prototype: T }): void;
-
-    public _valueConverter?: (value: string) => any;
-    public static _getByCssName(name: string): CssAnimationProperty<any, any>;
-}
-
 export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
     constructor(options: PropertyOptions<T, U>);
 
@@ -60,6 +48,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
     public readonly defaultValue: U;
     public register(cls: { prototype: T }): void;
     public nativeValueChange(T, U): void;
+    public isSet(instance: T): boolean;
 }
 
 export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements TypedPropertyDescriptor<U> {
@@ -80,26 +69,37 @@ export class CssProperty<T extends Style, U> {
     public readonly cssName: string;
     public readonly defaultValue: U;
     public register(cls: { prototype: T }): void;
+    public isSet(instance: T): boolean;
 }
 
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> {
     constructor(options: CssPropertyOptions<T, U>);
 }
 
-export interface ShorthandPropertyOptions<P> {
-    readonly name: string,
-    readonly cssName: string;
-    readonly converter: (value: string | P) => [CssProperty<any, any>, any][],
-    readonly getter: (this: Style) => string | P
-}
-
 export class ShorthandProperty<T extends Style, P> {
     constructor(options: ShorthandPropertyOptions<P>);
 
-    public readonly native: symbol;
     public readonly name: string;
     public readonly cssName: string;
+    public readonly native: symbol;
+
     public register(cls: { prototype: T }): void;
+}
+
+export class CssAnimationProperty<T extends Style, U> {
+    constructor(options: CssAnimationPropertyOptions<T, U>);
+
+    public readonly name: string;
+    public readonly cssName: string;
+    public readonly native: symbol;
+
+    readonly keyframe: string;
+
+    public register(cls: { prototype: T }): void;
+    public isSet(instance: T): boolean;
+    
+    public _valueConverter?: (value: string) => any;
+    public static _getByCssName(name: string): CssAnimationProperty<any, any>;
 }
 
 export function initNativeView(view: ViewBase): void;

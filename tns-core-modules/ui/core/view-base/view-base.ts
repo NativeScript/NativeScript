@@ -6,7 +6,7 @@ import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../la
 import { KeyframeAnimation } from "../../animation/keyframe-animation";
 
 // Types.
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView, _isSet } from "../properties";
+import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
@@ -97,6 +97,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
 
     public recycleNativeView: boolean;
 
+    private _iosView: Object;
+    private _androidView: Object;
     private _style: Style;
     private _isLoaded: boolean;
     private _registeredAnimations: Array<KeyframeAnimation>;
@@ -180,11 +182,11 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     get android(): any {
-        return undefined;
+        return this._androidView;
     }
 
     get ios(): any {
-        return undefined;
+        return this._iosView;
     }
 
     get isLoaded(): boolean {
@@ -581,8 +583,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         traceNotifyEvent(this, "_onContextChanged");
 
         if (isAndroid) {
-            const native: any = this._createNativeView();
-            const nativeView: android.view.View = this.nativeView = native;
+            const nativeView = this._androidView = this.nativeView = <android.view.View>this._createNativeView();
             if (nativeView) {
                 let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
                 if (result === undefined) {
@@ -596,23 +597,23 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
                 this._defaultPaddingLeft = result.left;
 
                 const style = this.style;
-                if (!_isSet(paddingTopProperty, style)) {
+                if (!paddingTopProperty.isSet(style)) {
                     this.effectivePaddingTop = this._defaultPaddingTop;
                 }
-                if (!_isSet(paddingRightProperty, style)) {
+                if (!paddingRightProperty.isSet(style)) {
                     this.effectivePaddingRight = this._defaultPaddingRight;
                 }
-                if (!_isSet(paddingBottomProperty, style)) {
+                if (!paddingBottomProperty.isSet(style)) {
                     this.effectivePaddingBottom = this._defaultPaddingBottom;
                 }
-                if (!_isSet(paddingLeftProperty, style)) {
+                if (!paddingLeftProperty.isSet(style)) {
                     this.effectivePaddingLeft = this._defaultPaddingLeft;
                 }
             }
         } else {
             // TODO: Implement _createNativeView for iOS
             this._createNativeView();
-            this.nativeView = (<any>this)._nativeView;
+            this.nativeView = this._iosView = (<any>this)._nativeView;
         }
 
         this._initNativeView();
@@ -636,6 +637,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (traceEnabled()) {
             traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }
+  
+        this._resetNativeView();
 
         this.eachChild((child) => {
             child._tearDownUI(force);
@@ -645,8 +648,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (this.parent) {
             this.parent._removeViewFromNativeVisualTree(this);
         }
-
-        this._resetNativeView();
 
         this._disposeNativeView();
 
@@ -713,7 +714,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (oldParent) {
             clearInheritedProperties(this);
             if (this.bindingContextBoundToParentBindingContextChanged) {
-                oldParent.parent.off("bindingContextChange", this.bindingContextChanged, this);
+                oldParent.off("bindingContextChange", this.bindingContextChanged, this);
             }
         } else if (this.shouldAddHandlerToParentBindingContextChanged) {
             const parent = this.parent;

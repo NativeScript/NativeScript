@@ -1,6 +1,7 @@
 ﻿import {
     ButtonBase, PseudoClassHandler,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length, zIndexProperty
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, 
+    Length, zIndexProperty
 } from "./button-common";
 
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
@@ -35,16 +36,13 @@ function initializeClickListener(): void {
 
 export class Button extends ButtonBase {
     _button: android.widget.Button;
+    
     private _highlightedHandler: (args: TouchGestureEventData) => void;
-
-    get android(): android.widget.Button {
-        return this._button;
-    }
 
     public _createNativeView() {
         initializeClickListener();
         const button = this._button = new android.widget.Button(this._context);
-        this._button.setOnClickListener(new ClickListener(this));
+        button.setOnClickListener(new ClickListener(this));
         return button;
     }
 

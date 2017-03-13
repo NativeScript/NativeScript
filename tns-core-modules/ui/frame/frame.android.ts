@@ -708,12 +708,17 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
         const entry = this.entry;
         const page = entry.resolvedPage;
-        if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
-            fragment.getFragmentManager().beginTransaction().hide(fragment).commit();
-            this.frame._addView(page);
-        }
-        else {
-            onFragmentShown(fragment);
+        try {
+            if (savedInstanceState && savedInstanceState.getBoolean(HIDDEN, false)) {
+                fragment.getFragmentManager().beginTransaction().hide(fragment).commit();
+                this.frame._addView(page);
+            } else {
+                onFragmentShown(fragment);
+            }
+        } catch (ex) {
+            const label = new android.widget.TextView(container.getContext());
+            label.setText(ex.message + ", " + ex.stackTrace);
+            return label;
         }
 
         return page._nativeView;
