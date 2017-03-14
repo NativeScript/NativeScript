@@ -9,16 +9,18 @@ import android.support.annotation.ColorInt;
  */
 
 public class SegmentedBarColorDrawable extends ColorDrawable {
-    static final int indicatorThickness = android.os.Build.VERSION.SDK_INT >= 21 ? 6 : 15;
 
-    public SegmentedBarColorDrawable(@ColorInt int color) {
+    private float thickness;
+
+    public SegmentedBarColorDrawable(@ColorInt int color, float thickness) {
         super(color);
+        this.thickness = thickness;
     }
 
     public void draw(android.graphics.Canvas canvas) {
         Paint p = new Paint();
         p.setColor(this.getColor());
         p.setStyle(android.graphics.Paint.Style.FILL);
-        canvas.drawRect(0, this.getBounds().height() - indicatorThickness, this.getBounds().width(), this.getBounds().height(), p);
+        canvas.drawRect(0, this.getBounds().height() - thickness, this.getBounds().width(), this.getBounds().height(), p);
     }
 }
