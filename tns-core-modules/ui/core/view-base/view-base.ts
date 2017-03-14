@@ -240,8 +240,6 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public onUnloaded() {
-        this._styleScope = null;
-        this._setCssState(null);
         this._unloadEachChild();
         this._isLoaded = false;
         this._emit("unloaded");
@@ -261,6 +259,8 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         const scope = this._styleScope;
         if (scope) {
             scope.applySelectors(this);
+        } else {
+            this._setCssState(null);
         }
     }
 
@@ -540,6 +540,9 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
      */
     public _removeViewCore(view: ViewBase) {
         // TODO: Discuss this.
+        if (this._styleScope === view._styleScope) {
+            view._setStyleScope(null);
+        }
         if (view.isLoaded) {
             view.onUnloaded();
         }
