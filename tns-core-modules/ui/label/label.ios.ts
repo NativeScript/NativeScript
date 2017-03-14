@@ -84,7 +84,7 @@ export class Label extends TextBase implements LabelDefinition {
             this._fixedSize = (widthMode === layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
                 | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
-            let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
+            let nativeSize = nativeView.sizeThatFits(CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height)));
             let labelWidth = layout.toDevicePixels(nativeSize.width);
 
             if (this.textWrap) {
