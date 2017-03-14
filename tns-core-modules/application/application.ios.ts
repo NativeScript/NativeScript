@@ -214,6 +214,8 @@ exports.start = function (entry?: NavigationEntry) {
     if (entry) {
         exports.mainEntry = entry;
     }
+    
+    started = true;
 
     if (!iosApp.nativeApp) {
         // Normal NativeScript app will need UIApplicationMain. 
