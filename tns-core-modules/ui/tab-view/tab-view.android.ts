@@ -381,6 +381,10 @@ export class TabViewStyler implements style.Styler {
     }
 
     private static resetFontInternalProperty(v: view.View, nativeValue: any) {
+        if (!nativeValue) {
+            return;
+        }
+
         var tab = <definition.TabView>v;
         var tabLayout = tab._getAndroidTabView();
         let tabCount = tabLayout.getItemCount(); 
