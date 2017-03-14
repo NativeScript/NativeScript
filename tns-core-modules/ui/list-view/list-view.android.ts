@@ -79,7 +79,7 @@ export class ListView extends ListViewBase {
         }
 
         // clear bindingContext when it is not observable because otherwise bindings to items won't reevaluate
-        this._realizedItems.forEach((view, nativeView, map) => {
+        this._realizedItems.forEach((view, nativeView) => {
             if (!(view.bindingContext instanceof Observable)) {
                 view.bindingContext = null;
             }
@@ -104,7 +104,7 @@ export class ListView extends ListViewBase {
     }
 
     public eachChildView(callback: (child: View) => boolean): void {
-        this._realizedItems.forEach((view, nativeView, map) => {
+        this._realizedItems.forEach((view, nativeView) => {
             if (view.parent instanceof ListView) {
                 callback(view);
             }
@@ -119,9 +119,9 @@ export class ListView extends ListViewBase {
 
     public _dumpRealizedTemplates() {
         console.log(`Realized Templates:`);
-        this._realizedTemplates.forEach((value, index, map) => {
+        this._realizedTemplates.forEach((value, index) => {
             console.log(`\t${index}:`);
-            value.forEach((value, index, map) => {
+            value.forEach((value, index) => {
                 console.log(`\t\t${index.hashCode()}: ${value}`);
             });
         });
@@ -130,7 +130,7 @@ export class ListView extends ListViewBase {
 
     private clearRealizedCells(): void {
         // clear the cache
-        this._realizedItems.forEach((view, nativeView, map) => {
+        this._realizedItems.forEach((view, nativeView) => {
             if (view.parent) {
                 // This is to clear the StackLayout that is used to wrap non LayoutBase & ProxyViewContainer instances.
                 if (!(view.parent instanceof ListView)) {
