@@ -38,7 +38,6 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
         this.style.fontSize = value;
     }
 
-    // Italic
     get fontStyle(): FontStyle {
         return this.style.fontStyle;
     }
@@ -46,7 +45,6 @@ export class FormattedString extends ViewBase implements FormattedStringDefiniti
         this.style.fontStyle = value;
     }
 
-    // Bold
     get fontWeight(): FontWeight {
         return this.style.fontWeight;
     }

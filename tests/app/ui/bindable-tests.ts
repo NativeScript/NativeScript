@@ -508,18 +508,17 @@ export function test_TwoElementsBindingToSameBindingContext() {
 
 export function test_BindingContext_NavigatingForwardAndBack() {
     const expectedValue = "Tralala";
+    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
     const testFunc = function (page: Page) {
         const innerTestFunc = function (childPage: Page) {
             const testTextField: TextField = <TextField>(childPage.getViewById("testTextField"));
             testTextField.text = expectedValue;
         };
-        const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
         helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage2"), page.bindingContext, innerTestFunc);
         const testLabel: Label = <Label>(page.getViewById("testLabel"));
         TKUnit.assertEqual(testLabel.text, expectedValue);
     };
 
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
     helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage1"), null, testFunc);
 };
 

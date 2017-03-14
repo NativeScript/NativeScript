@@ -5,36 +5,11 @@ import { Label } from "tns-core-modules/ui/label";
 import { TextField } from "tns-core-modules/ui/text-field";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Page } from "tns-core-modules/ui/page";
 import { Color } from "tns-core-modules/color";
 import { isAndroid, isIOS } from "tns-core-modules/platform";
 import { View } from "tns-core-modules/ui/core/view";
 import { Length, PercentLength } from "tns-core-modules/ui/core/view";
 import * as fontModule from "tns-core-modules/ui/styling/font";
-
-let testBtn: Button;
-let testPage: Page;
-
-export function setUpModule() {
-    const pageFactory = function () {
-        testPage = new Page();
-        testBtn = new Button();
-        testBtn.text = "test";
-        testBtn.id = "testBtn";
-        testPage.content = testBtn;
-        return testPage;
-    };
-    helper.navigate(pageFactory);
-}
-
-export function tearDownModule() {
-    testBtn = null;
-    testPage = null;
-}
-
-export function tearDown() {
-    testPage.css = "";
-}
 
 export function test_setting_textDecoration_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("textDecoration", "text-decoration", "underline");
@@ -214,14 +189,18 @@ function test_property_from_CSS_is_applied_to_style(propName: string, cssName: s
         cssValue = value + "";
     }
 
-    testPage.css = "#testBtn { " + cssName + ": " + cssValue + " }";
+    const btn = new Button();
+    btn.id = "testBtn";
+
+    const page = helper.getCurrentPage();
+    page.css = "#testBtn { " + cssName + ": " + cssValue + " }";
+    page.content = btn;
 
     if (useDeepEquals) {
-        TKUnit.assertDeepEqual(testBtn.style[propName], value);
+        TKUnit.assertDeepEqual(btn.style[propName], value);
     } else {
-        TKUnit.assertEqual(testBtn.style[propName], value, "Setting property " + propName + " with CSS name " + cssName);
+        TKUnit.assertEqual(btn.style[propName], value, "Setting property " + propName + " with CSS name " + cssName);
     }
-    testPage.css = "";
 }
 
 export function test_width_property_is_synced_in_style_and_view() {

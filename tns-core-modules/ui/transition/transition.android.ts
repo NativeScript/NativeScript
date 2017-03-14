@@ -428,7 +428,10 @@ export function _removePageNativeViewFromAndroidParent(page: Page): void {
             if (traceEnabled()) {
                 traceWrite(`REMOVED ${page}._nativeView from its Android parent`, traceCategories.Transition);
             }
-            page._tearDownUI(true);
+
+            if (page._context) {
+                page._tearDownUI(true);
+            }
             androidParent.removeView(page._nativeView);
         }
     }

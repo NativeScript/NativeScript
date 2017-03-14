@@ -39,11 +39,11 @@ function initializeEditTextListeners(): void {
         }
 
         public onTextChanged(text: string, start: number, before: number, count: number) {
-            const owner = this.owner;
-            let selectionStart = owner.android.getSelectionStart();
-            owner.android.removeTextChangedListener(owner._editTextListeners);
-            owner.android.addTextChangedListener(owner._editTextListeners);
-            owner.android.setSelection(selectionStart);
+            // const owner = this.owner;
+            // let selectionStart = owner.android.getSelectionStart();
+            // owner.android.removeTextChangedListener(owner._editTextListeners);
+            // owner.android.addTextChangedListener(owner._editTextListeners);
+            // owner.android.setSelection(selectionStart);
         }
 
         public afterTextChanged(editable: android.text.IEditable) {

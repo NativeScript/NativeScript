@@ -26,10 +26,6 @@ function print(map) {
     }
 }
 
-export function _isSet(cssProperty: CssProperty<any, any>, instance: Style): boolean {
-    return cssProperty.sourceKey in instance;
-}
-
 export function _printUnregisteredProperties(): void {
     print(symbolPropertyMap);
     print(cssSymbolPropertyMap);
@@ -176,6 +172,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
         }
         this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this);
+    }
+
+    public isSet(instance: T): boolean {
+        return this.key in instance;
     }
 }
 
@@ -544,6 +544,10 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
         }
     }
+
+    public isSet(instance: T): boolean {
+        return this.key in instance;
+    }
 }
 
 export class CssAnimationProperty<T extends Style, U> {
@@ -555,6 +559,7 @@ export class CssAnimationProperty<T extends Style, U> {
 
     public readonly keyframe: string;
     public readonly defaultValueKey: symbol;
+    public readonly computedValueKey: symbol;
 
     private static properties: { [cssName: string]: CssAnimationProperty<any, any> } = {};
 
@@ -582,6 +587,7 @@ export class CssAnimationProperty<T extends Style, U> {
         const styleValue = Symbol(propertyName);
         const keyframeValue = Symbol(keyframeName);
         const computedValue = Symbol("computed-value:" + propertyName);
+        this.computedValueKey = computedValue;
         const computedSource = Symbol("computed-source:" + propertyName);
 
         const native = this.native = Symbol("native:" + propertyName);
@@ -663,6 +669,10 @@ export class CssAnimationProperty<T extends Style, U> {
 
     public static _getByCssName(name: string): CssAnimationProperty<any, any> {
         return this.properties[name];
+    }
+
+    public isSet(instance: T): boolean {
+        return instance[this.computedValueKey] !== unsetValue;
     }
 }
 
