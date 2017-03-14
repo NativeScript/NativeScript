@@ -121,9 +121,10 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
 
 export class TabViewItem extends TabViewItemBase {
 
+    _iosViewController: UIViewController;
     public _update() {
         const parent = <TabView>this.parent;
-        let controller = <UIViewController>this.nativeView;
+        let controller = this._iosViewController;
         if (parent && controller) {
             const icon = parent._getIcon(this.iconSource);
             const index = parent.items.indexOf(this);
@@ -250,7 +251,7 @@ export class TabView extends TabViewBase {
                 newController.view.addSubview(item.view.ios);
             }
 
-            item.nativeView = newController;
+            item._iosViewController = newController;
 
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
@@ -286,7 +287,7 @@ export class TabView extends TabViewBase {
         if (!iconSource) {
             return null;
         }
-
+        
         let image: UIImage = this._iconsCache[iconSource];
         if (!image) {
             const is = fromFileOrResource(iconSource);
@@ -390,10 +391,10 @@ export class TabView extends TabViewBase {
         }
     }
 
-    get [itemsProperty.native](): TabViewItemBase[] {
+    get [itemsProperty.native](): TabViewItem[] {
         return null;
     }
-    set [itemsProperty.native](value: TabViewItemBase[]) {
+    set [itemsProperty.native](value: TabViewItem[]) {
         this.setViewControllers(value);
     }
 
@@ -401,7 +402,6 @@ export class TabView extends TabViewBase {
         return null;
     }
     set [tabTextColorProperty.native](value: UIColor | Color) {
-        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
     }
 
@@ -416,6 +416,7 @@ export class TabView extends TabViewBase {
         return this._ios.tabBar.tintColor;
     }
     set [selectedTabTextColorProperty.native](value: UIColor) {
+        this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
     }
 
