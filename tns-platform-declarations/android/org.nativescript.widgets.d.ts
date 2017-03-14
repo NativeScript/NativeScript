@@ -498,6 +498,7 @@
             }
 
             export class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
+                constructor(color: number, thickness: number);
             }
 
             export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {

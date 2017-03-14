@@ -1,7 +1,7 @@
 ﻿import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, fontSizeProperty, Color, initNativeView
+    colorProperty, fontInternalProperty, fontSizeProperty, Color, initNativeView, layout
 } from "./segmented-bar-common";
 
 export * from "./segmented-bar-common";
@@ -24,6 +24,7 @@ interface TabHost {
 }
 
 let apiLevel: number;
+let selectedIndicatorThickness: number;
 
 let TabHost: TabHost;
 let TabChangeListener: TabChangeListener;
@@ -33,6 +34,10 @@ function initializeNativeClasses(): void {
     if (TabChangeListener) {
         return;
     }
+
+    apiLevel = android.os.Build.VERSION.SDK_INT;
+    // Indicator thickness for material - 2dip. For pre-material - 5dip. 
+    selectedIndicatorThickness = layout.toDevicePixels(apiLevel >= 21 ? 2 : 5);
 
     @Interfaces([android.widget.TabHost.OnTabChangeListener])
     class TabChangeListenerImpl extends java.lang.Object implements android.widget.TabHost.OnTabChangeListener {
@@ -163,10 +168,9 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
                 org.nativescript.widgets.ViewHelper.setBackground(viewGroup, newDrawable);
             } else {
                 const stateDrawable = new android.graphics.drawable.StateListDrawable();
-
+                let colorDrawable: android.graphics.drawable.ColorDrawable = new org.nativescript.widgets.SegmentedBarColorDrawable(color, selectedIndicatorThickness);
                 let arr = Array.create("int", 1);
                 arr[0] = R_ATTR_STATE_SELECTED;
-                let colorDrawable: android.graphics.drawable.ColorDrawable = new org.nativescript.widgets.SegmentedBarColorDrawable(color);
                 stateDrawable.addState(arr, colorDrawable);
                 stateDrawable.setBounds(0, 15, viewGroup.getRight(), viewGroup.getBottom());
 
