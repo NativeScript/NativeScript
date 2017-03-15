@@ -3,7 +3,7 @@
 import * as fs from "tns-core-modules/file-system";
 // << file-system-require
 
-import * as TKUnit from "./TKUnit";
+import * as TKUnit from "../TKUnit";
 import * as appModule from "tns-core-modules/application";
 import * as platform from "tns-core-modules/platform";
 

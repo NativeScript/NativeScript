@@ -1,7 +1,6 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
 import * as builder from "tns-core-modules/ui/builder";
-import * as fs from "tns-core-modules/file-system";
 import { Label } from "tns-core-modules/ui/label";
 import { Button } from "tns-core-modules/ui/button";
 import { Page } from "tns-core-modules/ui/page";
@@ -212,10 +211,8 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
 
     let gotException = false;
 
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-
     try {
-        helper.navigateToModule(moduleName + "/ActionBar_NumberAsText");
+        helper.navigateToModule("ui/action-bar/ActionBar_NumberAsText");
     }
     catch (e) {
         gotException = true;
@@ -225,8 +222,8 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
 }
 
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(moduleName + "/ActionBar_BetweenTags", undefined, (page: Page) => {
+
+    helper.navigateToModuleAndRunTest("ui/action-bar/ActionBar_BetweenTags", undefined, (page: Page) => {
 
         TKUnit.assertNotNull(page.actionBar.navigationButton);
         TKUnit.assertEqual(page.actionBar.navigationButton.text, "nb");

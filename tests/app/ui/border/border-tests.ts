@@ -1,4 +1,5 @@
 ﻿// >> border-require
-var borderModule = require("ui/border");
+import { Border } from "tns-core-modules/ui/border";
 // << border-require
-console.dir(borderModule);
+
+console.dir(Border);

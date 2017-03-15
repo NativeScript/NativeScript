@@ -1,12 +1,11 @@
 import { Observable, fromObject, fromObjectRecursive } from "tns-core-modules/data/observable";
 import { ViewBase } from "tns-core-modules/ui/core/view-base";
 import { BindingOptions } from "tns-core-modules/ui/core/bindable";
-import * as TKUnit from "../TKUnit";
+import * as TKUnit from "../../../TKUnit";
 import * as types from "tns-core-modules/utils/types";
-import * as helper from "../ui/helper";
+import * as helper from "../../helper";
 import * as utils from "tns-core-modules/utils/utils";
 import * as bindingBuilder from "tns-core-modules/ui/builder/binding-builder";
-import * as fs from "tns-core-modules/file-system";
 import * as appModule from "tns-core-modules/application";
 import * as trace from "tns-core-modules/trace";
 import { View } from "tns-core-modules/ui/core/view";
@@ -502,24 +501,22 @@ export function test_TwoElementsBindingToSameBindingContext() {
         TKUnit.assertEqual(upperStackLabel.text, label1.text, "label1");
         TKUnit.assertEqual(upperStackLabel.text, label2.text, "label2");
     };
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage"), null, testFunc);
+    helper.navigateToModuleAndRunTest(("ui/core/bindable/bindingContext_testPage"), null, testFunc);
 };
 
 export function test_BindingContext_NavigatingForwardAndBack() {
     const expectedValue = "Tralala";
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
     const testFunc = function (page: Page) {
         const innerTestFunc = function (childPage: Page) {
             const testTextField: TextField = <TextField>(childPage.getViewById("testTextField"));
             testTextField.text = expectedValue;
         };
-        helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage2"), page.bindingContext, innerTestFunc);
+        helper.navigateToModuleAndRunTest(("ui/core/bindable/bindingContext_testPage2"), page.bindingContext, innerTestFunc);
         const testLabel: Label = <Label>(page.getViewById("testLabel"));
         TKUnit.assertEqual(testLabel.text, expectedValue);
     };
 
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/bindingContext_testPage1"), null, testFunc);
+    helper.navigateToModuleAndRunTest(("ui/core/bindable/bindingContext_testPage1"), null, testFunc);
 };
 
 export function test_BindingToSource_FailsAfterBindingContextChange() {

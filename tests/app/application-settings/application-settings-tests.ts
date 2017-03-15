@@ -2,7 +2,7 @@
 var appSettings = require("application-settings");
 // << application-settings-require
 
-import * as TKUnit from "./TKUnit";
+import * as TKUnit from "../TKUnit";
 
 var stringKey:string = "stringKey";
 var boolKey: string = "boolKey";

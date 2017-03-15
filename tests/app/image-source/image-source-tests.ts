@@ -9,20 +9,17 @@
 import * as imageSource from "tns-core-modules/image-source";
 import * as fs from "tns-core-modules/file-system";
 import * as app from "tns-core-modules/application";
-import * as TKUnit from "./TKUnit";
+import * as TKUnit from "../TKUnit";
 import * as platform from "tns-core-modules/platform";
 
-var imagePath = fs.path.join(__dirname, "/logo.png");
-var smallImagePath = fs.path.join(__dirname, "/small-image.png");
+var imagePath = "~/logo.png";
+var smallImagePath = "~/small-image.png";
 
-/* TODO: We need a way to programmatically add an image to resources and then load it from, otherwise we do not know if there is such resource in the target native app.
 export function testFromResource() {
-    // >> imagesource-resname
-    var img = imageSource.fromResource("logo");
-    // << imagesource-resname
+    var img = imageSource.fromResource("icon");
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 }
-*/
+
 export function testFromUrl(done) {
     //var completed;
     var result: imageSource.ImageSource;

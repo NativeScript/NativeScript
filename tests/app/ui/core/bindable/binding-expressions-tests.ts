@@ -1,7 +1,6 @@
 ﻿import * as frameModule from "tns-core-modules/ui/frame";
 import * as textFieldModule from "tns-core-modules/ui/text-field";
-import * as fs from "tns-core-modules/file-system";
-import * as helper from "../ui/helper";
+import * as helper from "../../helper";
 
 export var test_BindingExpressions_ArrayAccess = function () {
     navigateToPage("bindingExpressions_arrayAccess_testPage");
@@ -85,6 +84,5 @@ export var assertElementValueIsNaN = function (elementId: string) {
 }
 
 export var navigateToPage = function (pageName: string) {
-    var path = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModule(path + "/test-pages/" + pageName);
+    helper.navigateToModule("/ui/test-pages/" + pageName);
 }
