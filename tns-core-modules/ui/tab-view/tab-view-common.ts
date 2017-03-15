@@ -171,7 +171,7 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
     name: "selectedIndex", defaultValue: -1, affectsLayout: isIOS,
     valueChanged: (target, oldValue, newValue) => {
-        target.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: this, oldIndex: oldValue, newIndex: newValue });
+        target.notify(<SelectedIndexChangedEventData>{ eventName: TabViewBase.selectedIndexChangedEvent, object: target, oldIndex: oldValue, newIndex: newValue });
     },
     coerceValue: (target, value) => {
         let items = target.items;

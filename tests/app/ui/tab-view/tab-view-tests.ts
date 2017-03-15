@@ -271,6 +271,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         tabView.on(tabViewModule.TabView.selectedIndexChangedEvent, (args: tabViewModule.SelectedIndexChangedEventData) => {
             actualOldIndex = args.oldIndex;
             actualNewIndex = args.newIndex;
+            TKUnit.assertEqual(args.object, tabView, "args.object should be TabView")
         });
 
         tabView.selectedIndex = expectedNewIndex;
