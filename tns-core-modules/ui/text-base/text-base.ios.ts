@@ -234,37 +234,9 @@ export class TextBase extends TextBaseCommon {
         let fontSize = span.fontSize;
 
         if (bold || italic || fontFamily || fontSize) {
-            if (!fontSize) {
-                fontSize = viewFont.pointSize;
-            }
-
-            if (!fontFamily) {
-                fontFamily = viewFont.fontName;
-            }
-            
-            let font;
-
-            let fontDescriptor: UIFontDescriptor = viewFont.fontDescriptor;
-            if (fontFamily) {
-                fontDescriptor = fontDescriptor.fontDescriptorWithFamily(fontFamily);
-            }
-
-            let symbolicTraits;
-            if (bold) {
-                symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitBold;
-            }
-
-            if (italic) {
-                symbolicTraits |= UIFontDescriptorSymbolicTraits.TraitItalic;
-            }
-
-            if (symbolicTraits) {
-                font = UIFont.fontWithDescriptorSize(fontDescriptor.fontDescriptorWithSymbolicTraits(symbolicTraits), fontSize);
-            } else {
-                font = UIFont.fontWithDescriptorSize(fontDescriptor, fontSize);
-            }
-
-            attrDict[NSFontAttributeName] = font;
+            let font = new Font(style.fontFamily, style.fontSize, style.fontStyle, style.fontWeight);
+            let iosFont = font.getUIFont(viewFont);
+            attrDict[NSFontAttributeName] = iosFont;
         }
 
         const color = span.color;
