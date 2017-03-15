@@ -91,10 +91,10 @@ export module ad {
 
         // TODO: Can we move BorderWidths as separate native setter?
         // This way we could skip setPadding if borderWidth is not changed.
-        let leftPadding = Math.round(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
-        let topPadding = Math.round(view.effectiveBorderTopWidth + view.effectivePaddingTop);
-        let rightPadding = Math.round(view.effectiveBorderRightWidth + view.effectivePaddingRight);
-        let bottomPadding = Math.round(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
+        let leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
+        let topPadding = Math.ceil(view.effectiveBorderTopWidth + view.effectivePaddingTop);
+        let rightPadding = Math.ceil(view.effectiveBorderRightWidth + view.effectivePaddingRight);
+        let bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
 
         nativeView.setPadding(
             leftPadding,
