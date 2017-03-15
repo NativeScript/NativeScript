@@ -552,11 +552,11 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
             if (length == "auto") { // tslint:disable-line
                 setPixels(this.nativeView, auto);
             } else if (typeof length === "number") {
-                setPixels(this.nativeView, length * layout.getDisplayDensity());
+                setPixels(this.nativeView, Math.ceil(length * layout.getDisplayDensity()));
             } else if (length.unit == "dip") { // tslint:disable-line
-                setPixels(this.nativeView, length.value * layout.getDisplayDensity());
+                setPixels(this.nativeView, Math.ceil(length.value * layout.getDisplayDensity()));
             } else if (length.unit == "px") { // tslint:disable-line
-                setPixels(this.nativeView, length.value);
+                setPixels(this.nativeView, Math.ceil(length.value));
             } else if (length.unit == "%") { // tslint:disable-line
                 setPercent(this.nativeView, length.value);
             } else {

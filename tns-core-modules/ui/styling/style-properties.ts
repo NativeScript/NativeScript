@@ -59,16 +59,16 @@ function toDevicePixelsCommon(length: PercentLength, auto: number, parentAvailab
         return auto;
     }
     if (typeof length === "number") {
-        return Math.round(layout.getDisplayDensity() * length);
+        return Math.ceil(layout.getDisplayDensity() * length);
     }
     switch (length.unit) {
         case "px":
-            return Math.round(length.value);
-        default:
-        case "dip":
-            return Math.round(layout.getDisplayDensity() * length.value);
+            return Math.ceil(length.value);
         case "%":
             return Math.round(parentAvailableWidth * length.value);
+        case "dip":
+        default:
+            return Math.ceil(layout.getDisplayDensity() * length.value);
     }
 }
 
