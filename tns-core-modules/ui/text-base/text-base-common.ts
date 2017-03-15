@@ -1,6 +1,6 @@
 // Definitions.
 import { TextBase as TextBaseDefinition } from ".";
-import { FontWeight } from "../styling/font";
+import { FontStyle, FontWeight } from "../styling/font";
 import { PropertyChangeData } from "../../data/observable";
 
 // Types.
@@ -19,11 +19,32 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
     public text: string;
     public formattedText: FormattedString;
 
+    get fontFamily(): string {
+        return this.style.fontFamily;
+    }
+    set fontFamily(value: string) {
+        this.style.fontFamily = value;
+    }
+
     get fontSize(): number {
         return this.style.fontSize;
     }
     set fontSize(value: number) {
         this.style.fontSize = value;
+    }
+
+    get fontStyle(): FontStyle {
+        return this.style.fontStyle;
+    }
+    set fontStyle(value: FontStyle) {
+        this.style.fontStyle = value;
+    }
+
+    get fontWeight(): FontWeight {
+        return this.style.fontWeight;
+    }
+    set fontWeight(value: FontWeight) {
+        this.style.fontWeight = value;
     }
 
     get letterSpacing(): number {
