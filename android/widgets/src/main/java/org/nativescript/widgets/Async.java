@@ -347,6 +347,8 @@ public class Async
 			public String responseAsString;
 			public Bitmap responseAsImage;
 			public Exception error;
+			public String url;
+			public String statusText;
 
 			public void getHeaders(HttpURLConnection connection)
 			{
@@ -542,6 +544,8 @@ public class Async
 
 					// build the result
 					result.getHeaders(connection);
+					result.url = options.url;
+					result.statusText = connection.getResponseMessage();
 					if (!requestMethod.equals(HEAD_METHOD))
 					{
 						result.readResponseStream(connection, openedStreams, options);
