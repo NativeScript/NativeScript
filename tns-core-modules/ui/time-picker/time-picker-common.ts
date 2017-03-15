@@ -106,8 +106,7 @@ export var hourProperty = new Property<TimePickerBase, number>({
             // picker._setNativeTime();
             if (picker.time) {
                 picker.time.setHours(picker.hour);
-            }
-            else {
+            } else {
                 picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
             }
         } else {
@@ -136,6 +135,7 @@ export var maxHourProperty = new Property<TimePickerBase, number>({
         if (!isHourValid(newValue)) {
             throw new Error(getErrorMessage(picker, "maxHour", newValue));
         }
+
         if (isValidTime(picker)) {
             // picker._setNativeMaxTime();
         } else {
@@ -155,8 +155,7 @@ export var minuteProperty = new Property<TimePickerBase, number>({
             // picker._setNativeTime();
             if (picker.time) {
                 picker.time.setMinutes(picker.minute);
-            }
-            else {
+            } else {
                 picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
             }
         } else {
