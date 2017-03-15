@@ -1,7 +1,7 @@
-﻿import * as TKUnit from "./TKUnit";
+﻿import * as TKUnit from "../../../TKUnit";
 import { Observable, EventData } from "tns-core-modules/data/observable";
 import { addWeakEventListener, removeWeakEventListener } from "tns-core-modules/ui/core/weak-event-listener";
-import { forceGC } from "./ui/helper";
+import { forceGC } from "../../helper";
 
 class Target {
     public counter: number = 0;

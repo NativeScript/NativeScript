@@ -634,6 +634,11 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _tearDownUI(force?: boolean) {
+        // No context means we are already teared down.
+        if (!this._context) {
+            return;
+        }
+
         if (traceEnabled()) {
             traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }

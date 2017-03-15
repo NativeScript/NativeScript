@@ -902,10 +902,10 @@ export function test_TabViewHasCorrectParentChain() {
     var testFunc = function (page: Page) {
         TKUnit.assert(page.bindingContext.get("testPassed"));
     }
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
+
     var model = new Observable();
     model.set("testPassed", false);
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/mymodulewithxml/TabViewParentChain"), model, testFunc);
+    helper.navigateToModuleAndRunTest("xml-declaration/mymodulewithxml/TabViewParentChain", model, testFunc);
 }
 
 export function test_hasSourceCodeLocations() {

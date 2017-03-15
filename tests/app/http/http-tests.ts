@@ -1,5 +1,5 @@
 /* tslint:disable:no-unused-variable */
-import * as TKUnit from "./TKUnit";
+import * as TKUnit from "../TKUnit";
 import * as http from "tns-core-modules/http";
 import * as types from "tns-core-modules/utils/types";
 import * as fs from "tns-core-modules/file-system";

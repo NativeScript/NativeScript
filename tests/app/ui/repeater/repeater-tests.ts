@@ -5,7 +5,6 @@ import * as viewModule from "tns-core-modules/ui/core/view";
 import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
 import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
 import * as layoutBaseModule from "tns-core-modules/ui/layouts/layout-base";
-import * as fs from "tns-core-modules/file-system";
 import * as pageModule from "tns-core-modules/ui/page";
 import * as gestureModule from "tns-core-modules/ui/gestures";
 import { Label } from "tns-core-modules/ui/label";
@@ -201,17 +200,13 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         repeater.items = colors;
 
-        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
         // >> article-push-to-observablearray
         colors.push("yellow");
         // The Repeater will be updated automatically.
         // << article-push-to-observablearray
-        TKUnit.wait(ASYNC);
-        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
-
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
@@ -363,8 +358,7 @@ export var test_RepeaterItemsGestureBindings = function () {
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
     }
 
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
 }
 
 export var test_RepeaterItemsParentBindingsShouldWork = function () {
@@ -390,8 +384,7 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
     }
 
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
 }
 
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {

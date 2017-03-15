@@ -8,6 +8,8 @@ import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import * as platform from "tns-core-modules/platform";
 import "./ui-test";
 import * as fs from "tns-core-modules/file-system";
+import { unsetValue } from "tns-core-modules/ui/core/properties";
+import { ad } from "tns-core-modules/utils/utils";
 
 Frame.defaultAnimatedNavigation = false;
 
@@ -29,80 +31,206 @@ export function isRunningOnEmulator(): boolean {
 
 export var allTests = {};
 
-allTests["PLATFORM"] = require("./platform-tests");
-allTests["FILE SYSTEM"] = require("./file-system-tests");
-allTests["HTTP"] = require("./http-tests");
-allTests["XHR"] = require("./xhr-tests");
-allTests["FETCH"] = require("./fetch-tests");
-allTests["APPLICATION SETTINGS"] = require("./application-settings-tests");
-allTests["APPLICATION"] = require("./application-tests");
-allTests["IMAGE SOURCE"] = require("./image-source-tests");
-allTests["OBSERVABLE-ARRAY"] = require("./data/observable-array-tests");
-allTests["VIRTUAL-ARRAY"] = require("./data/virtual-array-tests");
-allTests["OBSERVABLE"] = require("./data/observable-tests");
-allTests["TIMER"] = require("./timer-tests");
-allTests["COLOR"] = require("./color-tests");
+import * as platformTests from "./platform/platform-tests";
+allTests["PLATFORM"] = platformTests;
 
-// allTests["DEPENDENCY-OBSERVABLE"] = require("./ui/dependency-observable-tests");
-allTests["BINDABLE"] = require("./ui/bindable-tests");
-allTests["BINDING-EXPRESSIONS"] = require("./ui/binding-expressions-tests");
-allTests["XML-PARSER"] = require("./xml-parser-tests/xml-parser-tests");
-allTests["FORMATTEDSTRING"] = require("./text/formatted-string-tests");
-allTests["FILE-SYSTEM-ACCESS"] = require("./file-system-access-tests/file-system-access-tests");
-allTests["FILE-NAME-RESOLVER"] = require("./file-name-resolver-tests/file-name-resolver-tests");
-allTests["WEAK-EVENTS"] = require("./weak-event-listener-tests");
-allTests["CONNECTIVITY"] = require("./connectivity-tests");
+import * as fsTests from "./file-system/file-system-tests";
+allTests["FILE SYSTEM"] = fsTests;
 
-allTests["PROXY-VIEW-CONTAINER"] = require("./ui/proxy-view-container/proxy-view-container-tests")
-allTests["SCROLL-VIEW"] = require("./ui/scroll-view/scroll-view-tests");
-allTests["ACTION-BAR"] = require("./ui/action-bar/action-bar-tests");
-allTests["XML-DECLARATION"] = require("./xml-declaration/xml-declaration-tests");
-allTests["DOCKLAYOUT"] = require("./ui/layouts/dock-layout-tests");
-allTests["WRAPLAYOUT"] = require("./ui/layouts/wrap-layout-tests");
-allTests["ABSOLUTELAYOUT"] = require("./ui/layouts/absolute-layout-tests");
-allTests["GRIDLAYOUT"] = require("./ui/layouts/grid-layout-tests");
-allTests["STACKLAYOUT"] = require("./ui/layouts/stack-layout-tests");
-allTests["FLEXBOXLAYOUT"] = require("./ui/layouts/flexbox-layout-tests");
-allTests["STYLE-PROPERTIES"] = require("./ui/styling/style-properties-tests");
-allTests["FRAME"] = require("./ui/frame/frame-tests");
-allTests["VIEW"] = require("./ui/view/view-tests");
-allTests["STYLE"] = require("./ui/styling/style-tests");
-allTests["VISUAL-STATE"] = require("./ui/styling/visual-state-tests");
-allTests["VALUE-SOURCE"] = require("./ui/styling/value-source-tests");
-allTests["CSS-SELECTOR-PARSER"] = require("./ui/styling/css-selector-parser");
-allTests["CSS-SELECTOR"] = require("./ui/styling/css-selector");
-allTests["BUTTON"] = require("./ui/button/button-tests");
-allTests["BORDER"] = require("./ui/border/border-tests");
-allTests["LABEL"] = require("./ui/label/label-tests");
-allTests["TAB-VIEW"] = require("./ui/tab-view/tab-view-tests");
-allTests["TAB-VIEW-NAVIGATION"] = require("./ui/tab-view/tab-view-navigation-tests");
-allTests["IMAGE"] = require("./ui/image/image-tests");
-allTests["SLIDER"] = require("./ui/slider/slider-tests");
-allTests["SWITCH"] = require("./ui/switch/switch-tests");
-allTests["PROGRESS"] = require("./ui/progress/progress-tests");
-allTests["PLACEHOLDER"] = require("./ui/placeholder/placeholder-tests");
-allTests["PAGE"] = require("./ui/page/page-tests");
-allTests["LISTVIEW"] = require("./ui/list-view/list-view-tests");
-allTests["ACTIVITY-INDICATOR"] = require("./ui/activity-indicator/activity-indicator-tests");
-allTests["TEXT-FIELD"] = require("./ui/text-field/text-field-tests");
-allTests["TEXT-VIEW"] = require("./ui/text-view/text-view-tests");
-allTests["LIST-PICKER"] = require("./ui/list-picker/list-picker-tests");
-allTests["DATE-PICKER"] = require("./ui/date-picker/date-picker-tests");
-allTests["TIME-PICKER"] = require("./ui/time-picker/time-picker-tests");
-allTests["WEB-VIEW"] = require("./ui/web-view/web-view-tests");
-allTests["HTML-VIEW"] = require("./ui/html-view/html-view-tests");
-allTests["REPEATER"] = require("./ui/repeater/repeater-tests");
-allTests["SEARCH-BAR"] = require('./ui/search-bar/search-bar-tests');
-allTests["SEGMENTED-BAR"] = require("./ui/segmented-bar/segmented-bar-tests");
-allTests["ANIMATION"] = require("./ui/animation/animation-tests");
-allTests["CSS-ANIMATION"] = require("./ui/animation/css-animation-tests");
+import * as httpTests from "./http/http-tests";
+allTests["HTTP"] = httpTests;
 
+import * as xhrTests from "./xhr/xhr-tests";
+allTests["XHR"] = xhrTests;
+
+import * as fetchTests from "./fetch/fetch-tests";
+allTests["FETCH"] = fetchTests;
+
+import * as appSettingsTests from "./application-settings/application-settings-tests";
+allTests["APPLICATION SETTINGS"] = appSettingsTests;
+
+import * as applicationTests from "./application/application-tests";
+allTests["APPLICATION"] = applicationTests;
+
+import * as imageSourceTests from "./image-source/image-source-tests";
+allTests["IMAGE SOURCE"] = imageSourceTests;
+
+import * as observableArrayTests from "./data/observable-array-tests";
+allTests["OBSERVABLE-ARRAY"] = observableArrayTests;
+
+import * as virtualArrayTests from "./data/virtual-array-tests";
+allTests["VIRTUAL-ARRAY"] = virtualArrayTests;
+
+import * as observableTests from "./data/observable-tests";
+allTests["OBSERVABLE"] = observableTests;
+
+import * as timerTests from "./timer/timer-tests";
+allTests["TIMER"] = timerTests;
+
+import * as colorTests from "./color/color-tests";
+allTests["COLOR"] = colorTests;
+
+import * as bindableTests from "./ui/core/bindable/bindable-tests";
+allTests["BINDABLE"] = bindableTests;
+
+import * as bindintExpressionTests from "./ui/core/bindable/binding-expressions-tests";
+allTests["BINDING-EXPRESSIONS"] = bindintExpressionTests;
+
+import * as xmlParserTests from "./xml-parser-tests/xml-parser-tests";
+allTests["XML-PARSER"] = xmlParserTests;
+
+import * as formattedStringTests from "./text/formatted-string-tests";
+allTests["FORMATTEDSTRING"] = formattedStringTests;
+
+import * as fileSystemAccessTests from "./file-system-access-tests/file-system-access-tests";
+allTests["FILE-SYSTEM-ACCESS"] = fileSystemAccessTests;
+
+import * as fileNameResolverTests from "./file-name-resolver-tests/file-name-resolver-tests";
+allTests["FILE-NAME-RESOLVER"] = fileNameResolverTests;
+
+import * as weakEventsTests from "./ui/core/weak-event-listener/weak-event-listener-tests";
+allTests["WEAK-EVENTS"] = weakEventsTests;
+
+import * as connectivityTests from "./connectivity/connectivity-tests";
+allTests["CONNECTIVITY"] = connectivityTests;
+
+import * as proxyViewContainerTests from "./ui/proxy-view-container/proxy-view-container-tests";
+allTests["PROXY-VIEW-CONTAINER"] = proxyViewContainerTests;
+
+import * as scrollViewTests from "./ui/scroll-view/scroll-view-tests";
+allTests["SCROLL-VIEW"] = scrollViewTests;
+
+import * as actionBarTests from "./ui/action-bar/action-bar-tests";
+allTests["ACTION-BAR"] = actionBarTests;
+
+import * as xmlDeclarationTests from "./xml-declaration/xml-declaration-tests";
+allTests["XML-DECLARATION"] = xmlDeclarationTests;
+
+import * as dockLayoutTests from "./ui/layouts/dock-layout-tests";
+allTests["DOCKLAYOUT"] = dockLayoutTests;
+
+import * as wrapLayoutTests from "./ui/layouts/wrap-layout-tests";
+allTests["WRAPLAYOUT"] = wrapLayoutTests;
+
+import * as absoluteLayoutTests from "./ui/layouts/absolute-layout-tests";
+allTests["ABSOLUTELAYOUT"] = absoluteLayoutTests;
+
+import * as gridLayoutTests from "./ui/layouts/grid-layout-tests";
+allTests["GRIDLAYOUT"] = gridLayoutTests;
+
+import * as stackLayoutTests from "./ui/layouts/stack-layout-tests";
+allTests["STACKLAYOUT"] = stackLayoutTests;
+
+import * as flexBoxLayoutTests from "./ui/layouts/flexbox-layout-tests";
+allTests["FLEXBOXLAYOUT"] = flexBoxLayoutTests;
+
+import * as stylePropertiesTests from "./ui/styling/style-properties-tests";
+allTests["STYLE-PROPERTIES"] = stylePropertiesTests;
+
+import * as frameTests from "./ui/frame/frame-tests";
+allTests["FRAME"] = frameTests;
+
+import * as viewTests from "./ui/view/view-tests";
+allTests["VIEW"] = viewTests;
+
+import * as styleTests from "./ui/styling/style-tests";
+allTests["STYLE"] = styleTests;
+
+import * as visualStateTests from "./ui/styling/visual-state-tests";
+allTests["VISUAL-STATE"] = visualStateTests;
+
+import * as valueSourceTests from "./ui/styling/value-source-tests";
+allTests["VALUE-SOURCE"] = valueSourceTests;
+
+import * as cssSelectorParserTests from "./ui/styling/css-selector-parser";
+allTests["CSS-SELECTOR-PARSER"] = cssSelectorParserTests;
+
+import * as cssSelectorTests from "./ui/styling/css-selector";
+allTests["CSS-SELECTOR"] = cssSelectorTests;
+
+import * as buttonTests from "./ui/button/button-tests";
+allTests["BUTTON"] = buttonTests;
+
+import * as borderTests from "./ui/border/border-tests";
+allTests["BORDER"] = borderTests;
+
+import * as labelTests from "./ui/label/label-tests";
+allTests["LABEL"] = labelTests;
+
+import * as tabViewTests from "./ui/tab-view/tab-view-tests";
+allTests["TAB-VIEW"] = tabViewTests;
+
+import * as tabViewNavigationTests from "./ui/tab-view/tab-view-navigation-tests";
+allTests["TAB-VIEW-NAVIGATION"] = tabViewNavigationTests;
+
+import * as imageTests from "./ui/image/image-tests";
+allTests["IMAGE"] = imageTests;
+
+import * as sliderTests from "./ui/slider/slider-tests";
+allTests["SLIDER"] = sliderTests;
+
+import * as switchTests from "./ui/switch/switch-tests";
+allTests["SWITCH"] = switchTests;
+
+import * as progressTests from "./ui/progress/progress-tests";
+allTests["PROGRESS"] = progressTests;
+
+import * as placeholderTests from "./ui/placeholder/placeholder-tests";
+allTests["PLACEHOLDER"] = placeholderTests;
+
+import * as pageTests from "./ui/page/page-tests";
+allTests["PAGE"] = pageTests;
+
+import * as listViewTests from "./ui/list-view/list-view-tests";
+allTests["LISTVIEW"] = listViewTests;
+
+import * as activityIndicatorTests from "./ui/activity-indicator/activity-indicator-tests";
+allTests["ACTIVITY-INDICATOR"] = activityIndicatorTests;
+
+import * as textFieldTests from "./ui/text-field/text-field-tests";
+allTests["TEXT-FIELD"] = textFieldTests;
+
+import * as textViewTests from "./ui/text-view/text-view-tests";
+allTests["TEXT-VIEW"] = textViewTests;
+
+import * as listPickerTests from "./ui/list-picker/list-picker-tests";
+allTests["LIST-PICKER"] = listPickerTests;
+
+import * as datePickerTests from "./ui/date-picker/date-picker-tests";
+allTests["DATE-PICKER"] = datePickerTests;
+
+import * as timePickerTests from "./ui/time-picker/time-picker-tests";
+allTests["TIME-PICKER"] = timePickerTests;
+
+import * as webViewTests from "./ui/web-view/web-view-tests";
+allTests["WEB-VIEW"] = webViewTests;
+
+import * as htmlViewTests from "./ui/html-view/html-view-tests";
+allTests["HTML-VIEW"] = htmlViewTests;
+
+import * as repeaterTests from "./ui/repeater/repeater-tests";
+allTests["REPEATER"] = repeaterTests;
+
+import * as searchBarTests from "./ui/search-bar/search-bar-tests";
+allTests["SEARCH-BAR"] = searchBarTests;
+
+import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
+allTests["SEGMENTED-BAR"] = segmentedBarTests;
+
+import * as animationTests from "./ui/animation/animation-tests";
+allTests["ANIMATION"] = animationTests;
+
+import * as cssAnimationTests from "./ui/animation/css-animation-tests";
+allTests["CSS-ANIMATION"] = cssAnimationTests;
+
+import * as transitionTests from "./navigation/transition-tests";
 // Skip transitions on android emulators with API 23
 if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
-    allTests["TANSITIONS"] = require("./navigation/transition-tests");
+    allTests["TANSITIONS"] = transitionTests;
 }
 
-allTests["NAVIGATION"] = require("./navigation/navigation-tests");
+import * as navigationTests from "./navigation/navigation-tests";
+allTests["NAVIGATION"] = navigationTests;
 
 var testsWithLongDelay = {
     test_Transitions: 3 * 60 * 1000,
@@ -208,7 +336,17 @@ function printRunTestStats() {
     messageContainer.editable = messageContainer.autocorrect = false;
     messageContainer.text = finalMessage;
     stack.addChild(messageContainer);
-    topmost().currentPage.content = stack;
+    const page = topmost().currentPage;
+    page.id = unsetValue;
+    page.className = unsetValue;
+    page.bindingContext = unsetValue;
+    page.style.color = unsetValue;
+    page.style.backgroundColor = unsetValue;
+    page.content = stack;
+    messageContainer.focus();
+    if (page.android) {
+        setTimeout(() => messageContainer.dismissSoftInput());
+    }
 }
 
 function startLog(): void {

@@ -1,4 +1,4 @@
-﻿import * as TKUnit from "./TKUnit";
+﻿import * as TKUnit from "../TKUnit";
 import * as timer from "tns-core-modules/timer";
 
 // >> timer-require
