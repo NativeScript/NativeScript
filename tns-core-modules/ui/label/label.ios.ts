@@ -140,7 +140,7 @@ export class Label extends TextBase implements LabelDefinition {
         let nativeView = this.nativeView;
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
-            top: this.effectiveBorderTopWidth,
+            top: layout.toDeviceIndependentPixels(this.effectiveBorderTopWidth),
             right: border.right,
             bottom: border.bottom,
             left: border.left
@@ -155,7 +155,7 @@ export class Label extends TextBase implements LabelDefinition {
         let border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
-            right: this.effectiveBorderRightWidth,
+            right: layout.toDeviceIndependentPixels(this.effectiveBorderRightWidth),
             bottom: border.bottom,
             left: border.left
         };
@@ -170,7 +170,7 @@ export class Label extends TextBase implements LabelDefinition {
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
-            bottom: this.effectiveBorderBottomWidth,
+            bottom: layout.toDeviceIndependentPixels(this.effectiveBorderBottomWidth),
             left: border.left
         };
     }
@@ -185,7 +185,7 @@ export class Label extends TextBase implements LabelDefinition {
             top: border.top,
             right: border.right,
             bottom: border.bottom,
-            left: this.effectiveBorderLeftWidth
+            left: layout.toDeviceIndependentPixels(this.effectiveBorderLeftWidth)
         };
     }
 
