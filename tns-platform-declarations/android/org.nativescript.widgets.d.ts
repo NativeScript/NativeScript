@@ -37,6 +37,8 @@
                         public raw: java.io.ByteArrayOutputStream;
                         public headers: java.util.ArrayList<KeyValuePair>;
                         public statusCode: number;
+                        public statusText: string;
+                        public url: string;
                         public responseAsString: string;
                         public responseAsImage: android.graphics.Bitmap;
                         public error: java.lang.Exception;

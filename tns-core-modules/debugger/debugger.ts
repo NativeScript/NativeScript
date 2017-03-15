@@ -3,7 +3,7 @@ export namespace domains {
         export interface NetworkDomainDebugger {
             create(): domains.network.NetworkRequest;
         }
-        
+
         export interface Headers {
         }
 
@@ -43,4 +43,135 @@ export function getNetwork(): domains.network.NetworkDomainDebugger {
 }
 export function setNetwork(newNetwork: domains.network.NetworkDomainDebugger) {
     network = newNetwork;
+}
+
+export namespace NetworkAgent {
+    export interface Request {
+        url: string;
+        method: string;
+        headers: any;
+        postData?: string;
+    }
+
+    export interface RequestData {
+        requestId: string;
+        url: string;
+        request: Request;
+        timestamp: number;
+        type: string;
+    }
+
+    export interface Response {
+        url: string;
+        status: number;
+        statusText: string;
+        headers: any;
+        headersText?: string;
+        mimeType: string;
+        fromDiskCache?: boolean;
+    }
+
+    export interface ResponseData {
+        requestId: string;
+        type: string;
+        response: Response;
+        timestamp: number;
+    }
+
+    export interface SuccessfulRequestData {
+        requestId: string;
+        data: string;
+        hasTextContent: boolean;
+    }
+
+    export interface LoadingFinishedData {
+        requestId: string;
+        timestamp: number;
+    }
+
+    export function responseReceived(requestId: number, result: org.nativescript.widgets.Async.Http.RequestResult, headers: any) {
+        let requestIdStr = requestId.toString();
+        // Content-Type and content-type are both common in headers spelling
+        let mimeType: string = <string>headers["Content-Type"] || <string>headers["content-type"];
+        let response: NetworkAgent.Response = {
+            url: result.url || "",
+            status: result.statusCode,
+            statusText: result.statusText || "",
+            headers: headers,
+            mimeType: mimeType,
+            fromDiskCache: false
+        }
+
+        let responseData: NetworkAgent.ResponseData = {
+            requestId: requestIdStr,
+            type: mimeTypeToType(response.mimeType),
+            response: response,
+            timestamp: getTimeStamp()
+        }
+
+        global.__inspector.responseReceived(responseData);
+        global.__inspector.loadingFinished({ requestId: requestIdStr, timestamp: getTimeStamp() });
+
+        let hasTextContent = responseData.type === "Document" || responseData.type === "Script";
+        let data;
+
+        if (!hasTextContent) {
+            if (responseData.type === "Image") {
+                let bitmap = result.responseAsImage;
+                if (bitmap) {
+                    let outputStream = new java.io.ByteArrayOutputStream();
+                    bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, outputStream);
+
+                    let base64Image = android.util.Base64.encodeToString(outputStream.toByteArray(), android.util.Base64.DEFAULT);
+                    data = base64Image;
+                }
+            }
+        } else {
+            data = result.responseAsString;
+        }
+
+        let successfulRequestData: NetworkAgent.SuccessfulRequestData = {
+            requestId: requestIdStr,
+            data: data,
+            hasTextContent: hasTextContent
+        }
+
+        global.__inspector.dataForRequestId(successfulRequestData);
+    }
+
+    export function requestWillBeSent(requestId: number, options: any) {
+        let request: NetworkAgent.Request = {
+            url: options.url,
+            method: options.method,
+            headers: options.headers || {},
+            postData: options.content ? options.content.toString() : ""
+        }
+
+        let requestData: NetworkAgent.RequestData = {
+            requestId: requestId.toString(),
+            url: request.url,
+            request: request,
+            timestamp: getTimeStamp(),
+            type: "Document"
+        }
+
+        global.__inspector.requestWillBeSent(requestData);
+    }
+
+    function getTimeStamp(): number {
+        var d = new Date();
+        return Math.round(d.getTime() / 1000);
+    }
+
+    function mimeTypeToType(mimeType: string): string {
+        let type: string = "Document";
+
+        if (mimeType.indexOf("image") === 0) {
+            type = "Image";
+        } else if (mimeType.indexOf("javascript") !== -1 || mimeType.indexOf("json") !== -1) {
+            type = "Script";
+        }
+
+        return type;
+    }
 }

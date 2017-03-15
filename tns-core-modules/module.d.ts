@@ -14,6 +14,7 @@ declare namespace NodeJS {
         Deprecated(target: Object, key?: string | symbol, descriptor?: any): any;
         Experimental(target: Object, key?: string | symbol, descriptor?: any): any;
         __native?: any;
+        __inspector?: any;
         __extends: any;
         __onLiveSync: () => void;
         __onUncaughtError: (error: NativeScriptError) => void;
