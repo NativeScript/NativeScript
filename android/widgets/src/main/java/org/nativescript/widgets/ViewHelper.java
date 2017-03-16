@@ -59,7 +59,7 @@ public class ViewHelper {
     public static void setWidthPercent(android.view.View view, float value) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
-            CommonLayoutParams lp = new CommonLayoutParams();
+            params = new CommonLayoutParams();
         }
 
         if (params instanceof CommonLayoutParams) {
@@ -96,7 +96,7 @@ public class ViewHelper {
     public static void setHeightPercent(android.view.View view, float value) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
-            CommonLayoutParams lp = new CommonLayoutParams();
+            params = new CommonLayoutParams();
         }
 
         if (params instanceof CommonLayoutParams) {
@@ -169,7 +169,7 @@ public class ViewHelper {
     public static void setMarginLeftPercent(android.view.View view, float value) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
-            CommonLayoutParams lp = new CommonLayoutParams();
+            params = new CommonLayoutParams();
         }
 
         if (params instanceof CommonLayoutParams) {
@@ -214,7 +214,7 @@ public class ViewHelper {
     public static void setMarginTopPercent(android.view.View view, float value) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
-            CommonLayoutParams lp = new CommonLayoutParams();
+            params = new CommonLayoutParams();
         }
 
         if (params instanceof CommonLayoutParams) {
@@ -259,7 +259,7 @@ public class ViewHelper {
     public static void setMarginRightPercent(android.view.View view, float value) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
-            CommonLayoutParams lp = new CommonLayoutParams();
+            params = new CommonLayoutParams();
         }
 
         if (params instanceof CommonLayoutParams) {
@@ -304,7 +304,7 @@ public class ViewHelper {
     public static void setMarginBottomPercent(android.view.View view, float value) {
         ViewGroup.LayoutParams params = view.getLayoutParams();
         if (params == null) {
-            CommonLayoutParams lp = new CommonLayoutParams();
+            params = new CommonLayoutParams();
         }
 
         if (params instanceof CommonLayoutParams) {
