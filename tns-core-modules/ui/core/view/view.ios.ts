@@ -414,7 +414,7 @@ export class View extends ViewCommon {
 
     _setNativeClipToBounds() {
         let backgroundInternal = this.style.backgroundInternal;
-        this.nativeView.clipsToBounds = backgroundInternal.hasUniformBorder() || backgroundInternal.getUniformBorderRadius() > 0;
+        this.nativeView.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
     }
 }
 
