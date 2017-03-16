@@ -119,7 +119,7 @@ export class View extends ViewCommon {
                 height = Number.POSITIVE_INFINITY;
             }
 
-            let nativeSize = view.sizeThatFits(CGSizeMake(width, height));
+            let nativeSize = view.sizeThatFits(CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height)));
             nativeWidth = layout.toDevicePixels(nativeSize.width);
             nativeHeight = layout.toDevicePixels(nativeSize.height);
         }
