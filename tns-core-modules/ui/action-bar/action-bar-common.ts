@@ -61,10 +61,18 @@ export class ActionBarBase extends View implements ActionBarDefinition {
 
             this._titleView = value;
 
-            if (this._titleView) {
-                this._titleView.style[horizontalAlignmentProperty.cssName] = "center";
-                this._titleView.style[verticalAlignmentProperty.cssName] = "middle";
-                this._addView(this._titleView);
+            if (value) {
+                // Addview will reset CSS properties so we first add it then set aligments with lowest priority.
+                this._addView(value);
+                const style = value.style;
+
+                if (!horizontalAlignmentProperty.isSet(style)) {
+                    style[horizontalAlignmentProperty.cssName] = "center";
+                }
+
+                if (!verticalAlignmentProperty.isSet(style)) {
+                    style[verticalAlignmentProperty.cssName] = "middle";
+                }
             }
 
             this.update();
