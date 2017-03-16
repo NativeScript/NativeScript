@@ -570,7 +570,11 @@ export class CssAnimationProperty<T extends Style, U> {
         const propertyName = options.name;
         this.name = propertyName;
 
-        CssAnimationProperty.properties[options.cssName || propertyName] = this;
+        CssAnimationProperty.properties[propertyName] = this;
+        if (options.cssName && options.cssName !== propertyName) {
+            CssAnimationProperty.properties[options.cssName] = this;
+        }
+
         this._valueConverter = options.valueConverter;
 
         const cssName = "css:" + (options.cssName || propertyName);
