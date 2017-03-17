@@ -16,8 +16,8 @@ export class Image extends ImageBase {
         //TODO: Think of unified way of setting all the default values.
         this._ios = UIImageView.new();
         this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
-        this._ios.clipsToBounds = true;
         this._ios.userInteractionEnabled = true;
+        this._setNativeClipToBounds();
     }
 
     get ios(): UIImageView {
@@ -43,6 +43,11 @@ export class Image extends ImageBase {
         if (this._imageSourceAffectsLayout) {
             this.requestLayout();
         }
+    }
+
+    _setNativeClipToBounds() {
+        // Always set clipsToBounds for images
+        this._ios.clipsToBounds = true;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

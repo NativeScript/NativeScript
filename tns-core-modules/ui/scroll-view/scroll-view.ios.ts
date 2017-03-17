@@ -36,6 +36,12 @@ export class ScrollView extends ScrollViewBase {
     constructor() {
         super();
         this.nativeView = UIScrollView.new();
+        this._setNativeClipToBounds();
+    }
+
+    _setNativeClipToBounds() {
+        // Always set clipsToBounds for scroll-view
+        this.nativeView.clipsToBounds = true;
     }
 
     protected attachNative() {
