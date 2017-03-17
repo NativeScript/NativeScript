@@ -217,6 +217,12 @@ export class ListView extends ListViewBase {
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, View>();
+        this._setNativeClipToBounds();
+    }
+
+    _setNativeClipToBounds() {
+        // Always set clipsToBounds for list-view
+        this._ios.clipsToBounds = true;
     }
 
     public onLoaded() {
