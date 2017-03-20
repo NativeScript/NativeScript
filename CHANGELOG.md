@@ -1,6 +1,20 @@
 Cross Platform Modules Changelog
 ==============================
 
+##2.5.2 (2017, March 21)
+
+### Fixed
+
+- [(#3790)](https://github.com/NativeScript/NativeScript/pull/3790) Fix a crash in Android tabview when resetting font property
+
+- [(#3675)](https://github.com/NativeScript/NativeScript/pull/3675) Fix a crash when nesting a ProxyViewContainer in FlexboxLayout
+
+##2.5.1 (2017, February 16)
+
+### Fixed
+
+- [(#3565)](https://github.com/NativeScript/NativeScript/issues/3565) Fix a crash when ActionBar transparent background
+
 ##2.5.0 (2017, February 1)
 
 ### Fixed
