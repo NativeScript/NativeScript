@@ -57,8 +57,8 @@ export class Switch extends SwitchBase {
         this.width = nativeSize.width;
         this.height = nativeSize.height;
 
-        const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), 51, layout.EXACTLY, 0);
-        const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), 31, layout.EXACTLY, 0);
+        const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
+        const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
