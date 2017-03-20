@@ -370,15 +370,53 @@ export class View extends ViewCommon {
     get [horizontalAlignmentProperty.native](): HorizontalAlignment {
         return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
     }
-    set [horizontalAlignmentProperty.native](value: HorizontalAlignment) {
-        org.nativescript.widgets.ViewHelper.setHorizontalAlignment(this.nativeView, value);
+    set [horizontalAlignmentProperty.native](value: HorizontalAlignment)  {
+        const  nativeView = this.nativeView;
+        const  lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        // Set only if params gravity exists.
+        if (lp.gravity !== undefined) {
+            switch (value) {
+                case "left":
+                    lp.gravity = android.view.Gravity.LEFT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    break;
+                case "center":
+                    lp.gravity = android.view.Gravity.CENTER_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    break;
+                case "right":
+                    lp.gravity = android.view.Gravity.RIGHT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    break;
+                case "stretch":
+                    lp.gravity = android.view.Gravity.FILL_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    break;
+            }
+            nativeView.setLayoutParams(lp);
+        }
     }
 
     get [verticalAlignmentProperty.native](): VerticalAlignment {
         return <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
     }
     set [verticalAlignmentProperty.native](value: VerticalAlignment) {
-        org.nativescript.widgets.ViewHelper.setVerticalAlignment(this.nativeView, value);
+        const  nativeView = this.nativeView;
+        const  lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        // Set only if params gravity exists.
+        if (lp.gravity !== undefined) {
+            switch (value) {
+                case "top":
+                    lp.gravity = android.view.Gravity.TOP | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    break;
+                case "middle":
+                    lp.gravity = android.view.Gravity.CENTER_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    break;
+                case "bottom":
+                    lp.gravity = android.view.Gravity.BOTTOM | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    break;
+                case "stretch":
+                    lp.gravity = android.view.Gravity.FILL_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    break;
+            }
+            nativeView.setLayoutParams(lp);
+        }
     }
 
     get [rotateProperty.native](): number {
