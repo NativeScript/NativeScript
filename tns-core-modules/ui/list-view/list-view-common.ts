@@ -107,7 +107,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
         lbl.bind({
             targetProperty: "text",
             sourceProperty: "$value"
-        }, null);
+        });
         return lbl;
     }
 
