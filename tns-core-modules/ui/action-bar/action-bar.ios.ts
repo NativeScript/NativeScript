@@ -232,24 +232,22 @@ export class ActionBar extends ActionBarBase {
 
     private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let navBarWidth = 0;
         let navBarHeight = 0;
-        
-        let frame = this.page.frame;
+
+        const frame = this.page.frame;
         if (frame) {
             let navBar: UIView = frame.ios.controller.navigationBar;
             if (!navBar.hidden) {
-                let navBarSize = navBar.sizeThatFits(CGSizeMake(
-                    (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
-                    (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
-                navBarWidth = layout.toDevicePixels(navBarSize.width);
-                navBarHeight = layout.toDevicePixels(navBarSize.height);
+                const desiredSize = layout.measureNativeView(navBar, width, widthMode, height, heightMode);
+                navBarWidth = desiredSize.width;
+                navBarHeight = desiredSize.height;
             }
         }
 
@@ -276,7 +274,7 @@ export class ActionBar extends ActionBarBase {
         View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView && actionItem.actionView.ios) {
-                let measuredWidth = actionItem.actionView.getMeasuredWidth(); 
+                let measuredWidth = actionItem.actionView.getMeasuredWidth();
                 let measuredHeight = actionItem.actionView.getMeasuredHeight();
                 View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
             }

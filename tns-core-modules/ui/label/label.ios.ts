@@ -73,26 +73,18 @@ export class Label extends TextBase implements LabelDefinition {
             let height = layout.getMeasureSpecSize(heightMeasureSpec);
             let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            if (widthMode === layout.UNSPECIFIED) {
-                width = Number.POSITIVE_INFINITY;
-            }
-
-            if (heightMode === layout.UNSPECIFIED) {
-                height = Number.POSITIVE_INFINITY;
-            }
-
             this._fixedSize = (widthMode === layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
                 | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
-            let nativeSize = nativeView.sizeThatFits(CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height)));
-            let labelWidth = layout.toDevicePixels(nativeSize.width);
+            const nativeSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
+            let labelWidth = nativeSize.width;
 
             if (this.textWrap) {
                 labelWidth = Math.min(labelWidth, width);
             }
 
             let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
-            let measureHeight = Math.max(layout.toDevicePixels(nativeSize.height), this.effectiveMinHeight);
+            let measureHeight = Math.max(nativeSize.height, this.effectiveMinHeight);
 
             let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
             let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);

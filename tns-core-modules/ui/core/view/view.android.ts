@@ -370,9 +370,9 @@ export class View extends ViewCommon {
     get [horizontalAlignmentProperty.native](): HorizontalAlignment {
         return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
     }
-    set [horizontalAlignmentProperty.native](value: HorizontalAlignment)  {
-        const  nativeView = this.nativeView;
-        const  lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+    set [horizontalAlignmentProperty.native](value: HorizontalAlignment) {
+        const nativeView = this.nativeView;
+        const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         // Set only if params gravity exists.
         if (lp.gravity !== undefined) {
             switch (value) {
@@ -397,8 +397,8 @@ export class View extends ViewCommon {
         return <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
     }
     set [verticalAlignmentProperty.native](value: VerticalAlignment) {
-        const  nativeView = this.nativeView;
-        const  lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        const nativeView = this.nativeView;
+        const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         // Set only if params gravity exists.
         if (lp.gravity !== undefined) {
             switch (value) {
@@ -562,6 +562,7 @@ interface NativePercentLengthPropertyOptions {
     setPixels: NativeSetter;
     setPercent?: NativeSetter
 }
+
 function createNativePercentLengthProperty(options: NativePercentLengthPropertyOptions) {
     const { key, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
@@ -590,11 +591,11 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
             if (length == "auto") { // tslint:disable-line
                 setPixels(this.nativeView, auto);
             } else if (typeof length === "number") {
-                setPixels(this.nativeView, Math.ceil(length * layout.getDisplayDensity()));
+                setPixels(this.nativeView, layout.round(layout.toDevicePixels(length)));
             } else if (length.unit == "dip") { // tslint:disable-line
-                setPixels(this.nativeView, Math.ceil(length.value * layout.getDisplayDensity()));
+                setPixels(this.nativeView, layout.round(layout.toDevicePixels(length.value)));
             } else if (length.unit == "px") { // tslint:disable-line
-                setPixels(this.nativeView, Math.ceil(length.value));
+                setPixels(this.nativeView, layout.round(length.value));
             } else if (length.unit == "%") { // tslint:disable-line
                 setPercent(this.nativeView, length.value);
             } else {

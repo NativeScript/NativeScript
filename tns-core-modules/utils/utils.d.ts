@@ -23,6 +23,9 @@ interface CacheLayerType {
  * Utility module related to layout.
  */
 export module layout {
+    export type px = number;
+    export type dip = number;
+
     /**
      * Bits that provide the actual measured size.
      */
@@ -53,7 +56,7 @@ export module layout {
      * @param size - The size component of measure specification.
      * @param mode - The mode component of measure specification.
      */
-    export function makeMeasureSpec(size: number, mode: number): number;
+    export function makeMeasureSpec(px: number, mode: number): number;
     /**
      * Gets display density for the current device.
      */
@@ -62,13 +65,34 @@ export module layout {
      * Convert value to device pixels.
      * @param value - The pixel to convert.
      */
-    export function toDevicePixels(value: number): number;
+    export function toDevicePixels(value: dip): px;
     /**
      * Convert value to device independent pixels.
      * @param value - The pixel to convert.
      */
-    export function toDeviceIndependentPixels(value: number): number;
+    export function toDeviceIndependentPixels(value: px): dip;
 
+    /**
+     * Rounds value used in layout.
+     * @param value to round.
+     */
+    export function round(px: px): px;
+
+    /**
+     * Converts device pixels to device independent pixes and measure the nativeView.
+     * Returns the desired size of the nativeView in device pixels.
+     * @param nativeView the nativeView to measure (UIView or android.view.View)
+     * @param width the available width
+     * @param widthMode width mode - UNSPECIFIED, EXACTLY or AT_MOST
+     * @param height the available hegiht
+     * @param heightMode height mode - UNSPECIFIED, EXACTLY or AT_MOST
+     */
+    export function measureNativeView(nativeView: any /* UIView or android.view.View */, width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number };
+
+    /**
+     * Prints user friendly version of the measureSpec.
+     * @param measureSpec the spec to print
+     */
     export function measureSpecToString(measureSpec: number): string;
 }
 

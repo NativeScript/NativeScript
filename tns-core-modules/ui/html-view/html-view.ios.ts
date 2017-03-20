@@ -1,5 +1,5 @@
 ﻿import {
-    HtmlViewBase, View, layout,  htmlProperty
+    HtmlViewBase, View, layout, htmlProperty
 } from "./html-view-common";
 
 export * from "./html-view-common";
@@ -30,29 +30,20 @@ export class HtmlView extends HtmlViewBase {
         var nativeView = this._nativeView;
         if (nativeView) {
 
-            let width = layout.getMeasureSpecSize(widthMeasureSpec);
-            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+            const width = layout.getMeasureSpecSize(widthMeasureSpec);
+            const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-            let height = layout.getMeasureSpecSize(heightMeasureSpec);
-            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+            const height = layout.getMeasureSpecSize(heightMeasureSpec);
+            const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            if (widthMode === layout.UNSPECIFIED) {
-                width = Number.POSITIVE_INFINITY;
-            }
+            const desiredSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
 
-            if (heightMode === layout.UNSPECIFIED) {
-                height = Number.POSITIVE_INFINITY;
-            }
+            const labelWidth = Math.min(desiredSize.width, width);
+            const measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
+            const measureHeight = Math.max(desiredSize.height, this.effectiveMinHeight);
 
-            let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
-            let labelWidth = layout.toDevicePixels(nativeSize.width);
-
-            labelWidth = Math.min(labelWidth, width);
-            let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
-            let measureHeight = Math.max(layout.toDevicePixels(nativeSize.height), this.effectiveMinHeight);
-
-            let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }

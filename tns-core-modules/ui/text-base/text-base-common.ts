@@ -245,6 +245,7 @@ export namespace WhiteSpace {
 export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
     name: "whiteSpace",
     cssName: "white-space",
+    affectsLayout: isIOS,
     valueConverter: WhiteSpace.parse
 });
 whiteSpaceProperty.register(Style);

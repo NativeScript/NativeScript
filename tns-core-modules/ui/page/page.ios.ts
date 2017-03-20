@@ -514,7 +514,7 @@ export class Page extends PageBase {
 
         if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height.
-            let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+            let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, layout.makeMeasureSpec(height, layout.AT_MOST));
             actionBarWidth = actionBarSize.measuredWidth;
             actionBarHeight = actionBarSize.measuredHeight;
         }

@@ -26,6 +26,7 @@ class SwitchChangeHandlerImpl extends NSObject {
     };
 }
 
+const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
     private _ios: UISwitch;
     private _handler: NSObject;
@@ -52,12 +53,12 @@ export class Switch extends SwitchBase {
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // It can't be anything different from 51x31
-        let nativeSize = this._nativeView.sizeThatFits(CGSizeMake(0, 0));
+        let nativeSize = this._nativeView.sizeThatFits(zeroSize);
         this.width = nativeSize.width;
         this.height = nativeSize.height;
 
-        let widthAndState = layout.makeMeasureSpec(layout.toDevicePixels(nativeSize.width), layout.EXACTLY);
-        let heightAndState = layout.makeMeasureSpec(layout.toDevicePixels(nativeSize.height), layout.EXACTLY);
+        const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
+        const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
