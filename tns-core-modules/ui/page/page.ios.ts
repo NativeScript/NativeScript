@@ -5,7 +5,9 @@
 } from "./page-common";
 import { ios as iosApp } from "../../application";
 import { device } from "../../platform";
-import * as uiUtils from "../utils";
+// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
+// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
+import * as uiUtils from "tns-core-modules/ui/utils";
 
 export * from "./page-common";
 
