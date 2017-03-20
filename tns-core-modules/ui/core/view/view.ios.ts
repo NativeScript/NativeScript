@@ -3,8 +3,8 @@ import { Point, View as ViewDefinition } from ".";
 
 import { ios, Background } from "../../styling/background";
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, 
-    traceEnabled, traceWrite, traceCategories 
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
+    traceEnabled, traceWrite, traceCategories
 } from "./view-common";
 
 import {
@@ -100,35 +100,26 @@ export class View extends ViewCommon {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let view = this.nativeView;
+        const view = this.nativeView;
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
         let nativeWidth = 0;
         let nativeHeight = 0;
-
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
         if (view) {
-            if (widthMode === layout.UNSPECIFIED) {
-                width = Number.POSITIVE_INFINITY;
-            }
-
-            if (heightMode === layout.UNSPECIFIED) {
-                height = Number.POSITIVE_INFINITY;
-            }
-
-            let nativeSize = view.sizeThatFits(CGSizeMake(layout.toDeviceIndependentPixels(width), layout.toDeviceIndependentPixels(height)));
-            nativeWidth = layout.toDevicePixels(nativeSize.width);
-            nativeHeight = layout.toDevicePixels(nativeSize.height);
+            const nativeSize = layout.measureNativeView(view, width, widthMode, height, heightMode);
+            nativeWidth = nativeSize.width;
+            nativeHeight = nativeSize.height;
         }
 
-        let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
-        let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+        const measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+        const measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
 
-        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }

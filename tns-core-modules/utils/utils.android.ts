@@ -45,6 +45,15 @@ export module layout {
     export function toDeviceIndependentPixels(value: number): number {
         return value / getDisplayDensity();
     }
+
+    export function measureNativeView(nativeView: any /* android.view.View */, width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number } {
+        const view = <android.view.View>nativeView;
+        view.measure(makeMeasureSpec(width, widthMode), makeMeasureSpec(height, heightMode));
+        return {
+            width: view.getMeasuredWidth(),
+            height: view.getMeasuredHeight()
+        };
+    }
 }
 
 // We are using "ad" here to avoid namespace collision with the global android object

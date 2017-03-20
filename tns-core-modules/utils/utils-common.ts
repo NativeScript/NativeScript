@@ -87,6 +87,18 @@ export module layout {
         text += size;
         return text;
     }
+
+    export function round(value: number): number {
+        const res = Math.floor(value + 0.5);
+        if (res !== 0) {
+            return res;
+        } else if (value === 0) {
+            return 0;
+        } else if (value > 0) {
+            return 1;
+        }
+        return -1;
+    }
 }
 
 export function isFileOrResourcePath(path: string): boolean {
@@ -123,7 +135,7 @@ export function mergeSort(arr, compareFunc) {
 
 export function merge(left, right, compareFunc) {
     let result = [];
-    while(left.length && right.length) {
+    while (left.length && right.length) {
         if (compareFunc(left[0], right[0]) <= 0) {
             result.push(left.shift());
         } else {

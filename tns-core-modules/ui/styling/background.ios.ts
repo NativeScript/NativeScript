@@ -145,19 +145,15 @@ function _flipImage(originalImage: UIImage): UIImage {
     return flippedImage;
 }
 
-function cssValueToDevicePixels(source: string, total: number): number {
-    let result;
+function cssValueToDevicePixels(source: string, totalPx: number): number {
     source = source.trim();
-
     if (source.indexOf("px") !== -1) {
-        result = parseFloat(source.replace("px", ""));
-    }
-    else if (source.indexOf("%") !== -1 && total > 0) {
-        result = (parseFloat(source.replace("%", "")) / 100) * layout.toDeviceIndependentPixels(total);
+        return parseFloat(source.replace("px", ""));
+    } else if (source.indexOf("%") !== -1 && totalPx > 0) {
+        return (parseFloat(source.replace("%", "")) / 100) * totalPx;
     } else {
-        result = parseFloat(source);
+        return layout.toDevicePixels(parseFloat(source));
     }
-    return layout.toDevicePixels(result);
 }
 
 function drawNonUniformBorders(nativeView: NativeView, background: Background) {
@@ -293,10 +289,10 @@ function drawClipPath(nativeView: UIView, background: Background) {
     const layerSize = layerBounds.size;
 
     const bounds = {
-        left: layerOrigin.x,
-        top: layerOrigin.y,
-        bottom: layerSize.height,
-        right: layerSize.width
+        left: layout.toDevicePixels(layerOrigin.x),
+        top: layout.toDevicePixels(layerOrigin.y),
+        bottom: layout.toDevicePixels(layerSize.height),
+        right: layout.toDevicePixels(layerSize.width)
     };
 
     if (bounds.right === 0 || bounds.bottom === 0) {

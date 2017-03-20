@@ -287,7 +287,7 @@ export class TabView extends TabViewBase {
         if (!iconSource) {
             return null;
         }
-        
+
         let image: UIImage = this._iconsCache[iconSource];
         if (!image) {
             const is = fromFileOrResource(iconSource);
@@ -311,9 +311,9 @@ export class TabView extends TabViewBase {
             const height = layout.getMeasureSpecSize(heightMeasureSpec);
             const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            this._tabBarHeight = TabView.measureHelper(this._ios.tabBar, width, widthMode, height, heightMode).height;
+            this._tabBarHeight = layout.measureNativeView(this._ios.tabBar, width, widthMode, height, heightMode).height;
             const moreNavBarVisible = !!this._ios.moreNavigationController.navigationBar.window;
-            this._navBarHeight = moreNavBarVisible ? TabView.measureHelper(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
+            this._navBarHeight = moreNavBarVisible ? layout.measureNativeView(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
 
             const density = layout.getDisplayDensity();
             let measureWidth = 0;
@@ -345,13 +345,6 @@ export class TabView extends TabViewBase {
         if (child) {
             View.layoutChild(this, child, 0, this._navBarHeight, right, (bottom - this._navBarHeight - this._tabBarHeight));
         }
-    }
-
-    private static measureHelper(nativeView: UIView, width: number, widthMode: number, height: number, heightMode: number): CGSize {
-        const size = nativeView.sizeThatFits(CGSizeMake(
-            (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
-            (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
-        return { width: layout.toDevicePixels(size.width), height: layout.toDevicePixels(size.height) };
     }
 
     private _updateIOSTabBarColorsAndFonts(): void {
@@ -460,7 +453,7 @@ interface TabStates {
 }
 
 function getTitleAttributesForStates(tabView: TabView): TabStates {
-    const result: TabStates = { };
+    const result: TabStates = {};
 
     const font = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
     let tabItemTextColor = tabView.style.tabTextColor;

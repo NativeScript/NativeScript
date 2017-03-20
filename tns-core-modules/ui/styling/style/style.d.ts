@@ -134,14 +134,14 @@ export class Style extends Observable {
     public view: ViewBase;
 
     //flexbox layout properties
-    flexDirection: FlexDirection;
-    flexWrap: FlexWrap;
-    justifyContent: JustifyContent;
-    alignItems: AlignItems;
-    alignContent: AlignContent;
-    order: Order;
-    flexGrow: FlexGrow;
-    flexShrink: FlexShrink;
-    flexWrapBefore: FlexWrapBefore;
-    alignSelf: AlignSelf;
+    public flexDirection: FlexDirection;
+    public flexWrap: FlexWrap;
+    public justifyContent: JustifyContent;
+    public alignItems: AlignItems;
+    public alignContent: AlignContent;
+    public order: Order;
+    public flexGrow: FlexGrow;
+    public flexShrink: FlexShrink;
+    public flexWrapBefore: FlexWrapBefore;
+    public alignSelf: AlignSelf;
 }

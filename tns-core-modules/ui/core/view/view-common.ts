@@ -572,20 +572,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let measureHeight = 0;
 
         if (child && !child.isCollapsed) {
-            let width = layout.getMeasureSpecSize(widthMeasureSpec);
-            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
-            let height = layout.getMeasureSpecSize(heightMeasureSpec);
-            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
             child._updateEffectiveLayoutValues(parent);
 
             let style = child.style;
             let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
             let verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
+            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
+            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
 
             if (traceEnabled()) {
                 traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
@@ -599,7 +593,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return { measuredWidth: measureWidth, measuredHeight: measureHeight };
     }
 
-    private static getMeasureSpec(parentLength: number, parentSpecMode: number, margins: number, childLength: number, stretched: boolean): number {
+    private static getMeasureSpec(parentSpec: number, margins: number, childLength: number, stretched: boolean): number {
+        const parentLength = layout.getMeasureSpecSize(parentSpec);
+        const parentSpecMode = layout.getMeasureSpecMode(parentSpec);
+
         let resultSize: number;
         let resultMode: number;
 
@@ -607,6 +604,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         if (childLength >= 0) {
             // If mode !== UNSPECIFIED we take the smaller of parentLength and childLength
             // Otherwise we will need to clip the view but this is not possible in all Android API levels.
+            // TODO: remove Math.min(parentLength, childLength)
             resultSize = parentSpecMode === layout.UNSPECIFIED ? childLength : Math.min(parentLength, childLength);
             resultMode = layout.EXACTLY;
         }

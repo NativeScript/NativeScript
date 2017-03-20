@@ -30,6 +30,18 @@ export module layout {
     export function toDeviceIndependentPixels(value: number): number {
         return value / mainScreenScale;
     }
+
+    export function measureNativeView(nativeView: any /* UIView */, width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number } {
+        const view = <UIView>nativeView;
+        const nativeSize = view.sizeThatFits({
+            width: widthMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : toDeviceIndependentPixels(width),
+            height: heightMode === 0 /* layout.UNSPECIFIED */ ? Number.POSITIVE_INFINITY : toDeviceIndependentPixels(height)
+        });
+
+        nativeSize.width = toDevicePixels(nativeSize.width);
+        nativeSize.height = toDevicePixels(nativeSize.height);
+        return nativeSize;
+    }
 }
 
 export module ios {
