@@ -50,7 +50,7 @@ function onCssChanged(args: application.CssChangedEventData): void {
 }
 
 function onLiveSync(args: application.CssChangedEventData): void {
-    loadCss(args.cssFile)
+    loadCss(application.getCssFileName());
 }
 
 function loadCss(cssFile?: string): RuleSet[] {
