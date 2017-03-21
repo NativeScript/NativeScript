@@ -220,13 +220,13 @@ export class View extends ViewCommon {
         }
 
         let background = this.style.backgroundInternal;
-        if (!background.isEmpty()) {
-            this[backgroundInternalProperty.native] = background;
+        if (!background.isEmpty() && this[backgroundInternalProperty.setNative]) {
+            this[backgroundInternalProperty.setNative](background);
         }
 
         let clipPath = this.style.clipPath;
-        if (clipPath !== "") {
-            this[clipPathProperty.native] = clipPath;
+        if (clipPath !== "" && this[clipPathProperty.setNative]) {
+            this[clipPathProperty.setNative](clipPath);
         }
     }
 
@@ -269,50 +269,50 @@ export class View extends ViewCommon {
         return this._suspendCATransaction;
     }
 
-    get [isEnabledProperty.native](): boolean {
+    [isEnabledProperty.getDefault](): boolean {
         let nativeView = this.nativeView;
         return nativeView instanceof UIControl ? nativeView.enabled : true;
     }
-    set [isEnabledProperty.native](value: boolean) {
+    [isEnabledProperty.setNative](value: boolean) {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIControl) {
             nativeView.enabled = value;
         }
     }
 
-    get [originXProperty.native](): number {
+    [originXProperty.getDefault](): number {
         return this.nativeView.layer.anchorPoint.x;
     }
-    set [originXProperty.native](value: number) {
+    [originXProperty.setNative](value: number) {
         this.updateOriginPoint(value, this.originY);
     }
 
-    get [originYProperty.native](): number {
+    [originYProperty.getDefault](): number {
         return this.nativeView.layer.anchorPoint.y;
     }
-    set [originYProperty.native](value: number) {
+    [originYProperty.setNative](value: number) {
         this.updateOriginPoint(this.originX, value);
     }
 
-    get [automationTextProperty.native](): string {
+    [automationTextProperty.getDefault](): string {
         return this.nativeView.accessibilityLabel;
     }
-    set [automationTextProperty.native](value: string) {
+    [automationTextProperty.setNative](value: string) {
         this.nativeView.accessibilityIdentifier = value;
         this.nativeView.accessibilityLabel = value;
     }
 
-    get [isUserInteractionEnabledProperty.native](): boolean {
+    [isUserInteractionEnabledProperty.getDefault](): boolean {
         return this.nativeView.userInteractionEnabled;
     }
-    set [isUserInteractionEnabledProperty.native](value: boolean) {
+    [isUserInteractionEnabledProperty.setNative](value: boolean) {
         this.nativeView.userInteractionEnabled = value;
     }
 
-    get [visibilityProperty.native](): Visibility {
+    [visibilityProperty.getDefault](): Visibility {
         return this.nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
     }
-    set [visibilityProperty.native](value: Visibility) {
+    [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case Visibility.VISIBLE:
                 this.nativeView.hidden = false;
@@ -326,10 +326,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [opacityProperty.native](): number {
+    [opacityProperty.getDefault](): number {
         return this.nativeView.alpha;
     }
-    set [opacityProperty.native](value: number) {
+    [opacityProperty.setNative](value: number) {
         let nativeView = this.nativeView;
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
@@ -341,52 +341,52 @@ export class View extends ViewCommon {
         }
     }
 
-    get [rotateProperty.native](): number {
+    [rotateProperty.getDefault](): number {
         return 0;
     }
-    set [rotateProperty.native](value: number) {
+    [rotateProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 
-    get [scaleXProperty.native](): number {
+    [scaleXProperty.getDefault](): number {
         return 1;
     }
-    set [scaleXProperty.native](value: number) {
+    [scaleXProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 
-    get [scaleYProperty.native](): number {
+    [scaleYProperty.getDefault](): number {
         return 1;
     }
-    set [scaleYProperty.native](value: number) {
+    [scaleYProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 
-    get [translateXProperty.native](): Length | number {
+    [translateXProperty.getDefault](): Length | number {
         return 0;
     }
-    set [translateXProperty.native](value: Length) {
+    [translateXProperty.setNative](value: Length) {
         this.updateNativeTransform();
     }
 
-    get [translateYProperty.native](): Length | number {
+    [translateYProperty.getDefault](): Length | number {
         return 0;
     }
-    set [translateYProperty.native](value: Length) {
+    [translateYProperty.setNative](value: Length) {
         this.updateNativeTransform();
     }
 
-    get [zIndexProperty.native](): number {
+    [zIndexProperty.getDefault](): number {
         return 0;
     }
-    set [zIndexProperty.native](value: number) {
+    [zIndexProperty.setNative](value: number) {
         this.nativeView.layer.zPosition = value;
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
+    [backgroundInternalProperty.getDefault](): UIColor {
         return this.nativeView.backgroundColor;
     }
-    set [backgroundInternalProperty.native](value: UIColor | Background) {
+    [backgroundInternalProperty.setNative](value: UIColor | Background) {
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
             CATransaction.begin();

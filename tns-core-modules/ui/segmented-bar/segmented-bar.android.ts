@@ -127,18 +127,18 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         }
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         return this._textView.getCurrentTextColor();
     }
-    set [colorProperty.native](value: Color | number) {
+    [colorProperty.setNative](value: Color | number) {
         let color = value instanceof Color ? value.android : value;
         this._textView.setTextColor(color);
     }
 
-    get [fontSizeProperty.native](): { nativeSize: number } {
+    [fontSizeProperty.getDefault](): { nativeSize: number } {
         return { nativeSize: this._textView.getTextSize() };
     }
-    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (typeof value === "number") {
             this._textView.setTextSize(value);
         } else {
@@ -146,18 +146,18 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         }
     }
 
-    get [fontInternalProperty.native](): android.graphics.Typeface {
+    [fontInternalProperty.getDefault](): android.graphics.Typeface {
         return this._textView.getTypeface();
     }
-    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         this._textView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    get [selectedBackgroundColorProperty.native](): android.graphics.drawable.Drawable.ConstantState {
+    [selectedBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {
         let viewGroup = <android.view.ViewGroup>this._textView.getParent();
         return viewGroup.getBackground().getConstantState();
     }
-    set [selectedBackgroundColorProperty.native](value: Color | android.graphics.drawable.Drawable.ConstantState) {
+    [selectedBackgroundColorProperty.setNative](value: Color | android.graphics.drawable.Drawable.ConstantState) {
         let viewGroup = <android.view.ViewGroup>this._textView.getParent();
         if (value instanceof Color) {
             let color = value.android;
@@ -234,17 +234,17 @@ export class SegmentedBar extends SegmentedBarBase {
         this._addingTab = false;
     }
 
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         this._android.setCurrentTab(value);
     }
 
-    get [itemsProperty.native](): SegmentedBarItem[] {
+    [itemsProperty.getDefault](): SegmentedBarItem[] {
         return null;
     }
-    set [itemsProperty.native](value: SegmentedBarItem[]) {
+    [itemsProperty.setNative](value: SegmentedBarItem[]) {
         this._android.clearAllTabs();
 
         const newItems = value;

@@ -25,40 +25,40 @@ export class DatePicker extends DatePickerBase {
         return this.nativeView;
     }
 
-    get [yearProperty.native](): number {
+    [yearProperty.getDefault](): number {
         return this.nativeView.date.getFullYear();
     }
-    set [yearProperty.native](value: number) {
+    [yearProperty.setNative](value: number) {
         let picker = this.nativeView;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.year = value;
         this.date = new Date(comps.year, comps.month - 1, comps.day);
     }
 
-    get [monthProperty.native](): number {
+    [monthProperty.getDefault](): number {
         return this.nativeView.date.getMonth();
     }
-    set [monthProperty.native](value: number) {
+    [monthProperty.setNative](value: number) {
         let picker = this.nativeView;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.month = value;
         this.date = new Date(comps.year, comps.month - 1, comps.day);
     }
 
-    get [dayProperty.native](): number {
+    [dayProperty.getDefault](): number {
         return this.nativeView.date.getDay();
     }
-    set [dayProperty.native](value: number) {
+    [dayProperty.setNative](value: number) {
         let picker = this.nativeView;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.day = value;
         this.date = new Date(comps.year, comps.month - 1, comps.day);
     }
 
-    get [dateProperty.native](): Date {
+    [dateProperty.getDefault](): Date {
         return this.nativeView.date;
     }
-    set [dateProperty.native](value: Date) {
+    [dateProperty.setNative](value: Date) {
         let picker = this.nativeView;
         let comps = ios.getter(NSCalendar, NSCalendar.currentCalendar).componentsFromDate(NSCalendarUnit.CalendarUnitYear | NSCalendarUnit.CalendarUnitMonth | NSCalendarUnit.CalendarUnitDay, picker.date);
         comps.year = value.getFullYear();
@@ -67,28 +67,28 @@ export class DatePicker extends DatePickerBase {
         picker.setDateAnimated(ios.getter(NSCalendar, NSCalendar.currentCalendar).dateFromComponents(comps), false);
     }
 
-    get [maxDateProperty.native](): Date {
+    [maxDateProperty.getDefault](): Date {
         return this.nativeView.maximumDate;
     }
-    set [maxDateProperty.native](value: Date) {
+    [maxDateProperty.setNative](value: Date) {
         let picker = this.nativeView;
         let nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
         picker.maximumDate = <any>nsDate;
     }
 
-    get [minDateProperty.native](): Date {
+    [minDateProperty.getDefault](): Date {
         return this.nativeView.minimumDate;
     }
-    set [minDateProperty.native](value: Date) {
+    [minDateProperty.setNative](value: Date) {
         let picker = this.nativeView;
         let nsDate = NSDate.dateWithTimeIntervalSince1970(value.getTime() / 1000);
         picker.minimumDate = <any>nsDate;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this.nativeView.valueForKey("textColor");
     }
-    set [colorProperty.native](value: Color | UIColor) {
+    [colorProperty.setNative](value: Color | UIColor) {
         let picker = this.nativeView;
         picker.setValueForKey(value instanceof Color ? value.ios : value, "textColor");
     }

@@ -50,45 +50,45 @@ export class Slider extends SliderBase {
         return this._ios;
     }
 
-    get [valueProperty.native](): number {
+    [valueProperty.getDefault](): number {
         return 0;
     }
-    set [valueProperty.native](value: number) {
+    [valueProperty.setNative](value: number) {
         this._ios.value = value;
     }
-    get [minValueProperty.native](): number {
+    [minValueProperty.getDefault](): number {
         return 0;
     }
-    set [minValueProperty.native](value: number) {
+    [minValueProperty.setNative](value: number) {
         this._ios.minimumValue = value;
     }
-    get [maxValueProperty.native](): number {
+    [maxValueProperty.getDefault](): number {
         return 100;
     }
-    set [maxValueProperty.native](value: number) {
+    [maxValueProperty.setNative](value: number) {
         this._ios.maximumValue = value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this._ios.thumbTintColor;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
         this._ios.thumbTintColor = color;
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         return this._ios.minimumTrackTintColor;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
         this._ios.minimumTrackTintColor = color;
     }
 
-    get [backgroundInternalProperty.native](): Background {
+    [backgroundInternalProperty.getDefault](): Background {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Background) {
+    [backgroundInternalProperty.setNative](value: Background) {
         //
     }
 }

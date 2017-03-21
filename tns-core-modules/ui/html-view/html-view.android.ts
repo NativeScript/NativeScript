@@ -19,10 +19,10 @@ export class HtmlView extends HtmlViewBase {
         return textView;
     }
 
-    get [htmlProperty.native](): string {
+    [htmlProperty.getDefault](): string {
         return "";
     }
-    set [htmlProperty.native](value: string) {
+    [htmlProperty.setNative](value: string) {
         // If the data.newValue actually has a <a...> in it; we need to disable autolink mask
         // it internally disables the coloring, but then the <a> links won't work..  So to support both
         // styles of links (html and just text based) we have to manually enable/disable the autolink mask

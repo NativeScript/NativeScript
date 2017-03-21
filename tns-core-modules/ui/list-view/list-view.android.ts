@@ -144,14 +144,14 @@ export class ListView extends ListViewBase {
         this._realizedTemplates.clear();
     }
 
-    get [separatorColorProperty.native](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
+    [separatorColorProperty.getDefault](): { dividerHeight: number, divider: android.graphics.drawable.Drawable } {
         let nativeView = this._android;
         return {
             dividerHeight: nativeView.getDividerHeight(),
             divider: nativeView.getDivider()
         };
     }
-    set [separatorColorProperty.native](value: Color | { dividerHeight: number, divider: android.graphics.drawable.Drawable }) {
+    [separatorColorProperty.setNative](value: Color | { dividerHeight: number, divider: android.graphics.drawable.Drawable }) {
         let nativeView = this._android;
         if (value instanceof Color) {
             nativeView.setDivider(new android.graphics.drawable.ColorDrawable(value.android));
@@ -162,10 +162,10 @@ export class ListView extends ListViewBase {
         }
     }
 
-    get [itemTemplatesProperty.native](): KeyedTemplate[] {
+    [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
         return null;
     }
-    set [itemTemplatesProperty.native](value: KeyedTemplate[]) {
+    [itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
         this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
         if (value) {
             this._itemTemplatesInternal = this._itemTemplatesInternal.concat(value);

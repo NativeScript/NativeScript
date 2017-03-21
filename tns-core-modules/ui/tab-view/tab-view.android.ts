@@ -214,10 +214,10 @@ export class TabViewItem extends TabViewItemBase {
         }
     }
 
-    get [fontSizeProperty.native](): { nativeSize: number } {
+    [fontSizeProperty.getDefault](): { nativeSize: number } {
         return { nativeSize: this.nativeView.getTextSize() };
     }
-    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (typeof value === "number") {
             this.nativeView.setTextSize(value);
         } else {
@@ -225,17 +225,17 @@ export class TabViewItem extends TabViewItemBase {
         }
     }
 
-    get [fontInternalProperty.native](): android.graphics.Typeface {
+    [fontInternalProperty.getDefault](): android.graphics.Typeface {
         return this.nativeView.getTypeface();
     }
-    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    get [textTransformProperty.native](): TextTransform {
+    [textTransformProperty.getDefault](): TextTransform {
         return "none";
     }
-    set [textTransformProperty.native](value: TextTransform) {
+    [textTransformProperty.setNative](value: TextTransform) {
         const tv = this.nativeView;
         const result = getTransformedText(this.title, value);
         tv.setText(result);
@@ -348,34 +348,34 @@ export class TabView extends TabViewBase {
         });
     }
 
-    get [androidOffscreenTabLimitProperty.native](): number {
+    [androidOffscreenTabLimitProperty.getDefault](): number {
         return this._viewPager.getOffscreenPageLimit();
     }
-    set [androidOffscreenTabLimitProperty.native](value: number) {
+    [androidOffscreenTabLimitProperty.setNative](value: number) {
         this._viewPager.setOffscreenPageLimit(value);
     }
 
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         if (traceEnabled()) {
             traceWrite("TabView this._viewPager.setCurrentItem(" + value + ", true);", traceCategory);
         }
         this._viewPager.setCurrentItem(value, true);
     }
 
-    get [itemsProperty.native](): TabViewItem[] {
+    [itemsProperty.getDefault](): TabViewItem[] {
         return null;
     }
-    set [itemsProperty.native](value: TabViewItem[]) {
+    [itemsProperty.setNative](value: TabViewItem[]) {
         this.setAdapter(value);
     }
 
-    get [tabBackgroundColorProperty.native](): android.graphics.drawable.Drawable.ConstantState {
+    [tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {
         return this._tabLayout.getBackground().getConstantState();
     }
-    set [tabBackgroundColorProperty.native](value: android.graphics.drawable.Drawable.ConstantState | Color) {
+    [tabBackgroundColorProperty.setNative](value: android.graphics.drawable.Drawable.ConstantState | Color) {
         if (value instanceof Color) {
             this._tabLayout.setBackgroundColor(value.android);
         } else {
@@ -383,26 +383,26 @@ export class TabView extends TabViewBase {
         }
     }
 
-    get [tabTextColorProperty.native](): number {
+    [tabTextColorProperty.getDefault](): number {
         return this._tabLayout.getTabTextColor();
     }
-    set [tabTextColorProperty.native](value: number | Color) {
+    [tabTextColorProperty.setNative](value: number | Color) {
         const color = value instanceof Color ? value.android : value;
         this._tabLayout.setTabTextColor(color);
     }
 
-    get [selectedTabTextColorProperty.native](): number {
+    [selectedTabTextColorProperty.getDefault](): number {
         return this._tabLayout.getSelectedTabTextColor();
     }
-    set [selectedTabTextColorProperty.native](value: number | Color) {
+    [selectedTabTextColorProperty.setNative](value: number | Color) {
         const color = value instanceof Color ? value.android : value;
         this._tabLayout.setSelectedTabTextColor(color);
     }
 
-    get [androidSelectedTabHighlightColorProperty.native](): number {
+    [androidSelectedTabHighlightColorProperty.getDefault](): number {
         return getDefaultAccentColor(this._context);
     }
-    set [androidSelectedTabHighlightColorProperty.native](value: number | Color) {
+    [androidSelectedTabHighlightColorProperty.setNative](value: number | Color) {
         let tabLayout = this._tabLayout;
         const color = value instanceof Color ? value.android : value;
         tabLayout.setSelectedIndicatorColors([color]);

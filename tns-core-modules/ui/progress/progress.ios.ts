@@ -20,39 +20,39 @@ export class Progress extends ProgressBase {
         return this._ios;
     }
 
-    get [valueProperty.native](): number {
+    [valueProperty.getDefault](): number {
         return 0;
     }
-    set [valueProperty.native](value: number) {
+    [valueProperty.setNative](value: number) {
         this._ios.progress = value / this.maxValue;
     }
 
-    get [maxValueProperty.native](): number {
+    [maxValueProperty.getDefault](): number {
         return 100;
     }
-    set [maxValueProperty.native](value: number) {
+    [maxValueProperty.setNative](value: number) {
         this._ios.progress = this.value / value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this._ios.progressTintColor;
     }
-    set [colorProperty.native](value: Color | UIColor) {
+    [colorProperty.setNative](value: Color | UIColor) {
         this._ios.progressTintColor = value instanceof Color ? value.ios : value;
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         return this._ios.trackTintColor;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
         this._ios.trackTintColor = color;
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
+    [backgroundInternalProperty.getDefault](): UIColor {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Color) {
+    [backgroundInternalProperty.setNative](value: Color) {
         //
     }
 }

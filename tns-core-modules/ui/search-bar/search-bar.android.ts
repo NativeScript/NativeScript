@@ -111,12 +111,12 @@ export class SearchBar extends SearchBarBase {
         return this._android;
     }
 
-    get [backgroundColorProperty.native](): number {
+    [backgroundColorProperty.getDefault](): number {
         // TODO: Why do we get DrawingCacheBackgroundColor but set backgroundColor?????
         let result = this._android.getDrawingCacheBackgroundColor();
         return result;
     }
-    set [backgroundColorProperty.native](value: Color) {
+    [backgroundColorProperty.setNative](value: Color) {
         let color: number;
         if (typeof value === "number") {
             color = value;
@@ -129,11 +129,11 @@ export class SearchBar extends SearchBarBase {
         searchPlate.setBackgroundColor(color);
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         let textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
-    set [colorProperty.native](value: Color) {
+    [colorProperty.setNative](value: Color) {
         let color: number;
         if (typeof value === "number") {
             color = value;
@@ -145,10 +145,10 @@ export class SearchBar extends SearchBarBase {
         textView.setTextColor(color);
     }
 
-    get [fontSizeProperty.native](): { nativeSize: number } {
+    [fontSizeProperty.getDefault](): { nativeSize: number } {
         return { nativeSize: this._getTextView().getTextSize() };
     }
-    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (typeof value === "number") {
             this._getTextView().setTextSize(value);
         } else {
@@ -156,48 +156,48 @@ export class SearchBar extends SearchBarBase {
         }
     }
 
-    get [fontInternalProperty.native](): android.graphics.Typeface {
+    [fontInternalProperty.getDefault](): android.graphics.Typeface {
         return this._getTextView().getTypeface();
     }
-    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         this._getTextView().setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    get [backgroundInternalProperty.native](): any {
+    [backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: any) {
+    [backgroundInternalProperty.setNative](value: any) {
         //
     }
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return "";
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
         this._android.setQuery(text, false);
     }
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return "";
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
         this._android.setQueryHint(text);
     }
-    get [textFieldBackgroundColorProperty.native](): number {
+    [textFieldBackgroundColorProperty.getDefault](): number {
         let textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
-    set [textFieldBackgroundColorProperty.native](value: Color) {
+    [textFieldBackgroundColorProperty.setNative](value: Color) {
         let textView = this._getTextView();
         let color = value instanceof Color ? value.android : value;
         textView.setBackgroundColor(color);
     }
-    get [textFieldHintColorProperty.native](): number {
+    [textFieldHintColorProperty.getDefault](): number {
         let textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
-    set [textFieldHintColorProperty.native](value: Color) {
+    [textFieldHintColorProperty.setNative](value: Color) {
         let textView = this._getTextView();
         let color = value instanceof Color ? value.android : value;
         textView.setHintTextColor(color);

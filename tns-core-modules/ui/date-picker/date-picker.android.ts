@@ -74,37 +74,37 @@ export class DatePicker extends DatePickerBase {
         this.date = new Date(year, month, day);
     }
 
-    get [yearProperty.native](): number {
+    [yearProperty.getDefault](): number {
         return this.android.getYear();
     }
-    set [yearProperty.native](value: number) {
+    [yearProperty.setNative](value: number) {
         if (this.android.getYear() !== value) {
             this.updateNativeDate();
         }
     }
 
-    get [monthProperty.native](): number {
+    [monthProperty.getDefault](): number {
         return this.android.getMonth();
     }
-    set [monthProperty.native](value: number) {
+    [monthProperty.setNative](value: number) {
         if (this.android.getMonth() !== (value - 1)) {
             this.updateNativeDate();
         }
     }
 
-    get [dayProperty.native](): number {
+    [dayProperty.getDefault](): number {
         return this.android.getDayOfMonth();
     }
-    set [dayProperty.native](value: number) {
+    [dayProperty.setNative](value: number) {
         if (this.android.getDayOfMonth() !== value) {
             this.updateNativeDate();
         }
     }
 
-    get [dateProperty.native](): Date {
+    [dateProperty.getDefault](): Date {
         return new Date(this.android.getYear(), this.android.getMonth(), this.android.getDayOfMonth());
     }
-    set [dateProperty.native](value: Date) {
+    [dateProperty.setNative](value: Date) {
         if (this.android.getDayOfMonth() !== value.getDay()
             || this.android.getMonth() !== value.getMonth()
             || this.android.getYear() !== value.getFullYear()) {
@@ -112,20 +112,20 @@ export class DatePicker extends DatePickerBase {
         }
     }
 
-    get [maxDateProperty.native](): Date {
+    [maxDateProperty.getDefault](): Date {
         return this.android.getMaxDate();
     }
-    set [maxDateProperty.native](value: Date) {
+    [maxDateProperty.setNative](value: Date) {
         let newValue = value.getTime();
         if (this.android.getMaxDate() !== newValue) {
             this.android.setMaxDate(newValue);
         }
     }
 
-    get [minDateProperty.native](): Date {
+    [minDateProperty.getDefault](): Date {
         return this.android.getMinDate();
     }
-    set [minDateProperty.native](value: Date) {
+    [minDateProperty.setNative](value: Date) {
         let picker = this.android;
         let newValue = value.getTime();
         if (picker.getMinDate() !== newValue) {

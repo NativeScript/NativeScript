@@ -48,10 +48,10 @@ export class HtmlView extends HtmlViewBase {
         }
     }
 
-    get [htmlProperty.native](): string {
+    [htmlProperty.getDefault](): string {
         return "";
     }
-    set [htmlProperty.native](value: string) {
+    [htmlProperty.setNative](value: string) {
         const htmlString = NSString.stringWithString(value + "");
         const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
         this._ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);

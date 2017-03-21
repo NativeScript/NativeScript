@@ -18,10 +18,10 @@ export class StackLayout extends StackLayoutBase {
          return layout;
     }
 
-    get [orientationProperty.native](): "horizontal" | "vertical" {
+    [orientationProperty.getDefault](): "horizontal" | "vertical" {
         return "vertical";
     }
-    set [orientationProperty.native](value: "horizontal" | "vertical") {
+    [orientationProperty.setNative](value: "horizontal" | "vertical") {
         this._layout.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
     }
 }

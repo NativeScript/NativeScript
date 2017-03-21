@@ -181,14 +181,14 @@ export class Page extends PageBase {
         this.actionBar.update();
     }
 
-    get [actionBarHiddenProperty.native](): boolean {
+    [actionBarHiddenProperty.getDefault](): boolean {
         return undefined;
     }
-    set [actionBarHiddenProperty.native](value: boolean) {
+    [actionBarHiddenProperty.setNative](value: boolean) {
         this.updateActionBar();
     }
 
-    get [statusBarStyleProperty.native](): { color: number, systemUiVisibility: number } {
+    [statusBarStyleProperty.getDefault](): { color: number, systemUiVisibility: number } {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             let decorView = window.getDecorView();
@@ -201,7 +201,7 @@ export class Page extends PageBase {
 
         return null;
     }
-    set [statusBarStyleProperty.native](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
+    [statusBarStyleProperty.setNative](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             let decorView = window.getDecorView();
@@ -220,7 +220,7 @@ export class Page extends PageBase {
         }
     }
 
-    get [androidStatusBarBackgroundProperty.native](): number {
+    [androidStatusBarBackgroundProperty.getDefault](): number {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             return (<any>window).getStatusBarColor();
@@ -228,7 +228,7 @@ export class Page extends PageBase {
 
         return null;
     }
-    set [androidStatusBarBackgroundProperty.native](value: number | Color) {
+    [androidStatusBarBackgroundProperty.setNative](value: number | Color) {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             let color = value instanceof Color ? value.android : value;

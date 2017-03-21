@@ -111,10 +111,10 @@ export class Image extends ImageBase {
         }
     }
 
-    get [stretchProperty.native](): "aspectFit" {
+    [stretchProperty.getDefault](): "aspectFit" {
         return "aspectFit";
     }
-    set [stretchProperty.native](value: "none" | "aspectFill" | "aspectFit" | "fill") {
+    [stretchProperty.setNative](value: "none" | "aspectFill" | "aspectFit" | "fill") {
         switch (value) {
             case "aspectFit":
                 this.android.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
@@ -132,10 +132,10 @@ export class Image extends ImageBase {
         }
     }
 
-    get [tintColorProperty.native](): Color {
+    [tintColorProperty.getDefault](): Color {
         return undefined;
     }
-    set [tintColorProperty.native](value: Color) {
+    [tintColorProperty.setNative](value: Color) {
         if (value === undefined) {
             this._android.clearColorFilter();
         } else {
@@ -143,10 +143,10 @@ export class Image extends ImageBase {
         }
     }
 
-    get [imageSourceProperty.native](): ImageSource {
+    [imageSourceProperty.getDefault](): ImageSource {
         return undefined;
     }
-    set [imageSourceProperty.native](value: ImageSource) {
+    [imageSourceProperty.setNative](value: ImageSource) {
         if (value && value.android) {
             let rotation = value.rotationAngle ? value.rotationAngle : 0;
             this.android.setRotationAngle(rotation);
@@ -157,10 +157,10 @@ export class Image extends ImageBase {
         }
     }
 
-    get [srcProperty.native](): any {
+    [srcProperty.getDefault](): any {
         return undefined;
     }
-    set [srcProperty.native](value: any) {
+    [srcProperty.setNative](value: any) {
         this._createImageSourceFromSrc();
     }
 }

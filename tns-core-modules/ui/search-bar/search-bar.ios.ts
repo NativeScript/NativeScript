@@ -101,22 +101,22 @@ export class SearchBar extends SearchBarBase {
         return this.__placeholderLabel;
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         return this._ios.barTintColor;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         let color: UIColor = value instanceof Color ? value.ios : value;
         this._ios.barTintColor = color;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         let sf = this._textField;
         if (sf) {
             return sf.textColor;
         }
         return null;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         let sf = this._textField;
         let color = value instanceof Color ? value.ios : value;
         if (sf) {
@@ -125,41 +125,41 @@ export class SearchBar extends SearchBarBase {
         }
     }
 
-    get [fontInternalProperty.native](): UIFont {
+    [fontInternalProperty.getDefault](): UIFont {
         let sf = this._textField;
         return sf ? sf.font : null;
     }
-    set [fontInternalProperty.native](value: UIFont | Font) {
+    [fontInternalProperty.setNative](value: UIFont | Font) {
         let sf = this._textField;
         if (sf) {
             sf.font = value instanceof Font ? value.getUIFont(sf.font) : value;
         }
     }
 
-    get [backgroundInternalProperty.native](): any {
+    [backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: any) {
+    [backgroundInternalProperty.setNative](value: any) {
         //
     }
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return '';
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
         this._ios.text = text;
     }
 
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return '';
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
         this._ios.placeholder = text;
     }
 
-    get [textFieldBackgroundColorProperty.native](): UIColor {
+    [textFieldBackgroundColorProperty.getDefault](): UIColor {
         const textField = this._textField;
         if (textField) {
             return textField.backgroundColor;
@@ -167,7 +167,7 @@ export class SearchBar extends SearchBarBase {
 
         return null;
     }
-    set [textFieldBackgroundColorProperty.native](value: Color | UIColor) {
+    [textFieldBackgroundColorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value
         const textField = this._textField;
         if (textField) {
@@ -175,7 +175,7 @@ export class SearchBar extends SearchBarBase {
         }
     }
 
-    get [textFieldHintColorProperty.native](): UIColor {
+    [textFieldHintColorProperty.getDefault](): UIColor {
         const placeholderLabel = this._placeholderLabel;
         if (placeholderLabel) {
             return placeholderLabel.textColor;
@@ -183,7 +183,7 @@ export class SearchBar extends SearchBarBase {
 
         return null;
     }
-    set [textFieldHintColorProperty.native](value: Color | UIColor) {
+    [textFieldHintColorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value
         const placeholderLabel = this._placeholderLabel;
         if (placeholderLabel) {

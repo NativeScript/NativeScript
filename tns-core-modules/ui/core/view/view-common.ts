@@ -53,8 +53,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _currentWidthMeasureSpec: number;
     _currentHeightMeasureSpec: number;
 
-    _minWidthNative: Length;
-    _minHeightNative: Length;
+    _setMinWidthNative: (value: Length) => void;
+    _setMinHeightNative: (value: Length) => void;
 
     private _isLayoutValid: boolean;
     private _cssType: string;

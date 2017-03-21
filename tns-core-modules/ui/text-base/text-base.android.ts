@@ -62,10 +62,10 @@ export class TextBase extends TextBaseCommon {
         this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
     }
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return '';
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         if (this.formattedText) {
             return;
         }
@@ -73,10 +73,10 @@ export class TextBase extends TextBaseCommon {
         this._setNativeText();
     }
 
-    get [formattedTextProperty.native](): FormattedString {
+    [formattedTextProperty.getDefault](): FormattedString {
         return null;
     }
-    set [formattedTextProperty.native](value: FormattedString) {
+    [formattedTextProperty.setNative](value: FormattedString) {
         // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
         if ((<any>this).secure) {
             return;
@@ -86,6 +86,7 @@ export class TextBase extends TextBaseCommon {
 
         const spannableStringBuilder = createSpannableStringBuilder(value);
         this.nativeView.setText(<any>spannableStringBuilder);
+
         textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
 
         if (spannableStringBuilder && this.nativeView instanceof android.widget.Button &&
@@ -97,11 +98,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [textTransformProperty.native](): string {
+    [textTransformProperty.getDefault](): "default" {
         return "default";
     }
-
-    set [textTransformProperty.native](value: TextTransform | android.text.method.TransformationMethod) {
+    [textTransformProperty.setNative](value: "default" | TextTransform | android.text.method.TransformationMethod) {
         // In case of reset.
         if (value === "default") {
              this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
@@ -114,6 +114,7 @@ export class TextBase extends TextBaseCommon {
         }
 
         initializeTextTransformation();
+
         if (typeof value === "string") {
             this.nativeView.setTransformationMethod(new TextTransformation(this));
         } else {
@@ -121,10 +122,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [colorProperty.native](): android.content.res.ColorStateList {
+    [colorProperty.getDefault](): android.content.res.ColorStateList {
         return this.nativeView.getTextColors();
     }
-    set [colorProperty.native](value: Color | android.content.res.ColorStateList) {
+    [colorProperty.setNative](value: Color | android.content.res.ColorStateList) {
         if (!this.formattedText || !(value instanceof Color)) {
             if (value instanceof Color) {
                 this.nativeView.setTextColor(value.android);
@@ -134,10 +135,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [fontSizeProperty.native](): { nativeSize: number } {
+    [fontSizeProperty.getDefault](): { nativeSize: number } {
         return { nativeSize: this.nativeView.getTextSize() };
     }
-    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (!this.formattedText || (typeof value !== "number")) {
             if (typeof value === "number") {
                 this.nativeView.setTextSize(value);
@@ -147,15 +148,15 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [fontInternalProperty.native](): android.graphics.Typeface {
+    [fontInternalProperty.getDefault](): android.graphics.Typeface {
         return this.nativeView.getTypeface();
     }
-    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         if (!this.formattedText || !(value instanceof Font)) {
             this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
         }
     }
-    get [textAlignmentProperty.native](): TextAlignment {
+    [textAlignmentProperty.getDefault](): TextAlignment {
         let textAlignmentGravity = this.nativeView.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
         switch (textAlignmentGravity) {
             case android.view.Gravity.CENTER_HORIZONTAL:
@@ -167,7 +168,7 @@ export class TextBase extends TextBaseCommon {
                 return "left";
         }
     }
-    set [textAlignmentProperty.native](value: TextAlignment) {
+    [textAlignmentProperty.setNative](value: TextAlignment) {
         let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
         switch (value) {
             case "left":
@@ -184,10 +185,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [textDecorationProperty.native](): number {
+    [textDecorationProperty.getDefault](): number {
         return -1;
     }
-    set [textDecorationProperty.native](value: TextDecoration | number) {
+    [textDecorationProperty.setNative](value: number | TextDecoration) {
         const isReset = typeof value === "number";
         if (!this.formattedText || isReset) {
             value = isReset ? "none" : value;
@@ -208,7 +209,6 @@ export class TextBase extends TextBaseCommon {
                 default:
                     throw new Error(`Invalid text decoration value: ${value}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
             }
-
             this.nativeView.setPaintFlags(flags);
         } else {
             this._setNativeText();
@@ -217,11 +217,11 @@ export class TextBase extends TextBaseCommon {
 
     // Overriden in TextField becasue setSingleLine(false) will remove methodTransformation.
     // and we don't want to allow TextField to be multiline
-    get [whiteSpaceProperty.native](): WhiteSpace {
+    [whiteSpaceProperty.getDefault](): WhiteSpace {
         return "normal";
     }
 
-    set [whiteSpaceProperty.native](value: WhiteSpace) {
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
         const nativeView = this.nativeView;
         switch (value) {
             case "normal":
@@ -237,38 +237,38 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [letterSpacingProperty.native](): number {
+    [letterSpacingProperty.getDefault](): number {
         return org.nativescript.widgets.ViewHelper.getLetterspacing(this.nativeView);
     }
-    set [letterSpacingProperty.native](value: number) {
+    [letterSpacingProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setLetterspacing(this.nativeView, value);
     }
 
-    get [paddingTopProperty.native](): Length {
+    [paddingTopProperty.getDefault](): Length {
         return { value: this._defaultPaddingTop, unit: "px" }
     }
-    set [paddingTopProperty.native](value: Length) {
+    [paddingTopProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
-    get [paddingRightProperty.native](): Length {
+    [paddingRightProperty.getDefault](): Length {
         return { value: this._defaultPaddingRight, unit: "px" }
     }
-    set [paddingRightProperty.native](value: Length) {
+    [paddingRightProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
-    get [paddingBottomProperty.native](): Length {
+    [paddingBottomProperty.getDefault](): Length {
         return { value: this._defaultPaddingBottom, unit: "px" }
     }
-    set [paddingBottomProperty.native](value: Length) {
+    [paddingBottomProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
-    get [paddingLeftProperty.native](): Length {
+    [paddingLeftProperty.getDefault](): Length {
         return { value: this._defaultPaddingLeft, unit: "px" }
     }
-    set [paddingLeftProperty.native](value: Length) {
+    [paddingLeftProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 

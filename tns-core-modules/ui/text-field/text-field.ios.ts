@@ -152,10 +152,10 @@ export class TextField extends TextFieldBase {
         return this._ios;
     }
 
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return this.nativeView.placeholder;
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         let stringValue;
         if (value === null || value === void 0) {
             stringValue = "";
@@ -165,18 +165,18 @@ export class TextField extends TextFieldBase {
         this.nativeView.placeholder = stringValue;
     }
 
-    get [secureProperty.native](): boolean {
+    [secureProperty.getDefault](): boolean {
         return this.nativeView.secureTextEntry;
     }
-    set [secureProperty.native](value: boolean) {
+    [secureProperty.setNative](value: boolean) {
         this.nativeView.secureTextEntry = value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         // return this.nativeView.tintColor;
         return this.nativeView.textColor;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         // NOTE: Do we need this code? We have placeholderColor.
         // let nativeValue = this.nativeView;
         // if (this.isShowingHint && value) {
@@ -189,10 +189,10 @@ export class TextField extends TextFieldBase {
         this.nativeView.textColor = color;
     }
 
-    get [placeholderColorProperty.native](): UIColor {
+    [placeholderColorProperty.getDefault](): UIColor {
         return null;
     }
-    set [placeholderColorProperty.native](value: UIColor | Color) {
+    [placeholderColorProperty.setNative](value: UIColor | Color) {
         let nativeView = this.nativeView;
         let colorAttibutes = NSMutableDictionary.new<string, any>();
         colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
@@ -207,31 +207,31 @@ export class TextField extends TextFieldBase {
         nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, colorAttibutes);
     }
 
-    get [paddingTopProperty.native](): Length {
+    [paddingTopProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingTopProperty.native](value: Length) {
+    [paddingTopProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 
-    get [paddingRightProperty.native](): Length {
+    [paddingRightProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingRightProperty.native](value: Length) {
+    [paddingRightProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 
-    get [paddingBottomProperty.native](): Length {
+    [paddingBottomProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingBottomProperty.native](value: Length) {
+    [paddingBottomProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 
-    get [paddingLeftProperty.native](): Length {
+    [paddingLeftProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingLeftProperty.native](value: Length) {
+    [paddingLeftProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 }

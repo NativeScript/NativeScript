@@ -1,12 +1,8 @@
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     FlexboxLayoutBase, View, layout,
-    orderProperty, Order as OrderBase,
-    flexGrowProperty, FlexGrow,
-    flexShrinkProperty, FlexShrink,
-    flexWrapBeforeProperty, FlexWrapBefore,
-    alignSelfProperty, AlignSelf,
-    FlexBasisPercent
+    FlexBasisPercent,
+    orderProperty, flexGrowProperty, flexShrinkProperty, flexWrapBeforeProperty, alignSelfProperty
 } from "./flexbox-layout-common";
 
 export * from "./flexbox-layout-common";
@@ -18,69 +14,17 @@ import UNSPECIFIED = layout.UNSPECIFIED;
 import MEASURED_SIZE_MASK = layout.MEASURED_SIZE_MASK;
 import MEASURED_STATE_TOO_SMALL = layout.MEASURED_STATE_TOO_SMALL;
 
-function childHandler(view) {
-    if (!(view instanceof View)) {
-        throw new Error("Element is not View or its descendant.");
-    }
-    let flexbox = view.parent;
+function requestFlexboxLayout(this: View, value) {
+    let flexbox = this.parent;
     if (flexbox instanceof FlexboxLayoutBase) {
         flexbox.requestLayout();
     }
 }
-
-const orderDescriptor: TypedPropertyDescriptor<OrderBase> = {
-    enumerable: true,
-    configurable: true,
-    get: () => orderProperty.defaultValue,
-    set: function (this: View, value: OrderBase) {
-        childHandler(this);
-    }
-}
-
-const flexGrowDescriptor: TypedPropertyDescriptor<FlexGrow> = {
-    enumerable: true,
-    configurable: true,
-    get: () => flexGrowProperty.defaultValue,
-    set: function (this: View, value: FlexGrow) {
-        childHandler(this);
-    }
-}
-
-const flexShrinkDescriptor: TypedPropertyDescriptor<FlexShrink> = {
-    enumerable: true,
-    configurable: true,
-    get: () => flexShrinkProperty.defaultValue,
-    set: function (this: View, value: FlexShrink) {
-        childHandler(this);
-    }
-}
-
-const flexWrapBeforeDescriptor: TypedPropertyDescriptor<FlexWrapBefore> = {
-    enumerable: true,
-    configurable: true,
-    get: () => false,
-    set: function (this: View, value: FlexWrapBefore) {
-        childHandler(this);
-    }
-}
-
-const alignSelfDescriptor: TypedPropertyDescriptor<AlignSelf> = {
-    enumerable: true,
-    configurable: true,
-    get: () => AlignSelf.AUTO,
-    set: function (this: View, value: AlignSelf) {
-        childHandler(this);
-    }
-}
-
-// register native properties on View type.
-Object.defineProperties(View.prototype, {
-    [orderProperty.native]: orderDescriptor,
-    [flexGrowProperty.native]: flexGrowDescriptor,
-    [flexShrinkProperty.native]: flexShrinkDescriptor,
-    [flexWrapBeforeProperty.native]: flexWrapBeforeDescriptor,
-    [alignSelfProperty.native]: alignSelfDescriptor
-});
+View.prototype[orderProperty.setNative] = requestFlexboxLayout;
+View.prototype[flexGrowProperty.setNative] = requestFlexboxLayout;
+View.prototype[flexShrinkProperty.setNative] = requestFlexboxLayout;
+View.prototype[flexWrapBeforeProperty.setNative] = requestFlexboxLayout;
+View.prototype[alignSelfProperty.setNative] = requestFlexboxLayout;
 
 const MATCH_PARENT = -1;
 const WRAP_CONTENT = -2;
@@ -289,7 +233,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
                 child._updateEffectiveLayoutValues(this);
                 let lp = child; // child.style;
-                if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
+                if (FlexboxLayout.getAlignSelf(child) === "stretch") {
                     flexLine._indicesAlignSelfStretch.push(i);
                 }
 
@@ -404,7 +348,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
             child._updateEffectiveLayoutValues(this);
             const lp = child; // .style;
-            if (FlexboxLayout.getAlignSelf(child) === AlignSelf.STRETCH) {
+            if (FlexboxLayout.getAlignSelf(child) === "stretch") {
                 flexLine._indicesAlignSelfStretch.push(i);
             }
 
@@ -813,7 +757,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
                 for (let i = 0; i < flexLine.itemCount; i++ , viewIndex++) {
                     let view = this._getReorderedChildAt(viewIndex);
                     let alignSelf = FlexboxLayout.getAlignSelf(view);
-                    if (alignSelf !== AlignSelf.AUTO && alignSelf !== AlignSelf.STRETCH) {
+                    if (alignSelf !== "auto" && alignSelf !== "stretch") {
                         continue;
                     }
                     switch (flexDirection) {
@@ -1104,7 +1048,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         let lp = view; // .style;
 
         let alignSelf = FlexboxLayout.getAlignSelf(view);
-        if (alignSelf !== AlignSelf.AUTO) {
+        if (alignSelf !== "auto") {
             alignItems = alignSelf;
         }
 
@@ -1262,7 +1206,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
     private _layoutSingleChildVertical(view: View, flexLine: FlexLine, isRtl: boolean, alignItems: AlignItems, left: number, top: number, right: number, bottom: number) {
         let lp = view; // .style;
         let alignSelf = FlexboxLayout.getAlignSelf(view);
-        if (alignSelf !== AlignSelf.AUTO) {
+        if (alignSelf !== "auto") {
             alignItems = alignSelf;
         }
         let crossSize = flexLine.crossSize;

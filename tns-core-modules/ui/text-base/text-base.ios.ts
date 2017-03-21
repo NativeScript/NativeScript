@@ -11,10 +11,10 @@ export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return '';
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         if (this.formattedText) {
             return;
         }
@@ -23,16 +23,16 @@ export class TextBase extends TextBaseCommon {
         this._requestLayoutOnTextChanged();
     }
 
-    get [formattedTextProperty.native](): FormattedString {
+    [formattedTextProperty.getDefault](): FormattedString {
         return null;
     }
-    set [formattedTextProperty.native](value: FormattedString) {
+    [formattedTextProperty.setNative](value: FormattedString) {
         this._setNativeText();
         textProperty.nativeValueChange(this, !value ? '' : value.toString());
         this._requestLayoutOnTextChanged();
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             return nativeView.titleColorForState(UIControlState.Normal);
@@ -40,7 +40,7 @@ export class TextBase extends TextBaseCommon {
             return nativeView.textColor;
         }
     }
-    set [colorProperty.native](value: Color | UIColor) {
+    [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
         if (!this.formattedText) {
             let nativeView = this.nativeView;
@@ -52,12 +52,12 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [fontInternalProperty.native](): UIFont {
+    [fontInternalProperty.getDefault](): UIFont {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         return nativeView.font;
     }
-    set [fontInternalProperty.native](value: Font | UIFont) {
+    [fontInternalProperty.setNative](value: Font | UIFont) {
         if (!this.formattedText) {
             let nativeView = this.nativeView;
             nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
@@ -66,7 +66,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [textAlignmentProperty.native](): TextAlignment {
+    [textAlignmentProperty.getDefault](): TextAlignment {
         let nativeView = this.nativeView;
         nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
         switch (nativeView.textAlignment) {
@@ -81,7 +81,7 @@ export class TextBase extends TextBaseCommon {
                 throw new Error(`Unsupported NSTextAlignment: ${nativeView.textAlignment}. Currently supported values are NSTextAlignment.Left, NSTextAlignment.Center, and NSTextAlignment.Right.`);
         }
     }
-    set [textAlignmentProperty.native](value: TextAlignment) {
+    [textAlignmentProperty.setNative](value: TextAlignment) {
         let nativeView = <UITextField | UITextView | UILabel>this.nativeView;
         switch (value) {
             case "left":
@@ -101,24 +101,24 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    get [textDecorationProperty.native](): TextDecoration {
+    [textDecorationProperty.getDefault](): TextDecoration {
         return "none";
     }
-    set [textDecorationProperty.native](value: TextDecoration) {
+    [textDecorationProperty.setNative](value: TextDecoration) {
         this._setNativeText();
     }
 
-    get [textTransformProperty.native](): TextTransform {
+    [textTransformProperty.getDefault](): TextTransform {
         return "none";
     }
-    set [textTransformProperty.native](value: TextTransform) {
+    [textTransformProperty.setNative](value: TextTransform) {
         this._setNativeText();
     }
 
-    get [letterSpacingProperty.native](): number {
+    [letterSpacingProperty.getDefault](): number {
         return 0;
     }
-    set [letterSpacingProperty.native](value: number) {
+    [letterSpacingProperty.setNative](value: number) {
         this._setNativeText();
     }
 

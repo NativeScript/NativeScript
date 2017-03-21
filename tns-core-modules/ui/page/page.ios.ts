@@ -584,10 +584,10 @@ export class Page extends PageBase {
         super._removeViewFromNativeVisualTree(view);
     }
 
-    get [actionBarHiddenProperty.native](): boolean {
+    [actionBarHiddenProperty.getDefault](): boolean {
         return undefined;
     }
-    set [actionBarHiddenProperty.native](value: boolean) {
+    [actionBarHiddenProperty.setNative](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
         if (this.isLoaded) {
             // Update nav-bar visibility with disabled animations
@@ -595,10 +595,10 @@ export class Page extends PageBase {
         }
     }
 
-    get [statusBarStyleProperty.native](): UIBarStyle {
+    [statusBarStyleProperty.getDefault](): UIBarStyle {
         return UIBarStyle.Default;
     }
-    set [statusBarStyleProperty.native](value: string | UIBarStyle) {
+    [statusBarStyleProperty.setNative](value: string | UIBarStyle) {
         let frame = this.frame;
         if (frame) {
             let navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;

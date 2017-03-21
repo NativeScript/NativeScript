@@ -69,10 +69,10 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
 
     abstract reload(): void;
 
-    get [srcProperty.native](): string {
+    [srcProperty.getDefault](): string {
         return "";
     }
-    set [srcProperty.native](src: string) {
+    [srcProperty.setNative](src: string) {
         this.stopLoading();
 
         if (isFileOrResourcePath(src)) {

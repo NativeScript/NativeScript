@@ -355,7 +355,7 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         if (!defaultTitleTextColor) {
             let textView = new android.widget.TextView(this._context);
             defaultTitleTextColor = textView.getTextColors().getDefaultColor();
@@ -363,7 +363,7 @@ export class ActionBar extends ActionBarBase {
 
         return defaultTitleTextColor;
     }
-    set [colorProperty.native](value: number | Color) {
+    [colorProperty.setNative](value: number | Color) {
         let color = value instanceof Color ? value.android : value;
         this.nativeView.setTitleTextColor(color);
     }

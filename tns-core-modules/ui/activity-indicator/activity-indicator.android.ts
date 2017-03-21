@@ -16,19 +16,19 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         return this._progressBar;
     }
 
-    get [busyProperty.native](): boolean {
+    [busyProperty.getDefault](): boolean {
         return false;
     }
-    set [busyProperty.native](value: boolean) {
+    [busyProperty.setNative](value: boolean) {
         if (this.visibility === Visibility.VISIBLE) {
             this._progressBar.setVisibility(value ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
         }
     }
 
-    get [visibilityProperty.native](): Visibility {
+    [visibilityProperty.getDefault](): Visibility {
         return Visibility.HIDDEN;       
     }
-    set [visibilityProperty.native](value: Visibility) {
+    [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case Visibility.VISIBLE:
                 this._progressBar.setVisibility(this.busy ? android.view.View.VISIBLE : android.view.View.INVISIBLE);
@@ -44,14 +44,13 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         }
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         return -1;
     }
-    set [colorProperty.native](value: number | Color) {
+    [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
             this._progressBar.getIndeterminateDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
-        }
-        else {
+        } else {
             this._progressBar.getIndeterminateDrawable().clearColorFilter();
         }
     }

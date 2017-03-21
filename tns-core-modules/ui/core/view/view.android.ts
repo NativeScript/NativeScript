@@ -290,38 +290,38 @@ export class View extends ViewCommon {
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
-    get [isEnabledProperty.native](): boolean {
+    [isEnabledProperty.getDefault](): boolean {
         return this.nativeView.isEnabled();
     }
-    set [isEnabledProperty.native](value: boolean) {
+    [isEnabledProperty.setNative](value: boolean) {
         this.nativeView.setEnabled(value);
     }
 
-    get [originXProperty.native](): number {
+    [originXProperty.getDefault](): number {
         return this.nativeView.getPivotX();
     }
-    set [originXProperty.native](value: number) {
+    [originXProperty.setNative](value: number) {
         org.nativescript.widgets.OriginPoint.setX(this.nativeView, value);
     }
 
-    get [originYProperty.native](): number {
+    [originYProperty.getDefault](): number {
         return this.nativeView.getPivotY();
     }
-    set [originYProperty.native](value: number) {
+    [originYProperty.setNative](value: number) {
         org.nativescript.widgets.OriginPoint.setY(this.nativeView, value);
     }
 
-    get [automationTextProperty.native](): string {
+    [automationTextProperty.getDefault](): string {
         return this.nativeView.getContentDescription();
     }
-    set [automationTextProperty.native](value: string) {
+    [automationTextProperty.setNative](value: string) {
         this.nativeView.setContentDescription(value);
     }
 
-    get [isUserInteractionEnabledProperty.native](): boolean {
+    [isUserInteractionEnabledProperty.getDefault](): boolean {
         return true;
     }
-    set [isUserInteractionEnabledProperty.native](value: boolean) {
+    [isUserInteractionEnabledProperty.setNative](value: boolean) {
         if (!value) {
             initializeDisabledListener();
             // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
@@ -331,7 +331,7 @@ export class View extends ViewCommon {
         }
     }
 
-    get [visibilityProperty.native](): Visibility {
+    [visibilityProperty.getDefault](): Visibility {
         let nativeVisibility = this.nativeView.getVisibility();
         switch (nativeVisibility) {
             case android.view.View.VISIBLE:
@@ -344,7 +344,7 @@ export class View extends ViewCommon {
                 throw new Error(`Unsupported android.view.View visibility: ${nativeVisibility}. Currently supported values are android.view.View.VISIBLE, android.view.View.INVISIBLE, android.view.View.GONE.`);
         }
     }
-    set [visibilityProperty.native](value: Visibility) {
+    [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case "visible":
                 this.nativeView.setVisibility(android.view.View.VISIBLE);
@@ -360,17 +360,17 @@ export class View extends ViewCommon {
         }
     }
 
-    get [opacityProperty.native](): number {
+    [opacityProperty.getDefault](): number {
         return this.nativeView.getAlpha();
     }
-    set [opacityProperty.native](value: number) {
+    [opacityProperty.setNative](value: number) {
         this.nativeView.setAlpha(value);
     }
 
-    get [horizontalAlignmentProperty.native](): HorizontalAlignment {
+    [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
         return <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeView);
     }
-    set [horizontalAlignmentProperty.native](value: HorizontalAlignment) {
+    [horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
         const nativeView = this.nativeView;
         const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         // Set only if params gravity exists.
@@ -393,10 +393,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [verticalAlignmentProperty.native](): VerticalAlignment {
+    [verticalAlignmentProperty.getDefault](): VerticalAlignment {
         return <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeView);
     }
-    set [verticalAlignmentProperty.native](value: VerticalAlignment) {
+    [verticalAlignmentProperty.setNative](value: VerticalAlignment) {
         const nativeView = this.nativeView;
         const lp: any = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
         // Set only if params gravity exists.
@@ -419,45 +419,45 @@ export class View extends ViewCommon {
         }
     }
 
-    get [rotateProperty.native](): number {
+    [rotateProperty.getDefault](): number {
         return org.nativescript.widgets.ViewHelper.getRotate(this.nativeView);
     }
-    set [rotateProperty.native](value: number) {
+    [rotateProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setRotate(this.nativeView, float(value));
     }
 
-    get [scaleXProperty.native](): number {
+    [scaleXProperty.getDefault](): number {
         return org.nativescript.widgets.ViewHelper.getScaleX(this.nativeView);
     }
-    set [scaleXProperty.native](value: number) {
+    [scaleXProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setScaleX(this.nativeView, float(value));
     }
 
-    get [scaleYProperty.native](): number {
+    [scaleYProperty.getDefault](): number {
         return org.nativescript.widgets.ViewHelper.getScaleY(this.nativeView);
     }
-    set [scaleYProperty.native](value: number) {
+    [scaleYProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setScaleY(this.nativeView, float(value));
     }
 
-    get [translateXProperty.native](): Length | number {
+    [translateXProperty.getDefault](): Length | number {
         return org.nativescript.widgets.ViewHelper.getTranslateX(this.nativeView);
     }
-    set [translateXProperty.native](value: Length) {
+    [translateXProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, Length.toDevicePixels(value, 0));
     }
 
-    get [translateYProperty.native](): Length | number {
+    [translateYProperty.getDefault](): Length | number {
         return org.nativescript.widgets.ViewHelper.getTranslateY(this.nativeView);
     }
-    set [translateYProperty.native](value: Length) {
+    [translateYProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, Length.toDevicePixels(value, 0));
     }
 
-    get [zIndexProperty.native](): number {
+    [zIndexProperty.getDefault](): number {
         return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
     }
-    set [zIndexProperty.native](value: number) {
+    [zIndexProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
         // let nativeView = this.nativeView;
         // if (nativeView instanceof android.widget.Button) {
@@ -465,10 +465,10 @@ export class View extends ViewCommon {
         // }
     }
 
-    get [backgroundInternalProperty.native](): android.graphics.drawable.Drawable {
+    [backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
         return this.nativeView.getBackground();
     }
-    set [backgroundInternalProperty.native](value: android.graphics.drawable.Drawable | Background) {
+    [backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
         if (value instanceof android.graphics.drawable.Drawable) {
             this.nativeView.setBackground(value);
         } else {
@@ -476,19 +476,19 @@ export class View extends ViewCommon {
         }
     }
 
-    set [minWidthProperty.native](value: Length) {
+    [minWidthProperty.setNative](value: Length) {
         if (this.parent instanceof CustomLayoutView && this.parent.nativeView) {
             this.parent._setChildMinWidthNative(this);
         } else {
-            this._minWidthNative = this.minWidth;
+            this._setMinWidthNative(this.minWidth);
         }
     }
 
-    set [minHeightProperty.native](value: Length) {
+    [minHeightProperty.setNative](value: Length) {
         if (this.parent instanceof CustomLayoutView && this.parent.nativeView) {
             this.parent._setChildMinHeightNative(this);
         } else {
-            this._minHeightNative = this.minHeight;
+            this._setMinHeightNative(this.minHeight);
         }
     }
 }
@@ -532,11 +532,11 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     }
 
     public _setChildMinWidthNative(child: View): void {
-        child._minWidthNative = child.minWidth;
+        child._setMinWidthNative(child.minWidth);
     }
 
     public _setChildMinHeightNative(child: View): void {
-        child._minHeightNative = child.minHeight;
+        child._setMinHeightNative(child.minHeight);
     }
 
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
@@ -556,18 +556,19 @@ type NativeSetter = { (view: android.view.View, value: number): void };
 type NativeGetter = { (view: android.view.View): number };
 const percentNotSupported = (view: android.view.View, value: number) => { throw new Error("PercentLength is not supported."); };
 interface NativePercentLengthPropertyOptions {
-    key: string | symbol;
+    getter?: string | symbol;
+    setter: string | symbol;
     auto?: number;
-    getPixels: NativeGetter;
+    getPixels?: NativeGetter;
     setPixels: NativeSetter;
     setPercent?: NativeSetter
 }
 
 function createNativePercentLengthProperty(options: NativePercentLengthPropertyOptions) {
-    const { key, auto = 0 } = options;
+    const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
-    Object.defineProperty(View.prototype, key, {
-        get: function (this: View): PercentLength {
+    if (getter) {
+        View.prototype[getter] = function(this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -580,8 +581,10 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
             } else {
                 return { value, unit: "px" };
             }
-        },
-        set: function (this: View, length: PercentLength) {
+        }
+    }
+    if (setter) {
+        View.prototype[setter] = function(this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -602,39 +605,44 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
                 throw new Error(`Unsupported PercentLength ${length}`);
             }
         }
-    });
+    }
 }
 
 createNativePercentLengthProperty({
-    key: marginTopProperty.native,
+    getter: marginTopProperty.getDefault,
+    setter: marginTopProperty.setNative,
     get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginTop },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginTop },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginTopPercent }
 });
 
 createNativePercentLengthProperty({
-    key: marginRightProperty.native,
+    getter: marginRightProperty.getDefault,
+    setter: marginRightProperty.setNative,
     get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginRight },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginRight },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginRightPercent }
 });
 
 createNativePercentLengthProperty({
-    key: marginBottomProperty.native,
+    getter: marginBottomProperty.getDefault,
+    setter: marginBottomProperty.setNative,
     get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginBottom },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginBottom },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginBottomPercent }
 });
 
 createNativePercentLengthProperty({
-    key: marginLeftProperty.native,
+    getter: marginLeftProperty.getDefault,
+    setter: marginLeftProperty.setNative,
     get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginLeft },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginLeft },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginLeftPercent }
 });
 
 createNativePercentLengthProperty({
-    key: widthProperty.native,
+    getter: widthProperty.getDefault,
+    setter: widthProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
     get getPixels() { return org.nativescript.widgets.ViewHelper.getWidth },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setWidth },
@@ -642,7 +650,8 @@ createNativePercentLengthProperty({
 });
 
 createNativePercentLengthProperty({
-    key: heightProperty.native,
+    getter: heightProperty.getDefault,
+    setter: heightProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
     get getPixels() { return org.nativescript.widgets.ViewHelper.getHeight },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setHeight },
@@ -650,13 +659,11 @@ createNativePercentLengthProperty({
 });
 
 createNativePercentLengthProperty({
-    key: "_minWidthNative",
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMinWidth },
+    setter: "_setMinWidthNative",
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMinWidth }
 });
 
 createNativePercentLengthProperty({
-    key: "_minHeightNative",
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMinHeight },
+    setter: "_setMinHeightNative",
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMinHeight }
 });

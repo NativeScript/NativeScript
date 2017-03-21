@@ -48,17 +48,17 @@ export class Switch extends SwitchBase {
         return this._android;
     }
 
-    get [checkedProperty.native](): boolean {
+    [checkedProperty.getDefault](): boolean {
         return false;
     }
-    set [checkedProperty.native](value: boolean) {
+    [checkedProperty.setNative](value: boolean) {
         this._android.setChecked(value);
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         return -1;
     }
-    set [colorProperty.native](value: number | Color) {
+    [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
             this._android.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
@@ -66,10 +66,10 @@ export class Switch extends SwitchBase {
         }
     }
 
-    get [backgroundColorProperty.native](): number {
+    [backgroundColorProperty.getDefault](): number {
         return -1;
     }
-    set [backgroundColorProperty.native](value: number | Color) {
+    [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
             this._android.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
@@ -77,10 +77,10 @@ export class Switch extends SwitchBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): any {
+    [backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: any) {
+    [backgroundInternalProperty.setNative](value: any) {
         //
     }
 }

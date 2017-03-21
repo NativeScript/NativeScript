@@ -389,17 +389,17 @@ export class ListView extends ListViewBase {
         this._map.delete(cell);
     }
 
-    get [separatorColorProperty.native](): UIColor {
+    [separatorColorProperty.getDefault](): UIColor {
         return this._ios.separatorColor;
     }
-    set [separatorColorProperty.native](value: Color | UIColor) {
+    [separatorColorProperty.setNative](value: Color | UIColor) {
         this._ios.separatorColor = value instanceof Color ? value.ios : value;
     }
 
-    get [itemTemplatesProperty.native](): KeyedTemplate[] {
+    [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
         return null;
     }
-    set [itemTemplatesProperty.native](value: KeyedTemplate[]) {
+    [itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
         this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
         if (value) {
             for (let i = 0, length = value.length; i < length; i++) {

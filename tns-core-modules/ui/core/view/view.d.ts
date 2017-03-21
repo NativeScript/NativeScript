@@ -503,8 +503,8 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     _currentWidthMeasureSpec: number;
     _currentHeightMeasureSpec: number;
 
-    _minWidthNative: Length;
-    _minHeightNative: Length;
+    _setMinWidthNative(value: Length): void;
+    _setMinHeightNative(value: Length): void;
     //@endprivate
 
     /**

@@ -285,18 +285,18 @@ class TestView extends Layout {
         this.setMeasuredDimension(100, 100);
     }
 
-    get [customCssProperty.native](): string {
+    [customCssProperty.getDefault](): string {
         return "customCssPropertyDefaultValue";
     }
-    set [customCssProperty.native](value: string) {
+    [customCssProperty.setNative](value: string) {
         this.cssPropCounter++;
         this.cssPropNativeValue = value;
     }
 
-    get [customViewProperty.native](): string {
+    [customViewProperty.getDefault](): string {
         return "customViewPropertyDefaultValue";
     }
-    set [customViewProperty.native](value: string) {
+    [customViewProperty.setNative](value: string) {
         this.viewPropCounter++;
         this.viewPropNativeValue = value;
     }

@@ -12,10 +12,10 @@ global.moduleMerge(commonTests, exports);
 class MyGrid extends grid.GridLayout {
     public backgroundSetterCount: number = 0;
 
-    get [view.backgroundInternalProperty.native](): any {
+    [view.backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [view.backgroundInternalProperty.native](value: any) {
+    [view.backgroundInternalProperty.setNative](value: any) {
         this.backgroundSetterCount ++;
     }
 
