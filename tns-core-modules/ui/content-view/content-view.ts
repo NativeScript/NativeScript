@@ -69,19 +69,19 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
 
     // This method won't be called in Android because we use the native android layout.
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
+        const result = View.measureChild(this, this.layoutView, widthMeasureSpec, heightMeasureSpec);
 
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let measureWidth = Math.max(result.measuredWidth, this.effectiveMinWidth);
-        let measureHeight = Math.max(result.measuredHeight, this.effectiveMinHeight);
+        const measureWidth = Math.max(result.measuredWidth, this.effectiveMinWidth);
+        const measureHeight = Math.max(result.measuredHeight, this.effectiveMinHeight);
 
-        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }

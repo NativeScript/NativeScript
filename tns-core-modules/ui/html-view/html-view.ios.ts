@@ -29,7 +29,6 @@ export class HtmlView extends HtmlViewBase {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         var nativeView = this._nativeView;
         if (nativeView) {
-
             const width = layout.getMeasureSpecSize(widthMeasureSpec);
             const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
@@ -38,7 +37,7 @@ export class HtmlView extends HtmlViewBase {
 
             const desiredSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
 
-            const labelWidth = Math.min(desiredSize.width, width);
+            const labelWidth = widthMode === layout.AT_MOST ? Math.min(desiredSize.width, width) : desiredSize.width;
             const measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
             const measureHeight = Math.max(desiredSize.height, this.effectiveMinHeight);
 
