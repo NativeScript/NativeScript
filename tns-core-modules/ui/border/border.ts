@@ -14,21 +14,21 @@ export class Border extends ContentView implements BorderDefinition {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-        let horizontalBorderLength = this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
-        let verticalBorderLength = this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
+        const horizontalBorderLength = this.effectiveBorderLeftWidth + this.effectiveBorderRightWidth;
+        const verticalBorderLength = this.effectiveBorderTopWidth + this.effectiveBorderBottomWidth;
 
-        let result = View.measureChild(this, this.layoutView,
+        const result = View.measureChild(this, this.layoutView,
             layout.makeMeasureSpec(width - horizontalBorderLength, widthMode),
             layout.makeMeasureSpec(height - verticalBorderLength, heightMode));
 
-        let widthAndState = View.resolveSizeAndState(result.measuredWidth + horizontalBorderLength, width, widthMode, 0);
-        let heightAndState = View.resolveSizeAndState(result.measuredHeight + verticalBorderLength, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(result.measuredWidth + horizontalBorderLength, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(result.measuredHeight + verticalBorderLength, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }

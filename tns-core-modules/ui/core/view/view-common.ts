@@ -459,21 +459,21 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let result = size;
         switch (specMode) {
             case layout.UNSPECIFIED:
-                result = size;
+                result = Math.ceil(size);
                 break;
 
             case layout.AT_MOST:
                 if (specSize < size) {
-                    result = Math.round(specSize + 0.499) | layout.MEASURED_STATE_TOO_SMALL;
+                    result = Math.ceil(specSize) | layout.MEASURED_STATE_TOO_SMALL;
                 }
                 break;
 
             case layout.EXACTLY:
-                result = specSize;
+                result = Math.ceil(specSize);
                 break;
         }
 
-        return Math.round(result + 0.499) | (childMeasuredState & layout.MEASURED_STATE_MASK);
+        return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
     public static combineMeasuredStates(curState: number, newState): number {
