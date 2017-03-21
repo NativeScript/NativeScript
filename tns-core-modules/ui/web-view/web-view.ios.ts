@@ -109,17 +109,6 @@ export class WebView extends WebViewBase {
         this._ios.stopLoading();
     }
 
-    public _loadUrl(url: string) {
-        if (traceEnabled()) {
-            traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
-        }
-
-        if (this._ios.loading) {
-            this._ios.stopLoading();
-        }
-        this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(url)));
-    }
-
     public _loadFileOrResource(path: string, content: string) {
         var baseURL = NSURL.fileURLWithPath(NSString.stringWithString(path).stringByDeletingLastPathComponent);
         this._ios.loadHTMLStringBaseURL(content, baseURL);

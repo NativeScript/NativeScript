@@ -112,18 +112,6 @@ export class WebView extends WebViewBase {
         super._resetNativeView();
     }
 
-    public _loadUrl(url: string) {
-        if (!this._android) {
-            return;
-        }
-
-        if (traceEnabled()) {
-            traceWrite("WebView._loadUrl(" + url + ")", traceCategories.Debug);
-        }
-        this._android.stopLoading();
-        this._android.loadUrl(url);
-    }
-
     public _loadFileOrResource(path: string, content: string) {
         if (!this._android) {
             return;
