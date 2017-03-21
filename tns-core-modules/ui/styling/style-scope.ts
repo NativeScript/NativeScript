@@ -122,7 +122,7 @@ export class CssState {
         });
 
         let ruleAnimations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
-        if (ruleAnimations && view.isLoaded && view.nativeView !== undefined) {
+        if (ruleAnimations) {
             ensureKeyframeAnimationModule();
             for (let animationInfo of ruleAnimations) {
                 let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
