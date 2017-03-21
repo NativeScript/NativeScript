@@ -46,6 +46,9 @@ export class ListPicker extends ListPickerBase {
     }
     set [itemsProperty.native](value: any[] | ItemsSource) {
         this.ios.reloadAllComponents();
+
+        // Coerce selected index after we have set items to native view.
+        selectedIndexProperty.coerce(this);
     }
 
     get [backgroundColorProperty.native](): UIColor {

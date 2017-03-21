@@ -137,6 +137,9 @@ export class ListPicker extends ListPickerBase {
         let maxValue = value && value.length > 0 ? value.length - 1 : 0;
         this.android.setMaxValue(maxValue);
         this._fixNumberPickerRendering();
+
+        // Coerce selected index after we have set items to native view.
+        selectedIndexProperty.coerce(this);
     }
 
     get [colorProperty.native](): { wheelColor: number, textColor: number } {
