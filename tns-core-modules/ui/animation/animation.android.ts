@@ -35,7 +35,7 @@ propertyKeys[Properties.rotate] = Symbol(keyPrefix + Properties.rotate);
 propertyKeys[Properties.scale] = Symbol(keyPrefix + Properties.scale);
 propertyKeys[Properties.translate] = Symbol(keyPrefix + Properties.translate);
 
-export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator): android.view.animation.Interpolator {
+export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve | android.view.animation.Interpolator | android.view.animation.LinearInterpolator): android.view.animation.Interpolator {
     switch (curve) {
         case "easeIn":
             if (traceEnabled()) {
@@ -70,11 +70,11 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             }
             if (curve instanceof CubicBezierAnimationCurve) {
                 return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
-            } 
-            else if (curve instanceof android.view.animation.Interpolator) {
+            } else if (curve instanceof android.view.animation.Interpolator) {
                 return curve;
-            }
-            else {
+            } else if ((<any>curve) instanceof android.view.animation.LinearInterpolator) {
+                return <android.view.animation.Interpolator><any>curve;
+            } else {
                 throw new Error(`Invalid animation curve: ${curve}`);
             }
     }
