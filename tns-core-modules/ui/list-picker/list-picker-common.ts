@@ -46,7 +46,6 @@ export const itemsProperty = new Property<ListPickerBase, any[] | ItemsSource>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         let getItem = newValue && (<ItemsSource>newValue).getItem;
         target.isItemsSource = typeof getItem === "function";
-        selectedIndexProperty.coerce(target);
     }
 });
 itemsProperty.register(ListPickerBase);
