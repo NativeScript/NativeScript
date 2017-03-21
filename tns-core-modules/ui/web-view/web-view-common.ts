@@ -21,15 +21,9 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
         "other"
     ];
 
-    public _suspendLoading: boolean;
-
     public src: string;
 
     public _onLoadFinished(url: string, error?: string) {
-
-        this._suspendLoading = true;
-        this._suspendLoading = false;
-
         let args = <LoadEventData>{
             eventName: WebViewBase.loadFinishedEvent,
             object: this,
@@ -52,8 +46,6 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
 
         this.notify(args);
     }
-
-    abstract _loadUrl(url: string): void;
 
     abstract _loadFileOrResource(path: string, content: string): void;
 
@@ -81,10 +73,6 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
         return "";
     }
     set [srcProperty.native](src: string) {
-        if (this._suspendLoading) {
-            return;
-        }
-
         this.stopLoading();
 
         if (isFileOrResourcePath(src)) {
@@ -102,6 +90,13 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
         } else {
             this._loadData(src);
         }
+    }
+
+    get url() : string {
+        throw new Error("Property url of WebView is deprecated. Use src istead");
+    }
+    set url(value:string){
+        throw new Error("Property url of WebView is deprecated. Use src istead")
     }
 }
 
