@@ -145,14 +145,14 @@ function _flipImage(originalImage: UIImage): UIImage {
     return flippedImage;
 }
 
-function cssValueToDevicePixels(source: string, totalPx: number): number {
+function cssValueToDeviceIndependentPixels(source: string, total: number): number {
     source = source.trim();
     if (source.indexOf("px") !== -1) {
-        return parseFloat(source.replace("px", ""));
-    } else if (source.indexOf("%") !== -1 && totalPx > 0) {
-        return (parseFloat(source.replace("%", "")) / 100) * totalPx;
+        return layout.toDeviceIndependentPixels(parseFloat(source.replace("px", "")));
+    } else if (source.indexOf("%") !== -1 && total > 0) {
+        return (parseFloat(source.replace("%", "")) / 100) * total;
     } else {
-        return layout.toDevicePixels(parseFloat(source));
+        return parseFloat(source);
     }
 }
 
@@ -289,10 +289,10 @@ function drawClipPath(nativeView: UIView, background: Background) {
     const layerSize = layerBounds.size;
 
     const bounds = {
-        left: layout.toDevicePixels(layerOrigin.x),
-        top: layout.toDevicePixels(layerOrigin.y),
-        bottom: layout.toDevicePixels(layerSize.height),
-        right: layout.toDevicePixels(layerSize.width)
+        left: layerOrigin.x,
+        top: layerOrigin.y,
+        bottom: layerSize.height,
+        right: layerSize.width
     };
 
     if (bounds.right === 0 || bounds.bottom === 0) {
@@ -353,10 +353,10 @@ function drawClipPath(nativeView: UIView, background: Background) {
 
 function rectPath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
-    const top = cssValueToDevicePixels(arr[0], bounds.top);
-    const left = cssValueToDevicePixels(arr[1], bounds.left);
-    const bottom = cssValueToDevicePixels(arr[2], bounds.bottom);
-    const right = cssValueToDevicePixels(arr[3], bounds.right);
+    const top = cssValueToDeviceIndependentPixels(arr[0], bounds.top);
+    const left = cssValueToDeviceIndependentPixels(arr[1], bounds.left);
+    const bottom = cssValueToDeviceIndependentPixels(arr[2], bounds.bottom);
+    const right = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
 
     return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }
@@ -387,19 +387,19 @@ function insetPath(value: string, bounds: Rect): UIBezierPath {
         leftString = arr[3];
     }
 
-    const top = cssValueToDevicePixels(topString, bounds.bottom);
-    const right = cssValueToDevicePixels("100%", bounds.right) - cssValueToDevicePixels(rightString, bounds.right);
-    const bottom = cssValueToDevicePixels("100%", bounds.bottom) - cssValueToDevicePixels(bottomString, bounds.bottom);
-    const left = cssValueToDevicePixels(leftString, bounds.right);
+    const top = cssValueToDeviceIndependentPixels(topString, bounds.bottom);
+    const right = cssValueToDeviceIndependentPixels("100%", bounds.right) - cssValueToDeviceIndependentPixels(rightString, bounds.right);
+    const bottom = cssValueToDeviceIndependentPixels("100%", bounds.bottom) - cssValueToDeviceIndependentPixels(bottomString, bounds.bottom);
+    const left = cssValueToDeviceIndependentPixels(leftString, bounds.right);
 
     return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }
 
 function circlePath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
-    const radius = cssValueToDevicePixels(arr[0], (bounds.right > bounds.bottom ? bounds.bottom : bounds.right) / 2);
-    const y = cssValueToDevicePixels(arr[2], bounds.bottom);
-    const x = cssValueToDevicePixels(arr[3], bounds.right);
+    const radius = cssValueToDeviceIndependentPixels(arr[0], (bounds.right > bounds.bottom ? bounds.bottom : bounds.right) / 2);
+    const y = cssValueToDeviceIndependentPixels(arr[2], bounds.bottom);
+    const x = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
 
     return UIBezierPath.bezierPathWithArcCenterRadiusStartAngleEndAngleClockwise(CGPointMake(x, y), radius, 0, 360, true).CGPath;
 }
@@ -407,10 +407,10 @@ function circlePath(value: string, bounds: Rect): UIBezierPath {
 function ellipsePath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
 
-    const rX = cssValueToDevicePixels(arr[0], bounds.right);
-    const rY = cssValueToDevicePixels(arr[1], bounds.bottom);
-    const cX = cssValueToDevicePixels(arr[3], bounds.right);
-    const cY = cssValueToDevicePixels(arr[4], bounds.bottom);
+    const rX = cssValueToDeviceIndependentPixels(arr[0], bounds.right);
+    const rY = cssValueToDeviceIndependentPixels(arr[1], bounds.bottom);
+    const cX = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
+    const cY = cssValueToDeviceIndependentPixels(arr[4], bounds.bottom);
 
     const left = cX - rX;
     const top = cY - rY;
@@ -428,8 +428,8 @@ function polygonPath(value: string, bounds: Rect): UIBezierPath {
     for (let i = 0; i < arr.length; i++) {
         const xy = arr[i].trim().split(/[\s]+/);
         const point: Point = {
-            x: cssValueToDevicePixels(xy[0], bounds.right),
-            y: cssValueToDevicePixels(xy[1], bounds.bottom)
+            x: cssValueToDeviceIndependentPixels(xy[0], bounds.right),
+            y: cssValueToDeviceIndependentPixels(xy[1], bounds.bottom)
         };
 
         if (!firstPoint) {
