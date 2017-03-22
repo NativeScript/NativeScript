@@ -44,66 +44,66 @@ export class TimePicker extends TimePickerBase {
         return this._ios;
     }
 
-    get [timeProperty.native](): Date {
+    [timeProperty.getDefault](): Date {
         return this.nativeView.date;
     }
-    set [timeProperty.native](value: Date) {
+    [timeProperty.setNative](value: Date) {
         this.nativeView.date = getDate(this.hour, this.minute);
     }
 
-    get [minuteProperty.native](): number {
+    [minuteProperty.getDefault](): number {
         return this.nativeView.date.getMinutes();
     }
-    set [minuteProperty.native](value: number) {
+    [minuteProperty.setNative](value: number) {
         this.nativeView.date = getDate(this.hour, value);
     }
 
-    get [hourProperty.native](): number {
+    [hourProperty.getDefault](): number {
         return this.nativeView.date.getHours();
     }
-    set [hourProperty.native](value: number) {
+    [hourProperty.setNative](value: number) {
         this.nativeView.date = getDate(value, this.minute);
     }
 
-    get [minHourProperty.native](): number {
+    [minHourProperty.getDefault](): number {
         return this.nativeView.minimumDate ? this.nativeView.minimumDate.getHours() : 0;
     }
-    set [minHourProperty.native](value: number) {
+    [minHourProperty.setNative](value: number) {
         this.nativeView.minimumDate = getDate(value, this.minute);
     }
 
-    get [maxHourProperty.native](): number {
+    [maxHourProperty.getDefault](): number {
         return this.nativeView.maximumDate ? this.nativeView.maximumDate.getHours() : 24;
     }
-    set [maxHourProperty.native](value: number) {
+    [maxHourProperty.setNative](value: number) {
         this.nativeView.maximumDate = getDate(value, this.minute);
     }
 
-    get [minMinuteProperty.native](): number {
+    [minMinuteProperty.getDefault](): number {
         return this.nativeView.minimumDate ? this.nativeView.minimumDate.getMinutes() : 0;
     }
-    set [minMinuteProperty.native](value: number) {
+    [minMinuteProperty.setNative](value: number) {
         this.nativeView.minimumDate = getDate(this.hour, value);
     }
 
-    get [maxMinuteProperty.native](): number {
+    [maxMinuteProperty.getDefault](): number {
         return this.nativeView.maximumDate ? this.nativeView.maximumDate.getMinutes() : 60;
     }
-    set [maxMinuteProperty.native](value: number) {
+    [maxMinuteProperty.setNative](value: number) {
         this.nativeView.maximumDate = getDate(this.hour, value);
     }
 
-    get [timeProperty.native](): number {
+    [timeProperty.getDefault](): number {
         return this.nativeView.minuteInterval;
     }
-    set [timeProperty.native](value: number) {
+    [timeProperty.setNative](value: number) {
         this.nativeView.minuteInterval = value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this.nativeView.valueForKey("textColor");
     }
-    set [colorProperty.native](value: Color | UIColor) {
+    [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
         this.nativeView.setValueForKey(color, "textColor");
     }

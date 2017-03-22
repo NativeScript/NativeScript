@@ -36,17 +36,17 @@ export class SegmentedBar extends SegmentedBarBase {
         return this._ios;
     }
 
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         this._ios.selectedSegmentIndex = value;
     }
 
-    get [itemsProperty.native](): SegmentedBarItem[] {
+    [itemsProperty.getDefault](): SegmentedBarItem[] {
         return null;
     }
-    set [itemsProperty.native](value: SegmentedBarItem[]) {
+    [itemsProperty.setNative](value: SegmentedBarItem[]) {
         const segmentedControl = this._ios;
         segmentedControl.removeAllSegments();
         const newItems = value;
@@ -60,18 +60,18 @@ export class SegmentedBar extends SegmentedBarBase {
         }
     }
 
-    get [selectedBackgroundColorProperty.native](): UIColor {
+    [selectedBackgroundColorProperty.getDefault](): UIColor {
         return this._ios.tintColor;
     }
-    set [selectedBackgroundColorProperty.native](value: UIColor | Color) {
+    [selectedBackgroundColorProperty.setNative](value: UIColor | Color) {
         let color = value instanceof Color ? value.ios : value;
         this._ios.tintColor = color;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return null;
     }
-    set [colorProperty.native](value: Color | UIColor) {
+    [colorProperty.setNative](value: Color | UIColor) {
         let color = value instanceof Color ? value.ios : value;
         let bar = this._ios;
         let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);
@@ -80,10 +80,10 @@ export class SegmentedBar extends SegmentedBarBase {
         bar.setTitleTextAttributesForState(attrs, UIControlState.Normal);
     }
 
-    get [fontInternalProperty.native](): Font {
+    [fontInternalProperty.getDefault](): Font {
         return null
     }
-    set [fontInternalProperty.native](value: Font) {
+    [fontInternalProperty.setNative](value: Font) {
         let font: UIFont = value ? value.getUIFont(UIFont.systemFontOfSize(ios.getter(UIFont, UIFont.labelFontSize))) : null;
         let bar = this._ios;
         let currentAttrs = bar.titleTextAttributesForState(UIControlState.Normal);

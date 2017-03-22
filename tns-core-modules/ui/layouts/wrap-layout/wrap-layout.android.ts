@@ -18,24 +18,24 @@ export class WrapLayout extends WrapLayoutBase {
          return layout;
     }
 
-    get [orientationProperty.native](): "horizontal" | "vertical" {
+    [orientationProperty.getDefault](): "horizontal" | "vertical" {
         return "vertical";
     }
-    set [orientationProperty.native](value: "horizontal" | "vertical") {
+    [orientationProperty.setNative](value: "horizontal" | "vertical") {
         this._layout.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
     }
 
-    get [itemWidthProperty.native](): Length {
+    [itemWidthProperty.getDefault](): Length {
         return "auto";
     }
-    set [itemWidthProperty.native](value: Length) {
+    [itemWidthProperty.setNative](value: Length) {
         this._layout.setItemWidth(Length.toDevicePixels(value, -1));
     }
 
-    get [itemHeightProperty.native](): Length {
+    [itemHeightProperty.getDefault](): Length {
         return "auto";
     }
-    set [itemHeightProperty.native](value: Length) {
+    [itemHeightProperty.setNative](value: Length) {
         this._layout.setItemHeight(Length.toDevicePixels(value, -1));
     }
 }

@@ -77,25 +77,25 @@ export class TimePicker extends TimePickerBase {
         this._setNativeValueSilently(this.hour, this.minute);
     }
 
-    get [timeProperty.native](): Date {
+    [timeProperty.getDefault](): Date {
         let nativeView = this._android;
         return new Date(0, 0, 0, nativeView.getCurrentHour().intValue(), nativeView.getCurrentMinute().intValue());
     }
-    set [timeProperty.native](value: Date) {
+    [timeProperty.setNative](value: Date) {
         this._setNativeValueSilently(this.hour, this.minute);
     }
 
-    get [minuteProperty.native](): number {
+    [minuteProperty.getDefault](): number {
         return this._android.getCurrentMinute().intValue();
     }
-    set [minuteProperty.native](value: number) {
+    [minuteProperty.setNative](value: number) {
         this._setNativeValueSilently(this.hour, value);
     }
 
-    get [hourProperty.native](): number {
+    [hourProperty.getDefault](): number {
         return this._android.getCurrentHour().intValue()
     }
-    set [hourProperty.native](value: number) {
+    [hourProperty.setNative](value: number) {
         this._setNativeValueSilently(value, this.minute);
     }
 }

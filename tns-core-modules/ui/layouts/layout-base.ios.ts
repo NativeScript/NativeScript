@@ -4,10 +4,10 @@ export * from "./layout-base-common";
 
 export class LayoutBase extends LayoutBaseCommon {
     
-    get [clipToBoundsProperty.native](): boolean {
+    [clipToBoundsProperty.getDefault](): boolean {
         return false;
     }
-    set [clipToBoundsProperty.native](value: boolean) {
+    [clipToBoundsProperty.setNative](value: boolean) {
         this._setNativeClipToBounds();
     }
 

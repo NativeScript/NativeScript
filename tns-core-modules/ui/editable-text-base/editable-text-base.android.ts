@@ -192,15 +192,15 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return this._android.getText();
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
         this._android.setText(text, android.widget.TextView.BufferType.EDITABLE);
     }
 
-    get [keyboardTypeProperty.native](): "datetime" | "phone" | "number" | "url" | "email" | string {
+    [keyboardTypeProperty.getDefault](): "datetime" | "phone" | "number" | "url" | "email" | string {
         let inputType = this._android.getInputType();
         switch (inputType) {
             case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
@@ -222,7 +222,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return inputType.toString();
         }
     }
-    set [keyboardTypeProperty.native](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
         let newInputType;
         switch (value) {
             case "datetime":
@@ -258,7 +258,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(newInputType);
     }
 
-    get [returnKeyTypeProperty.native](): "done" | "next" | "go" | "search" | "send" | string {
+    [returnKeyTypeProperty.getDefault](): "done" | "next" | "go" | "search" | "send" | string {
         let ime = this._android.getImeOptions();
         switch (ime) {
             case android.view.inputmethod.EditorInfo.IME_ACTION_DONE:
@@ -280,7 +280,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return ime.toString();
         }
     }
-    set [returnKeyTypeProperty.native](value: "done" | "next" | "go" | "search" | "send" | string) {
+    [returnKeyTypeProperty.setNative](value: "done" | "next" | "go" | "search" | "send" | string) {
         let newImeOptions;
         switch (value) {
             case "done":
@@ -311,10 +311,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._android.setImeOptions(newImeOptions);
     }
 
-    get [editableProperty.native](): boolean {
+    [editableProperty.getDefault](): boolean {
         return !!this._android.getKeyListener();
     }
-    set [editableProperty.native](value: boolean) {
+    [editableProperty.setNative](value: boolean) {
         if (value) {
             this._android.setKeyListener(this._keyListenerCache);
         }
@@ -323,7 +323,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    get [autocapitalizationTypeProperty.native](): "none" | "words" | "sentences" | "allCharacters" | string {
+    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allCharacters" | string {
         let inputType = this._android.getInputType();
         if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
             return "words";
@@ -335,7 +335,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             return inputType.toString();
         }
     }
-    set [autocapitalizationTypeProperty.native](value: string) {
+    [autocapitalizationTypeProperty.setNative](value: string) {
         let inputType = this._android.getInputType();
         inputType = inputType & ~28672; //28672 (0x00070000) 13,14,15bits (111 0000 0000 0000)
 
@@ -366,7 +366,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(inputType);
     }
 
-    get [autocorrectProperty.native](): boolean {
+    [autocorrectProperty.getDefault](): boolean {
         let autocorrect = this._android.getInputType();
         if ((autocorrect & android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) === android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) {
             return true;
@@ -374,7 +374,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
         return false;
     }
-    set [autocorrectProperty.native](value: boolean) {
+    [autocorrectProperty.setNative](value: boolean) {
         let inputType = this._android.getInputType();
         switch (value) {
             case true:
@@ -395,17 +395,17 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(inputType);
     }
 
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return this._android.getHint();
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         this._android.setHint(value + '');
     }
 
-    get [placeholderColorProperty.native](): android.content.res.ColorStateList {
+    [placeholderColorProperty.getDefault](): android.content.res.ColorStateList {
         return this._android.getHintTextColors();
     }
-    set [placeholderColorProperty.native](value: Color | android.content.res.ColorStateList) {
+    [placeholderColorProperty.setNative](value: Color | android.content.res.ColorStateList) {
         if (value instanceof Color) {
             this._android.setHintTextColor(value.android);
         } else {

@@ -306,10 +306,10 @@ export class ActionBar extends ActionBarBase {
         return (<UINavigationController>page.frame.ios.controller).navigationBar;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return null;
     }
-    set [colorProperty.native](color: Color) {
+    [colorProperty.setNative](color: Color) {
         const navBar = this.navBar;
         if (color) {
             navBar.tintColor = color.ios;
@@ -320,12 +320,12 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         // This getter is never called.
         // CssAnimationProperty use default value form their constructor.
         return null;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         let navBar = this.navBar;
         if (navBar) {
             let color = value instanceof Color ? value.ios : value;
@@ -333,9 +333,9 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
+    [backgroundInternalProperty.getDefault](): UIColor {
         return null;
     }
-    set [backgroundInternalProperty.native](value: UIColor) { // tslint:disable-line
+    [backgroundInternalProperty.setNative](value: UIColor) { // tslint:disable-line
     }
 }

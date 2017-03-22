@@ -32,36 +32,36 @@ export class ListPicker extends ListPickerBase {
         return this._ios;
     }
 
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         if (value >= 0) {
             this.ios.selectRowInComponentAnimated(value, 0, false);
         }
     }
 
-    get [itemsProperty.native](): any[] {
+    [itemsProperty.getDefault](): any[] {
         return null;
     }
-    set [itemsProperty.native](value: any[] | ItemsSource) {
+    [itemsProperty.setNative](value: any[] | ItemsSource) {
         this.ios.reloadAllComponents();
 
         // Coerce selected index after we have set items to native view.
         selectedIndexProperty.coerce(this);
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         return this._ios.backgroundColor;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         this._ios.backgroundColor = value instanceof Color ? value.ios : value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this._ios.tintColor;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         this._ios.tintColor = value instanceof Color ? value.ios : value;
     }
 }

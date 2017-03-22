@@ -259,7 +259,7 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[opacityProperty.keyframe] = originalValue1;
                     }
                     if (propertyAnimation.target.nativeView) {
-                        propertyAnimation.target[opacityProperty.native] = propertyAnimation.target.style.opacity;
+                        propertyAnimation.target[opacityProperty.setNative](propertyAnimation.target.style.opacity);
                     }
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "alpha", nativeArray));
@@ -287,8 +287,8 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[backgroundColorProperty.name] = originalValue1;
                     } else {
                         propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
-                        if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[backgroundColorProperty.native] = propertyAnimation.target.style.backgroundColor;
+                        if (propertyAnimation.target.nativeView && propertyAnimation.target[backgroundColorProperty.setNative]) {
+                            propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
                         }
                     }
                 }));
@@ -324,8 +324,8 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[translateXProperty.keyframe] = originalValue1;
                         propertyAnimation.target.style[translateYProperty.keyframe] = originalValue2;
                         if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[translateXProperty.native] = propertyAnimation.target.style.translateX;
-                            propertyAnimation.target[translateYProperty.native] = propertyAnimation.target.style.translateY;
+                            propertyAnimation.target[translateXProperty.setNative](propertyAnimation.target.style.translateX);
+                            propertyAnimation.target[translateYProperty.setNative](propertyAnimation.target.style.translateY);
                         }
                     }
                 }));
@@ -365,8 +365,8 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[scaleXProperty.keyframe] = originalValue1;
                         propertyAnimation.target.style[scaleYProperty.keyframe] = originalValue2;
                         if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[scaleXProperty.native] = propertyAnimation.target.style.scaleX;
-                            propertyAnimation.target[scaleYProperty.native] = propertyAnimation.target.style.scaleY;
+                            propertyAnimation.target[scaleXProperty.setNative](propertyAnimation.target.style.scaleX);
+                            propertyAnimation.target[scaleYProperty.setNative](propertyAnimation.target.style.scaleY);
                         }
                     }
                 }));
@@ -390,7 +390,7 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
                         if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[rotateProperty.native] = propertyAnimation.target.style.rotate;
+                            propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
                         }
                     }
                 }));

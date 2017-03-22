@@ -121,19 +121,19 @@ export class ListPicker extends ListPickerBase {
         this._android.invalidate();
     }
 
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         if (value >= 0) {
             this.android.setValue(value);
         }
     }
 
-    get [itemsProperty.native](): any[] {
+    [itemsProperty.getDefault](): any[] {
         return null;
     }
-    set [itemsProperty.native](value: any[] | ItemsSource) {
+    [itemsProperty.setNative](value: any[] | ItemsSource) {
         let maxValue = value && value.length > 0 ? value.length - 1 : 0;
         this.android.setMaxValue(maxValue);
         this._fixNumberPickerRendering();
@@ -142,13 +142,13 @@ export class ListPicker extends ListPickerBase {
         selectedIndexProperty.coerce(this);
     }
 
-    get [colorProperty.native](): { wheelColor: number, textColor: number } {
+    [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
         return {
             wheelColor: this._selectorWheelPaint.getColor(),
             textColor: this._editText ? this._editText.getTextColors().getDefaultColor() : -1
         }
     }
-    set [colorProperty.native](value: { wheelColor: number, textColor: number } | Color) {
+    [colorProperty.setNative](value: { wheelColor: number, textColor: number } | Color) {
         let color: number;
         let wheelColor: number;
         if (value instanceof Color) {

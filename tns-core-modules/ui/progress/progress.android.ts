@@ -23,24 +23,24 @@ export class Progress extends ProgressBase {
         return this._android;
     }
 
-    get [valueProperty.native](): number {
+    [valueProperty.getDefault](): number {
         return 0;
     }
-    set [valueProperty.native](value: number) {
+    [valueProperty.setNative](value: number) {
         this._android.setProgress(value);
     }
 
-    get [maxValueProperty.native](): number {
+    [maxValueProperty.getDefault](): number {
         return 100;
     }
-    set [maxValueProperty.native](value: number) {
+    [maxValueProperty.setNative](value: number) {
         this._android.setMax(value);
     }
 
-    get [colorProperty.native](): android.graphics.drawable.Drawable {
+    [colorProperty.getDefault](): android.graphics.drawable.Drawable {
         return null;
     }
-    set [colorProperty.native](value: Color) {
+    [colorProperty.setNative](value: Color) {
         let progressDrawable = this._android.getProgressDrawable();
         if (!progressDrawable) {
             return;
@@ -53,10 +53,10 @@ export class Progress extends ProgressBase {
         }
     }
 
-    get [backgroundColorProperty.native](): number {
+    [backgroundColorProperty.getDefault](): number {
         return null;
     }
-    set [backgroundColorProperty.native](value: Color) {
+    [backgroundColorProperty.setNative](value: Color) {
         let progressDrawable = this._android.getProgressDrawable();
         if (!progressDrawable) {
             return;
@@ -74,10 +74,10 @@ export class Progress extends ProgressBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): number {
+    [backgroundInternalProperty.getDefault](): number {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Color) {
+    [backgroundInternalProperty.setNative](value: Color) {
         //
     }
 }

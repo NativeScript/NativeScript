@@ -62,31 +62,31 @@ export class Switch extends SwitchBase {
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    get [checkedProperty.native](): boolean {
+    [checkedProperty.getDefault](): boolean {
         return false;
     }
-    set [checkedProperty.native](value: boolean) {
+    [checkedProperty.setNative](value: boolean) {
         this._ios.on = value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this._ios.thumbTintColor;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         this._ios.thumbTintColor = value instanceof Color ? value.ios : value;
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         return this._ios.onTintColor;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         this._ios.onTintColor = value instanceof Color ? value.ios : value;
     }
 
-    get [backgroundInternalProperty.native](): any {
+    [backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: any) {
+    [backgroundInternalProperty.setNative](value: any) {
         //
     }
 }

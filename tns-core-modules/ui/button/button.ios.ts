@@ -46,10 +46,10 @@ export class Button extends ButtonBase {
         }
     }
 
-    get [whiteSpaceProperty.native](): WhiteSpace {
+    [whiteSpaceProperty.getDefault](): WhiteSpace {
         return WhiteSpace.NO_WRAP;
     }
-    set [whiteSpaceProperty.native](value: WhiteSpace) {
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
         const nativeView = this.nativeView.titleLabel;
         switch (value) {
             case WhiteSpace.NORMAL:
@@ -65,106 +65,106 @@ export class Button extends ButtonBase {
         }
     }
 
-    get [borderTopWidthProperty.native](): Length {
+    [borderTopWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.top,
             unit: "px"
         };
     }
-    set [borderTopWidthProperty.native](value: Length) {
+    [borderTopWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
         this.nativeView.contentEdgeInsets = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [borderRightWidthProperty.native](): Length {
+    [borderRightWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.right,
             unit: "px"
         };
     }
-    set [borderRightWidthProperty.native](value: Length) {
+    [borderRightWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
-    get [borderBottomWidthProperty.native](): Length {
+    [borderBottomWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.bottom,
             unit: "px"
         };
     }
-    set [borderBottomWidthProperty.native](value: Length) {
+    [borderBottomWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
-    get [borderLeftWidthProperty.native](): Length {
+    [borderLeftWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.left,
             unit: "px"
         };
     }
-    set [borderLeftWidthProperty.native](value: Length) {
+    [borderLeftWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [paddingTopProperty.native](): Length {
+    [paddingTopProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.top,
             unit: "px"
         };
     }
-    set [paddingTopProperty.native](value: Length) {
+    [paddingTopProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
         this.nativeView.contentEdgeInsets = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [paddingRightProperty.native](): Length {
+    [paddingRightProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.right,
             unit: "px"
         };
     }
-    set [paddingRightProperty.native](value: Length) {
+    [paddingRightProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
-    get [paddingBottomProperty.native](): Length {
+    [paddingBottomProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.bottom,
             unit: "px"
         };
     }
-    set [paddingBottomProperty.native](value: Length) {
+    [paddingBottomProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
-    get [paddingLeftProperty.native](): Length {
+    [paddingLeftProperty.getDefault](): Length {
         return {
             value: this.nativeView.contentEdgeInsets.left,
             unit: "px"
         };
     }
-    set [paddingLeftProperty.native](value: Length) {
+    [paddingLeftProperty.setNative](value: Length) {
         let inset = this.nativeView.contentEdgeInsets;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [textAlignmentProperty.native](): TextAlignment {
+    [textAlignmentProperty.getDefault](): TextAlignment {
         return Button.nativeToJsTextAlignment[this.nativeView.contentHorizontalAlignment];
     }
-    set [textAlignmentProperty.native](value: TextAlignment) {
+    [textAlignmentProperty.setNative](value: TextAlignment) {
         this.nativeView.contentHorizontalAlignment = Button.jsToNativeTextAlignment[value];
     }
 

@@ -44,7 +44,8 @@ export interface CssAnimationPropertyOptions<T, U> {
 export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
     constructor(options: PropertyOptions<T, U>);
 
-    public readonly native: symbol;
+    public readonly getDefault: symbol;
+    public readonly setNative: symbol;
     public readonly defaultValue: U;
     public register(cls: { prototype: T }): void;
     public nativeValueChange(T, U): void;
@@ -64,7 +65,8 @@ export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
 export class CssProperty<T extends Style, U> {
     constructor(options: CssPropertyOptions<T, U>);
 
-    public readonly native: symbol;
+    public readonly getDefault: symbol;
+    public readonly setNative: symbol;
     public readonly name: string;
     public readonly cssName: string;
     public readonly defaultValue: U;
@@ -81,7 +83,6 @@ export class ShorthandProperty<T extends Style, P> {
 
     public readonly name: string;
     public readonly cssName: string;
-    public readonly native: symbol;
 
     public register(cls: { prototype: T }): void;
 }
@@ -89,11 +90,16 @@ export class ShorthandProperty<T extends Style, P> {
 export class CssAnimationProperty<T extends Style, U> {
     constructor(options: CssAnimationPropertyOptions<T, U>);
 
+    public readonly getDefault: symbol;
+    public readonly setNative: symbol;
+
     public readonly name: string;
     public readonly cssName: string;
     public readonly native: symbol;
 
     readonly keyframe: string;
+
+    public readonly defaultValue: U;
 
     public register(cls: { prototype: T }): void;
     public isSet(instance: T): boolean;

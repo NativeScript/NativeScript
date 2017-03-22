@@ -12,7 +12,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.resignFirstResponder();
     }
 
-    get [keyboardTypeProperty.native](): "datetime"| "phone" | "number" | "url" | "email" | string {
+    [keyboardTypeProperty.getDefault](): "datetime"| "phone" | "number" | "url" | "email" | string {
         let keyboardType = this.nativeView.keyboardType;
         switch (keyboardType) {
             case UIKeyboardType.NumbersAndPunctuation:
@@ -31,7 +31,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return keyboardType.toString();
         }
     }
-    set [keyboardTypeProperty.native](value: "datetime"| "phone" | "number" | "url" | "email" | string) {
+    [keyboardTypeProperty.setNative](value: "datetime"| "phone" | "number" | "url" | "email" | string) {
         let newKeyboardType: UIKeyboardType;
         switch (value) {
             case "datetime":
@@ -67,7 +67,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.keyboardType = newKeyboardType;
     }
 
-    get [returnKeyTypeProperty.native](): "done" | "next" | "go" | "search" | "send" | string {
+    [returnKeyTypeProperty.getDefault](): "done" | "next" | "go" | "search" | "send" | string {
         let returnKeyType = this.nativeView.returnKeyType;
         switch (returnKeyType) {
             case UIReturnKeyType.Done:
@@ -89,7 +89,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return returnKeyType.toString();
         }
     }
-    set [returnKeyTypeProperty.native](value: "done" | "next" | "go" | "search" | "send" | string) {
+    [returnKeyTypeProperty.setNative](value: "done" | "next" | "go" | "search" | "send" | string) {
         let newValue;
         switch (value) {
             case "done":
@@ -120,7 +120,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.returnKeyType = newValue;
     }
 
-    get [autocapitalizationTypeProperty.native](): "none" | "words" | "sentences" | "allCharacters" {
+    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allCharacters" {
         let autocapitalizationType = this.nativeView.autocapitalizationType;
         switch (autocapitalizationType) {
             case UITextAutocapitalizationType.None:
@@ -139,7 +139,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 throw new Error("Invalid autocapitalizationType value:" + autocapitalizationType);
         }
     }
-    set [autocapitalizationTypeProperty.native](value: "none" | "words" | "sentences" | "allCharacters") {
+    [autocapitalizationTypeProperty.setNative](value: "none" | "words" | "sentences" | "allCharacters") {
         let newValue: UITextAutocapitalizationType;
         switch (value) {
             case "none":
@@ -162,7 +162,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.autocapitalizationType = newValue;
     }
 
-    get [autocorrectProperty.native](): boolean | number {
+    [autocorrectProperty.getDefault](): boolean | number {
         let autocorrectionType = this.nativeView.autocorrectionType;
         switch (autocorrectionType) {
             case UITextAutocorrectionType.Yes:
@@ -173,7 +173,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return autocorrectionType;
         }
     }
-    set [autocorrectProperty.native](value: boolean | number) {
+    [autocorrectProperty.setNative](value: boolean | number) {
         let newValue: UITextAutocorrectionType;
         if (typeof value === "number") {
             newValue = UITextAutocorrectionType.Default;

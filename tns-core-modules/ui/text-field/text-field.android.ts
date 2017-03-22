@@ -15,10 +15,10 @@ export class TextField extends TextFieldBase {
         this.notify({ eventName: TextField.returnPressEvent, object: this })
     }
 
-    get [secureProperty.native](): boolean {
+    [secureProperty.getDefault](): boolean {
         return false;
     }
-    set [secureProperty.native](value: boolean) {
+    [secureProperty.setNative](value: boolean) {
         const nativeView = this.nativeView;
         const currentInputType = nativeView.getInputType();
         const currentClass = currentInputType & android.text.InputType.TYPE_MASK_CLASS;
@@ -49,10 +49,10 @@ export class TextField extends TextFieldBase {
         nativeView.setInputType(newInputType);
     }
 
-    get [whiteSpaceProperty.native](): WhiteSpace {
+    [whiteSpaceProperty.getDefault](): WhiteSpace {
         return "nowrap";
     }
-    set [whiteSpaceProperty.native](value: WhiteSpace) {
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
         // Don't change it otherwise TextField will go to multiline mode.
     }
 }

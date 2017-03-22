@@ -5,62 +5,21 @@
 
 export * from "./grid-layout-common";
 
-function setNativeProperty(view: View, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
-    const nativeView: android.view.View = view._nativeView;
-    const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-    if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
-        setter(lp);
-        nativeView.setLayoutParams(lp);
+function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutParams, value: T) => void) {
+    return function(this: View, value: T) {
+        const nativeView: android.view.View = this._nativeView;
+        const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
+            setter(lp, value);
+            nativeView.setLayoutParams(lp);
+        }
     }
 }
 
-// define native getter and setter for rowProperty.
-let rowDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 0,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.row = value);
-    }
-}
-
-// define native getter and setter for columnProperty.
-let colDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 0,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.column = value);
-    }
-}
-
-// define native getter and setter for rowSpanProperty.
-let rowSpanDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 1,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.rowSpan = value);
-    }
-}
-
-// define native getter and setter for columnSpanProperty.
-let colSpanDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 1,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.columnSpan = value);
-    }
-}
-
-// register native properties on View type.
-Object.defineProperties(View.prototype, {
-    [rowProperty.native]: rowDescriptor,
-    [columnProperty.native]: colDescriptor,
-    [rowSpanProperty.native]: rowSpanDescriptor,
-    [columnSpanProperty.native]: colSpanDescriptor
-});
+View.prototype[rowProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.row = value);
+View.prototype[columnProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.column = value);
+View.prototype[rowSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.rowSpan = value);
+View.prototype[columnSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.columnSpan = value);
 
 function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
     switch (itemSpec.gridUnitType) {

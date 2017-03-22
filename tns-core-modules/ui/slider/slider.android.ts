@@ -77,29 +77,29 @@ export class Slider extends SliderBase {
         }
     }
 
-    get [valueProperty.native](): number {
+    [valueProperty.getDefault](): number {
         return 0;
     }
-    set [valueProperty.native](value: number) {
+    [valueProperty.setNative](value: number) {
         this.setNativeValuesSilently(value - this.minValue, this.maxValue - this.minValue);
     }
-    get [minValueProperty.native](): number {
+    [minValueProperty.getDefault](): number {
         return 0;
     }
-    set [minValueProperty.native](value: number) {
+    [minValueProperty.setNative](value: number) {
         this.setNativeValuesSilently(this.value - value, this.maxValue - value);
     }
-    get [maxValueProperty.native](): number {
+    [maxValueProperty.getDefault](): number {
         return 100;
     }
-    set [maxValueProperty.native](value: number) {
+    [maxValueProperty.setNative](value: number) {
         this._android.setMax(value - this.minValue);
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         return -1;
     }
-    set [colorProperty.native](value: number | Color) {
+    [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
             this._android.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
@@ -107,10 +107,10 @@ export class Slider extends SliderBase {
         }
     }
 
-    get [backgroundColorProperty.native](): number {
+    [backgroundColorProperty.getDefault](): number {
         return -1;
     }
-    set [backgroundColorProperty.native](value: number | Color) {
+    [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
             this._android.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
@@ -118,10 +118,10 @@ export class Slider extends SliderBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): Background {
+    [backgroundInternalProperty.getDefault](): Background {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Background) {
+    [backgroundInternalProperty.setNative](value: Background) {
         //
     }
 }
