@@ -1,0 +1,7 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" navigatingFrom="onNavigatingFrom">
+    <GridLayout rows="auto, *">
+        <StackLayout id="placeholder" rowSpan="2" opacity="0.2" />
+        <Button text="Start test..." tap="onTap3"/>
+        <TextView id="result" row="1" />
+    </GridLayout>
+</Page>
