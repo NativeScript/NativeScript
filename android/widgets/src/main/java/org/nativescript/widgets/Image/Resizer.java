@@ -147,7 +147,18 @@ public abstract class Resizer extends Worker {
             addInBitmapOptions(options, cache);
         }
 
-        return BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+        Bitmap results = null;
+        try {
+            // This can throw an error on a corrupted image when using an inBitmap
+            results = BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+        }
+        catch (Exception e) {
+           // clear the inBitmap and try again
+           options.inBitmap = null;
+           results = BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options);
+           // If image is broken, rather than an issue with the inBitmap, we will get a NULL out in this case...
+        }
+        return results;
     }
 
     public static Bitmap decodeSampledBitmapFromByteArray(
