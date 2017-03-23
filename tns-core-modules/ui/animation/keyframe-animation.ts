@@ -212,9 +212,14 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             let animationDef = this.animations[index];
             (<any>animationDef).target = view;
             let animation = new Animation([animationDef]);
+            // Catch the animation cancel to prevent unhandled promise rejection warnings
             animation.play().then(() => {
                 this.animate(view, index + 1, iterations);
-            });
+            }).catch((error: any) => {
+                if (error.message.indexOf("Animation cancelled") < 0) {
+                    throw error;
+                }
+            }); // tslint:disable-line
             this._nativeAnimations.push(animation);
         }
     }
