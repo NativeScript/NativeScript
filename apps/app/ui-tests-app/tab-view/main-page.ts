@@ -19,6 +19,7 @@ export function pageLoaded(args: EventData) {
     examples.set("tabmore", "tab-view/tab-view-more");
     examples.set("tabViewCss", "tab-view/tab-view-css");
     examples.set("tab-view-icons", "tab-view/tab-view-icon");
+    examples.set("text-transform", "tab-view/text-transform");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;

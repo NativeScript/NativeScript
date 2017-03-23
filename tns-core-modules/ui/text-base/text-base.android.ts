@@ -300,16 +300,15 @@ function getCapitalizedString(str: string): string {
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
     switch (textTransform) {
-        case "none":
-            return text;
         case "uppercase":
             return text.toUpperCase();
         case "lowercase":
             return text.toLowerCase();
         case "capitalize":
             return getCapitalizedString(text);
+        case "none":
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: 'none', 'capitalize', 'uppercase', 'lowercase'.`);
+            return text;
     }
 }
 
@@ -324,7 +323,7 @@ function createSpannableStringBuilder(formattedString: FormattedString): android
         const text = span.text;
         const textTransform = (<TextBase>formattedString.parent).textTransform;
         let spanText = (text === null || text === undefined) ? '' : text.toString();
-        if (textTransform !== "none") {
+        if (textTransform && textTransform !== "none") {
             spanText = getTransformedText(spanText, textTransform);
         }
 
