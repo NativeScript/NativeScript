@@ -166,10 +166,12 @@ export namespace NetworkAgent {
     function mimeTypeToType(mimeType: string): string {
         let type: string = "Document";
 
-        if (mimeType.indexOf("image") === 0) {
-            type = "Image";
-        } else if (mimeType.indexOf("javascript") !== -1 || mimeType.indexOf("json") !== -1) {
-            type = "Script";
+        if (mimeType) {
+            if (mimeType.indexOf("image") === 0) {
+                type = "Image";
+            } else if (mimeType.indexOf("javascript") !== -1 || mimeType.indexOf("json") !== -1) {
+                type = "Script";
+            }
         }
 
         return type;
