@@ -16,7 +16,7 @@ previous_url: /ApiReference/timer/HOW-TO
 {%snippet timer-set-ten%}
 
 ### Cancels the evaluation with the clearTimeout method.
-{%snippet timer-set-twothousands%}
+{%snippet timer-set-fifty%}
 
 ### Evaluates an expression each time a specified number of milliseconds has elapsed.
 {%snippet timer-set-expression%}
