@@ -13,7 +13,7 @@ previous_url: /ApiReference/timer/HOW-TO
 {%snippet timer-set-zero%}
 
 ### Evaluates an expression after a specified number of milliseconds.
-{%snippet timer-set-fivehundred%}
+{%snippet timer-set-ten%}
 
 ### Cancels the evaluation with the clearTimeout method.
 {%snippet timer-set-twothousands%}
