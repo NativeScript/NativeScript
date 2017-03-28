@@ -38,10 +38,6 @@ export class Label extends TextBase implements LabelDefinition {
         return this.nativeView;
     }
 
-    get _nativeView(): TNSLabel {
-        return this.nativeView;
-    }
-
     get textWrap(): boolean {
         return this.style.whiteSpace === WhiteSpace.NORMAL;
     }
@@ -237,3 +233,5 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 }
+
+// Label.prototype.recycleNativeView = true;

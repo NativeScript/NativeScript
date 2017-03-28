@@ -1,5 +1,5 @@
 ﻿import { WrapLayout as WrapLayoutDefinition } from ".";
-import { LayoutBase, Property, isIOS, Length, zeroLength } from "../layout-base";
+import { LayoutBase, Property, isIOS, Length } from "../layout-base";
 
 export * from "../layout-base";
 
@@ -11,14 +11,16 @@ export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
     public effectiveItemHeight: number;
 }
 
+// WrapLayoutBase.prototype.recycleNativeView = true;
+
 export const itemWidthProperty = new Property<WrapLayoutBase, Length>({
-    name: "itemWidth", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),
+    name: "itemWidth", defaultValue: "auto", affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),
     valueChanged: (target, oldValue, newValue) => target.effectiveItemWidth = Length.toDevicePixels(newValue, -1)
 });
 itemWidthProperty.register(WrapLayoutBase);
 
 export const itemHeightProperty = new Property<WrapLayoutBase, Length>({
-    name: "itemHeight", defaultValue: zeroLength, affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),
+    name: "itemHeight", defaultValue: "auto", affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),
     valueChanged: (target, oldValue, newValue) => target.effectiveItemHeight = Length.toDevicePixels(newValue, -1)
 });
 itemHeightProperty.register(WrapLayoutBase);

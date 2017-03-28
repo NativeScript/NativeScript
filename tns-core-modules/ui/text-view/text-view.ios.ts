@@ -67,7 +67,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     constructor() {
         super();
 
-        this._ios = UITextView.new();
+        this.nativeView = this._ios = UITextView.new();
         if (!this._ios.font) {
             this._ios.font = UIFont.systemFontOfSize(12);
         }
@@ -88,9 +88,9 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         return this._ios;
     }
 
-    get nativeView(): UITextView {
-        return this._ios;
-    }
+    // get nativeView(): UITextView {
+    //     return this._ios;
+    // }
 
     public _refreshHintState(hint: string, text: string) {
         if (this.formattedText) {
@@ -269,3 +269,5 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 }
+
+// TextView.prototype.recycleNativeView = true;

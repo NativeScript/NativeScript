@@ -198,7 +198,7 @@ export class Animation extends AnimationBase {
     }
 
     private _createAnimators(propertyAnimation: PropertyAnimation): void {
-        if (!propertyAnimation.target._nativeView) {
+        if (!propertyAnimation.target.nativeView) {
             return;
         }
 
@@ -219,7 +219,7 @@ export class Animation extends AnimationBase {
         }
 
         let nativeArray;
-        let nativeView = <android.view.View>propertyAnimation.target._nativeView;
+        let nativeView = <android.view.View>propertyAnimation.target.nativeView;
         let animators = new Array<android.animation.Animator>();
         let propertyUpdateCallbacks = new Array<Function>();
         let propertyResetCallbacks = new Array<Function>();
@@ -439,7 +439,7 @@ export class Animation extends AnimationBase {
 
     private _enableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-            let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
+            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeView;
             if (cache) {
                 let layerType = cache.getLayerType();
                 if (layerType !== android.view.View.LAYER_TYPE_HARDWARE) {
@@ -452,7 +452,7 @@ export class Animation extends AnimationBase {
 
     private _disableHardwareAcceleration() {
         for (let i = 0, length = this._propertyAnimations.length; i < length; i++) {
-            let cache = <CacheLayerType>this._propertyAnimations[i].target._nativeView;
+            let cache = <CacheLayerType>this._propertyAnimations[i].target.nativeView;
             if (cache && cache.layerType !== undefined) {
                 cache.setLayerType(cache.layerType, null);
                 cache.layerType = undefined;

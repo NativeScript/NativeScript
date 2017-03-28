@@ -20,13 +20,12 @@ export function getValidTime(picker: TimePickerDefinition, hour: number, minute:
     }
 
     let time = { hour: hour, minute: minute };
+    if (!isLessThanMaxTime(picker, hour, minute)) {
+        time = { hour: picker.maxHour, minute: picker.maxMinute };
+    }
 
     if (!isGreaterThanMinTime(picker, hour, minute)) {
         time = { hour: picker.minHour, minute: picker.minMinute };
-    }
-
-    if (!isLessThanMaxTime(picker, hour, minute)) {
-        time = { hour: picker.maxHour, minute: picker.maxMinute };
     }
 
     return time;
@@ -96,35 +95,12 @@ export abstract class TimePickerBase extends View implements TimePickerDefinitio
     public maxMinute: number;
 }
 
-export var hourProperty = new Property<TimePickerBase, number>({
-    name: "hour", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
-        if (!isHourValid(newValue)) {
-            throw new Error(getErrorMessage(picker, "Hour", newValue));
-        }
-
-        if (isValidTime(picker)) {
-            // picker._setNativeTime();
-            if (picker.time) {
-                picker.time.setHours(picker.hour);
-            } else {
-                picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
-            }
-        } else {
-            throw new Error(getErrorMessage(picker, "Hour", newValue));
-        }
-    }, valueConverter: (v) => parseInt(v)
-});
-hourProperty.register(TimePickerBase);
+// TimePickerBase.prototype.recycleNativeView = true;
 
 export var minHourProperty = new Property<TimePickerBase, number>({
     name: "minHour", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
-        if (!isHourValid(newValue)) {
+        if (!isHourValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "minHour", newValue));
-        }
-        if (isValidTime(picker)) {
-            // picker._setNativeMinTime();
-        } else {
-            throw new Error(getErrorMessage(picker, "Hour", newValue));
         }
     }, valueConverter: (v) => parseInt(v)
 });
@@ -132,49 +108,18 @@ minHourProperty.register(TimePickerBase);
 
 export var maxHourProperty = new Property<TimePickerBase, number>({
     name: "maxHour", defaultValue: 23, valueChanged: (picker, oldValue, newValue) => {
-        if (!isHourValid(newValue)) {
+        if (!isHourValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "maxHour", newValue));
         }
 
-        if (isValidTime(picker)) {
-            // picker._setNativeMaxTime();
-        } else {
-            throw new Error(getErrorMessage(picker, "Hour", newValue));
-        }
     }, valueConverter: (v) => parseInt(v)
 });
 maxHourProperty.register(TimePickerBase);
 
-export var minuteProperty = new Property<TimePickerBase, number>({
-    name: "minute", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
-        if (!isMinuteValid(newValue)) {
-            throw new Error(getErrorMessage(picker, "minute", newValue));
-        }
-
-        if (isValidTime(picker)) {
-            // picker._setNativeTime();
-            if (picker.time) {
-                picker.time.setMinutes(picker.minute);
-            } else {
-                picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
-            }
-        } else {
-            throw new Error(getErrorMessage(picker, "Minute", newValue));
-        }
-    }, valueConverter: (v) => parseInt(v)
-});
-minuteProperty.register(TimePickerBase);
-
 export var minMinuteProperty = new Property<TimePickerBase, number>({
     name: "minMinute", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
-        if (!isMinuteValid(newValue)) {
+        if (!isMinuteValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "minMinute", newValue));
-        }
-
-        if (isValidTime(picker)) {
-            // picker._setNativeMinTime();
-        } else {
-            throw new Error(getErrorMessage(picker, "Minute", newValue));
         }
     }, valueConverter: (v) => parseInt(v)
 });
@@ -182,14 +127,8 @@ minMinuteProperty.register(TimePickerBase);
 
 export var maxMinuteProperty = new Property<TimePickerBase, number>({
     name: "maxMinute", defaultValue: 59, valueChanged: (picker, oldValue, newValue) => {
-        if (!isMinuteValid(newValue)) {
+        if (!isMinuteValid(newValue) || !isValidTime(picker)) {
             throw new Error(getErrorMessage(picker, "maxMinute", newValue));
-        }
-
-        if (isValidTime(picker)) {
-            // picker._setNativeMaxTime();
-        } else {
-            throw new Error(getErrorMessage(picker, "Minute", newValue));
         }
     }, valueConverter: (v) => parseInt(v)
 });
@@ -208,6 +147,29 @@ function dateComparer(x: Date, y: Date): boolean {
     return (x <= y && x >= y) ? true : false;
 }
 
+export var minuteProperty = new Property<TimePickerBase, number>({
+    name: "minute", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
+        if (!isMinuteValid(newValue) || !isValidTime(picker)) {
+            throw new Error(getErrorMessage(picker, "minute", newValue));
+        }
+
+        picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
+    }, valueConverter: (v) => parseInt(v)
+});
+minuteProperty.register(TimePickerBase);
+
+export var hourProperty = new Property<TimePickerBase, number>({
+    name: "hour", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {
+        if (!isHourValid(newValue) || !isValidTime(picker)) {
+            throw new Error(getErrorMessage(picker, "Hour", newValue));
+        }
+
+        picker.time = new Date(0, 0, 0, picker.hour, picker.minute);
+
+    }, valueConverter: (v) => parseInt(v)
+});
+hourProperty.register(TimePickerBase);
+
 export var timeProperty = new Property<TimePickerBase, Date>({
     name: "time", equalityComparer: dateComparer, valueChanged: (picker, oldValue, newValue) => {
         if (!isValidTime(picker)) {
@@ -216,7 +178,6 @@ export var timeProperty = new Property<TimePickerBase, Date>({
 
         picker.hour = newValue.getHours();
         picker.minute = newValue.getMinutes();
-        // picker._set
     }
 });
 timeProperty.register(TimePickerBase);

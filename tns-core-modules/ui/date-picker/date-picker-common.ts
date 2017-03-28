@@ -12,6 +12,8 @@ export class DatePickerBase extends View implements DatePickerDefinition {
     public date: Date;
 }
 
+// DatePickerBase.prototype.recycleNativeView = true;
+
 export const yearProperty = new Property<DatePickerBase, number>({ name: "year", valueConverter: (v) => parseInt(v) });
 yearProperty.register(DatePickerBase);
 

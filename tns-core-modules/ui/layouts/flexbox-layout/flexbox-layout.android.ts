@@ -14,7 +14,7 @@ export * from "./flexbox-layout-common";
 
 function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams, value: T) => void) {
     return function(this: View, value: T) {
-        const nativeView: android.view.View = this._nativeView;
+        const nativeView: android.view.View = this.nativeView;
         const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.FlexboxLayout.LayoutParams();
         if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
             setter(lp, value);
@@ -77,53 +77,50 @@ const alignSelfMap = {
 }
 
 export class FlexboxLayout extends FlexboxLayoutBase {
-    private _layout: org.nativescript.widgets.FlexboxLayout;
+    nativeView: org.nativescript.widgets.FlexboxLayout;
 
-    constructor() {
-        super();
+    public createNativeView() {
+        return new org.nativescript.widgets.FlexboxLayout(this._context);
     }
 
-    get android(): org.nativescript.widgets.FlexboxLayout { return this._layout; }
-    get _nativeView(): org.nativescript.widgets.FlexboxLayout { return this._layout; }
-
-    public _createNativeView() {
-        const layout = this._layout = new org.nativescript.widgets.FlexboxLayout(this._context);
-        return layout;
+    public disposeNativeView() {
+        (<any>this.nativeView).invalidateOrdersCache();
+        super.disposeNativeView();
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {
         return flexDirectionProperty.defaultValue;
     }
     [flexDirectionProperty.setNative](flexDirection: FlexDirection) {
-        this.android.setFlexDirection(flexDirectionMap[flexDirection]);
+        this.nativeView.setFlexDirection(flexDirectionMap[flexDirection]);
     }
 
     [flexWrapProperty.getDefault](): FlexWrap {
         return flexWrapProperty.defaultValue;
     }
     [flexWrapProperty.setNative](flexWrap: FlexWrap) {
-        this.android.setFlexWrap(flexWrapMap[flexWrap]);
+        this.nativeView.setFlexWrap(flexWrapMap[flexWrap]);
     }
 
     [justifyContentProperty.getDefault](): JustifyContent {
         return justifyContentProperty.defaultValue;
     }
     [justifyContentProperty.setNative](justifyContent: JustifyContent) {
-        this.android.setJustifyContent(justifyContentMap[justifyContent]);
+        this.nativeView.setJustifyContent(justifyContentMap[justifyContent]);
     }
 
     [alignItemsProperty.getDefault](): AlignItems {
         return alignItemsProperty.defaultValue;
     }
     [alignItemsProperty.setNative](alignItems: AlignItems) {
-        this.android.setAlignItems(alignItemsMap[alignItems]);
+        this.nativeView.setAlignItems(alignItemsMap[alignItems]);
     }
 
     [alignContentProperty.getDefault](): AlignContent {
         return alignContentProperty.defaultValue;
     }
     [alignContentProperty.setNative](alignContent: AlignContent) {
-        this.android.setAlignContent(alignContentMap[alignContent]);
+        this.nativeView.setAlignContent(alignContentMap[alignContent]);
     }
 
     public _updateNativeLayoutParams(child: View): void {

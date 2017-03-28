@@ -37,34 +37,29 @@ function initializeNativeViewGroup() {
 }
 
 export class Layout extends LayoutBase implements LayoutDefinition {
-    private _viewGroup: android.view.ViewGroup;
+    nativeView: android.view.ViewGroup;
     _measuredWidth: number;
     _measuredHeight: number;
 
-    get android(): android.view.ViewGroup {
-        return this._viewGroup;
-    }
-
-    get _nativeView(): android.view.ViewGroup {
-        return this._viewGroup;
-    }
-
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeViewGroup();
-        const layout = this._viewGroup = new NativeViewGroup(this._context);
-        this._viewGroup[OWNER] = this;
-        return layout;
+        return new NativeViewGroup(this._context);
     }
 
-    public _disposeNativeView() {
-        delete this._viewGroup[OWNER];
-        super._disposeNativeView();
+    public initNativeView(): void {
+        super.initNativeView();
+        (<any>this.nativeView)[OWNER] = this;
+    }
+
+    public disposeNativeView() {
+         (<any>this.nativeView)[OWNER] = undefined;
+        super.disposeNativeView();
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         this._setCurrentMeasureSpecs(widthMeasureSpec, heightMeasureSpec);
 
-        const view = this._nativeView;
+        const view = this.nativeView;
         if (view) {
             if (traceEnabled()) {
                 traceWrite(`${this} :measure: ${layout.measureSpecToString(widthMeasureSpec)}, ${layout.measureSpecToString(heightMeasureSpec)}`, traceCategories.Layout);
@@ -76,7 +71,7 @@ export class Layout extends LayoutBase implements LayoutDefinition {
     public layout(left: number, top: number, right: number, bottom: number): void {
         this._setCurrentLayoutBounds(left, top, right, bottom);
 
-        var view = this._nativeView;
+        var view = this.nativeView;
         if (view) {
             this.layoutNativeView(left, top, right, bottom);
             if (traceEnabled()) {

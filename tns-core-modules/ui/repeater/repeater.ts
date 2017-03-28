@@ -118,6 +118,8 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
 
 }
 
+// Repeater.prototype.recycleNativeView = true;
+
 /**
  * Represents the item template property of each ListView instance.
  */

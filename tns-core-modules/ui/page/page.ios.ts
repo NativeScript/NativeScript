@@ -325,7 +325,7 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends PageBase {
-    public nativeView: UIView;
+    nativeView: UIView;
 
     private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
@@ -343,8 +343,8 @@ export class Page extends PageBase {
 
     public requestLayout(): void {
         super.requestLayout();
-        if (!this.parent && this.ios && this._nativeView) {
-            this._nativeView.setNeedsLayout();
+        if (!this.parent && this.ios && this.nativeView) {
+            this.nativeView.setNeedsLayout();
         }
     }
 
@@ -400,10 +400,6 @@ export class Page extends PageBase {
 
     get ios(): UIViewController {
         return this._ios;
-    }
-
-    get _nativeView(): UIView {
-        return this.ios.view;
     }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {

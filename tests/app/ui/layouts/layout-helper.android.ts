@@ -1,6 +1,6 @@
-﻿import {Button} from "tns-core-modules/ui/button";
-import {StackLayout} from "tns-core-modules/ui/layouts/stack-layout";
-import {GridLayout} from "tns-core-modules/ui/layouts/grid-layout";
+﻿import { Button } from "tns-core-modules/ui/button";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
 
 import * as utils from "tns-core-modules/utils/utils";
 import * as TKUnit from "../../TKUnit";
@@ -8,12 +8,9 @@ import * as def from "./layout-helper";
 
 var DELTA = 0.1;
 
-class NativeButton extends android.widget.Button {    
-    private owner: def.MeasuredView;
-
-    constructor(context: android.content.Context, owner: def.MeasuredView) {
+class NativeButton extends android.widget.Button {
+    constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
-        this.owner = owner;
         return global.__native(this);
     }
 
@@ -31,11 +28,8 @@ class NativeButton extends android.widget.Button {
 }
 
 class NativeStackLayout extends org.nativescript.widgets.StackLayout {
-    private owner: def.MeasuredView;
-
-    constructor(context: android.content.Context, owner: def.MeasuredView) {
+    constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
-        this.owner = owner;
         return global.__native(this);
     }
 
@@ -53,11 +47,8 @@ class NativeStackLayout extends org.nativescript.widgets.StackLayout {
 }
 
 class NativeGridLayout extends org.nativescript.widgets.GridLayout {
-    private owner: def.MeasuredView;
-
-    constructor(context: android.content.Context, owner: def.MeasuredView) {
+    constructor(context: android.content.Context, public owner: def.MeasuredView) {
         super(context);
-        this.owner = owner;
         return global.__native(this);
     }
 
@@ -75,19 +66,18 @@ class NativeGridLayout extends org.nativescript.widgets.GridLayout {
 }
 
 export class MyButton extends Button implements def.MyButton {
-    private _layout: android.view.View;
+    nativeView: NativeButton;
 
-    get android(): android.view.View {
-        return this._layout;
+    public createNativeView() {
+        return new NativeButton(this._context, this);
     }
 
-    get _nativeView(): android.view.View {
-        return this._layout;
+    public initNativeView(): void {
+        this.nativeView.owner = this;
     }
 
-    public _createNativeView() {
-        this._layout = new NativeButton(this._context, this);
-        return this._layout;
+    public disposeNativeView() {
+        this.nativeView.owner = undefined;
     }
 
     public measureCount: number = 0;
@@ -112,36 +102,35 @@ export class MyButton extends Button implements def.MyButton {
     }
 
     get layoutWidth(): number {
-        return this._layout.getWidth();
+        return this.nativeView.getWidth();
     }
 
     get layoutHeight(): number {
-        return this._layout.getHeight();
+        return this.nativeView.getHeight();
     }
 
     get layoutLeft(): number {
-        return this._layout.getLeft();
+        return this.nativeView.getLeft();
     }
 
     get layoutTop(): number {
-        return this._layout.getTop();
+        return this.nativeView.getTop();
     }
 }
 
 export class MyStackLayout extends StackLayout implements def.MyStackLayout {
-    private _layout: android.view.View;
+    nativeView: NativeStackLayout;
 
-    get android(): android.view.View {
-        return this._layout;
+    public createNativeView() {
+        return new NativeStackLayout(this._context, this);
     }
 
-    get _nativeView(): android.view.View {
-        return this._layout;
+    public initNativeView(): void {
+        this.nativeView.owner = this;
     }
 
-    public _createNativeView() {
-        this._layout = new NativeStackLayout(this._context, this);
-        return this._layout;
+    public disposeNativeView() {
+        this.nativeView.owner = undefined;
     }
 
     public measureCount: number = 0;
@@ -166,36 +155,35 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
     }
 
     get layoutWidth(): number {
-        return this._layout.getWidth();
+        return this.nativeView.getWidth();
     }
 
     get layoutHeight(): number {
-        return this._layout.getHeight();
+        return this.nativeView.getHeight();
     }
 
     get layoutLeft(): number {
-        return this._layout.getLeft();
+        return this.nativeView.getLeft();
     }
 
     get layoutTop(): number {
-        return this._layout.getTop();
+        return this.nativeView.getTop();
     }
 }
 
 export class MyGridLayout extends GridLayout implements def.MyGridLayout {
-    private _layout: android.view.View;
+    nativeView: NativeGridLayout;
 
-    get android(): android.view.View {
-        return this._layout;
+    public createNativeView() {
+        return new NativeGridLayout(this._context, this);
     }
 
-    get _nativeView(): android.view.View {
-        return this._layout;
+    public initNativeView(): void {
+        this.nativeView.owner = this;
     }
 
-    public _createNativeView() {
-        this._layout = new NativeGridLayout(this._context, this);
-        return this._layout;
+    public disposeNativeView() {
+        this.nativeView.owner = undefined;
     }
 
     public measureCount: number = 0;
@@ -220,19 +208,19 @@ export class MyGridLayout extends GridLayout implements def.MyGridLayout {
     }
 
     get layoutWidth(): number {
-        return this._layout.getWidth();
+        return this.nativeView.getWidth();
     }
 
     get layoutHeight(): number {
-        return this._layout.getHeight();
+        return this.nativeView.getHeight();
     }
 
     get layoutLeft(): number {
-        return this._layout.getLeft();
+        return this.nativeView.getLeft();
     }
 
     get layoutTop(): number {
-        return this._layout.getTop();
+        return this.nativeView.getTop();
     }
 }
 

@@ -680,10 +680,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         // needed for iOS.
     }
 
-    get _nativeView(): any {
-        return undefined;
-    }
-
     public focus(): boolean {
         return undefined;
     }

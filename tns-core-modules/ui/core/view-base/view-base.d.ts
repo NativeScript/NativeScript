@@ -202,24 +202,25 @@ export abstract class ViewBase extends Observable {
     _tearDownUI(force?: boolean): void;
 
     /**
-     * Creates a native view
+     * Creates a native view.
+     * Returns either android.view.View or UIView.
      */
-    _createNativeView(): Object;
-
-    /**
-     * Clean up references to the native view.
-     */
-    _disposeNativeView(): void;
+    createNativeView(): Object;
 
     /**
      * Initializes properties/listeners of the native view.
      */
-    _initNativeView(): void;
+    initNativeView(): void;
+
+    /**
+     * Clean up references to the native view.
+     */
+    disposeNativeView(): void;
 
     /**
      * Resets properties/listeners set to the native view.
      */
-    _resetNativeView(): void;
+    resetNativeView(): void;
 
     _isAddedToNativeVisualTree: boolean;
 

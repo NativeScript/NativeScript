@@ -6,19 +6,20 @@
 export * from "./progress-common";
 
 export class Progress extends ProgressBase {
-    private _ios = UIProgressView.new();
+    private _ios: UIProgressView;
 
+    constructor() {
+        super();
+        this.nativeView = this._ios = UIProgressView.new();
+    }
+    
     get ios(): UIProgressView {
         return this._ios;
     }
 
-    get nativeView(): UIProgressView {
-        return this._ios;
-    }
-
-    get _nativeView(): UIProgressView {
-        return this._ios;
-    }
+    // get nativeView(): UIProgressView {
+    //     return this._ios;
+    // }
 
     [valueProperty.getDefault](): number {
         return 0;

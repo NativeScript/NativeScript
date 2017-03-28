@@ -366,13 +366,13 @@ export var wait = function (seconds: number) {
     }, seconds, false);
 };
 
-export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 20, shouldThrow: boolean = true) {
+export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 3, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
     }
 
     if (Application.ios) {
-        var waitTime = 20 / 1000;
+        const waitTime = 20 / 1000;
         var totalWaitTime = 0;
         while (true) {
             utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));

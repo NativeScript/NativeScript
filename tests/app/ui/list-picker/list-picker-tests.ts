@@ -170,7 +170,7 @@ export var testWhenSelectingAnItemNativelySelectedIndexIsUpdatedProperly = funct
     TKUnit.waitUntilReady(() => listPicker.selectedIndex === 1);
 
     let actualValue = listPicker.selectedIndex;
-    TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+    TKUnit.assertEqual(actualValue, expectedValue);
 }
 
 export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
@@ -182,8 +182,8 @@ export var test_Android_MaxValueIsOneLessThanItemsCount = function () {
         var listPicker = <listPickerModule.ListPicker>views[0];
         listPicker.items = ["One", "Two", "Three"];
         var expectedValue = listPicker.items.length - 1;
-        var actualValue = (<any>listPicker).android.getMaxValue();
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        var actualValue = listPicker.nativeView.getMaxValue();
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -195,8 +195,8 @@ export var test_Android_WhenItemsAreEmptyNativeControlDoesNotShowZero = function
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];
         var expectedValue = " ";
-        var actualValue = (<any>listPicker)._editText.getText().toString();
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        var actualValue = listPicker.nativeView.editText.getText().toString();
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -209,8 +209,8 @@ export var test_Android_WhenBoundToSingleElementArrayEditTextIsUpdatedProperly =
         var listPicker = <listPickerModule.ListPicker>views[0];
         listPicker.items = ["One"];
         var expectedValue = "One";
-        var actualValue = (<any>listPicker)._editText.getText().toString();
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        var actualValue = listPicker.nativeView.editText.getText().toString();
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }
 
@@ -224,7 +224,7 @@ export var test_Android_WhenSelectedIndexChangesEditTextIsUpdatedProperly = func
         listPicker.items = ["One", "Two"];
         listPicker.selectedIndex = 1;
         var expectedValue = "Two";
-        var actualValue = (<any>listPicker)._editText.getText().toString();
-        TKUnit.assert(actualValue === expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+        var actualValue = listPicker.nativeView.editText.getText().toString();
+        TKUnit.assertEqual(actualValue, expectedValue);
     });
 }

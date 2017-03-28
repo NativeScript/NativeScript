@@ -27,9 +27,9 @@ export class View extends ViewCommon {
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
 
-    get _nativeView(): UIView {
-        return this.ios;
-    }
+    // get nativeView(): UIView {
+    //     return this.ios;
+    // }
 
     public _addViewCore(view: ViewCommon, atIndex?: number) {
         super._addViewCore(view, atIndex);
@@ -411,15 +411,15 @@ export class View extends ViewCommon {
 
 export class CustomLayoutView extends View {
 
-    private _view: UIView;
+    nativeView: UIView;
 
     constructor() {
         super();
-        this._view = UIView.new();
+        this.nativeView = UIView.new();
     }
 
     get ios(): UIView {
-        return this._view;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

@@ -208,7 +208,7 @@ export class ListView extends ListViewBase {
 
     constructor() {
         super();
-        this._ios = UITableView.new();
+        this.nativeView = this._ios = UITableView.new();
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), this._defaultTemplate.key);
         this._ios.autoresizingMask = UIViewAutoresizing.None;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -359,15 +359,15 @@ export class ListView extends ListViewBase {
                 cell.owner = new WeakRef(view);
             } else if (cell.view !== view) {
                 this._removeContainer(cell);
-                (<UIView>cell.view._nativeView).removeFromSuperview();
+                (<UIView>cell.view.nativeView).removeFromSuperview();
                 cell.owner = new WeakRef(view);
             }
 
             this._prepareItem(view, indexPath.row);
             this._map.set(cell, view);
             // We expect that views returned from itemLoading are new (e.g. not reused).
-            if (view && !view.parent && view._nativeView) {
-                cell.contentView.addSubview(view._nativeView);
+            if (view && !view.parent && view.nativeView) {
+                cell.contentView.addSubview(view.nativeView);
                 this._addView(view);
             }
 

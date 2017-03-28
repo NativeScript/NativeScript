@@ -27,6 +27,8 @@ export class ProgressBase extends View implements ProgressDefinition {
     // }
 }
 
+// ProgressBase.prototype.recycleNativeView = true;
+
 /**
  * Represents the observable property backing the value property of each Progress instance.
  */

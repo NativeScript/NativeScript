@@ -14,7 +14,7 @@ export class Image extends ImageBase {
         super();
 
         //TODO: Think of unified way of setting all the default values.
-        this._ios = UIImageView.new();
+        this.nativeView = this._ios = UIImageView.new();
         this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
         this._ios.userInteractionEnabled = true;
         this._setNativeClipToBounds();

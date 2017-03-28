@@ -36,7 +36,7 @@ export class Slider extends SliderBase {
 
     constructor() {
         super();
-        this._ios = UISlider.new();
+        this.nativeView = this._ios = UISlider.new();
 
         // default values
         this._ios.minimumValue = 0;

@@ -51,15 +51,16 @@ export class TextBase extends TextBaseCommon {
     nativeView: android.widget.TextView;
     _defaultTransformationMethod: android.text.method.TransformationMethod;
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         this._defaultTransformationMethod = this.nativeView.getTransformationMethod();
-        super._initNativeView();
+        super.initNativeView();
     }
 
-    public _resetNativeView(): void {
-        super._resetNativeView();
+    public resetNativeView(): void {
+        super.resetNativeView();
         // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
         this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+        this._defaultTransformationMethod = null;
     }
 
     [textProperty.getDefault](): string {

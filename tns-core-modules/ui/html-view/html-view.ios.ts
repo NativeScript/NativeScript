@@ -5,29 +5,26 @@
 export * from "./html-view-common";
 
 export class HtmlView extends HtmlViewBase {
-    private _ios: UITextView;
+    nativeView: UITextView;
 
     constructor() {
         super();
-        this._ios = UITextView.new();
+        const nativeView = UITextView.new()
+        nativeView.scrollEnabled = false;
+        nativeView.editable = false;
+        nativeView.selectable = true;
+        nativeView.userInteractionEnabled = true;
+        nativeView.dataDetectorTypes = UIDataDetectorTypes.All;
 
-        this._ios.scrollEnabled = false;
-        this._ios.editable = false;
-        this._ios.selectable = true;
-        this._ios.userInteractionEnabled = true;
-        this._ios.dataDetectorTypes = UIDataDetectorTypes.All;
+        this.nativeView = nativeView;
     }
 
     get ios(): UITextView {
-        return this._ios;
-    }
-
-    get _nativeView(): UITextView {
-        return this._ios;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var nativeView = this._nativeView;
+        const nativeView = this.nativeView;
         if (nativeView) {
             const width = layout.getMeasureSpecSize(widthMeasureSpec);
             const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
@@ -54,6 +51,6 @@ export class HtmlView extends HtmlViewBase {
     [htmlProperty.setNative](value: string) {
         const htmlString = NSString.stringWithString(value + "");
         const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-        this._ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+        this.nativeView.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
     }
 }

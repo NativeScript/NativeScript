@@ -19,7 +19,7 @@ function initializeSeekBarChangeListener(): void {
 
     @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
     class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
-        constructor(private owner: Slider) {
+        constructor(public owner: Slider) {
             super();
             return global.__native(this);
         }
@@ -46,19 +46,27 @@ function initializeSeekBarChangeListener(): void {
 
 export class Slider extends SliderBase {
     _supressNativeValue: boolean;
-    private _android: android.widget.SeekBar;
-    private changeListener: android.widget.SeekBar.OnSeekBarChangeListener;
+    nativeView: android.widget.SeekBar;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeSeekBarChangeListener();
-        this.changeListener = this.changeListener || new SeekBarChangeListener(this);
-        this._android = new android.widget.SeekBar(this._context);
-        this._android.setOnSeekBarChangeListener(this.changeListener);
-        return this._android;
+        const listener = new SeekBarChangeListener(this);
+        const nativeView = new android.widget.SeekBar(this._context);
+        nativeView.setOnSeekBarChangeListener(listener);
+        (<any>nativeView).listener = listener;
+        return nativeView;
     }
 
-    get android(): android.widget.SeekBar {
-        return this._android;
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = this;
+    }
+
+    public disposeNativeView() {
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = null;
+        super.disposeNativeView();
     }
 
     /**
@@ -68,9 +76,10 @@ export class Slider extends SliderBase {
      */
     private setNativeValuesSilently(newValue: number, newMaxValue: number) {
         this._supressNativeValue = true;
+        const nativeView = this.nativeView;
         try {
-            this.android.setMax(newMaxValue);
-            this.android.setProgress(newValue);
+            nativeView.setMax(newMaxValue);
+            nativeView.setProgress(newValue);
         }
         finally {
             this._supressNativeValue = false;
@@ -93,7 +102,7 @@ export class Slider extends SliderBase {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this._android.setMax(value - this.minValue);
+        this.nativeView.setMax(value - this.minValue);
     }
 
     [colorProperty.getDefault](): number {
@@ -101,9 +110,9 @@ export class Slider extends SliderBase {
     }
     [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this._android.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeView.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this._android.getThumb().clearColorFilter();
+            this.nativeView.getThumb().clearColorFilter();
         }
     }
 
@@ -112,9 +121,9 @@ export class Slider extends SliderBase {
     }
     [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this._android.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeView.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this._android.getProgressDrawable().clearColorFilter();
+            this.nativeView.getProgressDrawable().clearColorFilter();
         }
     }
 

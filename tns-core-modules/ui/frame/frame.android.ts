@@ -84,14 +84,11 @@ export class Frame extends FrameBase {
     private _android: AndroidFrame;
     private _delayedNavigationEntry: BackstackEntry;
     private _containerViewId: number = -1;
-    private _listener: android.view.View.OnAttachStateChangeListener;
+    // private _listener: android.view.View.OnAttachStateChangeListener;
+
     constructor() {
         super();
         this._android = new AndroidFrame(this);
-        this._listener = new android.view.View.OnAttachStateChangeListener({
-            onViewAttachedToWindow: this.onNativeViewAttachedToWindow.bind(this),
-            onViewDetachedFromWindow: this.onNativeViewDetachedToWindow.bind(this)
-        });
     }
 
     public static get defaultAnimatedNavigation(): boolean {
@@ -114,10 +111,6 @@ export class Frame extends FrameBase {
 
     get android(): AndroidFrame {
         return this._android;
-    }
-
-    get _nativeView(): any {
-        return this._android.rootViewGroup;
     }
 
     public _navigateCore(backstackEntry: BackstackEntry) {
@@ -296,27 +289,24 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         const root = new org.nativescript.widgets.ContentLayout(this._context);
         if (this._containerViewId < 0) {
             this._containerViewId = android.view.View.generateViewId();
         }
-
-        this._android.rootViewGroup = root;
-        this._android.rootViewGroup.setId(this._containerViewId);
-        this._android.rootViewGroup.addOnAttachStateChangeListener(this._listener);
         return root;
     }
 
-    private onNativeViewAttachedToWindow(view: android.view.View): void {
-        if (this._delayedNavigationEntry) {
-            this._navigateCore(this._delayedNavigationEntry);
-            this._delayedNavigationEntry = undefined;
-        }
+    public initNativeView(): void {
+        super.initNativeView();
+        this._android.rootViewGroup = this.nativeView;
+        this._android.rootViewGroup.setId(this._containerViewId);
     }
 
-    private onNativeViewDetachedToWindow(view: android.view.View): void {
-        // unused for the moment.
+    public disposeNativeView() {
+        // we should keep the reference to underlying native object, since frame can contain many pages.
+        this._android.rootViewGroup = null;
+        super.disposeNativeView();
     }
 
     public _popFromFrameStack() {
@@ -328,15 +318,6 @@ export class Frame extends FrameBase {
         if (this._android.hasOwnActivity) {
             this._android.activity.finish();
         }
-    }
-
-    public _resetNativeView() {
-        this._android.rootViewGroup.removeOnAttachStateChangeListener(this._listener);
-    }
-
-    public _disposeNativeView() {
-        // we should keep the reference to underlying native object, since frame can contain many pages.
-        this._android.rootViewGroup = null;
     }
 
     public _printNativeBackStack() {
@@ -721,7 +702,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
             return label;
         }
 
-        return page._nativeView;
+        return page.nativeView;
     }
 
     public onSaveInstanceState(fragment: android.app.Fragment, outState: android.os.Bundle, superFunc: Function): void {
@@ -794,10 +775,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
 
         if (!rootView) {
-            navParam = application.mainEntry;
-            if (!navParam) {
-                navParam = application.mainModule;
-            }
+            navParam = application.getMainEntry();
 
             if (navParam) {
                 frame = new Frame();
@@ -821,7 +799,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
 
         // Initialize native visual tree;
         rootView._setupUI(activity);
-        activity.setContentView(rootView._nativeView, new org.nativescript.widgets.CommonLayoutParams());
+        activity.setContentView(rootView.nativeView, new org.nativescript.widgets.CommonLayoutParams());
         // frameId is negative w
         if (frame) {
             frame.navigate(navParam);

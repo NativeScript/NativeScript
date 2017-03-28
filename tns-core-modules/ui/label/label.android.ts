@@ -4,7 +4,7 @@ import { TextBase, WhiteSpace } from "../text-base";
 export * from "../text-base";
 
 export class Label extends TextBase implements LabelDefinition {
-    private _android: android.widget.TextView;
+    nativeView: android.widget.TextView;
 
     get textWrap(): boolean {
         return this.style.whiteSpace === WhiteSpace.NORMAL;
@@ -13,14 +13,19 @@ export class Label extends TextBase implements LabelDefinition {
         this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
     }
 
-    get android(): android.widget.TextView {
-        return this._android;
-    }
-
-    public _createNativeView() {
-        const textView = this._android = new android.widget.TextView(this._context);
+    public createNativeView() {
+        const textView = new android.widget.TextView(this._context);
         textView.setSingleLine(true);
         textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
         return textView;
     }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        const textView = this.nativeView;
+        textView.setSingleLine(true);
+        textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    }
 }
+
+// Label.prototype.recycleNativeView = true;

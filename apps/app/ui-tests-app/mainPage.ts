@@ -15,9 +15,7 @@ var oldExamples: Map<string, string> = new Map<string, string>();
 
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
-    let view = require("ui/core/view");
-    let wrapLayout = <WrapLayout>view.getViewById(page, "wrapLayoutWithExamples");
-
+    let wrapLayout = page.getViewById<WrapLayout>("wrapLayoutWithExamples");
     examples.set("action-bar", "action-bar/main-page");
     examples.set("bindings", "bindings/main-page");
     examples.set("css", "css/main-page");
@@ -46,8 +44,8 @@ export function pageLoaded(args: EventData) {
     let viewModel = new MainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
 
-     var parent = page.getViewById('parentLayout');
-     var searchBar = page.getViewById('textView');
+    var parent = page.getViewById('parentLayout');
+    var searchBar = page.getViewById('textView');
 
     if (parent.android) {
         parent.android.setFocusableInTouchMode(true);
@@ -57,7 +55,7 @@ export function pageLoaded(args: EventData) {
 
     refresh();
 }
-  
+
 // should be removes
 export function refresh() {
     oldExamples.set("actStyle", "action-bar/all");
@@ -217,7 +215,7 @@ export class MainPageViewModel extends observable.Observable {
             }
 
             btn.style.color = new colorModule.Color(this.colors[count++ % 3]);
-            btn.on(buttonModule.Button.tapEvent, function(eventData) {
+            btn.on(buttonModule.Button.tapEvent, function (eventData) {
                 let text = btn.text;
                 this.loadExample(text);
             }, this);

@@ -1,4 +1,5 @@
 import { setActivityCallbacks, AndroidActivityCallbacks } from "./frame";
+import * as appModule from "../../application";
 
 @JavaProxy("com.tns.NativeScriptActivity")
 class NativeScriptActivity extends android.app.Activity {
@@ -10,6 +11,8 @@ class NativeScriptActivity extends android.app.Activity {
     }
 
     protected onCreate(savedInstanceState: android.os.Bundle): void {
+        appModule.android.init(this.getApplication());
+        
         // Set isNativeScriptActivity in onCreate.
         // The JS construcotr might not be called beacuse the activity is created from Andoird.
         this.isNativeScriptActivity = true;

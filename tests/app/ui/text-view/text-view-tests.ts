@@ -46,7 +46,7 @@ var _createTextViewFunc = function (): textViewModule.TextView {
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
-        
+
         // >> set-text-value
         textView.text = "Hello, world!";
         // << set-text-value
@@ -60,7 +60,7 @@ export var testSetText = function () {
 export var testSetTextNull = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
-        
+
         textView.text = null;
 
         var expectedValue = "";
@@ -304,14 +304,14 @@ export var testBindEditableDirectlyToModel = function () {
         textView.bind(options, model);
         // textView.editable is now false
         // >> (hide)
-        TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
+        TKUnit.assertFalse(textView.editable, ".ediable property should be false");
+        TKUnit.assertFalse(textViewTestsNative.getNativeEditable(textView), "native Editable should be false");
         // << (hide)
         model.set("editable", true);
         // textView.editable is now true
         // >> (hide)
-        TKUnit.assert(textView.editable === true, "Actual: " + textView.text + "; Expected: " + true);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === true, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + true);
+        TKUnit.assertTrue(textView.editable, ".ediable property should be true");
+        TKUnit.assertTrue(textViewTestsNative.getNativeEditable(textView), "native Editable should be true");
         // << (hide)
         // << binding-editable-property
     });
@@ -332,12 +332,12 @@ export var testBindEditableToBindingConext = function () {
         }
 
         textView.bind(options);
-        TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
+        TKUnit.assertFalse(textView.editable, ".ediable property should be false");
+        TKUnit.assertFalse(textViewTestsNative.getNativeEditable(textView), "native Editable should be false");
 
         model.set("editable", true);
-        TKUnit.assert(textView.editable === true, "Actual: " + textView.text + "; Expected: " + true);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === true, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + true);
+        TKUnit.assertTrue(textView.editable, ".ediable property should be true");
+        TKUnit.assertTrue(textViewTestsNative.getNativeEditable(textView), "native Editable should be true");
     });
 }
 
@@ -499,7 +499,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
+
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
@@ -512,7 +512,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
+
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");

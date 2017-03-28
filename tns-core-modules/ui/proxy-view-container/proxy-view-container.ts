@@ -10,6 +10,12 @@ import { LayoutBase, View, traceEnabled, traceWrite, traceCategories } from "../
 // * Child is removed from attached proxy. Handled in _removeViewFromNativeVisualTree.
 // * Proxy (with children) is removed form the DOM. In _removeViewFromNativeVisualTree recursively when the proxy is removed from its parent.
 export class ProxyViewContainer extends LayoutBase implements ProxyViewContainerDefinition {
+
+    constructor() {
+        super();
+        this.nativeView = undefined;        
+    }
+    
     // No native view for proxy container.
     get ios(): any {
         return null;
@@ -19,16 +25,16 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         return null;
     }
 
-    get _nativeView(): any {
-        return null;
-    }
+    // get nativeView(): any {
+    //     return null;
+    // }
 
     get isLayoutRequested(): boolean {
         // Always return false so all layout requests from children bubble up.
         return false;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         return undefined;
     }
 

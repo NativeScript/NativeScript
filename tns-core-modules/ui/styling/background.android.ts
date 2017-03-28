@@ -29,14 +29,14 @@ export module ad {
     }
 
     export function onBackgroundOrBorderPropertyChanged(view: View) {
-        let nativeView = <android.view.View>view._nativeView;
+        let nativeView = <android.view.View>view.nativeView;
         if (!nativeView) {
             return;
         }
 
         let background = view.style.backgroundInternal;
         let backgroundDrawable = nativeView.getBackground();
-        let cache = <CacheLayerType>view._nativeView;
+        let cache = <CacheLayerType>view.nativeView;
         let viewClass = getClass(view);
 
         // always cache the default background constant state.

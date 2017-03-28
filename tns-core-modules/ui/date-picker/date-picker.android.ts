@@ -25,23 +25,23 @@ function initializeDateChangedListener(): void {
 
         onDateChanged(picker: android.widget.DatePicker, year: number, month: number, day: number) {
             const owner = this.owner;
-            let dateIsChanged = false;
+            let dateChanged = false;
             if (year !== owner.year) {
                 yearProperty.nativeValueChange(owner, year);
-                dateIsChanged = true;
+                dateChanged = true;
             }
 
             if ((month + 1) !== owner.month) {
                 monthProperty.nativeValueChange(owner, month + 1);
-                dateIsChanged = true;
+                dateChanged = true;
             }
 
             if (day !== owner.day) {
                 dayProperty.nativeValueChange(owner, day);
-                dateIsChanged = true;
+                dateChanged = true;
             }
 
-            if (dateIsChanged) {
+            if (dateChanged) {
                 dateProperty.nativeValueChange(owner, new Date(year, month, day));
             }
         }
@@ -51,85 +51,89 @@ function initializeDateChangedListener(): void {
 }
 
 export class DatePicker extends DatePickerBase {
-    private _android: android.widget.DatePicker;
-    public _listener: android.widget.DatePicker.OnDateChangedListener;
+    nativeView: android.widget.DatePicker;
 
-    get android(): android.widget.DatePicker {
-        return this._android;
-    }
-
-    public _createNativeView() {
+    public createNativeView() {
         initializeDateChangedListener();
-        const picker = this._android = new android.widget.DatePicker(this._context);
+        const picker = new android.widget.DatePicker(this._context);
         picker.setCalendarViewShown(false);
-        this._listener = this._listener = new DateChangedListener(this);
-        picker.init(0, 0, 0, this._listener);
+        const listener = new DateChangedListener(this);
+        picker.init(0, 0, 0, listener);
+        (<any>picker).listener = listener;
         return picker;
     }
 
+    public initNativeView(): void {
+        super.initNativeView();
+        (<any>this.nativeView).listener.owner = this;
+    }
+
+    public disposeNativeView() {
+        (<any>this.nativeView).listener.owner = null;
+        super.disposeNativeView();
+    }
+
     private updateNativeDate(): void {
-        const year = typeof this.year === "number" ? this.year : this.android.getYear();
-        const month = typeof this.month === "number" ? (this.month - 1) : this.android.getMonth();
-        const day = typeof this.day === "number" ? this.day : this.android.getDayOfMonth();
+        const nativeView = this.nativeView;
+        const year = typeof this.year === "number" ? this.year : nativeView.getYear();
+        const month = typeof this.month === "number" ? (this.month - 1) : nativeView.getMonth();
+        const day = typeof this.day === "number" ? this.day : nativeView.getDayOfMonth();
         this.date = new Date(year, month, day);
     }
 
     [yearProperty.getDefault](): number {
-        return this.android.getYear();
+        return this.nativeView.getYear();
     }
     [yearProperty.setNative](value: number) {
-        if (this.android.getYear() !== value) {
+        if (this.nativeView.getYear() !== value) {
             this.updateNativeDate();
         }
     }
 
     [monthProperty.getDefault](): number {
-        return this.android.getMonth();
+        return this.nativeView.getMonth();
     }
     [monthProperty.setNative](value: number) {
-        if (this.android.getMonth() !== (value - 1)) {
+        if (this.nativeView.getMonth() !== (value - 1)) {
             this.updateNativeDate();
         }
     }
 
     [dayProperty.getDefault](): number {
-        return this.android.getDayOfMonth();
+        return this.nativeView.getDayOfMonth();
     }
     [dayProperty.setNative](value: number) {
-        if (this.android.getDayOfMonth() !== value) {
+        if (this.nativeView.getDayOfMonth() !== value) {
             this.updateNativeDate();
         }
     }
 
     [dateProperty.getDefault](): Date {
-        return new Date(this.android.getYear(), this.android.getMonth(), this.android.getDayOfMonth());
+        const nativeView = this.nativeView;
+        return new Date(nativeView.getYear(), nativeView.getMonth(), nativeView.getDayOfMonth());
     }
     [dateProperty.setNative](value: Date) {
-        if (this.android.getDayOfMonth() !== value.getDay()
-            || this.android.getMonth() !== value.getMonth()
-            || this.android.getYear() !== value.getFullYear()) {
-            this.android.updateDate(value.getFullYear(), value.getMonth(), value.getDate());
+        const nativeView = this.nativeView;
+        if (nativeView.getDayOfMonth() !== value.getDay()
+            || nativeView.getMonth() !== value.getMonth()
+            || nativeView.getYear() !== value.getFullYear()) {
+            nativeView.updateDate(value.getFullYear(), value.getMonth(), value.getDate());
         }
     }
 
-    [maxDateProperty.getDefault](): Date {
-        return this.android.getMaxDate();
+    [maxDateProperty.getDefault](): number {
+        return this.nativeView.getMaxDate();
     }
-    [maxDateProperty.setNative](value: Date) {
-        let newValue = value.getTime();
-        if (this.android.getMaxDate() !== newValue) {
-            this.android.setMaxDate(newValue);
-        }
+    [maxDateProperty.setNative](value: Date | number) {
+        const newValue = value instanceof Date ? value.getTime() : value;
+        this.nativeView.setMaxDate(newValue);
     }
 
-    [minDateProperty.getDefault](): Date {
-        return this.android.getMinDate();
+    [minDateProperty.getDefault](): number {
+        return this.nativeView.getMinDate();
     }
-    [minDateProperty.setNative](value: Date) {
-        let picker = this.android;
-        let newValue = value.getTime();
-        if (picker.getMinDate() !== newValue) {
-            picker.setMinDate(newValue);
-        }
+    [minDateProperty.setNative](value: Date | number) {
+        const newValue = value instanceof Date ? value.getTime() : value;
+        this.nativeView.setMinDate(newValue);
     }
 }

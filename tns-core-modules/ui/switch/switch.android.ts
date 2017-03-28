@@ -32,27 +32,35 @@ function initializeCheckedChangeListener(): void {
 }
 
 export class Switch extends SwitchBase {
-    private _android: android.widget.Switch;
-    private listener: android.widget.CompoundButton.OnCheckedChangeListener;
+    nativeView: android.widget.Switch;
     public checked: boolean;
 
-    get android(): android.widget.Switch {
-        return this._android;
+    public createNativeView() {
+        initializeCheckedChangeListener();
+        const nativeView = new android.widget.Switch(this._context);
+        const listener = new CheckedChangeListener(this);
+        nativeView.setOnCheckedChangeListener(listener);
+        (<any>nativeView).listener = listener;
+        return nativeView;
     }
 
-    public _createNativeView() {
-        initializeCheckedChangeListener();
-        this._android = new android.widget.Switch(this._context);
-        this.listener = this.listener || new CheckedChangeListener(this);
-        this._android.setOnCheckedChangeListener(this.listener);
-        return this._android;
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = this;
+    }
+
+    public disposeNativeView() {
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = null;
+        super.disposeNativeView();
     }
 
     [checkedProperty.getDefault](): boolean {
         return false;
     }
     [checkedProperty.setNative](value: boolean) {
-        this._android.setChecked(value);
+        this.nativeView.setChecked(value);
     }
 
     [colorProperty.getDefault](): number {
@@ -60,9 +68,9 @@ export class Switch extends SwitchBase {
     }
     [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this._android.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeView.getThumbDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this._android.getThumbDrawable().clearColorFilter();
+            this.nativeView.getThumbDrawable().clearColorFilter();
         }
     }
 
@@ -71,9 +79,9 @@ export class Switch extends SwitchBase {
     }
     [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this._android.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeView.getTrackDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this._android.getTrackDrawable().clearColorFilter();
+            this.nativeView.getTrackDrawable().clearColorFilter();
         }
     }
 

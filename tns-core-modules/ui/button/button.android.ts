@@ -1,6 +1,6 @@
 ﻿import {
     ButtonBase, PseudoClassHandler,
-    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, 
+    paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     Length, zIndexProperty
 } from "./button-common";
 
@@ -13,6 +13,7 @@ interface ClickListener {
 }
 
 let ClickListener: ClickListener;
+let APILEVEL: number;
 
 function initializeClickListener(): void {
     if (ClickListener) {
@@ -32,18 +33,31 @@ function initializeClickListener(): void {
     }
 
     ClickListener = ClickListenerImpl;
+    APILEVEL = android.os.Build.VERSION.SDK_INT;
 }
 
 export class Button extends ButtonBase {
-    _button: android.widget.Button;
-    
+    nativeView: android.widget.Button;
+
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeClickListener();
-        const button = this._button = new android.widget.Button(this._context);
-        button.setOnClickListener(new ClickListener(this));
+        const button = new android.widget.Button(this._context);
+        const clickListener = new ClickListener(this);
+        button.setOnClickListener(clickListener);
+        (<any>button).clickListener = clickListener;
         return button;
+    }
+
+    public initNativeView(): void {
+        (<any>this.nativeView).clickListener.owner = this;
+        super.initNativeView();
+    }
+
+    public disposeNativeView() {
+        (<any>this.nativeView).clickListener.owner = null;
+        super.disposeNativeView();
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
@@ -99,8 +113,8 @@ export class Button extends ButtonBase {
     [zIndexProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
         // API >= 21
-        if (this.nativeView.setStateListAnimator) {
-            this.nativeView.setStateListAnimator(null);
+        if (APILEVEL >= 21) {
+            (<any>this.nativeView).setStateListAnimator(null);
         }
     }
 }

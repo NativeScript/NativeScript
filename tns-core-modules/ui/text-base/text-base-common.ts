@@ -118,7 +118,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
     }
 
     public _onFormattedTextContentsChanged(data: PropertyChangeData) {
-        if (this._nativeView) {
+        if (this.nativeView) {
             // Notifications from the FormattedString start arriving before the Android view is even created.
             this[formattedTextProperty.setNative](data.value);
         }

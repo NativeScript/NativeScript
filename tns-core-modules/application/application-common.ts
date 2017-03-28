@@ -18,7 +18,6 @@ export function hasLaunched(): boolean {
 export { Observable };
 
 import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from ".";
-import { NavigationEntry } from "../ui/frame";
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -30,10 +29,11 @@ export const orientationChangedEvent = "orientationChanged";
 
 let cssFile: string = "app.css";
 
-export let mainModule: string;
-export let mainEntry: NavigationEntry;
+let resources: any = {};
 
-export let resources: any = {};
+export function getResources() {
+    return resources;
+}
 
 export function setResources(res: any) {
     resources = res;

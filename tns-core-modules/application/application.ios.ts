@@ -188,13 +188,14 @@ const iosApp = new IOSApplication();
 exports.ios = iosApp;
 setApplication(iosApp);
 
+let mainEntry: NavigationEntry;
 function createRootView(v?: View) {
     let rootView = v;
     let frame: Frame;
     let main: string | NavigationEntry;
     if (!rootView) {
-        // try to navigate to the mainEntry/Module (if specified)
-        main = exports.mainEntry || exports.mainModule;
+        // try to navigate to the mainEntry (if specified)
+        main = mainEntry;
         if (main) {
             frame = new Frame();
             frame.navigate(main);
@@ -209,12 +210,13 @@ function createRootView(v?: View) {
     return rootView;
 }
 
+export function getMainEntry() {
+    return mainEntry;
+}
+
 let started: boolean = false;
-exports.start = function (entry?: NavigationEntry) {
-    if (entry) {
-        exports.mainEntry = entry;
-    }
-    
+export function start(entry?: string | NavigationEntry) {
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     started = true;
 
     if (!iosApp.nativeApp) {

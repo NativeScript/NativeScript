@@ -3,12 +3,17 @@
 export * from "./text-field-common";
 
 export class TextField extends TextFieldBase {
-    public _configureEditText() {
-        let nativeView = this.android;
-        nativeView.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-        nativeView.setLines(1);
-        nativeView.setMaxLines(1);
-        nativeView.setHorizontallyScrolling(true);
+    public _configureEditText(editText: android.widget.EditText) {
+        editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+        editText.setLines(1);
+        editText.setMaxLines(1);
+        editText.setHorizontallyScrolling(true);
+    }
+
+    public initNativeView(): void {
+        // TODO: We should be able to reset it using only our properties. Check it first.
+        super.initNativeView();
+        this.nativeView.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     }
 
     public _onReturnPress() {
@@ -29,19 +34,16 @@ export class TextField extends TextFieldBase {
         if (value) {
             if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
                 newInputType = currentClass | currentFlags | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-            }
-            else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
+            } else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
                 newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
             }
 
             // Lower all autocapitalization bits, because password bits don't like them and we will receive "Unsupported input type: 16513" error for example.
             newInputType = newInputType & ~28672; //28672 (0x0070000) 13,14,15 bits (111 0000 0000 0000)
-        }
-        else {
+        } else {
             if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
                 newInputType = currentClass | currentFlags | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
-            }
-            else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
+            } else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
                 newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL;
             }
         }

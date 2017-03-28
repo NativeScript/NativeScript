@@ -47,124 +47,6 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
     imageFetcher.initCache();
 }
 
-export class Image extends ImageBase {
-    private _android: org.nativescript.widgets.ImageView;
-    private _imageLoadedListener: org.nativescript.widgets.image.Worker.OnImageLoadedListener;
-
-    public decodeWidth = 0;
-    public decodeHeight = 0;
-    public useCache = true;
-
-    get android(): org.nativescript.widgets.ImageView {
-        return this._android;
-    }
-
-    public _createNativeView() {
-        initializeImageLoadedListener();
-        if (!imageFetcher) {
-            initImageCache(this._context);
-        }
-
-        const imageView = this._android = new org.nativescript.widgets.ImageView(this._context);
-        return imageView;
-    }
-
-    public _createImageSourceFromSrc() {
-        let imageView = this._android;
-        this.imageSource = <any>unsetValue;
-
-        if (!imageView || !this.src) {
-            return;
-        }
-
-        let value = this.src;
-        let async = this.loadMode === ASYNC;
-        this._imageLoadedListener = this._imageLoadedListener || new ImageLoadedListener(this);
-
-        if (typeof value === "string") {
-            value = value.trim();
-            this.isLoading = true;
-
-            if (isDataURI(value)) {
-                // TODO: Check with runtime what should we do in case of base64 string.
-                super._createImageSourceFromSrc();
-            }
-            else if (isFileOrResourcePath(value)) {
-                if (value.indexOf(RESOURCE_PREFIX) === 0) {
-                    imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async, this._imageLoadedListener);
-                }
-                else {
-                    let fileName = value;
-                    if (fileName.indexOf("~/") === 0) {
-                        fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
-                    }
-
-                    imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async, this._imageLoadedListener);
-                }
-            }
-            else {
-                // For backwards compatibility http always use async loading.
-                imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true, this._imageLoadedListener);
-            }
-        } else {
-            super._createImageSourceFromSrc();
-        }
-    }
-
-    [stretchProperty.getDefault](): "aspectFit" {
-        return "aspectFit";
-    }
-    [stretchProperty.setNative](value: "none" | "aspectFill" | "aspectFit" | "fill") {
-        switch (value) {
-            case "aspectFit":
-                this.android.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
-                break;
-            case "aspectFill":
-                this.android.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
-                break;
-            case "fill":
-                this.android.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
-                break;
-            case "none":
-            default:
-                this.android.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
-                break;
-        }
-    }
-
-    [tintColorProperty.getDefault](): Color {
-        return undefined;
-    }
-    [tintColorProperty.setNative](value: Color) {
-        if (value === undefined) {
-            this._android.clearColorFilter();
-        } else {
-            this._android.setColorFilter(value.android);
-        }
-    }
-
-    [imageSourceProperty.getDefault](): ImageSource {
-        return undefined;
-    }
-    [imageSourceProperty.setNative](value: ImageSource) {
-        if (value && value.android) {
-            let rotation = value.rotationAngle ? value.rotationAngle : 0;
-            this.android.setRotationAngle(rotation);
-            this.android.setImageBitmap(value.android);
-        } else {
-            this.android.setRotationAngle(0);
-            this.android.setImageBitmap(null);
-        }
-    }
-
-    [srcProperty.getDefault](): any {
-        return undefined;
-    }
-    [srcProperty.setNative](value: any) {
-        this._createImageSourceFromSrc();
-    }
-}
-
 interface ImageLoadedListener {
     new (owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
 }
@@ -177,15 +59,145 @@ function initializeImageLoadedListener() {
 
     @Interfaces([org.nativescript.widgets.image.Worker.OnImageLoadedListener])
     class ImageLoadedListenerImpl extends java.lang.Object implements org.nativescript.widgets.image.Worker.OnImageLoadedListener {
-        constructor(private owner: Image) {
+        constructor(public owner: Image) {
             super();
             return global.__native(this);
         }
 
         onImageLoaded(success: boolean): void {
-            this.owner.isLoading = false;
+            const owner = this.owner;
+            if (owner) {
+                owner.isLoading = false;
+            }
         }
     }
 
     ImageLoadedListener = ImageLoadedListenerImpl;
+}
+
+export class Image extends ImageBase {
+    nativeView: org.nativescript.widgets.ImageView;
+
+    public decodeWidth = 0;
+    public decodeHeight = 0;
+    public useCache = true;
+
+    public createNativeView() {
+        initializeImageLoadedListener();
+        if (!imageFetcher) {
+            initImageCache(this._context);
+        }
+
+        const imageView = new org.nativescript.widgets.ImageView(this._context);
+        const listener = new ImageLoadedListener(this);
+        imageView.setImageLoadedListener(listener);
+        (<any>imageView).listener = listener;
+
+        return imageView;
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        (<any>this.nativeView).listener.owner = this;
+    }
+
+    public disposeNativeView() {
+        (<any>this.nativeView).listener.owner = null;
+        super.disposeNativeView();
+    }
+
+    public _createImageSourceFromSrc() {
+        let imageView = this.nativeView;
+        this.imageSource = <any>unsetValue;
+
+        if (!imageView || !this.src) {
+            return;
+        }
+
+        let value = this.src;
+        let async = this.loadMode === ASYNC;
+
+        if (typeof value === "string") {
+            value = value.trim();
+            this.isLoading = true;
+
+            if (isDataURI(value)) {
+                // TODO: Check with runtime what should we do in case of base64 string.
+                super._createImageSourceFromSrc();
+            }
+            else if (isFileOrResourcePath(value)) {
+                if (value.indexOf(RESOURCE_PREFIX) === 0) {
+                    imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async);
+                }
+                else {
+                    let fileName = value;
+                    if (fileName.indexOf("~/") === 0) {
+                        fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+                    }
+
+                    imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async);
+                }
+            }
+            else {
+                // For backwards compatibility http always use async loading.
+                imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true);
+            }
+        } else {
+            super._createImageSourceFromSrc();
+        }
+    }
+
+    [stretchProperty.getDefault](): "aspectFit" {
+        return "aspectFit";
+    }
+    [stretchProperty.setNative](value: "none" | "aspectFill" | "aspectFit" | "fill") {
+        switch (value) {
+            case "aspectFit":
+                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.FIT_CENTER);
+                break;
+            case "aspectFill":
+                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+                break;
+            case "fill":
+                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.FIT_XY);
+                break;
+            case "none":
+            default:
+                this.nativeView.setScaleType(android.widget.ImageView.ScaleType.MATRIX);
+                break;
+        }
+    }
+
+    [tintColorProperty.getDefault](): Color {
+        return undefined;
+    }
+    [tintColorProperty.setNative](value: Color) {
+        if (value === undefined) {
+            this.nativeView.clearColorFilter();
+        } else {
+            this.nativeView.setColorFilter(value.android);
+        }
+    }
+
+    [imageSourceProperty.getDefault](): ImageSource {
+        return undefined;
+    }
+    [imageSourceProperty.setNative](value: ImageSource) {
+        const nativeView = this.nativeView;
+        if (value && value.android) {
+            const rotation = value.rotationAngle ? value.rotationAngle : 0;
+            nativeView.setRotationAngle(rotation);
+            nativeView.setImageBitmap(value.android);
+        } else {
+            nativeView.setRotationAngle(0);
+            nativeView.setImageBitmap(null);
+        }
+    }
+
+    [srcProperty.getDefault](): any {
+        return undefined;
+    }
+    [srcProperty.setNative](value: any) {
+        this._createImageSourceFromSrc();
+    }
 }

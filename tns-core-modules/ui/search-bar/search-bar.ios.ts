@@ -61,7 +61,7 @@ export class SearchBar extends SearchBarBase {
     constructor() {
         super();
 
-        this._ios = UISearchBar.new();
+        this.nativeView = this._ios = UISearchBar.new();
         this._delegate = UISearchBarDelegateImpl.initWithOwner(new WeakRef(this));
     }
 

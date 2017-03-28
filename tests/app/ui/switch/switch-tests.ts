@@ -13,10 +13,10 @@ import * as switchModule from "tns-core-modules/ui/switch";
 
 // >> article-binding-switch-property
 function pageLoaded(args) {
-  var page = args.object;
-  var obj = new observable.Observable();
-  obj.set("someProperty", false);
-  page.bindingContext = obj;
+    var page = args.object;
+    var obj = new observable.Observable();
+    obj.set("someProperty", false);
+    page.bindingContext = obj;
 }
 exports.pageLoaded = pageLoaded;
 // << article-binding-switch-property
@@ -137,17 +137,18 @@ export function test_binding_value_to_model() {
 }
 
 function getNativeValue(mySwitch: switchModule.Switch): boolean {
-    if (mySwitch.android) {
-        return mySwitch.android.isChecked();
-    }
-    else if (mySwitch.ios) {
+    if (platform.isAndroid) {
+        const nativeView: android.widget.Switch = mySwitch.nativeView;
+        return nativeView.isChecked();
+    } else if (mySwitch.ios) {
         return mySwitch.ios.on;
     }
 }
 
 function setNativeValue(mySwitch: switchModule.Switch, value: boolean) {
-    if (mySwitch.android) {
-        mySwitch.android.setChecked(value);
+    if (platform.isAndroid) {
+        const nativeView: android.widget.Switch = mySwitch.nativeView;
+        nativeView.setChecked(value);
     }
     else if (mySwitch.ios) {
         mySwitch.ios.on = value;

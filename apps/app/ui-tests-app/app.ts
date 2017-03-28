@@ -69,13 +69,10 @@ application.on(application.lowMemoryEvent, function (args: application.Applicati
 });
 
 application.on(application.uncaughtErrorEvent, function (args: application.UnhandledErrorEventData) {
-    if (args.android) {
-        // For Android applications, args.android is NativeScriptError.
-        console.log("### NativeScriptError: " + args.android);
-    } else if (args.ios) {
-        // For iOS applications, args.ios is NativeScriptError.
-        console.log("### NativeScriptError: " + args.ios);
-    }
+        console.log("### NativeScriptError: " + args.error);
+        console.log("### nativeException: " + (<any>args.error).nativeException);
+        console.log("### stackTace: " + (<any>args.error).stackTrace);
+        console.log("### stack: " + args.error.stack);
 });
 
 application.setCssFileName("ui-tests-app/app.css");

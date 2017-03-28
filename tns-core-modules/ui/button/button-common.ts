@@ -13,3 +13,5 @@ export abstract class ButtonBase extends TextBase implements ButtonDefinition {
         this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
     }
 }
+
+// ButtonBase.prototype.recycleNativeView = true;

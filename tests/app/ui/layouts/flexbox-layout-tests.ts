@@ -174,6 +174,7 @@ export function testFlexboxPage() {
     function view(id: string) {
         return <View>page.getViewById(id);
     }
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
     isLeftOf(view("six"), view("one"));
     isAbove(view("one"), view("scrollview"));
     isAbove(view("title"), view("firstlabel"));

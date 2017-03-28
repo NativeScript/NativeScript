@@ -348,9 +348,10 @@ export class Binding {
                 let context = this.source && this.source.get && this.source.get() || global;
                 let model = {};
                 let addedProps = [];
-                for (let prop in application.resources) {
-                    if (application.resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
-                        context[prop] = application.resources[prop];
+                const resources = application.getResources();
+                for (let prop in resources) {
+                    if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+                        context[prop] = resources[prop];
                         addedProps.push(prop);
                     }
                 }

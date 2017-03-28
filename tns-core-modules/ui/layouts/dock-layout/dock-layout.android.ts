@@ -3,7 +3,7 @@
 export * from "./dock-layout-common";
 
 View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "top" | "right" | "bottom") {
-    const nativeView: android.view.View = this._nativeView;
+    const nativeView: android.view.View = this.nativeView;
     const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
     if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
         switch (value) {
@@ -32,26 +32,16 @@ View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "t
 }
 
 export class DockLayout extends DockLayoutBase {
+    nativeView: org.nativescript.widgets.DockLayout;
 
-    private _layout: org.nativescript.widgets.DockLayout;
-
-    get android(): org.nativescript.widgets.DockLayout {
-        return this._layout;
-    }
-
-    get _nativeView(): org.nativescript.widgets.DockLayout {
-        return this._layout;
-    }
-
-    public _createNativeView() {
-        const layout = this._layout = new org.nativescript.widgets.DockLayout(this._context);
-        return layout;
+    public createNativeView() {
+        return new org.nativescript.widgets.DockLayout(this._context);
     }
 
     [stretchLastChildProperty.getDefault](): boolean {
-        return false;
+        return true;
     }
     [stretchLastChildProperty.setNative](value: boolean) {
-        this._layout.setStretchLastChild(value);
+        this.nativeView.setStretchLastChild(value);
     }
 }

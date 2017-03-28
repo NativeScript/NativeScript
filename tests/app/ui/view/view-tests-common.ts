@@ -14,6 +14,7 @@ import * as helper from "../../ui/helper";
 import * as observable from "tns-core-modules/data/observable";
 import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
+import { isIOS } from "tns-core-modules/platform";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -273,8 +274,20 @@ class TestView extends Layout {
         this.style["customCssProperty"] = value;
     }
 
+    private _nativeView;
     constructor(public name: string) {
         super();
+        this._nativeView = this.nativeView;
+        this.nativeView = undefined;
+    }
+
+    public createNativeView() {
+        if (isIOS) {
+            this.nativeView = this._nativeView;
+            return this._nativeView;
+        }
+
+        return super.createNativeView();
     }
 
     public toString() {
@@ -404,28 +417,55 @@ export function test_NativeSetter_called_when_add_and_remove() {
     secondView.custom = "testViewValue";
 
     helper.buildUIAndRunTest(firstView, () => {
-        TKUnit.assertEqual(secondView.cssPropCounter, 0);
-        TKUnit.assertEqual(secondView.viewPropCounter, 0);
+        TKUnit.assertEqual(secondView.cssPropCounter, 0, "1");
+        TKUnit.assertEqual(secondView.viewPropCounter, 0, "2");
 
         // Add to visual tree
         firstView.addChild(secondView);
-        TKUnit.assertEqual(secondView.cssPropCounter, 1);
-        TKUnit.assertEqual(secondView.viewPropCounter, 1);
-        secondView.cssPropCounter = 0;
-        secondView.viewPropCounter = 0;
+        TKUnit.assertEqual(secondView.cssPropCounter, 1, "3");
+        TKUnit.assertEqual(secondView.viewPropCounter, 1, "4");
 
         // Set new value
         secondView.customCssProperty = "test2";
         secondView.custom = "test2";
-        TKUnit.assertEqual(secondView.cssPropCounter, 1);
-        TKUnit.assertEqual(secondView.viewPropCounter, 1);
-        secondView.cssPropCounter = 0;
-        secondView.viewPropCounter = 0;
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "5");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "6");
 
         // Remove from visual tree
         firstView.removeChild(secondView);
-        TKUnit.assertEqual(secondView.cssPropCounter, 0);
-        TKUnit.assertEqual(secondView.viewPropCounter, 0);
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "7");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "8");
+    });
+};
+
+export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
+    const firstView = new TestView("firstView");
+    const secondView = new TestView("secondView");
+    secondView.recycleNativeView = !isIOS;
+    secondView.customCssProperty = "testCssValue";
+    secondView.custom = "testViewValue";
+
+    helper.buildUIAndRunTest(firstView, () => {
+        TKUnit.assertEqual(secondView.cssPropCounter, 0, "1");
+        TKUnit.assertEqual(secondView.viewPropCounter, 0, "2");
+
+        // Add to visual tree
+        firstView.addChild(secondView);
+        TKUnit.assertEqual(secondView.cssPropCounter, 1, "3");
+        TKUnit.assertEqual(secondView.viewPropCounter, 1, "4");
+
+        // Set new value
+        secondView.customCssProperty = "test2";
+        secondView.custom = "test2";
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "5");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "6");
+
+        // Remove from visual tree
+        firstView.removeChild(secondView);
+
+        // we don't recycle nativeViews on iOS yet so reset is not called.
+        TKUnit.assertEqual(secondView.cssPropCounter, isIOS ? 2 : 3, "7");
+        TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
     });
 };
 

@@ -494,7 +494,6 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number };
 
     _goToVisualState(state: string);
-    _nativeView: any;
     _setNativeViewFrame(nativeView: any, frame: any): void;
     // _onStylePropertyChanged(property: dependencyObservable.Property): void;
 
