@@ -35,6 +35,20 @@ We are using the following import statement for the code samples in this section
 import * as application from "tns-core-modules/application";
 ```
 
+`application.mainEntry` was removed.
+
+`application.mainModule` was removed.
+
+Pass `mainModule` or `mainEntry` to `application.start` method.
+If you need access to `mainEntry` use:
+* `application.getMainEntry(): NavigationEntry`
+
+The string `mainModule` is implicitly converted to `NavigationEntry` and set to `mainEntry`.
+
+`application.resources` was removed, use get/set methods:
+* `application.getResources(): any`
+* `application.setResources(res: any)`
+
 `application.cssFile` was removed, use get/set methods:
 * `application.getCssFileName(): string`
 * `application.setCssFileName(file: string)`
