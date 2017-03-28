@@ -28,32 +28,24 @@ class SwitchChangeHandlerImpl extends NSObject {
 
 const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
-    private _ios: UISwitch;
+    nativeView: UISwitch;
     private _handler: NSObject;
 
     constructor() {
         super();
-        this._ios = UISwitch.new();
-
+        const nativeView = UISwitch.new();
         this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
+        nativeView.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
+        this.nativeView = nativeView;
     }
 
     get ios(): UISwitch {
-        return this._ios;
-    }
-
-    get _nativeView(): UISwitch {
-        return this._ios;
-    }
-
-    get nativeView(): UISwitch {
-        return this._ios;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // It can't be anything different from 51x31
-        let nativeSize = this._nativeView.sizeThatFits(zeroSize);
+        let nativeSize = this.nativeView.sizeThatFits(zeroSize);
         this.width = nativeSize.width;
         this.height = nativeSize.height;
 
@@ -66,21 +58,21 @@ export class Switch extends SwitchBase {
         return false;
     }
     [checkedProperty.setNative](value: boolean) {
-        this._ios.on = value;
+        this.nativeView.on = value;
     }
 
     [colorProperty.getDefault](): UIColor {
-        return this._ios.thumbTintColor;
+        return this.nativeView.thumbTintColor;
     }
     [colorProperty.setNative](value: UIColor | Color) {
-        this._ios.thumbTintColor = value instanceof Color ? value.ios : value;
+        this.nativeView.thumbTintColor = value instanceof Color ? value.ios : value;
     }
 
     [backgroundColorProperty.getDefault](): UIColor {
-        return this._ios.onTintColor;
+        return this.nativeView.onTintColor;
     }
     [backgroundColorProperty.setNative](value: UIColor | Color) {
-        this._ios.onTintColor = value instanceof Color ? value.ios : value;
+        this.nativeView.onTintColor = value instanceof Color ? value.ios : value;
     }
 
     [backgroundInternalProperty.getDefault](): any {

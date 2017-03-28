@@ -91,3 +91,5 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
         View.layoutChild(this, this.layoutView, 0, 0, right - left, bottom - top);
     }
 }
+
+ContentView.prototype.recycleNativeView = true;

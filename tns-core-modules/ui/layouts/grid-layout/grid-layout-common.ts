@@ -305,6 +305,8 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
     }
 }
 
+GridLayoutBase.prototype.recycleNativeView = true;
+
 export const columnProperty = new Property<View, number>({
     name: "col", defaultValue: 0,
     valueChanged: (target, oldValue, newValue) => {

@@ -7,7 +7,7 @@ import * as application from "../../application";
 export * from "./action-bar-common";
 
 const R_ID_HOME = 0x0102002c;
-const ACTION_ITEM_ID_OFFSET = 1000;
+const ACTION_ITEM_ID_OFFSET = 10000;
 
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
@@ -104,8 +104,7 @@ export class NavigationButton extends ActionItem {
 
 export class ActionBar extends ActionBarBase {
     private _android: AndroidActionBarSettings;
-    private _toolbar: android.support.v7.widget.Toolbar;
-    private _menuItemClickListener: android.support.v7.widget.Toolbar.OnMenuItemClickListener;
+    public nativeView: android.support.v7.widget.Toolbar;
 
     constructor() {
         super();
@@ -114,13 +113,6 @@ export class ActionBar extends ActionBarBase {
 
     get android(): AndroidActionBarSettings {
         return this._android;
-    }
-    set android(value: AndroidActionBarSettings) {
-        throw new Error("ActionBar.android is read-only");
-    }
-
-    get _nativeView(): android.support.v7.widget.Toolbar {
-        return this._toolbar;
     }
 
     public _addChildFromBuilder(name: string, value: any) {
@@ -137,10 +129,19 @@ export class ActionBar extends ActionBarBase {
 
     public _createNativeView() {
         initializeMenuItemClickListener();
-        const toolbar = this._toolbar = new android.support.v7.widget.Toolbar(this._context);
-        this._menuItemClickListener = this._menuItemClickListener || new MenuItemClickListener(this);
-        this._toolbar.setOnMenuItemClickListener(this._menuItemClickListener);
+        const toolbar = new android.support.v7.widget.Toolbar(this._context);
+        const menuItemClickListener = new MenuItemClickListener(this);
+        toolbar.setOnMenuItemClickListener(menuItemClickListener);
+        (<any>toolbar).menuItemClickListener = menuItemClickListener;
         return toolbar;
+    }
+
+    public _initNativeView(): void {
+        (<any>this.nativeView).menuItemClickListener.owner = this;
+    }
+
+    public _disposeNativeView() {
+        (<any>this.nativeView).menuItemClickListener.owner = null;
     }
 
     public onLoaded() {
@@ -326,20 +327,15 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    public _disposeNativeView() {
-        // don't clear _android field!
-        this.nativeView = undefined;
-    }
-
     public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_VALUE): boolean {
         super._addViewToNativeVisualTree(child);
 
-        if (this.nativeView && child._nativeView) {
-            if (atIndex >= this._nativeView.getChildCount()) {
-                this.nativeView.addView(child._nativeView);
+        if (this.nativeView && child.nativeView) {
+            if (atIndex >= this.nativeView.getChildCount()) {
+                this.nativeView.addView(child.nativeView);
             }
             else {
-                this.nativeView.addView(child._nativeView, atIndex);
+                this.nativeView.addView(child.nativeView, atIndex);
             }
             return true;
         }
@@ -350,8 +346,8 @@ export class ActionBar extends ActionBarBase {
     public _removeViewFromNativeVisualTree(child: View): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (this.nativeView && child._nativeView) {
-            this.nativeView.removeView(child._nativeView);
+        if (this.nativeView && child.nativeView) {
+            this.nativeView.removeView(child.nativeView);
         }
     }
 
@@ -368,6 +364,8 @@ export class ActionBar extends ActionBarBase {
         this.nativeView.setTitleTextColor(color);
     }
 }
+
+ActionBar.prototype.recycleNativeView = true;
 
 let defaultTitleTextColor: number;
 

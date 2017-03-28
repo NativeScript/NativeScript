@@ -1,7 +1,7 @@
 ﻿import * as listPickerModule from "tns-core-modules/ui/list-picker";
 
 export function getNativeItemsCount(listPicker: listPickerModule.ListPicker): number {
-    var maxValue = listPicker.android.getMaxValue();
+    var maxValue = listPicker.nativeView.getMaxValue();
 
     if (listPicker.items.length === 0 && maxValue === 0) {
         return 0;
@@ -12,6 +12,6 @@ export function getNativeItemsCount(listPicker: listPickerModule.ListPicker): nu
 
 export function selectNativeItem(listPicker: listPickerModule.ListPicker, index: number): void {
     var oldIndex = listPicker.selectedIndex;
-    listPicker.android.setValue(index);
-    (<any>listPicker)._valueChangedListener.onValueChange(listPicker.android, oldIndex, index);
+    listPicker.nativeView.setValue(index);
+    listPicker.nativeView.valueChangedListener.onValueChange(listPicker.android, oldIndex, index);
 }

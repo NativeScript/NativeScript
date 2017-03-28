@@ -14,6 +14,8 @@ export abstract class SearchBarBase extends View implements SearchBarDefinition 
     public abstract dismissSoftInput();
 }
 
+SearchBarBase.prototype.recycleNativeView = true;
+
 export const textProperty = new Property<SearchBarBase, string>({ name: "text", defaultValue: "", affectsLayout: isIOS });
 textProperty.register(SearchBarBase);
 

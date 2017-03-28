@@ -422,17 +422,17 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
 }
 
 export function _removePageNativeViewFromAndroidParent(page: Page): void {
-    if (page._nativeView && page._nativeView.getParent) {
-        let androidParent = page._nativeView.getParent();
+    if (page.nativeView && page.nativeView.getParent) {
+        let androidParent = page.nativeView.getParent();
         if (androidParent && androidParent.removeView) {
             if (traceEnabled()) {
-                traceWrite(`REMOVED ${page}._nativeView from its Android parent`, traceCategories.Transition);
+                traceWrite(`REMOVED ${page}.nativeView from its Android parent`, traceCategories.Transition);
             }
 
             if (page._context) {
                 page._tearDownUI(true);
             }
-            androidParent.removeView(page._nativeView);
+            androidParent.removeView(page.nativeView);
         }
     }
 }

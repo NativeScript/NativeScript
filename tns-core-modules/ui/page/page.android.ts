@@ -39,13 +39,13 @@ function initializeDialogFragment() {
             this._owner.verticalAlignment = this._fullscreen ? "stretch" : "middle";
             this._owner.actionBarHidden = true;
 
-            const nativeView = <android.view.View>this._owner._nativeView;
+            const nativeView = <android.view.View>this._owner.nativeView;
             let layoutParams = nativeView.getLayoutParams();
             if (!layoutParams) {
                 layoutParams = new org.nativescript.widgets.CommonLayoutParams();
                 nativeView.setLayoutParams(layoutParams);
             }
-            dialog.setContentView(this._owner._nativeView, layoutParams);
+            dialog.setContentView(this._owner.nativeView, layoutParams);
 
             const window = dialog.getWindow();
             window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
@@ -87,32 +87,24 @@ function initializeDialogFragment() {
 }
 
 export class Page extends PageBase {
+    nativeView: org.nativescript.widgets.GridLayout;
     private _isBackNavigation = false;
-    private _grid: org.nativescript.widgets.GridLayout;
-
-    get android(): android.view.ViewGroup {
-        return this._grid;
-    }
-
-    get _nativeView(): android.view.ViewGroup {
-        return this._grid;
-    }
-
-    get nativeView(): android.view.ViewGroup {
-        return this._grid;
-    }
 
     public _createNativeView() {
-        const layout = this._grid = new org.nativescript.widgets.GridLayout(this._context);
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-        this.nativeView.setBackgroundColor(new Color("white").android);
+        const layout = new org.nativescript.widgets.GridLayout(this._context);
+        layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+        layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        layout.setBackgroundColor(-1);
         return layout;
+    }
+
+    public _initNativeView(): void {
+        this.nativeView.setBackgroundColor(-1); // White color.
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         // Set the row property for the child 
-        if (this._nativeView && child._nativeView) {
+        if (this.nativeView && child.nativeView) {
             if (child instanceof ActionBar) {
                 GridLayout.setRow(child, 0);
                 child.horizontalAlignment = "stretch";

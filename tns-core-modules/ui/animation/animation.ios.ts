@@ -223,7 +223,7 @@ export class Animation extends AnimationBase {
         let length = this._mergedPropertyAnimations.length;
         for (; i < length; i++) {
             let propertyAnimation = this._mergedPropertyAnimations[i];
-            propertyAnimation.target._nativeView.layer.removeAllAnimations();
+            propertyAnimation.target.nativeView.layer.removeAllAnimations();
             if (propertyAnimation._propertyResetCallback) {
                 propertyAnimation._propertyResetCallback(propertyAnimation._originalValue, this._valueSource);
             }
@@ -259,7 +259,7 @@ export class Animation extends AnimationBase {
 
     private static _getNativeAnimationArguments(animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe"): AnimationInfo {
 
-        let nativeView = <UIView>animation.target._nativeView;
+        let nativeView = <UIView>animation.target.nativeView;
         let propertyNameToAnimate = animation.property;
         let value = animation.value;
         let originalValue;
@@ -381,7 +381,7 @@ export class Animation extends AnimationBase {
 
     private static _createNativeAnimation(propertyAnimations: Array<PropertyAnimation>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimation, valueSource: "animation" | "keyframe", finishedCallback: (cancelled?: boolean) => void) {
 
-        let nativeView = <UIView>animation.target._nativeView;
+        let nativeView = <UIView>animation.target.nativeView;
         let nativeAnimation = CABasicAnimation.animationWithKeyPath(args.propertyNameToAnimate);
         nativeAnimation.fromValue = args.fromValue;
         nativeAnimation.toValue = args.toValue;
@@ -415,7 +415,7 @@ export class Animation extends AnimationBase {
 
     private static _createNativeSpringAnimation(propertyAnimations: Array<PropertyAnimationInfo>, index: number, playSequentially: boolean, args: AnimationInfo, animation: PropertyAnimationInfo, valueSource: "animation" | "keyframe", finishedCallback: (cancelled?: boolean) => void) {
 
-        let nativeView = <UIView>animation.target._nativeView;
+        let nativeView = <UIView>animation.target.nativeView;
 
         let callback = undefined;
         let nextAnimation;
@@ -593,7 +593,7 @@ export function _getTransformMismatchErrorMessage(view: View): string {
     result = CGAffineTransformRotate(result, (view.rotate || 0) * Math.PI / 180);
     result = CGAffineTransformScale(result, view.scaleX || 1, view.scaleY || 1);
     let viewTransform = NSStringFromCGAffineTransform(result);
-    let nativeTransform = NSStringFromCGAffineTransform(view._nativeView.transform);
+    let nativeTransform = NSStringFromCGAffineTransform(view.nativeView.transform);
 
     if (viewTransform !== nativeTransform) {
         return "View and Native transforms do not match. View: " + viewTransform + "; Native: " + nativeTransform;

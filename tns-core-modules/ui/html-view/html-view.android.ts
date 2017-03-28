@@ -5,14 +5,10 @@
 export * from "./html-view-common";
 
 export class HtmlView extends HtmlViewBase {
-    private _android: android.widget.TextView;
-
-    get android(): android.widget.TextView {
-        return this._android;
-    }
+    nativeView: android.widget.TextView;
 
     public _createNativeView() {
-        const textView = this._android = new android.widget.TextView(this._context);
+        const textView = new android.widget.TextView(this._context);
         // This makes the html <a href...> work
         textView.setLinksClickable(true);
         textView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
@@ -30,7 +26,7 @@ export class HtmlView extends HtmlViewBase {
         if (value.search(/<a\s/i) >= 0) {
             mask = 0;
         }
-        this._android.setAutoLinkMask(mask);
-        this._android.setText(<any>android.text.Html.fromHtml(value));
+        this.nativeView.setAutoLinkMask(mask);
+        this.nativeView.setText(<any>android.text.Html.fromHtml(value));
     }
 }

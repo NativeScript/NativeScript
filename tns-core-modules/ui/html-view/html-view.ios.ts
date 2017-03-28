@@ -9,7 +9,7 @@ export class HtmlView extends HtmlViewBase {
 
     constructor() {
         super();
-        this._ios = UITextView.new();
+        this.nativeView = this._ios = UITextView.new();
 
         this._ios.scrollEnabled = false;
         this._ios.editable = false;
@@ -22,12 +22,12 @@ export class HtmlView extends HtmlViewBase {
         return this._ios;
     }
 
-    get _nativeView(): UITextView {
-        return this._ios;
-    }
+    // get nativeView(): UITextView {
+    //     return this._ios;
+    // }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var nativeView = this._nativeView;
+        var nativeView = this._ios;
         if (nativeView) {
             const width = layout.getMeasureSpecSize(widthMeasureSpec);
             const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);

@@ -185,7 +185,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         var tabView = this.testView;
         this.waitUntilTestElementIsLoaded();
 
-        TKUnit.assertThrows(function () {
+        TKUnit.assertThrows(() => {
             let item = new tabViewModule.TabViewItem();
             item.title = "Tab 0";
             item.view = undefined;
@@ -198,7 +198,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         var tabView = this.testView;
         this.waitUntilTestElementIsLoaded();
 
-        TKUnit.assertThrows(function () {
+        TKUnit.assertThrows(() => {
             let item = new tabViewModule.TabViewItem();
             item.title = "Tab 0";
             item.view = null;

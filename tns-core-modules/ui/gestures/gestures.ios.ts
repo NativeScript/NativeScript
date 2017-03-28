@@ -107,8 +107,8 @@ export class GesturesObserver extends GesturesObserverBase {
     private _attach(target: View, type: GestureTypes) {
         this._detach();
 
-        if (target && target._nativeView && target._nativeView.addGestureRecognizer) {
-            let nativeView = <UIView>target._nativeView;
+        if (target && target.nativeView && target.nativeView.addGestureRecognizer) {
+            let nativeView = <UIView>target.nativeView;
 
             if (type & GestureTypes.tap) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.tap));
@@ -129,7 +129,7 @@ export class GesturesObserver extends GesturesObserverBase {
 
             if (type & GestureTypes.pan) {
                 nativeView.addGestureRecognizer(this._createRecognizer(GestureTypes.pan, args => {
-                    this._executeCallback(_getPanData(args, target._nativeView));
+                    this._executeCallback(_getPanData(args, target.nativeView));
                 }));
             }
 
@@ -168,11 +168,11 @@ export class GesturesObserver extends GesturesObserverBase {
     }
 
     private _detach() {
-        if (this.target && this.target._nativeView) {
+        if (this.target && this.target.nativeView) {
             for (let name in this._recognizers) {
                 if (this._recognizers.hasOwnProperty(name)) {
                     let item = <RecognizerCache>this._recognizers[name];
-                    this.target._nativeView.removeGestureRecognizer(item.recognizer);
+                    this.target.nativeView.removeGestureRecognizer(item.recognizer);
 
                     item.recognizer = null;
                     item.target = null;
@@ -288,7 +288,7 @@ function _getSwipeDirection(direction: UISwipeGestureRecognizerDirection): Swipe
 
 function _getPinchData(args: GestureEventData): PinchGestureEventData {
     let recognizer = <UIPinchGestureRecognizer>args.ios;
-    let center = recognizer.locationInView(args.view._nativeView);
+    let center = recognizer.locationInView(args.view.nativeView);
 
     return <PinchGestureEventData>{
         type: args.type,
@@ -386,7 +386,7 @@ class Pointer implements Pointer {
     private _location: CGPoint;
     private get location(): CGPoint {
         if (!this._location) {
-            this._location = this.ios.locationInView(this._view._nativeView);
+            this._location = this.ios.locationInView(this._view.nativeView);
         }
 
         return this._location;
@@ -470,10 +470,10 @@ class TouchGestureEventData implements TouchGestureEventData {
     }
 
     getX(): number {
-        return this.getMainPointer().locationInView(this.view._nativeView).x;
+        return this.getMainPointer().locationInView(this.view.nativeView).x;
     }
 
     getY(): number {
-        return this.getMainPointer().locationInView(this.view._nativeView).y
+        return this.getMainPointer().locationInView(this.view.nativeView).y
     }
 }

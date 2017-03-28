@@ -91,6 +91,41 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
 
 let viewIdCounter = 1;
 
+const contextMap = new Map<Object, Map<string, WeakRef<Object>[]>>();
+
+function getNativeView(context: Object, typeName: string): Object {
+    let typeMap = contextMap.get(context);
+    if (!typeMap) {
+        typeMap = new Map<string, WeakRef<Object>[]>();
+        contextMap.set(context, typeMap);
+        return undefined;
+    }
+
+    const array = typeMap.get(typeName);
+    if (array) {
+        let nativeView;
+        while (array.length > 0) {
+            const weakRef = array.pop();
+            nativeView = weakRef.get();
+            if (nativeView) {
+                return nativeView;
+            }
+        }
+    }
+    return undefined;
+}
+
+function putNativeView(context: Object, view: ViewBase): void {
+    const typeMap = contextMap.get(context);
+    const typeName = view.typeName;
+    let list = typeMap.get(typeName);
+    if (!list) {
+        list = [];
+        typeMap.set(typeName, list);
+    }
+    list.push(new WeakRef(view.nativeView));
+}
+
 export class ViewBase extends Observable implements ViewBaseDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
@@ -200,11 +235,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this.className = v;
     }
 
-    public get inlineStyleSelector(): SelectorCore {
+    get inlineStyleSelector(): SelectorCore {
         return this._inlineStyleSelector;
     }
-
-    public set inlineStyleSelector(value: SelectorCore) {
+    set inlineStyleSelector(value: SelectorCore) {
         this._inlineStyleSelector = value;
     }
 
@@ -567,7 +601,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
     }
 
     public _resetNativeView(): void {
-        if (this.nativeView && this.recycleNativeView) {
+        if (this.nativeView && this.recycleNativeView && isAndroid) {
             resetNativeView(this);
         }
     }
@@ -585,8 +619,18 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         this._context = context;
         traceNotifyEvent(this, "_onContextChanged");
 
+        let currentNativeView = this.nativeView;
         if (isAndroid) {
-            const nativeView = this._androidView = this.nativeView = <android.view.View>this._createNativeView();
+            let nativeView: android.view.View;
+            if (this.recycleNativeView) {
+                nativeView = <android.view.View>getNativeView(context, this.typeName);
+            }
+
+            if (!nativeView) {
+                nativeView = <android.view.View>this._createNativeView();
+            }
+
+            this._androidView = this.nativeView = nativeView;
             if (nativeView) {
                 let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
                 if (result === undefined) {
@@ -616,7 +660,10 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         } else {
             // TODO: Implement _createNativeView for iOS
             this._createNativeView();
-            this.nativeView = this._iosView = (<any>this)._nativeView;
+            if (!currentNativeView) {
+                console.log(`${this.typeName} doesnt have NativeView !!!!! =================`);
+            }
+            // this.nativeView = this._iosView = (<any>this)._nativeView;
         }
 
         this._initNativeView();
@@ -627,7 +674,9 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
 
         if (this.nativeView) {
-            initNativeView(this);
+            if (currentNativeView !== this.nativeView) {
+                initNativeView(this);
+            }
         }
 
         this.eachChild((child) => {
@@ -645,7 +694,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         if (traceEnabled()) {
             traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }
-  
+
         this._resetNativeView();
 
         this.eachChild((child) => {
@@ -657,7 +706,19 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             this.parent._removeViewFromNativeVisualTree(this);
         }
 
+        const nativeView = this.nativeView;
+        if (nativeView && this.recycleNativeView && isAndroid) {
+            const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
+            if (!nativeParent) {
+                putNativeView(this._context, this);
+            }
+        }
+
         this._disposeNativeView();
+
+        this.nativeView = null;
+        this._androidView = null;
+        this._iosView = null;
 
         this._context = null;
         traceNotifyEvent(this, "_onContextChanged");

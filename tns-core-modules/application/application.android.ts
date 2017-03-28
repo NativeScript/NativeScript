@@ -47,7 +47,11 @@ export class AndroidApplication extends Observable implements AndroidApplication
         return this.foregroundActivity;
     }
 
-    public init(nativeApp: any) {
+    public init(nativeApp: android.app.Application) {
+        if (this.nativeApp === nativeApp) {
+            return;
+        }
+        
         if (this.nativeApp) {
             throw new Error("application.android already initialized.");
         }

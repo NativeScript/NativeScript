@@ -13,6 +13,8 @@ function initializeTimeChangedListener(): void {
         return;
     }
 
+    apiLevel = android.os.Build.VERSION.SDK_INT;
+
     @Interfaces([android.widget.TimePicker.OnTimeChangedListener])
     class TimeChangedListenerImpl extends java.lang.Object implements android.widget.TimePicker.OnTimeChangedListener {
         constructor(public owner: TimePicker) {
@@ -22,8 +24,13 @@ function initializeTimeChangedListener(): void {
 
         onTimeChanged(picker: android.widget.TimePicker, hour: number, minute: number): void {
             const timePicker = this.owner;
-            let validTime = getValidTime(timePicker, hour, minute);
-            timePicker._setNativeValueSilently(validTime.hour, validTime.minute);
+            if (timePicker.updatingNativeValue) {
+                return;
+            }
+
+            const validTime = getValidTime(timePicker, hour, minute);
+            hourProperty.nativeValueChange(timePicker, validTime.hour);
+            minuteProperty.nativeValueChange(timePicker, validTime.minute);
             timeProperty.nativeValueChange(timePicker, new Date(0, 0, 0, validTime.hour, validTime.minute));
         }
     }
@@ -31,71 +38,59 @@ function initializeTimeChangedListener(): void {
     TimeChangedListener = TimeChangedListenerImpl;
 }
 
+let apiLevel: number;
+
 export class TimePicker extends TimePickerBase {
-    private _android: android.widget.TimePicker;
-    private _listener: android.widget.TimePicker.OnTimeChangedListener;
+    nativeView: android.widget.TimePicker;
+    updatingNativeValue: boolean;
 
     public _createNativeView() {
         initializeTimeChangedListener();
-        this._android = new android.widget.TimePicker(this._context);
-        this._listener = this._listener || new TimeChangedListener(this);
-        this._android.setOnTimeChangedListener(this._listener);
-
-        let c = java.util.Calendar.getInstance();
-        if (this.hour === 0) {
-            this.hour = c.get(java.util.Calendar.HOUR_OF_DAY);
-        }
-
-        if (this.minute === 0) {
-            this.minute = c.get(java.util.Calendar.MINUTE);
-        }
-
-        let validTime = getValidTime(this, this.hour, this.minute);
-        this._setNativeValueSilently(validTime.hour, validTime.minute);
-        return this._android;
+        const nativeView = new android.widget.TimePicker(this._context);
+        const listener = new TimeChangedListener(this);
+        nativeView.setOnTimeChangedListener(listener);
+        (<any>nativeView).listener = listener;
+        (<any>nativeView).calendar = java.util.Calendar.getInstance();
+        return nativeView;
     }
 
-    get android(): android.widget.TimePicker {
-        return this._android;
-    }
+    public _initNativeView(): void {
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = this;
 
-    public _setNativeValueSilently(hour: number, minute: number) {
-        if (this._android) {
-            this._android.setOnTimeChangedListener(null);
+        const calendar = (<any>nativeView).calendar;
+        const hour = hourProperty.isSet(this) ? this.hour : calendar.get(java.util.Calendar.HOUR_OF_DAY);
+        const minute = minuteProperty.isSet(this) ? this.minute : calendar.get(java.util.Calendar.MINUTE);
 
-            this._android.setCurrentHour(new java.lang.Integer(hour));
-            this._android.setCurrentMinute(new java.lang.Integer(minute));
-
-            this.minute = minute;
-            this.hour = hour;
-
-            this._android.setOnTimeChangedListener(this._listener);
+        const validTime = getValidTime(this, hour, minute);
+        if (!timeProperty.isSet(this)) {
+            this.time = new Date(0, 0, 0, validTime.hour, validTime.minute);
         }
     }
 
-    public _setNativeTime() {
-        this._setNativeValueSilently(this.hour, this.minute);
-    }
-
-    [timeProperty.getDefault](): Date {
-        let nativeView = this._android;
-        return new Date(0, 0, 0, nativeView.getCurrentHour().intValue(), nativeView.getCurrentMinute().intValue());
-    }
-    [timeProperty.setNative](value: Date) {
-        this._setNativeValueSilently(this.hour, this.minute);
-    }
-
-    [minuteProperty.getDefault](): number {
-        return this._android.getCurrentMinute().intValue();
-    }
     [minuteProperty.setNative](value: number) {
-        this._setNativeValueSilently(this.hour, value);
+        this.updatingNativeValue = true;
+        try {
+            if (apiLevel >= 23) {
+                (<any>this.nativeView).setMinute(value);
+            } else {
+                this.nativeView.setCurrentMinute(new java.lang.Integer(value));
+            }
+        } finally {
+            this.updatingNativeValue = false;
+        }
     }
 
-    [hourProperty.getDefault](): number {
-        return this._android.getCurrentHour().intValue()
-    }
     [hourProperty.setNative](value: number) {
-        this._setNativeValueSilently(value, this.minute);
+        this.updatingNativeValue = true;
+        try {
+            if (apiLevel >= 23) {
+                (<any>this.nativeView).setHour(value);
+            } else {
+                this.nativeView.setCurrentHour(new java.lang.Integer(value));
+            }
+        } finally {
+            this.updatingNativeValue = false;
+        }
     }
 }

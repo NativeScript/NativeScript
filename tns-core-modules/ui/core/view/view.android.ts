@@ -20,10 +20,6 @@ import {
 
 export * from "./view-common";
 
-const ANDROID = "_android";
-const NATIVE_VIEW = "_nativeView";
-const VIEW_GROUP = "_viewGroup";
-
 interface TouchListener {
     new (owner: View): android.view.View.OnTouchListener;
 }
@@ -60,7 +56,7 @@ function initializeTouchListener(): void {
                 });
             }
 
-            let nativeView = owner._nativeView;
+            let nativeView = owner.nativeView;
             if (!nativeView || !nativeView.onTouchEvent) {
                 return false;
             }
@@ -76,7 +72,7 @@ export class View extends ViewCommon {
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
 
-    public nativeView: android.view.View;
+    nativeView: android.view.View;
 
     // TODO: Implement unobserve that detach the touchListener.
     observe(type: GestureTypes, callback: (args: GestureEventData) => void, thisArg?: any): void {
@@ -93,7 +89,7 @@ export class View extends ViewCommon {
 
     public onUnloaded() {
         if (this.touchListenerIsSet) {
-            this._nativeView.setOnTouchListener(null);
+            this.nativeView.setOnTouchListener(null);
             this.touchListenerIsSet = false;
         }
 
@@ -106,37 +102,16 @@ export class View extends ViewCommon {
     }
 
     private setOnTouchListener() {
-        if (this._nativeView && this.hasGestureObservers()) {
+        if (this.nativeView && this.hasGestureObservers()) {
             this.touchListenerIsSet = true;
-            if (this._nativeView.setClickable) {
-                this._nativeView.setClickable(true);
+            if (this.nativeView.setClickable) {
+                this.nativeView.setClickable(true);
             }
 
             initializeTouchListener();
             this.touchListener = this.touchListener || new TouchListener(this);
-            this._nativeView.setOnTouchListener(this.touchListener);
+            this.nativeView.setOnTouchListener(this.touchListener);
         }
-    }
-
-    // TODO: revise this method
-    public _disposeNativeView() {
-
-        // Widgets like buttons and such have reference to their native view in both properties.
-        if (this[NATIVE_VIEW] === this[ANDROID]) {
-            (<any>this)[NATIVE_VIEW] = undefined;
-        }
-
-        // Handle layout and content view
-        if (this[VIEW_GROUP] === this[ANDROID]) {
-            this[VIEW_GROUP] = undefined;
-        }
-
-        this[ANDROID] = undefined;
-        this.nativeView = undefined;
-    }
-
-    get _nativeView(): android.view.View {
-        return this.android;
     }
 
     get isLayoutRequired(): boolean {
@@ -144,23 +119,23 @@ export class View extends ViewCommon {
     }
 
     get isLayoutValid(): boolean {
-        if (this._nativeView) {
-            return !this._nativeView.isLayoutRequested();
+        if (this.nativeView) {
+            return !this.nativeView.isLayoutRequested();
         }
 
         return false;
     }
 
     public layoutNativeView(left: number, top: number, right: number, bottom: number): void {
-        if (this._nativeView) {
-            this._nativeView.layout(left, top, right, bottom);
+        if (this.nativeView) {
+            this.nativeView.layout(left, top, right, bottom);
         }
     }
 
     public requestLayout(): void {
         super.requestLayout();
-        if (this._nativeView) {
-            return this._nativeView.requestLayout();
+        if (this.nativeView) {
+            return this.nativeView.requestLayout();
         }
     }
 
@@ -175,7 +150,7 @@ export class View extends ViewCommon {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let view = this._nativeView;
+        let view = this.nativeView;
         if (view) {
             view.measure(widthMeasureSpec, heightMeasureSpec);
             this.setMeasuredDimension(view.getMeasuredWidth(), view.getMeasuredHeight());
@@ -183,56 +158,56 @@ export class View extends ViewCommon {
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number): void {
-        let view = this._nativeView;
+        let view = this.nativeView;
         if (view) {
             this.layoutNativeView(left, top, right, bottom);
         }
     }
 
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number } {
-        if (this._nativeView) {
+        if (this.nativeView && !this.isCollapsed) {
             return {
-                left: this._nativeView.getLeft(),
-                top: this._nativeView.getTop(),
-                right: this._nativeView.getRight(),
-                bottom: this._nativeView.getBottom()
+                left: this.nativeView.getLeft(),
+                top: this.nativeView.getTop(),
+                right: this.nativeView.getRight(),
+                bottom: this.nativeView.getBottom()
             };
+        } else {
+            return { left: 0, top: 0, right: 0, bottom: 0 };
         }
-
-        return super._getCurrentLayoutBounds();
     }
 
     public getMeasuredWidth(): number {
-        if (this._nativeView) {
-            return this._nativeView.getMeasuredWidth();
+        if (this.nativeView) {
+            return this.nativeView.getMeasuredWidth();
         }
 
         return super.getMeasuredWidth();
     }
 
     public getMeasuredHeight(): number {
-        if (this._nativeView) {
-            return this._nativeView.getMeasuredHeight();
+        if (this.nativeView) {
+            return this.nativeView.getMeasuredHeight();
         }
 
         return super.getMeasuredHeight();
     }
 
     public focus(): boolean {
-        if (this._nativeView) {
-            return this._nativeView.requestFocus();
+        if (this.nativeView) {
+            return this.nativeView.requestFocus();
         }
 
         return false;
     }
 
     public getLocationInWindow(): Point {
-        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+        if (!this.nativeView || !this.nativeView.getWindowToken()) {
             return undefined;
         }
 
         let nativeArray = (<any>Array).create("int", 2);
-        this._nativeView.getLocationInWindow(nativeArray);
+        this.nativeView.getLocationInWindow(nativeArray);
         return {
             x: layout.toDeviceIndependentPixels(nativeArray[0]),
             y: layout.toDeviceIndependentPixels(nativeArray[1]),
@@ -240,12 +215,12 @@ export class View extends ViewCommon {
     }
 
     public getLocationOnScreen(): Point {
-        if (!this._nativeView || !this._nativeView.getWindowToken()) {
+        if (!this.nativeView || !this.nativeView.getWindowToken()) {
             return undefined;
         }
 
         let nativeArray = (<any>Array).create("int", 2);
-        this._nativeView.getLocationOnScreen(nativeArray);
+        this.nativeView.getLocationOnScreen(nativeArray);
         return {
             x: layout.toDeviceIndependentPixels(nativeArray[0]),
             y: layout.toDeviceIndependentPixels(nativeArray[1]),
@@ -253,16 +228,16 @@ export class View extends ViewCommon {
     }
 
     public getLocationRelativeTo(otherView: ViewCommon): Point {
-        if (!this._nativeView || !this._nativeView.getWindowToken() ||
-            !otherView._nativeView || !otherView._nativeView.getWindowToken() ||
-            this._nativeView.getWindowToken() !== otherView._nativeView.getWindowToken()) {
+        if (!this.nativeView || !this.nativeView.getWindowToken() ||
+            !otherView.nativeView || !otherView.nativeView.getWindowToken() ||
+            this.nativeView.getWindowToken() !== otherView.nativeView.getWindowToken()) {
             return undefined;
         }
 
         let myArray = (<any>Array).create("int", 2);
-        this._nativeView.getLocationOnScreen(myArray);
+        this.nativeView.getLocationOnScreen(myArray);
         let otherArray = (<any>Array).create("int", 2);
-        otherView._nativeView.getLocationOnScreen(otherArray);
+        otherView.nativeView.getLocationOnScreen(otherArray);
         return {
             x: layout.toDeviceIndependentPixels(myArray[0] - otherArray[0]),
             y: layout.toDeviceIndependentPixels(myArray[1] - otherArray[1]),
@@ -325,7 +300,7 @@ export class View extends ViewCommon {
         if (!value) {
             initializeDisabledListener();
             // User interaction is disabled -- we stop it and we do not care whether someone wants to listen for gestures.
-            this._nativeView.setOnTouchListener(disableUserInteractionListener);
+            this.nativeView.setOnTouchListener(disableUserInteractionListener);
         } else {
             this.setOnTouchListener();
         }
@@ -494,29 +469,20 @@ export class View extends ViewCommon {
 }
 
 export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
-    private _viewGroup: android.view.ViewGroup;
-
-    get android(): android.view.ViewGroup {
-        return this._viewGroup;
-    }
-
-    get _nativeView(): android.view.ViewGroup {
-        return this._viewGroup;
-    }
+    nativeView: android.view.ViewGroup;
 
     public _createNativeView() {
-        const viewGroup = this._viewGroup = new org.nativescript.widgets.ContentLayout(this._context);
-        return viewGroup;
+        return new org.nativescript.widgets.ContentLayout(this._context);
     }
 
     public _addViewToNativeVisualTree(child: ViewCommon, atIndex: number = -1): boolean {
         super._addViewToNativeVisualTree(child);
 
-        if (this._nativeView && child.nativeView) {
+        if (this.nativeView && child.nativeView) {
             if (traceEnabled()) {
                 traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
             }
-            this._nativeView.addView(child.nativeView, atIndex);
+            this.nativeView.addView(child.nativeView, atIndex);
             if (child instanceof View) {
                 this._updateNativeLayoutParams(child);
             }
@@ -542,10 +508,10 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (this._nativeView && child._nativeView) {
-            this._nativeView.removeView(child._nativeView);
+        if (this.nativeView && child.nativeView) {
+            this.nativeView.removeView(child.nativeView);
             if (traceEnabled()) {
-                traceWrite(`${this}._nativeView.removeView(${child}._nativeView)`, traceCategories.VisualTreeEvents);
+                traceWrite(`${this}.nativeView.removeView(${child}.nativeView)`, traceCategories.VisualTreeEvents);
                 traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
             }
         }

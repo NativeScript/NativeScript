@@ -259,6 +259,8 @@ export function test_NavigateTo_WithBindingContext() {
 }
 
 export function test_FrameBackStack_WhenNavigatingForwardAndBack() {
+
+    helper.navigate(() => new Page());
     let testPage: Page;
     let pageFactory = function () {
         testPage = new Page();

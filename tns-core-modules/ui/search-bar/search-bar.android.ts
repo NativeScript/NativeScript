@@ -76,18 +76,16 @@ function initializeNativeClasses(): void {
 }
 
 export class SearchBar extends SearchBarBase {
-    private _android: android.widget.SearchView;
-    private _closeListener: android.widget.SearchView.OnCloseListener;
-    private _queryTextListener: android.widget.SearchView.OnQueryTextListener;
+    nativeView: android.widget.SearchView;
 
     public dismissSoftInput() {
-        ad.dismissSoftInput(this._nativeView);
+        ad.dismissSoftInput(this.nativeView);
     }
 
     public focus(): boolean {
         let result = super.focus();
         if (result) {
-            ad.showSoftInput(this._nativeView);
+            ad.showSoftInput(this.nativeView);
         }
 
         return result;
@@ -95,25 +93,35 @@ export class SearchBar extends SearchBarBase {
 
     public _createNativeView() {
         initializeNativeClasses();
-        this._android = new android.widget.SearchView(this._context);
+        const nativeView = new android.widget.SearchView(this._context);
+        nativeView.setIconified(false);
 
-        this._android.setIconified(false);
+        const queryTextListener = new QueryTextListener(this);
+        nativeView.setOnQueryTextListener(queryTextListener);
+        (<any>nativeView).queryTextListener = queryTextListener;
 
-        this._queryTextListener = this._queryTextListener || new QueryTextListener(this);
-        this._android.setOnQueryTextListener(this._queryTextListener);
+        const closeListener = new CloseListener(this);
+        nativeView.setOnCloseListener(closeListener);
+        (<any>nativeView).closeListener = closeListener;
 
-        this._closeListener = this._closeListener || new CloseListener(this);
-        this._android.setOnCloseListener(this._closeListener);
-        return this._android;
+        return nativeView;
     }
 
-    get android(): android.widget.SearchView {
-        return this._android;
+    public _initNativeView(): void {
+        const nativeView: any = this.nativeView;
+        nativeView.closeListener.owner = this;
+        nativeView.queryTextListener.owner = this;
+    }
+
+    public _disposeNativeView() {
+        const nativeView: any = this.nativeView;
+        nativeView.closeListener.owner = null;
+        nativeView.queryTextListener.owner = null;
     }
 
     [backgroundColorProperty.getDefault](): number {
         // TODO: Why do we get DrawingCacheBackgroundColor but set backgroundColor?????
-        let result = this._android.getDrawingCacheBackgroundColor();
+        const result = this.nativeView.getDrawingCacheBackgroundColor();
         return result;
     }
     [backgroundColorProperty.setNative](value: Color) {
@@ -124,24 +132,18 @@ export class SearchBar extends SearchBarBase {
             color = value.android;
         }
 
-        this._android.setBackgroundColor(color);
-        let searchPlate = this._getSearchPlate();
+        this.nativeView.setBackgroundColor(color);
+        const searchPlate = this._getSearchPlate();
         searchPlate.setBackgroundColor(color);
     }
 
     [colorProperty.getDefault](): number {
-        let textView = this._getTextView();
+        const textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
     [colorProperty.setNative](value: Color) {
-        let color: number;
-        if (typeof value === "number") {
-            color = value;
-        } else {
-            color = value.android;
-        }
-
-        let textView = this._getTextView();
+        const color: number = (typeof value === "number") ? value : value.android;
+        const textView = this._getTextView();
         textView.setTextColor(color);
     }
 
@@ -175,41 +177,41 @@ export class SearchBar extends SearchBarBase {
     }
     [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
-        this._android.setQuery(text, false);
+        this.nativeView.setQuery(text, false);
     }
     [hintProperty.getDefault](): string {
         return "";
     }
     [hintProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
-        this._android.setQueryHint(text);
+        this.nativeView.setQueryHint(text);
     }
     [textFieldBackgroundColorProperty.getDefault](): number {
-        let textView = this._getTextView();
+        const textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
     [textFieldBackgroundColorProperty.setNative](value: Color) {
-        let textView = this._getTextView();
-        let color = value instanceof Color ? value.android : value;
+        const textView = this._getTextView();
+        const color = value instanceof Color ? value.android : value;
         textView.setBackgroundColor(color);
     }
     [textFieldHintColorProperty.getDefault](): number {
-        let textView = this._getTextView();
+        const textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
     [textFieldHintColorProperty.setNative](value: Color) {
-        let textView = this._getTextView();
-        let color = value instanceof Color ? value.android : value;
+        const textView = this._getTextView();
+        const color = value instanceof Color ? value.android : value;
         textView.setHintTextColor(color);
     }
 
     private _getTextView(): android.widget.TextView {
-        let id = this._android.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        return <android.widget.TextView>this._android.findViewById(id);
+        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        return <android.widget.TextView>this.nativeView.findViewById(id);
     }
 
     private _getSearchPlate(): android.widget.LinearLayout {
-        let id = this._android.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
-        return <android.widget.LinearLayout>this._android.findViewById(id);
+        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
+        return <android.widget.LinearLayout>this.nativeView.findViewById(id);
     }
 }

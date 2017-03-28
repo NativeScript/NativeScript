@@ -14,12 +14,9 @@ function initializeWebViewClient(): void {
     }
 
     class WebViewClientImpl extends android.webkit.WebViewClient {
-        private _view: WebViewBase;
 
-        constructor(view: WebViewBase) {
+        constructor(public owner: WebViewBase) {
             super();
-
-            this._view = view;
             return global.__native(this);
         }
 
@@ -32,23 +29,23 @@ function initializeWebViewClient(): void {
 
         public onPageStarted(view: android.webkit.WebView, url: string, favicon: android.graphics.Bitmap) {
             super.onPageStarted(view, url, favicon);
-
-            if (this._view) {
+            const owner = this.owner;
+            if (owner) {
                 if (traceEnabled()) {
                     traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
                 }
-                this._view._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
+                owner._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
             }
         }
 
         public onPageFinished(view: android.webkit.WebView, url: string) {
             super.onPageFinished(view, url);
-
-            if (this._view) {
+            const owner = this.owner;
+            if (owner) {
                 if (traceEnabled()) {
                     traceWrite("WebViewClientClass.onPageFinished(" + url + ")", traceCategories.Debug);
                 }
-                this._view._onLoadFinished(url, undefined);
+                owner._onLoadFinished(url, undefined);
             }
         }
 
@@ -62,23 +59,24 @@ function initializeWebViewClient(): void {
 
                 super.onReceivedError(view, errorCode, description, failingUrl);
 
-                if (this._view) {
+                const owner = this.owner;
+                if (owner) {
                     if (traceEnabled()) {
                         traceWrite("WebViewClientClass.onReceivedError(" + errorCode + ", " + description + ", " + failingUrl + ")", traceCategories.Debug);
                     }
-                    this._view._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
+                    owner._onLoadFinished(failingUrl, description + "(" + errorCode + ")");
                 }
             } else {
                 let request: any = arguments[1];
                 let error: any = arguments[2];
 
                 super.onReceivedError(view, request, error);
-
-                if (this._view) {
+                const owner = this.owner;
+                if (owner) {
                     if (traceEnabled()) {
                         traceWrite("WebViewClientClass.onReceivedError(" + error.getErrorCode() + ", " + error.getDescription() + ", " + (error.getUrl && error.getUrl()) + ")", traceCategories.Debug);
                     }
-                    this._view._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
+                    owner._onLoadFinished(error.getUrl && error.getUrl(), error.getDescription() + "(" + error.getErrorCode() + ")");
                 }
             }
         }
@@ -88,79 +86,100 @@ function initializeWebViewClient(): void {
 }
 
 export class WebView extends WebViewBase {
-    private _android: android.webkit.WebView;
-    private _webViewClient: android.webkit.WebViewClient;
-
-    get android(): android.webkit.WebView {
-        return this._android;
-    }
+    nativeView: android.webkit.WebView;
 
     public _createNativeView() {
         initializeWebViewClient();
-        this._webViewClient = new WebViewClient(this);
-        this._android = new android.webkit.WebView(this._context);
-        this._android.getSettings().setJavaScriptEnabled(true);
-        this._android.getSettings().setBuiltInZoomControls(true);
-        this._android.setWebViewClient(this._webViewClient);
-        return this._android;
+
+        const nativeView = new android.webkit.WebView(this._context);
+        nativeView.getSettings().setJavaScriptEnabled(true);
+        nativeView.getSettings().setBuiltInZoomControls(true);
+        const client = new WebViewClient(this);
+        nativeView.setWebViewClient(client);
+        (<any>nativeView).client = client;
+        return nativeView;
+    }
+
+    public _initNativeView(): void {
+        (<any>this.nativeView).client.owner = this;
     }
 
     public _resetNativeView() {
-        if (this.android) {
-            this.android.destroy();
+        const nativeView = this.nativeView;
+        if (nativeView) {
+            nativeView.destroy();
         }
+
+        (<any>nativeView).client.owner = null;
         super._resetNativeView();
     }
 
     public _loadFileOrResource(path: string, content: string) {
-        if (!this._android) {
+        const nativeView = this.nativeView;
+        if (!nativeView) {
             return;
         }
 
         const baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1)}`;
-        this._android.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
+        nativeView.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
     }
 
     public _loadHttp(src: string) {
-        if (!this._android) {
+        const nativeView = this.nativeView;
+        if (!nativeView) {
             return;
         }
 
-        this._android.loadUrl(src);
+        nativeView.loadUrl(src);
     }
 
     public _loadData(src: string) {
-        if (!this._android) {
+        const nativeView = this.nativeView;
+        if (!nativeView) {
             return;
         }
 
         const baseUrl = `file:///${knownFolders.currentApp().path}/`;
-        this._android.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);
+        nativeView.loadDataWithBaseURL(baseUrl, src, "text/html", "utf-8", null);
     }
 
     get canGoBack(): boolean {
-        return this._android.canGoBack();
+        return this.nativeView.canGoBack();
     }
 
     public stopLoading() {
-        if (this._android) {
-            this._android.stopLoading();
+        const nativeView = this.nativeView;
+        if (nativeView) {
+            nativeView.stopLoading();
         }
     }
 
     get canGoForward(): boolean {
-        return this._android.canGoForward();
+        const nativeView = this.nativeView;
+        if (nativeView) {
+            return nativeView.canGoForward();
+        }
+        return false;
     }
 
     public goBack() {
-        this._android.goBack();
+        const nativeView = this.nativeView;
+        if (nativeView) {
+            return nativeView.goBack();
+        }
     }
 
     public goForward() {
-        this._android.goForward();
+        const nativeView = this.nativeView;
+        if (nativeView) {
+            return nativeView.goForward();
+        }
     }
 
     public reload() {
-        this._android.reload();
+        const nativeView = this.nativeView;
+        if (nativeView) {
+            return nativeView.reload();
+        }
     }
 }

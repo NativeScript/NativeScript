@@ -81,10 +81,6 @@ export class ScrollView extends ScrollViewBase {
         return this.nativeView;
     }
 
-    get _nativeView(): UIView {
-        return this.nativeView;
-    }
-
     public scrollToVerticalOffset(value: number, animated: boolean) {
         if (this.orientation === "vertical") {
             const bounds = this.nativeView.bounds.size;
@@ -153,3 +149,5 @@ export class ScrollView extends ScrollViewBase {
         // NOOP
     }
 }
+
+ScrollView.prototype.recycleNativeView = true;

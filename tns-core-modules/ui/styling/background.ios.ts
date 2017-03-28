@@ -354,9 +354,9 @@ function drawClipPath(nativeView: UIView, background: Background) {
 function rectPath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
     const top = cssValueToDeviceIndependentPixels(arr[0], bounds.top);
-    const left = cssValueToDeviceIndependentPixels(arr[1], bounds.left);
+    const right = cssValueToDeviceIndependentPixels(arr[1], bounds.right);
     const bottom = cssValueToDeviceIndependentPixels(arr[2], bounds.bottom);
-    const right = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
+    const left = cssValueToDeviceIndependentPixels(arr[3], bounds.left);
 
     return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }

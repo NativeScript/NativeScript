@@ -343,8 +343,8 @@
                 getRotationAngle(): number;
                 setRotationAngle(angle: number): void;
 
-                setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean,
-                    async: boolean, listener: image.Worker.IOnImageLoadedListener): void;
+                setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean): void;
+                setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
             export class TabLayout extends android.widget.HorizontalScrollView {

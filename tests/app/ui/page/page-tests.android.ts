@@ -43,19 +43,19 @@ export function test_NavigateToNewPage_WithAndroidCache() {
         androidFrame.cachePagesOnNavigate = cachingBefore;
     }
 
-    TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
-    TKUnit.assert(testPage.isLoaded === false, "Page.isLoaded should become false after navigating back");
-    TKUnit.assert(testPage.frame === undefined, "Page.frame should become undefined after navigating back");
-    TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
+    TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
+    TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
+    TKUnit.assertNull(testPage.frame, "Page.frame should become undefined after navigating back");
+    TKUnit.assertFalse(testPage._isAddedToNativeVisualTree, "Page._isAddedToNativeVisualTree should become false after navigating back");
 
-    TKUnit.assert(label._context === null, "InnerControl._context should not be set after navigate back.");
-    TKUnit.assert(label.android === undefined, "InnerControl.android should not be set after navigate back.");
-    TKUnit.assert(label._nativeView === undefined, "InnerControl._nativeView hould not be set after navigate back.");
-    TKUnit.assert(label.isLoaded === false, "InnerControl.isLoaded should become false after navigating back");
-    TKUnit.assert(label._isAddedToNativeVisualTree === false, "InnerControl._isAddedToNativeVisualTree should not be true after navigating back");
+    TKUnit.assertNull(label._context, "InnerControl._context should not be set after navigate back.");
+    TKUnit.assertNull(label.android, "InnerControl.android should not be set after navigate back.");
+    TKUnit.assertNull(label.nativeView, "InnerControl.nativeView hould not be set after navigate back.");
+    TKUnit.assertFalse(label.isLoaded, "InnerControl.isLoaded should become false after navigating back");
+    TKUnit.assertFalse(label._isAddedToNativeVisualTree, "InnerControl._isAddedToNativeVisualTree should not be true after navigating back");
 }
 
-export var test_NavigateToNewPage_InnerControl = function () {
+export function test_NavigateToNewPage_InnerControl() {
     var testPage: PageModule.Page;
     var pageFactory = function () {
         testPage = new PageModule.Page();
@@ -69,11 +69,11 @@ export var test_NavigateToNewPage_InnerControl = function () {
 
     var label = <LabelModule.Label>testPage.content;  
 
-    TKUnit.assert(label._context === null, "InnerControl._context should be undefined after navigate back.");
-    TKUnit.assert(label.android === undefined, "InnerControl.android should be undefined after navigate back.");
-    TKUnit.assert(label._nativeView === undefined, "InnerControl._nativeView should be undefined after navigate back.");
-    TKUnit.assert(label.isLoaded === false, "InnerControl.isLoaded should become false after navigating back");
-    TKUnit.assert(label._isAddedToNativeVisualTree === false, "InnerControl._isAddedToNativeVisualTree should become false after navigating back");
+    TKUnit.assertNull(label._context, "InnerControl._context should be undefined after navigate back.");
+    TKUnit.assertNull(label.android, "InnerControl.android should be undefined after navigate back.");
+    TKUnit.assertNull(label.nativeView, "InnerControl.nativeView should be undefined after navigate back.");
+    TKUnit.assertFalse(label.isLoaded, "InnerControl.isLoaded should become false after navigating back");
+    TKUnit.assertFalse(label._isAddedToNativeVisualTree, "InnerControl._isAddedToNativeVisualTree should become false after navigating back");
 }
 
 export var test_ChangePageCaching_AfterNavigated_Throws = function () {

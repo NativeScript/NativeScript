@@ -40,3 +40,5 @@ export class Border extends ContentView implements BorderDefinition {
         View.layoutChild(this, this.layoutView, this.effectiveBorderLeftWidth, this.effectiveBorderTopWidth, right - left - horizontalBorderLength, bottom - top - verticalBorderLength);
     }
 }
+
+Border.prototype.recycleNativeView = true;

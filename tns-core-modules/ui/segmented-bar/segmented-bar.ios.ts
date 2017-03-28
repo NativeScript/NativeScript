@@ -26,7 +26,7 @@ export class SegmentedBar extends SegmentedBarBase {
 
     constructor() {
         super();
-        this._ios = UISegmentedControl.new();
+        this.nativeView = this._ios = UISegmentedControl.new();
 
         this._selectionHandler = SelectionHandlerImpl.initWithOwner(new WeakRef(this));
         this._ios.addTargetActionForControlEvents(this._selectionHandler, "selected", UIControlEvents.ValueChanged);
@@ -58,6 +58,8 @@ export class SegmentedBar extends SegmentedBarBase {
                 segmentedControl.insertSegmentWithTitleAtIndexAnimated(title, index, false);
             })
         }
+
+        selectedIndexProperty.coerce(this);
     }
 
     [selectedBackgroundColorProperty.getDefault](): UIColor {

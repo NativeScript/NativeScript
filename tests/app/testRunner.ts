@@ -344,6 +344,7 @@ function printRunTestStats() {
     page.style.backgroundColor = unsetValue;
     page.content = stack;
     messageContainer.focus();
+    page.style.fontSize = 11;
     if (page.android) {
         setTimeout(() => messageContainer.dismissSoftInput());
     }

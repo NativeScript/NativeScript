@@ -42,13 +42,20 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
 
     public _addChildFromBuilder(name: string, value: any): void {
         if (name === "SegmentedBarItem") {
-            if (!this.items) {
-                this.items = new Array<SegmentedBarItemBase>();
+            const item = <SegmentedBarItemBase>value;
+            let items = this.items;
+            if (!items) {
+                items = new Array<SegmentedBarItemBase>();
+                items.push(item);
+                this.items = items;
+            } else {
+                items.push(item);
+                this._addView(item);
             }
-            let item = <SegmentedBarItemBase>value;
-            this.items.push(item);
-            this._addView(item);
-            selectedIndexProperty.coerce(this);
+
+            if (this.nativeView) {
+                this[itemsProperty.setNative](items);
+            }
         }
     }
 
@@ -76,6 +83,8 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
         }
     }
 }
+
+SegmentedBarBase.prototype.recycleNativeView = true;
 
 /**
  * Gets or sets the selected index dependency property of the SegmentedBar.
@@ -108,7 +117,6 @@ selectedIndexProperty.register(SegmentedBarBase);
 export const itemsProperty = new Property<SegmentedBarBase, SegmentedBarItemDefinition[]>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         target.onItemsChanged(oldValue, newValue);
-        selectedIndexProperty.coerce(target);
     }
 });
 itemsProperty.register(SegmentedBarBase);

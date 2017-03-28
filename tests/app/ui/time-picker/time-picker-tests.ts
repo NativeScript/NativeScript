@@ -92,19 +92,19 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
     }
 
     public testMinuteIntervalThrowExceptionWhenLessThan1() {
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minuteInterval = 0;
         }, "Setting minuteInterval property to a value less than 1 should throw.");
     }
 
     public testMinuteIntervalThrowExceptionWhenGreaterThan30() {
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minuteInterval = 31;
         }, "Setting minuteInterval property to a value greater than 30 should throw.");
     }
 
     public testMinuteIntervalThrowExceptionWhenNotFold60() {
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minuteInterval = 7;
         }, "Setting minuteInterval property to a value not fold 60 should throw.");
     }
@@ -112,14 +112,14 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
     public testHourThrowExceptionWhenLessThanMinHour() {
         this.testView.hour = 14;
         this.testView.minHour = this.testView.hour - 1;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.hour = this.testView.minHour - 1;
         }, "Setting hour property to a value less than minHour property value should throw.");
     }
 
     public testMinHourThrowExceptionWhenHourLessThanMinHour() {
         this.testView.hour = 14;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minHour = this.testView.hour + 1;
         }, "Setting minHour property to a greater than hour property value should throw.");
     }
@@ -127,14 +127,14 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
     public testHourThrowExceptionWhenGreaterThanMaxHour() {
         this.testView.hour = 14;
         this.testView.maxHour = this.testView.hour + 1;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.hour = this.testView.maxHour + 1;
         }, "Setting hour property to a value greater than maxHour property value should throw.");
     }
 
     public testMaxHourThrowExceptionWhenHourGreaterThanMaxHour() {
         this.testView.hour = 14;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.maxHour = this.testView.hour - 1;
         }, "Setting maxHour property to a value less than hour property value should throw.");
     }
@@ -145,7 +145,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 
         this.testView.minHour = this.testView.hour;
         this.testView.minMinute = this.testView.minute;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minute = this.testView.minMinute - 1;
         }, "Setting minute property to a value less than minMinute property value should throw.");
     }
@@ -155,7 +155,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
         this.testView.minute = 13;
 
         this.testView.minHour = this.testView.hour;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minMinute = this.testView.minute + 1;
         }, "Setting minMinute property to a value greater than minute property value should throw.");
     }
@@ -166,7 +166,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
 
         this.testView.maxHour = this.testView.hour;
         this.testView.maxMinute = this.testView.minute;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.minute = this.testView.maxMinute + 1;
         }, "Setting minute property to a value greater than maxMinute property value should throw.");
     }
@@ -176,7 +176,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
         this.testView.minute = 13;
 
         this.testView.maxHour = this.testView.hour;
-        TKUnit.assertThrows(function() {
+        TKUnit.assertThrows(() => {
             this.testView.maxMinute = this.testView.minute - 1;
         }, "Setting maxMinute property to a value less than minute property value should throw.");
     }

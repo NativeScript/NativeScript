@@ -10,12 +10,8 @@ export class Placeholder extends View implements PlaceholderDefinition {
         if (!this._ios) {
             var args = <CreateViewEventData>{ eventName: Placeholder.creatingViewEvent, object: this, view: undefined, context: undefined };
             super.notify(args);
-            this._ios = args.view;
+            this.nativeView = this._ios = args.view;
         }
         return this._ios;
-    }
-
-    get _nativeView(): UIView {
-        return this.ios;
     }
 }

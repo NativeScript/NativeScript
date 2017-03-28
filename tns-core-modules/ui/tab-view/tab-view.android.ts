@@ -35,15 +35,8 @@ function initializeNativeClasses() {
     }
 
     class PagerAdapterImpl extends android.support.v4.view.PagerAdapter {
-        private owner: TabView;
-        private items: Array<TabViewItem>;
-
-        constructor(owner: TabView, items: Array<TabViewItem>) {
+        constructor(public owner: TabView, public items: Array<TabViewItem>) {
             super();
-
-            this.owner = owner;
-            this.items = items;
-
             return global.__native(this);
         }
 
@@ -73,13 +66,13 @@ function initializeNativeClasses() {
                 if (traceEnabled()) {
                     traceWrite("TabView.PagerAdapter.instantiateItem; restoreHierarchyState: " + item.view, traceCategory);
                 }
-                item.view._nativeView.restoreHierarchyState(this[VIEWS_STATES]);
+                item.view.nativeView.restoreHierarchyState(this[VIEWS_STATES]);
             }
 
-            if (item.view._nativeView) {
-                container.addView(item.view._nativeView);
+            if (item.view.nativeView) {
+                container.addView(item.view.nativeView);
             }
-            return item.view._nativeView;
+            return item.view.nativeView;
         }
 
         destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
@@ -87,7 +80,7 @@ function initializeNativeClasses() {
                 traceWrite("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, traceCategory);
             }
             let item = this.items[index];
-            let nativeView = item.view._nativeView;
+            let nativeView = item.view.nativeView;
 
             if (!nativeView || !_object) {
                 return;
@@ -99,7 +92,7 @@ function initializeNativeClasses() {
 
             container.removeView(nativeView);
 
-            // Note: this.owner._removeView will clear item.view._nativeView.
+            // Note: this.owner._removeView will clear item.view.nativeView.
             // So call this after the native instance is removed form the container. 
             // if (item.view.parent === this.owner) {
             //     this.owner._removeView(item.view);
@@ -125,7 +118,7 @@ function initializeNativeClasses() {
             }
             let viewStates = this[VIEWS_STATES];
             let childCallback = function (view: View): boolean {
-                let nativeView: android.view.View = view._nativeView;
+                let nativeView: android.view.View = view.nativeView;
                 if (nativeView && nativeView.isSaveFromParentEnabled && nativeView.isSaveFromParentEnabled()) {
                     nativeView.saveHierarchyState(viewStates);
                 }
@@ -195,7 +188,7 @@ function getDefaultAccentColor(context: android.content.Context): number {
 }
 
 export class TabViewItem extends TabViewItemBase {
-    public nativeView: android.widget.TextView;
+    nativeView: android.widget.TextView;
     public tabItemSpec: org.nativescript.widgets.TabItemSpec;
     public index: number;
 
@@ -242,18 +235,21 @@ export class TabViewItem extends TabViewItemBase {
     }
 }
 
+function setElevation(grid: org.nativescript.widgets.GridLayout, tabLayout: org.nativescript.widgets.TabLayout) {
+    const compat = <any>android.support.v4.view.ViewCompat;
+    if (compat.setElevation) {
+        const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
+        compat.setElevation(grid, val);
+        compat.setElevation(tabLayout, val);
+    }
+}
+
 export class TabView extends TabViewBase {
-    private _grid: org.nativescript.widgets.GridLayout;
+
     private _tabLayout: org.nativescript.widgets.TabLayout;
     private _viewPager: android.support.v4.view.ViewPager;
     private _pagerAdapter: android.support.v4.view.PagerAdapter;
     private _androidViewId: number = -1;
-
-    private _pageChagedListener: android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
-
-    get android(): android.view.View {
-        return this._grid;
-    }
 
     public onItemsChanged(oldItems: TabViewItem[], newItems: TabViewItem[]): void {
         super.onItemsChanged(oldItems, newItems);
@@ -273,57 +269,81 @@ export class TabView extends TabViewBase {
             traceWrite("TabView._createUI(" + this + ");", traceCategory);
         }
 
-        this._grid = new org.nativescript.widgets.GridLayout(this._context);
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        const context: android.content.Context = this._context;
+        const nativeView = new org.nativescript.widgets.GridLayout(context);
+        nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+        nativeView.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
 
-        this._tabLayout = new org.nativescript.widgets.TabLayout(this._context);
-        this._grid.addView(this._tabLayout);
+        const tabLayout = new org.nativescript.widgets.TabLayout(context);
+        nativeView.addView(tabLayout);
+        (<any>nativeView).tabLayout = tabLayout;
 
-        this.setElevation();
+        setElevation(nativeView, tabLayout);
 
-        const accentColor = getDefaultAccentColor(this._context);
+        const accentColor = getDefaultAccentColor(context);
         if (accentColor) {
-            this._tabLayout.setSelectedIndicatorColors([accentColor]);
+            tabLayout.setSelectedIndicatorColors([accentColor]);
         }
 
-        const primaryColor = ad.resources.getPalleteColor(PRIMARY_COLOR, this._context);
+        const primaryColor = ad.resources.getPalleteColor(PRIMARY_COLOR, context);
         if (primaryColor) {
-            this._tabLayout.setBackgroundColor(primaryColor);
+            tabLayout.setBackgroundColor(primaryColor);
         }
 
+        const viewPager = new android.support.v4.view.ViewPager(context);
+        const lp = new org.nativescript.widgets.CommonLayoutParams();
+        lp.row = 1;
+        viewPager.setLayoutParams(lp);
+        nativeView.addView(viewPager);
+        (<any>nativeView).viewPager = viewPager;
+
+        const listener = new PageChangedListener(this);
+        (<any>viewPager).addOnPageChangeListener(listener);
+        (<any>viewPager).listener = listener;
+        
+        const adapter = new PagerAdapter(this, null);
+        viewPager.setAdapter(adapter);
+        (<any>viewPager).adapter = adapter;
+
+        return nativeView;
+    }
+
+    public _initNativeView(): void {
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
 
-        this._viewPager = new android.support.v4.view.ViewPager(this._context);
-        this._viewPager.setId(this._androidViewId);
-        const lp = new org.nativescript.widgets.CommonLayoutParams();
-        lp.row = 1;
-        this._viewPager.setLayoutParams(lp);
-        this._grid.addView(this._viewPager);
+        const nativeView: any = this.nativeView;
+        this._tabLayout = (<any>nativeView).tabLayout;
 
-        this._pageChagedListener = new PageChangedListener(this);
-        (<any>this._viewPager).addOnPageChangeListener(this._pageChagedListener);
-        this.nativeView = this._viewPager;
-        this._nativeView = this._viewPager;
-        return this._grid;
+        const viewPager = (<any>nativeView).viewPager;
+        viewPager.setId(this._androidViewId);
+        this._viewPager = viewPager;
+        (<any>viewPager).listener.owner = this;
+
+        this._pagerAdapter = (<any>viewPager).adapter;
+        (<any>this._pagerAdapter).owner = this;
     }
 
-    private setElevation() {
-        const compat = <any>android.support.v4.view.ViewCompat;
-        if (compat.setElevation) {
-            let val = DEFAULT_ELEVATION * layout.getDisplayDensity();
-            compat.setElevation(this._grid, val);
-            compat.setElevation(this._tabLayout, val);
-        }
+    public _disposeNativeView() {
+        // this._tabLayout.setItems(null, null);
+        this._pagerAdapter.notifyDataSetChanged();
+        (<any>this._pagerAdapter).owner = null;
+        this._pagerAdapter = null;
+
+        // this._viewPager.setAdapter(null);
+        this._tabLayout = null;
+        (<any>this._viewPager).listener.owner = null;
+        this._viewPager = null;
     }
 
     private setAdapter(items: Array<TabViewItem>) {
+        (<any>this._pagerAdapter).items = items;
+
         const length = items ? items.length : 0;
         if (length === 0) {
-            this._viewPager.setAdapter(null);
-            this._pagerAdapter = null;
+            // this._viewPager.setAdapter(null);
+            // this._pagerAdapter = null;
             this._tabLayout.setItems(null, null);
             return;
         }
@@ -336,9 +356,9 @@ export class TabView extends TabViewBase {
             tabItems.push(tabItemSpec);
         });
 
-        // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
-        this._pagerAdapter = new PagerAdapter(this, items);
-        this._viewPager.setAdapter(this._pagerAdapter);
+        // // TODO: optimize by reusing the adapter and calling setAdapter(null) then the same adapter.
+        // this._pagerAdapter = new PagerAdapter(this, items);
+        // this._viewPager.setAdapter(this._pagerAdapter);
 
         const tabLayout = this._tabLayout;
         tabLayout.setItems(tabItems, this._viewPager);
@@ -346,6 +366,8 @@ export class TabView extends TabViewBase {
             const tv = tabLayout.getTextViewForItemAt(i);
             item.setNativeView(tv);
         });
+
+        this._pagerAdapter.notifyDataSetChanged();
     }
 
     [androidOffscreenTabLimitProperty.getDefault](): number {
