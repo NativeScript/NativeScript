@@ -159,23 +159,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         (<any>this.nativeView).listener.owner = null;
     }
 
-    // public _resetNativeView(force?: boolean) {
-    //     if (this._android) {
-    //         this._android.setOnFocusChangeListener(null);
-    //         this._android.setOnEditorActionListener(null);
-
-    //         if (this._editTextListeners) {
-    //             this._android.removeTextChangedListener(this._editTextListeners);
-    //         }
-    //     }
-    //     super.resetNativeView();
-    // }
-
-    // public _disposeNativeView(force?: boolean) {
-    //     this._android = undefined;
-    //     super.disposeNativeView();
-    // }
-
     public dismissSoftInput() {
         ad.dismissSoftInput(this.nativeView);
     }

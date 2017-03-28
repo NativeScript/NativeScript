@@ -29,8 +29,6 @@ function initializeTimeChangedListener(): void {
             }
 
             const validTime = getValidTime(timePicker, hour, minute);
-            hourProperty.nativeValueChange(timePicker, validTime.hour);
-            minuteProperty.nativeValueChange(timePicker, validTime.minute);
             timeProperty.nativeValueChange(timePicker, new Date(0, 0, 0, validTime.hour, validTime.minute));
         }
     }

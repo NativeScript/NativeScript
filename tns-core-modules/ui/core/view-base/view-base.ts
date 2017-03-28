@@ -660,9 +660,6 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         } else {
             // TODO: Implement _createNativeView for iOS
             this.createNativeView();
-            if (!currentNativeView) {
-                console.log(`${this.typeName} doesnt have NativeView !!!!! =================`);
-            }
             // this.nativeView = this._iosView = (<any>this)._nativeView;
         }
 

@@ -119,18 +119,18 @@ export class DatePicker extends DatePickerBase {
         }
     }
 
-    [maxDateProperty.getDefault](): Date {
+    [maxDateProperty.getDefault](): number {
         return this.nativeView.getMaxDate();
     }
-    [maxDateProperty.setNative](value: Date) {
+    [maxDateProperty.setNative](value: Date | number) {
         const newValue = value instanceof Date ? value.getTime() : value;
         this.nativeView.setMaxDate(newValue);
     }
 
-    [minDateProperty.getDefault](): Date {
+    [minDateProperty.getDefault](): number {
         return this.nativeView.getMinDate();
     }
-    [minDateProperty.setNative](value: Date) {
+    [minDateProperty.setNative](value: Date | number) {
         const newValue = value instanceof Date ? value.getTime() : value;
         this.nativeView.setMinDate(newValue);
     }
