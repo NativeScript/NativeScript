@@ -5,40 +5,40 @@
     </Page.actionBar>
     <StackLayout class="p-20">
         <Label text="Tap the button" class="h1 text-center"/>
-        <Label text="&#xf0a1;" class="font-awesome" fontFamily="FontAwesome" fontSize="42em" />
+        <Label text="&#xf0a1;" class="font-awesome" fontFamily="FontAwesome" />
         <Button text="TAP" tap="onTap">
             <FormattedString>
-                <Span text="&#xf0a1;" class="font-awesome" fontFamily="FontAwesome" fontSize="42em" color="white"></Span>
+                <Span text="&#xf0a1;" class="font-awesome" fontFamily="FontAwesome" color="white"></Span>
                 <Span text="font-awesome" fontWeight="bold"></Span>
             </FormattedString>
         </Button>
         <Button text="TAP" tap="onTap" class="">
             <FormattedString>
-                <Span text="&#xf1ec;" fontFamily="FontAwesome" fontSize="42em" color="white"></Span>
+                <Span text="&#xf1ec;" fontFamily="FontAwesome" color="white"></Span>
                 <Span text="some text" fontWeight="bold"></Span>
             </FormattedString>
         </Button>
         <Button text="TAP" tap="onTap" class="">
             <FormattedString>
-                <Span text="&#xf017;" fontFamily="FontAwesome" fontSize="42em" color="white"></Span>
+                <Span text="&#xf017;" fontFamily="FontAwesome" color="white"></Span>
                 <Span text="some text" fontWeight="bold"></Span>
             </FormattedString>
         </Button>
         <Button text="TAP" tap="onTap" class="">
             <FormattedString>
-                <Span text="&#xf1b9;" fontFamily="FontAwesome" fontSize="42em" color="white"></Span>
+                <Span text="&#xf1b9;" fontFamily="FontAwesome" color="white"></Span>
                 <Span text="some text" fontWeight="bold"></Span>
             </FormattedString>
         </Button>
         <Button text="TAP" tap="onTap" class="">
             <FormattedString>
-                <Span text="&#xf075;" fontFamily="FontAwesome" fontSize="42em" color="white"></Span>
+                <Span text="&#xf075;" fontFamily="FontAwesome" color="white"></Span>
                 <Span text="some text" fontWeight="bold"></Span>
             </FormattedString>
         </Button>
         <Button text="TAP" tap="onTap" class="">
             <FormattedString>
-                <Span text="&#xf05a;" fontFamily="FontAwesome" fontSize="42em" color="white"></Span>
+                <Span text="&#xf05a;" fontFamily="FontAwesome" color="white"></Span>
                 <Span text="some text" fontWeight="bold"></Span>
             </FormattedString>
         </Button>
