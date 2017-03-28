@@ -14,4 +14,4 @@ export abstract class ButtonBase extends TextBase implements ButtonDefinition {
     }
 }
 
-ButtonBase.prototype.recycleNativeView = true;
+// ButtonBase.prototype.recycleNativeView = true;

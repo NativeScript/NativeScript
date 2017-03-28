@@ -99,6 +99,7 @@ export class Page extends PageBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         this.nativeView.setBackgroundColor(-1); // White color.
     }
 

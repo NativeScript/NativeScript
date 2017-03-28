@@ -290,12 +290,6 @@ export class Frame extends FrameBase {
     }
 
     public createNativeView() {
-        // TODO: probably memory leak.
-        // this._listener = new android.view.View.OnAttachStateChangeListener({
-        //     onViewAttachedToWindow: this.onNativeViewAttachedToWindow.bind(this),
-        //     onViewDetachedFromWindow: this.onNativeViewDetachedToWindow.bind(this)
-        // });
-
         const root = new org.nativescript.widgets.ContentLayout(this._context);
         if (this._containerViewId < 0) {
             this._containerViewId = android.view.View.generateViewId();
@@ -304,30 +298,16 @@ export class Frame extends FrameBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         this._android.rootViewGroup = this.nativeView;
         this._android.rootViewGroup.setId(this._containerViewId);
-        // this._android.rootViewGroup.addOnAttachStateChangeListener(this._listener);
     }
-
-    // public resetNativeView() {
-    //     this._android.rootViewGroup.removeOnAttachStateChangeListener(this._listener);
-    // }
 
     public disposeNativeView() {
         // we should keep the reference to underlying native object, since frame can contain many pages.
         this._android.rootViewGroup = null;
+        super.disposeNativeView();
     }
-
-    // private onNativeViewAttachedToWindow(view: android.view.View): void {
-    //     if (this._delayedNavigationEntry) {
-    //         this._navigateCore(this._delayedNavigationEntry);
-    //         this._delayedNavigationEntry = undefined;
-    //     }
-    // }
-
-    // private onNativeViewDetachedToWindow(view: android.view.View): void {
-    //     // unused for the moment.
-    // }
 
     public _popFromFrameStack() {
         if (!this._isInFrameStack) {
@@ -795,10 +775,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
 
         if (!rootView) {
-            navParam = application.mainEntry;
-            if (!navParam) {
-                navParam = application.mainModule;
-            }
+            navParam = application.getMainEntry();
 
             if (navParam) {
                 frame = new Frame();

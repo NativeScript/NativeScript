@@ -7,7 +7,7 @@ export class StackLayoutBase extends LayoutBase implements StackLayoutDefinition
     public orientation: "horizontal" | "vertical";
 }
 
-StackLayoutBase.prototype.recycleNativeView = true;
+// StackLayoutBase.prototype.recycleNativeView = true;
 
 export const orientationProperty = new Property<StackLayoutBase, "horizontal" | "vertical">({
     name: "orientation", defaultValue: "vertical", affectsLayout: isIOS,

@@ -150,6 +150,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView = this.nativeView;
         (<any>nativeView).listener.owner = this;
         this._keyListenerCache = nativeView.getKeyListener();

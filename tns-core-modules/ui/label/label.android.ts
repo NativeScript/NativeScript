@@ -21,10 +21,11 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const textView = this.nativeView;
         textView.setSingleLine(true);
-        // textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
     }
 }
 
-Label.prototype.recycleNativeView = true;
+// Label.prototype.recycleNativeView = true;

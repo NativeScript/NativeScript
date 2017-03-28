@@ -309,6 +309,7 @@ export class TabView extends TabViewBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
@@ -335,6 +336,7 @@ export class TabView extends TabViewBase {
         this._tabLayout = null;
         (<any>this._viewPager).listener.owner = null;
         this._viewPager = null;
+        super.disposeNativeView();
     }
 
     private setAdapter(items: Array<TabViewItem>) {

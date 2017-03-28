@@ -52,10 +52,12 @@ export class Button extends ButtonBase {
 
     public initNativeView(): void {
         (<any>this.nativeView).clickListener.owner = this;
+        super.initNativeView();
     }
 
     public disposeNativeView() {
         (<any>this.nativeView).clickListener.owner = null;
+        super.disposeNativeView();
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")

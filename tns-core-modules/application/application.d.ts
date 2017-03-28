@@ -103,23 +103,19 @@ export interface CssChangedEventData extends EventData {
 }
 
 /**
- * The main page path (without the file extension) for the application starting from the application root. 
- * For example if you have page called "main.js" in a folder called "subFolder" and your root folder is "app" you can specify mainModule like this:
- * var application = require("application");
- * application.mainModule = "app/subFolder/main";
- * application.start();
+ * Get main entry specified when calling start function.
  */
-export var mainModule: string;
+export function getMainEntry(): NavigationEntry;
 
 /**
- * The main navigation entry to be used when loading the main Page.
+ * Get application level static resources.
  */
-export var mainEntry: NavigationEntry;
+export function getResources(): any;
 
 /**
- * An application level static resources.
+ * Set application level static resources.
  */
-export var resources: any;
+export function setResources(res: any): void;
 
 /**
  * Sets application level static resources.
@@ -156,7 +152,7 @@ export function off(eventNames: string, callback?: any, thisArg?: any);
 /**
  * Call this method to start the application. Important: All code after this method call will not be executed!
  */
-export function start(entry?: NavigationEntry);
+export function start(entry?: NavigationEntry | string);
 
 /**
  * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).

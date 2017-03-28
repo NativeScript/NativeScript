@@ -53,6 +53,7 @@ export class TimePicker extends TimePickerBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
 

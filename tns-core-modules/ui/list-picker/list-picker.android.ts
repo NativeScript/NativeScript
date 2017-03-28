@@ -99,6 +99,7 @@ export class ListPicker extends ListPickerBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView = this.nativeView;
         this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
         (<any>nativeView).formatter.owner = this;
@@ -119,6 +120,7 @@ export class ListPicker extends ListPickerBase {
         const nativeView = this.nativeView;
         (<any>nativeView).formatter.owner = null;
         (<any>nativeView).valueChangedListener.owner = null;
+        super.disposeNativeView();
     }
 
     private _fixNumberPickerRendering() {

@@ -64,11 +64,13 @@ export class DatePicker extends DatePickerBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         (<any>this.nativeView).listener.owner = this;
     }
 
     public disposeNativeView() {
         (<any>this.nativeView).listener.owner = null;
+        super.disposeNativeView();
     }
 
     private updateNativeDate(): void {

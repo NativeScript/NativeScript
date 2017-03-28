@@ -107,21 +107,23 @@ const androidApp = new AndroidApplication();
 exports.android = androidApp;
 setApplication(androidApp);
 
+let mainEntry: NavigationEntry;
 let started = false;
-export function start(entry?: NavigationEntry) {
+export function start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
 
+    started = true;
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     if (!androidApp.nativeApp) {
         const nativeApp = getNativeApplication();
         androidApp.init(nativeApp);
     }
+}
 
-    started = true;
-    if (entry) {
-        exports.mainEntry = entry;
-    }
+export function getMainEntry() {
+    return mainEntry;
 }
 
 export function getNativeApplication(): android.app.Application {

@@ -85,6 +85,7 @@ export class FlexboxLayout extends FlexboxLayoutBase {
 
     public disposeNativeView() {
         (<any>this.nativeView).invalidateOrdersCache();
+        super.disposeNativeView();
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {

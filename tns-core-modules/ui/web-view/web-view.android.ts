@@ -101,6 +101,7 @@ export class WebView extends WebViewBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         (<any>this.nativeView).client.owner = this;
     }
 

@@ -58,6 +58,7 @@ export class Slider extends SliderBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
     }
@@ -65,6 +66,7 @@ export class Slider extends SliderBase {
     public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = null;
+        super.disposeNativeView();
     }
 
     /**

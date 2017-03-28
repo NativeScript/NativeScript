@@ -45,6 +45,7 @@ export class Switch extends SwitchBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
     }
@@ -52,6 +53,7 @@ export class Switch extends SwitchBase {
     public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = null;
+        super.disposeNativeView();
     }
 
     [checkedProperty.getDefault](): boolean {

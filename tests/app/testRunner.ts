@@ -346,7 +346,10 @@ function printRunTestStats() {
     messageContainer.focus();
     page.style.fontSize = 11;
     if (page.android) {
-        setTimeout(() => messageContainer.dismissSoftInput());
+        setTimeout(() => {
+            messageContainer.dismissSoftInput();
+            (<android.view.View>messageContainer.nativeView).scrollTo(0, 0);
+        });
     }
 }
 

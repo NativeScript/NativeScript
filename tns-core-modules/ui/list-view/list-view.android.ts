@@ -74,6 +74,7 @@ export class ListView extends ListViewBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView: any = this.nativeView;
         (<any>nativeView).itemClickListener.owner = this;
         const adapter = (<any>nativeView).adapter;

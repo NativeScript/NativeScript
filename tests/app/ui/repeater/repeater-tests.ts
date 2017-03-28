@@ -264,7 +264,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
         return result;
     };
 
-    app.resources["dateConverter"] = dateConverter;
+    app.getResources()["dateConverter"] = dateConverter;
 
     var data = new observableArray.ObservableArray();
 

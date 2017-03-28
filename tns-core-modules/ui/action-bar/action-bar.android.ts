@@ -137,11 +137,13 @@ export class ActionBar extends ActionBarBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         (<any>this.nativeView).menuItemClickListener.owner = this;
     }
 
     public disposeNativeView() {
         (<any>this.nativeView).menuItemClickListener.owner = null;
+        super.disposeNativeView();
     }
 
     public onLoaded() {
@@ -365,7 +367,7 @@ export class ActionBar extends ActionBarBase {
     }
 }
 
-ActionBar.prototype.recycleNativeView = true;
+// ActionBar.prototype.recycleNativeView = true;
 
 let defaultTitleTextColor: number;
 

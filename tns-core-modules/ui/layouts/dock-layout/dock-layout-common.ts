@@ -27,7 +27,7 @@ export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
     }
 }
 
-DockLayoutBase.prototype.recycleNativeView = true;
+// DockLayoutBase.prototype.recycleNativeView = true;
 
 export const dockProperty = new Property<View, "left" | "top" | "right" | "bottom">({
     name: "dock", defaultValue: "left", valueChanged: (target, oldValue, newValue) => {

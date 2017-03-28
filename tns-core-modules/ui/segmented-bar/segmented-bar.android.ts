@@ -211,6 +211,7 @@ export class SegmentedBar extends SegmentedBarBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
         this._tabContentFactory = this._tabContentFactory || new TabContentFactory(this);
@@ -219,6 +220,7 @@ export class SegmentedBar extends SegmentedBarBase {
     public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = null;
+        super.disposeNativeView();
     }
 
     private insertTab(tabItem: SegmentedBarItem, index: number): void {

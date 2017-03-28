@@ -60,6 +60,7 @@ export class TextBase extends TextBaseCommon {
         super.resetNativeView();
         // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
         this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+        this._defaultTransformationMethod = null;
     }
 
     [textProperty.getDefault](): string {

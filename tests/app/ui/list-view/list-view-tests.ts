@@ -421,7 +421,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return result;
         };
 
-        app.resources["dateConverter"] = dateConverter;
+        app.getResources()["dateConverter"] = dateConverter;
 
         var data = new observableArray.ObservableArray();
         data.push({ date: new Date(2020, 2, 7) });
@@ -542,7 +542,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return value;
         }
 
-        app.resources["testConverter"] = testConverter;
+        app.getResources()["testConverter"] = testConverter;
 
         var listViewModel = new observable.Observable();
         listViewModel.set("items", [1, 2, 3]);
@@ -570,7 +570,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return value;
         }
 
-        app.resources["testConverter"] = testConverter;
+        app.getResources()["testConverter"] = testConverter;
 
         var listViewModel = new observable.Observable();
         listViewModel.set("items", [1, 2, 3]);

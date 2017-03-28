@@ -604,7 +604,7 @@ export function test_BindingToDictionaryAtAppLevel() {
     pageViewModel.set("testProperty", testPropertyName);
     const dict = {};
     dict[testPropertyName] = expectedValue;
-    appModule.resources["dict"] = dict;
+    appModule.getResources()["dict"] = dict;
 
     const testFunc = function (views: Array<View>) {
         const testLabel = <Label>(views[0]);
@@ -629,7 +629,7 @@ export function test_BindingConverterCalledEvenWithNullValue() {
     const testPropertyValue = null;
     const expectedValue = "collapsed";
     pageViewModel.set("testProperty", testPropertyValue);
-    appModule.resources["converter"] = function (value) {
+    appModule.getResources()["converter"] = function (value) {
         if (value) {
             return "visible";
         } else {

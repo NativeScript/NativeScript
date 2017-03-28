@@ -108,6 +108,7 @@ export class SearchBar extends SearchBarBase {
     }
 
     public initNativeView(): void {
+        super.initNativeView();
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = this;
         nativeView.queryTextListener.owner = this;
@@ -117,6 +118,7 @@ export class SearchBar extends SearchBarBase {
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = null;
         nativeView.queryTextListener.owner = null;
+        super.disposeNativeView();
     }
 
     [backgroundColorProperty.getDefault](): number {
