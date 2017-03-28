@@ -160,16 +160,19 @@ public class ImageView extends android.widget.ImageView {
         }
     }
 
-    public void setUri(String uri, int decodeWidth, int decodeHeight, boolean useCache, boolean async, Worker.OnImageLoadedListener listener) {
+    public void setUri(String uri, int decodeWidth, int decodeHeight, boolean useCache, boolean async) {
         mUri = uri;
         mDecodeWidth = decodeWidth;
         mDecodeHeight = decodeHeight;
         mUseCache = useCache;
         mAsync = async;
-        mListener = listener;
         if (mAttachedToWindow) {
             loadImage();
         }
+    }
+
+    public void setImageLoadedListener(Worker.OnImageLoadedListener listener) {
+        mListener = listener;
     }
 
     private void loadImage() {
