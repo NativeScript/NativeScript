@@ -183,7 +183,7 @@ export class SegmentedBar extends SegmentedBarBase {
         return !this._addingTab;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeClasses();
 
         const context: android.content.Context = this._context;
@@ -210,13 +210,13 @@ export class SegmentedBar extends SegmentedBarBase {
         return nativeView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
         this._tabContentFactory = this._tabContentFactory || new TabContentFactory(this);
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = null;
     }

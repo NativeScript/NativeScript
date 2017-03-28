@@ -34,7 +34,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
         return false;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         return undefined;
     }
 

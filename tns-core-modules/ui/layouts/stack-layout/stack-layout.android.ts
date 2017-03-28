@@ -5,7 +5,7 @@ export * from "./stack-layout-common";
 export class StackLayout extends StackLayoutBase {
     nativeView: org.nativescript.widgets.StackLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
          return new org.nativescript.widgets.StackLayout(this._context);
     }
 

@@ -90,7 +90,7 @@ export class Page extends PageBase {
     nativeView: org.nativescript.widgets.GridLayout;
     private _isBackNavigation = false;
 
-    public _createNativeView() {
+    public createNativeView() {
         const layout = new org.nativescript.widgets.GridLayout(this._context);
         layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
@@ -98,7 +98,7 @@ export class Page extends PageBase {
         return layout;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         this.nativeView.setBackgroundColor(-1); // White color.
     }
 

@@ -136,7 +136,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     public abstract _onReturnPress(): void;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeEditTextListeners();
         const editText = new android.widget.EditText(this._context);
         this._configureEditText(editText);
@@ -149,7 +149,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return editText;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView = this.nativeView;
         (<any>nativeView).listener.owner = this;
         this._keyListenerCache = nativeView.getKeyListener();
@@ -168,12 +168,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     //             this._android.removeTextChangedListener(this._editTextListeners);
     //         }
     //     }
-    //     super._resetNativeView();
+    //     super.resetNativeView();
     // }
 
     // public _disposeNativeView(force?: boolean) {
     //     this._android = undefined;
-    //     super._disposeNativeView();
+    //     super.disposeNativeView();
     // }
 
     public dismissSoftInput() {

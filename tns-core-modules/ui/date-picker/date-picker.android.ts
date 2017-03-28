@@ -53,7 +53,7 @@ function initializeDateChangedListener(): void {
 export class DatePicker extends DatePickerBase {
     nativeView: android.widget.DatePicker;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeDateChangedListener();
         const picker = new android.widget.DatePicker(this._context);
         picker.setCalendarViewShown(false);
@@ -63,11 +63,11 @@ export class DatePicker extends DatePickerBase {
         return picker;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         (<any>this.nativeView).listener.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         (<any>this.nativeView).listener.owner = null;
     }
 

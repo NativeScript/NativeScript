@@ -41,7 +41,7 @@ export class Button extends ButtonBase {
 
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeClickListener();
         const button = new android.widget.Button(this._context);
         const clickListener = new ClickListener(this);
@@ -50,11 +50,11 @@ export class Button extends ButtonBase {
         return button;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         (<any>this.nativeView).clickListener.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         (<any>this.nativeView).clickListener.owner = null;
     }
 

@@ -34,7 +34,7 @@ View.prototype[dockProperty.setNative] = function(this: View, value: "left" | "t
 export class DockLayout extends DockLayoutBase {
     nativeView: org.nativescript.widgets.DockLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new org.nativescript.widgets.DockLayout(this._context);
     }
 

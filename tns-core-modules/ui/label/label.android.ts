@@ -13,14 +13,14 @@ export class Label extends TextBase implements LabelDefinition {
         this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         const textView = new android.widget.TextView(this._context);
         textView.setSingleLine(true);
         textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
         return textView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const textView = this.nativeView;
         textView.setSingleLine(true);
         // textView.setEllipsize(android.text.TextUtils.TruncateAt.END);

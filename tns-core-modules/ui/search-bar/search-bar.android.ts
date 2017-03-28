@@ -91,7 +91,7 @@ export class SearchBar extends SearchBarBase {
         return result;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeClasses();
         const nativeView = new android.widget.SearchView(this._context);
         nativeView.setIconified(false);
@@ -107,13 +107,13 @@ export class SearchBar extends SearchBarBase {
         return nativeView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = this;
         nativeView.queryTextListener.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = null;
         nativeView.queryTextListener.owner = null;

@@ -126,7 +126,7 @@ function putNativeView(context: Object, view: ViewBase): void {
     list.push(new WeakRef(view.nativeView));
 }
 
-export class ViewBase extends Observable implements ViewBaseDefinition {
+export abstract class ViewBase extends Observable implements ViewBaseDefinition {
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
@@ -588,19 +588,19 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
         }
     }
 
-    public _createNativeView(): Object {
+    public createNativeView(): Object {
         return undefined;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         //
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         //
     }
 
-    public _resetNativeView(): void {
+    public resetNativeView(): void {
         if (this.nativeView && this.recycleNativeView && isAndroid) {
             resetNativeView(this);
         }
@@ -627,7 +627,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             }
 
             if (!nativeView) {
-                nativeView = <android.view.View>this._createNativeView();
+                nativeView = <android.view.View>this.createNativeView();
             }
 
             this._androidView = this.nativeView = nativeView;
@@ -659,14 +659,14 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             }
         } else {
             // TODO: Implement _createNativeView for iOS
-            this._createNativeView();
+            this.createNativeView();
             if (!currentNativeView) {
                 console.log(`${this.typeName} doesnt have NativeView !!!!! =================`);
             }
             // this.nativeView = this._iosView = (<any>this)._nativeView;
         }
 
-        this._initNativeView();
+        this.initNativeView();
 
         if (this.parent) {
             let nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
@@ -695,7 +695,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }
 
-        this._resetNativeView();
+        this.resetNativeView();
 
         this.eachChild((child) => {
             child._tearDownUI(force);
@@ -714,7 +714,7 @@ export class ViewBase extends Observable implements ViewBaseDefinition {
             }
         }
 
-        this._disposeNativeView();
+        this.disposeNativeView();
 
         this.nativeView = null;
         this._androidView = null;

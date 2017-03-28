@@ -127,7 +127,7 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeMenuItemClickListener();
         const toolbar = new android.support.v7.widget.Toolbar(this._context);
         const menuItemClickListener = new MenuItemClickListener(this);
@@ -136,11 +136,11 @@ export class ActionBar extends ActionBarBase {
         return toolbar;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         (<any>this.nativeView).menuItemClickListener.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         (<any>this.nativeView).menuItemClickListener.owner = null;
     }
 

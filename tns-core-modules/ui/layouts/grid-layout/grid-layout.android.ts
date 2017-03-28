@@ -52,17 +52,17 @@ export class ItemSpec extends ItemSpecBase {
 export class GridLayout extends GridLayoutBase {
     nativeView: org.nativescript.widgets.GridLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new org.nativescript.widgets.GridLayout(this._context);
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         // Update native GridLayout
         this.rowsInternal.forEach((itemSpec: ItemSpec, index, rows) => { this._onRowAdded(itemSpec); }, this);
         this.columnsInternal.forEach((itemSpec: ItemSpec, index, rows) => { this._onColumnAdded(itemSpec); }, this);
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         // Update native GridLayout
         for (let i = this.rowsInternal.length; i--; i >= 0) {
             const itemSpec = <ItemSpec>this.rowsInternal[i];

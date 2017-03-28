@@ -5,7 +5,7 @@ export * from "./wrap-layout-common";
 export class WrapLayout extends WrapLayoutBase {
     nativeView: org.nativescript.widgets.WrapLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
          return new org.nativescript.widgets.WrapLayout(this._context);
     }
 

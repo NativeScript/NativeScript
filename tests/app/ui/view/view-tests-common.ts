@@ -281,13 +281,13 @@ class TestView extends Layout {
         this.nativeView = undefined;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         if (isIOS) {
             this.nativeView = this._nativeView;
             return this._nativeView;
         }
 
-        return super._createNativeView();
+        return super.createNativeView();
     }
 
     public toString() {

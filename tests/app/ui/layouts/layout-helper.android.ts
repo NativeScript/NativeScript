@@ -68,15 +68,15 @@ class NativeGridLayout extends org.nativescript.widgets.GridLayout {
 export class MyButton extends Button implements def.MyButton {
     nativeView: NativeButton;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new NativeButton(this._context, this);
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         this.nativeView.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         this.nativeView.owner = undefined;
     }
 
@@ -121,15 +121,15 @@ export class MyButton extends Button implements def.MyButton {
 export class MyStackLayout extends StackLayout implements def.MyStackLayout {
     nativeView: NativeStackLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new NativeStackLayout(this._context, this);
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         this.nativeView.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         this.nativeView.owner = undefined;
     }
 
@@ -174,15 +174,15 @@ export class MyStackLayout extends StackLayout implements def.MyStackLayout {
 export class MyGridLayout extends GridLayout implements def.MyGridLayout {
     nativeView: NativeGridLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new NativeGridLayout(this._context, this);
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         this.nativeView.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         this.nativeView.owner = undefined;
     }
 

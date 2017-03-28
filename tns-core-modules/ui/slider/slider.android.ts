@@ -48,7 +48,7 @@ export class Slider extends SliderBase {
     _supressNativeValue: boolean;
     nativeView: android.widget.SeekBar;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeSeekBarChangeListener();
         const listener = new SeekBarChangeListener(this);
         const nativeView = new android.widget.SeekBar(this._context);
@@ -57,12 +57,12 @@ export class Slider extends SliderBase {
         return nativeView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = null;
     }

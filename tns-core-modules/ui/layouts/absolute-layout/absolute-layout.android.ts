@@ -19,7 +19,7 @@ View.prototype[leftProperty.setNative] = makeNativeSetter<number>(function(this:
 export class AbsoluteLayout extends AbsoluteLayoutBase {
     nativeView: org.nativescript.widgets.AbsoluteLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new org.nativescript.widgets.AbsoluteLayout(this._context);
     }
 }

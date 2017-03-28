@@ -79,11 +79,11 @@ const alignSelfMap = {
 export class FlexboxLayout extends FlexboxLayoutBase {
     nativeView: org.nativescript.widgets.FlexboxLayout;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new org.nativescript.widgets.FlexboxLayout(this._context);
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         (<any>this.nativeView).invalidateOrdersCache();
     }
 

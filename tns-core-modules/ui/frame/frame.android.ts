@@ -289,7 +289,7 @@ export class Frame extends FrameBase {
         }
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         // TODO: probably memory leak.
         // this._listener = new android.view.View.OnAttachStateChangeListener({
         //     onViewAttachedToWindow: this.onNativeViewAttachedToWindow.bind(this),
@@ -303,17 +303,17 @@ export class Frame extends FrameBase {
         return root;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         this._android.rootViewGroup = this.nativeView;
         this._android.rootViewGroup.setId(this._containerViewId);
         // this._android.rootViewGroup.addOnAttachStateChangeListener(this._listener);
     }
 
-    // public _resetNativeView() {
+    // public resetNativeView() {
     //     this._android.rootViewGroup.removeOnAttachStateChangeListener(this._listener);
     // }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         // we should keep the reference to underlying native object, since frame can contain many pages.
         this._android.rootViewGroup = null;
     }

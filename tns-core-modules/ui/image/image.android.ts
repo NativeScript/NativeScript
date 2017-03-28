@@ -82,7 +82,7 @@ export class Image extends ImageBase {
     public decodeHeight = 0;
     public useCache = true;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeImageLoadedListener();
         if (!imageFetcher) {
             initImageCache(this._context);
@@ -96,11 +96,11 @@ export class Image extends ImageBase {
         return imageView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         (<any>this.nativeView).listener.owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         (<any>this.nativeView).listener.owner = null;
     }
 

@@ -7,7 +7,7 @@ export * from "./html-view-common";
 export class HtmlView extends HtmlViewBase {
     nativeView: android.widget.TextView;
 
-    public _createNativeView() {
+    public createNativeView() {
         const textView = new android.widget.TextView(this._context);
         // This makes the html <a href...> work
         textView.setLinksClickable(true);

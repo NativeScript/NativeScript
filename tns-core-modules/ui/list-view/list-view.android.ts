@@ -49,7 +49,7 @@ export class ListView extends ListViewBase {
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeItemClickListener();
 
         const listView = new android.widget.ListView(this._context);
@@ -73,7 +73,7 @@ export class ListView extends ListViewBase {
         return listView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView: any = this.nativeView;
         (<any>nativeView).itemClickListener.owner = this;
         const adapter = (<any>nativeView).adapter;
@@ -85,13 +85,13 @@ export class ListView extends ListViewBase {
         nativeView.setId(this._androidViewId);
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         const nativeView = this.nativeView;
          nativeView.setAdapter(null);
         (<any>nativeView).itemClickListener.owner = null;
         (<any>nativeView).adapter.owner = null;
         this.clearRealizedCells();
-        super._disposeNativeView();
+        super.disposeNativeView();
     }
 
     public refresh() {

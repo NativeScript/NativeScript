@@ -44,7 +44,7 @@ export class TimePicker extends TimePickerBase {
     nativeView: android.widget.TimePicker;
     updatingNativeValue: boolean;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeTimeChangedListener();
         const nativeView = new android.widget.TimePicker(this._context);
         const listener = new TimeChangedListener(this);
@@ -54,7 +54,7 @@ export class TimePicker extends TimePickerBase {
         return nativeView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView: any = this.nativeView;
         nativeView.listener.owner = this;
 

@@ -263,7 +263,7 @@ export class TabView extends TabViewBase {
         }
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeClasses();
         if (traceEnabled()) {
             traceWrite("TabView._createUI(" + this + ");", traceCategory);
@@ -308,7 +308,7 @@ export class TabView extends TabViewBase {
         return nativeView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
         }
@@ -325,7 +325,7 @@ export class TabView extends TabViewBase {
         (<any>this._pagerAdapter).owner = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         // this._tabLayout.setItems(null, null);
         this._pagerAdapter.notifyDataSetChanged();
         (<any>this._pagerAdapter).owner = null;

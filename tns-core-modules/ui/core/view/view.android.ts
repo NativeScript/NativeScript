@@ -471,7 +471,7 @@ export class View extends ViewCommon {
 export class CustomLayoutView extends View implements CustomLayoutViewDefinition {
     nativeView: android.view.ViewGroup;
 
-    public _createNativeView() {
+    public createNativeView() {
         return new org.nativescript.widgets.ContentLayout(this._context);
     }
 

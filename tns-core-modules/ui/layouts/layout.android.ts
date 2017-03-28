@@ -41,18 +41,18 @@ export class Layout extends LayoutBase implements LayoutDefinition {
     _measuredWidth: number;
     _measuredHeight: number;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeViewGroup();
         return new NativeViewGroup(this._context);
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         (<any>this.nativeView)[OWNER] = this;
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
          (<any>this.nativeView)[OWNER] = undefined;
-        super._disposeNativeView();
+        super.disposeNativeView();
     }
 
     public measure(widthMeasureSpec: number, heightMeasureSpec: number): void {

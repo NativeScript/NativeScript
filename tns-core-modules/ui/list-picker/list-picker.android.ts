@@ -72,7 +72,7 @@ export class ListPicker extends ListPickerBase {
     nativeView: android.widget.NumberPicker;
     private _selectorWheelPaint: android.graphics.Paint;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeClasses();
         const picker = new android.widget.NumberPicker(this._context);
        
@@ -98,7 +98,7 @@ export class ListPicker extends ListPickerBase {
         return picker;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         const nativeView = this.nativeView;
         this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
         (<any>nativeView).formatter.owner = this;
@@ -115,7 +115,7 @@ export class ListPicker extends ListPickerBase {
         }
     }
 
-    public _disposeNativeView() {
+    public disposeNativeView() {
         const nativeView = this.nativeView;
         (<any>nativeView).formatter.owner = null;
         (<any>nativeView).valueChangedListener.owner = null;

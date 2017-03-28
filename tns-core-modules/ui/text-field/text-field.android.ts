@@ -10,9 +10,9 @@ export class TextField extends TextFieldBase {
         editText.setHorizontallyScrolling(true);
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         // TODO: We should be able to reset it using only our properties. Check it first.
-        super._initNativeView();
+        super.initNativeView();
         this.nativeView.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
     }
 

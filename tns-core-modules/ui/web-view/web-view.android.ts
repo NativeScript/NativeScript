@@ -88,7 +88,7 @@ function initializeWebViewClient(): void {
 export class WebView extends WebViewBase {
     nativeView: android.webkit.WebView;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeWebViewClient();
 
         const nativeView = new android.webkit.WebView(this._context);
@@ -100,18 +100,18 @@ export class WebView extends WebViewBase {
         return nativeView;
     }
 
-    public _initNativeView(): void {
+    public initNativeView(): void {
         (<any>this.nativeView).client.owner = this;
     }
 
-    public _resetNativeView() {
+    public resetNativeView() {
         const nativeView = this.nativeView;
         if (nativeView) {
             nativeView.destroy();
         }
 
         (<any>nativeView).client.owner = null;
-        super._resetNativeView();
+        super.resetNativeView();
     }
 
     public _loadFileOrResource(path: string, content: string) {
