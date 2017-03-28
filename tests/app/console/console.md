@@ -26,10 +26,6 @@ Asserts a boolean condition and prints a message in case the assert fails.
 Prints the state of the specified object to the console.
 {%snippet console-dir%}
 
-### Dump
-Prints the state of the specified object to the console.
-{%snippet console-dump%}
-
 ### Trace
 Prints the current stack trace in the console.
 {%snippet console-trace%}

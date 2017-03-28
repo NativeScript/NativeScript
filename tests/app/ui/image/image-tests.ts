@@ -126,10 +126,8 @@ export const test_SettingImageSrcToDataURI_sync = function () {
 };
 
 export const test_SettingImageSrcToDataURI_async = function (done) {
-    // >> img-create-datauri
     const image = new ImageModule.Image();
     image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
-    // << img-create-datauri
 
     runImageTestAsync(image, image.src, done);
 };

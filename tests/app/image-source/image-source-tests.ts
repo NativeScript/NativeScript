@@ -16,7 +16,9 @@ var imagePath = "~/logo.png";
 var smallImagePath = "~/small-image.png";
 
 export function testFromResource() {
+    // >> imagesource-resname
     var img = imageSource.fromResource("icon");
+    // << imagesource-resname
     TKUnit.assert(img.height > 0, "image.fromResource failed");
 }
 

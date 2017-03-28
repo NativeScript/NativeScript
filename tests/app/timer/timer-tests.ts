@@ -82,12 +82,11 @@ export function test_setTimeout_callbackShouldBeCleared() {
         completed = true;
         // << (hide)
     }, 50);
-    // << timer-set-fifty
 
     //// Clear timeout with specified id.
     timer.clearTimeout(id);
 
-    // << timer-set-twothousands
+    // << timer-set-fifty
 
     TKUnit.wait(0.060);
     timer.clearTimeout(id);
