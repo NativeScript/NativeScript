@@ -142,8 +142,8 @@ export class MyTextViewCommon extends View {
 }
 
 // Define textProperty and register it
-export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
-textProperty.register(TextBaseCommon);
+export const textProperty = new Property<MyTextViewCommon, string>({ name: "text", defaultValue: "" });
+textProperty.register(MyTextViewCommon);
 
 // Define and register the "text-align" CSS property
 export type TextAlignment = "left" | "center" | "right";
