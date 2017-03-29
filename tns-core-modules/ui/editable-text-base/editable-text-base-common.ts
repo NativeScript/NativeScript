@@ -13,6 +13,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public editable: boolean;
     public autocorrect: boolean;
     public hint: string;
+    public maxLength: number;
 
     public abstract dismissSoftInput();
     public abstract _setInputType(inputType: number): void;
@@ -49,4 +50,6 @@ export const autocorrectProperty = new Property<EditableTextBase, boolean>({ nam
 autocorrectProperty.register(EditableTextBase);
 
 export const hintProperty = new Property<EditableTextBase, string>({ name: "hint", defaultValue: "" });
-hintProperty.register(EditableTextBase);
+
+export const maxLengthProperty = new Property<EditableTextBase, number>({ name: "maxLength", defaultValue: -1 });
+maxLengthProperty.register(EditableTextBase);
