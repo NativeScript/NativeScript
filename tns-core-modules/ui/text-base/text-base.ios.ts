@@ -45,11 +45,10 @@ export class TextBase extends TextBaseCommon {
         const nativeView = this.nativeView;
         if (nativeView instanceof UIButton) {
             nativeView.setTitleColorForState(color, UIControlState.Normal);
+            nativeView.titleLabel.textColor = color;
         } else {
             nativeView.textColor = color;
         }
-
-        this._setNativeText();
     }
 
     [fontInternalProperty.getDefault](): UIFont {
