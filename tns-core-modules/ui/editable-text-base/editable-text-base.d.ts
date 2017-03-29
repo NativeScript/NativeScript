@@ -13,6 +13,8 @@ export const placeholderColorProperty: CssProperty<Style, Color>;
  * Represents the base class for all editable text views.
  */
 export class EditableTextBase extends TextBase {
+    public static blurEvent: string;
+
     /**
      * Gets or sets the soft keyboard type. Possible values are contained in the [KeyboardType enumeration](../enums/KeyboardType/README.md).
      */

@@ -4,7 +4,7 @@ import { TextBase, Property, CssProperty, Style, Color, booleanConverter } from 
 export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
-
+    public static blurEvent = "blur";
     public keyboardType: "datetime" | "phone" | "number" | "url" | "email";
     public returnKeyType: "done" | "next" | "go" | "search" | "send";
     public updateTextTrigger: "focusLost" | "textChanged";
