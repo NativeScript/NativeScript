@@ -196,7 +196,6 @@ selectedIndexProperty.register(TabViewBase);
 export const itemsProperty = new Property<TabViewBase, TabViewItemDefinition[]>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         target.onItemsChanged(oldValue, newValue);
-        selectedIndexProperty.coerce(target);
     }
 });
 itemsProperty.register(TabViewBase);

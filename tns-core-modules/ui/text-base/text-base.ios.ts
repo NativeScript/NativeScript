@@ -42,13 +42,12 @@ export class TextBase extends TextBaseCommon {
     }
     [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
-        if (!this.formattedText) {
-            let nativeView = this.nativeView;
-            if (nativeView instanceof UIButton) {
-                nativeView.setTitleColorForState(color, UIControlState.Normal);
-            } else {
-                nativeView.textColor = color;
-            }
+        const nativeView = this.nativeView;
+        if (nativeView instanceof UIButton) {
+            nativeView.setTitleColorForState(color, UIControlState.Normal);
+            nativeView.titleLabel.textColor = color;
+        } else {
+            nativeView.textColor = color;
         }
     }
 
@@ -58,10 +57,10 @@ export class TextBase extends TextBaseCommon {
         return nativeView.font;
     }
     [fontInternalProperty.setNative](value: Font | UIFont) {
-        if (!this.formattedText) {
+        if (!(value instanceof Font) || !this.formattedText) {
             let nativeView = this.nativeView;
             nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-            let font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
+            const font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
             nativeView.font = font;
         }
     }
@@ -170,14 +169,14 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSKernAttributeName, style.letterSpacing * this.nativeView.font.pointSize);
         }
 
-        if (style.color) {
+        const isTextView = this.nativeView instanceof UITextView;
+        if (style.color && (dict.size > 0 || isTextView)) {
             dict.set(NSForegroundColorAttributeName, style.color.ios);
         }
 
         const text = this.text;
         const string = (text === undefined || text === null) ? '' : text.toString();
         const source = getTransformedText(string, this.textTransform);
-        const isTextView = this.nativeView instanceof UITextView;
         if (dict.size > 0 || isTextView) {
             if (isTextView) {
                 // UITextView's font seems to change inside.

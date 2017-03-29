@@ -386,6 +386,7 @@ export class TabView extends TabViewBase {
     }
     [itemsProperty.setNative](value: TabViewItem[]) {
         this.setViewControllers(value);
+        selectedIndexProperty.coerce(this);
     }
 
     [tabTextColorProperty.getDefault](): UIColor {
