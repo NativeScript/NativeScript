@@ -55,13 +55,13 @@ Use single quotes, unless you are writing JSON.
 *Right:*
 
 ~~~ {.javascript}
-var foo = "bar";
+var foo = 'bar';
 ~~~
 
 *Wrong:*
 
 ~~~ {.javascript}
-var foo = 'bar';
+var foo = "bar";
 ~~~
 
 ## Braces
