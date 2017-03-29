@@ -8,6 +8,7 @@ export const autocapitalizationTypeProperty: Property<EditableTextBase, string>;
 export const autocorrectProperty: Property<EditableTextBase, boolean>;
 export const hintProperty: Property<EditableTextBase, string>;
 export const placeholderColorProperty: CssProperty<Style, Color>;
+export const maxLengthProperty: Property<EditableTextBase, number>;
 
 /**
  * Represents the base class for all editable text views.
@@ -48,6 +49,11 @@ export class EditableTextBase extends TextBase {
      * Gets or sets the placeholder text.
      */
     hint: string;
+
+    /**
+     * Limits input to a certain number of characters.
+     */
+    maxLength: number;
 
     /**
      * Hides the soft input method, ususally a soft keyboard.

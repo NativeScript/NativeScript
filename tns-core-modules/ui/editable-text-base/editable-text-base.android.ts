@@ -2,7 +2,7 @@
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty, placeholderColorProperty, Color
+    textProperty, placeholderColorProperty, Color, maxLengthProperty
 } from "./editable-text-base-common";
 
 import { ad } from "../../utils/utils";
@@ -409,5 +409,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         } else {
             this.nativeView.setHintTextColor(value);
         }
+    }
+
+    [maxLengthProperty.setNative](value: number) {
+        this.nativeView.setFilters([new android.text.InputFilter.LengthFilter(+value)]);
     }
 }
