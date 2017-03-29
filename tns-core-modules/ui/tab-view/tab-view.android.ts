@@ -327,25 +327,21 @@ export class TabView extends TabViewBase {
     }
 
     public disposeNativeView() {
-        // this._tabLayout.setItems(null, null);
         this._pagerAdapter.notifyDataSetChanged();
         (<any>this._pagerAdapter).owner = null;
         this._pagerAdapter = null;
 
-        // this._viewPager.setAdapter(null);
         this._tabLayout = null;
         (<any>this._viewPager).listener.owner = null;
         this._viewPager = null;
         super.disposeNativeView();
     }
 
-    private setAdapter(items: Array<TabViewItem>) {
+    private setAdapterItems(items: Array<TabViewItem>) {
         (<any>this._pagerAdapter).items = items;
 
         const length = items ? items.length : 0;
         if (length === 0) {
-            // this._viewPager.setAdapter(null);
-            // this._pagerAdapter = null;
             this._tabLayout.setItems(null, null);
             return;
         }
@@ -393,7 +389,8 @@ export class TabView extends TabViewBase {
         return null;
     }
     [itemsProperty.setNative](value: TabViewItem[]) {
-        this.setAdapter(value);
+        this.setAdapterItems(value);
+        selectedIndexProperty.coerce(this);
     }
 
     [tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {
