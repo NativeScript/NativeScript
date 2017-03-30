@@ -27,7 +27,7 @@ export module inputType {
     export const password: string = "password";
 
     /**
-     * Password input type.
+     * Email input type.
      */
     export const email: string = "email";
 }
