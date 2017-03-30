@@ -59,6 +59,10 @@ export class ActionBar extends ActionBarBase {
         return null;
     }
 
+    public createNativeView(): UIView {
+        return this.ios;
+    }
+
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof NavigationButton) {
             this.navigationButton = value;
