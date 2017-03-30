@@ -1,5 +1,5 @@
 ﻿import { 
-    TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, maxLengthProperty,
+    TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty,
     Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
 
@@ -67,8 +67,11 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner) {
-            if (owner.maxLength > -1 && owner.maxLength <= textField.text.length && replacementString.length > range.length) {
-                return false;
+            const delta = replacementString.length - range.length;
+            if (delta > 0) {
+                if (textField.text.length + delta > owner.maxLength) {
+                    return false;
+                }
             }
 
             if (owner.updateTextTrigger === "textChanged") {
@@ -132,7 +135,6 @@ class UITextFieldImpl extends UITextField {
 export class TextField extends TextFieldBase {
     private _ios: UITextField;
     private _delegate: UITextFieldDelegateImpl;
-    private _maxLength: number = -1;
     nativeView: UITextField;
 
     constructor() {
@@ -238,12 +240,5 @@ export class TextField extends TextFieldBase {
     }
     [paddingLeftProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
-    }
-
-    [maxLengthProperty.getDefault](): number {
-        return this._maxLength;
-    }
-    [maxLengthProperty.setNative](value: number) {
-        this._maxLength = +value;
     }
 }

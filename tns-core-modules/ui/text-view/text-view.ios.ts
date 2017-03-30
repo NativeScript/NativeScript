@@ -2,7 +2,7 @@
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, maxLengthProperty,
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout
 } from "../editable-text-base";
 
@@ -52,8 +52,11 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner) {
-            if (owner.maxLength > -1 && owner.maxLength <= textView.text.length && replacementString.length > range.length) {
-                return false;
+            const delta = replacementString.length - range.length;
+            if (delta > 0) {
+                if (textView.text.length + delta > owner.maxLength) {
+                    return false;
+                }
             }
 
             if (owner.formattedText) {
@@ -69,7 +72,6 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _ios: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
-    private _maxLength: number = -1;
 
     constructor() {
         super();
@@ -274,13 +276,6 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         let inset = this.nativeView.textContainerInset;
         let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
-    }
-
-    [maxLengthProperty.getDefault](): number {
-        return this._maxLength;
-    }
-    [maxLengthProperty.setNative](value: number) {
-        this._maxLength = +value;
     }
 }
 
