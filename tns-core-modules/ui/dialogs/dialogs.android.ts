@@ -179,8 +179,12 @@ export function prompt(arg: any): Promise<PromptResult> {
 
             const input = new android.widget.EditText(androidApp.foregroundActivity);
 
-            if (options && options.inputType === inputType.password) {
-                input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+            if (options) {
+                if (options.inputType === inputType.password) {
+                    input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                } else if (options.inputType === inputType.email) {
+                    input.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+                }
             }
 
             input.setText(options && options.defaultText || "");

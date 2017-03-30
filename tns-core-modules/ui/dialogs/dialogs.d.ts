@@ -14,6 +14,11 @@ export module inputType {
      * Password input type.
      */
     export var password: string;
+
+    /**
+     * Email input type.
+     */
+    export var email: string;
 }
 
 /**
@@ -167,7 +172,7 @@ export interface PromptOptions extends ConfirmOptions {
     defaultText?: string;
 
     /**
-     * Gets or sets the prompt input type (plain text or password).
+     * Gets or sets the prompt input type (plain text, password, or email).
      */
     inputType?: string;
 }

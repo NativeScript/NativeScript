@@ -25,6 +25,11 @@ export module inputType {
      * Password input type.
      */
     export const password: string = "password";
+
+    /**
+     * Password input type.
+     */
+    export const email: string = "email";
 }
 
 let frame: typeof frameModule;
