@@ -818,6 +818,7 @@ export function testBorderWidth() {
 export function testCornerRadius() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
+        TKUnit.waitUntilReady(() => lbl.isLayoutValid);
         const expectedValue = <number>lbl.borderRadius * utils.layout.getDisplayDensity();
         const actualValue = definition.getUniformNativeCornerRadius(lbl);
         TKUnit.assertAreClose(actualValue, expectedValue, 0.01, "borderRadius");
