@@ -715,9 +715,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.disposeNativeView();
 
-        this.nativeView = null;
-        this._androidView = null;
-        this._iosView = null;
+        if (isAndroid) {
+            this.nativeView = null;
+            this._androidView = null;
+        }
+
+        // this._iosView = null;
 
         this._context = null;
         traceNotifyEvent(this, "_onContextChanged");
