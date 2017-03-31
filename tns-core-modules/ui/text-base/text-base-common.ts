@@ -229,7 +229,6 @@ export namespace TextTransform {
 export const textTransformProperty = new CssProperty<Style, TextTransform>({
     name: "textTransform",
     cssName: "text-transform",
-    defaultValue: "none",
     valueConverter: TextTransform.parse
 });
 textTransformProperty.register(Style);

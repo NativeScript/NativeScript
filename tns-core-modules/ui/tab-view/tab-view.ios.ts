@@ -3,7 +3,7 @@
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, initNativeView
 } from "./tab-view-common"
 
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
@@ -120,15 +120,28 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
 }
 
 export class TabViewItem extends TabViewItemBase {
+    private _iosViewController: UIViewController;
 
-    _iosViewController: UIViewController;
+    public setViewController(controller: UIViewController) {
+        this._iosViewController = controller;
+        (<any>this)._nativeView = this.nativeView = controller.view;
+        initNativeView(this);
+    }
+    
+    public disposeNativeView() {
+        this._iosViewController = undefined;
+        this.nativeView = undefined;
+    }
+
     public _update() {
         const parent = <TabView>this.parent;
         let controller = this._iosViewController;
         if (parent && controller) {
             const icon = parent._getIcon(this.iconSource);
             const index = parent.items.indexOf(this);
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(this.title, icon, index);
+            const title = getTransformedText(this.title, this.style.textTransform);
+
+            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
             }
@@ -139,6 +152,10 @@ export class TabViewItem extends TabViewItemBase {
             applyStatesToItem(tabBarItem, states);
             controller.tabBarItem = tabBarItem;
         }
+    }
+
+    [textTransformProperty.setNative](value: TextTransform) {
+        this._update();
     }
 }
 
@@ -248,7 +265,7 @@ export class TabView extends TabViewBase {
                 newController.view.addSubview(item.view.ios);
             }
 
-            item._iosViewController = newController;
+            item.setViewController(newController);
 
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
@@ -356,18 +373,6 @@ export class TabView extends TabViewBase {
         }
     }
 
-    private _updateIOSTabBarTextTransform(newValue: TextTransform): void {
-        if (!this.items) {
-            return;
-        }
-
-        const tabBar = this.ios.tabBar;
-        for (let i = 0, count = tabBar.items.count; i < count; i++) {
-            const item = tabBar.items[i];
-            item.title = getTransformedText(item.title, newValue);
-        }
-    }
-
     [selectedIndexProperty.getDefault](): number {
         return -1;
     }
@@ -409,14 +414,6 @@ export class TabView extends TabViewBase {
     [selectedTabTextColorProperty.setNative](value: UIColor) {
         this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
-    }
-
-    // TODO: Move this to TabViewItem
-    [textTransformProperty.getDefault](): TextTransform {
-        return "none";
-    }
-    [textTransformProperty.setNative](value: TextTransform) {
-        this._updateIOSTabBarTextTransform(value);
     }
 
     // TODO: Move this to TabViewItem

@@ -281,16 +281,15 @@ export class TextBase extends TextBaseCommon {
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
     switch (textTransform) {
-        case "none":
-            return text;
         case "uppercase":
             return NSStringFromNSAttributedString(text).uppercaseString;
         case "lowercase":
             return NSStringFromNSAttributedString(text).lowercaseString;
         case "capitalize":
             return NSStringFromNSAttributedString(text).capitalizedString;
+        case "none":
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: 'none', 'capitalize', 'uppercase', 'lowercase'.`);
+            return text;
     }
 }
 

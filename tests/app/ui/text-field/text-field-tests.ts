@@ -542,7 +542,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform default value");
+        TKUnit.assertNull(view.style.textTransform, "TextTransform default value");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration default value");
         TKUnit.assertTrue(view.style.letterSpacing === 0, "LetterSpacing default value");
 

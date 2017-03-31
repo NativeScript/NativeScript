@@ -5,6 +5,7 @@ import {
 } from "../core/view";
 
 export * from "../core/view";
+import { TextTransform } from "../text-base";
 
 export const traceCategory = "TabView";
 
@@ -12,6 +13,13 @@ export abstract class TabViewItemBase extends ViewBase implements TabViewItemDef
     private _title: string = "";
     private _view: View;
     private _iconSource: string;
+
+    get textTransform(): TextTransform {
+        return this.style.textTransform;
+    }
+    set textTransform(value: TextTransform) {
+        this.style.textTransform = value;
+    }
 
     public _addChildFromBuilder(name: string, value: any): void {
         if (value instanceof View) {
@@ -75,6 +83,13 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
     public selectedIndex: number;
     public androidOffscreenTabLimit: number;
     public iosIconRenderingMode: "automatic" | "alwaysOriginal" | "alwaysTemplate";
+
+    get androidSelectedTabHighlightColor(): Color {
+        return this.style.androidSelectedTabHighlightColor;
+    }
+    set androidSelectedTabHighlightColor(value: Color) {
+        this.style.androidSelectedTabHighlightColor = value;
+    }
 
     get tabTextColor(): Color {
         return this.style.tabTextColor;

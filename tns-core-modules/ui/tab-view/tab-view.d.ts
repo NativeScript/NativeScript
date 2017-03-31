@@ -2,7 +2,7 @@
  * Contains the TabView class, which represents a standard content component with tabs.
  */
 import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
-
+import { TextTransform } from "../text-base";
 /**
  * Represents a tab view entry.
  */
@@ -21,6 +21,11 @@ export class TabViewItem extends ViewBase {
      * Gets or sets the icon source of the TabViewItem. This could either be a a file name or resource id.
      */
     public iconSource: string;
+
+    /**
+     * Gets or sets the text transform of the tab titles. 
+     */
+    textTransform: TextTransform;
 }
 
 /**
@@ -51,6 +56,26 @@ export class TabView extends View {
      * Gets or sets the selectedIndex of the TabView.
      */
     selectedIndex: number;
+
+    /**
+     * Gets or sets the text color of the tabs titles.
+     */
+    tabTextColor: Color;
+    
+    /**
+     * Gets or sets the background color of the tabs.
+     */
+    tabBackgroundColor: Color;
+    
+    /**
+     * Gets or sets the text color of the selected tab title.
+     */
+    selectedTabTextColor: Color;
+    
+    /**
+     * Gets or sets the color of the horizontal line drawn below the currently selected tab on Android.
+     */
+    androidSelectedTabHighlightColor: Color;
 
     /**
      * Gets the native [android widget](http://developer.android.com/reference/android/support/v4/view/ViewPager.html) that represents the user interface for this component. Valid only when running on Android OS.
