@@ -22,7 +22,7 @@ export class StyleScope {
 
     public static createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): RuleSet[];
     public static createSelectorsFromImports(tree: SyntaxTree, keyframes: Object): RuleSet[];
-    public ensureSelectors(): boolean;
+    public ensureSelectors(): number;
 
     public applySelectors(view: ViewBase): void
     public query(options: Node): SelectorCore[];

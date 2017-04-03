@@ -26,10 +26,12 @@ export class PageBase extends ContentView implements PageDefinition {
     private _navigationContext: any;
 
     private _actionBar: ActionBar;
+    private _cssAppliedVersion: number;
 
+    public _styleScope: StyleScope; // same as in ViewBase, but strongly typed
     public _modal: PageBase;
     public _fragmentTag: string;
-
+    
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;
     public backgroundSpanUnderStatusBar: boolean;
@@ -79,16 +81,8 @@ export class PageBase extends ContentView implements PageDefinition {
         return this;
     }
 
-    public refreshCssIfAppCssChanged(): void {
-        // If app css changed ensureSelectors will return true.
-        // Need when app css change and page is in the backstack.
-        if (this._styleScope.ensureSelectors()) {
-            this._refreshCss();
-        }
-    }
-
     public onLoaded(): void {
-        this.refreshCssIfAppCssChanged();
+        this._refreshCss();
         super.onLoaded();
     }
 
@@ -124,16 +118,21 @@ export class PageBase extends ContentView implements PageDefinition {
         }
     }
 
+    // Used in component-builder.ts
     public _refreshCss(): void {
-        const styleScope = this._styleScope;
-        this._resetCssValues();
-        const checkSelectors = (view: View): boolean => {
-            styleScope.applySelectors(view);
-            return true;
-        };
+        const scopeVersion = this._styleScope.ensureSelectors();
+        if (scopeVersion !== this._cssAppliedVersion) {
+            const styleScope = this._styleScope;
+            this._resetCssValues();
+            const checkSelectors = (view: View): boolean => {
+                styleScope.applySelectors(view);
+                return true;
+            };
 
-        checkSelectors(this);
-        eachDescendant(this, checkSelectors);
+            checkSelectors(this);
+            eachDescendant(this, checkSelectors);
+            this._cssAppliedVersion = scopeVersion;
+        }
     }
 
     public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
@@ -310,6 +309,8 @@ statusBarStyleProperty.register(Style);
 /**
  * Property backing androidStatusBarBackground.
  */
-export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>({ name: "androidStatusBarBackground", cssName:"android-status-bar-background", 
-    equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>({
+    name: "androidStatusBarBackground", cssName: "android-status-bar-background",
+    equalityComparer: Color.equals, valueConverter: (v) => new Color(v)
+});
 androidStatusBarBackgroundProperty.register(Style);

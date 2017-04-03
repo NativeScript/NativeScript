@@ -17,7 +17,7 @@ let inheritableProperties = new Array<InheritedProperty<any, any>>();
 let inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
 
 function print(map) {
-    let symbols = (<any>Object).getOwnPropertySymbols(map);
+    let symbols = Object.getOwnPropertySymbols(map);
     for (let symbol of symbols) {
         const prop = map[symbol];
         if (!prop.registered) {
@@ -955,7 +955,7 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
 }
 
 export function initNativeView(view: ViewBase): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(view);
+    let symbols = Object.getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         const property: Property<any, any> = symbolPropertyMap[symbol];
         if (!property) {
@@ -976,7 +976,7 @@ export function initNativeView(view: ViewBase): void {
     }
 
     const style = view.style;
-    symbols = (<any>Object).getOwnPropertySymbols(style);
+    symbols = Object.getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
         if (!property) {
@@ -998,7 +998,7 @@ export function initNativeView(view: ViewBase): void {
 }
 
 export function resetNativeView(view: ViewBase): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(view);
+    let symbols = Object.getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         const property: Property<any, any> = symbolPropertyMap[symbol];
         if (!property) {
@@ -1017,7 +1017,7 @@ export function resetNativeView(view: ViewBase): void {
 
     const style = view.style;
 
-    symbols = (<any>Object).getOwnPropertySymbols(style);
+    symbols = Object.getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
         if (!property) {
@@ -1053,7 +1053,7 @@ export function clearInheritedProperties(view: ViewBase): void {
 }
 
 export function resetCSSProperties(style: Style): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(style);
+    let symbols = Object.getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         let cssProperty;
         if (cssProperty = cssSymbolPropertyMap[symbol]) {
