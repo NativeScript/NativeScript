@@ -79,7 +79,7 @@ function initializeEditTextListeners(): void {
                 }
             }
             else {
-                if (owner._dirtyTextAccumulator) {
+                if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
                     textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
                     owner._dirtyTextAccumulator = undefined;
                 }
