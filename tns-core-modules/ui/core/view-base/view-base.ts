@@ -534,14 +534,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public _addViewCore(view: ViewBase, atIndex?: number) {
-        propagateInheritableProperties(this);
+        propagateInheritableProperties(this, view);
 
         const styleScope = this._styleScope;
         if (styleScope) {
             view._setStyleScope(styleScope);
         }
 
-        propagateInheritableCssProperties(this.style);
+        propagateInheritableCssProperties(this.style, view.style);
 
         if (this._context) {
             view._setupUI(this._context, atIndex);
