@@ -1065,46 +1065,28 @@ export function resetCSSProperties(style: Style): void {
     }
 }
 
-export function propagateInheritableProperties(view: ViewBase): void {
+export function propagateInheritableProperties(view: ViewBase, child: ViewBase): void {
     const inheritablePropertyValues = inheritablePropertyValuesOn(view);
-    if (inheritablePropertyValues.length === 0) {
-        return;
-    }
-
-    view.eachChild((child) => {
-        for (let pair of inheritablePropertyValues) {
-            const prop = pair.property;
-            const sourceKey = prop.sourceKey;
-            const currentValueSource: number = child[sourceKey] || ValueSource.Default;
-            if (currentValueSource <= ValueSource.Inherited) {
-                prop.setInheritedValue.call(child, pair.value);
-            }
+    for (let pair of inheritablePropertyValues) {
+        const prop = pair.property;
+        const sourceKey = prop.sourceKey;
+        const currentValueSource: number = child[sourceKey] || ValueSource.Default;
+        if (currentValueSource <= ValueSource.Inherited) {
+            prop.setInheritedValue.call(child, pair.value);
         }
-
-        return true;
-    });
+    }
 }
 
-export function propagateInheritableCssProperties(style: Style): void {
-    const view = style.view;
-    const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(style);
-    if (inheritableCssPropertyValues.length === 0) {
-        return;
-    }
-
-    view.eachChild((child) => {
-        for (let pair of inheritableCssPropertyValues) {
-            const prop = pair.property;
-            const sourceKey = prop.sourceKey;
-            const style = child.style;
-            const currentValueSource: number = style[sourceKey] || ValueSource.Default;
-            if (currentValueSource <= ValueSource.Inherited) {
-                prop.setInheritedValue.call(style, pair.value, ValueSource.Inherited);
-            }
+export function propagateInheritableCssProperties(parentStyle: Style, childStyle: Style): void {
+    const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(parentStyle);
+    for (let pair of inheritableCssPropertyValues) {
+        const prop = pair.property;
+        const sourceKey = prop.sourceKey;
+        const currentValueSource: number = childStyle[sourceKey] || ValueSource.Default;
+        if (currentValueSource <= ValueSource.Inherited) {
+            prop.setInheritedValue.call(childStyle, pair.value, ValueSource.Inherited);
         }
-
-        return true;
-    });
+    }
 }
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T {
