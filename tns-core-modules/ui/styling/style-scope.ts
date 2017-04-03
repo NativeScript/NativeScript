@@ -102,11 +102,12 @@ export class CssState {
             matchingSelectors.push(this.view.inlineStyleSelector);
         }
 
-        matchingSelectors.forEach(s => this.applyDescriptors(this.view, s.ruleset));
+        matchingSelectors.forEach(s => this.applyDescriptors(s.ruleset));
+        matchingSelectors.forEach(s => this.playKeyframeAnimations(s.ruleset));
     }
 
-    private applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
-        let style = view.style;
+    private applyDescriptors(ruleset: RuleSet): void {
+        let style = this.view.style;
         ruleset.declarations.forEach(d => {
             try {
                 // Use the "css:" prefixed name, so that CSS value source is set.
@@ -114,23 +115,25 @@ export class CssState {
                 if (cssPropName in style) {
                     style[cssPropName] = d.value;
                 } else {
-                    view[d.property] = d.value;
+                    this.view[d.property] = d.value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
             }
         });
+    }
 
+    private playKeyframeAnimations(ruleset: RuleSet): void {
         let ruleAnimations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
         if (ruleAnimations) {
             ensureKeyframeAnimationModule();
             for (let animationInfo of ruleAnimations) {
                 let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
                 if (animation) {
-                    view._registerAnimation(animation);
-                    animation.play(<View>view)
-                        .then(() => { view._unregisterAnimation(animation); })
-                        .catch((e) => { view._unregisterAnimation(animation); });
+                    this.view._registerAnimation(animation);
+                    animation.play(<View>this.view)
+                        .then(() => { this.view._unregisterAnimation(animation); })
+                        .catch((e) => { this.view._unregisterAnimation(animation); });
                 }
             }
         }

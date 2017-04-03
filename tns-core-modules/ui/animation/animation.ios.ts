@@ -1,5 +1,5 @@
 import { AnimationDefinition } from ".";
-import { View } from "../core/view";
+import { View, layout } from "../core/view";
 
 import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
@@ -589,7 +589,9 @@ export class Animation extends AnimationBase {
 export function _getTransformMismatchErrorMessage(view: View): string {
     // Order is important: translate, rotate, scale
     let result: CGAffineTransform = CGAffineTransformIdentity;
-    result = CGAffineTransformTranslate(result, Length.toDevicePixels(view.translateX || 0, 0), Length.toDevicePixels(view.translateY || 0, 0));
+    const tx = layout.toDeviceIndependentPixels(Length.toDevicePixels(view.translateX || 0, 0));
+    const ty = layout.toDeviceIndependentPixels(Length.toDevicePixels(view.translateY || 0, 0));
+    result = CGAffineTransformTranslate(result, tx, ty);
     result = CGAffineTransformRotate(result, (view.rotate || 0) * Math.PI / 180);
     result = CGAffineTransformScale(result, view.scaleX || 1, view.scaleY || 1);
     let viewTransform = NSStringFromCGAffineTransform(result);

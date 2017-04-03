@@ -247,6 +247,19 @@ export abstract class ViewBase extends Observable {
 
     //@private
     public _styleScope: any;
+
+    /**
+     * Determines the depth of batchUpdates.
+     * When the value is 0 the current updates are not batched.
+     * If the value is 1 or greater, the current updates are batched.
+     * Do not set this field, the _batchUpdate method is responsible to keep the count up to date.
+     */
+    public _batchUpdateScope: number;
+
+    /**
+     * Allow multiple updates to be performed on the instance at once.
+     */
+    public _batchUpdate<T>(callback: () => T): T;
     //@endprivate
 }
 
