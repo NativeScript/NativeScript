@@ -200,7 +200,7 @@ export class StyleScope {
         return undefined;
     }
 
-    public ensureSelectors(): boolean {
+    public ensureSelectors(): number {
         let toMerge: RuleSet[][];
         if (this._applicationCssSelectorsAppliedVersion !== applicationCssSelectorVersion ||
             this._localCssSelectorVersion !== this._localCssSelectorsAppliedVersion ||
@@ -218,12 +218,10 @@ export class StyleScope {
         if (toMerge && toMerge.length > 0) {
             this._mergedCssSelectors = toMerge.filter(m => !!m).reduce((merged, next) => merged.concat(next), []);
             this._applyKeyframesOnSelectors();
-        } else {
-            return false;
+            this._selectors = new SelectorsMap(this._mergedCssSelectors);
         }
 
-        this._selectors = new SelectorsMap(this._mergedCssSelectors);
-        return true;
+        return this._getSelectorsVersion();
     }
 
     public applySelectors(view: ViewBase): void {
@@ -243,6 +241,12 @@ export class StyleScope {
     private _reset() {
         this._statesByKey = {};
         this._viewIdToKey = {};
+    }
+
+    private _getSelectorsVersion() {
+        // The counters can only go up. So we can return just appVersion + localVersion
+        // The 100000 * appVersion is just for easier debugging
+        return 100000 * this._applicationCssSelectorsAppliedVersion + this._localCssSelectorsAppliedVersion;
     }
 
     private _applyKeyframesOnSelectors() {

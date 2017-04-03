@@ -83,14 +83,16 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
         if (!page) {
             throw new Error("Failed to create Page with entry.create() function.");
         }
+
+        page._refreshCss();
     }
     else if (entry.moduleName) {
         // Current app full path.
         let currentAppPath = knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
         let moduleNamePath = path.join(currentAppPath, entry.moduleName);
-        console.log("frame module path: " + moduleNamePath);
-        console.log("frame module module: " + entry.moduleName);
+        traceWrite("frame module path: " + moduleNamePath, traceCategories.Navigation);
+        traceWrite("frame module module: " + entry.moduleName, traceCategories.Navigation);
 
         let moduleExports;
         // web-pack case where developers register their page JS file manually.
