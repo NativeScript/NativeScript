@@ -809,7 +809,7 @@ export function testSetInlineStyle() {
 export function testBorderWidth() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
-        const expectedValue = <number>lbl.borderWidth * utils.layout.getDisplayDensity();
+        const expectedValue = Math.round(<number>lbl.borderWidth * utils.layout.getDisplayDensity());
         const actualValue = definition.getUniformNativeBorderWidth(lbl);
         TKUnit.assertAreClose(actualValue, expectedValue, 0.01, "borderWidth");
     });
@@ -819,7 +819,7 @@ export function testCornerRadius() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
         TKUnit.waitUntilReady(() => lbl.isLayoutValid);
-        const expectedValue = <number>lbl.borderRadius * utils.layout.getDisplayDensity();
+        const expectedValue = Math.round(<number>lbl.borderRadius * utils.layout.getDisplayDensity());
         const actualValue = definition.getUniformNativeCornerRadius(lbl);
         TKUnit.assertAreClose(actualValue, expectedValue, 0.01, "borderRadius");
     });
