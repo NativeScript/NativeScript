@@ -1,5 +1,5 @@
 ﻿import { 
-    TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
+    TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty,
     Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
 
@@ -67,6 +67,13 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
     public textFieldShouldChangeCharactersInRangeReplacementString(textField: UITextField, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
         if (owner) {
+            const delta = replacementString.length - range.length;
+            if (delta > 0) {
+                if (textField.text.length + delta > owner.maxLength) {
+                    return false;
+                }
+            }
+
             if (owner.updateTextTrigger === "textChanged") {
                 if (textField.secureTextEntry && this.firstEdit) {
                     textProperty.nativeValueChange(owner, replacementString);
