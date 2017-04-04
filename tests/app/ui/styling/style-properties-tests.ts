@@ -729,19 +729,23 @@ export const test_setting_label_textTransform_sets_native = function () {
 };
 
 export const test_setting_textField_textTransform_sets_native = function () {
-    const testView = new TextField();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
+    if (isIOS) {
+        const testView = new TextField();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_textView_textTransform_sets_native = function () {
-    const testView = new TextView();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
+    if (isIOS) {
+        const testView = new TextView();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_button_textTransform_sets_native = function () {
@@ -762,21 +766,25 @@ export const test_setting_label_textTransform_and_textDecoration_sets_native = f
 };
 
 export const test_setting_textField_textTransform_and_textDecoration_sets_native = function () {
-    const testView = new TextField();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
-    testView.style.textDecoration = "underline";
+    if (isIOS) {
+        const testView = new TextField();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
+        testView.style.textDecoration = "underline";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_textView_textTransform_and_textDecoration_sets_native = function () {
-    const testView = new TextView();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
-    testView.style.textDecoration = "underline";
+    if (isIOS) {
+        const testView = new TextView();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
+        testView.style.textDecoration = "underline";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_button_textTransform_and_textDecoration_sets_native = function () {
