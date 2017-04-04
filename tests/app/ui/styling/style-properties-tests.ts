@@ -729,7 +729,7 @@ export const test_setting_label_textTransform_sets_native = function () {
 };
 
 export const test_setting_textField_textTransform_sets_native = function () {
-    if (isAndroid) {
+    if (isIOS) {
         const testView = new TextField();
         testView.text = initial;
         testView.style.textTransform = "capitalize";
@@ -739,7 +739,7 @@ export const test_setting_textField_textTransform_sets_native = function () {
 };
 
 export const test_setting_textView_textTransform_sets_native = function () {
-    if (isAndroid) {
+    if (isIOS) {
         const testView = new TextView();
         testView.text = initial;
         testView.style.textTransform = "capitalize";
@@ -766,7 +766,7 @@ export const test_setting_label_textTransform_and_textDecoration_sets_native = f
 };
 
 export const test_setting_textField_textTransform_and_textDecoration_sets_native = function () {
-    if (isAndroid) {
+    if (isIOS) {
         const testView = new TextField();
         testView.text = initial;
         testView.style.textTransform = "capitalize";
@@ -777,7 +777,7 @@ export const test_setting_textField_textTransform_and_textDecoration_sets_native
 };
 
 export const test_setting_textView_textTransform_and_textDecoration_sets_native = function () {
-    if (isAndroid) {
+    if (isIOS) {
         const testView = new TextView();
         testView.text = initial;
         testView.style.textTransform = "capitalize";
