@@ -320,8 +320,8 @@ function printRunTestStats() {
     testFile.writeTextSync(testFileContent.join(""));
 
     finalMessage += "\n" + "Test results: " + testFilePath;
-    finalMessage += "\n" + "----------------- ";
-    finalMessage += "\n" + "Slow tests: ";
+    // finalMessage += "\n" + "----------------- ";
+    // finalMessage += "\n" + "Slow tests: ";
     // slowTests.forEach((message, i, arr) => {
     //     TKUnit.write(message, messageType.error);
     //     finalMessage += "\n" + message;
