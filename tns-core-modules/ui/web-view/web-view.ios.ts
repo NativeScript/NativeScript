@@ -1,4 +1,4 @@
-import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories } from "./web-view-common";
+import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
 
 export * from "./web-view-common";
 
@@ -17,30 +17,30 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
         let owner = this._owner.get();
 
         if (owner && request.URL) {
-            let navTypeIndex = WebViewBase.navigationTypes.indexOf("other");
+            let navType: NavigationType = "other";
 
             switch (navigationType) {
                 case UIWebViewNavigationType.LinkClicked:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("linkClicked");
+                    navType = "linkClicked";
                     break;
                 case UIWebViewNavigationType.FormSubmitted:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("formSubmitted");
+                    navType = "formSubmitted";
                     break;
                 case UIWebViewNavigationType.BackForward:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("backForward");
+                    navType = "backForward";
                     break;
                 case UIWebViewNavigationType.Reload:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("reload");
+                    navType = "reload";
                     break;
                 case UIWebViewNavigationType.FormResubmitted:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("formResubmitted");
+                    navType = "formResubmitted";
                     break;
             }
 
             if (traceEnabled()) {
                 traceWrite("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", traceCategories.Debug);
             }
-            owner._onLoadStarted(request.URL.absoluteString, WebViewBase.navigationTypes[navTypeIndex]);
+            owner._onLoadStarted(request.URL.absoluteString, navType);
         }
 
         return true;

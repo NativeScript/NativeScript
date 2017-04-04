@@ -144,24 +144,6 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
 
         webView.src = targetSrc;
     }
-
-    public testLoadStartedNavigationTypeExists(done) {
-        let webView = this.testView;
-        let targetSrc = "https://github.com/";
-
-        webView.on(webViewModule.WebView.loadStartedEvent, function (args: webViewModule.LoadEventData) {
-            try {
-                TKUnit.assertNull(args.error, args.error);
-                TKUnit.assertTrue(webViewModule.WebView.navigationTypes.indexOf(args.navigationType) > -1, "navigationTypeExists");
-                done(null);
-            }
-            catch (e) {
-                done(e);
-            }
-        });
-
-        webView.src = targetSrc;
-    }
 }
 
 export function createTestCase(): WebViewTest {

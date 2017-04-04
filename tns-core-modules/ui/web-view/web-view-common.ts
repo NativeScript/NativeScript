@@ -1,9 +1,9 @@
-import { WebView as WebViewDefinition, LoadEventData } from ".";
+import { WebView as WebViewDefinition, LoadEventData, NavigationType } from ".";
 import { View, Property } from "../core/view";
 import { isFileOrResourcePath } from "../../utils/utils";
 import { File, knownFolders, path } from "../../file-system";
 
-export { File, knownFolders, path };
+export { File, knownFolders, path, NavigationType };
 export * from "../core/view";
 
 export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
@@ -11,15 +11,6 @@ export const srcProperty = new Property<WebViewBase, string>({ name: "src" });
 export abstract class WebViewBase extends View implements WebViewDefinition {
     public static loadStartedEvent = "loadStarted";
     public static loadFinishedEvent = "loadFinished";
-
-    public static navigationTypes = [
-        "linkClicked",
-        "formSubmitted",
-        "backForward",
-        "reload",
-        "formResubmitted",
-        "other"
-    ];
 
     public src: string;
 
@@ -35,7 +26,7 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
         this.notify(args);
     }
 
-    public _onLoadStarted(url: string, navigationType: string) {
+    public _onLoadStarted(url: string, navigationType: NavigationType) {
         let args = <LoadEventData>{
             eventName: WebViewBase.loadStartedEvent,
             object: this,
