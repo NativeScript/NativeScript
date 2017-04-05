@@ -90,6 +90,9 @@ Removed properties of `TabView` class (`ui/tab-view` module):
 * `tabsBackgroundColor` - use `tabBackgroundColor` instead.
 * `textTransform` - `textTransform` is can be set on the individual `TabViewItem`s instead on the `TabView`
 
+### TextField & TextView (Android)
+Setting `text-transform` property on these controls will not change the text inside them. In case you want to transform the text you should do it before setting it to `text` property.
+
 ### Trace
 The `enabled` exported variable is replaced with getter function: `isEnabled()`. You can still use the `enable()` and `disable()` methods to enable/disable tracing.
 
@@ -168,11 +171,13 @@ export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignme
 });
 textAlignmentProperty.register(Style);
 ```
-Every property which type (U) is not string should define valueConverter. Even properties that are of type string but allow only some strings (like enums) should define valueConverter
-and either convert from string or throw an exception in case value is not valid.
-If equalityComparer is not defined we use === to compare currentValue and newValue so if type is not simple comparer will be needed.
+Every property which type is not string should define `valueConverter`. Even properties that are of type string but allow only some strings (like enums) should define `valueConverter` and either convert from string or throw an exception in case value is not valid.
+If `equalityComparer` is not defined we use `===` to compare `currentValue` and `newValue`. This will work only for simple property types like `boolean`, `string` and `number`. For other types it is recommended to specify `equalityComparer`.
 
-Then in the platform specific implementation use `getDefault` and `setNative` symbols from the property object (ex. `textProperty`), to define how this property is applied to native views.
+In the platform specific implementation use `getDefault` and `setNative` symbols from the property object (ex. `textProperty`), to define how this property is applied to native views.
+
+`getDefault` method is called just once before the first call to `setNative` so that we know what is the default native value for this property. The value that you return will be passed to `setNative` method when we decide to recycle the native view. 
+Recycling the native view of control is done only if `recycleNativeView` field is set to `true`.
 
 `my-text-view.android.ts` with android specific implementation:
 
@@ -242,12 +247,12 @@ Observable > ViewBase > View
 
 Consider using `View`, `ViewBase` or `Observable` instead.
 
-### Property Types and Enumerations
+### Property Types
 As a part of the we have changed the types of many properties. The reasons for the changes:
  * Make better use of the TypeScript typings. 
  * Support for units (`dip`, `px`, `%`) for properties like `width`, `height`, `margin`
 
- Here is a list of view nad style properties that have their types changes:
+ Here is a list of view and style properties that have their types changes:
 
 | class.property | old type | new type |
 |---|---|---|
@@ -274,11 +279,16 @@ let image = new Image();
 // still works - sets the width in dips
 image.width = 100; 
 
-// also works - sets width in pixels
+// with 3.0 - sets width in pixels
 image.width = { value: 100, unit: "px" }; 
 ```
 
-You will hae to be careful when getting the value - you might get an complex object instead of `number`
+You will have to be careful when getting the value - you might get an complex object instead of `number`
+
+### Enumerations
+Enumeration from `ui/enums` modules are not used anymore. Most ot the properties that accepts specific strings are defined directly with the allowed values:
+`export type TextAlignment = "initial" | "left" | "center" | "right";`
+TypeScript will warn in case you set invalid value.
 
 ### View Life-cycle
 
@@ -298,11 +308,11 @@ For getting `View` children use:
 public eachChildView(callback: (child: View) => boolean): void
 ```
 
-This method was previously known as `_eachChildView()`. It will return `View` descendants only. For example `TabView` returns the view of each `TabViewItem` because is `TabViewItem`s are of type `ViewBase`.
+This method was previously known as `_eachChildView()`. It will return `View` descendants only. For example `TabView` returns the view of each `TabViewItem` because is `TabViewItem` is of type `ViewBase`.
 
 Getting `ViewBase` children use:
 ```
 public eachChild(callback: (child: ViewBase) => boolean): void;
 ```
-This method will return all views including `ViewBase`. It is used by the property system to apply native setters, propagate inherited properties, etc.
+This method will return all views including `ViewBase`. It is used by the property system to apply native setters, propagate inherited properties, apply styles, etc.
 In the case of `TabView` – this method will return `TabViewItem`'s as well so that they could be styled through CSS.
