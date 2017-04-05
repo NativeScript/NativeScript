@@ -1,22 +1,15 @@
-﻿import { StackLayout as StackLayoutDefinition } from ".";
-import { LayoutBase, Property, isIOS } from "../layout-base";
+﻿import { StackLayout as StackLayoutDefinition, Orientation } from ".";
+import { LayoutBase, Property, isIOS, makeValidator, makeParser } from "../layout-base";
 
 export * from "../layout-base";
 
 export class StackLayoutBase extends LayoutBase implements StackLayoutDefinition {
-    public orientation: "horizontal" | "vertical";
+    public orientation: Orientation;
 }
 
 // StackLayoutBase.prototype.recycleNativeView = true;
 
-export const orientationProperty = new Property<StackLayoutBase, "horizontal" | "vertical">({
-    name: "orientation", defaultValue: "vertical", affectsLayout: isIOS,
-    valueConverter: (v) => {
-        if (v === "horizontal" || v === "vertical") {
-            return <"horizontal" | "vertical">v;
-        }
+const converter = makeParser<Orientation>(makeValidator("horizontal", "vertical"));
 
-        throw new Error(`Invalid orientation value: ${v}`);
-    }
-});
+export const orientationProperty = new Property<StackLayoutBase, Orientation>({ name: "orientation", defaultValue: "vertical", affectsLayout: isIOS, valueConverter: converter });
 orientationProperty.register(StackLayoutBase);

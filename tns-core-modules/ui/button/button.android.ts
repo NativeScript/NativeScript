@@ -1,7 +1,7 @@
 ﻿import {
     ButtonBase, PseudoClassHandler,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
-    Length, zIndexProperty
+    Length, zIndexProperty, textAlignmentProperty, TextAlignment
 } from "./button-common";
 
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
@@ -116,5 +116,11 @@ export class Button extends ButtonBase {
         if (APILEVEL >= 21) {
             (<any>this.nativeView).setStateListAnimator(null);
         }
+    }
+
+    [textAlignmentProperty.setNative](value: TextAlignment) {
+        // Button initial value is center.
+        const newValue = value === "initial" ? "center" : value;
+        super[textAlignmentProperty.setNative](newValue);
     }
 }

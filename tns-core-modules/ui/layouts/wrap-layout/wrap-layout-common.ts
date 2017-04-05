@@ -1,10 +1,10 @@
-﻿import { WrapLayout as WrapLayoutDefinition } from ".";
-import { LayoutBase, Property, isIOS, Length } from "../layout-base";
+﻿import { WrapLayout as WrapLayoutDefinition, Orientation } from ".";
+import { LayoutBase, Property, isIOS, Length, makeValidator, makeParser } from "../layout-base";
 
 export * from "../layout-base";
 
 export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
-    public orientation: "horizontal" | "vertical";
+    public orientation: Orientation;
     public itemWidth: Length;
     public itemHeight: Length;
     public effectiveItemWidth: number;
@@ -25,14 +25,6 @@ export const itemHeightProperty = new Property<WrapLayoutBase, Length>({
 });
 itemHeightProperty.register(WrapLayoutBase);
 
-export const orientationProperty = new Property<WrapLayoutBase, "horizontal" | "vertical">({
-    name: "orientation", defaultValue: "horizontal", affectsLayout: isIOS,
-    valueConverter: (v) => {
-        if (v === "horizontal" || v === "vertical") {
-            return <"horizontal" | "vertical">v;
-        }
-
-        throw new Error(`Invalid orientation value: ${v}`);
-    }
-});
+const converter = makeParser<Orientation>(makeValidator<Orientation>("horizontal", "vertical"));
+export const orientationProperty = new Property<WrapLayoutBase, Orientation>({ name: "orientation", defaultValue: "horizontal", affectsLayout: isIOS, valueConverter: converter });
 orientationProperty.register(WrapLayoutBase);

@@ -1,5 +1,5 @@
 // Definitions.
-import { TextBase as TextBaseDefinition } from ".";
+import { TextBase as TextBaseDefinition, TextAlignment, TextDecoration, TextTransform, WhiteSpace } from ".";
 import { FontStyle, FontWeight } from "../styling/font";
 import { PropertyChangeData } from "../../data/observable";
 
@@ -162,11 +162,7 @@ export function isBold(fontWeight: FontWeight): boolean {
 export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
 textProperty.register(TextBaseCommon);
 
-export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({
-    name: "formattedText",
-    affectsLayout: isIOS,
-    valueChanged: onFormattedTextPropertyChanged
-});
+export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
 formattedTextProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
@@ -181,79 +177,21 @@ function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: Form
     }
 }
 
-export type TextAlignment = "left" | "center" | "right";
-export namespace TextAlignment {
-    export const LEFT: "left" = "left";
-    export const CENTER: "center" = "center";
-    export const RIGHT: "right" = "right";
-    export const isValid = makeValidator<TextAlignment>(LEFT, CENTER, RIGHT);
-    export const parse = makeParser<TextAlignment>(isValid);
-}
-
-export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({
-    name: "textAlignment",
-    cssName: "text-align",
-    valueConverter: TextAlignment.parse
-});
+const textAlignmentConverter = makeParser<TextAlignment>(makeValidator<TextAlignment>("initial", "left", "center", "right"));
+export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({ name: "textAlignment", cssName: "text-align", defaultValue: "initial", valueConverter: textAlignmentConverter });
 textAlignmentProperty.register(Style);
 
-export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
-export namespace TextDecoration {
-    export const NONE: "none" = "none";
-    export const UNDERLINE: "underline" = "underline";
-    export const LINE_THROUGH: "line-through" = "line-through";
-    export const UNDERLINE_LINE_THROUGH: "underline line-through" = "underline line-through";
-
-    export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
-    export const parse = makeParser<TextDecoration>(isValid);
-}
-
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
-    name: "textDecoration",
-    cssName: "text-decoration",
-    defaultValue: "none",
-    valueConverter: TextDecoration.parse
-});
-textDecorationProperty.register(Style);
-
-export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
-export namespace TextTransform {
-    export const NONE: "none" = "none";
-    export const CAPITALIZE: "capitalize" = "capitalize";
-    export const UPPERCASE: "uppercase" = "uppercase";
-    export const LOWERCASE: "lowercase" = "lowercase";
-    export const isValid = makeValidator<TextTransform>(NONE, CAPITALIZE, UPPERCASE, LOWERCASE);
-    export const parse = makeParser<TextTransform>(isValid);
-}
-
-export const textTransformProperty = new CssProperty<Style, TextTransform>({
-    name: "textTransform",
-    cssName: "text-transform",
-    valueConverter: TextTransform.parse
-});
+const textTransformConverter = makeParser<TextTransform>(makeValidator<TextTransform>("initial", "none", "capitalize", "uppercase", "lowercase"));
+export const textTransformProperty = new CssProperty<Style, TextTransform>({ name: "textTransform", cssName: "text-transform", defaultValue: "initial", valueConverter: textTransformConverter });
 textTransformProperty.register(Style);
 
-export type WhiteSpace = "normal" | "nowrap";
-export namespace WhiteSpace {
-    export const NORMAL: "normal" = "normal";
-    export const NO_WRAP: "nowrap" = "nowrap";
-    export const isValid = makeValidator<WhiteSpace>(NORMAL, NO_WRAP);
-    export const parse = makeParser<WhiteSpace>(isValid);
-}
-
-export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
-    name: "whiteSpace",
-    cssName: "white-space",
-    affectsLayout: isIOS,
-    valueConverter: WhiteSpace.parse
-});
+const whiteSpaceConverter = makeParser<WhiteSpace>(makeValidator<WhiteSpace>("initial", "normal", "nowrap"));
+export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({ name: "whiteSpace", cssName: "white-space", defaultValue: "initial", affectsLayout: isIOS, valueConverter: whiteSpaceConverter });
 whiteSpaceProperty.register(Style);
 
-export const letterSpacingProperty = new CssProperty<Style, number>({
-    name: "letterSpacing",
-    cssName: "letter-spacing",
-    defaultValue: 0,
-    affectsLayout: isIOS,
-    valueConverter: v => parseFloat(v)
-});
+const textDecorationConverter = makeParser<TextDecoration>(makeValidator<TextDecoration>("none", "underline", "line-through", "underline line-through"));
+export const textDecorationProperty = new CssProperty<Style, TextDecoration>({ name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: textDecorationConverter });
+textDecorationProperty.register(Style);
+
+export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 letterSpacingProperty.register(Style);

@@ -1,5 +1,5 @@
-﻿import { DockLayout as DockLayoutDefinition } from ".";
-import { LayoutBase, View, Property, isIOS, booleanConverter } from "../layout-base";
+﻿import { DockLayout as DockLayoutDefinition, Dock } from ".";
+import { LayoutBase, View, Property, isIOS, booleanConverter, makeValidator, makeParser } from "../layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
@@ -12,24 +12,25 @@ export * from "../layout-base";
 
 export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
 
-    public static getDock(element: View): "left" | "top" | "right" | "bottom" {
+    public static getDock(element: View): Dock {
         return validateArgs(element).dock;
     }
 
-    public static setDock(element: View, value: "left" | "top" | "right" | "bottom"): void {
+    public static setDock(element: View, value: Dock): void {
         validateArgs(element).dock = value;
     }
 
     public stretchLastChild: boolean;
 
-    public onDockChanged(view: View, oldValue: "left" | "top" | "right" | "bottom", newValue: "left" | "top" | "right" | "bottom") {
+    public onDockChanged(view: View, oldValue: Dock, newValue: Dock) {
         //
     }
 }
 
 // DockLayoutBase.prototype.recycleNativeView = true;
 
-export const dockProperty = new Property<View, "left" | "top" | "right" | "bottom">({
+const dockConverter = makeParser<Dock>(makeValidator<Dock>("left", "top", "right", "bottom"));
+export const dockProperty = new Property<View, Dock>({
     name: "dock", defaultValue: "left", valueChanged: (target, oldValue, newValue) => {
         if (target instanceof View) {
             const layout = target.parent;
@@ -37,13 +38,7 @@ export const dockProperty = new Property<View, "left" | "top" | "right" | "botto
                 layout.onDockChanged(target, oldValue, newValue);
             }
         }
-    }, valueConverter: (v) => {
-        if (v === "left" || v === "top" || v === "right" || v === "bottom") {
-            return <"left" | "top" | "right" | "bottom">v;
-        }
-
-        throw new Error(`Invalid value for dock property: ${v}`);
-    }
+    }, valueConverter: dockConverter
 });
 dockProperty.register(View);
 

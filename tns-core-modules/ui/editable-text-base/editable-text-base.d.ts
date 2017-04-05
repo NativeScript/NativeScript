@@ -1,38 +1,28 @@
 ﻿import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
 
-export const keyboardTypeProperty: Property<EditableTextBase, string>;
-export const returnKeyTypeProperty: Property<EditableTextBase, string>;
-export const editableProperty: Property<EditableTextBase, boolean>;
-export const updateTextTriggerProperty: Property<EditableTextBase, string>;
-export const autocapitalizationTypeProperty: Property<EditableTextBase, string>;
-export const autocorrectProperty: Property<EditableTextBase, boolean>;
-export const hintProperty: Property<EditableTextBase, string>;
-export const placeholderColorProperty: CssProperty<Style, Color>;
-
 /**
  * Represents the base class for all editable text views.
  */
 export class EditableTextBase extends TextBase {
     /**
-     * Gets or sets the soft keyboard type. Possible values are contained in the [KeyboardType enumeration](../enums/KeyboardType/README.md).
+     * Gets or sets the soft keyboard type.
      */
-    keyboardType: "datetime" | "phone" | "number" | "url" | "email";
+    keyboardType: KeyboardType;
 
     /**
-     * Gets or sets the soft keyboard return key flavor. Possible values are contained in the [ReturnKeyType enumeration](../enums/ReturnKeyType/README.md).
+     * Gets or sets the soft keyboard return key flavor.
      */
-    returnKeyType: "done" | "next" | "go" | "search" | "send";
+    returnKeyType: ReturnKeyType;
 
     /**
      * Gets or sets a value indicating when the text property will be updated. 
-     * Possible values are contained in the [UpdateTextTrigger enumeration](../enums/UpdateTextTrigger/README.md).
      */
-    updateTextTrigger: "focusLost" | "textChanged";
+    updateTextTrigger: UpdateTextTrigger;
 
     /**
-     * Gets or sets the autocapitalization type. Possible values are contained in the [AutocapitalizationType enumeration](../enums/AutocapitalizationType/README.md).
+     * Gets or sets the autocapitalization type.
      */
-    autocapitalizationType: "none" | "words" | "sentences" | "allCharacters";
+    autocapitalizationType: AutocapitalizationType;
 
     /**
      * Gets or sets whether the instance is editable.
@@ -54,6 +44,20 @@ export class EditableTextBase extends TextBase {
      */
     dismissSoftInput(): void;
 }
+
+export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email";
+export type ReturnKeyType = "done" | "next" | "go" | "search" | "send";
+export type UpdateTextTrigger = "focusLost" | "textChanged";
+export type AutocapitalizationType = "none" | "words" | "sentences" | "allCharacters";
+
+export const keyboardTypeProperty: Property<EditableTextBase, KeyboardType>;
+export const returnKeyTypeProperty: Property<EditableTextBase, ReturnKeyType>;
+export const editableProperty: Property<EditableTextBase, boolean>;
+export const updateTextTriggerProperty: Property<EditableTextBase, UpdateTextTrigger>;
+export const autocapitalizationTypeProperty: Property<EditableTextBase, AutocapitalizationType>;
+export const autocorrectProperty: Property<EditableTextBase, boolean>;
+export const hintProperty: Property<EditableTextBase, string>;
+export const placeholderColorProperty: CssProperty<Style, Color>;
 
 //@private
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
