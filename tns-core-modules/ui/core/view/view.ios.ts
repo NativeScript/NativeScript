@@ -22,6 +22,7 @@ const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends ViewCommon {
+    nativeView: UIView;
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
@@ -231,8 +232,8 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-        let translateX = Length.toDevicePixels(this.translateX || 0, 0);
-        let translateY = Length.toDevicePixels(this.translateY || 0, 0);
+        let translateX = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateX || 0, 0));
+        let translateY = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateY || 0, 0));
         let scaleX = this.scaleX || 1;
         let scaleY = this.scaleY || 1;
         let rotate = this.rotate || 0;
@@ -241,8 +242,15 @@ export class View extends ViewCommon {
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
         newTransform = CGAffineTransformScale(newTransform, scaleX === 0 ? 0.001 : scaleX, scaleY === 0 ? 0.001 : scaleY);
         if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
+            let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+                CATransaction.begin();
+            }
             this.nativeView.transform = newTransform;
             this._hasTransfrom = this.nativeView && !CGAffineTransformEqualToTransform(this.nativeView.transform, CGAffineTransformIdentity);
+            if (!updateSuspended) {
+                CATransaction.commit();
+            }
         }
     }
 
@@ -266,7 +274,7 @@ export class View extends ViewCommon {
     }
 
     public _isPresentationLayerUpdateSuspeneded() {
-        return this._suspendCATransaction;
+        return this._suspendCATransaction || this._batchUpdateScope;
     }
 
     [isEnabledProperty.getDefault](): boolean {

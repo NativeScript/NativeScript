@@ -111,8 +111,8 @@ export class CssAnimationProperty<T extends Style, U> {
 export function initNativeView(view: ViewBase): void;
 export function resetNativeView(view: ViewBase): void;
 export function resetCSSProperties(style: Style): void;
-export function propagateInheritableProperties(view: ViewBase): void;
-export function propagateInheritableCssProperties(style: Style): void;
+export function propagateInheritableProperties(view: ViewBase, childView: ViewBase): void;
+export function propagateInheritableCssProperties(parentStyle: Style, childStyle: Style): void;
 export function clearInheritedProperties(view: ViewBase): void;
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T;

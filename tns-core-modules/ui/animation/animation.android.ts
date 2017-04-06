@@ -70,10 +70,10 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             }
             if (curve instanceof CubicBezierAnimationCurve) {
                 return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
-            } else if (curve instanceof android.view.animation.Interpolator) {
-                return curve;
+            } else if (curve && (<any>curve).getInterpolation) {
+                return <android.view.animation.Interpolator>curve;
             } else if ((<any>curve) instanceof android.view.animation.LinearInterpolator) {
-                return <android.view.animation.Interpolator><any>curve;
+                return <android.view.animation.Interpolator>curve;
             } else {
                 throw new Error(`Invalid animation curve: ${curve}`);
             }

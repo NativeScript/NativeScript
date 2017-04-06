@@ -2,7 +2,7 @@
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty, placeholderColorProperty, Color
+    textProperty, placeholderColorProperty, Color, textTransformProperty
 } from "./editable-text-base-common";
 
 import { ad } from "../../utils/utils";
@@ -79,7 +79,7 @@ function initializeEditTextListeners(): void {
                 }
             }
             else {
-                if (owner._dirtyTextAccumulator) {
+                if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
                     textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
                     owner._dirtyTextAccumulator = undefined;
                 }
@@ -411,5 +411,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         } else {
             this.nativeView.setHintTextColor(value);
         }
+    }
+
+    [textTransformProperty.setNative](value: "default") {
+        //
     }
 }

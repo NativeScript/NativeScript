@@ -1,5 +1,5 @@
-﻿import { ScrollView as ScrollViewDefinition } from ".";
-import { ContentView, Property } from "../content-view";
+﻿import { ScrollView as ScrollViewDefinition, Orientation } from ".";
+import { ContentView, Property, makeParser, makeValidator } from "../content-view";
 
 export * from "../content-view";
 
@@ -7,7 +7,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     private _scrollChangeCount: number = 0;
     public static scrollEvent = "scroll";
 
-    public orientation: "horizontal" | "vertical";
+    public orientation: Orientation;
 
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
@@ -80,19 +80,12 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public abstract _onOrientationChanged();
 }
 
-export const orientationProperty = new Property<ScrollViewBase, "horizontal" | "vertical">({
+const converter = makeParser<Orientation>(makeValidator("horizontal", "vertical"));
+export const orientationProperty = new Property<ScrollViewBase, Orientation>({
     name: "orientation", defaultValue: "vertical", affectsLayout: true,
-    valueChanged: (target: ScrollViewBase, oldValue: "horizontal" | "vertical", newValue: "horizontal" | "vertical") => {
+    valueChanged: (target: ScrollViewBase, oldValue: Orientation, newValue: Orientation) => {
         target._onOrientationChanged();
     },
-    valueConverter: (value) => {
-        if (value === "vertical") {
-            return "vertical";
-        } else if (value === "horizontal") {
-            return "horizontal";
-        }
-
-        throw new Error(`Orientation should be 'horizontal' or 'vertical'. Given: ${value}`);
-    }
+    valueConverter: converter
 });
 orientationProperty.register(ScrollViewBase);

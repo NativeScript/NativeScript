@@ -191,6 +191,26 @@ export class TabViewItem extends TabViewItemBase {
     nativeView: android.widget.TextView;
     public tabItemSpec: org.nativescript.widgets.TabItemSpec;
     public index: number;
+    private _defaultTransformationMethod: android.text.method.TransformationMethod;
+
+    public initNativeView(): void {
+        super.initNativeView();
+        if (this.nativeView) {
+            this._defaultTransformationMethod = this.nativeView.getTransformationMethod();
+        }
+    }
+
+    public resetNativeView(): void {
+        super.resetNativeView();
+        if (this.nativeView) {
+            // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
+            this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+        }
+    }
+
+    public createNativeView() {
+        return this.nativeView;
+    }
 
     public setNativeView(textView: android.widget.TextView): void {
         this.nativeView = textView;
@@ -225,13 +245,19 @@ export class TabViewItem extends TabViewItemBase {
         this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    [textTransformProperty.getDefault](): TextTransform {
-        return "none";
+    [textTransformProperty.getDefault](): "default" {
+        return "default";
     }
-    [textTransformProperty.setNative](value: TextTransform) {
+    [textTransformProperty.setNative](value: TextTransform | "default") {
         const tv = this.nativeView;
-        const result = getTransformedText(this.title, value);
-        tv.setText(result);
+        if (value === "default") {
+            tv.setTransformationMethod(this._defaultTransformationMethod);
+            tv.setText(this.title);
+        } else {
+            const result = getTransformedText(this.title, value);
+            tv.setText(result);
+            tv.setTransformationMethod(null);
+        }
     }
 }
 
@@ -327,25 +353,21 @@ export class TabView extends TabViewBase {
     }
 
     public disposeNativeView() {
-        // this._tabLayout.setItems(null, null);
         this._pagerAdapter.notifyDataSetChanged();
         (<any>this._pagerAdapter).owner = null;
         this._pagerAdapter = null;
 
-        // this._viewPager.setAdapter(null);
         this._tabLayout = null;
         (<any>this._viewPager).listener.owner = null;
         this._viewPager = null;
         super.disposeNativeView();
     }
 
-    private setAdapter(items: Array<TabViewItem>) {
+    private setAdapterItems(items: Array<TabViewItem>) {
         (<any>this._pagerAdapter).items = items;
 
         const length = items ? items.length : 0;
         if (length === 0) {
-            // this._viewPager.setAdapter(null);
-            // this._pagerAdapter = null;
             this._tabLayout.setItems(null, null);
             return;
         }
@@ -393,7 +415,8 @@ export class TabView extends TabViewBase {
         return null;
     }
     [itemsProperty.setNative](value: TabViewItem[]) {
-        this.setAdapter(value);
+        this.setAdapterItems(value);
+        selectedIndexProperty.coerce(this);
     }
 
     [tabBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable.ConstantState {

@@ -1,6 +1,6 @@
-#TSN-Modules Coding Convention#
+# TSN-Modules Coding Convention#
 
-##Linting
+## Linting
 
 *TODO: We should further verify this may work with TypeScript*
 
@@ -55,13 +55,13 @@ Use single quotes, unless you are writing JSON.
 *Right:*
 
 ~~~ {.javascript}
-var foo = "bar";
+var foo = 'bar';
 ~~~
 
 *Wrong:*
 
 ~~~ {.javascript}
-var foo = 'bar';
+var foo = "bar";
 ~~~
 
 ## Braces
@@ -283,7 +283,8 @@ if (a == '') {
 
 [comparisonoperators]: https://developer.mozilla.org/en/JavaScript/Reference/Operators/Comparison_Operators
 
-##Short-hand oprators
+## Short-hand oprators
+
 Try to avoid short-hand operators except in very simple scenarios.
 *Right:*
 
@@ -302,7 +303,8 @@ var big = (x > 10) ? checkX(x)?getExtraLarge():getDefaultSize():getSmallValue();
 ~~~
 
 
-##Curly braces 
+## Curly braces 
+
 Always use curly braces even in the cases of one line conditional operations.
 
 *Right:*
@@ -324,7 +326,8 @@ if (a)
 if (a) return 'winning';
 ~~~
 
-##Boolean comparisons
+## Boolean comparisons
+
 **Do not** directly compare with true, or false.
 
 *Right:*
@@ -548,7 +551,8 @@ function doAsync(arg, onSuccess, onError) {
 }
 ~~~
 
-##Comments
+## Comments
+
 Use the [JSDoc][JSDOC] convention for comments. When writing a comment always think how understandable will be for somebody who is new to this code. Even if it may look simple to you think how a guy that just joined will understand it. Always comment in the following cases:
 + When there is some non-trivial logic.
 + Some 'external' knowledge is needed which is missing in the context - workaround for driver, module bug, special 'hack' because of a bug and so on;
@@ -559,7 +563,8 @@ Use the [JSDoc][JSDOC] convention for comments. When writing a comment always th
 [param]: http://usejsdoc.org/tags-param.html
 
 
-##Commenting of parameters that are objects/complex types
+## Commenting of parameters that are objects/complex types
+
 When you have parameters that are complex objexts like *options* or other type for which the properties are not clear or is external one use the [@type-def tag][typedef]
 
 *Right:*
@@ -598,7 +603,8 @@ function checkProperties(properties) {
 
 [typedef]: http://usejsdoc.org/tags-typedef.html
 
-##File/module structure
+## File/module structure
+
 Typical module should have the following structure:
 
 1. required dependencies

@@ -279,6 +279,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._emit("unloaded");
     }
 
+    public _batchUpdateScope: number;
+    public _batchUpdate<T>(callback: () => T): T {
+        try {
+            ++this._batchUpdateScope;
+            return callback();
+        } finally {
+            --this._batchUpdateScope;
+        }
+    }
+
     private _unloadEachChild() {
         this.eachChild((child) => {
             if (child.isLoaded) {
@@ -371,13 +381,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _invalidateCssHandlerSuspended: boolean;
 
     private applyCssState(): void {
-        if (!this._cssState) {
-            return;
-        }
-
-        // this.style._beginUpdate();
-        this._cssState.apply();
-        // this.style._endUpdate();
+        this._batchUpdate(() => {
+            if (!this._cssState) {
+                this._cancelAllAnimations();
+                resetCSSProperties(this.style);
+                return;
+            }
+            this._cssState.apply();
+        });
     }
 
     private pseudoClassAliases = {
@@ -534,14 +545,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public _addViewCore(view: ViewBase, atIndex?: number) {
-        propagateInheritableProperties(this);
+        propagateInheritableProperties(this, view);
 
         const styleScope = this._styleScope;
         if (styleScope) {
             view._setStyleScope(styleScope);
         }
 
-        propagateInheritableCssProperties(this.style);
+        propagateInheritableCssProperties(this.style, view.style);
 
         if (this._context) {
             view._setupUI(this._context, atIndex);
@@ -715,9 +726,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.disposeNativeView();
 
-        this.nativeView = null;
-        this._androidView = null;
-        this._iosView = null;
+        if (isAndroid) {
+            this.nativeView = null;
+            this._androidView = null;
+        }
+
+        // this._iosView = null;
 
         this._context = null;
         traceNotifyEvent(this, "_onContextChanged");
@@ -844,6 +858,8 @@ ViewBase.prototype._defaultPaddingRight = 0;
 ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
 
+ViewBase.prototype._batchUpdateScope = 0;
+
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
 
@@ -861,8 +877,6 @@ export const classNameProperty = new Property<ViewBase, string>({
 classNameProperty.register(ViewBase);
 
 function resetStyles(view: ViewBase): void {
-    view._cancelAllAnimations();
-    resetCSSProperties(view.style);
     view._applyStyleFromScope();
     view.eachChild((child) => {
         resetStyles(child);

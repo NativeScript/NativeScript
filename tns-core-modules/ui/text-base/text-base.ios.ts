@@ -1,8 +1,9 @@
-﻿import { Font } from "../styling/font";
+﻿import { TextDecoration, TextAlignment, TextTransform } from "./text-base";
+import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
     textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, FormattedString,
-    TextDecoration, TextAlignment, TextTransform, Span, Color, isBold
+    Span, Color, isBold
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -11,9 +12,6 @@ export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
-    [textProperty.getDefault](): string {
-        return '';
-    }
     [textProperty.setNative](value: string) {
         if (this.formattedText) {
             return;
@@ -23,9 +21,6 @@ export class TextBase extends TextBaseCommon {
         this._requestLayoutOnTextChanged();
     }
 
-    [formattedTextProperty.getDefault](): FormattedString {
-        return null;
-    }
     [formattedTextProperty.setNative](value: FormattedString) {
         this._setNativeText();
         textProperty.nativeValueChange(this, !value ? '' : value.toString());
@@ -42,13 +37,12 @@ export class TextBase extends TextBaseCommon {
     }
     [colorProperty.setNative](value: Color | UIColor) {
         const color = value instanceof Color ? value.ios : value;
-        if (!this.formattedText) {
-            let nativeView = this.nativeView;
-            if (nativeView instanceof UIButton) {
-                nativeView.setTitleColorForState(color, UIControlState.Normal);
-            } else {
-                nativeView.textColor = color;
-            }
+        const nativeView = this.nativeView;
+        if (nativeView instanceof UIButton) {
+            nativeView.setTitleColorForState(color, UIControlState.Normal);
+            nativeView.titleLabel.textColor = color;
+        } else {
+            nativeView.textColor = color;
         }
     }
 
@@ -58,66 +52,38 @@ export class TextBase extends TextBaseCommon {
         return nativeView.font;
     }
     [fontInternalProperty.setNative](value: Font | UIFont) {
-        if (!this.formattedText) {
+        if (!(value instanceof Font) || !this.formattedText) {
             let nativeView = this.nativeView;
             nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-            let font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
+            const font = value instanceof Font ? value.getUIFont(nativeView.font) : value;
             nativeView.font = font;
         }
     }
 
-    [textAlignmentProperty.getDefault](): TextAlignment {
-        let nativeView = this.nativeView;
-        nativeView = nativeView instanceof UIButton ? nativeView.titleLabel : nativeView;
-        switch (nativeView.textAlignment) {
-            case NSTextAlignment.Natural:
-            case NSTextAlignment.Left:
-                return "left";
-            case NSTextAlignment.Center:
-                return "center";
-            case NSTextAlignment.Right:
-                return "right";
-            default:
-                throw new Error(`Unsupported NSTextAlignment: ${nativeView.textAlignment}. Currently supported values are NSTextAlignment.Left, NSTextAlignment.Center, and NSTextAlignment.Right.`);
-        }
-    }
     [textAlignmentProperty.setNative](value: TextAlignment) {
-        let nativeView = <UITextField | UITextView | UILabel>this.nativeView;
+        const nativeView = <UITextField | UITextView | UILabel>this.nativeView;
         switch (value) {
+            case "initial":
             case "left":
                 nativeView.textAlignment = NSTextAlignment.Left;
                 break;
-
             case "center":
                 nativeView.textAlignment = NSTextAlignment.Center;
                 break;
-
             case "right":
                 nativeView.textAlignment = NSTextAlignment.Right;
                 break;
-
-            default:
-                throw new Error(`Invalid text alignment value: ${value}. Valid values are: 'left', 'center', 'right'.`);
         }
     }
 
-    [textDecorationProperty.getDefault](): TextDecoration {
-        return "none";
-    }
     [textDecorationProperty.setNative](value: TextDecoration) {
         this._setNativeText();
     }
 
-    [textTransformProperty.getDefault](): TextTransform {
-        return "none";
-    }
     [textTransformProperty.setNative](value: TextTransform) {
         this._setNativeText();
     }
 
-    [letterSpacingProperty.getDefault](): number {
-        return 0;
-    }
     [letterSpacingProperty.setNative](value: number) {
         this._setNativeText();
     }
@@ -147,8 +113,7 @@ export class TextBase extends TextBaseCommon {
 
     setTextDecorationAndTransform() {
         const style = this.style;
-
-        let dict = new Map<string, any>();
+        const dict = new Map<string, any>();
         switch (style.textDecoration) {
             case "none":
                 break;
@@ -170,20 +135,21 @@ export class TextBase extends TextBaseCommon {
             dict.set(NSKernAttributeName, style.letterSpacing * this.nativeView.font.pointSize);
         }
 
-        if (style.color) {
+        const isTextView = this.nativeView instanceof UITextView;
+        if (style.color && (dict.size > 0 || isTextView)) {
             dict.set(NSForegroundColorAttributeName, style.color.ios);
         }
 
         const text = this.text;
         const string = (text === undefined || text === null) ? '' : text.toString();
         const source = getTransformedText(string, this.textTransform);
-        const isTextView = this.nativeView instanceof UITextView;
         if (dict.size > 0 || isTextView) {
             if (isTextView) {
                 // UITextView's font seems to change inside.
                 dict.set(NSFontAttributeName, this.nativeView.font);
             }
-            let result = NSMutableAttributedString.alloc().initWithString(source);
+            
+            const result = NSMutableAttributedString.alloc().initWithString(source);
             result.setAttributesRange(<any>dict, { location: 0, length: source.length });
             if (this.nativeView instanceof UIButton) {
                 this.nativeView.setAttributedTitleForState(result, UIControlState.Normal);
@@ -211,7 +177,7 @@ export class TextBase extends TextBaseCommon {
                 const text = span.text;
                 const textTransform = (<TextBase>formattedString.parent).textTransform;
                 let spanText = (text === null || text === undefined) ? '' : text.toString();
-                if (textTransform !== "none") {
+                if (textTransform !== "none" && textTransform !== "initial") {
                     spanText = getTransformedText(spanText, textTransform);
                 }
 
@@ -282,8 +248,6 @@ export class TextBase extends TextBaseCommon {
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
     switch (textTransform) {
-        case "none":
-            return text;
         case "uppercase":
             return NSStringFromNSAttributedString(text).uppercaseString;
         case "lowercase":
@@ -291,7 +255,7 @@ export function getTransformedText(text: string, textTransform: TextTransform): 
         case "capitalize":
             return NSStringFromNSAttributedString(text).capitalizedString;
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: 'none', 'capitalize', 'uppercase', 'lowercase'.`);
+            return text;
     }
 }
 

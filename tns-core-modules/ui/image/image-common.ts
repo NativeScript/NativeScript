@@ -1,4 +1,4 @@
-﻿import { Image as ImageDefinition } from ".";
+﻿import { Image as ImageDefinition, Stretch } from ".";
 import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
@@ -11,7 +11,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
     public imageSource: ImageSource;
     public src: string | ImageSource;
     public isLoading: boolean;
-    public stretch: "none" | "aspectFill" | "aspectFit" | "fill";
+    public stretch: Stretch;
     public loadMode: "sync" | "async";
 
     get tintColor(): Color {
@@ -117,7 +117,7 @@ loadModeProperty.register(ImageBase);
 export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false, valueConverter: booleanConverter });
 isLoadingProperty.register(ImageBase);
 
-export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS });
+export const stretchProperty = new Property<ImageBase, Stretch>({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS });
 stretchProperty.register(ImageBase);
 
 export const tintColorProperty = new InheritedCssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });

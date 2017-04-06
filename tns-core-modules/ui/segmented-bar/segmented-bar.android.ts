@@ -92,6 +92,10 @@ function initializeNativeClasses(): void {
 export class SegmentedBarItem extends SegmentedBarItemBase {
     nativeView: android.widget.TextView;
 
+    public createNativeView(): android.widget.TextView {
+        return this.nativeView;
+    }
+
     public setupNativeView(tabIndex: number): void {
         // TabHost.TabSpec.setIndicator DOES NOT WORK once the title has been set.
         // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android

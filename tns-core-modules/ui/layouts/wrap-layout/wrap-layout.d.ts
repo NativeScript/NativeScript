@@ -10,7 +10,7 @@ export class WrapLayout extends LayoutBase {
      * Gets or sets the flow direction. Default value is horizontal.
      * If orientation is horizontal items are arranged in rows, else items are arranged in columns.
      */
-    orientation: "horizontal" | "vertical";
+    orientation: Orientation;
 
     /**
      * Gets or sets the width used to measure and layout each child.
@@ -25,10 +25,12 @@ export class WrapLayout extends LayoutBase {
     itemHeight: Length;
 }
 
+export type Orientation = "horizontal" | "vertical";
+
 /**
  * Represents the observable property backing the orientation property of each WrapLayout instance.
  */
-export const orientationProperty: Property<WrapLayout, "horizontal" | "vertical">;
+export const orientationProperty: Property<WrapLayout, Orientation>;
 
 /**
  * Represents the observable property backing the itemWidth property of each WrapLayout instance.

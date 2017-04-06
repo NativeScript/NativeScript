@@ -610,21 +610,7 @@ function test_native_font(style: "normal" | "italic", weight: "100" | "200" | "3
     //TODO: If needed add tests for other platforms
 }
 
-export const test_setting_button_whiteSpace_normal_sets_native = function () {
-    const testView = new Button();
-    testView.style.whiteSpace = "nowrap";
-
-    helper.buildUIAndRunTest(testView, function (views: Array<View>) {
-        if (isAndroid) {
-            TKUnit.assertEqual((<android.widget.Button>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
-        } else if (isIOS) {
-            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.ByTruncatingMiddle);
-            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
-        }
-    });
-};
-
-export const test_setting_label_whiteSpace_normal_sets_native = function () {
+export function test_setting_label_whiteSpace_nowrap_sets_native() {
     const testView = new Label();
     testView.style.whiteSpace = "nowrap";
 
@@ -638,21 +624,7 @@ export const test_setting_label_whiteSpace_normal_sets_native = function () {
     });
 };
 
-export const test_setting_button_whiteSpace_nowrap_sets_native = function () {
-    const testView = new Button();
-    testView.style.whiteSpace = "normal";
-
-    helper.buildUIAndRunTest(testView, function (views: Array<View>) {
-        if (isAndroid) {
-            TKUnit.assertNull((<android.widget.Button>testView.android).getEllipsize(), null);
-        } else if (isIOS) {
-            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.ByWordWrapping);
-            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 0);
-        }
-    });
-};
-
-export const test_setting_label_whiteSpace_nowrap_sets_native = function () {
+export function test_setting_label_whiteSpace_normal_sets_native() {
     const testView = new Label();
     testView.style.whiteSpace = "normal";
 
@@ -662,6 +634,34 @@ export const test_setting_label_whiteSpace_nowrap_sets_native = function () {
         } else if (isIOS) {
             TKUnit.assertEqual((<UILabel>testView.ios).lineBreakMode, NSLineBreakMode.ByWordWrapping);
             TKUnit.assertEqual((<UILabel>testView.ios).numberOfLines, 0);
+        }
+    });
+};
+
+export function test_setting_button_whiteSpace_nowrap_sets_native() {
+    const testView = new Button();
+    testView.style.whiteSpace = "nowrap";
+
+    helper.buildUIAndRunTest(testView, function (views: Array<View>) {
+        if (isAndroid) {
+            TKUnit.assertEqual((<android.widget.Button>testView.android).getEllipsize(), android.text.TextUtils.TruncateAt.END);
+        } else if (isIOS) {
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.ByTruncatingMiddle);
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 1);
+        }
+    });
+};
+
+export function test_setting_button_whiteSpace_normal_sets_native() {
+    const testView = new Button();
+    testView.style.whiteSpace = "normal";
+
+    helper.buildUIAndRunTest(testView, function (views: Array<View>) {
+        if (isAndroid) {
+            TKUnit.assertNull((<android.widget.Button>testView.android).getEllipsize(), null);
+        } else if (isIOS) {
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.lineBreakMode, NSLineBreakMode.ByWordWrapping);
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.numberOfLines, 0);
         }
     });
 };
@@ -729,19 +729,23 @@ export const test_setting_label_textTransform_sets_native = function () {
 };
 
 export const test_setting_textField_textTransform_sets_native = function () {
-    const testView = new TextField();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
+    if (isIOS) {
+        const testView = new TextField();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_textView_textTransform_sets_native = function () {
-    const testView = new TextView();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
+    if (isIOS) {
+        const testView = new TextView();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_button_textTransform_sets_native = function () {
@@ -762,21 +766,25 @@ export const test_setting_label_textTransform_and_textDecoration_sets_native = f
 };
 
 export const test_setting_textField_textTransform_and_textDecoration_sets_native = function () {
-    const testView = new TextField();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
-    testView.style.textDecoration = "underline";
+    if (isIOS) {
+        const testView = new TextField();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
+        testView.style.textDecoration = "underline";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_textView_textTransform_and_textDecoration_sets_native = function () {
-    const testView = new TextView();
-    testView.text = initial;
-    testView.style.textTransform = "capitalize";
-    testView.style.textDecoration = "underline";
+    if (isIOS) {
+        const testView = new TextView();
+        testView.text = initial;
+        testView.style.textTransform = "capitalize";
+        testView.style.textDecoration = "underline";
 
-    executeTransformTest(testView, androidText, iOSText);
+        executeTransformTest(testView, androidText, iOSText);
+    }
 };
 
 export const test_setting_button_textTransform_and_textDecoration_sets_native = function () {
