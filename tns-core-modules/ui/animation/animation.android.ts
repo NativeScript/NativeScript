@@ -92,6 +92,7 @@ export class Animation extends AnimationBase {
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
+        this._valueSource = "animation";
         if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
             this._valueSource = animationDefinitions[0].valueSource;
         }
@@ -275,7 +276,7 @@ export class Animation extends AnimationBase {
                 animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
                     onAnimationUpdate(animator: android.animation.ValueAnimator) {
                         let argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
-                        propertyAnimation.target.style[backgroundColorProperty.cssName] = new Color(argb);
+                        propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = new Color(argb);
                     }
                 }));
 

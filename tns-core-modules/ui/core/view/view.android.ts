@@ -339,7 +339,7 @@ export class View extends ViewCommon {
         return this.nativeView.getAlpha();
     }
     [opacityProperty.setNative](value: number) {
-        this.nativeView.setAlpha(value);
+        this.nativeView.setAlpha(float(value));
     }
 
     [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
