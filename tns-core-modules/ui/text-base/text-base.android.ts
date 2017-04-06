@@ -1,11 +1,11 @@
-﻿import { Font } from "../styling/font";
+﻿import { TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base";
+import { Font } from "../styling/font";
 import { backgroundColorProperty } from "../styling/style-properties";
 import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    whiteSpaceProperty, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
-    layout, Span, Color, isBold
+    whiteSpaceProperty, FormattedString, layout, Span, Color, isBold
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -63,9 +63,6 @@ export class TextBase extends TextBaseCommon {
         this._defaultTransformationMethod = null;
     }
 
-    [textProperty.getDefault](): string {
-        return '';
-    }
     [textProperty.setNative](value: string) {
         if (this.formattedText) {
             return;
@@ -74,9 +71,6 @@ export class TextBase extends TextBaseCommon {
         this._setNativeText();
     }
 
-    [formattedTextProperty.getDefault](): FormattedString {
-        return null;
-    }
     [formattedTextProperty.setNative](value: FormattedString) {
         // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
         if ((<any>this).secure) {
@@ -99,14 +93,10 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    [textTransformProperty.getDefault](): "default" {
-        return "default";
-    }
-    [textTransformProperty.setNative](value: "default" | TextTransform | android.text.method.TransformationMethod) {
-        // In case of reset.
-        if (value === "default") {
-             this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
-             return;
+    [textTransformProperty.setNative](value: TextTransform) {
+        if (value === "initial") {
+            this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+            return;
         }
 
         // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
@@ -115,11 +105,44 @@ export class TextBase extends TextBaseCommon {
         }
 
         initializeTextTransformation();
+        this.nativeView.setTransformationMethod(new TextTransformation(this));
+    }
 
-        if (typeof value === "string") {
-            this.nativeView.setTransformationMethod(new TextTransformation(this));
-        } else {
-            this.nativeView.setTransformationMethod(value);
+    [textAlignmentProperty.getDefault](): TextAlignment {
+        return "left";
+    }
+    [textAlignmentProperty.setNative](value: TextAlignment) {
+        let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+        switch (value) {
+            case "initial":
+            case "left":
+                this.nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
+                break;
+
+            case "center":
+                this.nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+                break;
+
+            case "right":
+                this.nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+                break;
+        }
+    }
+
+    // Overriden in TextField becasue setSingleLine(false) will remove methodTransformation.
+    // and we don't want to allow TextField to be multiline
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
+        const nativeView = this.nativeView;
+        switch (value) {
+            case "initial":
+            case "normal":
+                nativeView.setSingleLine(false);
+                nativeView.setEllipsize(null);
+                break;
+            case "nowrap":
+                nativeView.setSingleLine(true);
+                nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                break;
         }
     }
 
@@ -157,85 +180,26 @@ export class TextBase extends TextBaseCommon {
             this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
         }
     }
-    [textAlignmentProperty.getDefault](): TextAlignment {
-        let textAlignmentGravity = this.nativeView.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
-        switch (textAlignmentGravity) {
-            case android.view.Gravity.CENTER_HORIZONTAL:
-                return "center";
-            case android.view.Gravity.RIGHT:
-                return "right";
-            case android.view.Gravity.LEFT:
-            default:
-                return "left";
-        }
-    }
-    [textAlignmentProperty.setNative](value: TextAlignment) {
-        let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
-        switch (value) {
-            case "left":
-                this.nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
-                break;
-            case "center":
-                this.nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
-                break;
-            case "right":
-                this.nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
-                break;
-            default:
-                throw new Error(`Invalid text alignment value: ${value}. Valid values are: 'left', 'center', 'right'.`);
-        }
-    }
 
-    [textDecorationProperty.getDefault](): number {
-        return -1;
-    }
     [textDecorationProperty.setNative](value: number | TextDecoration) {
-        const isReset = typeof value === "number";
-        if (!this.formattedText || isReset) {
-            value = isReset ? "none" : value;
-            let flags: number;
-            switch (value) {
-                case "none":
-                    flags = 0;
-                    break;
-                case "underline":
-                    flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG;
-                    break;
-                case "line-through":
-                    flags = android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
-                    break;
-                case "underline line-through":
-                    flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
-                    break;
-                default:
-                    throw new Error(`Invalid text decoration value: ${value}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
-            }
-            this.nativeView.setPaintFlags(flags);
-        } else {
-            this._setNativeText();
-        }
-    }
-
-    // Overriden in TextField becasue setSingleLine(false) will remove methodTransformation.
-    // and we don't want to allow TextField to be multiline
-    [whiteSpaceProperty.getDefault](): WhiteSpace {
-        return "normal";
-    }
-
-    [whiteSpaceProperty.setNative](value: WhiteSpace) {
-        const nativeView = this.nativeView;
+        let flags: number;
         switch (value) {
-            case "normal":
-                nativeView.setSingleLine(false);
-                nativeView.setEllipsize(null);
+            case "none":
+                flags = 0;
                 break;
-            case "nowrap":
-                nativeView.setSingleLine(true);
-                nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            case "underline":
+                flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG;
                 break;
-            default:
-                throw new Error(`Invalid whitespace value: ${value}. Valid values are: 'normal', nowrap'.`);
+            case "line-through":
+                flags = android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+                break;
+            case "underline line-through":
+                flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
+                break;
         }
+
+        this.nativeView.setPaintFlags(flags);
+        this._setNativeText();
     }
 
     [letterSpacingProperty.getDefault](): number {

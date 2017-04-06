@@ -91,42 +91,10 @@ export class TextBase extends View implements AddChildFromBuilder {
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 
-export type TextAlignment = "left" | "center" | "right";
-export namespace TextAlignment {
-    export const LEFT: "left";
-    export const CENTER: "center";
-    export const RIGHT: "right";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): TextAlignment;
-}
-
+export type WhiteSpace = "initial" | "normal" | "nowrap";
+export type TextAlignment = "initial" | "left" | "center" | "right";
+export type TextTransform = "initial" | "none" | "capitalize" | "uppercase" | "lowercase";
 export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
-export namespace TextDecoration {
-    export const NONE: "none";
-    export const UNDERLINE: "underline";
-    export const LINE_THROUGH: "line-through";
-    export const UNDERLINE_LINE_THROUGH: "underline line-through";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): TextDecoration;
-}
-
-export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
-export namespace TextTransform {
-    export const NONE: "none";
-    export const CAPITALIZE: "capitalize";
-    export const UPPERCASE: "uppercase";
-    export const LOWERCASE: "lowercase";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): TextTransform;
-}
-
-export type WhiteSpace = "normal" | "nowrap";
-export namespace WhiteSpace {
-    export const NORMAL: "normal";
-    export const NO_WRAP: "nowrap";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): WhiteSpace;
-}
 
 export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
 export const textDecorationProperty: CssProperty<Style, TextDecoration>;

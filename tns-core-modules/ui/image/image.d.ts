@@ -36,7 +36,7 @@ export class Image extends View {
     /**
      * Gets or sets the image stretch mode.
      */
-    stretch: "none" | "aspectFill" | "aspectFit" | "fill";
+    stretch: Stretch;
 
     /**
      * Gets or sets the loading strategy for images on the local file system:
@@ -52,9 +52,11 @@ export class Image extends View {
     tintColor: Color;
 }
 
+export type Stretch = "none" | "aspectFill" | "aspectFit" | "fill";
+
 export const imageSourceProperty: Property<Image, ImageSource>;
 export const srcProperty: Property<Image, any>;
 export const isLoadingProperty: Property<Image, string>;
 export const loadMode: Property<Image, "sync" | "async">;
-export const stretchProperty: Property<Image, "none" | "aspectFill" | "aspectFit" | "fill">;
+export const stretchProperty: Property<Image, Stretch>;
 export const tintColorProperty: InheritedCssProperty<Style, Color>;

@@ -109,40 +109,6 @@ export const backgroundInternalProperty: CssProperty<Style, Background>;
 export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 
 export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
-export namespace BackgroundRepeat {
-    export const REPEAT: "repeat";
-    export const REPEAT_X: "repeat-x";
-    export const REPEAT_Y: "repeat-y";
-    export const NO_REPEAT: "no-repeat";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): BackgroundRepeat;
-}
-
 export type Visibility = "visible" | "hidden" | "collapse";
-export namespace Visibility {
-    export const VISIBLE: "visible";
-    export const HIDDEN: "hidden";
-    export const COLLAPSE: "collapse";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): Visibility;
-}
-
 export type HorizontalAlignment = "left" | "center" | "right" | "stretch";
-export namespace HorizontalAlignment {
-    export const LEFT: "left";
-    export const CENTER: "center";
-    export const RIGHT: "right";
-    export const STRETCH: "stretch";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): HorizontalAlignment;
-}
-
 export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch";
-export namespace VerticalAlignment {
-    export const TOP: "top";
-    export const MIDDLE: "middle";
-    export const BOTTOM: "bottom";
-    export const STRETCH: "stretch";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): VerticalAlignment;
-}

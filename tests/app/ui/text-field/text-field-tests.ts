@@ -4,7 +4,6 @@ import * as viewModule from "tns-core-modules/ui/core/view";
 import * as pagesModule from "tns-core-modules/ui/page";
 import * as textFieldTestsNative from "./text-field-tests-native";
 import * as colorModule from "tns-core-modules/color";
-import * as enums from "tns-core-modules/ui/enums";
 import * as platform from "tns-core-modules/platform";
 import * as formattedStringModule from "tns-core-modules/text/formatted-string";
 import * as spanModule from "tns-core-modules/text/span";
@@ -542,15 +541,15 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertNull(view.style.textTransform, "TextTransform default value");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration default value");
+        TKUnit.assertEqual(view.style.textTransform, "initial", "TextTransform default value");
+        TKUnit.assertEqual(view.style.textDecoration, "none", "TextDecoration default value");
         TKUnit.assertTrue(view.style.letterSpacing === 0, "LetterSpacing default value");
 
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.textTransform,  "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }
@@ -562,8 +561,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }

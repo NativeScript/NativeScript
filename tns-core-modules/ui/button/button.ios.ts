@@ -1,8 +1,9 @@
 ﻿import { ControlStateChangeListener } from "../core/control-state-change";
 import {
-    ButtonBase, PseudoClassHandler, whiteSpaceProperty,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, textAlignmentProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace, TextAlignment, layout
+    ButtonBase, PseudoClassHandler, Length, layout,
+    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
+    whiteSpaceProperty, WhiteSpace, textAlignmentProperty, TextAlignment
 } from "./button-common";
 
 export * from "./button-common";
@@ -43,25 +44,6 @@ export class Button extends ButtonBase {
             this._stateChangedHandler.start();
         } else {
             this._stateChangedHandler.stop();
-        }
-    }
-
-    [whiteSpaceProperty.getDefault](): WhiteSpace {
-        return WhiteSpace.NO_WRAP;
-    }
-    [whiteSpaceProperty.setNative](value: WhiteSpace) {
-        const nativeView = this.nativeView.titleLabel;
-        switch (value) {
-            case WhiteSpace.NORMAL:
-                nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-                nativeView.numberOfLines = 0;
-                break;
-            case WhiteSpace.NO_WRAP:
-                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
-                nativeView.numberOfLines = 1;
-                break;
-            default:
-                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
 
@@ -161,23 +143,34 @@ export class Button extends ButtonBase {
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
-    [textAlignmentProperty.getDefault](): TextAlignment {
-        return Button.nativeToJsTextAlignment[this.nativeView.contentHorizontalAlignment];
-    }
     [textAlignmentProperty.setNative](value: TextAlignment) {
-        this.nativeView.contentHorizontalAlignment = Button.jsToNativeTextAlignment[value];
+        switch (value) {
+            case "left":
+                this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
+                break;
+            case "initial":
+            case "center":
+                this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+                break;
+            case "right":
+                this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+                break;
+        }
     }
 
-    private static nativeToJsTextAlignment: { [key: number]: TextAlignment } = {
-        [UIControlContentHorizontalAlignment.Left]: "left",
-        [UIControlContentHorizontalAlignment.Center]: "center",
-        [UIControlContentHorizontalAlignment.Right]: "right",
-        [UIControlContentHorizontalAlignment.Fill]: "center"
-    }
-    private static jsToNativeTextAlignment: { [key in TextAlignment]: UIControlContentHorizontalAlignment } = {
-        "left": UIControlContentHorizontalAlignment.Left,
-        "center": UIControlContentHorizontalAlignment.Center,
-        "right": UIControlContentHorizontalAlignment.Right
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
+        const nativeView = this.nativeView.titleLabel;
+        switch (value) {
+            case "normal":
+                nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+                nativeView.numberOfLines = 0;
+                break;
+            case "nowrap":
+            case "initial":
+                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
+                nativeView.numberOfLines = 1;
+                break;
+        }
     }
 }
 

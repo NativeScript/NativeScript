@@ -1,14 +1,14 @@
-﻿import { EditableTextBase as EditableTextBaseDefinition } from ".";
-import { TextBase, Property, CssProperty, Style, Color, booleanConverter } from "../text-base";
+﻿import { EditableTextBase as EditableTextBaseDefinition, KeyboardType, ReturnKeyType, UpdateTextTrigger, AutocapitalizationType } from ".";
+import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeValidator, makeParser } from "../text-base";
 
 export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
 
-    public keyboardType: "datetime" | "phone" | "number" | "url" | "email";
-    public returnKeyType: "done" | "next" | "go" | "search" | "send";
-    public updateTextTrigger: "focusLost" | "textChanged";
-    public autocapitalizationType: "none" | "words" | "sentences" | "allCharacters";
+    public keyboardType: KeyboardType;
+    public returnKeyType: ReturnKeyType;
+    public updateTextTrigger: UpdateTextTrigger;
+    public autocapitalizationType: AutocapitalizationType;
     public editable: boolean;
     public autocorrect: boolean;
     public hint: string;
@@ -22,19 +22,25 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
 export const placeholderColorProperty = new CssProperty<Style, Color>({ name: "placeholderColor", cssName: "placeholder-color", equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
 placeholderColorProperty.register(Style);
 
-export const keyboardTypeProperty = new Property<EditableTextBase, "datetime" | "phone" | "number" | "url" | "email">({ name: "keyboardType" });
+const keyboardTypeConverter = makeParser<KeyboardType>(makeValidator<KeyboardType>("datetime", "phone", "number", "url", "email"));
+
+export const keyboardTypeProperty = new Property<EditableTextBase, KeyboardType>({ name: "keyboardType", valueConverter: keyboardTypeConverter });
 keyboardTypeProperty.register(EditableTextBase);
 
-export const returnKeyTypeProperty = new Property<EditableTextBase, "done" | "next" |  "go" | "search" | "send">({ name: "returnKeyType" });
+const returnKeyTypeConverter = makeParser<ReturnKeyType>(makeValidator<ReturnKeyType>("done", "next", "go", "search", "send"));
+
+export const returnKeyTypeProperty = new Property<EditableTextBase, ReturnKeyType>({ name: "returnKeyType", valueConverter: returnKeyTypeConverter });
 returnKeyTypeProperty.register(EditableTextBase);
 
 export const editableProperty = new Property<EditableTextBase, boolean>({ name: "editable", defaultValue: true, valueConverter: booleanConverter });
 editableProperty.register(EditableTextBase);
 
-export const updateTextTriggerProperty = new Property<EditableTextBase, "focusLost" | "textChanged">({ name: "updateTextTrigger", defaultValue: "textChanged" });
+export const updateTextTriggerProperty = new Property<EditableTextBase, UpdateTextTrigger>({ name: "updateTextTrigger", defaultValue: "textChanged" });
 updateTextTriggerProperty.register(EditableTextBase);
 
-export const autocapitalizationTypeProperty = new Property<EditableTextBase, "none" | "words" | "sentences" | "allCharacters">({ name: "autocapitalizationType", defaultValue: "sentences" });
+const autocapitalizationTypeConverter = makeParser<AutocapitalizationType>(makeValidator<AutocapitalizationType>("none", "words", "sentences", "allCharacters"));
+
+export const autocapitalizationTypeProperty = new Property<EditableTextBase, AutocapitalizationType>({ name: "autocapitalizationType", defaultValue: "sentences", valueConverter: autocapitalizationTypeConverter });
 autocapitalizationTypeProperty.register(EditableTextBase);
 
 export const autocorrectProperty = new Property<EditableTextBase, boolean>({ name: "autocorrect", valueConverter: booleanConverter });
