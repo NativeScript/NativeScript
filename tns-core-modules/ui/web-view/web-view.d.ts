@@ -9,6 +9,11 @@ import { View, Property, EventData } from "../core/view";
 export const urlProperty: Property<WebView, string>;
 
 /**
+ * Represents navigation type
+ */
+export type NavigationType = "linkClicked" | "formSubmitted" | "backForward" | "reload" | "formResubmitted" | "other" | undefined;
+
+/**
  * Represents a standard WebView widget.
  */
 export class WebView extends View {
@@ -21,11 +26,6 @@ export class WebView extends View {
      * String value used when hooking to loadFinished event.
      */
     public static loadFinishedEvent: string;
-
-    /**
-     * Array of string values used when passing navigation types.
-     */
-    public static navigationTypes: string[];
 
     /**
      * Gets the native [android widget](http://developer.android.com/reference/android/webkit/WebView.html) that represents the user interface for this component. Valid only when running on Android OS.
@@ -102,7 +102,7 @@ export interface LoadEventData extends EventData {
     /**
      * Gets the navigation type of the web-view.
      */
-    navigationType: string;
+    navigationType: NavigationType;
     /**
      * Gets the error (if any). 
      */

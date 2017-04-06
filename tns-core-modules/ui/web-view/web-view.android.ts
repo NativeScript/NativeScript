@@ -34,7 +34,7 @@ function initializeWebViewClient(): void {
                 if (traceEnabled()) {
                     traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
                 }
-                owner._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
+                owner._onLoadStarted(url, undefined);
             }
         }
 
