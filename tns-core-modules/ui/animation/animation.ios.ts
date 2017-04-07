@@ -153,6 +153,7 @@ export class Animation extends AnimationBase {
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
+        this._valueSource = "animation";
         if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
             this._valueSource = animationDefinitions[0].valueSource;
         }
