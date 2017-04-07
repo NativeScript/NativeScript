@@ -40,13 +40,14 @@ export class Observable implements ObservableDefinition {
 
     public set(name: string, value: any) {
         // TODO: Parameter validation
+        const oldValue = this[name];
         if (this[name] === value) {
             return;
         }
 
         const newValue = WrappedValue.unwrap(value);
         this[name] = newValue;
-        this.notifyPropertyChange(name, newValue);
+        this.notifyPropertyChange(name, newValue, oldValue);
     }
 
     public on(eventNames: string, callback: (data: EventData) => void, thisArg?: any) {
@@ -125,21 +126,16 @@ export class Observable implements ObservableDefinition {
         }
     }
 
-    public notifyPropertyChange(name: string, newValue: any) {
-        this.notify(this._createPropertyChangeData(name, newValue));
+    public notifyPropertyChange(name: string, value: any, oldValue?: any) {
+        this.notify(this._createPropertyChangeData(name, value, oldValue));
     }
 
     public hasListeners(eventName: string) {
         return eventName in this._observers;
     }
 
-    public _createPropertyChangeData(name: string, value: any): PropertyChangeData {
-        return {
-            eventName: Observable.propertyChangeEvent,
-            propertyName: name,
-            object: this,
-            value: value
-        };
+    public _createPropertyChangeData(propertyName: string, value: any, oldValue?: any): PropertyChangeData {
+        return { eventName: Observable.propertyChangeEvent, object: this, propertyName, value, oldValue };
     }
 
     public _emit(eventNames: string) {
@@ -195,7 +191,7 @@ class ObservableFromObject extends Observable {
 
         const newValue = WrappedValue.unwrap(value);
         this._map[name] = newValue;
-        this.notifyPropertyChange(name, newValue);
+        this.notifyPropertyChange(name, newValue, currentValue);
     }
 }
 
