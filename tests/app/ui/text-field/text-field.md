@@ -8,7 +8,6 @@ previous_url: /ApiReference/ui/text-field/HOW-TO
 # TextField
 Using a TextField requires the text-field module.
 {%snippet require-textfield%}
-{%snippet require-observable-textfield%}
 ### Binding two TextFields text property to observable view-model property.
 ```XML
  <Page loaded="pageLoaded">
