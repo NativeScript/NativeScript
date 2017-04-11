@@ -3,7 +3,7 @@ import * as definitions from "../view-base";
 import { ViewBase } from "../view-base";
 
 // Types.
-import { WrappedValue } from "../../../data/observable";
+import { WrappedValue, PropertyChangeData } from "../../../data/observable";
 import { Style } from "../../styling/style";
 
 export { Style };
@@ -131,11 +131,12 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: unboxedValue
+                        value: unboxedValue,
+                        oldValue: currentValue
                     });
                 }
 
@@ -163,11 +164,12 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 }
 
                 if (owner.hasListeners(eventName)) {
-                    owner.notify({
+                    owner.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: owner,
-                        value: value
+                        value: value,
+                        oldValue: currentValue
                     });
                 }
 
@@ -275,11 +277,12 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: unboxedValue
+                        value: unboxedValue,
+                        oldValue: currentValue
                     });
                 }
 
@@ -460,11 +463,12 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: value
+                        value: value,
+                        oldValue: currentValue
                     });
                 }
 
@@ -529,11 +533,12 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: value
+                        value: value,
+                        oldValue: currentValue
                     });
                 }
 
@@ -676,7 +681,7 @@ export class CssAnimationProperty<T extends Style, U> {
                             this.view[setNative](next);
                         }
                         if (this.hasListeners(eventName)) {
-                            this.notify({ eventName, object: this, propertyName, value });
+                            this.notify<PropertyChangeData>({ eventName, object: this, propertyName, value, oldValue: prev });
                         }
                     }
                 }
@@ -812,11 +817,12 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: newValue
+                        value: newValue,
+                        oldValue: currentValue
                     });
                 }
 

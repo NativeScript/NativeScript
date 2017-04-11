@@ -27,6 +27,10 @@ export interface PropertyChangeData extends EventData {
      * The new value of the property.
      */
     value: any;
+    /**
+     * The previous value of the property.
+     */
+    oldValue?: any;
 }
 
 /**
@@ -129,7 +133,7 @@ export class Observable {
     /**
      * Notifies all the registered listeners for the property change event.
      */
-    notifyPropertyChange(propertyName: string, newValue: any): void;
+    notifyPropertyChange(propertyName: string, value: any, oldValue?: any): void;
 
     /**
      * Checks whether a listener is registered for the specified event name.
@@ -141,7 +145,7 @@ export class Observable {
     /**
      * This method is intended to be overriden by inheritors to provide additional implementation.
      */
-    _createPropertyChangeData(name: string, value: any): PropertyChangeData;
+    _createPropertyChangeData(name: string, value: any, oldValue?: any): PropertyChangeData;
     _emit(eventNames: string);
     //@endprivate
 }
