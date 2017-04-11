@@ -13,6 +13,7 @@ export function pageLoaded(args: EventData) {
 
     examples.set("webview", "web-view/web-view");
     examples.set("webtest", "web-view/web-view-test");
+    examples.set("query", "web-view/query-params");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
