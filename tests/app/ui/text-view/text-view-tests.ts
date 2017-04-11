@@ -26,13 +26,13 @@ import * as observable from "tns-core-modules/data/observable";
 // </Page>
 // << text-view-xml
 // >> observable-declare
-// export function pageLoaded(args) {
-//   let page = args.object;
-//   let obj = new observable.Observable();
-//   obj.set("someProperty", "Please change this text!");
-//   page.bindingContext = obj;
-// }
-// exports.pageLoaded = pageLoaded;
+export function pageLoaded(args) {
+  let page = args.object;
+  let obj = new observable.Observable();
+  obj.set("someProperty", "Please change this text!");
+  page.bindingContext = obj;
+}
+exports.pageLoaded = pageLoaded;
 // << observable-declare
 
 var _createTextViewFunc = function (): textViewModule.TextView {
