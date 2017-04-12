@@ -86,6 +86,8 @@ if (application.hasLaunched()) {
 }
 
 export class CssState {
+    private _pendingKeyframeAnimations: SelectorCore[];
+
     constructor(private view: ViewBase, private match: SelectorsMatch<ViewBase>) {
     }
 
@@ -103,7 +105,15 @@ export class CssState {
         }
 
         matchingSelectors.forEach(s => this.applyDescriptors(s.ruleset));
-        matchingSelectors.forEach(s => this.playKeyframeAnimations(s.ruleset));
+        this._pendingKeyframeAnimations = matchingSelectors;
+        this.playPendingKeyframeAnimations();
+    }
+
+    public playPendingKeyframeAnimations() {
+        if (this._pendingKeyframeAnimations && this.view.nativeView) {
+            this._pendingKeyframeAnimations.forEach(s => this.playKeyframeAnimationsFromRuleSet(s.ruleset));
+            this._pendingKeyframeAnimations = null;
+        }
     }
 
     private applyDescriptors(ruleset: RuleSet): void {
@@ -123,7 +133,7 @@ export class CssState {
         });
     }
 
-    private playKeyframeAnimations(ruleset: RuleSet): void {
+    private playKeyframeAnimationsFromRuleSet(ruleset: RuleSet): void {
         let ruleAnimations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
         if (ruleAnimations) {
             ensureKeyframeAnimationModule();

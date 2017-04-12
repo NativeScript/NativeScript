@@ -608,12 +608,18 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public initNativeView(): void {
-        //
+        // No initNativeView(this)?
+        if (this._cssState) {
+            this._cssState.playPendingKeyframeAnimations();
+        }
     }
 
     public resetNativeView(): void {
         if (this.nativeView && this.recycleNativeView && isAndroid) {
             resetNativeView(this);
+        }
+        if (this._cssState) {
+            this._cancelAllAnimations();
         }
     }
 
