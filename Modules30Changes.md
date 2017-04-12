@@ -64,7 +64,7 @@ Use the corresponding events such: `application.on(“suspend”, (args: applica
 Removed all android specific callback methods. For example instead of `application.android.onActivityResult(…)` use `application.android.on("activityResult", (eventData) => …)`
 
 ### Console
-`console.dump()` removed, use `console.dir()` instead
+`console.dump()` removed, use `console.dir()` instead.
 
 ### KeyframeAnimation
 Changed method `keyframeAnimationFromInfo(info: KeyframeAnimationInfo, valueSourceModifier: number): KeyframeAnimation` to `KeyframeAnimation.keyframeAnimationFromInfo(info: KeyframeAnimationInfo): KeyframeAnimation`. ValueSource no longer needed.
@@ -76,6 +76,20 @@ Use `observableModule.fromObject(obj)` method instead.
 ### SegmentedBar
 Removed method `insertTab()`. You can use `items` property for setting additional tabs.
 Removed method `getValidIndex()` - it was intended for internal use only.
+
+The 'items' property os of type `SegmentedBarItem[]`. Items should be created using the `SegmentedBarItem` constructor.
+
+Old code:
+```
+let firstItem =  {"title": "first"};
+segmentedBar.items = [ firstItem ];
+```
+New code:
+```
+let firstItem = new SegmentedBarItem();
+firstItem.title = "first";
+segmentedBar.items = [ firstItem ];
+```
 
 ### Span
 Removed methods and properties. These were for internal use only and not needed any more:
@@ -134,6 +148,9 @@ There are several type of Properties in modules 3.0:
 * `Property` – property defined on `ViewBase` or another view class. These are properties like `id` on `ViewBase` or `text` on `Label`. 
 * `CssProperty` – property defined on `Style` type. These are properties that could be set in CSS.
 * `InheritedCssProperty `- property defined on `Style` type. These are inheritable CSS properties that could be set in CSS and propagates value on its children. These are properties like `FontSize`, `FontWeight`, `Color`, etc.
+
+### NativeView property
+There is a new property `nativeView` in `ViewBase` class. It is recommended to use `nativeView` instead of `ios` and `android` properties. The `ios` and `android` properties are left for compatibility, however all view-lifecycle methods and native property callbacks (explained below) should work with the `nativeView` property.
 
 ### Property Example
 In here is how to define `text` (view property) and `text-align` (css property) for the text-View
