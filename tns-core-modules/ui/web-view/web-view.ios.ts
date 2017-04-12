@@ -109,12 +109,7 @@ export class WebView extends WebViewBase {
         this._ios.stopLoading();
     }
 
-    public _loadFileOrResource(path: string, content: string) {
-        var baseURL = NSURL.fileURLWithPath(NSString.stringWithString(path).stringByDeletingLastPathComponent);
-        this._ios.loadHTMLStringBaseURL(content, baseURL);
-    }
-
-    public _loadHttp(src: string) {
+    public _loadUrl(src: string) {
         this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
     }
 

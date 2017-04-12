@@ -115,17 +115,7 @@ export class WebView extends WebViewBase {
         super.resetNativeView();
     }
 
-    public _loadFileOrResource(path: string, content: string) {
-        const nativeView = this.nativeView;
-        if (!nativeView) {
-            return;
-        }
-
-        const baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1)}`;
-        nativeView.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
-    }
-
-    public _loadHttp(src: string) {
+    public _loadUrl(src: string) {
         const nativeView = this.nativeView;
         if (!nativeView) {
             return;
