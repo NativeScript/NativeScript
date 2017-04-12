@@ -56,9 +56,7 @@ For the TabView component could be set three different styling properties
 * `tabBackgroundColor` (coresponding CSS property `tab-background-color`) - changing the background of the tabs.
 * `textTransform` (coresponding CSS property `text-transform`) - setting up textTransform individual for every `TabViewItem`. Value options: `capitalize`, `lowercase`, `none`, `uppercase`.
 
-XML
-
-```
+```XML
 <TabView selectedTabTextColor="#00FF00" tabBackgroundColor="#FF0000" >
             <TabView.items>
                 <TabViewItem title="Tab 1" textTransform="lowercase">
@@ -73,4 +71,23 @@ XML
                 </TabViewItem>
             </TabView.items>
 </TabView>
+```
+
+* `androidSelectedTabHighlightColor`<sup>android specific property</sup> (coresponding CSS property `android-selected-tab-highlight-color`) - setup underline color of the `Tab`s in Android.
+
+```XML
+<TabView androidSelectedTabHighlightColor="red">
+                <TabView.items>
+                    <TabViewItem title="Tab 1" >
+                    <TabViewItem.view>
+                        <Label text="Label in Tab1"/>
+                    </TabViewItem.view>
+                    </TabViewItem>
+                    <TabViewItem title="Tab 2">
+                    <TabViewItem.view>
+                        <Label text="Label in Tab2" />
+                    </TabViewItem.view>
+                    </TabViewItem>
+                </TabView.items>
+    </TabView>
 ```
