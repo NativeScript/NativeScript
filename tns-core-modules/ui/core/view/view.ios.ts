@@ -234,13 +234,13 @@ export class View extends ViewCommon {
     public updateNativeTransform() {
         let translateX = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateX || 0, 0));
         let translateY = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateY || 0, 0));
-        let scaleX = this.scaleX || 1;
-        let scaleY = this.scaleY || 1;
+        let scaleX = this.scaleX || 1e-6;
+        let scaleY = this.scaleY || 1e-6;
         let rotate = this.rotate || 0;
         let newTransform = CGAffineTransformIdentity;
         newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX === 0 ? 0.001 : scaleX, scaleY === 0 ? 0.001 : scaleY);
+        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
         if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
             let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
             if (!updateSuspended) {
