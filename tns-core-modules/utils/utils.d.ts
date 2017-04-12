@@ -1,4 +1,3 @@
-import * as colorModule from "../color";
 export var RESOURCE_PREFIX: string;
 
 //@private
@@ -208,11 +207,6 @@ export module ios {
         export function nsArrayToJSArray(a: any): string[];
     }
 
-    /**
-     * Gets NativeScript color from [UIColor](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIColor_Class/).
-     * @param uiColor - UIColor instance used to create a NativeScript color.
-     */
-    export function getColor(uiColor: any /* UIColor */): colorModule.Color;
     /**
      * Gets an information about if current mode is Landscape.
      */
