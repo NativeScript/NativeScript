@@ -50,7 +50,7 @@ The NativeScript framework consists of a number of components, all of which are 
     [![npm](https://img.shields.io/npm/dm/tns-ios.svg)](https://www.npmjs.com/package/tns-ios)
     - This repo contains the NativeScript iOS runtime—the code that hosts NativeScript iOS apps, and allows JavaScript code to be executed on iOS devices. The iOS runtime is written in a fun mix of C++, Objective-C, and more.
 - **[Android runtime](//github.com/NativeScript/android-runtime)**
-    [![npm](https://img.shields.io/npm/dm/tns-android.svgs)](https://www.npmjs.com/package/tns-android)
+    [![npm](https://img.shields.io/npm/dm/tns-android.svg)](https://www.npmjs.com/package/tns-android)
     - This repo contains the NativeScript Android—the code that hosts NativeScript Android apps, and allows JavaScript code to be executed on Android devices. The Android runtime is written in a fun mix of C++ and Java.
 - **[CLI](//github.com/NativeScript/nativescript-cli)**
     [![npm](https://img.shields.io/npm/dm/nativescript.svg)](https://www.npmjs.com/package/nativescript)
