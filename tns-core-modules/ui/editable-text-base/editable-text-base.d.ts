@@ -48,7 +48,7 @@ export class EditableTextBase extends TextBase {
 export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email";
 export type ReturnKeyType = "done" | "next" | "go" | "search" | "send";
 export type UpdateTextTrigger = "focusLost" | "textChanged";
-export type AutocapitalizationType = "none" | "words" | "sentences" | "allCharacters";
+export type AutocapitalizationType = "none" | "words" | "sentences" | "allcharacters";
 
 export const keyboardTypeProperty: Property<EditableTextBase, KeyboardType>;
 export const returnKeyTypeProperty: Property<EditableTextBase, ReturnKeyType>;

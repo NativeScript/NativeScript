@@ -321,14 +321,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allCharacters" | string {
+    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allcharacters" | string {
         let inputType = this.nativeView.getInputType();
         if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
             return "words";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) === android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) {
             return "sentences";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) {
-            return "allCharacters";
+            return "allcharacters";
         } else {
             return inputType.toString();
         }
@@ -347,7 +347,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             case "sentences":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00040000) 15th bit
                 break;
-            case "allCharacters":
+            case "allcharacters":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
                 break;
             default:
