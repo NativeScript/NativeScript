@@ -109,7 +109,7 @@ export class TextBase extends TextBaseCommon {
     }
 
     [textAlignmentProperty.getDefault](): TextAlignment {
-        return "left";
+        return "initial";
     }
     [textAlignmentProperty.setNative](value: TextAlignment) {
         let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
