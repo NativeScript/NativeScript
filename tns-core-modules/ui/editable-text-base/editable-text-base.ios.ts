@@ -120,7 +120,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this.nativeView.returnKeyType = newValue;
     }
 
-    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allCharacters" {
+    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allcharacters" {
         let autocapitalizationType = this.nativeView.autocapitalizationType;
         switch (autocapitalizationType) {
             case UITextAutocapitalizationType.None:
@@ -133,13 +133,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return "sentences";
 
             case UITextAutocapitalizationType.AllCharacters:
-                return "allCharacters";
+                return "allcharacters";
 
             default:
                 throw new Error("Invalid autocapitalizationType value:" + autocapitalizationType);
         }
     }
-    [autocapitalizationTypeProperty.setNative](value: "none" | "words" | "sentences" | "allCharacters") {
+    [autocapitalizationTypeProperty.setNative](value: "none" | "words" | "sentences" | "allcharacters") {
         let newValue: UITextAutocapitalizationType;
         switch (value) {
             case "none":
@@ -151,7 +151,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             case "sentences":
                 newValue = UITextAutocapitalizationType.Sentences;
                 break;
-            case "allCharacters":
+            case "allcharacters":
                 newValue = UITextAutocapitalizationType.AllCharacters;
                 break;
             default:

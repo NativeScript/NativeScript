@@ -38,7 +38,7 @@ editableProperty.register(EditableTextBase);
 export const updateTextTriggerProperty = new Property<EditableTextBase, UpdateTextTrigger>({ name: "updateTextTrigger", defaultValue: "textChanged" });
 updateTextTriggerProperty.register(EditableTextBase);
 
-const autocapitalizationTypeConverter = makeParser<AutocapitalizationType>(makeValidator<AutocapitalizationType>("none", "words", "sentences", "allCharacters"));
+const autocapitalizationTypeConverter = makeParser<AutocapitalizationType>(makeValidator<AutocapitalizationType>("none", "words", "sentences", "allcharacters"));
 
 export const autocapitalizationTypeProperty = new Property<EditableTextBase, AutocapitalizationType>({ name: "autocapitalizationType", defaultValue: "sentences", valueConverter: autocapitalizationTypeConverter });
 autocapitalizationTypeProperty.register(EditableTextBase);
