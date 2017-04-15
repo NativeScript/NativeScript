@@ -457,7 +457,7 @@ export var test_request_responseContentToImageShouldReturnCorrectImage = functio
 export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = function (done) {
     var result;
 
-    http.request({ url: "https://raw.githubusercontent.com/NativeScript/NativeScript/master/apps/tests/logo.png", method: "GET" }).then(function (response) {
+    http.request({ url: "https://raw.githubusercontent.com/NativeScript/NativeScript/master/apps/app/ui-tests-app/image-view/red.png", method: "GET" }).then(function (response) {
         result = response.content.toFile();
         try {
             TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
