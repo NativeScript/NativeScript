@@ -152,7 +152,10 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                     var fs: typeof fsModule = require("file-system");
                                     var fileName = options.url;
                                     if (!destinationFilePath) {
-                                        destinationFilePath = fs.path.join(fs.knownFolders.documents().path, fileName.substring(fileName.lastIndexOf('/') + 1));
+                                        let slashPos = fileName.lastIndexOf('/') + 1;
+                                        let questionMarkPos = fileName.lastIndexOf('?');
+                                        let actualFileName = fileName.substring(slashPos, questionMarkPos);
+                                        destinationFilePath = fs.path.join(fs.knownFolders.documents().path, actualFileName);
                                     }
                                     if (data instanceof NSData) {
                                         data.writeToFileAtomically(destinationFilePath, true);

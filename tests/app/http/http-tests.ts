@@ -249,7 +249,7 @@ export var test_getContentAsFile = function (done) {
 
     // >> http-get-urlfile-content
     var filePath = fs.path.join(fs.knownFolders.documents().path, "test.png");
-    http.getFile("https://httpbin.org/image/png", filePath).then(function (r) {
+    http.getFile("https://httpbin.org/image/png?testQuery=query&anotherParam=param", filePath).then(function (r) {
         //// Argument (r) is File!
         // >> (hide)
         result = r;
