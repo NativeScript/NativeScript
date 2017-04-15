@@ -45,6 +45,13 @@ namespace Match {
     export var Static = false;
 }
 
+function getNodeDirectSibling (node) {
+    if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) return false;
+    const nodeIndex = node.parent.getChildIndex(node);
+    if (nodeIndex === 0) return false;
+    return node.parent.getChildAt(nodeIndex - 1);
+}
+
 function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: boolean = false): ClassDecorator {
     return cls => {
         cls.prototype.specificity = specificity;
@@ -123,7 +130,15 @@ export class IdSelector extends SimpleSelector {
 export class TypeSelector extends SimpleSelector {
     constructor(public cssType: string) { super(); }
     public toString(): string { return `${this.cssType}${wrap(this.combinator)}`; }
-    public match(node: Node): boolean { return node.cssType === this.cssType; }
+    public match(node: Node): boolean {
+        if (this.combinator === "+") {
+            const sibling = getNodeDirectSibling(node);
+            return sibling
+                && node.cssType === this.cssType
+                && sibling.cssType === this.cssType;
+        }
+        return node.cssType === this.cssType;
+    }
     public lookupSort(sorter: LookupSorter, base?: SelectorCore): void { sorter.sortByType(this.cssType, base || this); }
 }
 
@@ -131,7 +146,15 @@ export class TypeSelector extends SimpleSelector {
 export class ClassSelector extends SimpleSelector {
     constructor(public cssClass: string) { super(); }
     public toString(): string { return `.${this.cssClass}${wrap(this.combinator)}`; }
-    public match(node: Node): boolean { return node.cssClasses && node.cssClasses.has(this.cssClass); }
+    public match(node: Node): boolean {
+        if (this.combinator === "+") {
+            const sibling = getNodeDirectSibling(node);
+            return sibling
+                && node.cssClasses.has(this.cssClass)
+                && sibling.cssClasses.has(this.cssClass)
+        }
+        return node.cssClasses && node.cssClasses.has(this.cssClass);
+    }
     public lookupSort(sorter: LookupSorter, base?: SelectorCore): void { sorter.sortByClass(this.cssClass, base || this); }
 }
 
@@ -235,6 +258,7 @@ export class Selector extends SelectorCore {
             switch(sel.combinator) {
                 case undefined:
                 case " ":
+                case "+":
                     groups.push(lastGroup = []);
                 case ">":
                     lastGroup.push(sel);
@@ -258,10 +282,11 @@ export class Selector extends SelectorCore {
                 return !!node;
             } else {
                 let ancestor = node;
-                while(ancestor = ancestor.parent) {
+                while(ancestor) {
                     if (node = group.match(ancestor)) {
                         return true;
                     }
+                    ancestor = ancestor.parent
                 }
                 return false;
             }
