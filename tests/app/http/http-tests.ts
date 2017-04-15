@@ -474,7 +474,7 @@ export var test_request_responseContentToFileFromUrlShouldReturnCorrectFile = fu
 export var test_request_responseContentToFileFromContentShouldReturnCorrectFile = function (done) {
     var result;
 
-    http.request({ url: "https://httpbin.org/image/png", method: "GET" }).then(function (response) {
+    http.request({ url: "https://httpbin.org/image/png?queryString=param&another=anotherParam", method: "GET" }).then(function (response) {
         result = response.content.toFile();
         try {
             TKUnit.assert(result instanceof fs.File, "Result from toFile() should be valid File object!");
