@@ -125,7 +125,14 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                 if (!destinationFilePath) {
                     let slashPos = fileName.lastIndexOf('/') + 1;
                     let questionMarkPos = fileName.lastIndexOf('?');
-                    let actualFileName = fileName.substring(slashPos, questionMarkPos);
+
+                    let actualFileName;
+                    
+                    if(questionMarkPos != -1){
+                        actualFileName = fileName.substring(slashPos, questionMarkPos);
+                    } else {
+                        actualFileName = fileName.substring(slashPos);
+                    }
                     destinationFilePath = fs.path.join(fs.knownFolders.documents().path, actualFileName);
                 }
                 var stream: java.io.FileOutputStream;

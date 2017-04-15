@@ -154,7 +154,13 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                     if (!destinationFilePath) {
                                         let slashPos = fileName.lastIndexOf('/') + 1;
                                         let questionMarkPos = fileName.lastIndexOf('?');
-                                        let actualFileName = fileName.substring(slashPos, questionMarkPos);
+                                        let actualFileName;
+
+                                        if(questionMarkPos != -1){
+                                            actualFileName = fileName.substring(slashPos, questionMarkPos);
+                                        } else {
+                                            actualFileName = fileName.substring(slashPos);
+                                        }
                                         destinationFilePath = fs.path.join(fs.knownFolders.documents().path, actualFileName);
                                     }
                                     if (data instanceof NSData) {
