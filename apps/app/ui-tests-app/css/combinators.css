@@ -13,6 +13,10 @@
   color: white;
 }
 
+.direct-sibling--id #test-child + #test-child {
+  background-color: pink;
+}
+
 .direct-sibling--class .test-child + .test-child {
   background-color: yellow;
 }

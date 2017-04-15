@@ -1,39 +1,50 @@
 <Page>
-	<StackLayout>
+	<ScrollView>
+		<StackLayout>
 
-		<StackLayout class="direct-child--type">
-			<Label text="Direct child test by type"/>
-			<Button text="I'm a direct child!"/>
-			<StackLayout>
+			<StackLayout class="direct-child--type">
+				<Label text="Direct child test by type"/>
+				<Button text="I'm a direct child!"/>
+				<StackLayout>
+					<Button text="I'm not!"/>
+				</StackLayout>
+			</StackLayout>
+
+			<StackLayout class="direct-child--class">
+				<Label text="Direct child test by class"/>
+				<Button class="test-child" text="I'm a direct child!"/>
+				<StackLayout>
+					<Button class="test-child" text="I'm not!"/>
+				</StackLayout>
+			</StackLayout>
+
+			<StackLayout class="direct-sibling--type">
+				<Label text="Direct sibling test by type"/>
+				<Button text="I'm the ref"/>
+				<Button text="I'm a direct sibling!"/>
+				<Label text="I'm not!" class="sibling-test-label"/>
+				<Button text="I'm not either!"/>
+				<Button text="But I am!"/>
+			</StackLayout>
+
+			<StackLayout class="direct-sibling--id">
+				<Label text="Direct sibling test by id (Boo !)"/>
+				<Button id="test-child" text="I'm the ref"/>
+				<Button id="test-child" text="I'm a direct sibling!"/>
 				<Button text="I'm not!"/>
+				<Button id="test-child" text="I'm not either!"/>
+				<Label id="test-child" class="sibling-test-label" text="But I am!"/>
 			</StackLayout>
-		</StackLayout>
 
-		<StackLayout class="direct-child--class">
-			<Label text="Direct child test by class"/>
-			<Button class="test-child" text="I'm a direct child!"/>
-			<StackLayout>
-				<Button class="test-child" text="I'm not!"/>
+			<StackLayout class="direct-sibling--class">
+				<Label text="Direct sibling test by class"/>
+				<Button class="test-child" text="I'm the ref"/>
+				<Button class="test-child" text="I'm a direct sibling!"/>
+				<Button text="I'm not!"/>
+				<Button class="test-child" text="I'm not either!"/>
+				<Label class="test-child sibling-test-label" text="But I am!"/>
 			</StackLayout>
-		</StackLayout>
 
-		<StackLayout class="direct-sibling--type">
-			<Label text="Direct sibling test by type"/>
-			<Button text="I'm the ref"/>
-			<Button text="I'm a direct sibling!"/>
-			<Label text="I'm not!" class="sibling-test-label"/>
-			<Button text="I'm not either!"/>
-			<Button text="But I am!"/>
 		</StackLayout>
-
-		<StackLayout class="direct-sibling--class">
-			<Label text="Direct sibling test by class"/>
-			<Button class="test-child" text="I'm the ref"/>
-			<Button class="test-child" text="I'm a direct sibling!"/>
-			<Button text="I'm not!"/>
-			<Button class="test-child" text="I'm not either!"/>
-			<Label class="test-child sibling-test-label" text="But I am!"/>
-		</StackLayout>
-
-	</StackLayout>
+	</ScrollView>
 </Page>
