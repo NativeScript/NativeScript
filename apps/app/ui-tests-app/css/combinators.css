@@ -16,3 +16,7 @@
 .direct-sibling--class .test-child + .test-child {
   background-color: yellow;
 }
+
+.sibling-test-label {
+  text-align: center;
+}
