@@ -1,5 +1,5 @@
-﻿import { View } from "ui/core/view";
-import * as utils from "utils/utils";
+﻿import { View } from "./core/view";
+import * as utils from "../utils/utils";
 import getter = utils.ios.getter;
 
 export module ios {
@@ -31,7 +31,7 @@ export module ios {
         let width = utils.layout.toDevicePixels(size.width);
         let height = utils.layout.toDevicePixels(size.height);
 
-        var superview = (<UIView>rootView._nativeView).superview;
+        var superview = (<UIView>rootView.nativeView).superview;
         var superViewRotationRadians;
         if (superview) {
             superViewRotationRadians = atan2f(superview.transform.b, superview.transform.a);

@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the action bar related classes.
  */
-import { EventData, ViewBase, View } from "ui/core/view";
+import { EventData, ViewBase, View } from "../core/view";
 
 /**
  * Provides an abstraction over the ActionBar (android) and NavigationBar (iOS).

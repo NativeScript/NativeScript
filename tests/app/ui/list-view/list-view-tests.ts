@@ -1,22 +1,22 @@
 ﻿import * as testModule from "../../ui-test";
 import * as TKUnit from "../../TKUnit";
-import * as app from "application";
-import * as observable from "data/observable";
-import * as types from "utils/types";
-import * as platform from "platform";
-import * as utils from "utils/utils";
-import { Label } from "ui/label";
+import * as app from "tns-core-modules/application";
+import * as observable from "tns-core-modules/data/observable";
+import * as types from "tns-core-modules/utils/types";
+import * as platform from "tns-core-modules/platform";
+import * as utils from "tns-core-modules/utils/utils";
+import { Label } from "tns-core-modules/ui/label";
 import * as helper from "../helper";
-import { Page } from "ui/page";
-import { View, KeyedTemplate, isIOS } from "ui/core/view";
+import { Page } from "tns-core-modules/ui/page";
+import { View, KeyedTemplate, isIOS } from "tns-core-modules/ui/core/view";
 
 // >> article-require-listview-module
-import * as listViewModule from "ui/list-view";
+import * as listViewModule from "tns-core-modules/ui/list-view";
 // << article-require-listview-module
 
 // >> article-require-modules-listview
-import * as observableArray from "data/observable-array";
-import * as labelModule from "ui/label";
+import * as observableArray from "tns-core-modules/data/observable-array";
+import * as labelModule from "tns-core-modules/ui/label";
 // << article-require-modules-listview
 
 // >> article-item-tap
@@ -421,7 +421,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return result;
         };
 
-        app.resources["dateConverter"] = dateConverter;
+        app.getResources()["dateConverter"] = dateConverter;
 
         var data = new observableArray.ObservableArray();
         data.push({ date: new Date(2020, 2, 7) });
@@ -542,7 +542,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return value;
         }
 
-        app.resources["testConverter"] = testConverter;
+        app.getResources()["testConverter"] = testConverter;
 
         var listViewModel = new observable.Observable();
         listViewModel.set("items", [1, 2, 3]);
@@ -570,7 +570,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
             return value;
         }
 
-        app.resources["testConverter"] = testConverter;
+        app.getResources()["testConverter"] = testConverter;
 
         var listViewModel = new observable.Observable();
         listViewModel.set("items", [1, 2, 3]);

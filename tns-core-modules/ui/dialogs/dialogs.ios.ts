@@ -2,10 +2,10 @@
  * iOS specific dialogs functions implementation.
  */
 
-import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from "ui/dialogs";
+import { DialogOptions, ConfirmOptions, PromptOptions, PromptResult, LoginOptions, LoginResult, ActionOptions } from ".";
 import { getCurrentPage, getLabelColor, getButtonColor, getTextFieldColor, isDialogOptions, inputType, ALERT, OK, CONFIRM, CANCEL, PROMPT, LOGIN } from "./dialogs-common";
-import { isString, isDefined, isFunction } from "utils/types";
-import * as utils from "utils/utils";
+import { isString, isDefined, isFunction } from "../../utils/types";
+import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
 export * from "./dialogs-common";
@@ -240,6 +240,10 @@ export function prompt(arg: any): Promise<PromptResult> {
                 textField = alert.textFieldAtIndex(0);
                 textField.text = isString(options.defaultText) ? options.defaultText : "";
 
+                if (options.inputType === inputType.email) {
+                    textField.keyboardType = UIKeyboardType.EmailAddress;
+                }
+
                 // Assign first to local letiable, otherwise it will be garbage collected since delegate is weak reference.
                 let delegate = UIAlertViewDelegateImpl.initWithCallback(function (view, index) {
                     resolve({ result: getDialogResult(alert.tag, index), text: textField.text });
@@ -256,6 +260,10 @@ export function prompt(arg: any): Promise<PromptResult> {
                 alertController.addTextFieldWithConfigurationHandler((arg: UITextField) => {
                     arg.text = isString(options.defaultText) ? options.defaultText : "";
                     arg.secureTextEntry = options && options.inputType === inputType.password;
+
+                    if (options && options.inputType === inputType.email) {
+                        arg.keyboardType = UIKeyboardType.EmailAddress;
+                    }
 
                     let color = getTextFieldColor();
                     if (color) {

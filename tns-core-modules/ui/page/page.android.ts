@@ -1,8 +1,8 @@
 ﻿import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, androidStatusBarBackgroundProperty } from "./page-common";
-import { ActionBar } from "ui/action-bar";
-import { GridLayout } from "ui/layouts/grid-layout";
+import { ActionBar } from "../action-bar";
+import { GridLayout } from "../layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
-import { device } from "platform";
+import { device } from "../../platform";
 
 export * from "./page-common";
 
@@ -39,13 +39,13 @@ function initializeDialogFragment() {
             this._owner.verticalAlignment = this._fullscreen ? "stretch" : "middle";
             this._owner.actionBarHidden = true;
 
-            const nativeView = <android.view.View>this._owner._nativeView;
+            const nativeView = <android.view.View>this._owner.nativeView;
             let layoutParams = nativeView.getLayoutParams();
             if (!layoutParams) {
                 layoutParams = new org.nativescript.widgets.CommonLayoutParams();
                 nativeView.setLayoutParams(layoutParams);
             }
-            dialog.setContentView(this._owner._nativeView, layoutParams);
+            dialog.setContentView(this._owner.nativeView, layoutParams);
 
             const window = dialog.getWindow();
             window.setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT));
@@ -87,32 +87,25 @@ function initializeDialogFragment() {
 }
 
 export class Page extends PageBase {
+    nativeView: org.nativescript.widgets.GridLayout;
     private _isBackNavigation = false;
-    private _grid: org.nativescript.widgets.GridLayout;
 
-    get android(): android.view.ViewGroup {
-        return this._grid;
-    }
-
-    get _nativeView(): android.view.ViewGroup {
-        return this._grid;
-    }
-
-    get nativeView(): android.view.ViewGroup {
-        return this._grid;
-    }
-
-    public _createNativeView() {
-        const layout = this._grid = new org.nativescript.widgets.GridLayout(this._context);
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
-        this._grid.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-        this.nativeView.setBackgroundColor(new Color("white").android);
+    public createNativeView() {
+        const layout = new org.nativescript.widgets.GridLayout(this._context);
+        layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
+        layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
+        layout.setBackgroundColor(-1);
         return layout;
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        this.nativeView.setBackgroundColor(-1); // White color.
     }
 
     public _addViewToNativeVisualTree(child: View, atIndex?: number): boolean {
         // Set the row property for the child 
-        if (this._nativeView && child._nativeView) {
+        if (this.nativeView && child.nativeView) {
             if (child instanceof ActionBar) {
                 GridLayout.setRow(child, 0);
                 child.horizontalAlignment = "stretch";
@@ -181,14 +174,14 @@ export class Page extends PageBase {
         this.actionBar.update();
     }
 
-    get [actionBarHiddenProperty.native](): boolean {
+    [actionBarHiddenProperty.getDefault](): boolean {
         return undefined;
     }
-    set [actionBarHiddenProperty.native](value: boolean) {
+    [actionBarHiddenProperty.setNative](value: boolean) {
         this.updateActionBar();
     }
 
-    get [statusBarStyleProperty.native](): { color: number, systemUiVisibility: number } {
+    [statusBarStyleProperty.getDefault](): { color: number, systemUiVisibility: number } {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             let decorView = window.getDecorView();
@@ -201,7 +194,7 @@ export class Page extends PageBase {
 
         return null;
     }
-    set [statusBarStyleProperty.native](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
+    [statusBarStyleProperty.setNative](value: "dark" | "light" | { color: number, systemUiVisibility: number }) {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             let decorView = window.getDecorView();
@@ -220,7 +213,7 @@ export class Page extends PageBase {
         }
     }
 
-    get [androidStatusBarBackgroundProperty.native](): number {
+    [androidStatusBarBackgroundProperty.getDefault](): number {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             return (<any>window).getStatusBarColor();
@@ -228,7 +221,7 @@ export class Page extends PageBase {
 
         return null;
     }
-    set [androidStatusBarBackgroundProperty.native](value: number | Color) {
+    [androidStatusBarBackgroundProperty.setNative](value: number | Color) {
         if (device.sdkVersion >= "21") {
             let window = (<android.app.Activity>this._context).getWindow();
             let color = value instanceof Color ? value.android : value;

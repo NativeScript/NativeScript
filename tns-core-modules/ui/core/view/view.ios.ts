@@ -1,10 +1,10 @@
 ﻿// Definitions.
-import { Point, View as ViewDefinition } from "ui/core/view";
+import { Point, View as ViewDefinition } from ".";
 
-import { ios, Background } from "ui/styling/background";
+import { ios, Background } from "../../styling/background";
 import {
-    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty, 
-    traceEnabled, traceWrite, traceCategories 
+    ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
+    traceEnabled, traceWrite, traceCategories
 } from "./view-common";
 
 import {
@@ -13,7 +13,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
-} from "ui/styling/style-properties";
+} from "../../styling/style-properties";
 
 export * from "./view-common";
 
@@ -22,14 +22,15 @@ const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends ViewCommon {
+    nativeView: UIView;
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
 
-    get _nativeView(): UIView {
-        return this.ios;
-    }
+    // get nativeView(): UIView {
+    //     return this.ios;
+    // }
 
     public _addViewCore(view: ViewCommon, atIndex?: number) {
         super._addViewCore(view, atIndex);
@@ -100,35 +101,26 @@ export class View extends ViewCommon {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        let view = this.nativeView;
+        const view = this.nativeView;
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
         let nativeWidth = 0;
         let nativeHeight = 0;
-
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
         if (view) {
-            if (widthMode === layout.UNSPECIFIED) {
-                width = Number.POSITIVE_INFINITY;
-            }
-
-            if (heightMode === layout.UNSPECIFIED) {
-                height = Number.POSITIVE_INFINITY;
-            }
-
-            let nativeSize = view.sizeThatFits(CGSizeMake(width, height));
-            nativeWidth = layout.toDevicePixels(nativeSize.width);
-            nativeHeight = layout.toDevicePixels(nativeSize.height);
+            const nativeSize = layout.measureNativeView(view, width, widthMode, height, heightMode);
+            nativeWidth = nativeSize.width;
+            nativeHeight = nativeSize.height;
         }
 
-        let measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
-        let measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
+        const measureWidth = Math.max(nativeWidth, this.effectiveMinWidth);
+        const measureHeight = Math.max(nativeHeight, this.effectiveMinHeight);
 
-        let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-        let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+        const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+        const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
@@ -229,29 +221,36 @@ export class View extends ViewCommon {
         }
 
         let background = this.style.backgroundInternal;
-        if (!background.isEmpty()) {
-            this[backgroundInternalProperty.native] = background;
+        if (!background.isEmpty() && this[backgroundInternalProperty.setNative]) {
+            this[backgroundInternalProperty.setNative](background);
         }
 
         let clipPath = this.style.clipPath;
-        if (clipPath !== "") {
-            this[clipPathProperty.native] = clipPath;
+        if (clipPath !== "" && this[clipPathProperty.setNative]) {
+            this[clipPathProperty.setNative](clipPath);
         }
     }
 
     public updateNativeTransform() {
-        let translateX = Length.toDevicePixels(this.translateX || 0, 0);
-        let translateY = Length.toDevicePixels(this.translateY || 0, 0);
-        let scaleX = this.scaleX || 1;
-        let scaleY = this.scaleY || 1;
+        let translateX = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateX || 0, 0));
+        let translateY = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateY || 0, 0));
+        let scaleX = this.scaleX || 1e-6;
+        let scaleY = this.scaleY || 1e-6;
         let rotate = this.rotate || 0;
         let newTransform = CGAffineTransformIdentity;
         newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX === 0 ? 0.001 : scaleX, scaleY === 0 ? 0.001 : scaleY);
+        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
         if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
+            let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+                CATransaction.begin();
+            }
             this.nativeView.transform = newTransform;
             this._hasTransfrom = this.nativeView && !CGAffineTransformEqualToTransform(this.nativeView.transform, CGAffineTransformIdentity);
+            if (!updateSuspended) {
+                CATransaction.commit();
+            }
         }
     }
 
@@ -275,53 +274,53 @@ export class View extends ViewCommon {
     }
 
     public _isPresentationLayerUpdateSuspeneded() {
-        return this._suspendCATransaction;
+        return this._suspendCATransaction || this._batchUpdateScope;
     }
 
-    get [isEnabledProperty.native](): boolean {
+    [isEnabledProperty.getDefault](): boolean {
         let nativeView = this.nativeView;
         return nativeView instanceof UIControl ? nativeView.enabled : true;
     }
-    set [isEnabledProperty.native](value: boolean) {
+    [isEnabledProperty.setNative](value: boolean) {
         let nativeView = this.nativeView;
         if (nativeView instanceof UIControl) {
             nativeView.enabled = value;
         }
     }
 
-    get [originXProperty.native](): number {
+    [originXProperty.getDefault](): number {
         return this.nativeView.layer.anchorPoint.x;
     }
-    set [originXProperty.native](value: number) {
+    [originXProperty.setNative](value: number) {
         this.updateOriginPoint(value, this.originY);
     }
 
-    get [originYProperty.native](): number {
+    [originYProperty.getDefault](): number {
         return this.nativeView.layer.anchorPoint.y;
     }
-    set [originYProperty.native](value: number) {
+    [originYProperty.setNative](value: number) {
         this.updateOriginPoint(this.originX, value);
     }
 
-    get [automationTextProperty.native](): string {
+    [automationTextProperty.getDefault](): string {
         return this.nativeView.accessibilityLabel;
     }
-    set [automationTextProperty.native](value: string) {
+    [automationTextProperty.setNative](value: string) {
         this.nativeView.accessibilityIdentifier = value;
         this.nativeView.accessibilityLabel = value;
     }
 
-    get [isUserInteractionEnabledProperty.native](): boolean {
+    [isUserInteractionEnabledProperty.getDefault](): boolean {
         return this.nativeView.userInteractionEnabled;
     }
-    set [isUserInteractionEnabledProperty.native](value: boolean) {
+    [isUserInteractionEnabledProperty.setNative](value: boolean) {
         this.nativeView.userInteractionEnabled = value;
     }
 
-    get [visibilityProperty.native](): Visibility {
+    [visibilityProperty.getDefault](): Visibility {
         return this.nativeView.hidden ? Visibility.COLLAPSE : Visibility.VISIBLE;
     }
-    set [visibilityProperty.native](value: Visibility) {
+    [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case Visibility.VISIBLE:
                 this.nativeView.hidden = false;
@@ -335,10 +334,10 @@ export class View extends ViewCommon {
         }
     }
 
-    get [opacityProperty.native](): number {
+    [opacityProperty.getDefault](): number {
         return this.nativeView.alpha;
     }
-    set [opacityProperty.native](value: number) {
+    [opacityProperty.setNative](value: number) {
         let nativeView = this.nativeView;
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
@@ -350,52 +349,52 @@ export class View extends ViewCommon {
         }
     }
 
-    get [rotateProperty.native](): number {
+    [rotateProperty.getDefault](): number {
         return 0;
     }
-    set [rotateProperty.native](value: number) {
+    [rotateProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 
-    get [scaleXProperty.native](): number {
+    [scaleXProperty.getDefault](): number {
         return 1;
     }
-    set [scaleXProperty.native](value: number) {
+    [scaleXProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 
-    get [scaleYProperty.native](): number {
+    [scaleYProperty.getDefault](): number {
         return 1;
     }
-    set [scaleYProperty.native](value: number) {
+    [scaleYProperty.setNative](value: number) {
         this.updateNativeTransform();
     }
 
-    get [translateXProperty.native](): Length | number {
+    [translateXProperty.getDefault](): Length | number {
         return 0;
     }
-    set [translateXProperty.native](value: Length) {
+    [translateXProperty.setNative](value: Length) {
         this.updateNativeTransform();
     }
 
-    get [translateYProperty.native](): Length | number {
+    [translateYProperty.getDefault](): Length | number {
         return 0;
     }
-    set [translateYProperty.native](value: Length) {
+    [translateYProperty.setNative](value: Length) {
         this.updateNativeTransform();
     }
 
-    get [zIndexProperty.native](): number {
+    [zIndexProperty.getDefault](): number {
         return 0;
     }
-    set [zIndexProperty.native](value: number) {
+    [zIndexProperty.setNative](value: number) {
         this.nativeView.layer.zPosition = value;
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
+    [backgroundInternalProperty.getDefault](): UIColor {
         return this.nativeView.backgroundColor;
     }
-    set [backgroundInternalProperty.native](value: UIColor | Background) {
+    [backgroundInternalProperty.setNative](value: UIColor | Background) {
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
             CATransaction.begin();
@@ -414,21 +413,21 @@ export class View extends ViewCommon {
 
     _setNativeClipToBounds() {
         let backgroundInternal = this.style.backgroundInternal;
-        this.nativeView.clipsToBounds = backgroundInternal.hasUniformBorder() || backgroundInternal.getUniformBorderRadius() > 0;
+        this.nativeView.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
     }
 }
 
 export class CustomLayoutView extends View {
 
-    private _view: UIView;
+    nativeView: UIView;
 
     constructor() {
         super();
-        this._view = UIView.new();
+        this.nativeView = UIView.new();
     }
 
     get ios(): UIView {
-        return this._view;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

@@ -1,12 +1,14 @@
 ﻿// Definitions.
-import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from "ui/frame";
-import { Page } from "ui/page";
+import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
+import { Page } from "../page";
 
 //Types.
 import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
-import { _createIOSAnimatedTransitioning } from "ui/transition";
-import * as uiUtils from "ui/utils";
-import * as utils from "utils/utils";
+import { _createIOSAnimatedTransitioning } from "../transition";
+// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
+// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
+import * as uiUtils from "tns-core-modules/ui/utils";
+import * as utils from "../../utils/utils";
 
 export * from "./frame-common";
 
@@ -42,7 +44,8 @@ export class Frame extends FrameBase {
     constructor() {
         super();
         this._ios = new iOSFrame(this);
-
+        this.nativeView = this._ios.controller.view;
+        
         // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
         let frameRef = new WeakRef(this);
         application.ios.addNotificationObserver(UIApplicationDidChangeStatusBarFrameNotification, (notification: NSNotification) => {
@@ -245,9 +248,9 @@ export class Frame extends FrameBase {
         return this._ios;
     }
 
-    get _nativeView(): any {
-        return this._ios.controller.view;
-    }
+    // get nativeView(): any {
+    //     return this._ios.controller.view;
+    // }
 
     public static get defaultAnimatedNavigation(): boolean {
         return FrameBase.defaultAnimatedNavigation;
@@ -266,7 +269,7 @@ export class Frame extends FrameBase {
     public requestLayout(): void {
         super.requestLayout();
         // Invalidate our Window so that layout is triggered again.
-        let window = this._nativeView.window;
+        let window = this.nativeView.window;
         if (window) {
             window.setNeedsLayout();
         }
@@ -354,7 +357,7 @@ export class Frame extends FrameBase {
 
     public remeasureFrame(): void {
         this.requestLayout();
-        let window: UIWindow = this._nativeView.window;
+        let window: UIWindow = this.nativeView.window;
         if (window) {
             window.layoutIfNeeded();
         }

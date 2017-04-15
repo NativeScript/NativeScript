@@ -1,8 +1,8 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
-import {LayoutBase, unsetValue, PercentLength} from "ui/layouts/layout-base";
-import * as platform from "platform";
+import {LayoutBase, unsetValue, PercentLength} from "tns-core-modules/ui/layouts/layout-base";
+import * as platform from "tns-core-modules/platform";
 
 function getNativeLayoutParams(nativeView: android.view.View): org.nativescript.widgets.CommonLayoutParams {
     var lp = <org.nativescript.widgets.CommonLayoutParams>nativeView.getLayoutParams();
@@ -30,7 +30,7 @@ export function percent_support_nativeLayoutParams_are_correct(test: testModule.
 
     test.waitUntilTestElementLayoutIsValid();
 
-    let lp = getNativeLayoutParams(btn._nativeView);
+    let lp = getNativeLayoutParams(btn.nativeView);
     TKUnit.assertEqual(lp.width, 100, "width");
     TKUnit.assertEqual(lp.widthPercent, -1, "widthPercent");
     TKUnit.assertEqual(lp.height, 100, "height");

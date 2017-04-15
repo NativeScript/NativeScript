@@ -1,5 +1,5 @@
-﻿import * as file_access_module from "file-system/file-system-access";
-import * as platformModule from "platform";
+﻿import * as file_access_module from "./file-system-access";
+import * as platformModule from "../platform";
 
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;

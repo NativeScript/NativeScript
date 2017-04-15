@@ -1,5 +1,5 @@
-﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "ui/placeholder"
-import { View } from "ui/core/view"
+﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "."
+import { View } from "../core/view"
 
 export class Placeholder extends View implements PlaceholderDefinition {
     public static creatingViewEvent = "creatingView";
@@ -10,12 +10,8 @@ export class Placeholder extends View implements PlaceholderDefinition {
         if (!this._ios) {
             var args = <CreateViewEventData>{ eventName: Placeholder.creatingViewEvent, object: this, view: undefined, context: undefined };
             super.notify(args);
-            this._ios = args.view;
+            this.nativeView = this._ios = args.view;
         }
         return this._ios;
-    }
-
-    get _nativeView(): UIView {
-        return this.ios;
     }
 }

@@ -1,7 +1,7 @@
-import { View } from "ui/core/view";
-import { isNullOrUndefined, isFunction, getClass } from "utils/types";
-import { CacheLayerType, layout } from "utils/utils";
-import { parse } from "css-value";
+import { View } from "../core/view";
+import { isNullOrUndefined, isFunction, getClass } from "../../utils/types";
+import { CacheLayerType, layout } from "../../utils/utils";
+import { parse } from "../../css-value";
 
 export * from "./background-common"
 
@@ -29,14 +29,14 @@ export module ad {
     }
 
     export function onBackgroundOrBorderPropertyChanged(view: View) {
-        let nativeView = <android.view.View>view._nativeView;
+        let nativeView = <android.view.View>view.nativeView;
         if (!nativeView) {
             return;
         }
 
         let background = view.style.backgroundInternal;
         let backgroundDrawable = nativeView.getBackground();
-        let cache = <CacheLayerType>view._nativeView;
+        let cache = <CacheLayerType>view.nativeView;
         let viewClass = getClass(view);
 
         // always cache the default background constant state.
@@ -91,10 +91,10 @@ export module ad {
 
         // TODO: Can we move BorderWidths as separate native setter?
         // This way we could skip setPadding if borderWidth is not changed.
-        let leftPadding = Math.round(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
-        let topPadding = Math.round(view.effectiveBorderTopWidth + view.effectivePaddingTop);
-        let rightPadding = Math.round(view.effectiveBorderRightWidth + view.effectivePaddingRight);
-        let bottomPadding = Math.round(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
+        let leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
+        let topPadding = Math.ceil(view.effectiveBorderTopWidth + view.effectivePaddingTop);
+        let rightPadding = Math.ceil(view.effectiveBorderRightWidth + view.effectivePaddingRight);
+        let bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
 
         nativeView.setPadding(
             leftPadding,

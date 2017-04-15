@@ -1,4 +1,4 @@
-import { Observable, EventData } from "data/observable";
+import { Observable, EventData } from "../../../data/observable";
 
 /**
  * Attaches a WeakEventListener.

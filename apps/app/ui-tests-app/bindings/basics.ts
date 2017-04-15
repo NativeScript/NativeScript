@@ -1,8 +1,8 @@
-﻿import * as buttonModule from "ui/button";
-import * as pageModule from "ui/page";
-import * as textFieldModule from "ui/text-field";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as observableModule from "data/observable";
+﻿import * as buttonModule from "tns-core-modules/ui/button";
+import * as pageModule from "tns-core-modules/ui/page";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as observableModule from "tns-core-modules/data/observable";
 
 export function createPage() {
 

@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Progress class, which represents a component capable of showing progress.
  */
-import { View, Property } from "ui/core/view";
+import { View, Property } from "../core/view";
 
 /**
  * Represents a progress component.

@@ -1,10 +1,10 @@
 ﻿import {
     write as traceWrite, categories as traceCategories, messageType as traceMessageType
-} from "trace";
+} from "../trace";
 
 export * from "./utils-common";
 
-import { getNativeApplication, android as androidApp } from "application";
+import { getNativeApplication, android as androidApp } from "../application";
 
 export module layout {
     let density: number;
@@ -44,6 +44,15 @@ export module layout {
 
     export function toDeviceIndependentPixels(value: number): number {
         return value / getDisplayDensity();
+    }
+
+    export function measureNativeView(nativeView: any /* android.view.View */, width: number, widthMode: number, height: number, heightMode: number): { width: number, height: number } {
+        const view = <android.view.View>nativeView;
+        view.measure(makeMeasureSpec(width, widthMode), makeMeasureSpec(height, heightMode));
+        return {
+            width: view.getMeasuredWidth(),
+            height: view.getMeasuredHeight()
+        };
     }
 }
 

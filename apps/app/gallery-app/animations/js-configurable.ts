@@ -1,11 +1,11 @@
-import * as observable from "data/observable";
-import * as pages from "ui/page";
-import * as buttonModule from "ui/button";
-import * as abs from "ui/layouts/absolute-layout";
-import * as animationModule from "ui/animation";
-import * as colorModule from "color";
-import * as enums from "ui/enums";
-import * as frame from "ui/frame";
+import * as observable from "tns-core-modules/data/observable";
+import * as pages from "tns-core-modules/ui/page";
+import * as buttonModule from "tns-core-modules/ui/button";
+import * as abs from "tns-core-modules/ui/layouts/absolute-layout";
+import * as animationModule from "tns-core-modules/ui/animation";
+import * as colorModule from "tns-core-modules/color";
+import * as enums from "tns-core-modules/ui/enums";
+import * as frame from "tns-core-modules/ui/frame";
 
 export class ViewModel extends observable.Observable {
     constructor() {

@@ -1,7 +1,7 @@
-﻿import * as pages from "ui/page";
-import * as imageSource from "image-source";
-import * as gridModule from "ui/layouts/grid-layout";
-import * as enums from "ui/enums";
+﻿import * as pages from "tns-core-modules/ui/page";
+import * as imageSource from "tns-core-modules/image-source";
+import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as enums from "tns-core-modules/ui/enums";
 
 export function createPage() {
     var StackLayout = require("ui/layouts/stack-layout").StackLayout;

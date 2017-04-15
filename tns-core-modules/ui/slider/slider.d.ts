@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Slider class, which represents a standard slider component.
  */
-import { View, Property, CoercibleProperty } from "ui/core/view";
+import { View, Property, CoercibleProperty } from "../core/view";
 
 /**
  * Represents a slider component.

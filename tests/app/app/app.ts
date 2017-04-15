@@ -6,7 +6,7 @@ else {
     start = java.lang.System.currentTimeMillis();
 }
 
-import * as application from "application";
+import * as application from "tns-core-modules/application";
 
 // Specify custom UIApplicationDelegate.
 /*

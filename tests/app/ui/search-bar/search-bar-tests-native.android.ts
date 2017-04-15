@@ -1,6 +1,6 @@
-import * as colorModule from "color";
-import * as searchBarModule from "ui/search-bar";
-import * as utils from "utils/utils";
+import * as colorModule from "tns-core-modules/color";
+import * as searchBarModule from "tns-core-modules/ui/search-bar";
+import * as utils from "tns-core-modules/utils/utils";
 
 function getTextView(bar: android.widget.SearchView): android.widget.TextView {
     if (bar) {

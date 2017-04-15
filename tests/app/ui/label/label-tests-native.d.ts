@@ -1,6 +1,6 @@
 ﻿//@private
-import * as labelModule from "ui/label";
-import * as colorModule from "color";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as colorModule from "tns-core-modules/color";
 
 export declare function getNativeTextAlignment(label: labelModule.Label): string;
 

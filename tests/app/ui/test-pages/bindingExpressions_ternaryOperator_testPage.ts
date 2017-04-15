@@ -1,4 +1,4 @@
-﻿import * as pages from "ui/page";
+﻿import * as pages from "tns-core-modules/ui/page";
 
 export function pageLoaded(args) {
     var page = <pages.Page>args.object;

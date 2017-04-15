@@ -3,39 +3,21 @@
 export * from "./wrap-layout-common";
 
 export class WrapLayout extends WrapLayoutBase {
-    private _layout: org.nativescript.widgets.WrapLayout;
+    nativeView: org.nativescript.widgets.WrapLayout;
 
-    get android(): org.nativescript.widgets.WrapLayout {
-        return this._layout;
-    }
-
-    get _nativeView(): org.nativescript.widgets.WrapLayout {
-        return this._layout;
+    public createNativeView() {
+         return new org.nativescript.widgets.WrapLayout(this._context);
     }
 
-    public _createNativeView() {
-         const layout = this._layout = new org.nativescript.widgets.WrapLayout(this._context);
-         return layout;
+    [orientationProperty.setNative](value: "horizontal" | "vertical") {
+        this.nativeView.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
     }
 
-    get [orientationProperty.native](): "horizontal" | "vertical" {
-        return "vertical";
-    }
-    set [orientationProperty.native](value: "horizontal" | "vertical") {
-        this._layout.setOrientation(value === "vertical" ? org.nativescript.widgets.Orientation.vertical : org.nativescript.widgets.Orientation.horizontal)
+    [itemWidthProperty.setNative](value: Length) {
+        this.nativeView.setItemWidth(Length.toDevicePixels(value, -1));
     }
 
-    get [itemWidthProperty.native](): Length {
-        return "auto";
-    }
-    set [itemWidthProperty.native](value: Length) {
-        this._layout.setItemWidth(Length.toDevicePixels(value, -1));
-    }
-
-    get [itemHeightProperty.native](): Length {
-        return "auto";
-    }
-    set [itemHeightProperty.native](value: Length) {
-        this._layout.setItemHeight(Length.toDevicePixels(value, -1));
+    [itemHeightProperty.setNative](value: Length) {
+        this.nativeView.setItemHeight(Length.toDevicePixels(value, -1));
     }
 }

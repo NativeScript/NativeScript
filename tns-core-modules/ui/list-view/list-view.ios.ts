@@ -1,11 +1,11 @@
-﻿import { ItemEventData } from "ui/list-view";
+﻿import { ItemEventData } from ".";
 import {
     ListViewBase, View, KeyedTemplate, Length, Observable, Color,
     separatorColorProperty, itemTemplatesProperty, layout, EventData
 } from "./list-view-common";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { ProxyViewContainer } from "ui/proxy-view-container";
-import { ios } from "utils/utils";
+import { StackLayout } from "../layouts/stack-layout";
+import { ProxyViewContainer } from "../proxy-view-container";
+import { ios } from "../../utils/utils";
 
 export * from "./list-view-common";
 
@@ -208,7 +208,7 @@ export class ListView extends ListViewBase {
 
     constructor() {
         super();
-        this._ios = UITableView.new();
+        this.nativeView = this._ios = UITableView.new();
         this._ios.registerClassForCellReuseIdentifier(ListViewCell.class(), this._defaultTemplate.key);
         this._ios.autoresizingMask = UIViewAutoresizing.None;
         this._ios.estimatedRowHeight = DEFAULT_HEIGHT;
@@ -217,6 +217,12 @@ export class ListView extends ListViewBase {
         this._delegate = UITableViewDelegateImpl.initWithOwner(new WeakRef(this));
         this._heights = new Array<number>();
         this._map = new Map<ListViewCell, View>();
+        this._setNativeClipToBounds();
+    }
+
+    _setNativeClipToBounds() {
+        // Always set clipsToBounds for list-view
+        this._ios.clipsToBounds = true;
     }
 
     public onLoaded() {
@@ -353,15 +359,15 @@ export class ListView extends ListViewBase {
                 cell.owner = new WeakRef(view);
             } else if (cell.view !== view) {
                 this._removeContainer(cell);
-                (<UIView>cell.view._nativeView).removeFromSuperview();
+                (<UIView>cell.view.nativeView).removeFromSuperview();
                 cell.owner = new WeakRef(view);
             }
 
             this._prepareItem(view, indexPath.row);
             this._map.set(cell, view);
             // We expect that views returned from itemLoading are new (e.g. not reused).
-            if (view && !view.parent && view._nativeView) {
-                cell.contentView.addSubview(view._nativeView);
+            if (view && !view.parent && view.nativeView) {
+                cell.contentView.addSubview(view.nativeView);
                 this._addView(view);
             }
 
@@ -383,17 +389,17 @@ export class ListView extends ListViewBase {
         this._map.delete(cell);
     }
 
-    get [separatorColorProperty.native](): UIColor {
+    [separatorColorProperty.getDefault](): UIColor {
         return this._ios.separatorColor;
     }
-    set [separatorColorProperty.native](value: Color | UIColor) {
+    [separatorColorProperty.setNative](value: Color | UIColor) {
         this._ios.separatorColor = value instanceof Color ? value.ios : value;
     }
 
-    get [itemTemplatesProperty.native](): KeyedTemplate[] {
+    [itemTemplatesProperty.getDefault](): KeyedTemplate[] {
         return null;
     }
-    set [itemTemplatesProperty.native](value: KeyedTemplate[]) {
+    [itemTemplatesProperty.setNative](value: KeyedTemplate[]) {
         this._itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
         if (value) {
             for (let i = 0, length = value.length; i < length; i++) {

@@ -3,13 +3,15 @@
     actionBarHiddenProperty, statusBarStyleProperty,
     traceEnabled, traceWrite, traceCategories, PercentLength, Color
 } from "./page-common";
-import { ios as iosApp } from "application";
-import { device } from "platform";
-import * as uiUtils from "ui/utils";
+import { ios as iosApp } from "../../application";
+import { device } from "../../platform";
+// HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
+// kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
+import * as uiUtils from "tns-core-modules/ui/utils";
 
 export * from "./page-common";
 
-import { ios } from "utils/utils";
+import { ios } from "../../utils/utils";
 import getter = ios.getter;
 
 const ENTRY = "_entry";
@@ -323,7 +325,7 @@ class UIViewControllerImpl extends UIViewController {
 }
 
 export class Page extends PageBase {
-    public nativeView: UIView;
+    nativeView: UIView;
 
     private _ios: UIViewControllerImpl;
     public _enableLoadedEvents: boolean;
@@ -341,8 +343,8 @@ export class Page extends PageBase {
 
     public requestLayout(): void {
         super.requestLayout();
-        if (!this.parent && this.ios && this._nativeView) {
-            this._nativeView.setNeedsLayout();
+        if (!this.parent && this.ios && this.nativeView) {
+            this.nativeView.setNeedsLayout();
         }
     }
 
@@ -398,10 +400,6 @@ export class Page extends PageBase {
 
     get ios(): UIViewController {
         return this._ios;
-    }
-
-    get _nativeView(): UIView {
-        return this.ios.view;
     }
 
     protected _showNativeModalView(parent: Page, context: any, closeCallback: Function, fullscreen?: boolean) {
@@ -514,7 +512,7 @@ export class Page extends PageBase {
 
         if (!this._modalParent && this.frame && this.frame._getNavBarVisible(this)) {
             // Measure ActionBar with the full height.
-            let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, heightMeasureSpec);
+            let actionBarSize = View.measureChild(this, this.actionBar, widthMeasureSpec, layout.makeMeasureSpec(height, layout.AT_MOST));
             actionBarWidth = actionBarSize.measuredWidth;
             actionBarHeight = actionBarSize.measuredHeight;
         }
@@ -582,10 +580,10 @@ export class Page extends PageBase {
         super._removeViewFromNativeVisualTree(view);
     }
 
-    get [actionBarHiddenProperty.native](): boolean {
+    [actionBarHiddenProperty.getDefault](): boolean {
         return undefined;
     }
-    set [actionBarHiddenProperty.native](value: boolean) {
+    [actionBarHiddenProperty.setNative](value: boolean) {
         this._updateEnableSwipeBackNavigation(value);
         if (this.isLoaded) {
             // Update nav-bar visibility with disabled animations
@@ -593,10 +591,10 @@ export class Page extends PageBase {
         }
     }
 
-    get [statusBarStyleProperty.native](): UIBarStyle {
+    [statusBarStyleProperty.getDefault](): UIBarStyle {
         return UIBarStyle.Default;
     }
-    set [statusBarStyleProperty.native](value: string | UIBarStyle) {
+    [statusBarStyleProperty.setNative](value: string | UIBarStyle) {
         let frame = this.frame;
         if (frame) {
             let navigationBar = (<UINavigationController>frame.ios.controller).navigationBar;

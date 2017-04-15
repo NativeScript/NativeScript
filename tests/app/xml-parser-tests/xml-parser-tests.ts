@@ -1,10 +1,10 @@
 ﻿// >> xml-module-snippet
-//var xmlModule = require("xml");
+//var xmlModule = require("tns-core-modules/xml");
 // << xml-module-snippet
 
 import * as TKUnit from "../TKUnit";
-import * as xmlModule from "xml";
-import * as fs from "file-system";
+import * as xmlModule from "tns-core-modules/xml";
+import * as fs from "tns-core-modules/file-system";
 
 export var test_XmlParser_IsDefined = function () {
     TKUnit.assertNotEqual(xmlModule.XmlParser, undefined, "Class XmlParser should be defined!");

@@ -1,7 +1,7 @@
-﻿import { LayoutBase as LayoutBaseDefinition } from "ui/layouts/layout-base";
-import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length } from "ui/core/view";
+﻿import { LayoutBase as LayoutBaseDefinition } from "./layout-base";
+import { View, CustomLayoutView, Property, AddChildFromBuilder, getViewById, Length, booleanConverter } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefinition, AddChildFromBuilder {
 
@@ -149,5 +149,5 @@ export class LayoutBaseCommon extends CustomLayoutView implements LayoutBaseDefi
     }
 }
 
-export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({ name: "clipToBounds", defaultValue: true });
+export const clipToBoundsProperty = new Property<LayoutBaseCommon, boolean>({ name: "clipToBounds", defaultValue: true, valueConverter: booleanConverter });
 clipToBoundsProperty.register(LayoutBaseCommon);

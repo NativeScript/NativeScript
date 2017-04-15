@@ -1,69 +1,56 @@
 ﻿import {
-    HtmlViewBase, View, layout,  htmlProperty
+    HtmlViewBase, View, layout, htmlProperty
 } from "./html-view-common";
 
 export * from "./html-view-common";
 
 export class HtmlView extends HtmlViewBase {
-    private _ios: UITextView;
+    nativeView: UITextView;
 
     constructor() {
         super();
-        this._ios = UITextView.new();
+        const nativeView = UITextView.new()
+        nativeView.scrollEnabled = false;
+        nativeView.editable = false;
+        nativeView.selectable = true;
+        nativeView.userInteractionEnabled = true;
+        nativeView.dataDetectorTypes = UIDataDetectorTypes.All;
 
-        this._ios.scrollEnabled = false;
-        this._ios.editable = false;
-        this._ios.selectable = true;
-        this._ios.userInteractionEnabled = true;
-        this._ios.dataDetectorTypes = UIDataDetectorTypes.All;
+        this.nativeView = nativeView;
     }
 
     get ios(): UITextView {
-        return this._ios;
-    }
-
-    get _nativeView(): UITextView {
-        return this._ios;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        var nativeView = this._nativeView;
+        const nativeView = this.nativeView;
         if (nativeView) {
+            const width = layout.getMeasureSpecSize(widthMeasureSpec);
+            const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-            let width = layout.getMeasureSpecSize(widthMeasureSpec);
-            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+            const height = layout.getMeasureSpecSize(heightMeasureSpec);
+            const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            let height = layout.getMeasureSpecSize(heightMeasureSpec);
-            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+            const desiredSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
 
-            if (widthMode === layout.UNSPECIFIED) {
-                width = Number.POSITIVE_INFINITY;
-            }
+            const labelWidth = widthMode === layout.AT_MOST ? Math.min(desiredSize.width, width) : desiredSize.width;
+            const measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
+            const measureHeight = Math.max(desiredSize.height, this.effectiveMinHeight);
 
-            if (heightMode === layout.UNSPECIFIED) {
-                height = Number.POSITIVE_INFINITY;
-            }
-
-            let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
-            let labelWidth = layout.toDevicePixels(nativeSize.width);
-
-            labelWidth = Math.min(labelWidth, width);
-            let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
-            let measureHeight = Math.max(layout.toDevicePixels(nativeSize.height), this.effectiveMinHeight);
-
-            let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
 
-    get [htmlProperty.native](): string {
+    [htmlProperty.getDefault](): string {
         return "";
     }
-    set [htmlProperty.native](value: string) {
+    [htmlProperty.setNative](value: string) {
         const htmlString = NSString.stringWithString(value + "");
         const nsData = htmlString.dataUsingEncoding(NSUnicodeStringEncoding);
-        this._ios.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
+        this.nativeView.attributedText = NSAttributedString.alloc().initWithDataOptionsDocumentAttributesError(nsData, <any>{ [NSDocumentTypeDocumentAttribute]: NSHTMLTextDocumentType }, null);
     }
 }

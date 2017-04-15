@@ -108,7 +108,7 @@ export module AutocapitalizationType {
     export var none: string = "none";
     export var words: string = "words";
     export var sentences: string = "sentences";
-    export var allCharacters: string = "allCharacters";
+    export var allCharacters: string = "allcharacters";
 }
 
 export module NavigationBarVisibility {

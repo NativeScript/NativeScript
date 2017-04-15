@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from "../TKUnit";
-import {Page, NavigatedData} from "ui/page";
-import {topmost as topmostFrame, NavigationTransition} from "ui/frame";
-import {Color} from "color";
+import {Page, NavigatedData} from "tns-core-modules/ui/page";
+import {topmost as topmostFrame, NavigationTransition} from "tns-core-modules/ui/frame";
+import {Color} from "tns-core-modules/color";
 import * as helper from "../ui/helper";
 
 // Creates a random colorful page full of meaningless stuff.

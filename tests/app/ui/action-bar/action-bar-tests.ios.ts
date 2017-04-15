@@ -1,11 +1,11 @@
 ﻿import * as actionTestsCommon from "./action-bar-tests-common";
-import * as PageModule from "ui/page";
+import * as PageModule from "tns-core-modules/ui/page";
 import * as TKUnit from "../../TKUnit";
-import * as LabelModule from "ui/label";
+import * as LabelModule from "tns-core-modules/ui/label";
 import * as helper from "../helper";
-import * as view from "ui/core/view";
-import * as actionBar from "ui/action-bar";
-import { Visibility } from "ui/enums";
+import * as view from "tns-core-modules/ui/core/view";
+import * as actionBar from "tns-core-modules/ui/action-bar";
+import { Visibility } from "tns-core-modules/ui/enums";
 
 global.moduleMerge(actionTestsCommon, exports);
 

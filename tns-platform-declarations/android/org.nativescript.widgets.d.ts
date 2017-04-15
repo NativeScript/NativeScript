@@ -37,6 +37,8 @@
                         public raw: java.io.ByteArrayOutputStream;
                         public headers: java.util.ArrayList<KeyValuePair>;
                         public statusCode: number;
+                        public statusText: string;
+                        public url: string;
                         public responseAsString: string;
                         public responseAsImage: android.graphics.Bitmap;
                         public error: java.lang.Exception;
@@ -341,8 +343,8 @@
                 getRotationAngle(): number;
                 setRotationAngle(angle: number): void;
 
-                setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean,
-                    async: boolean, listener: image.Worker.IOnImageLoadedListener): void;
+                setUri(uri: string, decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean): void;
+                setImageLoadedListener(listener: image.Worker.OnImageLoadedListener): void;
             }
 
             export class TabLayout extends android.widget.HorizontalScrollView {
@@ -498,6 +500,7 @@
             }
 
             export class SegmentedBarColorDrawable extends android.graphics.drawable.ColorDrawable {
+                constructor(color: number, thickness: number);
             }
 
             export class CustomTypefaceSpan extends android.text.style.TypefaceSpan {

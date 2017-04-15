@@ -1,8 +1,8 @@
 ﻿import * as common from "./image-cache-common";
-import * as trace from "trace";
-import * as httpRequestModule from "http/http-request";
+import * as trace from "../../trace";
+import * as httpRequestModule from "../../http/http-request";
 
-import * as utils from "utils/utils";
+import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
 var httpRequest: typeof httpRequestModule;

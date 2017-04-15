@@ -1,6 +1,6 @@
 ﻿/* tslint:disable:class-name */
-import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from "platform";
-import * as appModule from "application";
+import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } from ".";
+import * as appModule from "../application";
 
 const MIN_TABLET_PIXELS = 600;
 

@@ -1,4 +1,4 @@
-﻿import { ScrollEventData } from "ui/scroll-view";
+﻿import { ScrollEventData } from ".";
 import { View, layout, ScrollViewBase } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
@@ -36,6 +36,12 @@ export class ScrollView extends ScrollViewBase {
     constructor() {
         super();
         this.nativeView = UIScrollView.new();
+        this._setNativeClipToBounds();
+    }
+
+    _setNativeClipToBounds() {
+        // Always set clipsToBounds for scroll-view
+        this.nativeView.clipsToBounds = true;
     }
 
     protected attachNative() {
@@ -72,10 +78,6 @@ export class ScrollView extends ScrollViewBase {
     }
 
     get ios(): UIView {
-        return this.nativeView;
-    }
-
-    get _nativeView(): UIView {
         return this.nativeView;
     }
 
@@ -147,3 +149,5 @@ export class ScrollView extends ScrollViewBase {
         // NOOP
     }
 }
+
+// ScrollView.prototype.recycleNativeView = true;

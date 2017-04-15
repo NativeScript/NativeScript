@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the TextView class, which represents an editable multi-line line box.
  */
-import { EditableTextBase } from "ui/editable-text-base";
+import { EditableTextBase } from "../editable-text-base";
 
 /**
  * Represents an editable multiline text view.

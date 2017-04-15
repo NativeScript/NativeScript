@@ -1,7 +1,7 @@
-﻿import * as pages from "ui/page";
-import * as imageSource from "image-source";
-import * as gridModule from "ui/layouts/grid-layout";
-import * as img from "ui/image";
+﻿import * as pages from "tns-core-modules/ui/page";
+import * as imageSource from "tns-core-modules/image-source";
+import * as gridModule from "tns-core-modules/ui/layouts/grid-layout";
+import * as img from "tns-core-modules/ui/image";
 
 export function createPage() {
     var grid = new gridModule.GridLayout();

@@ -1,22 +1,22 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as bindable from "ui/core/bindable";
-import * as observable from "data/observable";
-import * as color from "color";
-import * as platform from "platform";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as bindable from "tns-core-modules/ui/core/bindable";
+import * as observable from "tns-core-modules/data/observable";
+import * as color from "tns-core-modules/color";
+import * as platform from "tns-core-modules/platform";
 // >> article-require-switch
-import * as switchModule from "ui/switch";
+import * as switchModule from "tns-core-modules/ui/switch";
 // << article-require-switch
 
 // ### Binding the Switch checked property and Button isEanbled property to a observable view-model property.
 
 // >> article-binding-switch-property
 function pageLoaded(args) {
-  var page = args.object;
-  var obj = new observable.Observable();
-  obj.set("someProperty", false);
-  page.bindingContext = obj;
+    var page = args.object;
+    var obj = new observable.Observable();
+    obj.set("someProperty", false);
+    page.bindingContext = obj;
 }
 exports.pageLoaded = pageLoaded;
 // << article-binding-switch-property
@@ -137,17 +137,18 @@ export function test_binding_value_to_model() {
 }
 
 function getNativeValue(mySwitch: switchModule.Switch): boolean {
-    if (mySwitch.android) {
-        return mySwitch.android.isChecked();
-    }
-    else if (mySwitch.ios) {
+    if (platform.isAndroid) {
+        const nativeView: android.widget.Switch = mySwitch.nativeView;
+        return nativeView.isChecked();
+    } else if (mySwitch.ios) {
         return mySwitch.ios.on;
     }
 }
 
 function setNativeValue(mySwitch: switchModule.Switch, value: boolean) {
-    if (mySwitch.android) {
-        mySwitch.android.setChecked(value);
+    if (platform.isAndroid) {
+        const nativeView: android.widget.Switch = mySwitch.nativeView;
+        nativeView.setChecked(value);
     }
     else if (mySwitch.ios) {
         mySwitch.ios.on = value;

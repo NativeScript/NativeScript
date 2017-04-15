@@ -1,14 +1,14 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import { View } from "ui/core/view";
-import { Page } from "ui/page";
-import { BindingOptions } from "ui/core/bindable";
-import { Observable, EventData, PropertyChangeData } from "data/observable";
-import { Color } from "color";
-import { isIOS } from "platform";
+import { View } from "tns-core-modules/ui/core/view";
+import { Page } from "tns-core-modules/ui/page";
+import { BindingOptions } from "tns-core-modules/ui/core/bindable";
+import { Observable, EventData, PropertyChangeData } from "tns-core-modules/data/observable";
+import { Color } from "tns-core-modules/color";
+import { isIOS } from "tns-core-modules/platform";
 
 // >> article-require-slider
-import { Slider } from "ui/slider";
+import { Slider } from "tns-core-modules/ui/slider";
 // << article-require-slider
 
 // ### Binding the Progress and Slider value properties to a observable view-model property.

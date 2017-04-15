@@ -1,9 +1,9 @@
-﻿import {StackLayout} from "ui/layouts/stack-layout";
-import {Button} from "ui/button";
+﻿import {StackLayout} from "tns-core-modules/ui/layouts/stack-layout";
+import {Button} from "tns-core-modules/ui/button";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "./layout-helper";
-import * as enums from "ui/enums";
-import * as utils from "utils/utils";
+import * as enums from "tns-core-modules/ui/enums";
+import * as utils from "tns-core-modules/utils/utils";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";

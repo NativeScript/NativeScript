@@ -1,15 +1,15 @@
-﻿import { Label as LabelDefinition } from "ui/label";
-import { Background } from "ui/styling/background";
+﻿import { Label as LabelDefinition } from ".";
+import { Background } from "../styling/background";
 import {
     TextBase, View, layout, backgroundInternalProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
     Length, WhiteSpace
-} from "ui/text-base";
+} from "../text-base";
 
-import { ios } from "ui/styling/background";
+import { ios } from "../styling/background";
 
-export * from "ui/text-base";
+export * from "../text-base";
 
 enum FixedSize {
     NONE = 0,
@@ -18,13 +18,8 @@ enum FixedSize {
     BOTH = 3
 }
 
-const zeroLength: Length = {
-    value: 0,
-    unit: "px"
-};
-
 export class Label extends TextBase implements LabelDefinition {
-    public nativeView: TNSLabel;
+    nativeView: TNSLabel;
     private _fixedSize: FixedSize;
 
     constructor() {
@@ -38,19 +33,11 @@ export class Label extends TextBase implements LabelDefinition {
         return this.nativeView;
     }
 
-    get _nativeView(): TNSLabel {
-        return this.nativeView;
-    }
-
     get textWrap(): boolean {
-        return this.style.whiteSpace === WhiteSpace.NORMAL;
+        return this.style.whiteSpace === "normal";
     }
     set textWrap(value: boolean) {
-        this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
-    }
-
-    public onLoaded() {
-        super.onLoaded();
+        this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
     _requestLayoutOnTextChanged(): void {
@@ -67,63 +54,51 @@ export class Label extends TextBase implements LabelDefinition {
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         let nativeView = this.nativeView;
         if (nativeView) {
-            let width = layout.getMeasureSpecSize(widthMeasureSpec);
-            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+            const width = layout.getMeasureSpecSize(widthMeasureSpec);
+            const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-            let height = layout.getMeasureSpecSize(heightMeasureSpec);
-            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
-            if (widthMode === layout.UNSPECIFIED) {
-                width = Number.POSITIVE_INFINITY;
-            }
-
-            if (heightMode === layout.UNSPECIFIED) {
-                height = Number.POSITIVE_INFINITY;
-            }
+            const height = layout.getMeasureSpecSize(heightMeasureSpec);
+            const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
             this._fixedSize = (widthMode === layout.EXACTLY ? FixedSize.WIDTH : FixedSize.NONE)
                 | (heightMode === layout.EXACTLY ? FixedSize.HEIGHT : FixedSize.NONE);
 
-            let nativeSize = nativeView.sizeThatFits(CGSizeMake(width, height));
-            let labelWidth = layout.toDevicePixels(nativeSize.width);
+            const nativeSize = layout.measureNativeView(nativeView, width, widthMode, height, heightMode);
+            let labelWidth = nativeSize.width;
 
-            if (this.textWrap) {
+            if (this.textWrap && widthMode === layout.AT_MOST) {
                 labelWidth = Math.min(labelWidth, width);
             }
 
-            let measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
-            let measureHeight = Math.max(layout.toDevicePixels(nativeSize.height), this.effectiveMinHeight);
+            const measureWidth = Math.max(labelWidth, this.effectiveMinWidth);
+            const measureHeight = Math.max(nativeSize.height, this.effectiveMinHeight);
 
-            let widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
-            let heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+            const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
 
             this.setMeasuredDimension(widthAndState, heightAndState);
         }
     }
 
-    get [whiteSpaceProperty.native](): WhiteSpace {
-        return WhiteSpace.NO_WRAP;
-    }
-    set [whiteSpaceProperty.native](value: WhiteSpace) {
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
         const nativeView = this.nativeView;
         switch (value) {
-            case WhiteSpace.NORMAL:
+            case "normal":
                 nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
                 nativeView.numberOfLines = 0;
                 break;
-            case WhiteSpace.NO_WRAP:
+            case "nowrap":
+            case "initial":
                 nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
                 nativeView.numberOfLines = 1;
                 break;
-            default:
-                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
 
-    get [backgroundInternalProperty.native](): any /* CGColor */ {
+    [backgroundInternalProperty.getDefault](): any /* CGColor */ {
         return this.nativeView.layer.backgroundColor;
     }
-    set [backgroundInternalProperty.native](value: Background) {
+    [backgroundInternalProperty.setNative](value: Background) {
         if (value instanceof Background) {
             const uiColor = <UIColor>ios.createBackgroundUIColor(this, true);
             value = uiColor ? uiColor.CGColor : null;
@@ -133,115 +108,93 @@ export class Label extends TextBase implements LabelDefinition {
         this.nativeView.layer.backgroundColor = value;
     }
 
-    get [borderTopWidthProperty.native](): Length {
-        return zeroLength;
-    }
-    set [borderTopWidthProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+    [borderTopWidthProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
-            top: this.effectiveBorderTopWidth,
+            top: layout.toDeviceIndependentPixels(this.effectiveBorderTopWidth),
             right: border.right,
             bottom: border.bottom,
             left: border.left
         };
     }
 
-    get [borderRightWidthProperty.native](): Length {
-        return zeroLength;
-    }
-    set [borderRightWidthProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+    [borderRightWidthProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
-            right: this.effectiveBorderRightWidth,
+            right: layout.toDeviceIndependentPixels(this.effectiveBorderRightWidth),
             bottom: border.bottom,
             left: border.left
         };
     }
 
-    get [borderBottomWidthProperty.native](): Length {
-        return zeroLength;
-    }
-    set [borderBottomWidthProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+    [borderBottomWidthProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
-            bottom: this.effectiveBorderBottomWidth,
+            bottom: layout.toDeviceIndependentPixels(this.effectiveBorderBottomWidth),
             left: border.left
         };
     }
 
-    get [borderLeftWidthProperty.native](): Length {
-        return zeroLength;
-    }
-    set [borderLeftWidthProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+    [borderLeftWidthProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
             bottom: border.bottom,
-            left: this.effectiveBorderLeftWidth
+            left: layout.toDeviceIndependentPixels(this.effectiveBorderLeftWidth)
         };
     }
 
-    get [paddingTopProperty.native](): Length {
-        return zeroLength;
-    }
-    set [paddingTopProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+    [paddingTopProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
-            top: this.effectivePaddingTop,
+            top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
             right: padding.right,
             bottom: padding.bottom,
             left: padding.left
         };
     }
 
-    get [paddingRightProperty.native](): Length {
-        return zeroLength;
-    }
-    set [paddingRightProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+    [paddingRightProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
-            right: this.effectivePaddingRight,
+            right: layout.toDeviceIndependentPixels(this.effectivePaddingRight),
             bottom: padding.bottom,
             left: padding.left
         };
     }
 
-    get [paddingBottomProperty.native](): Length {
-        return zeroLength;
-    }
-    set [paddingBottomProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+    [paddingBottomProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
-            bottom: this.effectivePaddingBottom,
+            bottom: layout.toDeviceIndependentPixels(this.effectivePaddingBottom),
             left: padding.left
         };
     }
 
-    get [paddingLeftProperty.native](): Length {
-        return zeroLength;
-    }
-    set [paddingLeftProperty.native](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+    [paddingLeftProperty.setNative](value: Length) {
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
             bottom: padding.bottom,
-            left: this.effectivePaddingLeft
+            left: layout.toDeviceIndependentPixels(this.effectivePaddingLeft)
         };
     }
 }
+
+// Label.prototype.recycleNativeView = true;

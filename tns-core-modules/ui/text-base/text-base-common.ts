@@ -1,10 +1,14 @@
-import { TextBase as TextBaseDefinition } from "ui/text-base";
-import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "ui/core/view";
-import { PropertyChangeData } from "data/observable";
-import { FormattedString, Span } from "text/formatted-string";
+// Definitions.
+import { TextBase as TextBaseDefinition, TextAlignment, TextDecoration, TextTransform, WhiteSpace } from ".";
+import { FontStyle, FontWeight } from "../styling/font";
+import { PropertyChangeData } from "../../data/observable";
+
+// Types.
+import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isIOS, Observable, makeValidator, makeParser, Length } from "../core/view";
+import { FormattedString, Span } from "../../text/formatted-string";
 
 export { FormattedString, Span };
-export * from "ui/core/view";
+export * from "../core/view";
 
 const CHILD_SPAN = "Span";
 const CHILD_FORMATTED_TEXT = "formattedText";
@@ -12,16 +16,35 @@ const CHILD_FORMATTED_STRING = "FormattedString";
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 
-    // public abstract _setFormattedTextPropertyToNative(value: FormattedString): void;
-
     public text: string;
     public formattedText: FormattedString;
+
+    get fontFamily(): string {
+        return this.style.fontFamily;
+    }
+    set fontFamily(value: string) {
+        this.style.fontFamily = value;
+    }
 
     get fontSize(): number {
         return this.style.fontSize;
     }
     set fontSize(value: number) {
         this.style.fontSize = value;
+    }
+
+    get fontStyle(): FontStyle {
+        return this.style.fontStyle;
+    }
+    set fontStyle(value: FontStyle) {
+        this.style.fontStyle = value;
+    }
+
+    get fontWeight(): FontWeight {
+        return this.style.fontWeight;
+    }
+    set fontWeight(value: FontWeight) {
+        this.style.fontWeight = value;
     }
 
     get letterSpacing(): number {
@@ -95,9 +118,9 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
     }
 
     public _onFormattedTextContentsChanged(data: PropertyChangeData) {
-        if (this._nativeView) {
+        if (this.nativeView) {
             // Notifications from the FormattedString start arriving before the Android view is even created.
-            this[formattedTextProperty.native] = data.value;
+            this[formattedTextProperty.setNative](data.value);
         }
     }
 
@@ -132,16 +155,14 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
     }
 }
 
-//Text
+export function isBold(fontWeight: FontWeight): boolean {
+    return fontWeight === "bold" || fontWeight === "700" || fontWeight === "800" || fontWeight === "900";
+}
+
 export const textProperty = new Property<TextBaseCommon, string>({ name: "text", defaultValue: "" });
 textProperty.register(TextBaseCommon);
 
-//FormattedText
-export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({
-    name: "formattedText",
-    affectsLayout: isIOS,
-    valueChanged: onFormattedTextPropertyChanged
-});
+export const formattedTextProperty = new Property<TextBaseCommon, FormattedString>({ name: "formattedText", affectsLayout: isIOS, valueChanged: onFormattedTextPropertyChanged });
 formattedTextProperty.register(TextBaseCommon);
 
 function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: FormattedString, newValue: FormattedString) {
@@ -156,83 +177,21 @@ function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: Form
     }
 }
 
-//TextAlignment
-export type TextAlignment = "left" | "center" | "right";
-export namespace TextAlignment {
-    export const LEFT: "left" = "left";
-    export const CENTER: "center" = "center";
-    export const RIGHT: "right" = "right";
-    export const isValid = makeValidator<TextAlignment>(LEFT, CENTER, RIGHT);
-    export const parse = makeParser<TextAlignment>(isValid);
-}
-
-export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({
-    name: "textAlignment",
-    cssName: "text-align",
-    valueConverter: TextAlignment.parse
-});
+const textAlignmentConverter = makeParser<TextAlignment>(makeValidator<TextAlignment>("initial", "left", "center", "right"));
+export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({ name: "textAlignment", cssName: "text-align", defaultValue: "initial", valueConverter: textAlignmentConverter });
 textAlignmentProperty.register(Style);
 
-//TextDecoration
-export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
-export namespace TextDecoration {
-    export const NONE: "none" = "none";
-    export const UNDERLINE: "underline" = "underline";
-    export const LINE_THROUGH: "line-through" = "line-through";
-    export const UNDERLINE_LINE_THROUGH: "underline line-through" = "underline line-through";
-
-    export const isValid = makeValidator<TextDecoration>(NONE, UNDERLINE, LINE_THROUGH, UNDERLINE_LINE_THROUGH);
-    export const parse = makeParser<TextDecoration>(isValid);
-}
-export const textDecorationProperty = new CssProperty<Style, TextDecoration>({
-    name: "textDecoration",
-    cssName: "text-decoration",
-    defaultValue: TextDecoration.NONE,
-    valueConverter: TextDecoration.parse
-});
-textDecorationProperty.register(Style);
-
-//TextTransform
-export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
-export namespace TextTransform {
-    export const NONE: "none" = "none";
-    export const CAPITALIZE: "capitalize" = "capitalize";
-    export const UPPERCASE: "uppercase" = "uppercase";
-    export const LOWERCASE: "lowercase" = "lowercase";
-    export const isValid = makeValidator<TextTransform>(NONE, CAPITALIZE, UPPERCASE, LOWERCASE);
-    export const parse = makeParser<TextTransform>(isValid);
-}
-export const textTransformProperty = new CssProperty<Style, TextTransform>({
-    name: "textTransform",
-    cssName: "text-transform",
-    defaultValue: TextTransform.NONE,
-    valueConverter: TextTransform.parse
-});
+const textTransformConverter = makeParser<TextTransform>(makeValidator<TextTransform>("initial", "none", "capitalize", "uppercase", "lowercase"));
+export const textTransformProperty = new CssProperty<Style, TextTransform>({ name: "textTransform", cssName: "text-transform", defaultValue: "initial", valueConverter: textTransformConverter });
 textTransformProperty.register(Style);
 
-//Whitespace
-export type WhiteSpace = "normal" | "nowrap";
-export namespace WhiteSpace {
-    export const NORMAL: "normal" = "normal";
-    export const NO_WRAP: "nowrap" = "nowrap";
-    export const isValid = makeValidator<WhiteSpace>(NORMAL, NO_WRAP);
-    export const parse = makeParser<WhiteSpace>(isValid);
-}
-
-//NB: Default value is deferent for Android and IOS
-export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({
-    name: "whiteSpace",
-    cssName: "white-space",
-    defaultValue: isIOS ? WhiteSpace.NO_WRAP : WhiteSpace.NORMAL,
-    valueConverter: WhiteSpace.parse
-});
+const whiteSpaceConverter = makeParser<WhiteSpace>(makeValidator<WhiteSpace>("initial", "normal", "nowrap"));
+export const whiteSpaceProperty = new CssProperty<Style, WhiteSpace>({ name: "whiteSpace", cssName: "white-space", defaultValue: "initial", affectsLayout: isIOS, valueConverter: whiteSpaceConverter });
 whiteSpaceProperty.register(Style);
 
-export const letterSpacingProperty = new CssProperty<Style, number>({
-    name: "letterSpacing",
-    cssName: "letter-spacing",
-    defaultValue: 0,
-    affectsLayout: isIOS,
-    valueConverter: (v: string) => parseFloat(v)
-});
+const textDecorationConverter = makeParser<TextDecoration>(makeValidator<TextDecoration>("none", "underline", "line-through", "underline line-through"));
+export const textDecorationProperty = new CssProperty<Style, TextDecoration>({ name: "textDecoration", cssName: "text-decoration", defaultValue: "none", valueConverter: textDecorationConverter });
+textDecorationProperty.register(Style);
+
+export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 letterSpacingProperty.register(Style);

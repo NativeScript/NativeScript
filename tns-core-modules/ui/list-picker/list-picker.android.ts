@@ -1,5 +1,5 @@
 ﻿import { ListPickerBase, selectedIndexProperty, itemsProperty, colorProperty, Color } from "./list-picker-common";
-import { ItemsSource } from "ui/list-picker";
+import { ItemsSource } from ".";
 
 export * from "./list-picker-common";
 
@@ -69,33 +69,42 @@ function getSelectorWheelPaint(picker: android.widget.NumberPicker): android.gra
 }
 
 export class ListPicker extends ListPickerBase {
-    private _android: android.widget.NumberPicker;
-    private _valueChangedListener: android.widget.NumberPicker.OnValueChangeListener;
-    private _formatter: android.widget.NumberPicker.Formatter;
-    private _editText: android.widget.EditText;
+    nativeView: android.widget.NumberPicker;
     private _selectorWheelPaint: android.graphics.Paint;
 
-    get android(): android.widget.NumberPicker {
-        return this._android;
-    }
-
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeClasses();
-        const picker = this._android = new android.widget.NumberPicker(this._context);
-        let editText = getEditText(this._android);
-        this._editText = editText;
-        this._selectorWheelPaint = getSelectorWheelPaint(picker);
-
+        const picker = new android.widget.NumberPicker(this._context);
+       
         picker.setDescendantFocusability(android.widget.NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         picker.setMinValue(0);
         picker.setMaxValue(0);
         picker.setValue(0);
 
-        this._formatter = this._formatter || new Formatter(this);
-        picker.setFormatter(this._formatter);
+        const formatter = new Formatter(this);
+        picker.setFormatter(formatter);
+        (<any>picker).formatter = formatter;
 
-        this._valueChangedListener = this._valueChangedListener || new ValueChangeListener(this);
-        picker.setOnValueChangedListener(this._valueChangedListener);
+        const valueChangedListener = new ValueChangeListener(this);
+        picker.setOnValueChangedListener(valueChangedListener);
+        (<any>picker).valueChangedListener = valueChangedListener;
+
+        const editText = getEditText(picker);
+        if (editText) {
+            (<any>picker).editText = editText;
+        }
+
+        picker.setWrapSelectorWheel(false);
+        return picker;
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeView;
+        this._selectorWheelPaint = getSelectorWheelPaint(nativeView);
+        (<any>nativeView).formatter.owner = this;
+        (<any>nativeView).valueChangedListener.owner = this;
+        const editText = (<any>nativeView).editText;
 
         if (editText) {
             //Fix the disappearing selected item.
@@ -105,47 +114,58 @@ export class ListPicker extends ListPickerBase {
             //Since the Android NumberPicker has to always have at least one item, i.e. minValue=maxValue=value=0, we don't want this zero showing up when this.items is empty.
             editText.setText(" ", android.widget.TextView.BufferType.NORMAL);
         }
+    }
 
-        picker.setWrapSelectorWheel(false);
-        return picker;
+    public disposeNativeView() {
+        const nativeView = this.nativeView;
+        (<any>nativeView).formatter.owner = null;
+        (<any>nativeView).valueChangedListener.owner = null;
+        super.disposeNativeView();
     }
 
     private _fixNumberPickerRendering() {
+        const nativeView = this.nativeView;
         //HACK: Force the stubborn NumberPicker to render correctly when we have 0 or 1 items.
-        this._android.setFormatter(null);
-        this._android.setFormatter(this._formatter); //Force the NumberPicker to call our Formatter 
-        if (this._editText) {
-            this._editText.setFilters([]);
-            this._editText.invalidate(); //Force the EditText to redraw
+        nativeView.setFormatter(null);
+        nativeView.setFormatter((<any>nativeView).formatter); //Force the NumberPicker to call our Formatter 
+
+        const editText = (<any>nativeView).editText;
+        if (editText) {
+            editText.setFilters([]);
+            editText.invalidate(); //Force the EditText to redraw
         }
-        this._android.invalidate();
+        nativeView.invalidate();
     }
 
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         if (value >= 0) {
-            this.android.setValue(value);
+            this.nativeView.setValue(value);
         }
     }
 
-    get [itemsProperty.native](): any[] {
+    [itemsProperty.getDefault](): any[] {
         return null;
     }
-    set [itemsProperty.native](value: any[] | ItemsSource) {
+    [itemsProperty.setNative](value: any[] | ItemsSource) {
         let maxValue = value && value.length > 0 ? value.length - 1 : 0;
-        this.android.setMaxValue(maxValue);
+        this.nativeView.setMaxValue(maxValue);
         this._fixNumberPickerRendering();
+
+        // Coerce selected index after we have set items to native view.
+        selectedIndexProperty.coerce(this);
     }
 
-    get [colorProperty.native](): { wheelColor: number, textColor: number } {
+    [colorProperty.getDefault](): { wheelColor: number, textColor: number } {
+	const editText = (<any>this.nativeView).editText;
         return {
             wheelColor: this._selectorWheelPaint.getColor(),
-            textColor: this._editText ? this._editText.getTextColors().getDefaultColor() : -1
+            textColor: editText ? editText.getTextColors().getDefaultColor() : -1
         }
     }
-    set [colorProperty.native](value: { wheelColor: number, textColor: number } | Color) {
+    [colorProperty.setNative](value: { wheelColor: number, textColor: number } | Color) {
         let color: number;
         let wheelColor: number;
         if (value instanceof Color) {
@@ -156,8 +176,9 @@ export class ListPicker extends ListPickerBase {
         }
 
         this._selectorWheelPaint.setColor(wheelColor);
-        if (this._editText) {
-            this._editText.setTextColor(color);
+        const editText = (<any>this.nativeView).editText;
+        if (editText) {
+            editText.setTextColor(color);
         }
     }
 }

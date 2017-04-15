@@ -1,19 +1,20 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, Property, Style } from "ui/core/view";
-import { topmost } from "ui/frame";
-import { Page } from "ui/page";
-import { Button } from "ui/button";
-import { Label } from "ui/label";
-import { Color } from "color";
-import { Layout } from "ui/layouts/layout";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { AbsoluteLayout } from "ui/layouts/absolute-layout";
-import * as utils from "utils/utils";
-import * as types from "utils/types";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, Property, Style } from "tns-core-modules/ui/core/view";
+import { topmost } from "tns-core-modules/ui/frame";
+import { Page } from "tns-core-modules/ui/page";
+import { Button } from "tns-core-modules/ui/button";
+import { Label } from "tns-core-modules/ui/label";
+import { Color } from "tns-core-modules/color";
+import { Layout } from "tns-core-modules/ui/layouts/layout";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { AbsoluteLayout } from "tns-core-modules/ui/layouts/absolute-layout";
+import * as utils from "tns-core-modules/utils/utils";
+import * as types from "tns-core-modules/utils/types";
 import * as helper from "../../ui/helper";
-import * as observable from "data/observable";
-import * as bindable from "ui/core/bindable";
+import * as observable from "tns-core-modules/data/observable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as definition from "./view-tests";
+import { isIOS } from "tns-core-modules/platform";
 
 export function test_eachDescendant() {
     const test = function (views: Array<View>) {
@@ -273,8 +274,20 @@ class TestView extends Layout {
         this.style["customCssProperty"] = value;
     }
 
+    private _nativeView;
     constructor(public name: string) {
         super();
+        this._nativeView = this.nativeView;
+        this.nativeView = undefined;
+    }
+
+    public createNativeView() {
+        if (isIOS) {
+            this.nativeView = this._nativeView;
+            return this._nativeView;
+        }
+
+        return super.createNativeView();
     }
 
     public toString() {
@@ -285,18 +298,18 @@ class TestView extends Layout {
         this.setMeasuredDimension(100, 100);
     }
 
-    get [customCssProperty.native](): string {
+    [customCssProperty.getDefault](): string {
         return "customCssPropertyDefaultValue";
     }
-    set [customCssProperty.native](value: string) {
+    [customCssProperty.setNative](value: string) {
         this.cssPropCounter++;
         this.cssPropNativeValue = value;
     }
 
-    get [customViewProperty.native](): string {
+    [customViewProperty.getDefault](): string {
         return "customViewPropertyDefaultValue";
     }
-    set [customViewProperty.native](value: string) {
+    [customViewProperty.setNative](value: string) {
         this.viewPropCounter++;
         this.viewPropNativeValue = value;
     }
@@ -404,28 +417,55 @@ export function test_NativeSetter_called_when_add_and_remove() {
     secondView.custom = "testViewValue";
 
     helper.buildUIAndRunTest(firstView, () => {
-        TKUnit.assertEqual(secondView.cssPropCounter, 0);
-        TKUnit.assertEqual(secondView.viewPropCounter, 0);
+        TKUnit.assertEqual(secondView.cssPropCounter, 0, "1");
+        TKUnit.assertEqual(secondView.viewPropCounter, 0, "2");
 
         // Add to visual tree
         firstView.addChild(secondView);
-        TKUnit.assertEqual(secondView.cssPropCounter, 1);
-        TKUnit.assertEqual(secondView.viewPropCounter, 1);
-        secondView.cssPropCounter = 0;
-        secondView.viewPropCounter = 0;
+        TKUnit.assertEqual(secondView.cssPropCounter, 1, "3");
+        TKUnit.assertEqual(secondView.viewPropCounter, 1, "4");
 
         // Set new value
         secondView.customCssProperty = "test2";
         secondView.custom = "test2";
-        TKUnit.assertEqual(secondView.cssPropCounter, 1);
-        TKUnit.assertEqual(secondView.viewPropCounter, 1);
-        secondView.cssPropCounter = 0;
-        secondView.viewPropCounter = 0;
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "5");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "6");
 
         // Remove from visual tree
         firstView.removeChild(secondView);
-        TKUnit.assertEqual(secondView.cssPropCounter, 0);
-        TKUnit.assertEqual(secondView.viewPropCounter, 0);
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "7");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "8");
+    });
+};
+
+export function test_NativeSetter_called_when_add_and_remove_and_recycled() {
+    const firstView = new TestView("firstView");
+    const secondView = new TestView("secondView");
+    secondView.recycleNativeView = !isIOS;
+    secondView.customCssProperty = "testCssValue";
+    secondView.custom = "testViewValue";
+
+    helper.buildUIAndRunTest(firstView, () => {
+        TKUnit.assertEqual(secondView.cssPropCounter, 0, "1");
+        TKUnit.assertEqual(secondView.viewPropCounter, 0, "2");
+
+        // Add to visual tree
+        firstView.addChild(secondView);
+        TKUnit.assertEqual(secondView.cssPropCounter, 1, "3");
+        TKUnit.assertEqual(secondView.viewPropCounter, 1, "4");
+
+        // Set new value
+        secondView.customCssProperty = "test2";
+        secondView.custom = "test2";
+        TKUnit.assertEqual(secondView.cssPropCounter, 2, "5");
+        TKUnit.assertEqual(secondView.viewPropCounter, 2, "6");
+
+        // Remove from visual tree
+        firstView.removeChild(secondView);
+
+        // we don't recycle nativeViews on iOS yet so reset is not called.
+        TKUnit.assertEqual(secondView.cssPropCounter, isIOS ? 2 : 3, "7");
+        TKUnit.assertEqual(secondView.viewPropCounter, isIOS ? 2 : 3, "8");
     });
 };
 
@@ -769,7 +809,7 @@ export function testSetInlineStyle() {
 export function testBorderWidth() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
-        const expectedValue = <number>lbl.borderWidth * utils.layout.getDisplayDensity();
+        const expectedValue = Math.round(<number>lbl.borderWidth * utils.layout.getDisplayDensity());
         const actualValue = definition.getUniformNativeBorderWidth(lbl);
         TKUnit.assertAreClose(actualValue, expectedValue, 0.01, "borderWidth");
     });
@@ -778,7 +818,8 @@ export function testBorderWidth() {
 export function testCornerRadius() {
     helper.buildUIAndRunTest(_createLabelWithBorder(), function (views: Array<View>) {
         const lbl = views[0];
-        const expectedValue = <number>lbl.borderRadius * utils.layout.getDisplayDensity();
+        TKUnit.waitUntilReady(() => lbl.isLayoutValid);
+        const expectedValue = Math.round(<number>lbl.borderRadius * utils.layout.getDisplayDensity());
         const actualValue = definition.getUniformNativeCornerRadius(lbl);
         TKUnit.assertAreClose(actualValue, expectedValue, 0.01, "borderRadius");
     });

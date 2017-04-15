@@ -1,6 +1,6 @@
-import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "ui/layouts/layout-base";
+import { LayoutBase, View, Style, CssProperty, isIOS, ShorthandProperty, makeValidator, makeParser, unsetValue } from "../layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "../layout-base";
 
 export type Basis = "auto" | number;
 
@@ -208,6 +208,8 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
         return validateArgs(view).style.flexWrapBefore;
     }
 }
+
+// FlexboxLayoutBase.prototype.recycleNativeView = true;
 
 export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({ name: "flexDirection", cssName: "flex-direction", defaultValue: FlexDirection.ROW, affectsLayout: isIOS, valueConverter: FlexDirection.parse });
 flexDirectionProperty.register(Style);

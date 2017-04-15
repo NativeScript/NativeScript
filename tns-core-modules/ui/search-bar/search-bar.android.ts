@@ -1,9 +1,9 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 import {
     SearchBarBase, Color, colorProperty, backgroundColorProperty, backgroundInternalProperty, fontInternalProperty,
     textProperty, hintProperty, textFieldHintColorProperty, textFieldBackgroundColorProperty, fontSizeProperty
 } from "./search-bar-common";
-import { ad } from "utils/utils";
+import { ad } from "../../utils/utils";
 
 export * from "./search-bar-common";
 
@@ -76,47 +76,57 @@ function initializeNativeClasses(): void {
 }
 
 export class SearchBar extends SearchBarBase {
-    private _android: android.widget.SearchView;
-    private _closeListener: android.widget.SearchView.OnCloseListener;
-    private _queryTextListener: android.widget.SearchView.OnQueryTextListener;
+    nativeView: android.widget.SearchView;
 
     public dismissSoftInput() {
-        ad.dismissSoftInput(this._nativeView);
+        ad.dismissSoftInput(this.nativeView);
     }
 
     public focus(): boolean {
         let result = super.focus();
         if (result) {
-            ad.showSoftInput(this._nativeView);
+            ad.showSoftInput(this.nativeView);
         }
 
         return result;
     }
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeNativeClasses();
-        this._android = new android.widget.SearchView(this._context);
+        const nativeView = new android.widget.SearchView(this._context);
+        nativeView.setIconified(false);
 
-        this._android.setIconified(false);
+        const queryTextListener = new QueryTextListener(this);
+        nativeView.setOnQueryTextListener(queryTextListener);
+        (<any>nativeView).queryTextListener = queryTextListener;
 
-        this._queryTextListener = this._queryTextListener || new QueryTextListener(this);
-        this._android.setOnQueryTextListener(this._queryTextListener);
+        const closeListener = new CloseListener(this);
+        nativeView.setOnCloseListener(closeListener);
+        (<any>nativeView).closeListener = closeListener;
 
-        this._closeListener = this._closeListener || new CloseListener(this);
-        this._android.setOnCloseListener(this._closeListener);
-        return this._android;
+        return nativeView;
     }
 
-    get android(): android.widget.SearchView {
-        return this._android;
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView: any = this.nativeView;
+        nativeView.closeListener.owner = this;
+        nativeView.queryTextListener.owner = this;
     }
 
-    get [backgroundColorProperty.native](): number {
+    public disposeNativeView() {
+        const nativeView: any = this.nativeView;
+        nativeView.closeListener.owner = null;
+        nativeView.queryTextListener.owner = null;
+        super.disposeNativeView();
+    }
+
+    [backgroundColorProperty.getDefault](): number {
         // TODO: Why do we get DrawingCacheBackgroundColor but set backgroundColor?????
-        let result = this._android.getDrawingCacheBackgroundColor();
+        const result = this.nativeView.getDrawingCacheBackgroundColor();
         return result;
     }
-    set [backgroundColorProperty.native](value: Color) {
+    [backgroundColorProperty.setNative](value: Color) {
         let color: number;
         if (typeof value === "number") {
             color = value;
@@ -124,31 +134,25 @@ export class SearchBar extends SearchBarBase {
             color = value.android;
         }
 
-        this._android.setBackgroundColor(color);
-        let searchPlate = this._getSearchPlate();
+        this.nativeView.setBackgroundColor(color);
+        const searchPlate = this._getSearchPlate();
         searchPlate.setBackgroundColor(color);
     }
 
-    get [colorProperty.native](): number {
-        let textView = this._getTextView();
+    [colorProperty.getDefault](): number {
+        const textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
-    set [colorProperty.native](value: Color) {
-        let color: number;
-        if (typeof value === "number") {
-            color = value;
-        } else {
-            color = value.android;
-        }
-
-        let textView = this._getTextView();
+    [colorProperty.setNative](value: Color) {
+        const color: number = (typeof value === "number") ? value : value.android;
+        const textView = this._getTextView();
         textView.setTextColor(color);
     }
 
-    get [fontSizeProperty.native](): { nativeSize: number } {
+    [fontSizeProperty.getDefault](): { nativeSize: number } {
         return { nativeSize: this._getTextView().getTextSize() };
     }
-    set [fontSizeProperty.native](value: number | { nativeSize: number }) {
+    [fontSizeProperty.setNative](value: number | { nativeSize: number }) {
         if (typeof value === "number") {
             this._getTextView().setTextSize(value);
         } else {
@@ -156,60 +160,60 @@ export class SearchBar extends SearchBarBase {
         }
     }
 
-    get [fontInternalProperty.native](): android.graphics.Typeface {
+    [fontInternalProperty.getDefault](): android.graphics.Typeface {
         return this._getTextView().getTypeface();
     }
-    set [fontInternalProperty.native](value: Font | android.graphics.Typeface) {
+    [fontInternalProperty.setNative](value: Font | android.graphics.Typeface) {
         this._getTextView().setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
     }
 
-    get [backgroundInternalProperty.native](): any {
+    [backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: any) {
+    [backgroundInternalProperty.setNative](value: any) {
         //
     }
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return "";
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
-        this._android.setQuery(text, false);
+        this.nativeView.setQuery(text, false);
     }
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return "";
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
-        this._android.setQueryHint(text);
+        this.nativeView.setQueryHint(text);
     }
-    get [textFieldBackgroundColorProperty.native](): number {
-        let textView = this._getTextView();
+    [textFieldBackgroundColorProperty.getDefault](): number {
+        const textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
-    set [textFieldBackgroundColorProperty.native](value: Color) {
-        let textView = this._getTextView();
-        let color = value instanceof Color ? value.android : value;
+    [textFieldBackgroundColorProperty.setNative](value: Color) {
+        const textView = this._getTextView();
+        const color = value instanceof Color ? value.android : value;
         textView.setBackgroundColor(color);
     }
-    get [textFieldHintColorProperty.native](): number {
-        let textView = this._getTextView();
+    [textFieldHintColorProperty.getDefault](): number {
+        const textView = this._getTextView();
         return textView.getCurrentTextColor();
     }
-    set [textFieldHintColorProperty.native](value: Color) {
-        let textView = this._getTextView();
-        let color = value instanceof Color ? value.android : value;
+    [textFieldHintColorProperty.setNative](value: Color) {
+        const textView = this._getTextView();
+        const color = value instanceof Color ? value.android : value;
         textView.setHintTextColor(color);
     }
 
     private _getTextView(): android.widget.TextView {
-        let id = this._android.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        return <android.widget.TextView>this._android.findViewById(id);
+        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        return <android.widget.TextView>this.nativeView.findViewById(id);
     }
 
     private _getSearchPlate(): android.widget.LinearLayout {
-        let id = this._android.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
-        return <android.widget.LinearLayout>this._android.findViewById(id);
+        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
+        return <android.widget.LinearLayout>this.nativeView.findViewById(id);
     }
 }

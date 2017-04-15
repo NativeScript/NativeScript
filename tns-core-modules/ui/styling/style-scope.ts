@@ -1,13 +1,13 @@
-import { ViewBase } from "ui/core/view-base";
-import { View } from "ui/core/view";
-import { resetCSSProperties } from "ui/core/properties";
-import { SyntaxTree, Keyframes, parse as parseCss, Node as CssNode } from "css";
-import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from "ui/styling/css-selector";
-import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "trace";
-import { File, knownFolders, path } from "file-system";
-import * as application from "application";
+import { ViewBase } from "../core/view-base";
+import { View } from "../core/view";
+import { resetCSSProperties } from "../core/properties";
+import { SyntaxTree, Keyframes, parse as parseCss, Node as CssNode } from "../../css";
+import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from "./css-selector";
+import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
+import { File, knownFolders, path } from "../../file-system";
+import * as application from "../../application";
 
-import * as kam from "ui/animation/keyframe-animation";
+import * as kam from "../animation/keyframe-animation";
 let keyframeAnimationModule: typeof kam;
 function ensureKeyframeAnimationModule() {
     if (!keyframeAnimationModule) {
@@ -34,8 +34,8 @@ let applicationCssSelectorVersion: number = 0;
 let applicationSelectors: RuleSet[] = [];
 const applicationAdditionalSelectors: RuleSet[] = [];
 const applicationKeyframes: any = {};
-
 const animationsSymbol: symbol = Symbol("animations");
+const pattern: RegExp = /('|")(.*?)\1/;
 
 function onCssChanged(args: application.CssChangedEventData): void {
     if (args.cssText) {
@@ -50,7 +50,7 @@ function onCssChanged(args: application.CssChangedEventData): void {
 }
 
 function onLiveSync(args: application.CssChangedEventData): void {
-    loadCss(args.cssFile)
+    loadCss(application.getCssFileName());
 }
 
 function loadCss(cssFile?: string): RuleSet[] {
@@ -74,11 +74,20 @@ function loadCss(cssFile?: string): RuleSet[] {
 
 application.on("cssChanged", onCssChanged);
 application.on("livesync", onLiveSync);
-application.on("launch", () => loadCss(application.getCssFileName()));
 
-let pattern: RegExp = /('|")(.*?)\1/;
+function loadCssOnLaunch() {
+    loadCss(application.getCssFileName());
+    application.off("launch", loadCssOnLaunch);
+}
+if (application.hasLaunched()) {
+    loadCssOnLaunch();
+} else {
+    application.on("launch", loadCssOnLaunch);
+}
 
 export class CssState {
+    private _pendingKeyframeAnimations: SelectorCore[];
+
     constructor(private view: ViewBase, private match: SelectorsMatch<ViewBase>) {
     }
 
@@ -95,11 +104,20 @@ export class CssState {
             matchingSelectors.push(this.view.inlineStyleSelector);
         }
 
-        matchingSelectors.forEach(s => this.applyDescriptors(this.view, s.ruleset));
+        matchingSelectors.forEach(s => this.applyDescriptors(s.ruleset));
+        this._pendingKeyframeAnimations = matchingSelectors;
+        this.playPendingKeyframeAnimations();
     }
 
-    private applyDescriptors(view: ViewBase, ruleset: RuleSet): void {
-        let style = view.style;
+    public playPendingKeyframeAnimations() {
+        if (this._pendingKeyframeAnimations && this.view.nativeView) {
+            this._pendingKeyframeAnimations.forEach(s => this.playKeyframeAnimationsFromRuleSet(s.ruleset));
+            this._pendingKeyframeAnimations = null;
+        }
+    }
+
+    private applyDescriptors(ruleset: RuleSet): void {
+        let style = this.view.style;
         ruleset.declarations.forEach(d => {
             try {
                 // Use the "css:" prefixed name, so that CSS value source is set.
@@ -107,23 +125,25 @@ export class CssState {
                 if (cssPropName in style) {
                     style[cssPropName] = d.value;
                 } else {
-                    view[d.property] = d.value;
+                    this.view[d.property] = d.value;
                 }
             } catch (e) {
-                traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${view}. ${e}`, traceCategories.Error, traceMessageType.error);
+                traceWrite(`Failed to apply property [${d.property}] with value [${d.value}] to ${this.view}. ${e}`, traceCategories.Error, traceMessageType.error);
             }
         });
+    }
 
+    private playKeyframeAnimationsFromRuleSet(ruleset: RuleSet): void {
         let ruleAnimations: kam.KeyframeAnimationInfo[] = ruleset[animationsSymbol];
-        if (ruleAnimations && view.isLoaded && view.nativeView !== undefined) {
+        if (ruleAnimations) {
             ensureKeyframeAnimationModule();
             for (let animationInfo of ruleAnimations) {
                 let animation = keyframeAnimationModule.KeyframeAnimation.keyframeAnimationFromInfo(animationInfo);
                 if (animation) {
-                    view._registerAnimation(animation);
-                    animation.play(<View>view)
-                        .then(() => { view._unregisterAnimation(animation); })
-                        .catch((e) => { view._unregisterAnimation(animation); });
+                    this.view._registerAnimation(animation);
+                    animation.play(<View>this.view)
+                        .then(() => { this.view._unregisterAnimation(animation); })
+                        .catch((e) => { this.view._unregisterAnimation(animation); });
                 }
             }
         }
@@ -193,7 +213,7 @@ export class StyleScope {
         return undefined;
     }
 
-    public ensureSelectors(): boolean {
+    public ensureSelectors(): number {
         let toMerge: RuleSet[][];
         if (this._applicationCssSelectorsAppliedVersion !== applicationCssSelectorVersion ||
             this._localCssSelectorVersion !== this._localCssSelectorsAppliedVersion ||
@@ -211,12 +231,10 @@ export class StyleScope {
         if (toMerge && toMerge.length > 0) {
             this._mergedCssSelectors = toMerge.filter(m => !!m).reduce((merged, next) => merged.concat(next), []);
             this._applyKeyframesOnSelectors();
-        } else {
-            return false;
+            this._selectors = new SelectorsMap(this._mergedCssSelectors);
         }
 
-        this._selectors = new SelectorsMap(this._mergedCssSelectors);
-        return true;
+        return this._getSelectorsVersion();
     }
 
     public applySelectors(view: ViewBase): void {
@@ -236,6 +254,12 @@ export class StyleScope {
     private _reset() {
         this._statesByKey = {};
         this._viewIdToKey = {};
+    }
+
+    private _getSelectorsVersion() {
+        // The counters can only go up. So we can return just appVersion + localVersion
+        // The 100000 * appVersion is just for easier debugging
+        return 100000 * this._applicationCssSelectorsAppliedVersion + this._localCssSelectorsAppliedVersion;
     }
 
     private _applyKeyframesOnSelectors() {

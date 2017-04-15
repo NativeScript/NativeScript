@@ -1,6 +1,6 @@
-﻿import * as pages from "ui/page";
-import * as textField from "ui/text-field";
-import * as observable from "data/observable";
+﻿import * as pages from "tns-core-modules/ui/page";
+import * as textField from "tns-core-modules/ui/text-field";
+import * as observable from "tns-core-modules/data/observable";
 
 var context: any;
 var closeCallback: Function;

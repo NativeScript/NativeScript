@@ -1,8 +1,8 @@
 import * as tests from "../testRunner";
-import * as pages from "ui/page";
-import * as bm from "ui/button";
-import * as listViewDef from "ui/list-view";
-import * as trace from "trace";
+import * as pages from "tns-core-modules/ui/page";
+import * as bm from "tns-core-modules/ui/button";
+import * as listViewDef from "tns-core-modules/ui/list-view";
+import * as trace from "tns-core-modules/trace";
 trace.enable();
 trace.addCategories(trace.categories.Test + "," + trace.categories.Error);
 

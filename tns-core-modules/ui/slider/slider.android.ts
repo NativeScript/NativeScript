@@ -1,4 +1,4 @@
-﻿import { Background } from "ui/styling/background";
+﻿import { Background } from "../styling/background";
 import {
     SliderBase, valueProperty, minValueProperty, maxValueProperty,
     colorProperty, backgroundColorProperty, backgroundInternalProperty, Color
@@ -19,7 +19,7 @@ function initializeSeekBarChangeListener(): void {
 
     @Interfaces([android.widget.SeekBar.OnSeekBarChangeListener])
     class SeekBarChangeListenerImpl extends java.lang.Object implements android.widget.SeekBar.OnSeekBarChangeListener {
-        constructor(private owner: Slider) {
+        constructor(public owner: Slider) {
             super();
             return global.__native(this);
         }
@@ -46,19 +46,27 @@ function initializeSeekBarChangeListener(): void {
 
 export class Slider extends SliderBase {
     _supressNativeValue: boolean;
-    private _android: android.widget.SeekBar;
-    private changeListener: android.widget.SeekBar.OnSeekBarChangeListener;
+    nativeView: android.widget.SeekBar;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeSeekBarChangeListener();
-        this.changeListener = this.changeListener || new SeekBarChangeListener(this);
-        this._android = new android.widget.SeekBar(this._context);
-        this._android.setOnSeekBarChangeListener(this.changeListener);
-        return this._android;
+        const listener = new SeekBarChangeListener(this);
+        const nativeView = new android.widget.SeekBar(this._context);
+        nativeView.setOnSeekBarChangeListener(listener);
+        (<any>nativeView).listener = listener;
+        return nativeView;
     }
 
-    get android(): android.widget.SeekBar {
-        return this._android;
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = this;
+    }
+
+    public disposeNativeView() {
+        const nativeView: any = this.nativeView;
+        nativeView.listener.owner = null;
+        super.disposeNativeView();
     }
 
     /**
@@ -68,60 +76,61 @@ export class Slider extends SliderBase {
      */
     private setNativeValuesSilently(newValue: number, newMaxValue: number) {
         this._supressNativeValue = true;
+        const nativeView = this.nativeView;
         try {
-            this.android.setMax(newMaxValue);
-            this.android.setProgress(newValue);
+            nativeView.setMax(newMaxValue);
+            nativeView.setProgress(newValue);
         }
         finally {
             this._supressNativeValue = false;
         }
     }
 
-    get [valueProperty.native](): number {
+    [valueProperty.getDefault](): number {
         return 0;
     }
-    set [valueProperty.native](value: number) {
+    [valueProperty.setNative](value: number) {
         this.setNativeValuesSilently(value - this.minValue, this.maxValue - this.minValue);
     }
-    get [minValueProperty.native](): number {
+    [minValueProperty.getDefault](): number {
         return 0;
     }
-    set [minValueProperty.native](value: number) {
+    [minValueProperty.setNative](value: number) {
         this.setNativeValuesSilently(this.value - value, this.maxValue - value);
     }
-    get [maxValueProperty.native](): number {
+    [maxValueProperty.getDefault](): number {
         return 100;
     }
-    set [maxValueProperty.native](value: number) {
-        this._android.setMax(value - this.minValue);
+    [maxValueProperty.setNative](value: number) {
+        this.nativeView.setMax(value - this.minValue);
     }
 
-    get [colorProperty.native](): number {
+    [colorProperty.getDefault](): number {
         return -1;
     }
-    set [colorProperty.native](value: number | Color) {
+    [colorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this._android.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeView.getThumb().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this._android.getThumb().clearColorFilter();
+            this.nativeView.getThumb().clearColorFilter();
         }
     }
 
-    get [backgroundColorProperty.native](): number {
+    [backgroundColorProperty.getDefault](): number {
         return -1;
     }
-    set [backgroundColorProperty.native](value: number | Color) {
+    [backgroundColorProperty.setNative](value: number | Color) {
         if (value instanceof Color) {
-            this._android.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
+            this.nativeView.getProgressDrawable().setColorFilter(value.android, android.graphics.PorterDuff.Mode.SRC_IN);
         } else {
-            this._android.getProgressDrawable().clearColorFilter();
+            this.nativeView.getProgressDrawable().clearColorFilter();
         }
     }
 
-    get [backgroundInternalProperty.native](): Background {
+    [backgroundInternalProperty.getDefault](): Background {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Background) {
+    [backgroundInternalProperty.setNative](value: Background) {
         //
     }
 }

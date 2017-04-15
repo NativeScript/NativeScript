@@ -20,8 +20,8 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
     }
 }
 
-import * as timerModule from "timer";
-import * as dialogsModule from "ui/dialogs";
+import * as timerModule from "../timer";
+import * as dialogsModule from "../ui/dialogs";
 
 type ModuleLoader = () => any;
 const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
@@ -121,7 +121,11 @@ if ((<any>global).__snapshot) {
     registerOnGlobalContext("fetch", "fetch");
 }
 
-if (!(<any>global).console) {
+// check whether the 'android' namespace is exposed
+// if positive - the current device is an Android 
+// so a custom implementation of the global 'console' object is attached.
+// otherwise do nothing on iOS - the NS runtime provides a native 'console' functionality.
+if ((<any>global).android || (<any>global).__snapshot) {
     const consoleModule = require("console");
     (<any>global).console = new consoleModule.Console();
 }

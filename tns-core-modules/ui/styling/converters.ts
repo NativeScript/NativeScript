@@ -1,5 +1,5 @@
-﻿import { Color } from "color";
-import { CubicBezierAnimationCurve } from "ui/animation";
+﻿import { Color } from "../../color";
+import { CubicBezierAnimationCurve } from "../animation";
 
 export function colorConverter(value: string): Color {
     return new Color(value);

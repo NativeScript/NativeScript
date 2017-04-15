@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the SearchBar class, which represents a standard search bar component.
  */
-import { View, Property, EventData, Color } from "ui/core/view";
+import { View, Property, EventData, Color } from "../core/view";
 
 /**
  * Represents a search bar component.

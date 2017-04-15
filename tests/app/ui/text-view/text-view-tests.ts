@@ -1,20 +1,20 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as pagesModule from "ui/page";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as pagesModule from "tns-core-modules/ui/page";
 import * as textViewTestsNative from "./text-view-tests-native";
-import * as colorModule from "color";
-import * as enums from "ui/enums";
-import * as platform from "platform";
+import * as colorModule from "tns-core-modules/color";
+import * as enums from "tns-core-modules/ui/enums";
+import * as platform from "tns-core-modules/platform";
 
 // >> require-textmodules
-import * as textViewModule from "ui/text-view";
+import * as textViewModule from "tns-core-modules/ui/text-view";
 // << require-textmodules
 
 // Other frequently used modules when working with buttons include:
-import * as bindable from "ui/core/bindable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 // >> require-observable-textview
-import * as observable from "data/observable";
+import * as observable from "tns-core-modules/data/observable";
 // << require-observable-textview
 
 // >> text-view-xml
@@ -26,13 +26,13 @@ import * as observable from "data/observable";
 // </Page>
 // << text-view-xml
 // >> observable-declare
-// function pageLoaded(args) {
-//   var page = args.object;
-//   var obj = new observable.Observable();
-//   obj.set("someProperty", "Please change this text!");
-//   page.bindingContext = obj;
-// }
-// exports.pageLoaded = pageLoaded;
+export function pageLoaded(args) {
+  let page = args.object;
+  let obj = new observable.Observable();
+  obj.set("someProperty", "Please change this text!");
+  page.bindingContext = obj;
+}
+exports.pageLoaded = pageLoaded;
 // << observable-declare
 
 var _createTextViewFunc = function (): textViewModule.TextView {
@@ -46,7 +46,7 @@ var _createTextViewFunc = function (): textViewModule.TextView {
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
-        
+
         // >> set-text-value
         textView.text = "Hello, world!";
         // << set-text-value
@@ -60,7 +60,7 @@ export var testSetText = function () {
 export var testSetTextNull = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
-        
+
         textView.text = null;
 
         var expectedValue = "";
@@ -87,7 +87,7 @@ if (platform.device.os === platform.platformNames.ios) {
         helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
             var textView = <textViewModule.TextView>views[0];
             textView.color = new colorModule.Color("red");
-            TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.tintColor.CGColor, "textView.color");
+            TKUnit.assertEqual(textView.color.ios.CGColor, textView.ios.textColor.CGColor, "textView.color");
         });
     }
 }
@@ -304,14 +304,14 @@ export var testBindEditableDirectlyToModel = function () {
         textView.bind(options, model);
         // textView.editable is now false
         // >> (hide)
-        TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
+        TKUnit.assertFalse(textView.editable, ".ediable property should be false");
+        TKUnit.assertFalse(textViewTestsNative.getNativeEditable(textView), "native Editable should be false");
         // << (hide)
         model.set("editable", true);
         // textView.editable is now true
         // >> (hide)
-        TKUnit.assert(textView.editable === true, "Actual: " + textView.text + "; Expected: " + true);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === true, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + true);
+        TKUnit.assertTrue(textView.editable, ".ediable property should be true");
+        TKUnit.assertTrue(textViewTestsNative.getNativeEditable(textView), "native Editable should be true");
         // << (hide)
         // << binding-editable-property
     });
@@ -332,12 +332,12 @@ export var testBindEditableToBindingConext = function () {
         }
 
         textView.bind(options);
-        TKUnit.assert(textView.editable === false, "Actual: " + textView.text + "; Expected: " + false);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === false, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + false);
+        TKUnit.assertFalse(textView.editable, ".ediable property should be false");
+        TKUnit.assertFalse(textViewTestsNative.getNativeEditable(textView), "native Editable should be false");
 
         model.set("editable", true);
-        TKUnit.assert(textView.editable === true, "Actual: " + textView.text + "; Expected: " + true);
-        TKUnit.assert(textViewTestsNative.getNativeEditable(textView) === true, "Actual: " + textViewTestsNative.getNativeEditable(textView) + "; Expected: " + true);
+        TKUnit.assertTrue(textView.editable, ".ediable property should be true");
+        TKUnit.assertTrue(textViewTestsNative.getNativeEditable(textView), "native Editable should be true");
     });
 }
 
@@ -499,7 +499,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
+
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
@@ -512,7 +512,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
+
         TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");

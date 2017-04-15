@@ -34,5 +34,5 @@ Other frequently used modules when working with a DockLayout include:
 ## Remove child view from layout
 {%snippet dock-layout-removechild%}
 
-## Setting the dock roperty
+## Setting the dock property
 {%snippet dock-layout-setdocl%}

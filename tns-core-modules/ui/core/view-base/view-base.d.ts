@@ -1,20 +1,20 @@
-import { Property, InheritedProperty, Style } from "ui/core/properties";
-import { BindingOptions, Observable } from "ui/core/bindable";
+import { Property, InheritedProperty, Style } from "../properties";
+import { BindingOptions, Observable } from "../bindable";
 
-import { SelectorCore } from "ui/styling/css-selector";
-import { isIOS, isAndroid } from "platform";
+import { SelectorCore } from "../../styling/css-selector";
+import { isIOS, isAndroid } from "../../../platform";
 
-import { KeyframeAnimation } from "ui/animation/keyframe-animation";
-import { Page } from "ui/page";
-import { layout } from "utils/utils";
+import { KeyframeAnimation } from "../../animation/keyframe-animation";
+import { Page } from "../../page";
+import { layout } from "../../../utils/utils";
 
-import { Color } from "color";
-import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "ui/layouts/flexbox-layout";
+import { Color } from "../../../color";
+import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
 
 export { isIOS, isAndroid, layout, Color };
-export * from "ui/core/properties";
-export * from "ui/core/bindable";
+export * from "../properties";
+export * from "../bindable";
 
 /**
  * Iterates through all child views (via visual tree) and executes a function.
@@ -202,24 +202,25 @@ export abstract class ViewBase extends Observable {
     _tearDownUI(force?: boolean): void;
 
     /**
-     * Creates a native view
+     * Creates a native view.
+     * Returns either android.view.View or UIView.
      */
-    _createNativeView(): Object;
-
-    /**
-     * Clean up references to the native view.
-     */
-    _disposeNativeView(): void;
+    createNativeView(): Object;
 
     /**
      * Initializes properties/listeners of the native view.
      */
-    _initNativeView(): void;
+    initNativeView(): void;
+
+    /**
+     * Clean up references to the native view.
+     */
+    disposeNativeView(): void;
 
     /**
      * Resets properties/listeners set to the native view.
      */
-    _resetNativeView(): void;
+    resetNativeView(): void;
 
     _isAddedToNativeVisualTree: boolean;
 
@@ -246,6 +247,19 @@ export abstract class ViewBase extends Observable {
 
     //@private
     public _styleScope: any;
+
+    /**
+     * Determines the depth of batchUpdates.
+     * When the value is 0 the current updates are not batched.
+     * If the value is 1 or greater, the current updates are batched.
+     * Do not set this field, the _batchUpdate method is responsible to keep the count up to date.
+     */
+    public _batchUpdateScope: number;
+
+    /**
+     * Allow multiple updates to be performed on the instance at once.
+     */
+    public _batchUpdate<T>(callback: () => T): T;
     //@endprivate
 }
 

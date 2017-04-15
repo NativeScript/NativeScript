@@ -1,15 +1,15 @@
 ﻿// Definitions.
-import { Transition as TransitionDefinition } from "ui/transition";
-import { Page } from "ui/page";
-import { NavigationTransition, BackstackEntry } from "ui/frame";
+import { Transition as TransitionDefinition } from ".";
+import { Page } from "../page";
+import { NavigationTransition, BackstackEntry } from "../frame";
 
 // Types.
-import { getClass } from "utils/types";
-import { device } from "platform";
-import { _resolveAnimationCurve } from "ui/animation";
-import lazy from "utils/lazy";
+import { getClass } from "../../utils/types";
+import { device } from "../../platform";
+import { _resolveAnimationCurve } from "../animation";
+import lazy from "../../utils/lazy";
 
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "trace";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories } from "../../trace";
 
 let slideTransition: any;
 function ensureSlideTransition() {
@@ -422,14 +422,17 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
 }
 
 export function _removePageNativeViewFromAndroidParent(page: Page): void {
-    if (page._nativeView && page._nativeView.getParent) {
-        let androidParent = page._nativeView.getParent();
+    if (page.nativeView && page.nativeView.getParent) {
+        let androidParent = page.nativeView.getParent();
         if (androidParent && androidParent.removeView) {
             if (traceEnabled()) {
-                traceWrite(`REMOVED ${page}._nativeView from its Android parent`, traceCategories.Transition);
+                traceWrite(`REMOVED ${page}.nativeView from its Android parent`, traceCategories.Transition);
             }
-            page._tearDownUI(true);
-            androidParent.removeView(page._nativeView);
+
+            if (page._context) {
+                page._tearDownUI(true);
+            }
+            androidParent.removeView(page.nativeView);
         }
     }
 }

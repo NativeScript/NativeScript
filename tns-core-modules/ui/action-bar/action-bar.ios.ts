@@ -1,6 +1,6 @@
-import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from "ui/action-bar";
+import { IOSActionItemSettings, ActionItem as ActionItemDefinition } from ".";
 import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, backgroundColorProperty, backgroundInternalProperty, layout, Color } from "./action-bar-common";
-import { ImageSource, fromFileOrResource } from "image-source";
+import { ImageSource, fromFileOrResource } from "../../image-source";
 
 export * from "./action-bar-common";
 
@@ -59,6 +59,10 @@ export class ActionBar extends ActionBarBase {
         return null;
     }
 
+    public createNativeView(): UIView {
+        return this.ios;
+    }
+
     public _addChildFromBuilder(name: string, value: any) {
         if (value instanceof NavigationButton) {
             this.navigationButton = value;
@@ -89,6 +93,8 @@ export class ActionBar extends ActionBarBase {
 
         if (this.titleView && this.titleView.ios) {
             navigationItem.titleView = this.titleView.ios;
+        } else {
+            navigationItem.titleView = null;
         }
 
         // Find previous ViewController in the navigation stack
@@ -115,7 +121,7 @@ export class ActionBar extends ActionBarBase {
             img = fromFileOrResource(this.navigationButton.icon);
         }
 
-        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to 
+        // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
         // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
         // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
         if (img && img.ios) {
@@ -128,7 +134,7 @@ export class ActionBar extends ActionBarBase {
             navigationBar.backIndicatorTransitionMaskImage = null;
         }
 
-        // Set back button visibility 
+        // Set back button visibility
         if (this.navigationButton) {
             navigationItem.setHidesBackButtonAnimated(!isVisible(this.navigationButton), true);
         }
@@ -232,24 +238,22 @@ export class ActionBar extends ActionBarBase {
 
     private _navigationBarHeight: number = 0;
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        let width = layout.getMeasureSpecSize(widthMeasureSpec);
-        let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+        const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
 
-        let height = layout.getMeasureSpecSize(heightMeasureSpec);
-        let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+        const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
         let navBarWidth = 0;
         let navBarHeight = 0;
-        
-        let frame = this.page.frame;
+
+        const frame = this.page.frame;
         if (frame) {
             let navBar: UIView = frame.ios.controller.navigationBar;
             if (!navBar.hidden) {
-                let navBarSize = navBar.sizeThatFits(CGSizeMake(
-                    (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
-                    (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
-                navBarWidth = layout.toDevicePixels(navBarSize.width);
-                navBarHeight = layout.toDevicePixels(navBarSize.height);
+                const desiredSize = layout.measureNativeView(navBar, width, widthMode, height, heightMode);
+                navBarWidth = desiredSize.width;
+                navBarHeight = desiredSize.height;
             }
         }
 
@@ -276,7 +280,7 @@ export class ActionBar extends ActionBarBase {
         View.layoutChild(this, this.titleView, 0, 0, right - left, this._navigationBarHeight);
         this.actionItems.getItems().forEach((actionItem) => {
             if (actionItem.actionView && actionItem.actionView.ios) {
-                let measuredWidth = actionItem.actionView.getMeasuredWidth(); 
+                let measuredWidth = actionItem.actionView.getMeasuredWidth();
                 let measuredHeight = actionItem.actionView.getMeasuredHeight();
                 View.layoutChild(this, actionItem.actionView, 0, 0, measuredWidth, measuredHeight);
             }
@@ -308,10 +312,10 @@ export class ActionBar extends ActionBarBase {
         return (<UINavigationController>page.frame.ios.controller).navigationBar;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return null;
     }
-    set [colorProperty.native](color: Color) {
+    [colorProperty.setNative](color: Color) {
         const navBar = this.navBar;
         if (color) {
             navBar.tintColor = color.ios;
@@ -322,12 +326,12 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    get [backgroundColorProperty.native](): UIColor {
+    [backgroundColorProperty.getDefault](): UIColor {
         // This getter is never called.
         // CssAnimationProperty use default value form their constructor.
         return null;
     }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
         let navBar = this.navBar;
         if (navBar) {
             let color = value instanceof Color ? value.ios : value;
@@ -335,9 +339,9 @@ export class ActionBar extends ActionBarBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): UIColor {
+    [backgroundInternalProperty.getDefault](): UIColor {
         return null;
     }
-    set [backgroundInternalProperty.native](value: UIColor) { // tslint:disable-line
+    [backgroundInternalProperty.setNative](value: UIColor) { // tslint:disable-line
     }
 }

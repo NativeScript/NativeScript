@@ -1,5 +1,5 @@
 ﻿/* tslint:disable:no-unused-variable */
-import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from "ui/core/control-state-change";
+import { ControlStateChangeListener as ControlStateChangeListenerDefinition } from ".";
 
 class ObserverClass extends NSObject {
     // NOTE: Refactor this - use Typescript property instead of strings....

@@ -1,22 +1,21 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import * as app from "application";
+import * as app from "tns-core-modules/application";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
-import * as wrapLayoutModule from "ui/layouts/wrap-layout";
-import * as layoutBaseModule from "ui/layouts/layout-base";
-import * as fs from "file-system";
-import * as pageModule from "ui/page";
-import * as gestureModule from "ui/gestures";
-import { Label } from "ui/label";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
+import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
+import * as layoutBaseModule from "tns-core-modules/ui/layouts/layout-base";
+import * as pageModule from "tns-core-modules/ui/page";
+import * as gestureModule from "tns-core-modules/ui/gestures";
+import { Label } from "tns-core-modules/ui/label";
 
 // >> article-require-repeater-module
-import * as repeaterModule from "ui/repeater";
+import * as repeaterModule from "tns-core-modules/ui/repeater";
 // << article-require-repeater-module
 
 // >> article-require-modules-repeater
-import * as observableArray from "data/observable-array";
-import * as labelModule from "ui/label";
+import * as observableArray from "tns-core-modules/data/observable-array";
+import * as labelModule from "tns-core-modules/ui/label";
 // << article-require-modules-repeater
 
 var ASYNC = 0.2;
@@ -201,17 +200,13 @@ export function test_add_to_observable_array_refreshes_the_Repeater() {
         var colors = new observableArray.ObservableArray(["red", "green", "blue"]);
         repeater.items = colors;
 
-        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 3, "getChildrenCount");
 
         // >> article-push-to-observablearray
         colors.push("yellow");
         // The Repeater will be updated automatically.
         // << article-push-to-observablearray
-        TKUnit.wait(ASYNC);
-        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), 4, "getChildrenCount");
-
     };
 
     helper.buildUIAndRunTest(repeater, testAction);
@@ -269,7 +264,7 @@ export function test_usingAppLevelConvertersInRepeaterItems() {
         return result;
     };
 
-    app.resources["dateConverter"] = dateConverter;
+    app.getResources()["dateConverter"] = dateConverter;
 
     var data = new observableArray.ObservableArray();
 
@@ -363,8 +358,7 @@ export var test_RepeaterItemsGestureBindings = function () {
         TKUnit.assertEqual(hasObservers, true, "Every item should have tap observer!");
     }
 
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
 }
 
 export var test_RepeaterItemsParentBindingsShouldWork = function () {
@@ -390,8 +384,7 @@ export var test_RepeaterItemsParentBindingsShouldWork = function () {
         TKUnit.assertEqual(testPass, true, "Every item should have text bound to Page binding context!");
     }
 
-    var moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(("." + moduleName + "/repeaterItems-bindingToGestures"), null, testFunc);
+    helper.navigateToModuleAndRunTest("ui/repeater/repeaterItems-bindingToGestures", null, testFunc);
 }
 
 export function test_ChildrenAreNotCreatedUntilTheRepeaterIsLoaded() {

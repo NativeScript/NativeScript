@@ -1,6 +1,6 @@
-﻿import * as buttonModule from "ui/button";
-import * as pages from "ui/page";
-import * as stackLayoutDef from "ui/layouts/stack-layout";
+﻿import * as buttonModule from "tns-core-modules/ui/button";
+import * as pages from "tns-core-modules/ui/page";
+import * as stackLayoutDef from "tns-core-modules/ui/layouts/stack-layout";
 
 // import {isAndroid} from "platform";
 // import * as style from "ui/styling/style";

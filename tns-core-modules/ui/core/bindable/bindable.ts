@@ -1,16 +1,16 @@
-﻿import { BindingOptions } from "ui/core/bindable";
-import { ViewBase } from "ui/core/view-base";
+﻿import { BindingOptions } from ".";
+import { ViewBase } from "../view-base";
 
-import { unsetValue } from "ui/core/properties";
-import { Observable, WrappedValue, PropertyChangeData, EventData } from "data/observable";
-import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
+import { unsetValue } from "../properties";
+import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
+import { addWeakEventListener, removeWeakEventListener } from "../weak-event-listener";
 import { bindingConstants, parentsRegex } from "../../builder/binding-builder";
-import { escapeRegexSymbols } from "utils/utils";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet, messageType as traceMessageType } from "trace";
-import * as types from "utils/types";
+import { escapeRegexSymbols } from "../../../utils/utils";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, isCategorySet, messageType as traceMessageType } from "../../../trace";
+import * as types from "../../../utils/types";
 
-import * as application from "application";
-import * as polymerExpressions from "js-libs/polymer-expressions";
+import * as application from "../../../application";
+import * as polymerExpressions from "../../../js-libs/polymer-expressions";
 
 export {
     Observable, WrappedValue, PropertyChangeData, EventData,
@@ -348,9 +348,10 @@ export class Binding {
                 let context = this.source && this.source.get && this.source.get() || global;
                 let model = {};
                 let addedProps = [];
-                for (let prop in application.resources) {
-                    if (application.resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
-                        context[prop] = application.resources[prop];
+                const resources = application.getResources();
+                for (let prop in resources) {
+                    if (resources.hasOwnProperty(prop) && !context.hasOwnProperty(prop)) {
+                        context[prop] = resources[prop];
                         addedProps.push(prop);
                     }
                 }

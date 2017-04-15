@@ -1,4 +1,4 @@
-import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility, PercentLength, Length } from "ui/layouts/layout-base";
+import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility, PercentLength, Length } from "tns-core-modules/ui/layouts/layout-base";
 
 export class ViewModel extends Observable {
 

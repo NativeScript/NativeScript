@@ -1,9 +1,9 @@
-import observable = require("data/observable");
-import pages = require("ui/page");
-import view = require("ui/core/view");
-import animationModule = require("ui/animation");
-import slider = require("ui/slider");
-import wrapLayout = require("ui/layouts/wrap-layout");
+import observable = require("tns-core-modules/data/observable");
+import pages = require("tns-core-modules/ui/page");
+import view = require("tns-core-modules/ui/core/view");
+import animationModule = require("tns-core-modules/ui/animation");
+import slider = require("tns-core-modules/ui/slider");
+import wrapLayout = require("tns-core-modules/ui/layouts/wrap-layout");
 
 var page: pages.Page;
 var opacitySlider: slider.Slider;

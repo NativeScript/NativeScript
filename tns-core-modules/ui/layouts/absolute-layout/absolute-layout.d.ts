@@ -1,4 +1,4 @@
-﻿import { LayoutBase, View, Property, Length } from "ui/layouts/layout-base";
+﻿import { LayoutBase, View, Property, Length } from "../layout-base";
 
 /**
  *  A layout that lets you specify exact locations (left/top coordinates) of its children.

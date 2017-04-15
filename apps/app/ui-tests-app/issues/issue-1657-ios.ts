@@ -1,4 +1,4 @@
-import { EventData } from 'data/observable';
+import { EventData } from "tns-core-modules/data/observable";
 var frameModule = require("ui/frame");
 var platform = require("platform");
 var defaultSpeed = -1;

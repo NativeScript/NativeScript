@@ -1,14 +1,12 @@
-﻿import { TextView as TextViewDefinition } from "ui/text-view";
+﻿import { TextView as TextViewDefinition } from ".";
 import {
-    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty,
+    EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, 
-    Length, _updateCharactersInRangeReplacementString, Color
-} from "ui/editable-text-base";
+    Length, _updateCharactersInRangeReplacementString, Color, layout
+} from "../editable-text-base";
 
-import { ios } from "utils/utils";
-
-export * from "ui/editable-text-base";
+export * from "../editable-text-base";
 
 class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
     public static ObjCProtocols = [UITextViewDelegate];
@@ -69,7 +67,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     constructor() {
         super();
 
-        this._ios = UITextView.new();
+        this.nativeView = this._ios = UITextView.new();
         if (!this._ios.font) {
             this._ios.font = UIFont.systemFontOfSize(12);
         }
@@ -90,9 +88,9 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         return this._ios;
     }
 
-    get nativeView(): UITextView {
-        return this._ios;
-    }
+    // get nativeView(): UITextView {
+    //     return this._ios;
+    // }
 
     public _refreshHintState(hint: string, text: string) {
         if (this.formattedText) {
@@ -108,154 +106,168 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         }
     }
 
+    private _refreshColor() {
+        if (this._isShowingHint) {
+            const placeholderColor = this.style.placeholderColor;
+            const color = this.style.color;
+
+            if (placeholderColor) {
+                this.nativeView.textColor = placeholderColor.ios;
+            } else if (color) {
+                // Use semi-transparent vesion of color for back-compatibility 
+                this.nativeView.textColor = color.ios.colorWithAlphaComponent(0.22);
+            } else {
+                this.nativeView.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
+            }
+        } else {
+            const color = this.style.color;
+
+            if (color) {
+                this.nativeView.textColor = color.ios;
+            } else {
+                this.nativeView.textColor = UIColor.blackColor;
+            }
+        }
+    }
+
     public showHint(hint: string) {
         const nativeView = this.nativeView;
-        nativeView.textColor = nativeView.textColor ? nativeView.textColor.colorWithAlphaComponent(0.22) : ios.getter(UIColor, UIColor.blackColor).colorWithAlphaComponent(0.22);
+
+        this._isShowingHint = true;
+        this._refreshColor();
+
         const hintAsString: string = (hint === null || hint === undefined) ? '' : hint.toString();
         nativeView.text = hintAsString;
-        this._isShowingHint = true;
     }
 
     public showText() {
-        this.nativeView.textColor = this.color ? this.color.ios : null;
-        this._setNativeText();
         this._isShowingHint = false;
+        this._refreshColor();
+        this._setNativeText();
     }
 
-    get [textProperty.native](): string {
+    [textProperty.getDefault](): string {
         return "";
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         this._refreshHintState(this.hint, value);
     }
 
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return "";
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         this._refreshHintState(value, this.text);
     }
 
-    get [editableProperty.native](): boolean {
+    [editableProperty.getDefault](): boolean {
         return this.nativeView.editable;
     }
-    set [editableProperty.native](value: boolean) {
+    [editableProperty.setNative](value: boolean) {
         this.nativeView.editable = value;
     }
 
-    get [colorProperty.native](): UIColor {
-        let textView = this.nativeView;
-        if (this._isShowingHint && textView.textColor) {
-            return textView.textColor.colorWithAlphaComponent(1);
-        }
-        else {
-            return textView.textColor;
-        }
+    [colorProperty.setNative](color: Color) {
+        this._refreshColor();
     }
-    set [colorProperty.native](color: UIColor | Color) {
-        let textView = this.nativeView;
-        let uiColor = color instanceof Color ? color.ios : color;
-        if (this._isShowingHint && uiColor) {
-            textView.textColor = uiColor.colorWithAlphaComponent(0.22);
-        } else {
-            textView.textColor = uiColor;
-            textView.tintColor = uiColor;
-        }
+    [placeholderColorProperty.setNative](value: Color) {
+        this._refreshColor();
     }
 
-    get [borderTopWidthProperty.native](): Length {
+    [borderTopWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.top,
             unit: "px"
         };
     }
-    set [borderTopWidthProperty.native](value: Length) {
+    [borderTopWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let top = this.effectivePaddingTop + this.effectiveBorderTopWidth;
+        let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
         this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [borderRightWidthProperty.native](): Length {
+    [borderRightWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.right,
             unit: "px"
         };
     }
-    set [borderRightWidthProperty.native](value: Length) {
+    [borderRightWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let right = this.effectivePaddingRight + this.effectiveBorderRightWidth;
+        let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
-    get [borderBottomWidthProperty.native](): Length {
+    [borderBottomWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.bottom,
             unit: "px"
         };
     }
-    set [borderBottomWidthProperty.native](value: Length) {
+    [borderBottomWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let bottom = this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
+        let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
 
-    get [borderLeftWidthProperty.native](): Length {
+    [borderLeftWidthProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.left,
             unit: "px"
         };
     }
-    set [borderLeftWidthProperty.native](value: Length) {
+    [borderLeftWidthProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
+        let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [paddingTopProperty.native](): Length {
+    [paddingTopProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.top,
             unit: "px"
         };
     }
-    set [paddingTopProperty.native](value: Length) {
+    [paddingTopProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let top = this.effectivePaddingTop + this.effectiveBorderTopWidth;
+        let top = layout.toDeviceIndependentPixels(this.effectivePaddingTop + this.effectiveBorderTopWidth);
         this.nativeView.textContainerInset = { top: top, left: inset.left, bottom: inset.bottom, right: inset.right };
     }
 
-    get [paddingRightProperty.native](): Length {
+    [paddingRightProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.right,
             unit: "px"
         };
     }
-    set [paddingRightProperty.native](value: Length) {
+    [paddingRightProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let right = this.effectivePaddingRight + this.effectiveBorderRightWidth;
+        let right = layout.toDeviceIndependentPixels(this.effectivePaddingRight + this.effectiveBorderRightWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: inset.bottom, right: right };
     }
 
-    get [paddingBottomProperty.native](): Length {
+    [paddingBottomProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.bottom,
             unit: "px"
         };
     }
-    set [paddingBottomProperty.native](value: Length) {
+    [paddingBottomProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let bottom = this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
+        let bottom = layout.toDeviceIndependentPixels(this.effectivePaddingBottom + this.effectiveBorderBottomWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: inset.left, bottom: bottom, right: inset.right };
     }
-    
-    get [paddingLeftProperty.native](): Length {
+    [paddingLeftProperty.getDefault](): Length {
         return {
             value: this.nativeView.textContainerInset.left,
             unit: "px"
         };
     }
-    set [paddingLeftProperty.native](value: Length) {
+    [paddingLeftProperty.setNative](value: Length) {
         let inset = this.nativeView.textContainerInset;
-        let left = this.effectivePaddingLeft + this.effectiveBorderLeftWidth;
+        let left = layout.toDeviceIndependentPixels(this.effectivePaddingLeft + this.effectiveBorderLeftWidth);
         this.nativeView.textContainerInset = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 }
+
+// TextView.prototype.recycleNativeView = true;

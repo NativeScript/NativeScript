@@ -14,10 +14,10 @@ export class Image extends ImageBase {
         super();
 
         //TODO: Think of unified way of setting all the default values.
-        this._ios = UIImageView.new();
+        this.nativeView = this._ios = UIImageView.new();
         this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
-        this._ios.clipsToBounds = true;
         this._ios.userInteractionEnabled = true;
+        this._setNativeClipToBounds();
     }
 
     get ios(): UIImageView {
@@ -43,6 +43,11 @@ export class Image extends ImageBase {
         if (this._imageSourceAffectsLayout) {
             this.requestLayout();
         }
+    }
+
+    _setNativeClipToBounds() {
+        // Always set clipsToBounds for images
+        this._ios.clipsToBounds = true;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
@@ -118,10 +123,10 @@ export class Image extends ImageBase {
         return { width: scaleW, height: scaleH };
     }
 
-    get [stretchProperty.native](): "aspectFit" {
+    [stretchProperty.getDefault](): "aspectFit" {
         return "aspectFit";
     }
-    set [stretchProperty.native](value: "none" | "aspectFill" | "aspectFit" | "fill") {
+    [stretchProperty.setNative](value: "none" | "aspectFill" | "aspectFit" | "fill") {
         switch (value) {
             case "aspectFit":
                 this._ios.contentMode = UIViewContentMode.ScaleAspectFit;
@@ -139,24 +144,24 @@ export class Image extends ImageBase {
         }
     }
 
-    get [tintColorProperty.native](): Color {
+    [tintColorProperty.getDefault](): Color {
         return undefined;
     }
-    set [tintColorProperty.native](value: Color) {
+    [tintColorProperty.setNative](value: Color) {
         this.setTintColor(value);
     }
 
-    get [imageSourceProperty.native](): ImageSource {
+    [imageSourceProperty.getDefault](): ImageSource {
         return undefined;
     }
-    set [imageSourceProperty.native](value: ImageSource) {
+    [imageSourceProperty.setNative](value: ImageSource) {
         this._setNativeImage(value ? value.ios : null);
     }
 
-    get [srcProperty.native](): any {
+    [srcProperty.getDefault](): any {
         return undefined;
     }
-    set [srcProperty.native](value: any) {
+    [srcProperty.setNative](value: any) {
         this._createImageSourceFromSrc();
     }
 }

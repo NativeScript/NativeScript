@@ -1,7 +1,7 @@
-﻿import {EventData as ObservableEventData} from "data/observable";
-import {Page} from "ui/page";
-import {ItemEventData as ListViewItemEventData} from "ui/list-view";
-import {topmost as topmostFrame} from "ui/frame";
+﻿import {EventData as ObservableEventData} from "tns-core-modules/data/observable";
+import {Page} from "tns-core-modules/ui/page";
+import {ItemEventData as ListViewItemEventData} from "tns-core-modules/ui/list-view";
+import {topmost as topmostFrame} from "tns-core-modules/ui/frame";
 import {AppViewModel} from "./reddit-app-view-model";
 
 var appViewModel = new AppViewModel();

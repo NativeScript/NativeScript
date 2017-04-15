@@ -1,24 +1,34 @@
-﻿import { Label as LabelDefinition } from "ui/label";
-import { TextBase, WhiteSpace } from "ui/text-base";
+﻿import { Label as LabelDefinition } from ".";
+import { TextBase, WhiteSpace, whiteSpaceProperty } from "../text-base";
 
-export * from "ui/text-base";
+export * from "../text-base";
 
 export class Label extends TextBase implements LabelDefinition {
-    private _android: android.widget.TextView;
+    nativeView: android.widget.TextView;
 
     get textWrap(): boolean {
-        return this.style.whiteSpace === WhiteSpace.NORMAL;
+        return this.style.whiteSpace === "normal";
     }
     set textWrap(value: boolean) {
-        this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
+        this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
-    get android(): android.widget.TextView {
-        return this._android;
+    public createNativeView() {
+        return new android.widget.TextView(this._context);
     }
 
-    public _createNativeView() {
-        const textView = this._android = new android.widget.TextView(this._context);
-        return textView;
+    public initNativeView(): void {
+        super.initNativeView();
+        const textView = this.nativeView;
+        textView.setSingleLine(true);
+        textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+    }
+
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
+        // Label initial value is no-wrap. set in initNativeView
+        const newValue = value === "initial" ? "nowrap" : value;
+        super[whiteSpaceProperty.setNative](newValue);
     }
 }
+
+// Label.prototype.recycleNativeView = true;

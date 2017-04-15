@@ -1,22 +1,21 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as pagesModule from "ui/page";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as pagesModule from "tns-core-modules/ui/page";
 import * as textFieldTestsNative from "./text-field-tests-native";
-import * as colorModule from "color";
-import * as enums from "ui/enums";
-import * as platform from "platform";
-import * as formattedStringModule from "text/formatted-string";
-import * as spanModule from "text/span";
+import * as colorModule from "tns-core-modules/color";
+import * as platform from "tns-core-modules/platform";
+import * as formattedStringModule from "tns-core-modules/text/formatted-string";
+import * as spanModule from "tns-core-modules/text/span";
 
 // >> require-textfield
-import * as textFieldModule from "ui/text-field";
+import * as textFieldModule from "tns-core-modules/ui/text-field";
 // << require-textfield
 // Other frequently used modules when working with buttons include:
 
-import * as bindable from "ui/core/bindable";
+import * as bindable from "tns-core-modules/ui/core/bindable";
 // >> require-observable-textfield
-import * as observable from "data/observable";
+import * as observable from "tns-core-modules/data/observable";
 // << require-observable-textfield
 
 // ### Binding two TextFields text property to observable view-model property.
@@ -542,15 +541,15 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform default value");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration default value");
+        TKUnit.assertEqual(view.style.textTransform, "initial", "TextTransform default value");
+        TKUnit.assertEqual(view.style.textDecoration, "none", "TextDecoration default value");
         TKUnit.assertTrue(view.style.letterSpacing === 0, "LetterSpacing default value");
 
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.textTransform,  "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }
@@ -562,8 +561,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
         
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }

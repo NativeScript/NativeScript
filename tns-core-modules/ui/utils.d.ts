@@ -1,4 +1,4 @@
-﻿import { View } from "ui/core/view";
+﻿import { View } from "./core/view";
 export module ios {
     /**
      * Gets actual height of a [UIView](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIView_Class/) widget.

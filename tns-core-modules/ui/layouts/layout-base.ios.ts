@@ -3,17 +3,18 @@
 export * from "./layout-base-common";
 
 export class LayoutBase extends LayoutBaseCommon {
+    nativeView: UIView;
     
-    get [clipToBoundsProperty.native](): boolean {
+    [clipToBoundsProperty.getDefault](): boolean {
         return false;
     }
-    set [clipToBoundsProperty.native](value: boolean) {
+    [clipToBoundsProperty.setNative](value: boolean) {
         this._setNativeClipToBounds();
     }
 
     _setNativeClipToBounds() {
         if (this.clipToBounds) {
-            this._nativeView.clipsToBounds = true;
+            this.nativeView.clipsToBounds = true;
         } else {
             super._setNativeClipToBounds();
         }

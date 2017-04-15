@@ -4,19 +4,19 @@ import {
     KeyframeInfo as KeyframeInfoDefinition,
     KeyframeAnimationInfo as KeyframeAnimationInfoDefinition,
     KeyframeAnimation as KeyframeAnimationDefinition
-} from "ui/animation/keyframe-animation";
+} from "./keyframe-animation";
 
-import { View, Color } from "ui/core/view";
+import { View, Color } from "../core/view";
 
 // Types.
-import { unsetValue } from "ui/core/properties";
-import { Animation } from "ui/animation";
+import { unsetValue } from "../core/properties";
+import { Animation } from "./animation";
 import {
     backgroundColorProperty,
     scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty,
     rotateProperty, opacityProperty
-} from "ui/styling/style-properties";
+} from "../styling/style-properties";
 
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;
@@ -212,9 +212,14 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
             let animationDef = this.animations[index];
             (<any>animationDef).target = view;
             let animation = new Animation([animationDef]);
+            // Catch the animation cancel to prevent unhandled promise rejection warnings
             animation.play().then(() => {
                 this.animate(view, index + 1, iterations);
-            });
+            }).catch((error: any) => {
+                if (error.message.indexOf("Animation cancelled") < 0) {
+                    throw error;
+                }
+            }); // tslint:disable-line
             this._nativeAnimations.push(animation);
         }
     }

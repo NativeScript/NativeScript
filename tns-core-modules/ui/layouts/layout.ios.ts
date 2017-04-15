@@ -1,21 +1,17 @@
-﻿import { Layout as LayoutDefinition } from "ui/layouts/layout";
-import { LayoutBase } from "ui/layouts/layout-base";
+﻿import { Layout as LayoutDefinition } from "./layout";
+import { LayoutBase } from "./layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "./layout-base";
 export class Layout extends LayoutBase implements LayoutDefinition {
-    private _view: UIView;
+    nativeView: UIView;
 
     constructor() {
         super();
-        this._view = UIView.new();
+        this.nativeView = UIView.new();
     }
 
     get ios(): UIView {
-        return this._view;
-    }
-
-    get _nativeView(): UIView {
-        return this._view;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {

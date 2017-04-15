@@ -1,11 +1,11 @@
-﻿import { ListView as ListViewDefinition, ItemsSource } from "ui/list-view";
-import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable } from "ui/core/view";
-import { parse, parseMultipleTemplates } from "ui/builder";
-import { Label } from "ui/label";
-import { ObservableArray, ChangedData } from "data/observable-array";
-import { addWeakEventListener, removeWeakEventListener } from "ui/core/weak-event-listener";
+﻿import { ListView as ListViewDefinition, ItemsSource } from ".";
+import { CoercibleProperty, CssProperty, Style, View, Template, KeyedTemplate, Length, Property, Color, Observable } from "../core/view";
+import { parse, parseMultipleTemplates } from "../builder";
+import { Label } from "../label";
+import { ObservableArray, ChangedData } from "../../data/observable-array";
+import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 // TODO: Think of a way to register these instead of relying on hardcoded values.
 export module knownTemplates {
@@ -107,7 +107,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
         lbl.bind({
             targetProperty: "text",
             sourceProperty: "$value"
-        }, null);
+        });
         return lbl;
     }
 
@@ -123,6 +123,8 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
         rowHeightProperty.coerce(this);
     }
 }
+
+// ListViewBase.prototype.recycleNativeView = true;
 
 /**
  * Represents the property backing the items property of each ListView instance.
@@ -174,7 +176,7 @@ export const rowHeightProperty = new CoercibleProperty<ListViewBase, Length>({
     name: "rowHeight", defaultValue: defaultRowHeight, equalityComparer: Length.equals,
     coerceValue: (target, value) => {
         // We coerce to default value if we don't have display density.
-        return target._nativeView ? value : defaultRowHeight;
+        return target.nativeView ? value : defaultRowHeight;
     },
     valueChanged: (target, oldValue, newValue) => {
         target._effectiveRowHeight = Length.toDevicePixels(newValue, autoEffectiveRowHeight);

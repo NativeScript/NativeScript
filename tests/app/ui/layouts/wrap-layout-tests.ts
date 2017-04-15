@@ -1,11 +1,11 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import {Label} from "ui/label";
+import {Label} from "tns-core-modules/ui/label";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
 
 // >> wrap-layout-require
-import * as wrapLayoutModule from "ui/layouts/wrap-layout";
+import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
 // << wrap-layout-require
 
 export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayout> {

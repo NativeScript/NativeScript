@@ -1,15 +1,14 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as builder from "ui/builder";
-import * as fs from "file-system";
-import { Label } from "ui/label";
-import { Button } from "ui/button";
-import { Page } from "ui/page";
-import { View } from "ui/core/view";
-import { fromObject } from "data/observable";
+import * as builder from "tns-core-modules/ui/builder";
+import { Label } from "tns-core-modules/ui/label";
+import { Button } from "tns-core-modules/ui/button";
+import { Page } from "tns-core-modules/ui/page";
+import { View } from "tns-core-modules/ui/core/view";
+import { fromObject } from "tns-core-modules/data/observable";
 
 // >> actionbar-common-require
-import * as actionBarModule from "ui/action-bar";
+import * as actionBarModule from "tns-core-modules/ui/action-bar";
 // << actionbar-common-require
 
 export function test_actionItem_inherit_bindingContext() {
@@ -212,10 +211,8 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
 
     let gotException = false;
 
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-
     try {
-        helper.navigateToModule(moduleName + "/ActionBar_NumberAsText");
+        helper.navigateToModule("ui/action-bar/ActionBar_NumberAsText");
     }
     catch (e) {
         gotException = true;
@@ -225,8 +222,8 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
 }
 
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
-    const moduleName = __dirname.substr(fs.knownFolders.currentApp().path.length);
-    helper.navigateToModuleAndRunTest(moduleName + "/ActionBar_BetweenTags", undefined, (page: Page) => {
+
+    helper.navigateToModuleAndRunTest("ui/action-bar/ActionBar_BetweenTags", undefined, (page: Page) => {
 
         TKUnit.assertNotNull(page.actionBar.navigationButton);
         TKUnit.assertEqual(page.actionBar.navigationButton.text, "nb");

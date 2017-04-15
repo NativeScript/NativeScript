@@ -4,7 +4,7 @@
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
     Property, CoercibleProperty, EventData, Color
-} from "ui/core/view";
+} from "../core/view";
 
 /**
  * Represents a SegmentedBar item.

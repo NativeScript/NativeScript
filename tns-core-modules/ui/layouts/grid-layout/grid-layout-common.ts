@@ -1,7 +1,7 @@
-﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from "ui/layouts/grid-layout";
-import { LayoutBase, View, Observable, Property, makeParser, makeValidator } from "ui/layouts/layout-base";
+﻿import { GridLayout as GridLayoutDefinition, ItemSpec as ItemSpecDefinition } from ".";
+import { LayoutBase, View, Observable, Property, makeParser, makeValidator } from "../layout-base";
 
-export * from "ui/layouts/layout-base";
+export * from "../layout-base";
 
 function validateArgs(element: View): View {
     if (!element) {
@@ -304,6 +304,8 @@ export class GridLayoutBase extends LayoutBase implements GridLayoutDefinition {
         parseAndAddItemSpecs(value, (spec: ItemSpec) => this.addRow(spec));
     }
 }
+
+// GridLayoutBase.prototype.recycleNativeView = true;
 
 export const columnProperty = new Property<View, number>({
     name: "col", defaultValue: 0,

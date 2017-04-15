@@ -1,7 +1,7 @@
-﻿import * as textViewModule from "ui/text-view";
-import * as colorModule from "color";
-import * as utilsModule from "utils/utils";
-import * as enums from "ui/enums";
+﻿import * as textViewModule from "tns-core-modules/ui/text-view";
+import * as colorModule from "tns-core-modules/color";
+import * as utilsModule from "tns-core-modules/utils/utils";
+import * as enums from "tns-core-modules/ui/enums";
 
 export function getNativeText(textView: textViewModule.TextView): string {
     return textView.android.getText().toString();

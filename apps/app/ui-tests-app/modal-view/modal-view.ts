@@ -1,6 +1,6 @@
-import * as pages from "ui/page";
-import * as labelModule from "ui/label";
-import * as observable from "data/observable";
+import * as pages from "tns-core-modules/ui/page";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as observable from "tns-core-modules/data/observable";
 
 var page: pages.Page;
 var label: labelModule.Label;

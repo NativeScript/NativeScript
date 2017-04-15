@@ -1,8 +1,8 @@
 ﻿import * as actionTestsCommon from "./action-bar-tests-common";
 import * as TKUnit from "../../TKUnit";
-import { ActionItem } from "ui/action-bar";
-import { Visibility } from "ui/enums";
-import { Button } from "ui/button";
+import { ActionItem } from "tns-core-modules/ui/action-bar";
+import { Visibility } from "tns-core-modules/ui/enums";
+import { Button } from "tns-core-modules/ui/button";
 
 global.moduleMerge(actionTestsCommon, exports);
 
@@ -11,7 +11,7 @@ export function test_actionItem_visibility() {
     actionItem.text = "Test";
     const page = actionTestsCommon.createPageAndNavigate();
     page.actionBar.actionItems.addItem(actionItem);
-    const toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
+    const toolbar = <android.support.v7.widget.Toolbar>page.actionBar.nativeView;
     const menu = toolbar.getMenu();
 
     TKUnit.assertTrue(menu.hasVisibleItems(), "Visibility does not work");
@@ -25,7 +25,7 @@ export function test_navigationButton_visibility() {
     const page = actionTestsCommon.createPageAndNavigate();
     page.actionBar.navigationButton = actionItem;
 
-    const toolbar = <android.support.v7.widget.Toolbar>(<any>page.actionBar)._toolbar;
+    const toolbar = <android.support.v7.widget.Toolbar>page.actionBar.nativeView;
 
     TKUnit.assertNotNull(toolbar.getNavigationIcon(), "Visibility does not work");
     actionItem.visibility = Visibility.collapse;

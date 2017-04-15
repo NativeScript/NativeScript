@@ -1,13 +1,13 @@
-﻿import { Page } from "ui/page";
-import { GridLayout, ItemSpec } from "ui/layouts/grid-layout";
-import { Button } from "ui/button";
+﻿import { Page } from "tns-core-modules/ui/page";
+import { GridLayout, ItemSpec } from "tns-core-modules/ui/layouts/grid-layout";
+import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../../TKUnit";
-import * as view from "ui/core/view";
-import { unsetValue } from "ui/core/view";
-import * as builder from "ui/builder";
+import * as view from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/view";
+import * as builder from "tns-core-modules/ui/builder";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
-import * as platform from "platform";
+import * as platform from "tns-core-modules/platform";
 import * as commonTests from "./common-layout-tests";
 
 var DELTA = 1;

@@ -1,5 +1,5 @@
-﻿import { Transition } from "ui/transition";
-import { screen } from "platform";
+﻿import { Transition } from "./transition";
+import { screen } from "../../platform";
 
 let screenWidth = screen.mainScreen.widthDIPs;
 let screenHeight = screen.mainScreen.heightDIPs;

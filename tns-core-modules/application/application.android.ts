@@ -1,7 +1,7 @@
 ﻿import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
     AndroidApplication as AndroidApplicationDefinition
-} from "application";
+} from ".";
 
 import {
     notify, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent,
@@ -11,7 +11,7 @@ import {
 // First reexport so that app module is initialized.
 export * from "./application-common";
 
-import { NavigationEntry } from "ui/frame";
+import { NavigationEntry } from "../ui/frame";
 
 const ActivityCreated = "activityCreated";
 const ActivityDestroyed = "activityDestroyed";
@@ -47,7 +47,11 @@ export class AndroidApplication extends Observable implements AndroidApplication
         return this.foregroundActivity;
     }
 
-    public init(nativeApp: any) {
+    public init(nativeApp: android.app.Application) {
+        if (this.nativeApp === nativeApp) {
+            return;
+        }
+        
         if (this.nativeApp) {
             throw new Error("application.android already initialized.");
         }
@@ -103,21 +107,23 @@ const androidApp = new AndroidApplication();
 exports.android = androidApp;
 setApplication(androidApp);
 
+let mainEntry: NavigationEntry;
 let started = false;
-export function start(entry?: NavigationEntry) {
+export function start(entry?: NavigationEntry | string) {
     if (started) {
         throw new Error("Application is already started.");
     }
 
+    started = true;
+    mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     if (!androidApp.nativeApp) {
         const nativeApp = getNativeApplication();
         androidApp.init(nativeApp);
     }
+}
 
-    started = true;
-    if (entry) {
-        exports.mainEntry = entry;
-    }
+export function getMainEntry() {
+    return mainEntry;
 }
 
 export function getNativeApplication(): android.app.Application {

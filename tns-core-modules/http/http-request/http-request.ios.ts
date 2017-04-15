@@ -3,11 +3,11 @@
  */
 
 import * as http from "../../http";
-import * as types from "utils/types";
-import * as imageSourceModule from "image-source";
-import * as fsModule from "file-system";
+import * as types from "../../utils/types";
+import * as imageSourceModule from "../../image-source";
+import * as fsModule from "../../file-system";
 
-import * as utils from "utils/utils";
+import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
 import * as domainDebugger from "../../debugger/debugger";
@@ -17,11 +17,13 @@ export const enum HttpResponseEncoding {
     GBK
 }
 
-var device = utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
+var currentDevice = utils.ios.getter(UIDevice, UIDevice.currentDevice);
+var device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
+var osVersion = currentDevice.systemVersion;
 
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
-var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25`;
+var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
 var sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
 var queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
 

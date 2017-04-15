@@ -1,8 +1,8 @@
-import { Color } from "color";
-import { View, Point } from "ui/core/view";
+import { Color } from "../../color";
+import { View, Point } from "../core/view";
 import { Background } from "./background-common";
-import { ios as utilsIos } from "utils/utils";
-import { layout } from "utils/utils";
+import { ios as utilsIos } from "../../utils/utils";
+import { layout } from "../../utils/utils";
 
 export * from "./background-common";
 
@@ -37,7 +37,9 @@ export module ios {
             const borderColor = background.getUniformBorderColor();
             layer.borderColor = !borderColor ? undefined : borderColor.ios.CGColor;
             layer.borderWidth = layout.toDeviceIndependentPixels(background.getUniformBorderWidth());
-            layer.cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
+            const renderSize = view.getActualSize() || { width: 0, height: 0 };
+            const cornerRadius = layout.toDeviceIndependentPixels(background.getUniformBorderRadius());
+            layer.cornerRadius = Math.min(Math.min(renderSize.width / 2, renderSize.height / 2), cornerRadius);
         }
         else {
             drawNonUniformBorders(nativeView, background);
@@ -145,19 +147,15 @@ function _flipImage(originalImage: UIImage): UIImage {
     return flippedImage;
 }
 
-function cssValueToDevicePixels(source: string, total: number): number {
-    let result;
+function cssValueToDeviceIndependentPixels(source: string, total: number): number {
     source = source.trim();
-
     if (source.indexOf("px") !== -1) {
-        result = parseFloat(source.replace("px", ""));
-    }
-    else if (source.indexOf("%") !== -1 && total > 0) {
-        result = (parseFloat(source.replace("%", "")) / 100) * layout.toDeviceIndependentPixels(total);
+        return layout.toDeviceIndependentPixels(parseFloat(source.replace("px", "")));
+    } else if (source.indexOf("%") !== -1 && total > 0) {
+        return (parseFloat(source.replace("%", "")) / 100) * total;
     } else {
-        result = parseFloat(source);
+        return parseFloat(source);
     }
-    return layout.toDevicePixels(result);
 }
 
 function drawNonUniformBorders(nativeView: NativeView, background: Background) {
@@ -357,10 +355,10 @@ function drawClipPath(nativeView: UIView, background: Background) {
 
 function rectPath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
-    const top = cssValueToDevicePixels(arr[0], bounds.top);
-    const left = cssValueToDevicePixels(arr[1], bounds.left);
-    const bottom = cssValueToDevicePixels(arr[2], bounds.bottom);
-    const right = cssValueToDevicePixels(arr[3], bounds.right);
+    const top = cssValueToDeviceIndependentPixels(arr[0], bounds.top);
+    const right = cssValueToDeviceIndependentPixels(arr[1], bounds.right);
+    const bottom = cssValueToDeviceIndependentPixels(arr[2], bounds.bottom);
+    const left = cssValueToDeviceIndependentPixels(arr[3], bounds.left);
 
     return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }
@@ -391,19 +389,19 @@ function insetPath(value: string, bounds: Rect): UIBezierPath {
         leftString = arr[3];
     }
 
-    const top = cssValueToDevicePixels(topString, bounds.bottom);
-    const right = cssValueToDevicePixels("100%", bounds.right) - cssValueToDevicePixels(rightString, bounds.right);
-    const bottom = cssValueToDevicePixels("100%", bounds.bottom) - cssValueToDevicePixels(bottomString, bounds.bottom);
-    const left = cssValueToDevicePixels(leftString, bounds.right);
+    const top = cssValueToDeviceIndependentPixels(topString, bounds.bottom);
+    const right = cssValueToDeviceIndependentPixels("100%", bounds.right) - cssValueToDeviceIndependentPixels(rightString, bounds.right);
+    const bottom = cssValueToDeviceIndependentPixels("100%", bounds.bottom) - cssValueToDeviceIndependentPixels(bottomString, bounds.bottom);
+    const left = cssValueToDeviceIndependentPixels(leftString, bounds.right);
 
     return UIBezierPath.bezierPathWithRect(CGRectMake(left, top, right - left, bottom - top)).CGPath;
 }
 
 function circlePath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
-    const radius = cssValueToDevicePixels(arr[0], (bounds.right > bounds.bottom ? bounds.bottom : bounds.right) / 2);
-    const y = cssValueToDevicePixels(arr[2], bounds.bottom);
-    const x = cssValueToDevicePixels(arr[3], bounds.right);
+    const radius = cssValueToDeviceIndependentPixels(arr[0], (bounds.right > bounds.bottom ? bounds.bottom : bounds.right) / 2);
+    const y = cssValueToDeviceIndependentPixels(arr[2], bounds.bottom);
+    const x = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
 
     return UIBezierPath.bezierPathWithArcCenterRadiusStartAngleEndAngleClockwise(CGPointMake(x, y), radius, 0, 360, true).CGPath;
 }
@@ -411,10 +409,10 @@ function circlePath(value: string, bounds: Rect): UIBezierPath {
 function ellipsePath(value: string, bounds: Rect): UIBezierPath {
     const arr = value.split(/[\s]+/);
 
-    const rX = cssValueToDevicePixels(arr[0], bounds.right);
-    const rY = cssValueToDevicePixels(arr[1], bounds.bottom);
-    const cX = cssValueToDevicePixels(arr[3], bounds.right);
-    const cY = cssValueToDevicePixels(arr[4], bounds.bottom);
+    const rX = cssValueToDeviceIndependentPixels(arr[0], bounds.right);
+    const rY = cssValueToDeviceIndependentPixels(arr[1], bounds.bottom);
+    const cX = cssValueToDeviceIndependentPixels(arr[3], bounds.right);
+    const cY = cssValueToDeviceIndependentPixels(arr[4], bounds.bottom);
 
     const left = cX - rX;
     const top = cY - rY;
@@ -432,8 +430,8 @@ function polygonPath(value: string, bounds: Rect): UIBezierPath {
     for (let i = 0; i < arr.length; i++) {
         const xy = arr[i].trim().split(/[\s]+/);
         const point: Point = {
-            x: cssValueToDevicePixels(xy[0], bounds.right),
-            y: cssValueToDevicePixels(xy[1], bounds.bottom)
+            x: cssValueToDeviceIndependentPixels(xy[0], bounds.right),
+            y: cssValueToDeviceIndependentPixels(xy[1], bounds.bottom)
         };
 
         if (!firstPoint) {

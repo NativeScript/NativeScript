@@ -1,7 +1,7 @@
-﻿import { ImageSource, fromFile as imageSourceFromFile } from "image-source";
-import { VirtualArray, ItemsLoading as virtualArrayItemsLoadingData } from "data/virtual-array";
-import { Observable } from "data/observable";
-import { Cache as ImageCache } from "ui/image-cache";
+﻿import { ImageSource, fromFile as imageSourceFromFile } from "tns-core-modules/image-source";
+import { VirtualArray, ItemsLoading as virtualArrayItemsLoadingData } from "tns-core-modules/data/virtual-array";
+import { Observable } from "tns-core-modules/data/observable";
+import { Cache as ImageCache } from "tns-core-modules/ui/image-cache";
 
 import { Data as RedditData } from "./reddit-model";
 import { RedditViewModel } from "./reddit-item-view-model";

@@ -1,9 +1,9 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, Color } from "ui/core/view";
-import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "ui/styling/style-properties";
+import { View as ViewDefinition, Point, Size, Color } from ".";
+import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 // Types.
-import { Source } from "utils/debug";
+import { Source } from "../../../utils/debug";
 
 import {
     ViewBase, Property, booleanConverter, EventData, layout,
@@ -16,12 +16,12 @@ import {
     GestureTypes,
     GestureEventData,
     fromString as gestureFromString
-} from "ui/gestures";
+} from "../../gestures";
 
-export * from "ui/styling/style-properties";
+export * from "../../styling/style-properties";
 export * from "../view-base";
 
-import * as am from "ui/animation";
+import * as am from "../../animation";
 let animationModule: typeof am;
 function ensureAnimationModule() {
     if (!animationModule) {
@@ -53,8 +53,8 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     _currentWidthMeasureSpec: number;
     _currentHeightMeasureSpec: number;
 
-    _minWidthNative: Length;
-    _minHeightNative: Length;
+    _setMinWidthNative: (value: Length) => void;
+    _setMinHeightNative: (value: Length) => void;
 
     private _isLayoutValid: boolean;
     private _cssType: string;
@@ -459,21 +459,21 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let result = size;
         switch (specMode) {
             case layout.UNSPECIFIED:
-                result = size;
+                result = Math.ceil(size);
                 break;
 
             case layout.AT_MOST:
                 if (specSize < size) {
-                    result = Math.round(specSize + 0.499) | layout.MEASURED_STATE_TOO_SMALL;
+                    result = Math.ceil(specSize) | layout.MEASURED_STATE_TOO_SMALL;
                 }
                 break;
 
             case layout.EXACTLY:
-                result = specSize;
+                result = Math.ceil(specSize);
                 break;
         }
 
-        return Math.round(result + 0.499) | (childMeasuredState & layout.MEASURED_STATE_MASK);
+        return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
     public static combineMeasuredStates(curState: number, newState): number {
@@ -572,20 +572,14 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         let measureHeight = 0;
 
         if (child && !child.isCollapsed) {
-            let width = layout.getMeasureSpecSize(widthMeasureSpec);
-            let widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
-
-            let height = layout.getMeasureSpecSize(heightMeasureSpec);
-            let heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
-
             child._updateEffectiveLayoutValues(parent);
 
             let style = child.style;
             let horizontalMargins = child.effectiveMarginLeft + child.effectiveMarginRight;
             let verticalMargins = child.effectiveMarginTop + child.effectiveMarginBottom;
 
-            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(width, widthMode, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
-            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(height, heightMode, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
+            let childWidthMeasureSpec = ViewCommon.getMeasureSpec(widthMeasureSpec, horizontalMargins, child.effectiveWidth, style.horizontalAlignment === "stretch");
+            let childHeightMeasureSpec = ViewCommon.getMeasureSpec(heightMeasureSpec, verticalMargins, child.effectiveHeight, style.verticalAlignment === "stretch");
 
             if (traceEnabled()) {
                 traceWrite(child.parent + " :measureChild: " + child + " " + layout.measureSpecToString(childWidthMeasureSpec) + ", " + layout.measureSpecToString(childHeightMeasureSpec), traceCategories.Layout);
@@ -599,7 +593,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         return { measuredWidth: measureWidth, measuredHeight: measureHeight };
     }
 
-    private static getMeasureSpec(parentLength: number, parentSpecMode: number, margins: number, childLength: number, stretched: boolean): number {
+    private static getMeasureSpec(parentSpec: number, margins: number, childLength: number, stretched: boolean): number {
+        const parentLength = layout.getMeasureSpecSize(parentSpec);
+        const parentSpecMode = layout.getMeasureSpecMode(parentSpec);
+
         let resultSize: number;
         let resultMode: number;
 
@@ -607,6 +604,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         if (childLength >= 0) {
             // If mode !== UNSPECIFIED we take the smaller of parentLength and childLength
             // Otherwise we will need to clip the view but this is not possible in all Android API levels.
+            // TODO: remove Math.min(parentLength, childLength)
             resultSize = parentSpecMode === layout.UNSPECIFIED ? childLength : Math.min(parentLength, childLength);
             resultMode = layout.EXACTLY;
         }
@@ -680,10 +678,6 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public _updateLayout() {
         // needed for iOS.
-    }
-
-    get _nativeView(): any {
-        return undefined;
     }
 
     public focus(): boolean {

@@ -26,66 +26,59 @@ class SwitchChangeHandlerImpl extends NSObject {
     };
 }
 
+const zeroSize = { width: 0, height: 0 };
 export class Switch extends SwitchBase {
-    private _ios: UISwitch;
+    nativeView: UISwitch;
     private _handler: NSObject;
 
     constructor() {
         super();
-        this._ios = UISwitch.new();
-
+        const nativeView = UISwitch.new();
         this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
-        this._ios.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
+        nativeView.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
+        this.nativeView = nativeView;
     }
 
     get ios(): UISwitch {
-        return this._ios;
-    }
-
-    get _nativeView(): UISwitch {
-        return this._ios;
-    }
-
-    get nativeView(): UISwitch {
-        return this._ios;
+        return this.nativeView;
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         // It can't be anything different from 51x31
-        let nativeSize = this._nativeView.sizeThatFits(CGSizeMake(0, 0));
+        let nativeSize = this.nativeView.sizeThatFits(zeroSize);
         this.width = nativeSize.width;
         this.height = nativeSize.height;
 
-        let widthAndState = layout.makeMeasureSpec(layout.toDevicePixels(nativeSize.width), layout.EXACTLY);
-        let heightAndState = layout.makeMeasureSpec(layout.toDevicePixels(nativeSize.height), layout.EXACTLY);
+        const widthAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.width), layout.toDevicePixels(51), layout.EXACTLY, 0);
+        const heightAndState = Switch.resolveSizeAndState(layout.toDevicePixels(nativeSize.height), layout.toDevicePixels(31), layout.EXACTLY, 0);
         this.setMeasuredDimension(widthAndState, heightAndState);
     }
 
-    get [checkedProperty.native](): boolean {
+    [checkedProperty.getDefault](): boolean {
         return false;
     }
-    set [checkedProperty.native](value: boolean) {
-        this._ios.on = value;
+    [checkedProperty.setNative](value: boolean) {
+        this.nativeView.on = value;
     }
 
-    get [colorProperty.native](): UIColor {
-        return this._ios.thumbTintColor;
+    [colorProperty.getDefault](): UIColor {
+        return this.nativeView.thumbTintColor;
     }
-    set [colorProperty.native](value: UIColor | Color) {
-        this._ios.thumbTintColor = value instanceof Color ? value.ios : value;
-    }
-
-    get [backgroundColorProperty.native](): UIColor {
-        return this._ios.onTintColor;
-    }
-    set [backgroundColorProperty.native](value: UIColor | Color) {
-        this._ios.onTintColor = value instanceof Color ? value.ios : value;
+    [colorProperty.setNative](value: UIColor | Color) {
+        this.nativeView.thumbTintColor = value instanceof Color ? value.ios : value;
     }
 
-    get [backgroundInternalProperty.native](): any {
+    [backgroundColorProperty.getDefault](): UIColor {
+        return this.nativeView.onTintColor;
+    }
+    [backgroundColorProperty.setNative](value: UIColor | Color) {
+        this.nativeView.onTintColor = value instanceof Color ? value.ios : value;
+    }
+
+    [backgroundInternalProperty.getDefault](): any {
         return null;
     }
-    set [backgroundInternalProperty.native](value: any) {
+    [backgroundInternalProperty.setNative](value: any) {
         //
     }
 }

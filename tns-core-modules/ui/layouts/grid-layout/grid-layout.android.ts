@@ -5,62 +5,21 @@
 
 export * from "./grid-layout-common";
 
-function setNativeProperty(view: View, setter: (lp: org.nativescript.widgets.CommonLayoutParams) => void) {
-    const nativeView: android.view.View = view._nativeView;
-    const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
-    if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
-        setter(lp);
-        nativeView.setLayoutParams(lp);
+function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.CommonLayoutParams, value: T) => void) {
+    return function(this: View, value: T) {
+        const nativeView: android.view.View = this.nativeView;
+        const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.CommonLayoutParams();
+        if (lp instanceof org.nativescript.widgets.CommonLayoutParams) {
+            setter(lp, value);
+            nativeView.setLayoutParams(lp);
+        }
     }
 }
 
-// define native getter and setter for rowProperty.
-let rowDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 0,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.row = value);
-    }
-}
-
-// define native getter and setter for columnProperty.
-let colDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 0,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.column = value);
-    }
-}
-
-// define native getter and setter for rowSpanProperty.
-let rowSpanDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 1,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.rowSpan = value);
-    }
-}
-
-// define native getter and setter for columnSpanProperty.
-let colSpanDescriptor: TypedPropertyDescriptor<number> = {
-    enumerable: true,
-    configurable: true,
-    get: () => 1,
-    set: function (this: View, value: number) {
-        setNativeProperty(this, (lp) => lp.columnSpan = value);
-    }
-}
-
-// register native properties on View type.
-Object.defineProperties(View.prototype, {
-    [rowProperty.native]: rowDescriptor,
-    [columnProperty.native]: colDescriptor,
-    [rowSpanProperty.native]: rowSpanDescriptor,
-    [columnSpanProperty.native]: colSpanDescriptor
-});
+View.prototype[rowProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.row = value);
+View.prototype[columnProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.column = value);
+View.prototype[rowSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.rowSpan = value);
+View.prototype[columnSpanProperty.setNative] = makeNativeSetter<number>((lp, value) => lp.columnSpan = value);
 
 function createNativeSpec(itemSpec: ItemSpec): org.nativescript.widgets.ItemSpec {
     switch (itemSpec.gridUnitType) {
@@ -91,53 +50,61 @@ export class ItemSpec extends ItemSpecBase {
 }
 
 export class GridLayout extends GridLayoutBase {
+    nativeView: org.nativescript.widgets.GridLayout;
 
-    private _layout: org.nativescript.widgets.GridLayout;
-
-    get android(): org.nativescript.widgets.GridLayout {
-        return this._layout;
+    public createNativeView() {
+        return new org.nativescript.widgets.GridLayout(this._context);
     }
 
-    get _nativeView(): org.nativescript.widgets.GridLayout {
-        return this._layout;
-    }
-
-    public _createNativeView() {
-        const layout = this._layout = new org.nativescript.widgets.GridLayout(this._context);
-
+    public initNativeView(): void {
+        super.initNativeView();
         // Update native GridLayout
-        this.getRows().forEach((itemSpec: ItemSpec, index, rows) => { this._onRowAdded(itemSpec); }, this);
-        this.getColumns().forEach((itemSpec: ItemSpec, index, rows) => { this._onColumnAdded(itemSpec); }, this);
-        return layout;
+        this.rowsInternal.forEach((itemSpec: ItemSpec, index, rows) => { this._onRowAdded(itemSpec); }, this);
+        this.columnsInternal.forEach((itemSpec: ItemSpec, index, rows) => { this._onColumnAdded(itemSpec); }, this);
+    }
+
+    public disposeNativeView() {
+        // Update native GridLayout
+        for (let i = this.rowsInternal.length; i--; i >= 0) {
+            const itemSpec = <ItemSpec>this.rowsInternal[i];
+            this._onRowRemoved(itemSpec, i);
+        }
+
+        for (let i = this.columnsInternal.length; i--; i >= 0) {
+            const itemSpec = <ItemSpec>this.columnsInternal[i];
+            this._onColumnRemoved(itemSpec, i);
+        }
+
+        super.disposeNativeView();
     }
 
     public _onRowAdded(itemSpec: ItemSpec) {
-        if (this._layout) {
+        if (this.nativeView) {
             const nativeSpec = createNativeSpec(itemSpec);
             itemSpec.nativeSpec = nativeSpec;
-            this._layout.addRow(nativeSpec);
+            this.nativeView.addRow(nativeSpec);
         }
     }
 
     public _onColumnAdded(itemSpec: ItemSpec) {
-        if (this._layout) {
+        if (this.nativeView) {
             const nativeSpec = createNativeSpec(itemSpec);
             itemSpec.nativeSpec = nativeSpec;
-            this._layout.addColumn(nativeSpec);
+            this.nativeView.addColumn(nativeSpec);
         }
     }
 
     public _onRowRemoved(itemSpec: ItemSpec, index: number) {
         itemSpec.nativeSpec = null;
-        if (this._layout) {
-            this._layout.removeRowAt(index);
+        if (this.nativeView) {
+            this.nativeView.removeRowAt(index);
         }
     }
 
     public _onColumnRemoved(itemSpec: ItemSpec, index: number) {
         itemSpec.nativeSpec = null;
-        if (this._layout) {
-            this._layout.removeColumnAt(index);
+        if (this.nativeView) {
+            this.nativeView.removeColumnAt(index);
         }
     }
 

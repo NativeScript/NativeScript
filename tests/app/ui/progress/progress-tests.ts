@@ -1,12 +1,12 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as viewModule from "ui/core/view";
-import * as observable from "data/observable";
-import * as color from "color";
-import * as platform from "platform";
+import * as viewModule from "tns-core-modules/ui/core/view";
+import * as observable from "tns-core-modules/data/observable";
+import * as color from "tns-core-modules/color";
+import * as platform from "tns-core-modules/platform";
 
 // >> article-require-progress-module
-import * as progressModule from "ui/progress";
+import * as progressModule from "tns-core-modules/ui/progress";
 // << article-require-progress-module
 
 export function test_default_TNS_values() {

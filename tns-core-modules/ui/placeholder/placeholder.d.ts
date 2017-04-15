@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the Placeholder class, which is used to add a native view to the visual tree.
  */
-import { View, EventData } from "ui/core/view";
+import { View, EventData } from "../core/view";
 
 /**
  * Represents a Placeholder, which is used to add a native view to the visual tree.

@@ -1,7 +1,7 @@
-import { EventData } from "data/observable";
+import { EventData } from "tns-core-modules/data/observable";
 import { MainPageViewModel } from "../mainPage";
-import { WrapLayout } from "ui/layouts/wrap-layout";
-import { Page } from "ui/page";
+import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
+import { Page } from "tns-core-modules/ui/page";
 
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
@@ -13,6 +13,7 @@ export function pageLoaded(args: EventData) {
 
     examples.set("webview", "web-view/web-view");
     examples.set("webtest", "web-view/web-view-test");
+    examples.set("query", "web-view/query-params");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;

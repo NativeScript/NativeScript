@@ -1,12 +1,14 @@
 ﻿/**
  * Android specific http request implementation.
  */
-import * as imageSourceModule from "image-source";
-import * as platformModule from "platform";
-import * as fsModule from "file-system";
+import * as imageSourceModule from "../../image-source";
+import * as platformModule from "../../platform";
+import * as fsModule from "../../file-system";
 
 // this is imported for definition purposes only
 import * as http from "../../http";
+
+import { NetworkAgent } from "../../debugger/debugger";
 
 export const enum HttpResponseEncoding {
     UTF8,
@@ -73,6 +75,11 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
             pair = jHeaders.get(i);
             addHeader(headers, pair.key, pair.value);
         }
+    }
+
+    // send response data (for requestId) to network debugger
+    if (global.__inspector && global.__inspector.isConnected) {
+        NetworkAgent.responseReceived(requestId, result, headers);
     }
 
     callbacks.resolveCallback({
@@ -193,6 +200,11 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
         try {
             // initialize the options
             var javaOptions = buildJavaOptions(options);
+
+            // send request data to network debugger
+            if (global.__inspector && global.__inspector.isConnected) {
+                NetworkAgent.requestWillBeSent(requestIdCounter, options);
+            }
 
             // remember the callbacks so that we can use them when the CompleteCallback is called
             var callbacks = {

@@ -1,9 +1,9 @@
-﻿import * as labelModule from "ui/label";
-import * as gestures from "ui/gestures";
-import * as button from "ui/button";
-import * as pages from "ui/page";
-import * as deviceProperties from "platform";
-import * as stackLayoutModule from "ui/layouts/stack-layout";
+﻿import * as labelModule from "tns-core-modules/ui/label";
+import * as gestures from "tns-core-modules/ui/gestures";
+import * as button from "tns-core-modules/ui/button";
+import * as pages from "tns-core-modules/ui/page";
+import * as deviceProperties from "tns-core-modules/platform";
+import * as stackLayoutModule from "tns-core-modules/ui/layouts/stack-layout";
 
 export function createPage() {
 

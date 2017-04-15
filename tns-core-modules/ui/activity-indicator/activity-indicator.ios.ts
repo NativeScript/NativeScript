@@ -15,7 +15,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         return this.nativeView;
     }
 
-    get [busyProperty.native](): boolean {
+    [busyProperty.getDefault](): boolean {
         if ((<any>this.nativeView).isAnimating) {
             return (<any>this.nativeView).isAnimating();
         }
@@ -23,7 +23,7 @@ export class ActivityIndicator extends ActivityIndicatorBase {
             return this.nativeView.animating;
         }
     }
-    set [busyProperty.native](value: boolean) {
+    [busyProperty.setNative](value: boolean) {
         let nativeView = this.nativeView;
         if (value) {
             nativeView.startAnimating();
@@ -36,10 +36,10 @@ export class ActivityIndicator extends ActivityIndicatorBase {
         }
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         return this.nativeView.color;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         this.nativeView.color = value instanceof Color ? value.ios : value;
     }
 }

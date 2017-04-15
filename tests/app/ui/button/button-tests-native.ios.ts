@@ -1,6 +1,6 @@
-﻿import * as buttonModule from "ui/button";
-import * as colorModule from "color";
-import * as enums from "ui/enums";
+﻿import * as buttonModule from "tns-core-modules/ui/button";
+import * as colorModule from "tns-core-modules/color";
+import * as enums from "tns-core-modules/ui/enums";
 import { getColor } from "../helper";
 
 export function getNativeText(button: buttonModule.Button): string {

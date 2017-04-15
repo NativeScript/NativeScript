@@ -1,16 +1,23 @@
 ﻿// Require globals first so that snapshot takes __extends function.
 require("globals");
 
-import { Observable, EventData } from "data/observable";
+import { Observable, EventData } from "../data/observable";
 
 const events = new Observable();
-// First merge all functions from events into application-common so that later appModule.on will be defined.
-global.moduleMerge(events, exports);
+let launched = false;
+function setLaunched() {
+    launched = true;
+    events.off("launch", setLaunched);
+}
+events.on("launch", setLaunched);
+
+export function hasLaunched(): boolean {
+    return launched;
+}
 
 export { Observable };
 
-import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from "application";
-import { NavigationEntry } from "ui/frame";
+import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChangedEventData } from ".";
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
@@ -22,10 +29,11 @@ export const orientationChangedEvent = "orientationChanged";
 
 let cssFile: string = "app.css";
 
-export let mainModule: string;
-export let mainEntry: NavigationEntry;
+let resources: any = {};
 
-export let resources: any = {};
+export function getResources() {
+    return resources;
+}
 
 export function setResources(res: any) {
     resources = res;
@@ -34,9 +42,9 @@ export function setResources(res: any) {
 export let android = undefined;
 export let ios = undefined;
 
-export function notify(args: EventData): void {
-    events.notify(args);
-}
+export const on: typeof events.on = events.on.bind(events);
+export const off: typeof events.off = events.off.bind(events);
+export const notify: typeof events.notify = events.notify.bind(events);
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {

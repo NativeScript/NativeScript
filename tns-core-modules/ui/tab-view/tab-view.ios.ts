@@ -1,14 +1,14 @@
-﻿import { Font } from "ui/styling/font";
+﻿import { Font } from "../styling/font";
 
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, initNativeView
 } from "./tab-view-common"
 
-import { textTransformProperty, TextTransform, getTransformedText } from "ui/text-base";
-import { fromFileOrResource } from "image-source";
-import { Page } from "ui/page";
+import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
+import { fromFileOrResource } from "../../image-source";
+import { Page } from "../page";
 
 export * from "./tab-view-common";
 
@@ -120,14 +120,28 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
 }
 
 export class TabViewItem extends TabViewItemBase {
+    private _iosViewController: UIViewController;
+
+    public setViewController(controller: UIViewController) {
+        this._iosViewController = controller;
+        (<any>this)._nativeView = this.nativeView = controller.view;
+        initNativeView(this);
+    }
+    
+    public disposeNativeView() {
+        this._iosViewController = undefined;
+        this.nativeView = undefined;
+    }
 
     public _update() {
         const parent = <TabView>this.parent;
-        let controller = <UIViewController>this.nativeView;
+        let controller = this._iosViewController;
         if (parent && controller) {
             const icon = parent._getIcon(this.iconSource);
             const index = parent.items.indexOf(this);
-            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(this.title, icon, index);
+            const title = getTransformedText(this.title, this.style.textTransform);
+
+            const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
             }
@@ -138,6 +152,10 @@ export class TabViewItem extends TabViewItemBase {
             applyStatesToItem(tabBarItem, states);
             controller.tabBarItem = tabBarItem;
         }
+    }
+
+    [textTransformProperty.setNative](value: TextTransform) {
+        this._update();
     }
 }
 
@@ -153,6 +171,7 @@ export class TabView extends TabViewBase {
         super();
 
         this._ios = UITabBarControllerImpl.initWithOwner(new WeakRef(this));
+        this.nativeView = this._ios.view;
         this._delegate = UITabBarControllerDelegateImpl.initWithOwner(new WeakRef(this));
         this._moreNavigationControllerDelegate = UINavigationControllerDelegateImpl.initWithOwner(new WeakRef(this));
         //This delegate is set on the last line of _addTabs method.
@@ -173,13 +192,9 @@ export class TabView extends TabViewBase {
         return this._ios;
     }
 
-    get nativeView(): UIView {
-        return this._ios.view;
-    }
-
-    get _nativeView(): UIView {
-        return this._ios.view;
-    }
+    // get nativeView(): UIView {
+    //     return this._ios.view;
+    // }
 
     public _onViewControllerShown(viewController: UIViewController) {
         // This method could be called with the moreNavigationController or its list controller, so we have to check.
@@ -229,7 +244,7 @@ export class TabView extends TabViewBase {
         }
     }
 
-    private setViewControllers(items: Array<TabViewItem>) {
+    private setViewControllers(items: TabViewItem[]) {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._ios.viewControllers = null;
@@ -250,7 +265,7 @@ export class TabView extends TabViewBase {
                 newController.view.addSubview(item.view.ios);
             }
 
-            item.nativeView = newController;
+            item.setViewController(newController);
 
             const icon = this._getIcon(item.iconSource);
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag((item.title || ""), icon, i);
@@ -301,7 +316,7 @@ export class TabView extends TabViewBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
-        const nativeView = this._nativeView;
+        const nativeView = this.nativeView;
         if (nativeView) {
 
             const width = layout.getMeasureSpecSize(widthMeasureSpec);
@@ -310,9 +325,9 @@ export class TabView extends TabViewBase {
             const height = layout.getMeasureSpecSize(heightMeasureSpec);
             const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
 
-            this._tabBarHeight = TabView.measureHelper(this._ios.tabBar, width, widthMode, height, heightMode).height;
+            this._tabBarHeight = layout.measureNativeView(this._ios.tabBar, width, widthMode, height, heightMode).height;
             const moreNavBarVisible = !!this._ios.moreNavigationController.navigationBar.window;
-            this._navBarHeight = moreNavBarVisible ? TabView.measureHelper(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
+            this._navBarHeight = moreNavBarVisible ? layout.measureNativeView(this._ios.moreNavigationController.navigationBar, width, widthMode, height, heightMode).height : 0;
 
             const density = layout.getDisplayDensity();
             let measureWidth = 0;
@@ -346,13 +361,6 @@ export class TabView extends TabViewBase {
         }
     }
 
-    private static measureHelper(nativeView: UIView, width: number, widthMode: number, height: number, heightMode: number): CGSize {
-        const size = nativeView.sizeThatFits(CGSizeMake(
-            (widthMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : width,
-            (heightMode === layout.UNSPECIFIED) ? Number.POSITIVE_INFINITY : height));
-        return { width: layout.toDevicePixels(size.width), height: layout.toDevicePixels(size.height) };
-    }
-
     private _updateIOSTabBarColorsAndFonts(): void {
         if (!this.items) {
             return;
@@ -365,22 +373,10 @@ export class TabView extends TabViewBase {
         }
     }
 
-    private _updateIOSTabBarTextTransform(newValue: TextTransform): void {
-        if (!this.items) {
-            return;
-        }
-
-        const tabBar = this.ios.tabBar;
-        for (let i = 0, count = tabBar.items.count; i < count; i++) {
-            const item = tabBar.items[i];
-            item.title = getTransformedText(item.title, newValue);
-        }
-    }
-
-    get [selectedIndexProperty.native](): number {
+    [selectedIndexProperty.getDefault](): number {
         return -1;
     }
-    set [selectedIndexProperty.native](value: number) {
+    [selectedIndexProperty.setNative](value: number) {
         if (traceEnabled()) {
             traceWrite("TabView._onSelectedIndexPropertyChangedSetNativeValue(" + value + ")", traceCategories.Debug);
         }
@@ -390,56 +386,49 @@ export class TabView extends TabViewBase {
         }
     }
 
-    get [itemsProperty.native](): TabViewItemBase[] {
+    [itemsProperty.getDefault](): TabViewItem[] {
         return null;
     }
-    set [itemsProperty.native](value: TabViewItemBase[]) {
+    [itemsProperty.setNative](value: TabViewItem[]) {
         this.setViewControllers(value);
+        selectedIndexProperty.coerce(this);
     }
 
-    get [tabTextColorProperty.native](): UIColor {
+    [tabTextColorProperty.getDefault](): UIColor {
         return null;
     }
-    set [tabTextColorProperty.native](value: UIColor | Color) {
+    [tabTextColorProperty.setNative](value: UIColor | Color) {
+        this._updateIOSTabBarColorsAndFonts();
+    }
+
+    [tabBackgroundColorProperty.getDefault](): UIColor {
+        return this._ios.tabBar.barTintColor;
+    }
+    [tabBackgroundColorProperty.setNative](value: UIColor | Color) {
+        this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
+    }
+
+    [selectedTabTextColorProperty.getDefault](): UIColor {
+        return this._ios.tabBar.tintColor;
+    }
+    [selectedTabTextColorProperty.setNative](value: UIColor) {
         this._ios.tabBar.tintColor = value instanceof Color ? value.ios : value;
         this._updateIOSTabBarColorsAndFonts();
     }
 
-    get [tabBackgroundColorProperty.native](): UIColor {
-        return this._ios.tabBar.barTintColor;
-    }
-    set [tabBackgroundColorProperty.native](value: UIColor | Color) {
-        this._ios.tabBar.barTintColor = value instanceof Color ? value.ios : value;
-    }
-
-    get [selectedTabTextColorProperty.native](): UIColor {
-        return this._ios.tabBar.tintColor;
-    }
-    set [selectedTabTextColorProperty.native](value: UIColor) {
-        this._updateIOSTabBarColorsAndFonts();
-    }
-
     // TODO: Move this to TabViewItem
-    get [textTransformProperty.native](): TextTransform {
-        return "none";
-    }
-    set [textTransformProperty.native](value: TextTransform) {
-        this._updateIOSTabBarTextTransform(value);
-    }
-
-    // TODO: Move this to TabViewItem
-    get [fontInternalProperty.native](): Font {
+    [fontInternalProperty.getDefault](): Font {
         return null;
     }
-    set [fontInternalProperty.native](value: Font) {
+    [fontInternalProperty.setNative](value: Font) {
         this._updateIOSTabBarColorsAndFonts();
     }
 
     // TODO: Move this to TabViewItem
-    get [iosIconRenderingModeProperty.native](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
+    [iosIconRenderingModeProperty.getDefault](): "automatic" | "alwaysOriginal" | "alwaysTemplate" {
         return "automatic";
     }
-    set [iosIconRenderingModeProperty.native](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
+    [iosIconRenderingModeProperty.setNative](value: "automatic" | "alwaysOriginal" | "alwaysTemplate") {
         this._iconsCache = {};
         let items = this.items;
         if (items && items.length) {
@@ -459,7 +448,7 @@ interface TabStates {
 }
 
 function getTitleAttributesForStates(tabView: TabView): TabStates {
-    const result: TabStates = { };
+    const result: TabStates = {};
 
     const font = tabView.style.fontInternal.getUIFont(UIFont.systemFontOfSize(10));
     let tabItemTextColor = tabView.style.tabTextColor;

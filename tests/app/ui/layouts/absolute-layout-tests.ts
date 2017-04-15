@@ -1,12 +1,12 @@
 ﻿import * as testModule from "../../ui-test";
 import * as TKUnit from "../../TKUnit";
-import * as labelModule from "ui/label";
-import * as colorModule from "color";
+import * as labelModule from "tns-core-modules/ui/label";
+import * as colorModule from "tns-core-modules/color";
 import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";
 
 // >> absolute-layout-require
-import * as absoluteLayoutModule from "ui/layouts/absolute-layout";
+import * as absoluteLayoutModule from "tns-core-modules/ui/layouts/absolute-layout";
 // << absolute-layout-require
 
 export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.AbsoluteLayout> {

@@ -1,7 +1,7 @@
 ﻿/**
  * Contains the TimePicker class.
  */
-import { View, Property } from "ui/core/view";
+import { View, Property } from "../core/view";
 
 /**
  * Represents an time picker.

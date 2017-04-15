@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from "../TKUnit";
-import * as fs from "file-system";
-import * as enums from "ui/enums";
-import * as resolver from "file-system/file-name-resolver";
+import * as fs from "tns-core-modules/file-system";
+import * as enums from "tns-core-modules/ui/enums";
+import * as resolver from "tns-core-modules/file-system/file-name-resolver";
 
 var androidPhonePortraitContext: resolver.PlatformContext = {
     width: 360,

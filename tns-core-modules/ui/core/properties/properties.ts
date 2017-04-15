@@ -1,10 +1,10 @@
 // Definitions.
-import * as definitions from "ui/core/view-base";
+import * as definitions from "../view-base";
 import { ViewBase } from "../view-base";
 
 // Types.
-import { WrappedValue } from "data/observable";
-import { Style } from "ui/styling/style";
+import { WrappedValue, PropertyChangeData } from "../../../data/observable";
+import { Style } from "../../styling/style";
 
 export { Style };
 
@@ -17,17 +17,13 @@ let inheritableProperties = new Array<InheritedProperty<any, any>>();
 let inheritableCssProperties = new Array<InheritedCssProperty<any, any>>();
 
 function print(map) {
-    let symbols = (<any>Object).getOwnPropertySymbols(map);
+    let symbols = Object.getOwnPropertySymbols(map);
     for (let symbol of symbols) {
         const prop = map[symbol];
         if (!prop.registered) {
             console.log(`Property ${prop.name} not Registered!!!!!`);
         }
     }
-}
-
-export function _isSet(cssProperty: CssProperty<any, any>, instance: Style): boolean {
-    return cssProperty.sourceKey in instance;
 }
 
 export function _printUnregisteredProperties(): void {
@@ -48,7 +44,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
     public readonly name: string;
     public readonly key: symbol;
-    public readonly native: symbol;
+
+    public readonly getDefault: symbol;
+    public readonly setNative: symbol;
+
     public readonly defaultValueKey: symbol;
     public readonly defaultValue: U;
     public readonly nativeValueChange: (owner: T, value: U) => void;
@@ -65,8 +64,11 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
         const key = Symbol(name + ":propertyKey");
         this.key = key;
 
-        const native: symbol = Symbol(name + ":nativeKey");
-        this.native = native;
+        const getDefault: symbol = Symbol(name + ":getDefault");
+        this.getDefault = getDefault;
+
+        const setNative: symbol = Symbol(name + ":setNative");
+        this.setNative = setNative;
 
         const defaultValueKey = Symbol(name + ":nativeDefaultValue");
         this.defaultValueKey = defaultValueKey;
@@ -99,15 +101,19 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
-                const setNativeValue = this.nativeView && native in this;
+                const setNativeValue = this.nativeView && this[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
                         valueChanged(this, currentValue, unboxedValue);
                     }
                     if (setNativeValue) {
-                        this[native] = this[defaultValueKey];
-                        delete this[defaultValueKey];
+                        if (defaultValueKey in this) {
+                            this[setNative](this[defaultValueKey]);
+                            delete this[defaultValueKey];
+                        } else {
+                            this[setNative](defaultValue);
+                        }
                     }
                 } else {
                     this[key] = unboxedValue;
@@ -117,19 +123,20 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
                     if (setNativeValue) {
                         if (!(defaultValueKey in this)) {
-                            this[defaultValueKey] = this[native];
+                            this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
                         }
 
-                        this[native] = unboxedValue;
+                        this[setNative](unboxedValue);
                     }
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: unboxedValue
+                        value: unboxedValue,
+                        oldValue: currentValue
                     });
                 }
 
@@ -152,12 +159,17 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                     valueChanged(owner, currentValue, value);
                 }
 
+                if (owner.nativeView && !(defaultValueKey in owner)) {
+                    owner[defaultValueKey] = owner[getDefault] ? owner[getDefault]() : defaultValue;
+                }
+
                 if (owner.hasListeners(eventName)) {
-                    owner.notify({
+                    owner.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: owner,
-                        value: value
+                        value: value,
+                        oldValue: currentValue
                     });
                 }
 
@@ -177,6 +189,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
         this.registered = true;
         Object.defineProperty(cls.prototype, this.name, this);
     }
+
+    public isSet(instance: T): boolean {
+        return this.key in instance;
+    }
 }
 
 export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements definitions.CoercibleProperty<T, U> {
@@ -187,7 +203,8 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 
         const name = options.name;
         const key = this.key;
-        const native: symbol = this.native;
+        const getDefault: symbol = this.getDefault;
+        const setNative: symbol = this.setNative;
         const defaultValueKey = this.defaultValueKey;
         const defaultValue: U = this.defaultValue;
 
@@ -229,7 +246,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
-                const setNativeValue = this.nativeView && native in this;
+                const setNativeValue = this.nativeView && this[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -237,8 +254,12 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                     }
 
                     if (setNativeValue) {
-                        this[native] = this[defaultValueKey];
-                        delete this[defaultValueKey];
+                        if (defaultValueKey in this) {
+                            this[setNative](this[defaultValueKey]);
+                            delete this[defaultValueKey];
+                        } else {
+                            this[setNative](defaultValue);
+                        }
                     }
                 } else {
                     this[key] = unboxedValue;
@@ -248,19 +269,20 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
 
                     if (setNativeValue) {
                         if (!(defaultValueKey in this)) {
-                            this[defaultValueKey] = this[native];
+                            this[defaultValueKey] = this[getDefault] ? this[getDefault]() : defaultValue;
                         }
 
-                        this[native] = unboxedValue;
+                        this[setNative](unboxedValue);
                     }
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: unboxedValue
+                        value: unboxedValue,
+                        oldValue: currentValue
                     });
                 }
 
@@ -355,7 +377,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
     protected readonly localValueDescriptor: PropertyDescriptor;
 
     public readonly key: symbol;
-    public readonly native: symbol;
+    public readonly getDefault: symbol;
+    public readonly setNative: symbol;
     public readonly sourceKey: symbol;
     public readonly defaultValueKey: symbol;
     public readonly defaultValue: U;
@@ -373,8 +396,11 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
         const sourceKey = Symbol(name + ":valueSourceKey");
         this.sourceKey = sourceKey;
 
-        const native = Symbol(name + ":nativeKey");
-        this.native = native;
+        const getDefault = Symbol(name + ":getDefault");
+        this.getDefault = getDefault;
+
+        const setNative = Symbol(name + ":setNative");
+        this.setNative = setNative;
 
         const defaultValueKey = Symbol(name + ":nativeDefaultValue");
         this.defaultValueKey = defaultValueKey;
@@ -406,7 +432,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
             if (changed) {
                 const view = this.view;
-                const setNativeValue = view.nativeView && native in view;
+                const setNativeValue = view.nativeView && view[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -414,8 +440,12 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                     }
 
                     if (setNativeValue) {
-                        view[native] = this[defaultValueKey];
-                        delete this[defaultValueKey];
+                        if (defaultValueKey in this) {
+                            view[setNative](this[defaultValueKey]);
+                            delete this[defaultValueKey];
+                        } else {
+                            view[setNative](defaultValue);
+                        }
                     }
                 } else {
                     this[key] = value;
@@ -425,19 +455,20 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
                     if (setNativeValue) {
                         if (!(defaultValueKey in this)) {
-                            this[defaultValueKey] = view[native];
+                            this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
                         }
 
-                        view[native] = value;
+                        view[setNative](value);
                     }
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: value
+                        value: value,
+                        oldValue: currentValue
                     });
                 }
 
@@ -471,7 +502,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
             if (changed) {
                 const view = this.view;
-                const setNativeValue = view.nativeView && native in view;
+                const setNativeValue = view.nativeView && view[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -479,8 +510,12 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
                     }
 
                     if (setNativeValue) {
-                        view[native] = this[defaultValueKey];
-                        delete this[defaultValueKey];
+                        if (defaultValueKey in this) {
+                            view[setNative](this[defaultValueKey]);
+                            delete this[defaultValueKey];
+                        } else {
+                            view[setNative](defaultValue);
+                        }
                     }
                 } else {
                     this[key] = value;
@@ -490,19 +525,20 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
                     if (setNativeValue) {
                         if (!(defaultValueKey in this)) {
-                            this[defaultValueKey] = view[native];
+                            this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
                         }
 
-                        view[native] = value;
+                        view[setNative](value);
                     }
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: value
+                        value: value,
+                        oldValue: currentValue
                     });
                 }
 
@@ -544,17 +580,26 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
             Object.defineProperty(cls.prototype, this.cssLocalName, this.localValueDescriptor);
         }
     }
+
+    public isSet(instance: T): boolean {
+        return this.key in instance;
+    }
 }
 
 export class CssAnimationProperty<T extends Style, U> {
     public readonly name: string;
     public readonly cssName: string;
 
-    public readonly native: symbol;
+    public readonly getDefault: symbol;
+    public readonly setNative: symbol;
+
     public readonly register: (cls: { prototype }) => void;
 
     public readonly keyframe: string;
     public readonly defaultValueKey: symbol;
+    public readonly computedValueKey: symbol;
+
+    public readonly defaultValue: U;
 
     private static properties: { [cssName: string]: CssAnimationProperty<any, any> } = {};
 
@@ -565,7 +610,11 @@ export class CssAnimationProperty<T extends Style, U> {
         const propertyName = options.name;
         this.name = propertyName;
 
-        CssAnimationProperty.properties[options.cssName || propertyName] = this;
+        CssAnimationProperty.properties[propertyName] = this;
+        if (options.cssName && options.cssName !== propertyName) {
+            CssAnimationProperty.properties[options.cssName] = this;
+        }
+
         this._valueConverter = options.valueConverter;
 
         const cssName = "css:" + (options.cssName || propertyName);
@@ -578,13 +627,18 @@ export class CssAnimationProperty<T extends Style, U> {
         const defaultValueKey = Symbol(defaultName);
         this.defaultValueKey = defaultValueKey;
 
+        this.defaultValue = defaultValue;
+
         const cssValue = Symbol(cssName);
         const styleValue = Symbol(propertyName);
         const keyframeValue = Symbol(keyframeName);
         const computedValue = Symbol("computed-value:" + propertyName);
+        this.computedValueKey = computedValue;
         const computedSource = Symbol("computed-source:" + propertyName);
 
-        const native = this.native = Symbol("native:" + propertyName);
+        // Note the getDefault is unused, CssAnimationProperties are expected to have default JavaScript value.
+        this.getDefault = Symbol(propertyName + ":getDefault");
+        const setNative = this.setNative = Symbol(propertyName + ":setNative");
         const eventName = propertyName + "Change";
 
         function descriptor(symbol: symbol, propertySource: ValueSource, enumerable: boolean, configurable: boolean, getsComputed: boolean): PropertyDescriptor {
@@ -623,11 +677,11 @@ export class CssAnimationProperty<T extends Style, U> {
                         if (valueChanged) {
                             valueChanged(this, prev, next);
                         }
-                        if (this.view.nativeView) {
-                            this.view[native] = next;
+                        if (this.view.nativeView && this.view[setNative]) {
+                            this.view[setNative](next);
                         }
                         if (this.hasListeners(eventName)) {
-                            this.notify({ eventName, object: this, propertyName, value });
+                            this.notify<PropertyChangeData>({ eventName, object: this, propertyName, value, oldValue: prev });
                         }
                     }
                 }
@@ -664,6 +718,10 @@ export class CssAnimationProperty<T extends Style, U> {
     public static _getByCssName(name: string): CssAnimationProperty<any, any> {
         return this.properties[name];
     }
+
+    public isSet(instance: T): boolean {
+        return instance[this.computedValueKey] !== unsetValue;
+    }
 }
 
 export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> implements definitions.InheritedCssProperty<T, U> {
@@ -675,7 +733,8 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
         const key = this.key;
         const sourceKey = this.sourceKey;
-        const native = this.native;
+        const getDefault = this.getDefault;
+        const setNative = this.setNative;
         const defaultValueKey = this.defaultValueKey;
 
         const eventName = name + "Change";
@@ -709,8 +768,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                 if (style && style[sourceKey] > ValueSource.Default) {
                     newValue = style[name];
                     this[sourceKey] = ValueSource.Inherited;
-                }
-                else {
+                } else {
                     newValue = defaultValue;
                     delete this[sourceKey];
                 }
@@ -728,7 +786,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
             if (changed) {
                 const view = this.view;
-                const setNativeValue = view.nativeView && native in view;
+                const setNativeValue = view.nativeView && view[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -736,8 +794,12 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
                     }
 
                     if (setNativeValue) {
-                        view[native] = this[defaultValueKey];
-                        delete this[defaultValueKey];
+                        if (defaultValueKey in this) {
+                            view[setNative](this[defaultValueKey]);
+                            delete this[defaultValueKey];
+                        } else {
+                            view[setNative](defaultValue);
+                        }
                     }
                 } else {
                     this[key] = newValue;
@@ -747,19 +809,20 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
                     if (setNativeValue) {
                         if (!(defaultValueKey in this)) {
-                            this[defaultValueKey] = view[native];
+                            this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
                         }
 
-                        view[native] = newValue;
+                        view[setNative](newValue);
                     }
                 }
 
                 if (this.hasListeners(eventName)) {
-                    this.notify({
+                    this.notify<PropertyChangeData>({
                         eventName: eventName,
                         propertyName: name,
                         object: this,
-                        value: newValue
+                        value: newValue,
+                        oldValue: currentValue
                     });
                 }
 
@@ -806,7 +869,6 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
     protected readonly cssValueDescriptor: PropertyDescriptor;
     protected readonly localValueDescriptor: PropertyDescriptor;
 
-    public readonly native: symbol;
     public readonly sourceKey: symbol;
 
     constructor(options: definitions.ShorthandPropertyOptions<P>) {
@@ -899,81 +961,83 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
 }
 
 export function initNativeView(view: ViewBase): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(view);
+    let symbols = Object.getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         const property: Property<any, any> = symbolPropertyMap[symbol];
         if (!property) {
             continue;
         }
 
-        const native = property.native;
-        if (native in view) {
+        const setNative = property.setNative;
+        const getDefault = property.getDefault;
+        if (setNative in view) {
             const defaultValueKey = property.defaultValueKey;
             if (!(defaultValueKey in view)) {
-                view[defaultValueKey] = view[native];
+                view[defaultValueKey] = view[getDefault] ? view[getDefault]() : property.defaultValue;
             }
 
             const value = view[symbol];
-            view[native] = value;
+            view[setNative](value);
         }
     }
 
     const style = view.style;
-    symbols = (<any>Object).getOwnPropertySymbols(style);
+    symbols = Object.getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
         if (!property) {
             continue;
         }
 
-        const native = property.native;
-        if (native in view) {
-            const defaultValueKey = property.defaultValueKey;
-            if (!(defaultValueKey in style)) {
-                style[defaultValueKey] = view[native];
+        if (view[property.setNative]) {
+            if (view[property.getDefault]) {
+                const defaultValueKey = property.defaultValueKey;
+                if (!(defaultValueKey in style)) {
+                    style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
+                }
             }
 
             const value = style[symbol];
-            view[native] = value;
+            view[property.setNative](value);
         }
     }
 }
 
 export function resetNativeView(view: ViewBase): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(view);
+    let symbols = Object.getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         const property: Property<any, any> = symbolPropertyMap[symbol];
         if (!property) {
             continue;
         }
 
-        const native = property.native;
-        if (native in view) {
-            view[native] = view[property.defaultValueKey];
-            delete view[property.defaultValueKey];
+        if (view[property.setNative]) {
+            if (property.defaultValueKey in view) {
+                view[property.setNative](view[property.defaultValueKey]);
+                delete view[property.defaultValueKey];
+            } else {
+                view[property.setNative](property.defaultValue);
+            }
         }
-
-        // This will not call propertyChange!!!
-        delete view[property.key];
     }
 
     const style = view.style;
 
-    symbols = (<any>Object).getOwnPropertySymbols(style);
+    symbols = Object.getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         const property: CssProperty<any, any> = cssSymbolPropertyMap[symbol];
         if (!property) {
             continue;
         }
 
-        const native = property.native;
-        if (native in view) {
-            view[native] = style[property.defaultValueKey];
-            delete style[property.defaultValueKey];
+        if (view[property.setNative]) {
+            if (property.defaultValueKey in style) {
+                view[property.setNative](style[property.defaultValueKey]);
+                delete style[property.defaultValueKey];
+            } else {
+                view[property.setNative](property.defaultValue);
+            }
         }
-
-        // This will not call propertyChange!!!
-        delete style[property.key];
     }
 }
 
@@ -995,7 +1059,7 @@ export function clearInheritedProperties(view: ViewBase): void {
 }
 
 export function resetCSSProperties(style: Style): void {
-    let symbols = (<any>Object).getOwnPropertySymbols(style);
+    let symbols = Object.getOwnPropertySymbols(style);
     for (let symbol of symbols) {
         let cssProperty;
         if (cssProperty = cssSymbolPropertyMap[symbol]) {
@@ -1007,46 +1071,28 @@ export function resetCSSProperties(style: Style): void {
     }
 }
 
-export function propagateInheritableProperties(view: ViewBase): void {
+export function propagateInheritableProperties(view: ViewBase, child: ViewBase): void {
     const inheritablePropertyValues = inheritablePropertyValuesOn(view);
-    if (inheritablePropertyValues.length === 0) {
-        return;
-    }
-
-    view.eachChild((child) => {
-        for (let pair of inheritablePropertyValues) {
-            const prop = pair.property;
-            const sourceKey = prop.sourceKey;
-            const currentValueSource: number = child[sourceKey] || ValueSource.Default;
-            if (currentValueSource <= ValueSource.Inherited) {
-                prop.setInheritedValue.call(child, pair.value);
-            }
+    for (let pair of inheritablePropertyValues) {
+        const prop = pair.property;
+        const sourceKey = prop.sourceKey;
+        const currentValueSource: number = child[sourceKey] || ValueSource.Default;
+        if (currentValueSource <= ValueSource.Inherited) {
+            prop.setInheritedValue.call(child, pair.value);
         }
-
-        return true;
-    });
+    }
 }
 
-export function propagateInheritableCssProperties(style: Style): void {
-    const view = style.view;
-    const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(style);
-    if (inheritableCssPropertyValues.length === 0) {
-        return;
-    }
-
-    view.eachChild((child) => {
-        for (let pair of inheritableCssPropertyValues) {
-            const prop = pair.property;
-            const sourceKey = prop.sourceKey;
-            const style = child.style;
-            const currentValueSource: number = style[sourceKey] || ValueSource.Default;
-            if (currentValueSource <= ValueSource.Inherited) {
-                prop.setInheritedValue.call(style, pair.value, ValueSource.Inherited);
-            }
+export function propagateInheritableCssProperties(parentStyle: Style, childStyle: Style): void {
+    const inheritableCssPropertyValues = inheritableCssPropertyValuesOn(parentStyle);
+    for (let pair of inheritableCssPropertyValues) {
+        const prop = pair.property;
+        const sourceKey = prop.sourceKey;
+        const currentValueSource: number = childStyle[sourceKey] || ValueSource.Default;
+        if (currentValueSource <= ValueSource.Inherited) {
+            prop.setInheritedValue.call(childStyle, pair.value, ValueSource.Inherited);
         }
-
-        return true;
-    });
+    }
 }
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T {

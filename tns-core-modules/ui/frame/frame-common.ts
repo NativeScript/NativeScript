@@ -1,17 +1,17 @@
 ﻿// Definitions.
-import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from "ui/frame";
-import { Page } from "ui/page";
+import { Frame as FrameDefinition, NavigationEntry, BackstackEntry, NavigationTransition } from ".";
+import { Page } from "../page";
 
 // Types.
-import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "ui/core/view";
-import { resolveFileName } from "file-system/file-name-resolver";
-import { knownFolders, path } from "file-system";
-import { parse, loadPage } from "ui/builder";
-import * as application from "application";
+import { View, CustomLayoutView, isIOS, isAndroid, traceEnabled, traceWrite, traceCategories, EventData } from "../core/view";
+import { resolveFileName } from "../../file-system/file-name-resolver";
+import { knownFolders, path } from "../../file-system";
+import { parse, loadPage } from "../builder";
+import * as application from "../../application";
 
 export { application };
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 function onLivesync(args: EventData): void {
     // give time to allow fileNameResolver & css to reload.
@@ -32,7 +32,7 @@ function onLivesync(args: EventData): void {
         }
     });
 }
-application.on("livesync", args => onLivesync);
+application.on("livesync", onLivesync);
 
 let frameStack: Array<FrameBase> = [];
 
@@ -83,12 +83,16 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
         if (!page) {
             throw new Error("Failed to create Page with entry.create() function.");
         }
+
+        page._refreshCss();
     }
     else if (entry.moduleName) {
         // Current app full path.
         let currentAppPath = knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
         let moduleNamePath = path.join(currentAppPath, entry.moduleName);
+        traceWrite("frame module path: " + moduleNamePath, traceCategories.Navigation);
+        traceWrite("frame module module: " + entry.moduleName, traceCategories.Navigation);
 
         let moduleExports;
         // web-pack case where developers register their page JS file manually.

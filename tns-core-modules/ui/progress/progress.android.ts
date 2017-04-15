@@ -8,40 +8,31 @@ export * from "./progress-common";
 const R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL = 0x01010078;
 
 export class Progress extends ProgressBase {
-    private _android: android.widget.ProgressBar;
+    nativeView: android.widget.ProgressBar;
 
-    public _createNativeView() {
-        const progressBar = this._android = new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
-        return progressBar;
+    public createNativeView() {
+        return new android.widget.ProgressBar(this._context, null, R_ATTR_PROGRESS_BAR_STYLE_HORIZONTAL);
     }
 
-    get android(): android.widget.ProgressBar {
-        return this._android;
-    }
-
-    get nativeView(): android.widget.ProgressBar {
-        return this._android;
-    }
-
-    get [valueProperty.native](): number {
+    [valueProperty.getDefault](): number {
         return 0;
     }
-    set [valueProperty.native](value: number) {
-        this._android.setProgress(value);
+    [valueProperty.setNative](value: number) {
+        this.nativeView.setProgress(value);
     }
 
-    get [maxValueProperty.native](): number {
+    [maxValueProperty.getDefault](): number {
         return 100;
     }
-    set [maxValueProperty.native](value: number) {
-        this._android.setMax(value);
+    [maxValueProperty.setNative](value: number) {
+        this.nativeView.setMax(value);
     }
 
-    get [colorProperty.native](): android.graphics.drawable.Drawable {
+    [colorProperty.getDefault](): android.graphics.drawable.Drawable {
         return null;
     }
-    set [colorProperty.native](value: Color) {
-        let progressDrawable = this._android.getProgressDrawable();
+    [colorProperty.setNative](value: Color) {
+        let progressDrawable = this.nativeView.getProgressDrawable();
         if (!progressDrawable) {
             return;
         }
@@ -53,11 +44,11 @@ export class Progress extends ProgressBase {
         }
     }
 
-    get [backgroundColorProperty.native](): number {
+    [backgroundColorProperty.getDefault](): number {
         return null;
     }
-    set [backgroundColorProperty.native](value: Color) {
-        let progressDrawable = this._android.getProgressDrawable();
+    [backgroundColorProperty.setNative](value: Color) {
+        let progressDrawable = this.nativeView.getProgressDrawable();
         if (!progressDrawable) {
             return;
         }
@@ -74,10 +65,10 @@ export class Progress extends ProgressBase {
         }
     }
 
-    get [backgroundInternalProperty.native](): number {
+    [backgroundInternalProperty.getDefault](): number {
         return null;
     }
-    set [backgroundInternalProperty.native](value: Color) {
+    [backgroundInternalProperty.setNative](value: Color) {
         //
     }
 }

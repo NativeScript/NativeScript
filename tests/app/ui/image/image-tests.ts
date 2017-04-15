@@ -1,22 +1,22 @@
-﻿import { Image } from "ui/image";
-import { StackLayout } from "ui/layouts/stack-layout";
-import { GridLayout } from "ui/layouts/grid-layout";
-import { isIOS, isAndroid } from "platform";
-import { PropertyChangeData } from "data/observable";
-import * as utils from "utils/utils";
+﻿import { Image } from "tns-core-modules/ui/image";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { GridLayout } from "tns-core-modules/ui/layouts/grid-layout";
+import { isIOS, isAndroid } from "tns-core-modules/platform";
+import { PropertyChangeData } from "tns-core-modules/data/observable";
+import * as utils from "tns-core-modules/utils/utils";
 import * as TKUnit from "../../TKUnit";
 import { getColor } from "../helper";
 
 // >> img-require
-import * as ImageModule from "ui/image";
+import * as ImageModule from "tns-core-modules/ui/image";
 // << img-require
 
-import * as types from "utils/types";
-import * as ImageSourceModule from "image-source";
-import * as ViewModule from "ui/core/view";
+import * as types from "tns-core-modules/utils/types";
+import * as ImageSourceModule from "tns-core-modules/image-source";
+import * as ViewModule from "tns-core-modules/ui/core/view";
 import * as helper from "../helper";
-import * as ObservableModule from "data/observable";
-import * as color from "color";
+import * as ObservableModule from "tns-core-modules/data/observable";
+import * as color from "tns-core-modules/color";
 
 const imagePath = "~/logo.png";
 
@@ -126,10 +126,8 @@ export const test_SettingImageSrcToDataURI_sync = function () {
 };
 
 export const test_SettingImageSrcToDataURI_async = function (done) {
-    // >> img-create-datauri
     const image = new ImageModule.Image();
     image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAAAXNSR0IArs4c6QAAABxpRE9UAAAAAgAAAAAAAAACAAAAKAAAAAIAAAACAAAARiS4uJEAAAASSURBVBgZYvjPwABHSMz/DAAAAAD//0GWpK0AAAAOSURBVGNgYPiPhBgQAACEvQv1D5y/pAAAAABJRU5ErkJggg==";
-    // << img-create-datauri
 
     runImageTestAsync(image, image.src, done);
 };

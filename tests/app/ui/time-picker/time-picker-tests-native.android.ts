@@ -1,4 +1,4 @@
-﻿import * as timePickerModule from "ui/time-picker";
+﻿import * as timePickerModule from "tns-core-modules/ui/time-picker";
 
 export function getNativeHour(timePicker: timePickerModule.TimePicker): number {
     return timePicker.android.getCurrentHour().intValue();

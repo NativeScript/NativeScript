@@ -1,6 +1,6 @@
 ﻿import { 
     TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty, 
-    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color
+    Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
 
 export * from "./text-field-common";
@@ -107,10 +107,13 @@ class UITextFieldImpl extends UITextField {
         }
 
         const size = bounds.size;
-        return CGRectMake(owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft, owner.effectiveBorderTopWidth + owner.effectivePaddingTop,
-            size.width - (owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft + owner.effectivePaddingRight + owner.effectiveBorderRightWidth),
-            size.height - (owner.effectiveBorderTopWidth + owner.effectivePaddingTop + owner.effectivePaddingBottom + owner.effectiveBorderBottomWidth)
-        );
+
+        const x = layout.toDeviceIndependentPixels(owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft);
+        const y = layout.toDeviceIndependentPixels(owner.effectiveBorderTopWidth + owner.effectivePaddingTop);
+        const width = layout.toDeviceIndependentPixels(layout.toDevicePixels(size.width) - (owner.effectiveBorderLeftWidth + owner.effectivePaddingLeft + owner.effectivePaddingRight + owner.effectiveBorderRightWidth));
+        const height = layout.toDeviceIndependentPixels(layout.toDevicePixels(size.height) - (owner.effectiveBorderTopWidth + owner.effectivePaddingTop + owner.effectivePaddingBottom + owner.effectiveBorderBottomWidth));
+
+        return CGRectMake(x, y, width, height);
     }
 
     public textRectForBounds(bounds: CGRect): CGRect {
@@ -149,10 +152,10 @@ export class TextField extends TextFieldBase {
         return this._ios;
     }
 
-    get [hintProperty.native](): string {
+    [hintProperty.getDefault](): string {
         return this.nativeView.placeholder;
     }
-    set [hintProperty.native](value: string) {
+    [hintProperty.setNative](value: string) {
         let stringValue;
         if (value === null || value === void 0) {
             stringValue = "";
@@ -162,18 +165,18 @@ export class TextField extends TextFieldBase {
         this.nativeView.placeholder = stringValue;
     }
 
-    get [secureProperty.native](): boolean {
+    [secureProperty.getDefault](): boolean {
         return this.nativeView.secureTextEntry;
     }
-    set [secureProperty.native](value: boolean) {
+    [secureProperty.setNative](value: boolean) {
         this.nativeView.secureTextEntry = value;
     }
 
-    get [colorProperty.native](): UIColor {
+    [colorProperty.getDefault](): UIColor {
         // return this.nativeView.tintColor;
         return this.nativeView.textColor;
     }
-    set [colorProperty.native](value: UIColor | Color) {
+    [colorProperty.setNative](value: UIColor | Color) {
         // NOTE: Do we need this code? We have placeholderColor.
         // let nativeValue = this.nativeView;
         // if (this.isShowingHint && value) {
@@ -186,10 +189,10 @@ export class TextField extends TextFieldBase {
         this.nativeView.textColor = color;
     }
 
-    get [placeholderColorProperty.native](): UIColor {
+    [placeholderColorProperty.getDefault](): UIColor {
         return null;
     }
-    set [placeholderColorProperty.native](value: UIColor | Color) {
+    [placeholderColorProperty.setNative](value: UIColor | Color) {
         let nativeView = this.nativeView;
         let colorAttibutes = NSMutableDictionary.new<string, any>();
         colorAttibutes.setValueForKey(value instanceof Color ? value.ios : value, NSForegroundColorAttributeName);
@@ -204,31 +207,31 @@ export class TextField extends TextFieldBase {
         nativeView.attributedPlaceholder = NSAttributedString.alloc().initWithStringAttributes(stringValue, colorAttibutes);
     }
 
-    get [paddingTopProperty.native](): Length {
+    [paddingTopProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingTopProperty.native](value: Length) {
+    [paddingTopProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 
-    get [paddingRightProperty.native](): Length {
+    [paddingRightProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingRightProperty.native](value: Length) {
+    [paddingRightProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 
-    get [paddingBottomProperty.native](): Length {
+    [paddingBottomProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingBottomProperty.native](value: Length) {
+    [paddingBottomProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 
-    get [paddingLeftProperty.native](): Length {
+    [paddingLeftProperty.getDefault](): Length {
         return zeroLength;
     }
-    set [paddingLeftProperty.native](value: Length) {
+    [paddingLeftProperty.setNative](value: Length) {
         // Padding is realized via UITextFieldImpl.textRectForBounds method
     }
 }

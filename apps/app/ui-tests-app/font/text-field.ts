@@ -1,5 +1,5 @@
-import { StackLayout } from "ui/layouts/stack-layout";
-import { View, unsetValue, eachDescendant } from "ui/core/view";
+import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { View, unsetValue, eachDescendant } from "tns-core-modules/ui/core/view";
 
 export function resetStyles(args) {
     var stackLayout = <StackLayout>args.object.parent;

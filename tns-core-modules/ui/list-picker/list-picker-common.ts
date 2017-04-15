@@ -1,7 +1,7 @@
-﻿import { ListPicker as ListPickerDefinition, ItemsSource } from "ui/list-picker";
-import { View, Property, CoercibleProperty } from "ui/core/view";
+﻿import { ListPicker as ListPickerDefinition, ItemsSource } from ".";
+import { View, Property, CoercibleProperty } from "../core/view";
 
-export * from "ui/core/view";
+export * from "../core/view";
 
 export class ListPickerBase extends View implements ListPickerDefinition {
 
@@ -19,6 +19,8 @@ export class ListPickerBase extends View implements ListPickerDefinition {
         return (item === undefined || item === null) ? index + "" : item + "";
     }
 }
+
+// ListPickerBase.prototype.recycleNativeView = true;
 
 export const selectedIndexProperty = new CoercibleProperty<ListPickerBase, number>({
     name: "selectedIndex", defaultValue: -1,
@@ -46,7 +48,6 @@ export const itemsProperty = new Property<ListPickerBase, any[] | ItemsSource>({
     name: "items", valueChanged: (target, oldValue, newValue) => {
         let getItem = newValue && (<ItemsSource>newValue).getItem;
         target.isItemsSource = typeof getItem === "function";
-        selectedIndexProperty.coerce(target);
     }
 });
 itemsProperty.register(ListPickerBase);

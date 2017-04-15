@@ -1,5 +1,5 @@
-﻿import { Font as FontDefinition, ParsedFont } from "ui/styling/font";
-import { makeValidator, makeParser } from "ui/core/properties";
+﻿import { Font as FontDefinition, ParsedFont } from "./font";
+import { makeValidator, makeParser } from "../core/properties";
 
 export abstract class FontBase implements FontDefinition {
     public static default = undefined;

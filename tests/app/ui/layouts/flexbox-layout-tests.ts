@@ -1,21 +1,60 @@
 // >> flexbox-layout-require
-import {
-    FlexboxLayout,
-    FlexDirection,
-    FlexWrap,
-    JustifyContent,
-    AlignItems,
-    AlignContent,
-    AlignSelf
-} from "ui/layouts/flexbox-layout";
+import { FlexboxLayout } from "tns-core-modules/ui/layouts/flexbox-layout";
 // << flexbox-layout-require
 
-import {View, unsetValue, Length, PercentLength} from "ui/core/view";
-import {Label} from "ui/label";
+export namespace FlexDirection {
+    export const ROW: "row" = "row";
+    export const ROW_REVERSE: "row-reverse" = "row-reverse";
+    export const COLUMN: "column" = "column";
+    export const COLUMN_REVERSE: "column-reverse" = "column-reverse";
+}
+
+export namespace FlexWrap {
+    export const NOWRAP: "nowrap" = "nowrap";
+    export const WRAP: "wrap" = "wrap";
+    export const WRAP_REVERSE: "wrap-reverse" = "wrap-reverse";
+}
+
+export namespace JustifyContent {
+    export const FLEX_START: "flex-start" = "flex-start";
+    export const FLEX_END: "flex-end" = "flex-end";
+    export const CENTER: "center" = "center";
+    export const SPACE_BETWEEN: "space-between" = "space-between";
+    export const SPACE_AROUND: "space-around" = "space-around";
+}
+
+export namespace AlignItems {
+    export const FLEX_START: "flex-start" = "flex-start";
+    export const FLEX_END: "flex-end" = "flex-end";
+    export const CENTER: "center" = "center";
+    export const BASELINE: "baseline" = "baseline";
+    export const STRETCH: "stretch" = "stretch";
+}
+
+export namespace AlignContent {
+    export const FLEX_START: "flex-start" = "flex-start";
+    export const FLEX_END: "flex-end" = "flex-end";
+    export const CENTER: "center" = "center";
+    export const SPACE_BETWEEN: "space-between" = "space-between";
+    export const SPACE_AROUND: "space-around" = "space-around";
+    export const STRETCH: "stretch" = "stretch";
+}
+
+export namespace AlignSelf {
+    export const AUTO: "auto" = "auto";
+    export const FLEX_START: "flex-start" = "flex-start";
+    export const FLEX_END: "flex-end" = "flex-end";
+    export const CENTER: "center" = "center";
+    export const BASELINE: "baseline" = "baseline";
+    export const STRETCH: "stretch" = "stretch";
+}
+
+import {View, unsetValue, Length, PercentLength} from "tns-core-modules/ui/core/view";
+import {Label} from "tns-core-modules/ui/label";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import {layout} from "utils/utils";
-import {parse} from "ui/builder";
+import {layout} from "tns-core-modules/utils/utils";
+import {parse} from "tns-core-modules/ui/builder";
 
 // TODO: Test the flexbox-layout-page.xml can be loaded and displayed
 
@@ -174,6 +213,7 @@ export function testFlexboxPage() {
     function view(id: string) {
         return <View>page.getViewById(id);
     }
+    TKUnit.waitUntilReady(() => page.isLayoutValid);
     isLeftOf(view("six"), view("one"));
     isAbove(view("one"), view("scrollview"));
     isAbove(view("title"), view("firstlabel"));

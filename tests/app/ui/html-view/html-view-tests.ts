@@ -1,9 +1,9 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import * as types from "utils/types";
+import * as types from "tns-core-modules/utils/types";
 
 // >> htmlview-require
-import * as htmlViewModule from "ui/html-view";
+import * as htmlViewModule from "tns-core-modules/ui/html-view";
 // << htmlview-require
 
 var _createHtmlViewFunc = function (): htmlViewModule.HtmlView {

@@ -1,4 +1,4 @@
-import * as parser from "ui/styling/css-selector-parser";
+import * as parser from "tns-core-modules/ui/styling/css-selector-parser";
 import * as TKUnit from "../../TKUnit";
 
 function test(css: string, expected: {}): void {

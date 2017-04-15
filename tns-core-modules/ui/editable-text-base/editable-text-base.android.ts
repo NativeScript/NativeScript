@@ -2,10 +2,10 @@
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty, placeholderColorProperty, Color
+    textProperty, placeholderColorProperty, Color, textTransformProperty
 } from "./editable-text-base-common";
 
-import { ad } from "utils/utils";
+import { ad } from "../../utils/utils";
 
 export * from "./editable-text-base-common";
 
@@ -39,15 +39,19 @@ function initializeEditTextListeners(): void {
         }
 
         public onTextChanged(text: string, start: number, before: number, count: number) {
-            const owner = this.owner;
-            let selectionStart = owner.android.getSelectionStart();
-            owner.android.removeTextChangedListener(owner._editTextListeners);
-            owner.android.addTextChangedListener(owner._editTextListeners);
-            owner.android.setSelection(selectionStart);
+            // const owner = this.owner;
+            // let selectionStart = owner.android.getSelectionStart();
+            // owner.android.removeTextChangedListener(owner._editTextListeners);
+            // owner.android.addTextChangedListener(owner._editTextListeners);
+            // owner.android.setSelection(selectionStart);
         }
 
         public afterTextChanged(editable: android.text.IEditable) {
             const owner = this.owner;
+            if (!owner) {
+                return;
+            }
+
             switch (owner.updateTextTrigger) {
                 case "focusLost":
                     owner._dirtyTextAccumulator = editable.toString();
@@ -62,6 +66,9 @@ function initializeEditTextListeners(): void {
 
         public onFocusChange(view: android.view.View, hasFocus: boolean) {
             const owner = this.owner;
+            if (!owner) {
+                return;
+            }
 
             if (hasFocus) {
                 if (dismissKeyboardTimeoutId) {
@@ -72,7 +79,7 @@ function initializeEditTextListeners(): void {
                 }
             }
             else {
-                if (owner._dirtyTextAccumulator) {
+                if (owner._dirtyTextAccumulator || owner._dirtyTextAccumulator === "") {
                     textProperty.nativeValueChange(owner, owner._dirtyTextAccumulator);
                     owner._dirtyTextAccumulator = undefined;
                 }
@@ -88,6 +95,9 @@ function initializeEditTextListeners(): void {
 
         public onEditorAction(textView: android.widget.TextView, actionId: number, event: android.view.KeyEvent): boolean {
             const owner = this.owner;
+            if (!owner) {
+                return;
+            }
 
             if (actionId === android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
                 actionId === android.view.inputmethod.EditorInfo.IME_ACTION_GO ||
@@ -118,66 +128,54 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     /* tslint:disable */
     _dirtyTextAccumulator: string;
     /* tslint:enable */
-    
-    _editTextListeners: EditTextListeners;
 
-    private _android: android.widget.EditText;
+    nativeView: android.widget.EditText;
     private _keyListenerCache: android.text.method.KeyListener;
 
-    get android(): android.widget.EditText {
-        return this._android;
-    }
-
-    public abstract _configureEditText(): void;
+    public abstract _configureEditText(editText: android.widget.EditText): void;
 
     public abstract _onReturnPress(): void;
 
-    public _createNativeView() {
+    public createNativeView() {
         initializeEditTextListeners();
-        const editText = this._android = new android.widget.EditText(this._context);
-        this._configureEditText();
-        this._keyListenerCache = editText.getKeyListener();
+        const editText = new android.widget.EditText(this._context);
+        this._configureEditText(editText);
 
-        this._editTextListeners = this._editTextListeners || new EditTextListeners(this);
-        editText.addTextChangedListener(this._editTextListeners);
-        editText.setOnFocusChangeListener(this._editTextListeners);
-        editText.setOnEditorActionListener(this._editTextListeners);
+        const listeners = new EditTextListeners(this);
+        editText.addTextChangedListener(listeners);
+        editText.setOnFocusChangeListener(listeners);
+        editText.setOnEditorActionListener(listeners);
+        (<any>editText).listener = listeners;
         return editText;
     }
 
-    public _resetNativeView(force?: boolean) {
-        if (this._android) {
-            this._android.setOnFocusChangeListener(null);
-            this._android.setOnEditorActionListener(null);
-
-            if (this._editTextListeners) {
-                this._android.removeTextChangedListener(this._editTextListeners);
-            }
-        }
-        super._resetNativeView();
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeView;
+        (<any>nativeView).listener.owner = this;
+        this._keyListenerCache = nativeView.getKeyListener();
     }
 
     public _disposeNativeView(force?: boolean) {
-        this._android = undefined;
-        super._disposeNativeView();
+        (<any>this.nativeView).listener.owner = null;
     }
 
     public dismissSoftInput() {
-        ad.dismissSoftInput(this._android);
+        ad.dismissSoftInput(this.nativeView);
     }
 
     public focus(): boolean {
         let result = super.focus();
 
         if (result) {
-            ad.showSoftInput(this._android);
+            ad.showSoftInput(this.nativeView);
         }
 
         return result;
     }
 
     private _setInputType(inputType): void {
-        let nativeView = this._android;
+        let nativeView = this.nativeView;
         nativeView.setInputType(inputType);
 
         // setInputType will change the keyListener so we should cache it again
@@ -192,16 +190,16 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    get [textProperty.native](): string {
-        return this._android.getText();
+    [textProperty.getDefault](): string {
+        return this.nativeView.getText();
     }
-    set [textProperty.native](value: string) {
+    [textProperty.setNative](value: string) {
         const text = (value === null || value === undefined) ? '' : value.toString();
-        this._android.setText(text, android.widget.TextView.BufferType.EDITABLE);
+        this.nativeView.setText(text, android.widget.TextView.BufferType.EDITABLE);
     }
 
-    get [keyboardTypeProperty.native](): "datetime" | "phone" | "number" | "url" | "email" | string {
-        let inputType = this._android.getInputType();
+    [keyboardTypeProperty.getDefault](): "datetime" | "phone" | "number" | "url" | "email" | string {
+        let inputType = this.nativeView.getInputType();
         switch (inputType) {
             case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
                 return "datetime";
@@ -222,7 +220,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return inputType.toString();
         }
     }
-    set [keyboardTypeProperty.native](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
         let newInputType;
         switch (value) {
             case "datetime":
@@ -258,8 +256,8 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(newInputType);
     }
 
-    get [returnKeyTypeProperty.native](): "done" | "next" | "go" | "search" | "send" | string {
-        let ime = this._android.getImeOptions();
+    [returnKeyTypeProperty.getDefault](): "done" | "next" | "go" | "search" | "send" | string {
+        let ime = this.nativeView.getImeOptions();
         switch (ime) {
             case android.view.inputmethod.EditorInfo.IME_ACTION_DONE:
                 return "done";
@@ -280,7 +278,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 return ime.toString();
         }
     }
-    set [returnKeyTypeProperty.native](value: "done" | "next" | "go" | "search" | "send" | string) {
+    [returnKeyTypeProperty.setNative](value: "done" | "next" | "go" | "search" | "send" | string) {
         let newImeOptions;
         switch (value) {
             case "done":
@@ -308,35 +306,35 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
         }
 
-        this._android.setImeOptions(newImeOptions);
+        this.nativeView.setImeOptions(newImeOptions);
     }
 
-    get [editableProperty.native](): boolean {
-        return !!this._android.getKeyListener();
+    [editableProperty.getDefault](): boolean {
+        return true;
     }
-    set [editableProperty.native](value: boolean) {
+    [editableProperty.setNative](value: boolean) {
         if (value) {
-            this._android.setKeyListener(this._keyListenerCache);
+            this.nativeView.setKeyListener(this._keyListenerCache);
         }
         else {
-            this._android.setKeyListener(null);
+            this.nativeView.setKeyListener(null);
         }
     }
 
-    get [autocapitalizationTypeProperty.native](): "none" | "words" | "sentences" | "allCharacters" | string {
-        let inputType = this._android.getInputType();
+    [autocapitalizationTypeProperty.getDefault](): "none" | "words" | "sentences" | "allcharacters" | string {
+        let inputType = this.nativeView.getInputType();
         if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS) {
             return "words";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) === android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES) {
             return "sentences";
         } else if ((inputType & android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) === android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS) {
-            return "allCharacters";
+            return "allcharacters";
         } else {
             return inputType.toString();
         }
     }
-    set [autocapitalizationTypeProperty.native](value: string) {
-        let inputType = this._android.getInputType();
+    [autocapitalizationTypeProperty.setNative](value: string) {
+        let inputType = this.nativeView.getInputType();
         inputType = inputType & ~28672; //28672 (0x00070000) 13,14,15bits (111 0000 0000 0000)
 
         switch (value) {
@@ -349,7 +347,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
             case "sentences":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00040000) 15th bit
                 break;
-            case "allCharacters":
+            case "allcharacters":
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
                 break;
             default:
@@ -366,16 +364,16 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(inputType);
     }
 
-    get [autocorrectProperty.native](): boolean {
-        let autocorrect = this._android.getInputType();
+    [autocorrectProperty.getDefault](): boolean {
+        let autocorrect = this.nativeView.getInputType();
         if ((autocorrect & android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) === android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT) {
             return true;
         }
 
         return false;
     }
-    set [autocorrectProperty.native](value: boolean) {
-        let inputType = this._android.getInputType();
+    [autocorrectProperty.setNative](value: boolean) {
+        let inputType = this.nativeView.getInputType();
         switch (value) {
             case true:
                 inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
@@ -395,21 +393,25 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         this._setInputType(inputType);
     }
 
-    get [hintProperty.native](): string {
-        return this._android.getHint();
+    [hintProperty.getDefault](): string {
+        return this.nativeView.getHint();
     }
-    set [hintProperty.native](value: string) {
-        this._android.setHint(value + '');
+    [hintProperty.setNative](value: string) {
+        this.nativeView.setHint(value + '');
     }
 
-    get [placeholderColorProperty.native](): android.content.res.ColorStateList {
-        return this._android.getHintTextColors();
+    [placeholderColorProperty.getDefault](): android.content.res.ColorStateList {
+        return this.nativeView.getHintTextColors();
     }
-    set [placeholderColorProperty.native](value: Color | android.content.res.ColorStateList) {
+    [placeholderColorProperty.setNative](value: Color | android.content.res.ColorStateList) {
         if (value instanceof Color) {
-            this._android.setHintTextColor(value.android);
+            this.nativeView.setHintTextColor(value.android);
         } else {
-            this._android.setHintTextColor(value);
+            this.nativeView.setHintTextColor(value);
         }
+    }
+
+    [textTransformProperty.setNative](value: "default") {
+        //
     }
 }

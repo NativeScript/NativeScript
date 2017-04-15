@@ -10,13 +10,13 @@
  
 */
 
-import * as Application from "application";
-import * as timer from "timer";
-import * as trace from "trace";
-import * as types from "utils/types";
-import * as platform from "platform";
+import * as Application from "tns-core-modules/application";
+import * as timer from "tns-core-modules/timer";
+import * as trace from "tns-core-modules/trace";
+import * as types from "tns-core-modules/utils/types";
+import * as platform from "tns-core-modules/platform";
 
-import * as utils from "utils/utils";
+import * as utils from "tns-core-modules/utils/utils";
 
 var sdkVersion = parseInt(platform.device.sdkVersion);
 
@@ -214,7 +214,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
     }
 }
 
-export function assertEqual<T extends { equals?(arg: T): boolean }>(actual: T, expected: T, message?: string) {
+export function assertEqual<T extends { equals?(arg: T): boolean }>(actual: T, expected: T, message: string = '') {
     if (!types.isNullOrUndefined(actual)
         && !types.isNullOrUndefined(expected)
         && types.getClass(actual) === types.getClass(expected)
@@ -366,13 +366,13 @@ export var wait = function (seconds: number) {
     }, seconds, false);
 };
 
-export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 20, shouldThrow: boolean = true) {
+export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 3, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
     }
 
     if (Application.ios) {
-        var waitTime = 20 / 1000;
+        const waitTime = 20 / 1000;
         var totalWaitTime = 0;
         while (true) {
             utils.ios.getter(NSRunLoop, NSRunLoop.currentRunLoop).runUntilDate(<any>NSDate.dateWithTimeIntervalSinceNow(waitTime));
