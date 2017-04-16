@@ -130,15 +130,7 @@ export class IdSelector extends SimpleSelector {
 export class TypeSelector extends SimpleSelector {
     constructor(public cssType: string) { super(); }
     public toString(): string { return `${this.cssType}${wrap(this.combinator)}`; }
-    public match(node: Node): boolean {
-        if (this.combinator === "+") {
-            const sibling = getNodeDirectSibling(node);
-            return sibling
-                && node.cssType === this.cssType
-                && sibling.cssType === this.cssType;
-        }
-        return node.cssType === this.cssType;
-    }
+    public match(node: Node): boolean { return node.cssType === this.cssType; }
     public lookupSort(sorter: LookupSorter, base?: SelectorCore): void { sorter.sortByType(this.cssType, base || this); }
 }
 
@@ -146,15 +138,7 @@ export class TypeSelector extends SimpleSelector {
 export class ClassSelector extends SimpleSelector {
     constructor(public cssClass: string) { super(); }
     public toString(): string { return `.${this.cssClass}${wrap(this.combinator)}`; }
-    public match(node: Node): boolean {
-        if (this.combinator === "+") {
-            const sibling = getNodeDirectSibling(node);
-            return sibling
-                && node.cssClasses.has(this.cssClass)
-                && sibling.cssClasses.has(this.cssClass)
-        }
-        return node.cssClasses && node.cssClasses.has(this.cssClass);
-    }
+    public match(node: Node): boolean { return node.cssClasses && node.cssClasses.has(this.cssClass); }
     public lookupSort(sorter: LookupSorter, base?: SelectorCore): void { sorter.sortByClass(this.cssClass, base || this); }
 }
 
@@ -222,6 +206,21 @@ export class PseudoClassSelector extends SimpleSelector {
     public match(node: Node): boolean { return node.cssPseudoClasses && node.cssPseudoClasses.has(this.cssPseudoClass); }
     public mayMatch(node: Node): boolean { return true; }
     public trackChanges(node: Node, map: ChangeAccumulator): void { map.addPseudoClass(node, this.cssPseudoClass); }
+}
+
+@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
+export class SiblingSelector extends SimpleSelector {
+    constructor(public firstSelector: SimpleSelector, public secondSelector: SimpleSelector) {
+        super();
+        this.combinator = "+";
+    }
+    public toString(): string { return `${this.firstSelector}${wrap(this.combinator)}${this.secondSelector}`; }
+    public match(node: Node): boolean {
+        const sibling = getNodeDirectSibling(node);
+        return sibling
+            && this.firstSelector.match(sibling)
+            && this.secondSelector.match(node);
+    }
 }
 
 export class SimpleSelectorSequence extends SimpleSelector {
@@ -406,20 +405,25 @@ function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | 
 
         let selectors = ast.map(createSimpleSelector);
         let sequences: (SimpleSelector | SimpleSelectorSequence)[] = [];
-
+        let siblingSequence = null;
         // Join simple selectors into sequences, set combinators
         for (let seqStart = 0, seqEnd = 0, last = selectors.length - 1; seqEnd <= last; seqEnd++) {
             let sel = selectors[seqEnd];
             let astComb = ast[seqEnd].comb;
             if (astComb || seqEnd === last) {
-                if (seqStart === seqEnd) {
-                    // This is a sequnce with single SimpleSelector, so we will not combine it into SimpleSelectorSequence.
-                    sel.combinator = astComb;
+                if (seqStart !== seqEnd) {
+                    // This is not a sequence with single SimpleSelector, so we will combine it into SimpleSelectorSequence.
+                    sel = new SimpleSelectorSequence(selectors.slice(seqStart, seqEnd + 1));
+                }
+                if (astComb === "+") {
+                    siblingSequence = sel;
+                } else if (!!siblingSequence) {
+                    sel = new SiblingSelector(siblingSequence, sel);
+                    siblingSequence = null;
                     sequences.push(sel);
                 } else {
-                    let sequence = new SimpleSelectorSequence(selectors.slice(seqStart, seqEnd + 1));
-                    sequence.combinator = astComb;
-                    sequences.push(sequence);
+                    sel.combinator = astComb;
+                    sequences.push(sel);
                 }
                 seqStart = seqEnd + 1;
             }
