@@ -1,7 +1,7 @@
 Cross Platform Modules Changelog
 ==============================
 
-##2.5.2 (2017, March 21)
+## 2.5.2 (2017, March 21)
 
 ### Fixed
 
@@ -9,13 +9,13 @@ Cross Platform Modules Changelog
 
 - [(#3675)](https://github.com/NativeScript/NativeScript/pull/3675) Fix a crash when nesting a ProxyViewContainer in FlexboxLayout
 
-##2.5.1 (2017, February 16)
+## 2.5.1 (2017, February 16)
 
 ### Fixed
 
 - [(#3565)](https://github.com/NativeScript/NativeScript/issues/3565) Fix a crash when ActionBar transparent background
 
-##2.5.0 (2017, February 1)
+## 2.5.0 (2017, February 1)
 
 ### Fixed
 
@@ -85,7 +85,7 @@ Cross Platform Modules Changelog
 
 - [(#2689)](https://github.com/NativeScript/NativeScript/issues/2689) TabView.iosIconRenderingMode property
 
-##2.4.0 (2016, November 16)
+## 2.4.0 (2016, November 16)
 
 ### Fixed
 
@@ -159,7 +159,7 @@ Cross Platform Modules Changelog
 
 - [(#50)](https://github.com/NativeScript/NativeScript/issues/50) Support for pseudo/state selectors in CSS
 
-##2.3.0 (2016, September 16)
+## 2.3.0 (2016, September 16)
 
 ### Fixed
 
@@ -183,7 +183,7 @@ Cross Platform Modules Changelog
 
 - [(#712)](https://github.com/NativeScript/NativeScript/issues/712) Ability to style EditableTextBase's hint property
 
-##2.2.0 (2016, August 10)
+## 2.2.0 (2016, August 10)
 
 ### Fixed
 
@@ -203,7 +203,7 @@ Cross Platform Modules Changelog
 - [(#734)](https://github.com/NativeScript/NativeScript/issues/734) Add API to retrieve the following standard user directories under iOS
 - [(#731)](https://github.com/NativeScript/NativeScript/issues/731) NavigationEntry.bindingContext property
 
-##2.1.0 (2016, June 30)
+## 2.1.0 (2016, June 30)
 
 ### Fixed
 
@@ -299,7 +299,7 @@ Cross Platform Modules Changelog
 
 
 
-##2.0.1 (2016, May 18)
+## 2.0.1 (2016, May 18)
 
 ### Fixed
 
@@ -327,7 +327,7 @@ Cross Platform Modules Changelog
 
 - [(#2102)](https://github.com/NativeScript/NativeScript/pull/2102) clip-path support added
 
-##2.0.0 (2016, April 27)
+## 2.0.0 (2016, April 27)
 
 ### Fixed
 
@@ -405,13 +405,13 @@ Cross Platform Modules Changelog
 
 - [(#515)](https://github.com/NativeScript/NativeScript/issues/515) CSS style property "z-index"
 
-##1.7.1 (2016, March 22)
+## 1.7.1 (2016, March 22)
 
 ### Fixed
 
 - [(#1614)](https://github.com/NativeScript/NativeScript/issues/1614) App crashes after a while leaving it open and re-selecting it on Android
 
-##1.7.0 (2016, March 16)
+## 1.7.0 (2016, March 16)
 
 ### Fixed
 
@@ -460,7 +460,7 @@ Cross Platform Modules Changelog
 - [(#704)](https://github.com/NativeScript/NativeScript/issues/704) Support of Px,rem
 
 
-##1.6.0 (2016, February 17)
+## 1.6.0 (2016, February 17)
 
 ### Breaking changes
 
@@ -564,13 +564,12 @@ Cross Platform Modules Changelog
 
 - [(#98)](https://github.com/NativeScript/NativeScript/issues/98) Support for advanced CSS selectors
 
-##1.5.2 (2016, January 27)
 
 ### Fixed
 
 - [(#1447)](https://github.com/NativeScript/NativeScript/issues/1447) Application fails with Segmentation fault on iOS when using ScrollView
 
-##1.5.1 (2015, November 14)
+## 1.5.1 (2015, November 14)
 
 ### Fixed
 
@@ -614,7 +613,7 @@ Cross Platform Modules Changelog
 
 - [(#501)](https://github.com/NativeScript/NativeScript/issues/501) Better XML declaration error reporting for non-existing element
 
-##1.5.0 (2015, November 24)
+## 1.5.0 (2015, November 24)
 
 ### Breaking changes
 - The XML namespace (xmlns) of the validator XSD schema changed from
@@ -732,7 +731,7 @@ Cross Platform Modules Changelog
 
 - [(#364)](https://github.com/NativeScript/NativeScript/issues/364) Ability to use built-in system icons on ActionBarItems
 
-##1.4.0 (2015, October 12)
+## 1.4.0 (2015, October 12)
 
 ### Fixed
 
@@ -828,7 +827,7 @@ animation1.play().finished.then(()=>console.log("Finished"));
 animation1.play().then(()=>console.log("Finished"));
 ```
 
-##1.3.0 (2015, September 16)
+## 1.3.0 (2015, September 16)
 
 ### Fixed
 
@@ -938,15 +937,15 @@ var observer = application.ios.addNotificationObserver(UIDeviceBatteryLevelDidCh
 application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChangeNotification);
 ```
 
-##1.2.1 (2015, August 18)
+## 1.2.1 (2015, August 18)
 
-###Fixed
+### Fixed
 
 - [(#575)](https://github.com/NativeScript/NativeScript/issues/575) Application crashes in Android when there is an ActionBar on the first page
 
 - [(#576)](https://github.com/NativeScript/NativeScript/issues/576) The app.css now applied when there is page-specific CSS
 
-##1.2.0 (2015, July 24)
+## 1.2.0 (2015, July 24)
 
 ###New
 
@@ -996,7 +995,7 @@ application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChan
 ### Known issues
 -  ```tns debug ios``` command is not working. The workaround is to use ```tns debug ios --framework-path "__path to the iOS runtime__"```. A fix for this is coming in 1.2.1 which will be released the week of July 27th.
 
-##1.1.0 (2015, June 10)
+## 1.1.0 (2015, June 10)
 
 ### New
 - [(#280)](https://github.com/NativeScript/NativeScript/issues/280) Change NativeActivity Pbase class in order to be compatible with Android runtime
@@ -1049,7 +1048,7 @@ application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChan
 -  [(#242)](https://github.com/NativeScript/NativeScript/issues/242) View and GesturesObserver classes have some breaking changes related to gesture operations
 
 
-##1.0.0 (2015, April 29)
+## 1.0.0 (2015, April 29)
 
 ### New
 * New options for camera module. Added a resizing options along with keep-aspect-ratio options. More information about how to use it can be found at the dedicated camera help article.
@@ -1068,7 +1067,7 @@ application.ios.removeNotificationObserver(observer, UIDeviceBatteryLevelDidChan
 * Gesture-related enum values changed to start with a small letter in order to be consistent with all other enums within NativeScript. For example, "gesturesModule.GestureType.Tap" should be used like "gesturesModule.GestureType.tap".
 * `knownEvents` modules within all UI controls are removed and replaced with a static string values. In that case, all possible events will be visible through the inheritance tree. These static strings have an `Event` suffix. Every place where `viewModule.knownEvents.loaded` is used should be changed to `viewModule.View.loadedEvent` or `pageModule.Page.loadedEvent`. This change is relevant to code-behind only (xml declaration will not be affected).
 
-##0.10.0 (2015, April 17)
+## 0.10.0 (2015, April 17)
 
 ### Fixed
 
