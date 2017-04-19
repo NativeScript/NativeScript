@@ -47,3 +47,47 @@ Using a TabView requires the "ui/tab-view" module.
 export function onSelectedIndexChanged(args) {...}
 ```
 > Note: Initially selectedIndexChanged event will be raised just after adding a new items to TabView without any user interaction, which will happen on TabView loaded. SelectedIndexChanged event will be raised because value of the selectedIndex property is changed from undefined (default) (with no items) to 0 (first tab item). Depends on how TabView.items are set or added it may happen to raise one or two times selectedIndexChanged event even before page events (loaded, navigatingTo, navigatedTo, ...).
+
+## Styling TabView
+
+For the TabView component could be set three different styling properties 
+
+* `selectedTabTextColor` (coresponding CSS property `selected-tab-text-color `) - change the color of the text, while selecting some of the tabs.
+* `tabBackgroundColor` (coresponding CSS property `tab-background-color`) - changing the background of the tabs.
+* `textTransform` (coresponding CSS property `text-transform`) - setting up textTransform individual for every `TabViewItem`. Value options: `capitalize`, `lowercase`, `none`, `uppercase`.
+
+```XML
+<TabView selectedTabTextColor="#00FF00" tabBackgroundColor="#FF0000" >
+            <TabView.items>
+                <TabViewItem title="Tab 1" textTransform="lowercase">
+                <TabViewItem.view>
+                    <Label text="Label in Tab1" />
+                </TabViewItem.view>
+                </TabViewItem>
+                <TabViewItem title="Tab 2" textTransform="lowercase">
+                <TabViewItem.view>
+                    <Label text="Label in Tab2" />
+                </TabViewItem.view>
+                </TabViewItem>
+            </TabView.items>
+</TabView>
+```
+
+* `androidSelectedTabHighlightColor`<sup>android specific property</sup> (coresponding CSS property `android-selected-tab-highlight-color`) - setup underline color of the `Tab`s in Android.
+
+```XML
+<TabView androidSelectedTabHighlightColor="red">
+                <TabView.items>
+                    <TabViewItem title="Tab 1" >
+                    <TabViewItem.view>
+                        <Label text="Label in Tab1"/>
+                    </TabViewItem.view>
+                    </TabViewItem>
+                    <TabViewItem title="Tab 2">
+                    <TabViewItem.view>
+                        <Label text="Label in Tab2" />
+                    </TabViewItem.view>
+                    </TabViewItem>
+                </TabView.items>
+    </TabView>
+```
