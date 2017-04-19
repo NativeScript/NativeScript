@@ -208,21 +208,6 @@ export class PseudoClassSelector extends SimpleSelector {
     public trackChanges(node: Node, map: ChangeAccumulator): void { map.addPseudoClass(node, this.cssPseudoClass); }
 }
 
-@SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
-export class SiblingSelector extends SimpleSelector {
-    constructor(public firstSelector: SimpleSelector, public secondSelector: SimpleSelector) {
-        super();
-        this.combinator = "+";
-    }
-    public toString(): string { return `${this.firstSelector}${wrap(this.combinator)}${this.secondSelector}`; }
-    public match(node: Node): boolean {
-        const sibling = getNodeDirectSibling(node);
-        return sibling
-            && this.firstSelector.match(sibling)
-            && this.secondSelector.match(node);
-    }
-}
-
 export class SimpleSelectorSequence extends SimpleSelector {
     private head: SimpleSelector;
     constructor(public selectors: SimpleSelector[]) {
@@ -251,22 +236,29 @@ export class Selector extends SelectorCore {
 
     constructor(public selectors: SimpleSelector[]) {
         super();
-        let lastGroup: SimpleSelector[];
-        let groups: SimpleSelector[][] = [];
+        let siblingGroup: SimpleSelector[];
+        let lastGroup: SimpleSelector[][];
+        let groups: SimpleSelector[][][] = [];
         selectors.reverse().forEach(sel => {
             switch(sel.combinator) {
                 case undefined:
                 case " ":
-                case "+":
-                    groups.push(lastGroup = []);
+                    siblingGroup = []
+                    groups.push(lastGroup = [siblingGroup]);
                 case ">":
-                    lastGroup.push(sel);
+                    lastGroup.push(siblingGroup = []);
+                case "+":
+                    siblingGroup.push(sel);
                     break;
                 default:
                     throw new Error(`Unsupported combinator "${sel.combinator}".`);
             }
         });
-        this.groups = groups.map(g => new Selector.ChildGroup(g));
+        this.groups = groups.map(g =>
+            new Selector.ChildGroup(g.map(sg =>
+                new Selector.SiblingGroup(sg)
+            ))
+        );
         this.last = selectors[0];
         this.specificity = selectors.reduce((sum, sel) => sel.specificity + sum, 0);
         this.dynamic = selectors.some(sel => sel.dynamic);
@@ -281,11 +273,10 @@ export class Selector extends SelectorCore {
                 return !!node;
             } else {
                 let ancestor = node;
-                while(ancestor) {
+                while(ancestor = ancestor.parent) {
                     if (node = group.match(ancestor)) {
                         return true;
                     }
-                    ancestor = ancestor.parent
                 }
                 return false;
             }
@@ -353,20 +344,39 @@ export namespace Selector {
     export class ChildGroup {
         public dynamic: boolean;
 
+        constructor(private selectors: SiblingGroup[]) {
+            this.dynamic = selectors.some(sel => sel.dynamic);
+        }
+
+        public match(node: Node): Node {
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && !!sel.match(node)) ? node : null;
+        }
+
+        public mayMatch(node: Node): Node {
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && !!sel.mayMatch(node)) ? node : null;
+        }
+
+        public trackChanges(node: Node, map: ChangeAccumulator) {
+            this.selectors.forEach((sel, i) => (i === 0 ? node : node = node.parent) && sel.trackChanges(node, map));
+        }
+    }
+    export class SiblingGroup {
+        public dynamic: boolean;
+
         constructor(private selectors: SimpleSelector[]) {
             this.dynamic = selectors.some(sel => sel.dynamic);
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (i === 0 ? node : node = node.parent) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.trackChanges(node, map));
         }
     }
     export interface Bound {
@@ -405,25 +415,19 @@ function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | 
 
         let selectors = ast.map(createSimpleSelector);
         let sequences: (SimpleSelector | SimpleSelectorSequence)[] = [];
-        let siblingSequence = null;
         // Join simple selectors into sequences, set combinators
         for (let seqStart = 0, seqEnd = 0, last = selectors.length - 1; seqEnd <= last; seqEnd++) {
             let sel = selectors[seqEnd];
             let astComb = ast[seqEnd].comb;
             if (astComb || seqEnd === last) {
-                if (seqStart !== seqEnd) {
-                    // This is not a sequence with single SimpleSelector, so we will combine it into SimpleSelectorSequence.
-                    sel = new SimpleSelectorSequence(selectors.slice(seqStart, seqEnd + 1));
-                }
-                if (astComb === "+") {
-                    siblingSequence = sel;
-                } else if (!!siblingSequence) {
-                    sel = new SiblingSelector(siblingSequence, sel);
-                    siblingSequence = null;
-                    sequences.push(sel);
-                } else {
+                if (seqStart === seqEnd) {
+                    // This is a sequnce with single SimpleSelector, so we will not combine it into SimpleSelectorSequence.
                     sel.combinator = astComb;
                     sequences.push(sel);
+                } else {
+                    let sequence = new SimpleSelectorSequence(selectors.slice(seqStart, seqEnd + 1));
+                    sequence.combinator = astComb;
+                    sequences.push(sequence);
                 }
                 seqStart = seqEnd + 1;
             }
