@@ -17,3 +17,5 @@ Using borders requires the Border module.
      </Border>
  </Page>
 ```
+
+> Note: Border module is **deprecated**! Use CSS properties instead.
