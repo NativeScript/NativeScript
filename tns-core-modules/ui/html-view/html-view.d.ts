@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/html-view"
+ * 
  * Contains the HtmlView class, which represents a standard html view widget.
- */
+ */ /** */
+
 import { View, Property } from "../core/view";
 
 /**

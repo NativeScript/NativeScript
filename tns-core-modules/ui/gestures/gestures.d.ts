@@ -1,6 +1,9 @@
 ﻿/**
- * Contains the GesturesObserver class, which lets you observe and respond to user gestures
- */
+ * @module "ui/gestures"
+ * 
+ * Contains the GesturesObserver class, which lets you observe and respond to user gestures.
+ */ /** */
+
 import { View, EventData } from "../core/view";
 
 /**

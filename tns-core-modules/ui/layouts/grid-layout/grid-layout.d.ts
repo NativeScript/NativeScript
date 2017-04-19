@@ -1,4 +1,8 @@
-﻿import { LayoutBase, Property, View } from "../layout-base";
+﻿/**
+ * @module "ui/layouts/grid-layout"
+ */ /** */
+
+import { LayoutBase, Property, View } from "../layout-base";
 
 /**
  * Defines row/column specific properties that apply to GridLayout elements.
@@ -128,9 +132,21 @@ export class GridLayout extends LayoutBase {
     public getRows(): Array<ItemSpec>;
 
     //@private
+    /**
+     * @private
+     */
     public _onRowAdded(itemSpec: ItemSpec): void;
+    /**
+     * @private
+     */
     public _onColumnAdded(itemSpec: ItemSpec): void;
+    /**
+     * @private
+     */
     public _onRowRemoved(itemSpec: ItemSpec, index: number): void;
+    /**
+     * @private
+     */
     public _onColumnRemoved(itemSpec: ItemSpec, index: number): void;
     //@endprivate
 }

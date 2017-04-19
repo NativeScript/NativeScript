@@ -1,4 +1,8 @@
-﻿import * as parser from "../../../css";
+﻿/**
+ * @module "ui/styling/css-selector"
+ */ /** */
+
+import * as parser from "../../../css";
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.

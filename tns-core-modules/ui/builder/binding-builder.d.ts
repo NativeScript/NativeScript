@@ -1,4 +1,9 @@
-﻿//@private
+﻿/**
+ * @module "ui/builder/binding-builder"
+ * @private
+ */ /** */
+
+//@private
 export module bindingConstants {
     export var sourceProperty: string;
     export var targetProperty: string;
@@ -14,4 +19,3 @@ export module bindingConstants {
 export function getBindingOptions(name: string, value: string): any;
 
 export var parentsRegex: RegExp;
-}

@@ -1,3 +1,7 @@
+/**
+ * @module "ui/layouts/flexbox-layout"
+ */ /** */
+
 import { LayoutBase, View, Style, CssProperty } from "../layout-base";
 
 export type FlexDirection = "row" | "row-reverse" | "column" | "column-reverse";

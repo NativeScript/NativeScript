@@ -1,4 +1,8 @@
-﻿import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
+﻿/**
+ * @module "ui/text-base"
+ */ /** */
+
+import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
 import { FormattedString } from "../../text/formatted-string";
 
 export * from "../core/view";
@@ -70,20 +74,25 @@ export class TextBase extends View implements AddChildFromBuilder {
      */
     paddingTop: Length;
 
+    //@private
     /**
      * Called for every child element declared in xml.
      * This method will add a child element (value) to current element.
+     * @private
      * @param name - Name of the element.
      * @param value - Value of the element.
      */
     _addChildFromBuilder(name: string, value: any): void;
 
     /**
-     * @private
      * Called when the text property is changed to request layout.
+     * @private
      */
     _requestLayoutOnTextChanged(): void;
 
+    /**
+     * @private
+     */
     _setNativeText(): void;
     //@endprivate
 }

@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "text"
+ * 
  * Defines specific text related enumerations.
- */
+ */ /** */
+
 /**
  * Defines the supported character encodings.
  */

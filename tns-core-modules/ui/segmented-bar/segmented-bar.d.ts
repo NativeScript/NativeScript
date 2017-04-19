@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/segmented-bar"
+ * 
  * Contains the SegmentedBar class, which represents a SegmentedBar component.
- */
+ */ /** */
+
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
     Property, CoercibleProperty, EventData, Color

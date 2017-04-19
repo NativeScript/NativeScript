@@ -1,3 +1,7 @@
+/**
+ * @module "ui/styling/style-properties"
+ */ /** */
+
 import { Color } from "../../color";
 import { Style, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from "../core/properties";
 import { Font, FontStyle, FontWeight } from "./font";

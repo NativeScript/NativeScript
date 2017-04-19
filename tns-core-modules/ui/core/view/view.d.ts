@@ -1,3 +1,7 @@
+/**
+ * @module "ui/core/view"
+ */ /** */
+
 ///<reference path="../../../tns-core-modules.d.ts" /> Include global typings
 import { ViewBase, Property, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
@@ -472,37 +476,65 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
+    /**
+     * @private
+     */
     isLayoutRequired: boolean;
+    /**
+     * @private
+     */
     _gestureObservers: any;
+    /**
+     * @private
+     */
     _setNativeClipToBounds(): void;
-
+    /**
+     * @private
+     */
     _updateLayout(): void;
-
     /**
      * Called by measure method to cache measureSpecs.
+     * @private
      */
     _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean;
-
     /**
      * Called by layout method to cache view bounds.
+     * @private
      */
     _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): void;
-
     /**
      * Return view bounds.
+     * @private
      */
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number };
-
+    /**
+     * @private
+     */
     _goToVisualState(state: string);
+    /**
+     * @private
+     */
     _setNativeViewFrame(nativeView: any, frame: any): void;
     // _onStylePropertyChanged(property: dependencyObservable.Property): void;
-
+    /**
+     * @private
+     */
     _updateEffectiveLayoutValues(parent: View): void;
-
+    /**
+     * @private
+     */
     _currentWidthMeasureSpec: number;
+    /**
+     * @private
+     */
     _currentHeightMeasureSpec: number;
-
+    /**
+     * @private
+     */
     _setMinWidthNative(value: Length): void;
+    /**
+     * @private
+     */
     _setMinHeightNative(value: Length): void;
     //@endprivate
 
@@ -522,8 +554,17 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
  */
 export class CustomLayoutView extends View {
     //@private
+    /**
+     * @private
+     */
     _updateNativeLayoutParams(child: View): void;
+    /**
+     * @private
+     */
     _setChildMinWidthNative(child: View): void;
+    /**
+     * @private
+     */
     _setChildMinHeightNative(child: View): void;
     //@endprivate
 }

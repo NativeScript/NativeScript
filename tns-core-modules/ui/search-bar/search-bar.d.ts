@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/search-bar"
+ * 
  * Contains the SearchBar class, which represents a standard search bar component.
- */
+ */ /** */
+
 import { View, Property, EventData, Color } from "../core/view";
 
 /**

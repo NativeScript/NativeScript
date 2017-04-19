@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/image"
+ * 
  * Contains the Image class, which represents an image widget.
- */
+ */ /** */
+
 import { View, Property, InheritedCssProperty, Color, Style } from "../core/view";
 import { ImageSource } from "../../image-source";
 

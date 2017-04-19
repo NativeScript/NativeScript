@@ -1,7 +1,10 @@
-﻿///<reference path="../../tns-core-modules.d.ts" /> Include global typings
-/**
- * Contains the Page class, which represents a logical unit for navigation inside a Frame. 
- */
+﻿/**
+ * @module "ui/page"
+ * 
+ * Contains the Page class, which represents a logical unit for navigation inside a Frame.
+ */ /** */
+
+///<reference path="../../tns-core-modules.d.ts" /> Include global typings
 import { ContentView, EventData, Property, Color } from "../content-view";
 import { Frame } from "../frame";
 import { ActionBar } from "../action-bar";
@@ -218,12 +221,14 @@ export class Page extends ContentView {
 
     /**
      * identifier for the fragment that shows this page.
-     * Android only. 
+     * Android only.
+     * @private
      */
     public _fragmentTag: string;
 
     /**
      * A method called before navigating to the page.
+     * @private
      * @param context - The data passed to the page through the NavigationEntry.context property.
      * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
      * @param bindingContext - An object to become the binding context of the page navigating to. Optional.
@@ -232,23 +237,32 @@ export class Page extends ContentView {
 
     /**
      * A method called after navigated to the page.
+     * @private
      * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
      */
     public onNavigatedTo(isBackNavigation: boolean): void;
 
     /**
      * A method called before navigating from the page.
+     * @private
      * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
      */
     public onNavigatingFrom(isBackNavigation: boolean): void;
 
     /**
      * A method called after navigated from the page.
+     * @private
      * @param isBackNavigation - True if the Page is being navigated from using the Frame.goBack() method, false otherwise.
      */
     public onNavigatedFrom(isBackNavigation: boolean): void;
 
+    /**
+     * @private
+     */
     _refreshCss(): void;
+    /**
+     * @private
+     */ 
     _getStyleScope(): styleScope.StyleScope;
     //@endprivate
 }

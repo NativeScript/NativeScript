@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "connectivity"
+ * 
  * Contains connectivity utility methods.
- */
+ */ /** */
+
 /**
  * Gets the type of connection.
  * Returns a value from the connectivity.connectionType enumeration.

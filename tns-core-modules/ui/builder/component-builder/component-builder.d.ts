@@ -1,3 +1,7 @@
+/**
+ * @module "ui/builder/component-builder"
+ */ /** */
+
 import { View } from "../../core/view";
 
 export function getComponentModule(elementName: string, namespace: string, attributes: Object, exports: Object, moduleNamePath?: string): ComponentModule;

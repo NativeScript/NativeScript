@@ -1,4 +1,8 @@
-﻿import { ViewBase } from "../view-base";
+﻿/**
+ * @module "ui/core/bindable"
+ */ /** */
+
+import { ViewBase } from "../view-base";
 import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
 import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType, isCategorySet } from "../../../trace";
 

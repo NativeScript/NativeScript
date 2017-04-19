@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "text/formatted-string"
+ * 
  * Contains the FormattedString and Span classes, which are used to create a formatted (rich text) strings.
- */
+ */ /** */
+
 import { Span } from "./span";
 import { ObservableArray } from "../data/observable-array";
 import { ViewBase } from "../ui/core/view";

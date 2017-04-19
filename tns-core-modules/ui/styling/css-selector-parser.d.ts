@@ -1,3 +1,8 @@
+/**
+ * @module "ui/styling/css-selector-parser"
+ * @private
+ */ /** */
+
 //@private
 export interface SimpleSelector {
     pos: number;

@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "http"
+ * 
  * Allows you to send web requests and receive the responses.
- */
+ */ /** */
+
 import * as image from "../image-source";
 import * as fs from "../file-system";
 

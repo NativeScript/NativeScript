@@ -1,3 +1,7 @@
+/**
+ * @module "ui/core/view-base"
+ */ /** */
+
 import { Property, InheritedProperty, Style } from "../properties";
 import { BindingOptions, Observable } from "../bindable";
 
@@ -60,13 +64,37 @@ export abstract class ViewBase extends Observable {
     alignSelf: AlignSelf;
 
     //@private
+    /**
+     * @private
+     */
     _oldLeft: number;
+    /**
+     * @private
+     */
     _oldTop: number;
+    /**
+     * @private
+     */
     _oldRight: number;
+    /**
+     * @private
+     */
     _oldBottom: number;
+    /**
+     * @private
+     */
     _defaultPaddingTop: number;
+    /**
+     * @private
+     */
     _defaultPaddingRight: number;
+    /**
+     * @private
+     */
     _defaultPaddingBottom: number;
+    /**
+     * @private
+     */
     _defaultPaddingLeft: number;
     //@endprivate
 
