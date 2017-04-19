@@ -131,7 +131,7 @@ export class Style extends Observable {
     public selectedBackgroundColor: Color;
 
     // Page-specific props 
-    public statusBarStyle: string;
+    public statusBarStyle: "light" | "dark";
     public androidStatusBarBackground: Color;
 
     constructor(ownerView: ViewBase);
