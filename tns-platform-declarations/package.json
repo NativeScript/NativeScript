@@ -1,6 +1,6 @@
 {
   "name": "tns-platform-declarations",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Platform-specific TypeScript declarations for NativeScript for accessing native objects",
   "main": "",
   "scripts": {
@@ -32,6 +32,6 @@
   },
   "homepage": "https://github.com/NativeScript/NativeScript#readme",
   "devDependencies": {
-    "typescript": "~2.1.6"
+    "typescript": "~2.2.1"
   }
 }
