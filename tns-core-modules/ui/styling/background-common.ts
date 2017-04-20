@@ -1,17 +1,15 @@
 // Deifinitions.
-import { Background as BackgroundDefinition, BackgroundDrawParams } from "./background";
+import { Background as BackgroundDefinition } from "./background";
 import { BackgroundRepeat } from "../core/view";
-import { ImageSource } from "../../image-source";
 
 // Types.
 import { Color } from "../../color";
-import { CSSValue, parse as cssParse } from "../../css-value";
 
 export class Background implements BackgroundDefinition {
     public static default = new Background();
 
     public color: Color;
-    public image: ImageSource;
+    public image: string;
     public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
@@ -30,7 +28,7 @@ export class Background implements BackgroundDefinition {
     public clipPath: string;
 
     private clone(): Background {
-        let clone = new Background();
+        const clone = new Background();
 
         clone.color = this.color;
         clone.image = this.image;
@@ -55,268 +53,112 @@ export class Background implements BackgroundDefinition {
     }
 
     public withColor(value: Color): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.color = value;
         return clone;
     }
 
-    public withImage(value: ImageSource): Background {
-        let clone = this.clone();
+    public withImage(value: string): Background {
+        const clone = this.clone();
         clone.image = value;
         return clone;
     }
 
     public withRepeat(value: BackgroundRepeat): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.repeat = value;
         return clone;
     }
 
     public withPosition(value: string): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.position = value;
         return clone;
     }
 
     public withSize(value: string): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.size = value;
         return clone;
     }
 
     public withBorderTopColor(value: Color): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderTopColor = value;
         return clone;
     }
 
     public withBorderRightColor(value: Color): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderRightColor = value;
         return clone;
     }
 
     public withBorderBottomColor(value: Color): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderBottomColor = value;
         return clone;
     }
 
     public withBorderLeftColor(value: Color): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderLeftColor = value;
         return clone;
     }
 
     public withBorderTopWidth(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderTopWidth = value;
         return clone;
     }
 
     public withBorderRightWidth(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderRightWidth = value;
         return clone;
     }
 
     public withBorderBottomWidth(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderBottomWidth = value;
         return clone;
     }
 
     public withBorderLeftWidth(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderLeftWidth = value;
         return clone;
     }
 
     public withBorderTopLeftRadius(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderTopLeftRadius = value;
         return clone;
     }
 
     public withBorderTopRightRadius(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderTopRightRadius = value;
         return clone;
     }
 
     public withBorderBottomRightRadius(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderBottomRightRadius = value;
         return clone;
     }
 
     public withBorderBottomLeftRadius(value: number): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.borderBottomLeftRadius = value;
         return clone;
     }
 
     public withClipPath(value: string): Background {
-        let clone = this.clone();
+        const clone = this.clone();
         clone.clipPath = value;
         return clone;
     }
-
-    public getDrawParams(width: number, height: number): BackgroundDrawParams {
-        if (!this.image) {
-            return null;
-        }
-
-        let res: BackgroundDrawParams = {
-            repeatX: true,
-            repeatY: true,
-            posX: 0,
-            posY: 0,
-        }
-
-        // repeat
-        if (this.repeat) {
-            switch (this.repeat.toLowerCase()) {
-                case "no-repeat":
-                    res.repeatX = false;
-                    res.repeatY = false;
-                    break;
-
-                case "repeat-x":
-                    res.repeatY = false;
-                    break;
-
-                case "repeat-y":
-                    res.repeatX = false;
-                    break;
-            }
-        }
-
-        let imageWidth = this.image.width;
-        let imageHeight = this.image.height;
-
-        // size
-        if (this.size) {
-            let values = cssParse(this.size);
-
-            if (values.length === 2) {
-                let vx = values[0];
-                let vy = values[1];
-                if (vx.unit === "%" && vy.unit === "%") {
-                    imageWidth = width * vx.value / 100;
-                    imageHeight = height * vy.value / 100;
-
-                    res.sizeX = imageWidth;
-                    res.sizeY = imageHeight;
-                }
-                else if (vx.type === "number" && vy.type === "number" &&
-                    ((vx.unit === "px" && vy.unit === "px") || (vx.unit === "" && vy.unit === ""))) {
-                    imageWidth = vx.value;
-                    imageHeight = vy.value;
-
-                    res.sizeX = imageWidth;
-                    res.sizeY = imageHeight;
-                }
-            }
-            else if (values.length === 1 && values[0].type === "ident") {
-                let scale = 0;
-
-                if (values[0].string === "cover") {
-                    scale = Math.max(width / imageWidth, height / imageHeight);
-                }
-                else if (values[0].string === "contain") {
-                    scale = Math.min(width / imageWidth, height / imageHeight);
-                }
-
-                if (scale > 0) {
-                    imageWidth *= scale;
-                    imageHeight *= scale;
-
-                    res.sizeX = imageWidth;
-                    res.sizeY = imageHeight;
-                }
-            }
-        }
-
-        // position
-        if (this.position) {
-            let v = Background.parsePosition(this.position);
-            if (v) {
-                let spaceX = width - imageWidth;
-                let spaceY = height - imageHeight;
-
-                if (v.x.unit === "%" && v.y.unit === "%") {
-                    res.posX = spaceX * v.x.value / 100;
-                    res.posY = spaceY * v.y.value / 100;
-                }
-                else if (v.x.type === "number" && v.y.type === "number" &&
-                    ((v.x.unit === "px" && v.y.unit === "px") || (v.x.unit === "" && v.y.unit === ""))) {
-                    res.posX = v.x.value;
-                    res.posY = v.y.value;
-                }
-                else if (v.x.type === "ident" && v.y.type === "ident") {
-                    if (v.x.string.toLowerCase() === "center") {
-                        res.posX = spaceX / 2;
-                    }
-                    else if (v.x.string.toLowerCase() === "right") {
-                        res.posX = spaceX;
-                    }
-
-                    if (v.y.string.toLowerCase() === "center") {
-                        res.posY = spaceY / 2;
-                    }
-                    else if (v.y.string.toLowerCase() === "bottom") {
-                        res.posY = spaceY;
-                    }
-                }
-            }
-        }
-
-        return res;
-    }
-
-    private static parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
-        let values = cssParse(pos);
-
-        if (values.length === 2) {
-            return {
-                x: values[0],
-                y: values[1]
-            };
-        }
-
-        if (values.length === 1 && values[0].type === "ident") {
-            let val = values[0].string.toLocaleLowerCase();
-            let center = {
-                type: "ident",
-                string: "center"
-            };
-
-            // If you only one keyword is specified, the other value is "center"
-            if (val === "left" || val === "right") {
-                return {
-                    x: values[0],
-                    y: center
-                };
-            }
-
-            else if (val === "top" || val === "bottom") {
-                return {
-                    x: center,
-                    y: values[0]
-                };
-            }
-
-            else if (val === "center") {
-                return {
-                    x: center,
-                    y: center
-                };
-            }
-        }
-
-        return null;
-    };
 
     public isEmpty(): boolean {
         return !this.color

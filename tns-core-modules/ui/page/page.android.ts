@@ -94,7 +94,6 @@ export class Page extends PageBase {
         const layout = new org.nativescript.widgets.GridLayout(this._context);
         layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.auto));
         layout.addRow(new org.nativescript.widgets.ItemSpec(1, org.nativescript.widgets.GridUnitType.star));
-        layout.setBackgroundColor(-1);
         return layout;
     }
 

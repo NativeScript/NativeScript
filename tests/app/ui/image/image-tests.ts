@@ -17,12 +17,12 @@ import * as ViewModule from "tns-core-modules/ui/core/view";
 import * as helper from "../helper";
 import * as ObservableModule from "tns-core-modules/data/observable";
 import * as color from "tns-core-modules/color";
-
+import * as backgroundModule from "tns-core-modules/ui/styling/background";
+import { android as androidApp } from "tns-core-modules/application";
 const imagePath = "~/logo.png";
 
 if (isAndroid) {
-    const imageModule = require("ui/image");
-    imageModule.currentMode = imageModule.CacheMode.memory; // use memory cache only.
+    (<any>backgroundModule).initImageCache(androidApp.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
 }
 
 export const test_Image_Members = function () {

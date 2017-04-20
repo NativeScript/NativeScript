@@ -248,7 +248,7 @@ function initComponentCallbacks() {
         },
 
         onConfigurationChanged: function (newConfig: android.content.res.Configuration) {
-            let newOrientation = newConfig.orientation;
+            const newOrientation = newConfig.orientation;
             if (newOrientation === currentOrientation) {
                 return;
             }

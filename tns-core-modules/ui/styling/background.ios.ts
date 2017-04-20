@@ -1,8 +1,9 @@
-import { Color } from "../../color";
+import { Background as BackgroundDefinition } from "./background";
 import { View, Point } from "../core/view";
-import { Background } from "./background-common";
-import { ios as utilsIos } from "../../utils/utils";
-import { layout } from "../../utils/utils";
+import { Color } from "../../color";
+import { ios as utilsIos, isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
+import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
+import { CSSValue, parse as cssParse } from "../../css-value";
 
 export * from "./background-common";
 
@@ -22,10 +23,11 @@ interface Rect {
 }
 
 const clearCGColor = utilsIos.getter(UIColor, UIColor.clearColor).CGColor;
+const symbolUrl = Symbol("backgroundImageUrl");
 
 export module ios {
-    export function createBackgroundUIColor(view: View, flip?: boolean): UIColor {
-        const background = <Background>view.style.backgroundInternal;
+    export function createBackgroundUIColor(view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
+        const background = view.style.backgroundInternal;
         const nativeView = <NativeView>view.nativeView;
 
         if (background.hasUniformBorder()) {
@@ -52,9 +54,10 @@ export module ios {
         }
 
         if (!background.image) {
-            return background.color ? background.color.ios : undefined;
+            const uiColor = background.color ? background.color.ios : undefined;
+            callback(uiColor);
         } else {
-            return getUIColorFromImage(view, nativeView, background, flip);
+            setUIColorFromImage(view, nativeView, callback, flip);
         }
     }
 }
@@ -77,7 +80,8 @@ function clearNonUniformBorders(nativeView: NativeView): void {
     }
 }
 
-function getUIColorFromImage(view: View, nativeView: UIView, background: Background, flip?: boolean): UIColor {
+const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor: UIColor) => void, flip?: boolean): void {
     const frame = nativeView.frame;
     const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
     const boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;
@@ -85,9 +89,188 @@ function getUIColorFromImage(view: View, nativeView: UIView, background: Backgro
         return undefined;
     }
 
-    // We have an image for a background
-    let img = <UIImage>background.image.ios;
-    const params = background.getDrawParams(boundsWidth, boundsHeight);
+    const style = view.style;
+    const background = style.backgroundInternal;
+    let imageUri = background.image;
+    if (imageUri) {
+        const match = imageUri.match(pattern);
+        if (match && match[2]) {
+            imageUri = match[2];
+        }
+    }
+
+    let bitmap: UIImage;
+    if (isDataURI(imageUri)) {
+        const base64Data = imageUri.split(",")[1];
+        if (base64Data !== undefined) {
+            bitmap = fromBase64(base64Data).ios
+        }
+    } else if (isFileOrResourcePath(imageUri)) {
+        bitmap = fromFileOrResource(imageUri).ios;
+    } else if (imageUri.indexOf("http") !== -1) {
+        style[symbolUrl] = imageUri;
+        fromUrl(imageUri).then((r) => {
+            if (style && style[symbolUrl] === imageUri) {
+                uiColorFromImage(r.ios, view, callback, flip);
+            }
+        });
+    }
+
+    uiColorFromImage(bitmap, view, callback, flip);
+}
+
+interface BackgroundDrawParams {
+    repeatX: boolean;
+    repeatY: boolean;
+    posX: number;
+    posY: number;
+    sizeX?: number;
+    sizeY?: number;
+}
+
+function parsePosition(pos: string): { x: CSSValue, y: CSSValue } {
+    const values = cssParse(pos);
+    if (values.length === 2) {
+        return { x: values[0], y: values[1] };
+    }
+
+    if (values.length === 1 && values[0].type === "ident") {
+        const val = values[0].string.toLocaleLowerCase();
+        const center = { type: "ident", string: "center" };
+
+        // If you only one keyword is specified, the other value is "center"
+        if (val === "left" || val === "right") {
+            return { x: values[0], y: center };
+        } else if (val === "top" || val === "bottom") {
+            return { x: center, y: values[0] };
+        } else if (val === "center") {
+            return { x: center, y: center };
+        }
+    }
+
+    return null;
+};
+
+function getDrawParams(this: void, image: UIImage, background: BackgroundDefinition, width: number, height: number): BackgroundDrawParams {
+    if (!image) {
+        return null;
+    }
+
+    const res: BackgroundDrawParams = {
+        repeatX: true,
+        repeatY: true,
+        posX: 0,
+        posY: 0,
+    }
+
+    // repeat
+    if (background.repeat) {
+        switch (background.repeat.toLowerCase()) {
+            case "no-repeat":
+                res.repeatX = false;
+                res.repeatY = false;
+                break;
+
+            case "repeat-x":
+                res.repeatY = false;
+                break;
+
+            case "repeat-y":
+                res.repeatX = false;
+                break;
+        }
+    }
+
+    const imageSize = image.size;
+    let imageWidth = imageSize.width;
+    let imageHeight = imageSize.height;
+
+    // size
+    const size = background.size;
+    if (size) {
+        const values = cssParse(size);
+        if (values.length === 2) {
+            const vx = values[0];
+            const vy = values[1];
+            if (vx.unit === "%" && vy.unit === "%") {
+                imageWidth = width * vx.value / 100;
+                imageHeight = height * vy.value / 100;
+
+                res.sizeX = imageWidth;
+                res.sizeY = imageHeight;
+            } else if (vx.type === "number" && vy.type === "number" &&
+                ((vx.unit === "px" && vy.unit === "px") || (vx.unit === "" && vy.unit === ""))) {
+                imageWidth = vx.value;
+                imageHeight = vy.value;
+
+                res.sizeX = imageWidth;
+                res.sizeY = imageHeight;
+            }
+        }
+        else if (values.length === 1 && values[0].type === "ident") {
+            let scale = 0;
+            if (values[0].string === "cover") {
+                scale = Math.max(width / imageWidth, height / imageHeight);
+            } else if (values[0].string === "contain") {
+                scale = Math.min(width / imageWidth, height / imageHeight);
+            }
+
+            if (scale > 0) {
+                imageWidth *= scale;
+                imageHeight *= scale;
+
+                res.sizeX = imageWidth;
+                res.sizeY = imageHeight;
+            }
+        }
+    }
+
+    // position
+    const position = background.position;
+    if (position) {
+        const v = parsePosition(position);
+        if (v) {
+            const spaceX = width - imageWidth;
+            const spaceY = height - imageHeight;
+
+            if (v.x.unit === "%" && v.y.unit === "%") {
+                res.posX = spaceX * v.x.value / 100;
+                res.posY = spaceY * v.y.value / 100;
+            } else if (v.x.type === "number" && v.y.type === "number" &&
+                ((v.x.unit === "px" && v.y.unit === "px") || (v.x.unit === "" && v.y.unit === ""))) {
+                res.posX = v.x.value;
+                res.posY = v.y.value;
+            } else if (v.x.type === "ident" && v.y.type === "ident") {
+                if (v.x.string.toLowerCase() === "center") {
+                    res.posX = spaceX / 2;
+                } else if (v.x.string.toLowerCase() === "right") {
+                    res.posX = spaceX;
+                }
+
+                if (v.y.string.toLowerCase() === "center") {
+                    res.posY = spaceY / 2;
+                } else if (v.y.string.toLowerCase() === "bottom") {
+                    res.posY = spaceY;
+                }
+            }
+        }
+    }
+
+    return res;
+}
+
+function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
+    if (!img) {
+        callback(null);
+    }
+
+    const nativeView = view.nativeView as UIView;
+    const background = view.style.backgroundInternal;
+    const frame = nativeView.frame;
+    const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
+    const boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;
+
+    const params = getDrawParams(img, background, boundsWidth, boundsHeight);
 
     if (params.sizeX > 0 && params.sizeY > 0) {
         const resizeRect = CGRectMake(0, 0, params.sizeX, params.sizeY);
@@ -126,10 +309,10 @@ function getUIColorFromImage(view: View, nativeView: UIView, background: Backgro
 
     if (flip) {
         const flippedImage = _flipImage(bkgImage);
-        return UIColor.alloc().initWithPatternImage(flippedImage);
+        callback(UIColor.alloc().initWithPatternImage(flippedImage));
+    } else {
+        callback(UIColor.alloc().initWithPatternImage(bkgImage));
     }
-
-    return UIColor.alloc().initWithPatternImage(bkgImage);
 }
 
 // Flipping the default coordinate system
@@ -158,7 +341,7 @@ function cssValueToDeviceIndependentPixels(source: string, total: number): numbe
     }
 }
 
-function drawNonUniformBorders(nativeView: NativeView, background: Background) {
+function drawNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {
     const layer = nativeView.layer;
     layer.borderColor = undefined;
     layer.borderWidth = 0;
@@ -284,7 +467,7 @@ function drawNonUniformBorders(nativeView: NativeView, background: Background) {
     nativeView.hasNonUniformBorder = hasNonUniformBorder;
 }
 
-function drawClipPath(nativeView: UIView, background: Background) {
+function drawClipPath(nativeView: UIView, background: BackgroundDefinition) {
     const layer = nativeView.layer;
     const layerBounds = layer.bounds;
     const layerOrigin = layerBounds.origin;

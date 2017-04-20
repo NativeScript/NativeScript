@@ -1,9 +1,13 @@
 import { View } from "../core/view";
-import { isNullOrUndefined, isFunction, getClass } from "../../utils/types";
-import { CacheLayerType, layout } from "../../utils/utils";
+import { CacheLayerType, isDataURI, isFileOrResourcePath, layout, RESOURCE_PREFIX, FILE_PREFIX } from "../../utils/utils";
 import { parse } from "../../css-value";
-
+import { path, knownFolders } from "../../file-system";
+import { android as androidApp } from "../../application";
 export * from "./background-common"
+
+interface AndroidView {
+    background: android.graphics.drawable.Drawable;
+}
 
 // TODO: Change this implementation to use 
 // We are using "ad" here to avoid namespace collision with the global android object
@@ -17,8 +21,6 @@ export module ad {
         return SDK;
     }
 
-    let _defaultBackgrounds = new Map<string, android.graphics.drawable.Drawable.ConstantState>();
-
     function isSetColorFilterOnlyWidget(nativeView: android.view.View): boolean {
         return (
             nativeView instanceof android.widget.Button ||
@@ -29,43 +31,40 @@ export module ad {
     }
 
     export function onBackgroundOrBorderPropertyChanged(view: View) {
-        let nativeView = <android.view.View>view.nativeView;
+        const nativeView = <android.view.View>view.nativeView;
         if (!nativeView) {
             return;
         }
 
-        let background = view.style.backgroundInternal;
-        let backgroundDrawable = nativeView.getBackground();
-        let cache = <CacheLayerType>view.nativeView;
-        let viewClass = getClass(view);
-
-        // always cache the default background constant state.
-        if (!_defaultBackgrounds.has(viewClass) && !isNullOrUndefined(backgroundDrawable)) {
-            _defaultBackgrounds.set(viewClass, backgroundDrawable.getConstantState());
+        const background = view.style.backgroundInternal;
+        const cache = <CacheLayerType>view.nativeView;
+        const drawable = nativeView.getBackground();
+        const androidView = <any>view as AndroidView;
+        // use undefined as not set. getBackground will never return undefined only Drawable or null;
+        if (androidView.background === undefined) {
+            androidView.background = drawable;
         }
 
         if (isSetColorFilterOnlyWidget(nativeView)
-            && !isNullOrUndefined(backgroundDrawable)
-            && isFunction(backgroundDrawable.setColorFilter)
+            && drawable
             && !background.hasBorderWidth()
             && !background.hasBorderRadius()
             && !background.clipPath
-            && isNullOrUndefined(background.image)
-            && !isNullOrUndefined(background.color)) {
-            let backgroundColor = (<any>backgroundDrawable).backgroundColor = background.color.android;
-            backgroundDrawable.mutate();
-            backgroundDrawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
-            backgroundDrawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
-            (<any>backgroundDrawable).backgroundColor = backgroundColor;
-        }
-        else if (!background.isEmpty()) {
-            if (!(backgroundDrawable instanceof org.nativescript.widgets.BorderDrawable)) {
+            && !background.image
+            && background.color) {
+            const backgroundColor = (<any>drawable).backgroundColor = background.color.android;
+            drawable.mutate();
+            drawable.setColorFilter(backgroundColor, android.graphics.PorterDuff.Mode.SRC_IN);
+            drawable.invalidateSelf(); // Make sure the drawable is invalidated. Android forgets to invalidate it in some cases: toolbar
+            (<any>drawable).backgroundColor = backgroundColor;
+        } else if (!background.isEmpty()) {
+            let backgroundDrawable = drawable as org.nativescript.widgets.BorderDrawable;
+            if (!(drawable instanceof org.nativescript.widgets.BorderDrawable)) {
                 backgroundDrawable = new org.nativescript.widgets.BorderDrawable(layout.getDisplayDensity(), view.toString());
-                refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
+                refreshBorderDrawable(view, backgroundDrawable);
                 org.nativescript.widgets.ViewHelper.setBackground(nativeView, backgroundDrawable);
-            }
-            else {
-                refreshBorderDrawable(view, <org.nativescript.widgets.BorderDrawable>backgroundDrawable);
+            } else {
+                refreshBorderDrawable(view, backgroundDrawable);
             }
 
             // This should be done only when backgroundImage is set!!!
@@ -77,11 +76,8 @@ export module ad {
                     cache.setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null);
                 }
             }
-        }
-        else {
-            if (_defaultBackgrounds.has(viewClass)) {
-                org.nativescript.widgets.ViewHelper.setBackground(nativeView, _defaultBackgrounds.get(viewClass).newDrawable());
-            }
+        } else {
+            org.nativescript.widgets.ViewHelper.setBackground(nativeView, androidView.background);
 
             if (cache.layerType !== undefined) {
                 cache.setLayerType(cache.layerType, null);
@@ -91,10 +87,10 @@ export module ad {
 
         // TODO: Can we move BorderWidths as separate native setter?
         // This way we could skip setPadding if borderWidth is not changed.
-        let leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
-        let topPadding = Math.ceil(view.effectiveBorderTopWidth + view.effectivePaddingTop);
-        let rightPadding = Math.ceil(view.effectiveBorderRightWidth + view.effectivePaddingRight);
-        let bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
+        const leftPadding = Math.ceil(view.effectiveBorderLeftWidth + view.effectivePaddingLeft);
+        const topPadding = Math.ceil(view.effectiveBorderTopWidth + view.effectivePaddingTop);
+        const rightPadding = Math.ceil(view.effectiveBorderRightWidth + view.effectivePaddingRight);
+        const bottomPadding = Math.ceil(view.effectiveBorderBottomWidth + view.effectivePaddingBottom);
 
         nativeView.setPadding(
             leftPadding,
@@ -105,25 +101,53 @@ export module ad {
     }
 }
 
-function refreshBorderDrawable(view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
-    let background = view.style.backgroundInternal;
+function fromBase64(source: string): android.graphics.Bitmap {
+    const bytes = android.util.Base64.decode(source, android.util.Base64.DEFAULT);
+    return android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.length)
+}
+
+const pattern: RegExp = /url\(('|")(.*?)\1\)/;
+function refreshBorderDrawable(this: void, view: View, borderDrawable: org.nativescript.widgets.BorderDrawable) {
+    const nativeView = <android.view.View>view.nativeView;
+    const context = nativeView.getContext();
+
+    const background = view.style.backgroundInternal;
     if (background) {
-        let backgroundPositionParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
-        let backgroundSizeParsedCSSValues: native.Array<org.nativescript.widgets.CSSValue> = null;
-        if (background.position) {
-            backgroundPositionParsedCSSValues = createNativeCSSValueArray(background.position);
-        }
-        if (background.size) {
-            backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size);
+        const backgroundPositionParsedCSSValues = createNativeCSSValueArray(background.position);
+        const backgroundSizeParsedCSSValues = createNativeCSSValueArray(background.size);
+        const blackColor = -16777216; //android.graphics.Color.BLACK;
+
+        let imageUri = background.image;
+        if (imageUri) {
+            const match = imageUri.match(pattern);
+            if (match && match[2]) {
+                imageUri = match[2];
+            }
         }
 
-        let blackColor = android.graphics.Color.BLACK;
+        let bitmap: android.graphics.Bitmap = null;
+        if (isDataURI(imageUri)) {
+            const base64Data = imageUri.split(",")[1];
+            if (base64Data !== undefined) {
+                bitmap = fromBase64(base64Data);
+                imageUri = null;
+            }
+        } else if (isFileOrResourcePath(imageUri)) {
+            if (imageUri.indexOf(RESOURCE_PREFIX) !== 0) {
+                let fileName = imageUri;
+                if (fileName.indexOf("~/") === 0) {
+                    fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+                }
+
+                imageUri = FILE_PREFIX + fileName;
+            }
+        }
+
         borderDrawable.refresh(
-
-            (background.borderTopColor && background.borderTopColor.android !== undefined) ? background.borderTopColor.android : blackColor,
-            (background.borderRightColor && background.borderRightColor.android !== undefined) ? background.borderRightColor.android : blackColor,
-            (background.borderBottomColor && background.borderBottomColor.android !== undefined) ? background.borderBottomColor.android : blackColor,
-            (background.borderLeftColor && background.borderLeftColor.android !== undefined) ? background.borderLeftColor.android : blackColor,
+            background.borderTopColor ? background.borderTopColor.android : blackColor,
+            background.borderRightColor ? background.borderRightColor.android : blackColor,
+            background.borderBottomColor ? background.borderBottomColor.android : blackColor,
+            background.borderLeftColor ? background.borderLeftColor.android : blackColor,
 
             background.borderTopWidth,
             background.borderRightWidth,
@@ -137,8 +161,10 @@ function refreshBorderDrawable(view: View, borderDrawable: org.nativescript.widg
 
             background.clipPath,
 
-            (background.color && background.color.android) ? background.color.android : 0,
-            (background.image && background.image.android) ? background.image.android : null,
+            background.color ? background.color.android : 0,
+            imageUri,
+            bitmap,
+            context,
             background.repeat,
             background.position,
             backgroundPositionParsedCSSValues,
@@ -154,8 +180,8 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
         return null;
     }
 
-    let cssValues = parse(css);
-    let nativeArray = Array.create(org.nativescript.widgets.CSSValue, cssValues.length);
+    const cssValues = parse(css);
+    const nativeArray = Array.create(org.nativescript.widgets.CSSValue, cssValues.length);
     for (let i = 0, length = cssValues.length; i < length; i++) {
         nativeArray[i] = new org.nativescript.widgets.CSSValue(
             cssValues[i].type,
@@ -167,3 +193,46 @@ function createNativeCSSValueArray(css: string): native.Array<org.nativescript.w
 
     return nativeArray;
 }
+
+export enum CacheMode {
+    none,
+    memory,
+    diskAndMemory
+}
+
+let currentCacheMode: CacheMode;
+let imageFetcher: org.nativescript.widgets.image.Fetcher;
+
+export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
+    if (currentCacheMode === mode) {
+        return;
+    }
+
+    currentCacheMode = mode;
+    if (!imageFetcher) {
+        imageFetcher = org.nativescript.widgets.image.Fetcher.getInstance(context);
+    } else {
+        imageFetcher.clearCache();
+    }
+
+    const params = new org.nativescript.widgets.image.Cache.CacheParams();
+    params.memoryCacheEnabled = mode !== CacheMode.none;
+    params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
+    params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
+    params.diskCacheSize = diskCacheSize;
+    const imageCache = org.nativescript.widgets.image.Cache.getInstance(params);
+    imageFetcher.addImageCache(imageCache);
+    imageFetcher.initCache();
+}
+
+androidApp.on("activityStarted", (args) => {
+    if (!imageFetcher) {
+        initImageCache(args.activity);
+    }
+});
+
+androidApp.on("activityStopped", (args) => {
+    if (imageFetcher) {
+        imageFetcher.closeCache();
+    }
+});
