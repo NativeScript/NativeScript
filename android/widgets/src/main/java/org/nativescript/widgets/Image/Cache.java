@@ -66,11 +66,8 @@ public class Cache {
      * called directly by other classes, instead use
      * {@link Cache#getInstance(CacheParams)} to fetch an Cache
      * instance.
-     *
-     * @param cacheParams The cache parameters to use to initialize the cache
      */
-    private Cache(CacheParams cacheParams) {
-        init(cacheParams);
+    private Cache() {
     }
 
     /**
@@ -80,9 +77,10 @@ public class Cache {
      */
     public static Cache getInstance(CacheParams cacheParams) {
         if (instance == null) {
-            instance = new Cache(cacheParams);
+            instance = new Cache();
         }
-        else if (instance.mParams != cacheParams) {
+
+        if (instance.mParams != cacheParams) {
             instance.init(cacheParams);
         }
 
@@ -95,6 +93,12 @@ public class Cache {
      * @param cacheParams The cache parameters to initialize the cache
      */
     private void init(CacheParams cacheParams) {
+        clearCache();
+        if (mReusableBitmaps != null) {
+            mReusableBitmaps.clear();
+            mReusableBitmaps = null;
+        }
+
         mParams = cacheParams;
 
         // Set up memory cache
@@ -142,12 +146,6 @@ public class Cache {
                     return bitmapSize == 0 ? 1 : bitmapSize;
                 }
             };
-        } else {
-            clearCache();
-            if (mReusableBitmaps != null) {
-                mReusableBitmaps.clear();
-                mReusableBitmaps = null;
-            }
         }
     }
 

@@ -1,6 +1,7 @@
 package org.nativescript.widgets;
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
@@ -12,7 +13,10 @@ import android.graphics.PointF;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
-import android.util.Log;
+import android.graphics.drawable.Drawable;
+
+import org.nativescript.widgets.image.BitmapOwner;
+import org.nativescript.widgets.image.Fetcher;
 
 import java.util.Locale;
 import java.util.regex.Pattern;
@@ -20,7 +24,7 @@ import java.util.regex.Pattern;
 /**
  * Created by hristov on 6/15/2016.
  */
-public class BorderDrawable extends ColorDrawable {
+public class BorderDrawable extends ColorDrawable implements BitmapOwner {
     private float density;
     private String id;
 
@@ -42,12 +46,15 @@ public class BorderDrawable extends ColorDrawable {
     private String clipPath;
 
     private int backgroundColor;
-    private Bitmap backgroundImage;
+    private String backgroundImage;
+    private Bitmap backgroundBitmap;
     private String backgroundRepeat;
     private String backgroundPosition;
     private CSSValue[] backgroundPositionParsedCSSValues;
     private String backgroundSize;
     private CSSValue[] backgroundSizeParsedCSSValues;
+
+    private Drawable drawable;
 
     public float getDensity() {
         return density;
@@ -133,8 +140,12 @@ public class BorderDrawable extends ColorDrawable {
         return backgroundColor;
     }
 
-    public Bitmap getBackgroundImage() {
+    public String getBackgroundImage() {
         return backgroundImage;
+    }
+
+    public Bitmap getBackgroundBitmap() {
+        return backgroundBitmap;
     }
 
     public String getBackgroundRepeat() {
@@ -184,46 +195,6 @@ public class BorderDrawable extends ColorDrawable {
         this.id = id;
     }
 
-    // For backwards compatibility
-    public void refresh(float borderWidth,
-                        int borderColor,
-                        float borderRadius,
-                        String clipPath,
-                        int backgroundColor,
-                        Bitmap backgroundImage,
-                        String backgroundRepeat,
-                        String backgroundPosition,
-                        CSSValue[] backgroundPositionParsedCSSValues,
-                        String backgroundSize,
-                        CSSValue[] backgroundSizeParsedCSSValues) {
-        this.refresh(
-                borderColor,
-                borderColor,
-                borderColor,
-                borderColor,
-
-                borderWidth,
-                borderWidth,
-                borderWidth,
-                borderWidth,
-
-                borderRadius,
-                borderRadius,
-                borderRadius,
-                borderRadius,
-
-                clipPath,
-
-                backgroundColor,
-                backgroundImage,
-                backgroundRepeat,
-                backgroundPosition,
-                backgroundPositionParsedCSSValues,
-                backgroundSize,
-                backgroundSizeParsedCSSValues
-        );
-    }
-
     public void refresh(int borderTopColor,
                         int borderRightColor,
                         int borderBottomColor,
@@ -242,7 +213,9 @@ public class BorderDrawable extends ColorDrawable {
                         String clipPath,
 
                         int backgroundColor,
-                        Bitmap backgroundImage,
+                        String backgroundImageUri,
+                        Bitmap backgroundBitmap,
+                        Context context,
                         String backgroundRepeat,
                         String backgroundPosition,
                         CSSValue[] backgroundPositionParsedCSSValues,
@@ -267,7 +240,8 @@ public class BorderDrawable extends ColorDrawable {
         this.clipPath = clipPath;
 
         this.backgroundColor = backgroundColor;
-        this.backgroundImage = backgroundImage;
+        this.backgroundImage = backgroundImageUri;
+        this.backgroundBitmap = backgroundBitmap;
         this.backgroundRepeat = backgroundRepeat;
         this.backgroundPosition = backgroundPosition;
         this.backgroundPositionParsedCSSValues = backgroundPositionParsedCSSValues;
@@ -275,6 +249,12 @@ public class BorderDrawable extends ColorDrawable {
         this.backgroundSizeParsedCSSValues = backgroundSizeParsedCSSValues;
 
         this.invalidateSelf();
+        if (backgroundImageUri != null) {
+            Fetcher fetcher = Fetcher.getInstance(context);
+            // TODO: Implement option to pass load-mode like in ImageView class.
+            boolean loadAsync = backgroundImageUri.startsWith("http");
+            fetcher.loadImage(backgroundImageUri, this, 0, 0, true, loadAsync, null);
+        }
     }
 
     @Override
@@ -312,20 +292,20 @@ public class BorderDrawable extends ColorDrawable {
             }
         }
 
-        if (this.backgroundImage != null) {
+        if (this.backgroundBitmap != null) {
             BackgroundDrawParams params = this.getDrawParams(bounds.width(), bounds.height());
             Matrix transform = new Matrix();
             if (params.sizeX > 0 && params.sizeY > 0) {
-                float scaleX = params.sizeX / this.backgroundImage.getWidth();
-                float scaleY = params.sizeY / this.backgroundImage.getHeight();
+                float scaleX = params.sizeX / this.backgroundBitmap.getWidth();
+                float scaleY = params.sizeY / this.backgroundBitmap.getHeight();
                 transform.setScale(scaleX, scaleY, 0, 0);
             } else {
-                params.sizeX = this.backgroundImage.getWidth();
-                params.sizeY = this.backgroundImage.getHeight();
+                params.sizeX = this.backgroundBitmap.getWidth();
+                params.sizeY = this.backgroundBitmap.getHeight();
             }
             transform.postTranslate(params.posX - leftBackoffAntialias, params.posY - topBackoffAntialias);
 
-            BitmapShader shader = new BitmapShader(this.backgroundImage, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
+            BitmapShader shader = new BitmapShader(this.backgroundBitmap, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
             shader.setLocalMatrix(transform);
 
             Paint backgroundImagePaint = new Paint();
@@ -611,8 +591,8 @@ public class BorderDrawable extends ColorDrawable {
             }
         }
 
-        float imageWidth = this.backgroundImage.getWidth();
-        float imageHeight = this.backgroundImage.getHeight();
+        float imageWidth = this.backgroundBitmap.getWidth();
+        float imageHeight = this.backgroundBitmap.getHeight();
 
         // size
         if (this.backgroundSize != null && !this.backgroundSize.isEmpty()) {
@@ -744,10 +724,28 @@ public class BorderDrawable extends ColorDrawable {
                 "clipPath: " + this.clipPath + "; " +
                 "backgroundColor: " + this.backgroundColor + "; " +
                 "backgroundImage: " + this.backgroundImage + "; " +
+                "backgroundBitmap: " + this.backgroundBitmap + "; " +
                 "backgroundRepeat: " + this.backgroundRepeat + "; " +
                 "backgroundPosition: " + this.backgroundPosition + "; " +
                 "backgroundSize: " + this.backgroundSize + "; "
                 ;
+    }
+
+    @Override
+    public void setBitmap(Bitmap value) {
+        backgroundBitmap = value;
+        invalidateSelf();
+        drawable = null;
+    }
+
+    @Override
+    public void setDrawable(Drawable asyncDrawable) {
+        drawable = asyncDrawable;
+    }
+
+    @Override
+    public Drawable getDrawable() {
+        return drawable;
     }
 
     private class BackgroundDrawParams {

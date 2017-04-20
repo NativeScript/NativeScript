@@ -79,61 +79,60 @@ public abstract class Worker {
 
     /**
      * Load an image specified by the data parameter into an ImageView (override
-     * {@link Worker#processBitmap(Object, int, int, boolean)} to define the processing logic). A memory and
+     * {@link Worker#processBitmap(String, int, int, boolean)} to define the processing logic). A memory and
      * disk cache will be used if an {@link Cache} has been added using
      * {@link Worker#addImageCache(Cache)}. If the
      * image is found in the memory cache, it is set immediately, otherwise an {@link AsyncTask}
      * will be created to asynchronously load the bitmap.
      *
-     * @param data The URL of the image to download.
-     * @param imageView The ImageView to bind the downloaded image to.
+     * @param uri The URI of the image to download.
+     * @param owner The owner to bind the downloaded image to.
      * @param listener A listener that will be called back once the image has been loaded.
      */
-    public void loadImage(Object data, ImageView imageView, int decodeWidth, int decodeHeight, boolean useCache, boolean async, OnImageLoadedListener listener) {
-        if (data == null) {
+    public void loadImage(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean useCache, boolean async, OnImageLoadedListener listener) {
+        if (uri == null) {
             return;
         }
 
         Bitmap value = null;
-        String dataString = String.valueOf(data);
         if (debuggable > 0) {
-            Log.v(TAG, "loadImage on: " + imageView + " to: " + dataString);
+            Log.v(TAG, "loadImage on: " + owner + " to: " + uri);
         }
 
         if (mCache != null && useCache) {
-            value = mCache.getBitmapFromMemCache(dataString);
+            value = mCache.getBitmapFromMemCache(uri);
         }
 
         if (value == null && !async) {
             // Decode sync.
-            value = processBitmap(data, decodeWidth, decodeHeight, useCache);
+            value = processBitmap(uri, decodeWidth, decodeHeight, useCache);
             if (value != null) {
                 if (mCache != null && useCache) {
                     if (debuggable > 0) {
-                        Log.v(TAG, "loadImage.addBitmapToCache: " + imageView + ", src: " + dataString);
+                        Log.v(TAG, "loadImage.addBitmapToCache: " + owner + ", src: " + uri);
                     }
-                    mCache.addBitmapToCache(dataString, value);
+                    mCache.addBitmapToCache(uri, value);
                 }
             }
         }
 
         if (value != null) {
-            // Bitmap found in memory cache
+            // Bitmap found in memory cache or loaded sync.
             if (debuggable > 0) {
-                Log.v(TAG, "Set ImageBitmap on: " + imageView + " to: " + dataString);
+                Log.v(TAG, "Set ImageBitmap on: " + owner + " to: " + uri);
             }
-            imageView.setImageBitmap(value);
+            owner.setBitmap(value);
             if (listener != null) {
                 if (debuggable > 0) {
-                    Log.v(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
+                    Log.v(TAG, "OnImageLoadedListener on: " + owner + " to: " + uri);
                 }
                 listener.onImageLoaded(true);
             }
-        } else if (cancelPotentialWork(data, imageView)) {
-            final BitmapWorkerTask task = new BitmapWorkerTask(data, imageView, decodeWidth, decodeHeight, useCache, listener);
+        } else if (cancelPotentialWork(uri, owner)) {
+            final BitmapWorkerTask task = new BitmapWorkerTask(uri, owner, decodeWidth, decodeHeight, useCache, listener);
             final AsyncDrawable asyncDrawable =
                     new AsyncDrawable(mResources, mLoadingBitmap, task);
-            imageView.setImageDrawable(asyncDrawable);
+            owner.setDrawable(asyncDrawable);
 
             // NOTE: This uses a custom version of AsyncTask that has been pulled from the
             // framework and slightly modified. Refer to the docs at the top of the class
@@ -185,11 +184,11 @@ public abstract class Worker {
      * the final bitmap. This will be executed in a background thread and be long running. For
      * example, you could resize a large bitmap here, or pull down an image from the network.
      *
-     * @param data The data to identify which image to process, as provided by
-     *            {@link Worker#loadImage(Object, ImageView, int, int, boolean, boolean, OnImageLoadedListener)}
+     * @param uri The URI to identify which image to process, as provided by
+     *            {@link Worker#loadImage(String, BitmapOwner, int, int, boolean, boolean, OnImageLoadedListener)}
      * @return The processed bitmap
      */
-    protected abstract Bitmap processBitmap(Object data, int decodeWidth, int decodeHeight, boolean useCache);
+    protected abstract Bitmap processBitmap(String uri, int decodeWidth, int decodeHeight, boolean useCache);
 
     /**
      * @return The {@link Cache} object currently being used by this Worker.
@@ -200,15 +199,14 @@ public abstract class Worker {
 
     /**
      * Cancels any pending work attached to the provided ImageView.
-     * @param imageView
+     * @param owner
      */
-    public static void cancelWork(ImageView imageView) {
-        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+    public static void cancelWork(BitmapOwner owner) {
+        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(owner);
         if (bitmapWorkerTask != null) {
             bitmapWorkerTask.cancel(true);
             if (debuggable > 0) {
-                final Object bitmapData = bitmapWorkerTask.mData;
-                Log.v(TAG, "cancelWork - cancelled work for " + bitmapData);
+                Log.v(TAG, "cancelWork - cancelled work for " + bitmapWorkerTask.mUri);
             }
         }
     }
@@ -219,15 +217,15 @@ public abstract class Worker {
      * Returns false if the work in progress deals with the same data. The work is not
      * stopped in that case.
      */
-    public static boolean cancelPotentialWork(Object data, ImageView imageView) {
-        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+    public static boolean cancelPotentialWork(String uri, BitmapOwner owner) {
+        final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(owner);
 
         if (bitmapWorkerTask != null) {
-            final Object bitmapData = bitmapWorkerTask.mData;
-            if (bitmapData == null || !bitmapData.equals(data)) {
+            final String mUri = bitmapWorkerTask.mUri;
+            if (mUri == null || !mUri.equals(uri)) {
                 bitmapWorkerTask.cancel(true);
                 if (debuggable > 0) {
-                    Log.v(TAG, "cancelPotentialWork - cancelled work for " + data);
+                    Log.v(TAG, "cancelPotentialWork - cancelled work for " + uri);
                 }
             } else {
                 // The same work is already in progress.
@@ -238,13 +236,13 @@ public abstract class Worker {
     }
 
     /**
-     * @param imageView Any imageView
+     * @param owner The owner that requested the bitmap;
      * @return Retrieve the currently active work task (if any) associated with this imageView.
      * null if there is no such task.
      */
-    private static BitmapWorkerTask getBitmapWorkerTask(ImageView imageView) {
-        if (imageView != null) {
-            final Drawable drawable = imageView.getDrawable();
+    private static BitmapWorkerTask getBitmapWorkerTask(BitmapOwner owner) {
+        if (owner != null) {
+            final Drawable drawable = owner.getDrawable();
             if (drawable instanceof AsyncDrawable) {
                 final AsyncDrawable asyncDrawable = (AsyncDrawable) drawable;
                 return asyncDrawable.getBitmapWorkerTask();
@@ -259,21 +257,21 @@ public abstract class Worker {
     private class BitmapWorkerTask extends AsyncTask<Void, Void, Bitmap> {
         private int mDecodeWidth;
         private int mDecodeHeight;
-        private Object mData;
+        private String mUri;
         private boolean mCacheImage;
-        private final WeakReference<ImageView> imageViewReference;
+        private final WeakReference<BitmapOwner> imageViewReference;
         private final OnImageLoadedListener mOnImageLoadedListener;
 
-        public BitmapWorkerTask(Object data, ImageView imageView, int decodeWidth, int decodeHeight, boolean cacheImage) {
-            this(data, imageView, decodeWidth, decodeHeight, cacheImage, null);
+        public BitmapWorkerTask(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean cacheImage) {
+            this(uri, owner, decodeWidth, decodeHeight, cacheImage, null);
         }
 
-        public BitmapWorkerTask(Object data, ImageView imageView, int decodeWidth, int decodeHeight, boolean cacheImage, OnImageLoadedListener listener) {
+        public BitmapWorkerTask(String uri, BitmapOwner owner, int decodeWidth, int decodeHeight, boolean cacheImage, OnImageLoadedListener listener) {
             mDecodeWidth = decodeWidth;
             mDecodeHeight = decodeHeight;
             mCacheImage = cacheImage;
-            mData = data;
-            imageViewReference = new WeakReference<ImageView>(imageView);
+            mUri = uri;
+            imageViewReference = new WeakReference<BitmapOwner>(owner);
             mOnImageLoadedListener = listener;
         }
 
@@ -282,7 +280,7 @@ public abstract class Worker {
          */
         @Override
         protected Bitmap doInBackground(Void... params) {
-            final String dataString = String.valueOf(mData);
+            final String dataString = String.valueOf(mUri);
             if (debuggable > 0) {
                 Log.v(TAG, "doInBackground - starting work: " + imageViewReference.get() + ", on: " + dataString);
             }
@@ -303,9 +301,9 @@ public abstract class Worker {
             // another thread and the ImageView that was originally bound to this task is still
             // bound back to this task and our "exit early" flag is not set, then call the main
             // process method (as implemented by a subclass)
-            if (bitmap == null && !isCancelled() && getAttachedImageView() != null
+            if (bitmap == null && !isCancelled() && getAttachedOwner() != null
                     && !mExitTasksEarly) {
-                bitmap = processBitmap(mData, mDecodeWidth, mDecodeHeight, mCacheImage);
+                bitmap = processBitmap(mUri, mDecodeWidth, mDecodeHeight, mCacheImage);
             }
 
             // If the bitmap was processed and the image cache is available, then add the processed
@@ -339,27 +337,26 @@ public abstract class Worker {
                 value = null;
             }
 
-            final String dataString = String.valueOf(mData);
             if (debuggable > 0) {
-                Log.v(TAG, "onPostExecute - setting bitmap for: " + imageViewReference.get() + " src: " + dataString);
+                Log.v(TAG, "onPostExecute - setting bitmap for: " + imageViewReference.get() + " src: " + mUri);
             }
 
-            final ImageView imageView = getAttachedImageView();
+            final BitmapOwner owner = getAttachedOwner();
             if (debuggable > 0) {
-                Log.v(TAG, "onPostExecute - current ImageView: " + imageView);
+                Log.v(TAG, "onPostExecute - current ImageView: " + owner);
             }
 
-            if (value != null && imageView != null) {
+            if (value != null && owner != null) {
                 success = true;
                 if (debuggable > 0) {
-                    Log.v(TAG, "Set ImageDrawable on: " + imageView + " to: " + dataString);
+                    Log.v(TAG, "Set ImageDrawable on: " + owner + " to: " + mUri);
                 }
-                imageView.setImageBitmap(value);
+                owner.setBitmap(value);
             }
 
             if (mOnImageLoadedListener != null) {
                 if (debuggable > 0) {
-                    Log.v(TAG, "OnImageLoadedListener on: " + imageView + " to: " + dataString);
+                    Log.v(TAG, "OnImageLoadedListener on: " + owner + " to: " + mUri);
                 }
                 mOnImageLoadedListener.onImageLoaded(success);
             }
@@ -377,12 +374,12 @@ public abstract class Worker {
          * Returns the ImageView associated with this task as long as the ImageView's task still
          * points to this task as well. Returns null otherwise.
          */
-        private ImageView getAttachedImageView() {
-            final ImageView imageView = imageViewReference.get();
-            final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(imageView);
+        private BitmapOwner getAttachedOwner() {
+            final BitmapOwner owner = imageViewReference.get();
+            final BitmapWorkerTask bitmapWorkerTask = getBitmapWorkerTask(owner);
 
             if (this == bitmapWorkerTask) {
-                return imageView;
+                return owner;
             }
 
             return null;

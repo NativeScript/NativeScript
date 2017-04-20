@@ -7,13 +7,14 @@ import android.content.Context;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
 
+import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
 import org.nativescript.widgets.image.Worker;
 
 /**
  * @author hhristov
  */
-public class ImageView extends android.widget.ImageView {
+public class ImageView extends android.widget.ImageView implements BitmapOwner {
     private static final double EPSILON = 1E-05;
 
     private Path path = new Path();
@@ -265,5 +266,15 @@ public class ImageView extends android.widget.ImageView {
         } else {
             super.onDraw(canvas);
         }
+    }
+
+    @Override
+    public void setBitmap(Bitmap value) {
+        this.setImageBitmap(value);
+    }
+
+    @Override
+    public void setDrawable(Drawable asyncDrawable) {
+        this.setImageDrawable(asyncDrawable);
     }
 }
