@@ -8,6 +8,8 @@ import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "
  * Represents the base class for all editable text views.
  */
 export class EditableTextBase extends TextBase {
+    public static blurEvent: string;
+
     /**
      * Gets or sets the soft keyboard type.
      */
