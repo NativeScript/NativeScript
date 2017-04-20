@@ -14,3 +14,6 @@ Obtaining connectivity information requires the "connectivity" module.
 
 ### Monitoring connection type.
 {%snippet connectivity-monitoring%}
+
+### Permissions
+On Android, the permission ACCESS_NETWORK_STATE is required.
