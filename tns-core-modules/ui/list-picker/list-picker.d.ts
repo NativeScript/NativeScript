@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/list-picker"
+ * 
  * Contains the ListPicker class.
- */
+ */ /** */
+
 import { View, Property } from "../core/view";
 
 /**

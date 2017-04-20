@@ -1,3 +1,7 @@
+/**
+ * @module "ui/styling/style"
+ */ /** */
+
 import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "../../core/view";
 import { Color } from "../../../color";
 import { Background } from "../background";
@@ -6,7 +10,7 @@ import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../
 import {
     FlexDirection, FlexWrap, JustifyContent, AlignItems, AlignContent,
     Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf
-} from "../../layouts/flexbox-layout"
+} from "../../layouts/flexbox-layout";
 
 export interface Thickness {
     left: number;

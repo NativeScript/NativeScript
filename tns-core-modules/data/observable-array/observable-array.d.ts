@@ -1,8 +1,10 @@
-﻿// Test: http://jsperf.com/array-vs-observable-array-vs-array-observe
-
-/**
+﻿/**
+ * @module "data/observable-array"
+ * 
  * Contains the ObservableArray class, which is capable of detecting and responding to changes of a collection of objects.
- */
+ */ /** */
+
+// Test: http://jsperf.com/array-vs-observable-array-vs-array-observe
 import * as observable from "../observable";
 
 /**

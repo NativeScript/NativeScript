@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/core/dependency-observable"
+ * 
  * Contains the DependencyObservable class, which represents an extended Observable object that uses Property instances for value backing mechanism.
- */
+ */ /** */
+
 import { Observable, EventData } from "../../../data/observable";
 
 /**

@@ -1,4 +1,8 @@
-﻿import { NavigationTransition } from "../frame";
+﻿/**
+ * @module "ui/transition"
+ */ /** */
+
+import { NavigationTransition } from "../frame";
 import { Page } from "../page";
 
 export module AndroidTransitionType {
@@ -18,14 +22,40 @@ export class Transition {
 }
 
 //@private
+/**
+ * @private
+ */
 export function _clearBackwardTransitions(fragment: any): void;
+/**
+ * @private
+ */
 export function _clearForwardTransitions(fragment: any): void;
+/**
+ * @private
+ */
 export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void;
+/**
+ * @private
+ */
 export function _onFragmentCreateAnimator(fragment: any, nextAnim: number): any;
+/**
+ * @private
+ */
 export function _onFragmentShown(fragment: any, isBack: boolean): void;
+/**
+ * @private
+ */
 export function _onFragmentHidden(fragment: any, isBack: boolean, destroyed: boolean): void;
+/**
+ * @private
+ */
 export function _removePageNativeViewFromAndroidParent(page: Page): void;
+/**
+ * @private
+ */
 export function _prepareCurrentFragmentForClearHistory(fragment: any): void;
-
+/**
+ * @private
+ */
 export function _createIOSAnimatedTransitioning(navigationTransition: NavigationTransition, nativeCurve: any, operation: number, fromVC: any, toVC: any): any;
 //@endprivate

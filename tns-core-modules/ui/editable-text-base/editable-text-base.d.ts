@@ -1,4 +1,8 @@
-﻿import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
+﻿/**
+ * @module "ui/editor-text-base"
+ */ /** */
+
+import { TextBase, Property, CssProperty, Style, Color, FormattedString } from "../text-base";
 
 /**
  * Represents the base class for all editable text views.
@@ -60,6 +64,9 @@ export const hintProperty: Property<EditableTextBase, string>;
 export const placeholderColorProperty: CssProperty<Style, Color>;
 
 //@private
+/**
+ * @private
+ */
 export function _updateCharactersInRangeReplacementString(formattedText: FormattedString, rangeLocation: number, rangeLength: number, replacementString: string): void;
 //@endprivate
 

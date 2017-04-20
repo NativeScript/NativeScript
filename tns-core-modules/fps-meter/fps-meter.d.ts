@@ -1,6 +1,8 @@
 ﻿/**
+ * @module "fps-meter"
+ * 
  * Allows you to capture the frames-per-second metrics of your application. 
- */
+ */ /** */
 
 /**
 * Starts the frames-per-second meter.

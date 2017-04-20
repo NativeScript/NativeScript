@@ -1,4 +1,8 @@
-﻿import { View, CustomLayoutView, Property, Length } from "../core/view";
+﻿/**
+ * @module "ui/layouts/layout-base"
+ */ /** */
+
+import { View, CustomLayoutView, Property, Length } from "../core/view";
 
 export * from "../core/view";
 

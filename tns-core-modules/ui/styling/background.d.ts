@@ -1,3 +1,7 @@
+/**
+ * @module "ui/styling/background"
+ */ /** */
+
 import { ImageSource } from "../../image-source";
 import { Color } from "../../color";
 import { View, BackgroundRepeat } from "../core/view";

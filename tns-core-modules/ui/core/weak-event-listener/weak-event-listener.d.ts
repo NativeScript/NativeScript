@@ -1,3 +1,7 @@
+/**
+ * @module "ui/core/weak-event-listener"
+ */ /** */
+
 import { Observable, EventData } from "../../../data/observable";
 
 /**

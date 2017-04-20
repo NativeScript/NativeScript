@@ -1,3 +1,7 @@
+/**
+ * @module "css-value"
+ */ /** */
+
 interface CSSValue {
     type: string;
     string: string;

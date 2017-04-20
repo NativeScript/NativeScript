@@ -1,4 +1,9 @@
-﻿//@private
+﻿/**
+ * @module "js-libs/easysax"
+ * @private
+ */ /** */
+
+//@private
 export class EasySAXParser {
     constructor();
     parse(xml: string): void;

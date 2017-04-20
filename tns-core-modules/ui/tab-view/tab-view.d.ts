@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/tab-view"
+ * 
  * Contains the TabView class, which represents a standard content component with tabs.
- */
+ */ /** */
+
 import { View, ViewBase, Property, CssProperty, Style, EventData, Color } from "../core/view";
 import { TextTransform } from "../text-base";
 /**

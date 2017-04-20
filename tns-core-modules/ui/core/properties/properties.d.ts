@@ -1,3 +1,7 @@
+/**
+ * @module "ui/core/properties"
+ */ /** */
+
 import { ViewBase } from "../view-base";
 import { Style } from "../../styling/style";
 

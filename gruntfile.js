@@ -23,13 +23,18 @@ module.exports = function(grunt) {
 
     // Custom Functions
     var filterTypeScriptFiles = function(content, srcPath) {
-        var matchRule = /^.*@private/ig;
-        if (matchRule.test(content))
-        {
+        var leadingPrivate = /^.*@private/ig;
+        if (leadingPrivate.test(content)) {
             return false;
         }
+
+        var blockCommentPrivate = /\/\*\*([^](?!\*\/))*@module([^](?!\*\/))*@private[^]*?\*\//g;
+        if (blockCommentPrivate.test(content)) {
+            return false;
+        }
+        
         var processed = content;
-        processed = processed.replace(/\/\/[\/\s]*@private((.|\s)*?)\/\/[\/\s]*@endprivate/gm, "");
+        processed = processed.replace(/\/\/[\/\s]*@private[^]*?\/\/[\/\s]*?@endprivate/gm, "");
         return processed;
     };
 

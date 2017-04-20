@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "data/observable"
+ * 
  * Contains the Observable class, which represents an observable object, or "data" in the model-view paradigm.
- */
+ */ /** */
+
 /**
  * Base event data.
  */
@@ -144,8 +147,13 @@ export class Observable {
     //@private
     /**
      * This method is intended to be overriden by inheritors to provide additional implementation.
+     * @private
      */
     _createPropertyChangeData(name: string, value: any, oldValue?: any): PropertyChangeData;
+    
+    /**
+     * @private
+     */
     _emit(eventNames: string);
     //@endprivate
 }

@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/switch"
+ * 
  * Contains the Switch class, which represents a standard switch component.
- */
+ */ /** */
+
 import { View, Property } from "../core/view";
 
 /**
