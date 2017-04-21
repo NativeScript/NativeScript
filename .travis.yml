@@ -3,13 +3,15 @@ env:
     - DATE=$(date +%Y-%m-%d)
     - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
 language: objective-c
-osx_image: xcode7.3
+osx_image: xcode8.3
 install:
   - brew update
-  - brew install android-sdk
-  - echo y | android update sdk -t android-23,build-tools-23.0.3,extra-android-m2repository --no-ui --all
+  - brew cask install android-sdk
+  - yes | sdkmanager "platforms;android-23"
+  - yes | sdkmanager "build-tools;23.0.3"
+  - yes | sdkmanager "extras;android;m2repository"
 before_script:
-  - export ANDROID_HOME=/usr/local/opt/android-sdk
+  - export ANDROID_HOME=/usr/local/share/android-sdk
 script: ./build.sh $PACKAGE_VERSION
 before_deploy:
   - cd ./dist/package/
