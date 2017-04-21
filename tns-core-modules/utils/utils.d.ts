@@ -2,7 +2,8 @@
  * @module "utils/utils"
  */ /** */
 
-export var RESOURCE_PREFIX: string;
+export const RESOURCE_PREFIX: string;
+export const FILE_PREFIX: string;
 
 //@private
 /**

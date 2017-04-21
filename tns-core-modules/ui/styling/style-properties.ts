@@ -1,11 +1,8 @@
 import { Color } from "../../color";
 import { Font, parseFont, FontStyle, FontWeight } from "./font";
-import { isDataURI, isFileOrResourcePath, layout } from "../../utils/utils";
+import { layout } from "../../utils/utils";
 import { Background } from "./background";
 import { isIOS } from "../../platform";
-
-// TODO: Remove this and start using string as source (for android).
-import { fromFileOrResource, fromBase64, fromUrl } from "../../image-source";
 
 import { Style } from "./style";
 
@@ -522,54 +519,11 @@ export const backgroundInternalProperty = new CssProperty<Style, Background>({
 });
 backgroundInternalProperty.register(Style);
 
-let pattern: RegExp = /url\(('|")(.*?)\1\)/;
+// const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 export const backgroundImageProperty = new CssProperty<Style, string>({
     name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
-
-        let style = target;
-        let currentBackground = target.backgroundInternal;
-        let url: string = newValue;
-        let isValid = false;
-
-        if (url === undefined) {
-            style.backgroundInternal = currentBackground.withImage(undefined);
-            return;
-        }
-
-        let match = url.match(pattern);
-        if (match && match[2]) {
-            url = match[2];
-        }
-
-        if (isDataURI(url)) {
-            let base64Data = url.split(",")[1];
-            if (typeof base64Data !== "undefined") {
-                style.backgroundInternal = currentBackground.withImage(fromBase64(base64Data));
-                isValid = true;
-            } else {
-                style.backgroundInternal = currentBackground.withImage(undefined);
-            }
-        }
-        else if (isFileOrResourcePath(url)) {
-            style.backgroundInternal = currentBackground.withImage(fromFileOrResource(url));
-            isValid = true;
-        }
-        else if (url.indexOf("http") !== -1) {
-            style["_url"] = url;
-            style.backgroundInternal = currentBackground.withImage(undefined);
-            fromUrl(url).then((r) => {
-                if (style && style["_url"] === url) {
-                    // Get the current background again, as it might have changed while doing the request.
-                    currentBackground = target.backgroundInternal;
-                    target.backgroundInternal = currentBackground.withImage(r);
-                }
-            });
-            isValid = true;
-        }
-
-        if (!isValid) {
-            style.backgroundInternal = currentBackground.withImage(undefined);
-        }
+        let background = target.backgroundInternal;
+        target.backgroundInternal = background.withImage(newValue);
     }
 });
 backgroundImageProperty.register(Style);

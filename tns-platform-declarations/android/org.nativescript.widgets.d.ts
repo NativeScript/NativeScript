@@ -71,7 +71,9 @@
                     clipPath: string,
 
                     backgroundColor: number,
-                    backgroundImage: android.graphics.Bitmap,
+                    backgroundImage: string,
+                    backgroundBitmap: android.graphics.Bitmap,
+                    context: android.content.Context,
                     backgroundRepeat: string,
                     backgroundPosition: string,
                     backgroundPositionParsedCSSValues: native.Array<CSSValue>,
@@ -100,7 +102,9 @@
                 public getClipPath(): string;
 
                 public getBackgroundColor(): number;
-                public getBackgroundImage(): android.graphics.Bitmap;
+                public getBackgroundImage(): string;
+                public getBackgroundBitmap(): android.graphics.Bitmap;
+
                 public getBackgroundRepeat(): string;
                 public getBackgroundPosition(): string;
                 public getBackgroundSize(): string;
@@ -401,6 +405,7 @@
                     public addImageCache(cache: Cache): void;
                     public initCache(): void;
                     public clearCache(): void;
+                    public closeCache(): void;
                     public loadImage(data: Object, imageView: ImageView,
                         decodeWidth: number, decodeHeight: number, useCache: boolean, async: boolean,
                         listener: Worker.IOnImageLoadedListener): void;

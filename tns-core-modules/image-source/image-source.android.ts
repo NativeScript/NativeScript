@@ -27,6 +27,7 @@ function getApplication() {
 
     return application;
 }
+
 function getResources() {
     if (!resources) {
         resources = getApplication().getResources();
@@ -248,7 +249,7 @@ export function fromUrl(url: string): Promise<ImageSource> {
 
 export function fromFileOrResource(path: string): ImageSource {
     if (!isFileOrResourcePath(path)) {
-        throw new Error("Path \"" + "\" is not a valid file or resource.");
+        throw new Error(`${path} is not a valid file or resource.`);
     }
 
     if (path.indexOf(RESOURCE_PREFIX) === 0) {

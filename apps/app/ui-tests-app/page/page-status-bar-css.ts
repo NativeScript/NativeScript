@@ -63,5 +63,5 @@ function reset(page: Page) {
     page.css = "";
     page.actionBarHidden = false;
     page.backgroundSpanUnderStatusBar = false;
-    page.actionBar.style.backgroundColor = unsetValue;
+    page.actionBar.backgroundColor = unsetValue;
 } 

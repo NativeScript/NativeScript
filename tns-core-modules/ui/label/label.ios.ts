@@ -100,12 +100,13 @@ export class Label extends TextBase implements LabelDefinition {
     }
     [backgroundInternalProperty.setNative](value: Background) {
         if (value instanceof Background) {
-            const uiColor = <UIColor>ios.createBackgroundUIColor(this, true);
-            value = uiColor ? uiColor.CGColor : null;
+            ios.createBackgroundUIColor(this, (color: UIColor) => {
+                const cgColor = color ? color.CGColor : null;
+                this.nativeView.layer.backgroundColor = cgColor;
+            }, true);
         }
 
         this._setNativeClipToBounds();
-        this.nativeView.layer.backgroundColor = value;
     }
 
     [borderTopWidthProperty.setNative](value: Length) {
