@@ -291,4 +291,4 @@ export const statusBarStyleProperty: CssProperty<Style, "light" | "dark">;
 /**
  * Property backing androidStatusBarBackground.
  */
-export const androidStatusBarBackgroundProperty: Property<Page, Color>;
+export const androidStatusBarBackgroundProperty: CssProperty<Style, Color>;
