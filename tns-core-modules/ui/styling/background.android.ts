@@ -41,7 +41,7 @@ export module ad {
         const drawable = nativeView.getBackground();
         const androidView = <any>view as AndroidView;
         // use undefined as not set. getBackground will never return undefined only Drawable or null;
-        if (androidView.background === undefined) {
+        if (androidView.background === undefined && drawable) {
             androidView.background = drawable.getConstantState();
         }
 
