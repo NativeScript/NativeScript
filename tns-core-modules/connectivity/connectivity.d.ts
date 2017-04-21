@@ -14,7 +14,7 @@ export function getConnectionType(): number;
 /**
  * Defines the different connection types.
  */
-export const enum connectionType {
+export enum connectionType {
     /**
      * Denotes no connection.
      */

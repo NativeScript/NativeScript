@@ -10,7 +10,7 @@ import * as http from "../../http";
 
 import { NetworkAgent } from "../../debugger/debugger";
 
-export const enum HttpResponseEncoding {
+export enum HttpResponseEncoding {
     UTF8,
     GBK
 }
