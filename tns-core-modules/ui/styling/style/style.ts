@@ -99,7 +99,7 @@ export class Style extends Observable implements StyleDefinition {
     public selectedBackgroundColor: Color;
 
     // Page-specific props 
-    public statusBarStyle: string;
+    public statusBarStyle: "light" | "dark";
     public androidStatusBarBackground: Color;
 
     //flexbox layout properties

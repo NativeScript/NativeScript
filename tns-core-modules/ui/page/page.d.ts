@@ -5,7 +5,7 @@
  */ /** */
 
 ///<reference path="../../tns-core-modules.d.ts" /> Include global typings
-import { ContentView, EventData, Property, Color } from "../content-view";
+import { ContentView, EventData, Property, Color, CssProperty, Style } from "../content-view";
 import { Frame } from "../frame";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
@@ -286,7 +286,7 @@ export const enableSwipeBackNavigationProperty: Property<Page, boolean>;
 /**
  * Property backing statusBarStyle.
  */
-export const statusBarStyleProperty: Property<Page, "light" | "dark">;
+export const statusBarStyleProperty: CssProperty<Style, "light" | "dark">;
 
 /**
  * Property backing androidStatusBarBackground.
