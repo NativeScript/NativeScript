@@ -120,7 +120,7 @@ export interface HttpResponse {
 
 export type Headers = { [key: string]: string | string[] };
 
-export const enum HttpResponseEncoding {
+export enum HttpResponseEncoding {
   UTF8,
   GBK
 }

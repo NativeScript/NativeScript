@@ -12,7 +12,7 @@ import getter = utils.ios.getter;
 
 import * as domainDebugger from "../../debugger/debugger";
 
-export const enum HttpResponseEncoding {
+export enum HttpResponseEncoding {
     UTF8,
     GBK
 }
