@@ -231,6 +231,8 @@ export function initImageCache(context: android.content.Context, mode = CacheMod
 androidApp.on("activityStarted", (args) => {
     if (!imageFetcher) {
         initImageCache(args.activity);
+    } else {
+        imageFetcher.initCache();
     }
 });
 
