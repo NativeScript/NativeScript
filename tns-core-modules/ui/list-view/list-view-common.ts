@@ -40,10 +40,16 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     public _itemTemplatesInternal = new Array<KeyedTemplate>(this._defaultTemplate);
     public _effectiveRowHeight: number = autoEffectiveRowHeight;
     public rowHeight: Length;
-    public separatorColor: Color;
     public items: any[] | ItemsSource;
     public itemTemplate: string | Template;
     public itemTemplates: string | Array<KeyedTemplate>;
+
+    get separatorColor(): Color {
+        return this.style.separatorColor;
+    }
+    set separatorColor(value: Color) {
+        this.style.separatorColor = value;
+    }
 
     get itemTemplateSelector(): string | ((item: any, index: number, items: any) => string) {
         return this._itemTemplateSelector;
