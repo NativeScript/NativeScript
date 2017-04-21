@@ -1,19 +1,8 @@
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { Label } from "tns-core-modules/ui/label";
 import { TextView } from "tns-core-modules/ui/text-view";
 import { Button } from "tns-core-modules/ui/button";
-import { Page } from "tns-core-modules/ui/page";
-import { Color } from "tns-core-modules/color";
-import { isIOS } from "tns-core-modules/platform";
-
-import * as knownColors from "tns-core-modules/color/known-colors";
 
 import * as tests from "./tests";
-
-let red = new Color(knownColors.Red);
-let green = new Color(knownColors.Green);
-let blue = new Color(knownColors.Blue);
-let purple = new Color(knownColors.Purple);
 
 const c = [10, 100, 1000, 10000, 100000];
 

@@ -9,8 +9,9 @@ const colors = ['red', 'green'];
 export function addRemove(counts: Array<number>, parent: LayoutBase): string {
     let result = `addRemove`;
     counts.forEach((count) => {
-        if (count > 10000)
+        if (count > 10000) {
             return;
+        }
 
         const lbl = new Label();
         const time = executeTest(() => {
@@ -30,7 +31,6 @@ export function setText(counts: Array<number>, parent?: LayoutBase): string {
     let result = `setText ${parent ? 'with nativeView' : ''}`;
     counts.forEach((count) => {
         const lbl = setup(parent);
-        const style = lbl.style;
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
                 lbl.text = colors[i % 2];
@@ -45,8 +45,10 @@ export function setText(counts: Array<number>, parent?: LayoutBase): string {
 export function setBackgroundColor(counts: Array<number>, parent?: LayoutBase): string {
     let result = `setBackgroundColor ${parent ? 'with nativeView' : ''}`;
     counts.forEach((count) => {
-        if (parent && count > 10000)
+        if (parent && count > 10000) {
             return;
+        }
+
         const lbl = setup(parent);
         const style = lbl.style;
         const time = executeTest(() => {
@@ -64,8 +66,9 @@ const borders = [1, 2, 3];
 export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): string {
     let result = `setBorderWidths ${parent ? 'with nativeView' : ''}`;
     counts.forEach((count) => {
-        if (count > 10000 && parent)
+        if (count > 10000 && parent) {
             return;
+        }
 
         const lbl = setup(parent);
         const style = lbl.style;
@@ -103,8 +106,10 @@ export function setColorWithParents(counts: Array<number>, parent: LayoutBase): 
     let result = `setColorWithParents`;
     const style = parent.style;
     counts.forEach((count) => {
-        if (count > 10000)
+        if (count > 10000) {
             return;
+        }
+
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
@@ -138,8 +143,10 @@ export function setFontSizeWithParents(counts: Array<number>, parent: LayoutBase
     let result = `setFontSizeWithParents`;
     const style = parent.style;
     counts.forEach((count) => {
-        if (count > 1000)
+        if (count > 1000) {
             return;
+        }
+
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
@@ -172,8 +179,10 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
     let result = `setFontWeightWithParents`;
     const style = parent.style;
     counts.forEach((count) => {
-        if (count > 1000)
+        if (count > 1000) {
             return;
+        }
+
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
@@ -204,8 +213,9 @@ export function setBindingContext(counts: Array<number>, parent?: LayoutBase): s
 export function setBindingContextWithParents(counts: Array<number>, parent: LayoutBase): string {
     let result = `setBindingContextWithParents`;
     counts.forEach((count) => {
-        if (count > 10000)
+        if (count > 10000) {
             return;
+        }
         setupParents(parent);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
@@ -221,8 +231,10 @@ export function setBindingContextWithParents(counts: Array<number>, parent: Layo
 export function setBindingContextWithParentsBound(counts: Array<number>, parent: LayoutBase): string {
     let result = `setBindingContextWithParentsBound`;
     counts.forEach((count) => {
-        if (count > 1000)
+        if (count > 1000) {
             return;
+        }
+
         setupParents(parent, true);
         const time = executeTest(() => {
             for (let i = 0; i < count; i++) {
