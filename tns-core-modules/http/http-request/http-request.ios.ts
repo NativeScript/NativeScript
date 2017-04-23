@@ -148,9 +148,8 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                         });
                                     });
                                 },
-                                toFile: (destinationFilePath?: string) => {
+                                toFile: (destinationFilePath: string) => {
                                     var fs: typeof fsModule = require("file-system");
-                                    var fileName = options.url;
                                     if (data instanceof NSData) {
                                         data.writeToFileAtomically(destinationFilePath, true);
                                         return fs.File.fromPath(destinationFilePath);
