@@ -49,7 +49,7 @@ export function getFile(arg: any, destinationFilePath?: string): Promise<any> {
                         let slashPos = arg.lastIndexOf('/') + 1;
                         let questionMarkPos = arg.lastIndexOf('?');
                         let actualFileName;
-                        if(questionMarkPos != -1){
+                        if(questionMarkPos !== -1){
                             actualFileName = arg.substring(slashPos, questionMarkPos);
                         } else {
                             actualFileName = arg.substring(slashPos);
