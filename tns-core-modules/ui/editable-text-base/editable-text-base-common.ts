@@ -4,6 +4,7 @@ import { TextBase, Property, CssProperty, Style, Color, booleanConverter, makeVa
 export * from "../text-base";
 
 export abstract class EditableTextBase extends TextBase implements EditableTextBaseDefinition {
+    public static blurEvent = "blur";
 
     public keyboardType: KeyboardType;
     public returnKeyType: ReturnKeyType;

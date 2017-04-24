@@ -1,15 +1,22 @@
-export var RESOURCE_PREFIX: string;
+/**
+ * @module "utils/utils"
+ */ /** */
+
+export const RESOURCE_PREFIX: string;
+export const FILE_PREFIX: string;
 
 //@private
 /**
- * Used by various android event listener implementations
+ * Used by various android event listener implementations.
+ * @private
  */
 interface Owned {
     owner: any;
 }
 
 /**
- * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType. 
+ * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType.
+ * @private
  */
 interface CacheLayerType {
     layerType: number;

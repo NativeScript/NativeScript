@@ -1,3 +1,7 @@
+/**
+ * @module "ui/animation/keyframe-animation"
+ */ /** */
+
 import { View } from "../core/view";
 
 export interface KeyframeDeclaration {

@@ -1,4 +1,8 @@
-﻿import { View, Template, KeyedTemplate } from "../core/view";
+﻿/**
+ * @module "ui/builder"
+ */ /** */
+
+import { View, Template, KeyedTemplate } from "../core/view";
 import { Page } from "../page";
 
 export function loadPage(moduleNamePath: string, fileName: string, moduleExports?: any): Page;

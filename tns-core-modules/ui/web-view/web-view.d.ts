@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/transition"
+ * 
  * Contains the WebView class, which represents a standard browser widget.
- */
+ */ /** */
+
 import { View, Property, EventData } from "../core/view";
 
 /**

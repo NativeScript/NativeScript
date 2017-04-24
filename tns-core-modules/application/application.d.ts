@@ -1,7 +1,10 @@
-﻿///<reference path="../tns-core-modules.d.ts" /> Include global typings
-/**
+﻿/**
+ * @module "application"
+ * 
  * Contains the application abstraction with all related methods.
- */
+ */ /** */
+
+///<reference path="../tns-core-modules.d.ts" /> Include global typings
 import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 
 /**

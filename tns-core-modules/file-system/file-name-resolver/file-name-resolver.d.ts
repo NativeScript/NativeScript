@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "file-system/file-name-resolver"
+ * 
  * Provides FileNameResolver class used for loading files based on device capabilities.
- */
+ */ /** */
+
 export interface PlatformContext {
     width: number;
     height: number;

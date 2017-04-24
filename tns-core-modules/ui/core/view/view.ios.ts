@@ -403,9 +403,12 @@ export class View extends ViewCommon {
         if (value instanceof UIColor) {
             this.nativeView.backgroundColor = value;
         } else {
-            this.nativeView.backgroundColor = ios.createBackgroundUIColor(this);
+            ios.createBackgroundUIColor(this, (color: UIColor) => {
+                this.nativeView.backgroundColor = color;
+            });
             this._setNativeClipToBounds();
         }
+
         if (!updateSuspended) {
             CATransaction.commit();
         }

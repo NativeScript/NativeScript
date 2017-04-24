@@ -35,7 +35,7 @@ import * as platformTests from "./platform/platform-tests";
 allTests["PLATFORM"] = platformTests;
 
 import * as fsTests from "./file-system/file-system-tests";
-allTests["FILE SYSTEM"] = fsTests;
+allTests["FILE-SYSTEM"] = fsTests;
 
 import * as httpTests from "./http/http-tests";
 allTests["HTTP"] = httpTests;
@@ -47,13 +47,13 @@ import * as fetchTests from "./fetch/fetch-tests";
 allTests["FETCH"] = fetchTests;
 
 import * as appSettingsTests from "./application-settings/application-settings-tests";
-allTests["APPLICATION SETTINGS"] = appSettingsTests;
+allTests["APPLICATION-SETTINGS"] = appSettingsTests;
 
 import * as applicationTests from "./application/application-tests";
 allTests["APPLICATION"] = applicationTests;
 
 import * as imageSourceTests from "./image-source/image-source-tests";
-allTests["IMAGE SOURCE"] = imageSourceTests;
+allTests["IMAGE-SOURCE"] = imageSourceTests;
 
 import * as observableArrayTests from "./data/observable-array-tests";
 allTests["OBSERVABLE-ARRAY"] = observableArrayTests;

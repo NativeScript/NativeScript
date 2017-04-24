@@ -1,4 +1,8 @@
 /**
+ * @module "utils/debug"
+ */ /** */
+
+/**
  * A runtime option indicating whether the build has debugging enabled.
  */
 export var debug: boolean;

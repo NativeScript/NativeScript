@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/action-bar"
+ * 
  * Contains the action bar related classes.
- */
+ */ /** */
+
 import { EventData, ViewBase, View } from "../core/view";
 
 /**
@@ -39,6 +42,9 @@ export class ActionBar extends View {
     update();
 
     //@private
+    /**
+     * @private
+     */
     _isEmpty(): boolean;
     //@endprivate
 }
@@ -114,6 +120,9 @@ export class ActionItem extends ViewBase {
     on(event: "tap", callback: (args: EventData) => void);
 
     //@private
+    /**
+     * @private
+     */
     _raiseTap(): void;
     //@endprivate
 

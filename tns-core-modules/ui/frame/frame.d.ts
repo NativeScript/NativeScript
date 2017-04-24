@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/frame"
+ * 
  * Contains the Frame class, which represents the logical View unit that is responsible for navigation within an application.
- */
+ */ /** */
+
 import { Page, View, Observable, EventData } from "../page";
 import { Transition } from "../transition";
 
@@ -100,10 +103,25 @@ export class Frame extends View {
     ios: iOSFrame;
 
     //@private
+    /**
+     * @private
+     */
     navigationQueueIsEmpty(): boolean;
+    /**
+     * @private
+     */
     navigationBarHeight: number;
+    /**
+     * @private
+     */
     _processNavigationQueue(page: Page);
+    /**
+     * @private
+     */
     _updateActionBar(page?: Page, disableNavBarAnimation?: boolean);
+    /**
+     * @private
+     */
     _getNavBarVisible(page: Page): boolean;
     //@endprivate
 
@@ -245,9 +263,21 @@ export interface BackstackEntry {
     resolvedPage: Page;
 
     //@private
+    /**
+     * @private
+     */
     navDepth: number;
+    /**
+     * @private
+     */
     fragmentTag: string;
+    /**
+     * @private
+     */
     isBack: boolean;
+    /**
+     * @private
+     */
     isNavigation: boolean;
     //@endprivate
 }
@@ -352,13 +382,25 @@ export interface iOSFrame {
     navBarVisibility: "auto" | "never" | "always";
 
     //@private
+    /**
+     * @private
+     */
     _disableNavBarAnimation: boolean;
     //@endprivate
 }
 
 export function setActivityCallbacks(activity: any /*android.app.Activity*/): void;
 //@private
+/**
+ * @private
+ */
 export function reloadPage(): void;
+/**
+ * @private
+ */
 export function resolvePageFromEntry(entry: NavigationEntry): Page;
+/**
+ * @private
+ */
 export function setFragmentCallbacks(fragment: any /*android.app.Fragment*/): void;
 //@endprivate

@@ -90,6 +90,8 @@ function initializeEditTextListeners(): void {
                     owner.dismissSoftInput();
                     dismissKeyboardTimeoutId = null;
                 }, 1);
+
+                owner.notify({ eventName: EditableTextBase.blurEvent, object: owner });
             }
         }
 

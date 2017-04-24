@@ -1,4 +1,8 @@
-﻿export class Font {
+﻿/**
+ * @module "ui/styling/font"
+ */ /** */
+
+export class Font {
     public static default: Font;
 
     public fontFamily: string;

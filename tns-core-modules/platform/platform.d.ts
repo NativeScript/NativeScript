@@ -1,7 +1,10 @@
-﻿/* tslint:disable:class-name */
-/**
+﻿/**
+ * @module "platform"
+ * 
  * Contains all kinds of information about the device, its operating system and software.
- */
+ */ /** */
+
+/* tslint:disable:class-name */
 
 /**
  * Gets a value indicating if the app is running on the Android platform.

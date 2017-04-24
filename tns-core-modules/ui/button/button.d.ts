@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/button"
+ * 
  * Contains the Button class, which represents a standard button widget.
- */
+ */ /** */
+
 import { TextBase, EventData } from "../text-base";
 
 /**

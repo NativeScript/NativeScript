@@ -1,4 +1,7 @@
-﻿
+﻿/**
+ * @module "fps-meter/fps-native"
+ */ /** */
+
 /**
  * An utility class used to measure frames per second.
  */

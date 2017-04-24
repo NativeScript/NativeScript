@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/content-view"
+ * 
  * View that can host another view.
- */
+ */ /** */
+
 import { View, AddChildFromBuilder } from "../core/view";
 
 export * from "../core/view";
@@ -18,6 +21,7 @@ export class ContentView extends View implements AddChildFromBuilder {
     //@private
     /**
      * Called when the content property has changed.
+     * @private
      * @param oldView The previous content.
      * @param newView The new content.
      */

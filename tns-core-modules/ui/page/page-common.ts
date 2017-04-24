@@ -35,8 +35,6 @@ export class PageBase extends ContentView implements PageDefinition {
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;
     public backgroundSpanUnderStatusBar: boolean;
-    public statusBarStyle: "light" | "dark";
-    public androidStatusBarBackground: Color;
 
     constructor() {
         super();
@@ -75,6 +73,20 @@ export class PageBase extends ContentView implements PageDefinition {
             this._actionBar = value;
             this._addView(this._actionBar);
         }
+    }
+
+    get statusBarStyle(): "light" | "dark" {
+        return this.style.statusBarStyle;
+    }
+    set statusBarStyle(value: "light" | "dark") {
+        this.style.statusBarStyle = value;
+    }
+
+    public get androidStatusBarBackground(): Color {
+        return this.style.androidStatusBarBackground;
+    }
+    public set androidStatusBarBackground(value: Color) {
+        this.style.androidStatusBarBackground = value;
     }
 
     get page(): PageDefinition {

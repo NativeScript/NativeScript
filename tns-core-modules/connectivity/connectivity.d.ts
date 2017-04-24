@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "connectivity"
+ * 
  * Contains connectivity utility methods.
- */
+ */ /** */
+
 /**
  * Gets the type of connection.
  * Returns a value from the connectivity.connectionType enumeration.
@@ -11,7 +14,7 @@ export function getConnectionType(): number;
 /**
  * Defines the different connection types.
  */
-export const enum connectionType {
+export enum connectionType {
     /**
      * Denotes no connection.
      */

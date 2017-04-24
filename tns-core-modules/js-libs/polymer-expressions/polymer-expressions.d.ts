@@ -1,4 +1,9 @@
-﻿//@private
+﻿/**
+ * @module "js-libs/polymer-expressions"
+ * @private
+ */ /** */
+
+//@private
 export class PolymerExpressions {
     static getExpression(expression: string): Expression;
 }

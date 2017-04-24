@@ -1,4 +1,8 @@
 ﻿/**
+ * @module "utils/types"
+ */ /** */
+
+/**
  * A function that checks if something is a valid string.
  * @param value The value which will be checked.
  * Returns true if value is a string.

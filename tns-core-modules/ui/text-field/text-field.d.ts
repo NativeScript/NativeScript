@@ -1,6 +1,9 @@
 ﻿/**
+ * @module "ui/text-base"
+ * 
  * Contains the TextField class, which represents an editable single-line box.
- */
+ */ /** */
+
 import { EditableTextBase, Property } from "../editable-text-base";
 
 export const secureProperty: Property<TextField, boolean>;

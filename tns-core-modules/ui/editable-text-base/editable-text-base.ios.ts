@@ -10,6 +10,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     public nativeView: UITextField | UITextView;
     public dismissSoftInput() {
         this.nativeView.resignFirstResponder();
+        this.notify({ eventName: EditableTextBase.blurEvent, object: this });
     }
 
     [keyboardTypeProperty.getDefault](): "datetime"| "phone" | "number" | "url" | "email" | string {

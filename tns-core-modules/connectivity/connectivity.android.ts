@@ -1,6 +1,6 @@
 ﻿import { getNativeApplication, android as androidApp} from "../application";
 
-export const enum connectionType {
+export enum connectionType {
     none = 0,
     wifi = 1,
     mobile = 2,
