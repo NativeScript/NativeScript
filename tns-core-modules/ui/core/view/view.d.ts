@@ -14,6 +14,24 @@ export * from "../../styling/style-properties";
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
 
 /**
+ * Denotes a length number that is in device independent pixels units.
+ */
+export type dip = number;
+
+/**
+ * Denotes a length number that is in phisical device pixels.
+ */
+export type px = number;
+
+/**
+ * Denotes a normalized percent number.
+ * 0% is represented as 0
+ * 50% is represented as 0.5
+ * 100% is represented as 1
+ */
+export type percent = number;
+
+/**
  * The Point interface describes a two dimensional location. 
  * It has two properties x and y, representing the x and y coordinate of the location. 
  */
@@ -228,14 +246,14 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     rotate: number;
 
     /**
-     * Gets or sets the translateX affine transform of the view.
+     * Gets or sets the translateX affine transform of the view in device independent pixels.
      */
-    translateX: Length;
+    translateX: dip;
 
     /**
-     * Gets or sets the translateY affine transform of the view.
+     * Gets or sets the translateY affine transform of the view in device independent pixels.
      */
-    translateY: Length;
+    translateY: dip;
 
     /**
      * Gets or sets the scaleX affine transform of the view.

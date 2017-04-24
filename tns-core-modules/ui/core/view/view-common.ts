@@ -1,5 +1,5 @@
 // Definitions.
-import { View as ViewDefinition, Point, Size, Color } from ".";
+import { View as ViewDefinition, Point, Size, Color, dip } from ".";
 import { HorizontalAlignment, VerticalAlignment, Visibility, Length, PercentLength } from "../../styling/style-properties";
 
 // Types.
@@ -366,17 +366,17 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
         this.style.rotate = value;
     }
 
-    get translateX(): Length {
+    get translateX(): dip {
         return this.style.translateX;
     }
-    set translateX(value: Length) {
+    set translateX(value: dip) {
         this.style.translateX = value;
     }
 
-    get translateY(): Length {
+    get translateY(): dip {
         return this.style.translateY;
     }
-    set translateY(value: Length) {
+    set translateY(value: dip) {
         this.style.translateY = value;
     }
 

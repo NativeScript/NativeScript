@@ -1,5 +1,5 @@
 ﻿// Definitions.
-import { Point, View as ViewDefinition } from ".";
+import { Point, View as ViewDefinition, dip } from ".";
 
 import { ios, Background } from "../../styling/background";
 import {
@@ -8,7 +8,7 @@ import {
 } from "./view-common";
 
 import {
-    Visibility, Length,
+    Visibility,
     visibilityProperty, opacityProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
@@ -232,13 +232,11 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-        let translateX = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateX || 0, 0));
-        let translateY = layout.toDeviceIndependentPixels(Length.toDevicePixels(this.translateY || 0, 0));
         let scaleX = this.scaleX || 1e-6;
         let scaleY = this.scaleY || 1e-6;
         let rotate = this.rotate || 0;
         let newTransform = CGAffineTransformIdentity;
-        newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
+        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
         newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
         if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
@@ -370,17 +368,17 @@ export class View extends ViewCommon {
         this.updateNativeTransform();
     }
 
-    [translateXProperty.getDefault](): Length | number {
+    [translateXProperty.getDefault](): dip {
         return 0;
     }
-    [translateXProperty.setNative](value: Length) {
+    [translateXProperty.setNative](value: dip) {
         this.updateNativeTransform();
     }
 
-    [translateYProperty.getDefault](): Length | number {
+    [translateYProperty.getDefault](): dip {
         return 0;
     }
-    [translateYProperty.setNative](value: Length) {
+    [translateYProperty.setNative](value: dip) {
         this.updateNativeTransform();
     }
 

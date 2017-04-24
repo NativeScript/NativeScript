@@ -1,3 +1,6 @@
+// Types
+import { dip, px, percent } from "../core/view";
+
 import { Color } from "../../color";
 import { Font, parseFont, FontStyle, FontWeight } from "./font";
 import { layout } from "../../utils/utils";
@@ -7,6 +10,13 @@ import { isIOS } from "../../platform";
 import { Style } from "./style";
 
 import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
+
+export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
+export type LengthPxUnit = { readonly unit: "px", readonly value: px };
+export type LengthPercentUnit = { readonly unit: "%", readonly value: percent };
+
+export type Length = "auto" | dip | LengthDipUnit | LengthPxUnit;
+export type PercentLength = "auto" | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
 
 function equalsCommon(a: Length, b: Length): boolean;
 function equalsCommon(a: PercentLength, b: PercentLength): boolean;
@@ -49,9 +59,7 @@ function convertToStringCommon(length: Length | PercentLength): string {
     return val + length.unit;
 }
 
-function toDevicePixelsCommon(length: Length, auto: number): number;
-function toDevicePixelsCommon(length: PercentLength, auto: number, parentSize: number): number;
-function toDevicePixelsCommon(length: PercentLength, auto: number, parentAvailableWidth?: number): number {
+function toDevicePixelsCommon(length: PercentLength, auto: number = Number.NaN, parentAvailableWidth: number = Number.NaN): number {
     if (length == "auto") { // tslint:disable-line
         return auto;
     }
@@ -69,50 +77,43 @@ function toDevicePixelsCommon(length: PercentLength, auto: number, parentAvailab
     }
 }
 
-export type PercentLength = "auto" | number | {
-    readonly unit: "%" | "dip" | "px";
-    readonly value: number;
-}
-
 export namespace PercentLength {
-    export function parse(value: string | Length): PercentLength {
-        if (value == "auto") { // tslint:disable-line
+    export function parse(fromValue: string | Length): PercentLength {
+        if (fromValue == "auto") { // tslint:disable-line
             return "auto";
         }
-        if (typeof value === "string") {
-            let type: "%" | "dip" | "px";
-            let numberValue = 0;
-            let stringValue = value.trim();
+        if (typeof fromValue === "string") {
+            let stringValue = fromValue.trim();
             let percentIndex = stringValue.indexOf("%");
             if (percentIndex !== -1) {
-                type = "%";
+                let value: percent;
                 // if only % or % is not last we treat it as invalid value.
                 if (percentIndex !== (stringValue.length - 1) || percentIndex === 0) {
-                    numberValue = Number.NaN;
+                    value = Number.NaN;
                 } else {
-                    numberValue = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
+                    value = parseFloat(stringValue.substring(0, stringValue.length - 1).trim()) / 100;
                 }
+
+                if (isNaN(value) || !isFinite(value)) {
+                    throw new Error(`Invalid value: ${fromValue}`);
+                }
+                return { unit: "%", value }
+            } else if (stringValue.indexOf("px") !== -1) {
+                stringValue = stringValue.replace("px", "").trim();
+                let value: px = parseFloat(stringValue);
+                if (isNaN(value) || !isFinite(value)) {
+                    throw new Error(`Invalid value: ${fromValue}`);
+                }
+                return { unit: "px", value };
             } else {
-                if (stringValue.indexOf("px") !== -1) {
-                    type = "px";
-                    stringValue = stringValue.replace("px", "").trim();
-                } else {
-                    type = "dip";
+                let value: dip = parseFloat(stringValue);
+                if (isNaN(value) || !isFinite(value)) {
+                    throw new Error(`Invalid value: ${fromValue}`);
                 }
-
-                numberValue = parseFloat(stringValue);
+                return value;
             }
-
-            if (isNaN(numberValue) || !isFinite(numberValue)) {
-                throw new Error(`Invalid value: ${value}`);
-            }
-
-            return {
-                value: numberValue,
-                unit: type
-            };
         } else {
-            return value;
+            return fromValue;
         }
     }
 
@@ -121,42 +122,33 @@ export namespace PercentLength {
     export const convertToString: { (length: PercentLength): string } = convertToStringCommon;
 }
 
-export type Length = "auto" | number | {
-    readonly unit: "dip" | "px";
-    readonly value: number;
-};
-
 export namespace Length {
-    export function parse(value: string | Length): Length {
-        if (value == "auto") { // tslint:disable-line
+    export function parse(fromValue: string | Length): Length {
+        if (fromValue == "auto") { // tslint:disable-line
             return "auto";
-        } else if (typeof value === "string") {
-            let type: "dip" | "px";
-            let numberValue = 0;
-            let stringValue = value.trim();
+        }
+        if (typeof fromValue === "string") {
+            let stringValue = fromValue.trim();
             if (stringValue.indexOf("px") !== -1) {
-                type = "px";
                 stringValue = stringValue.replace("px", "").trim();
+                let value: px = parseFloat(stringValue);
+                if (isNaN(value) || !isFinite(value)) {
+                    throw new Error(`Invalid value: ${stringValue}`);
+                }
+                return { unit: "px", value };
             } else {
-                type = "dip";
+                let value: dip = parseFloat(stringValue);
+                if (isNaN(value) || !isFinite(value)) {
+                    throw new Error(`Invalid value: ${stringValue}`);
+                }
+                return value;
             }
-
-            numberValue = parseFloat(stringValue);
-
-            if (isNaN(numberValue) || !isFinite(numberValue)) {
-                throw new Error(`Invalid value: ${value}`);
-            }
-
-            return {
-                value: numberValue,
-                unit: type
-            };
         } else {
-            return value;
+            return fromValue;
         }
     }
     export const equals: { (a: Length, b: Length): boolean } = equalsCommon;
-    export const toDevicePixels: { (length: Length, auto: number): number } = toDevicePixelsCommon;
+    export const toDevicePixels: { (length: Length, auto?: number): number } = toDevicePixelsCommon;
     export const convertToString: { (length: Length): string } = convertToStringCommon;
 }
 
@@ -387,10 +379,18 @@ scaleXProperty.register(Style);
 export const scaleYProperty = new CssAnimationProperty<Style, number>({ name: "scaleY", cssName: "scaleY", defaultValue: 1, valueConverter: parseFloat });
 scaleYProperty.register(Style);
 
-export const translateXProperty = new CssAnimationProperty<Style, Length>({ name: "translateX", cssName: "translateX", defaultValue: 0, valueConverter: Length.parse, equalityComparer: Length.equals });
+function parseDIPs(value: string): dip {
+    if (value.indexOf("px") !== -1) {
+        return layout.toDeviceIndependentPixels(parseFloat(value.replace("px", "").trim()));
+    } else {
+        return parseFloat(value.replace("dip", "").trim());
+    }
+}
+
+export const translateXProperty = new CssAnimationProperty<Style, dip>({ name: "translateX", cssName: "translateX", defaultValue: 0, valueConverter: parseDIPs });
 translateXProperty.register(Style);
 
-export const translateYProperty = new CssAnimationProperty<Style, Length>({ name: "translateY", cssName: "translateY", defaultValue: 0, valueConverter: Length.parse, equalityComparer: Length.equals });
+export const translateYProperty = new CssAnimationProperty<Style, dip>({ name: "translateY", cssName: "translateY", defaultValue: 0, valueConverter: parseDIPs });
 translateYProperty.register(Style);
 
 const transformProperty = new ShorthandProperty<Style, string>({
