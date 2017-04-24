@@ -1,5 +1,5 @@
 import { EventData } from "tns-core-modules/data/observable";
-import { MainPageViewModel } from "../mainPage";
+import { MainPageViewModel } from "../../mainPage";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
 
@@ -10,8 +10,7 @@ export function pageLoaded(args: EventData) {
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
     let examples: Map<string, string> = new Map<string, string>();
-    examples.set("properties", "perf/properties/main-page");
-    examples.set("memory-leaks", "perf/memory-leaks/main-page");
+    examples.set("background-image", "perf/memory-leaks/background-image");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;

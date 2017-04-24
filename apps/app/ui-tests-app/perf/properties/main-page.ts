@@ -30,6 +30,7 @@ export function onTap3(args) {
 
     function track(line: string) {
         console.log(line);
+        result.fontSize = 10;
         result.text += line + "\n";
     }
 

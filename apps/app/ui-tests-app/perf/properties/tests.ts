@@ -21,7 +21,7 @@ export function addRemove(counts: Array<number>, parent: LayoutBase): string {
             }
         });
 
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -36,7 +36,7 @@ export function setText(counts: Array<number>, parent?: LayoutBase): string {
                 lbl.text = colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -56,7 +56,7 @@ export function setBackgroundColor(counts: Array<number>, parent?: LayoutBase): 
                 style.backgroundColor = <any>colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -80,7 +80,7 @@ export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): str
                 style.borderBottomWidth = borders[i % 3];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -96,7 +96,7 @@ export function setColor(counts: Array<number>, parent?: LayoutBase): string {
                 style.color = <any>colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -116,7 +116,7 @@ export function setColorWithParents(counts: Array<number>, parent: LayoutBase): 
                 style.color = <any>colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -133,7 +133,7 @@ export function setFontSize(counts: Array<number>, parent?: LayoutBase): string 
                 style.fontSize = fontSizes[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -153,7 +153,7 @@ export function setFontSizeWithParents(counts: Array<number>, parent: LayoutBase
                 style.fontSize = fontSizes[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -169,7 +169,7 @@ export function setFontWeight(counts: Array<number>, parent?: LayoutBase): strin
                 style.fontWeight = i % 2 === 0 ? 'bold' : 'normal';
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -189,7 +189,7 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
                 style.fontWeight = i % 2 === 0 ? 'bold' : 'normal'
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -204,7 +204,7 @@ export function setBindingContext(counts: Array<number>, parent?: LayoutBase): s
                 lbl.bindingContext = colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -222,7 +222,7 @@ export function setBindingContextWithParents(counts: Array<number>, parent: Layo
                 parent.bindingContext = colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -241,7 +241,7 @@ export function setBindingContextWithParentsBound(counts: Array<number>, parent:
                 parent.bindingContext = colors[i % 2];
             }
         });
-        result += `\t${time}`;
+        result += setResultTime(time);
     });
 
     return result;
@@ -298,4 +298,8 @@ function executeTest(func: Function): string {
     const avg = total / average;
     const res = `${avg.toFixed(2)}`;
     return res;
+}
+
+function setResultTime(time: string) {
+    return ' ' + `\t${time}` + ' ';
 }
