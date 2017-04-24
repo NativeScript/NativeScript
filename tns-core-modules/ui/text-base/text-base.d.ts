@@ -73,8 +73,7 @@ export class TextBase extends View implements AddChildFromBuilder {
      * Specify the top padding of this layout.
      */
     paddingTop: Length;
-
-    //@private
+    
     /**
      * Called for every child element declared in xml.
      * This method will add a child element (value) to current element.
@@ -84,6 +83,7 @@ export class TextBase extends View implements AddChildFromBuilder {
      */
     _addChildFromBuilder(name: string, value: any): void;
 
+    //@private
     /**
      * Called when the text property is changed to request layout.
      * @private
