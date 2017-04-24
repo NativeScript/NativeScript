@@ -1,7 +1,6 @@
 import * as frame from "tns-core-modules/ui/frame";
 import { EventData } from "tns-core-modules/data/observable";
 import { Page } from "tns-core-modules/ui/page";
-import { Label } from "tns-core-modules/ui/label";
 import * as application from "tns-core-modules/application";
 
 var indexCounter = 0;
