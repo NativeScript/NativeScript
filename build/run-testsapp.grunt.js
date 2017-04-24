@@ -207,7 +207,7 @@ module.exports = {
                 },
                 "npm-i-widgets": {
                     // HACK: switch to @next when it gets switched to the 3.0 branch
-                    cmd: "npm i tns-core-modules-widgets@rc",
+                    cmd: "npm i tns-core-modules-widgets@internal-preview",
                     cwd: localCfg.applicationDir
                 }
             },
