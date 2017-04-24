@@ -236,23 +236,21 @@ export class Selector extends SelectorCore {
 
     constructor(public selectors: SimpleSelector[]) {
         super();
+        const supportedCombinator = [undefined, " ", ">", "+"];
         let siblingGroup: SimpleSelector[];
         let lastGroup: SimpleSelector[][];
         let groups: SimpleSelector[][][] = [];
         selectors.reverse().forEach(sel => {
-            switch(sel.combinator) {
-                case undefined:
-                case " ":
-                    siblingGroup = []
-                    groups.push(lastGroup = [siblingGroup]);
-                case ">":
-                    lastGroup.push(siblingGroup = []);
-                case "+":
-                    siblingGroup.push(sel);
-                    break;
-                default:
-                    throw new Error(`Unsupported combinator "${sel.combinator}".`);
+            if (supportedCombinator.indexOf(sel.combinator) === -1) {
+                throw new Error(`Unsupported combinator "${sel.combinator}".`);
             }
+            if (sel.combinator === undefined || sel.combinator === " ") {
+                groups.push(lastGroup = [siblingGroup = []]);
+            }
+            if (sel.combinator === ">") {
+                lastGroup.push(siblingGroup = []);
+            }
+            siblingGroup.push(sel);
         });
         this.groups = groups.map(g =>
             new Selector.ChildGroup(g.map(sg =>
