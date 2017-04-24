@@ -1,6 +1,7 @@
 import * as frame from "tns-core-modules/ui/frame";
 import { EventData } from "tns-core-modules/data/observable";
 import { Page } from "tns-core-modules/ui/page";
+import { Label } from "tns-core-modules/ui/label";
 import * as application from "tns-core-modules/application";
 
 var indexCounter = 0;
@@ -11,7 +12,7 @@ export function onLoad(args: EventData) {
     let index = indexCounter++ % 3;
     let page = <Page>args.object;
     page.backgroundImage = '~/ui-tests-app/image-view/' + images[index] + '.png';
-    setLabelText(args.object.page, navCounter, "countInfo");
+    setLabelText(page, navCounter, "countInfo");
     getMemoryUsage(args);
 }
 
@@ -26,7 +27,7 @@ export function navigateBack(args: EventData) {
 }
 
 function setLabelText(page: Page, text: number, id: string) {
-    let label = page.getViewById(id);
+    let label = <Label>page.getViewById(id);
     label.text = text + '';
 }
 
@@ -36,7 +37,7 @@ function getMemoryUsage(args: EventData) {
     activityManager.getMemoryInfo(mi);
     let usedMemory = mi.totalMem - mi.availMem;
     
-    setLabelText(args.object, usedMemory, "usedMemory");
+    setLabelText(<Page>args.object, usedMemory, "usedMemory");
 
     console.log("availMem in bytes: " + mi.availMem);
     console.log("Percentage usage: " + (mi.availMem / mi.totalMem));
