@@ -48,15 +48,15 @@ export function test_setting_backgroundImage_property_from_CSS_is_applied_to_Sty
 }
 
 export function test_setting_borderWidth_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", { value: 5, unit: "dip" }, "5", true);
+    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", 5, "5", true);
 }
 
 export function test_setting_borderWidth_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", { value: 5, unit: "dip" }, "5dip", true);
+    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", 5, "5dip", true);
 }
 
 export function test_setting_borderWidth_multiple_values_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", "1dip 2dip 3dip 4dip", "1 2dip 3 4dip");
+    test_property_from_CSS_is_applied_to_style("borderWidth", "border-width", "1 2 3 4", "1 2dip 3 4dip");
 }
 
 export function test_setting_borderColor_property_from_CSS_is_applied_to_Style() {
@@ -72,52 +72,51 @@ export function test_setting_borderColorRGBA_property_from_CSS_is_applied_to_Sty
 }
 
 export function test_setting_borderRadius_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", { value: 20, unit: "dip" }, "20", true);
+    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", 20, "20", true);
 }
 
 export function test_setting_borderRadius_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", { value: 20, unit: "dip" }, "20dip", true);
+    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", 20, "20dip", true);
 }
 
 export function test_setting_borderRadius_multiple_values_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", "1dip 2dip 3dip 4dip", "1 2dip 3 4dip");
+    test_property_from_CSS_is_applied_to_style("borderRadius", "border-radius", "1 2 3 4", "1 2dip 3 4dip");
 }
 
 export function test_setting_textAlignment_property_from_CSS_is_applied_to_Style() {
     test_property_from_CSS_is_applied_to_style("textAlignment", "text-align", "center");
 }
 
-const testLength: PercentLength = { value: 200, unit: "dip" };
 export function test_setting_width_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("width", "width", testLength, "200", true);
+    test_property_from_CSS_is_applied_to_style("width", "width", 200, "200", true);
 }
 
 export function test_setting_width_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("width", "width", testLength, "200dip", true);
+    test_property_from_CSS_is_applied_to_style("width", "width", 200, "200dip", true);
 }
 
 export function test_setting_height_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("height", "height", testLength, "200", true);
+    test_property_from_CSS_is_applied_to_style("height", "height", 200, "200", true);
 }
 
 export function test_setting_height_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("height", "height", testLength, "200dip", true);
+    test_property_from_CSS_is_applied_to_style("height", "height", 200, "200dip", true);
 }
 
 export function test_setting_minWidth_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("minWidth", "min-width", testLength, "200", true);
+    test_property_from_CSS_is_applied_to_style("minWidth", "min-width", 200, "200", true);
 }
 
 export function test_setting_minWidth_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("minWidth", "min-width", testLength, "200dip", true);
+    test_property_from_CSS_is_applied_to_style("minWidth", "min-width", 200, "200dip", true);
 }
 
 export function test_setting_minHeight_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("minHeight", "min-height", testLength, "200", true);
+    test_property_from_CSS_is_applied_to_style("minHeight", "min-height", 200, "200", true);
 }
 
 export function test_setting_minHeight_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("minHeight", "min-height", testLength, "200dip", true);
+    test_property_from_CSS_is_applied_to_style("minHeight", "min-height", 200, "200dip", true);
 }
 
 export function test_setting_verticalAlignment_property_from_CSS_is_applied_to_Style() {
@@ -137,11 +136,11 @@ export function test_setting_visibility_property_from_CSS_is_applied_to_Style() 
 }
 
 export function test_setting_margin_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("margin", "margin", { value: 10, unit: "dip" }, "10", true);
+    test_property_from_CSS_is_applied_to_style("margin", "margin", 10, "10", true);
 }
 
 export function test_setting_margin_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("margin", "margin", { value: 10, unit: "dip" }, "10dip", true);
+    test_property_from_CSS_is_applied_to_style("margin", "margin", 10, "10dip", true);
 }
 
 export function test_setting_margin_percent_property_from_CSS_is_applied_to_Style() {
@@ -149,19 +148,19 @@ export function test_setting_margin_percent_property_from_CSS_is_applied_to_Styl
 }
 
 export function test_setting_margin_multiple_values_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("margin", "margin", "1dip 2% 3dip 4dip", "1 2% 3 4dip");
+    test_property_from_CSS_is_applied_to_style("margin", "margin", "1 2% 3 4", "1 2% 3 4dip");
 }
 
 export function test_setting_padding_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("padding", "padding", { value: 10, unit: "dip" }, "10", true);
+    test_property_from_CSS_is_applied_to_style("padding", "padding", 10, "10", true);
 }
 
 export function test_setting_padding_dip_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("padding", "padding", { value: 10, unit: "dip" }, "10dip", true);
+    test_property_from_CSS_is_applied_to_style("padding", "padding", 10, "10dip", true);
 }
 
 export function test_setting_padding_multiple_values_property_from_CSS_is_applied_to_Style() {
-    test_property_from_CSS_is_applied_to_style("padding", "padding", "1dip 2dip 3dip 4dip", "1 2dip 3 4dip");
+    test_property_from_CSS_is_applied_to_style("padding", "padding", "1 2 3 4", "1 2dip 3 4dip");
 }
 
 export function test_setting_opacity_property_from_CSS_is_applied_to_Style() {
