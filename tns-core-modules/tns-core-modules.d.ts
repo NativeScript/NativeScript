@@ -73,6 +73,61 @@ declare function JavaProxy(nativeClassName: string): ClassDecorator;
  */ 
 declare function Interfaces(interfaces: any[]): ClassDecorator;
 
+/**
+ * Important: Not applicable to Java classes (Android platform)
+ * Decorates a class that implements native Objective-C protocols.
+ * @param protocols An array of fully-classified Objective-C protocol names that the class must implement.
+ */ 
+declare function ObjCClass(...protocols: any[]): ClassDecorator;
+
+/**
+ * Important: Not applicable to Java methods (Android platform)
+ * Decorates method that it is exposed in Objective-C.
+ * The JS name of the method will be used as the name of the native method
+ * and the return type will be set to `interop.types.void`
+ */ 
+declare function ObjCMethod(): MethodDecorator;
+
+/**
+ * Important: Not applicable to Java methods (Android platform)
+ * Decorates method that it is exposed in Objective-C.
+ * @param name The name of the method to be exposed.
+ * The native return type will be set to `interop.types.void`.
+ */ 
+declare function ObjCMethod(name: string): MethodDecorator;
+
+/**
+ * Important: Not applicable to Java methods (Android platform)
+ * Decorates a method to be exposed in Objective-C.
+ * The JS name of the method will be used for the name of the native method.
+ * @param returnType The native type of the result.
+ */ 
+declare function ObjCMethod(returnType: any): MethodDecorator;
+
+/**
+ * Important: Not applicable to Java methods (Android platform)
+ * Decorates a method to be exposed in Objective-C.
+ * @param name The name of the method to be exposed. Can be different than the JS function name
+ * and can follow Objective-C colon syntax (for example `tableView:cellForRowAtIndexPath:`).
+ * @param returnType The native type of the result.
+ */ 
+declare function ObjCMethod(name: string, returnType: any): MethodDecorator;
+
+/**
+ * Important: Not applicable to Java classes or methods (Android platform)
+ * This is a shorthand decorator that can be used to decorate either a method or a class
+ * to be exposed to Objective-C.
+ * @param params Parameters to send to the ObjCClass or ObjCMethod decorators.
+ */ 
+declare function ObjC(...params: any[]): ClassDecorator & MethodDecorator;
+
+/**
+ * Important: Not applicable to Java method parameters (Android platform)
+ * Decorates a parameter in an Objective-C exposed method with its native type.
+ * @param type The native type for the parameter.
+ */ 
+declare function ObjCParam(type: any): ParameterDecorator;
+
 declare function Log(data: any): void;
 declare function log(data: any): void;
 declare function fail(data: any): void;
