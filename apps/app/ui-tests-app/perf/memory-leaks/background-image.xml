@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page navigatingTo="onLoad" class="bg-main-page">
+  <Page.actionBar>
+    <ActionBar title="">
+      <NavigationButton text="go back"/>
+      <ActionBar.actionItems>
+        <ActionItem text="back" tap="navigateBack"/>
+        <ActionItem text="forward" tap="navigate"/>
+      </ActionBar.actionItems>
+    </ActionBar>
+  </Page.actionBar>
+  <GridLayout rows="*, *, *" columns="*, *" class="info">
+    <!--<Image class="image" />-->
+    <Button tap="getMemoryUsage" text="Get memory info" height="60" colSpan="2"/>
+    <Label text="navigation counter" row="1" />
+    <Label text="navigation counter" id="countInfo" row="1" col="1" />
+    <Label text="used memory" row="2" />
+    <Label text="" id="usedMemory" row="2" col="1" />
+  </GridLayout>
+</Page>

@@ -38,6 +38,8 @@ export function pageLoaded(args: EventData) {
     examples.set("issues", "issues/main-page");
     examples.set("page", "page/main-page");
 
+    examples.set("perf", "perf/main-page");
+
     //examples.set("listview_binding", "pages/listview_binding");
     //examples.set("textfield", "text-field/text-field");
 
