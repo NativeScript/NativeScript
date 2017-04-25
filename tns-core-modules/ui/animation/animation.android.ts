@@ -113,13 +113,19 @@ export class Animation extends AnimationBase {
                 if (traceEnabled()) {
                     traceWrite("MainAnimatorListener.onAnimationEnd(" + animator + ")", traceCategories.Animation);
                 }
-                that.get()._onAndroidAnimationEnd();
+                const thisRef = that.get();
+                if (thisRef) {
+                    thisRef._onAndroidAnimationEnd();
+                }
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
                 if (traceEnabled()) {
                     traceWrite("MainAnimatorListener.onAnimationCancel(" + animator + ")", traceCategories.Animation);
                 }
-                that.get()._onAndroidAnimationCancel();
+                const thisRef = that.get();
+                if (thisRef) {
+                    thisRef._onAndroidAnimationCancel();
+                }
             }
         });
     }
