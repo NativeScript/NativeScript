@@ -5,7 +5,7 @@ export class Placeholder extends View implements PlaceholderDefinition {
     public static creatingViewEvent = "creatingView";
 
     public createNativeView() {
-        let args = <CreateViewEventData>{ eventName: Placeholder.creatingViewEvent, object: this, view: undefined, context: this._context };
+        const args = <CreateViewEventData>{ eventName: Placeholder.creatingViewEvent, object: this, view: undefined, context: this._context };
         this.notify(args);
         return <android.view.View>args.view;
     }
