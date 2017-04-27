@@ -181,6 +181,8 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
         if (mUri != null && fetcher != null) {
             // Get the Bitmap from cache.
             fetcher.loadImage(mUri, this, mDecodeWidth, mDecodeHeight, mUseCache, mAsync, mListener);
+        } else {
+            this.setImageBitmap(null);
         }
     }
 
