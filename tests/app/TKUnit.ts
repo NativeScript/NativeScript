@@ -366,7 +366,7 @@ export var wait = function (seconds: number) {
     }, seconds, false);
 };
 
-export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 3, shouldThrow: boolean = true) {
+export var waitUntilReady = function (isReady: () => boolean, timeoutSec: number = 300, shouldThrow: boolean = true) {
     if (!isReady) {
         return;
     }

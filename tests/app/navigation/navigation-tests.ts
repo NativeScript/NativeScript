@@ -1,7 +1,7 @@
 ﻿import * as TKUnit from "../TKUnit";
-import {Page, NavigatedData} from "tns-core-modules/ui/page";
-import {topmost as topmostFrame, NavigationTransition} from "tns-core-modules/ui/frame";
-import {Color} from "tns-core-modules/color";
+import { Page, NavigatedData } from "tns-core-modules/ui/page";
+import { topmost as topmostFrame, NavigationTransition } from "tns-core-modules/ui/frame";
+import { Color } from "tns-core-modules/color";
 import * as helper from "../ui/helper";
 
 // Creates a random colorful page full of meaningless stuff.
@@ -15,11 +15,11 @@ let pageFactory = function (): Page {
 };
 
 function androidGC() {
-    let topmost = topmostFrame();
-    if (topmost.android) {
-        gc();
-        java.lang.System.gc();
-    }
+    // let topmost = topmostFrame();
+    // if (topmost.android) {
+    //     gc();
+    //     java.lang.System.gc();
+    // }
 }
 
 function attachEventListeners(page: Page, events: Array<string>) {
@@ -37,19 +37,20 @@ function _test_backstackVisible(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
-
+    TKUnit.wait(0.2);
     // page1 should not be added to the backstack
     let page0 = topmost.currentPage;
     helper.navigateWithEntry({ create: pageFactory, backstackVisible: false, transition: transition, animated: true });
-
+    TKUnit.wait(0.2);
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
-
+    TKUnit.wait(0.2);
     helper.goBack();
-
+    TKUnit.wait(0.2);
     // From page2 we have to go directly to page0, skipping page1.
     TKUnit.assert(topmost.currentPage === page0, "Page 1 should be skipped when going back.");
 
     helper.goBack();
+    TKUnit.wait(0.2);
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
@@ -74,7 +75,11 @@ function _test_backToEntry(transition?: NavigationTransition) {
     };
 
     let mainTestPage = topmost.currentPage;
-    let waitFunc = tag => TKUnit.waitUntilReady(() => topmost.currentPage["tag"] === tag, 1);
+    let waitFunc = tag => {
+        TKUnit.waitUntilReady(() => topmost.currentPage["tag"] === tag, 1);
+        TKUnit.wait(0.21);
+    };
+
     let navigate = tag => {
         topmost.navigate({ create: page(tag), transition: transition, animated: true });
         waitFunc(tag);
@@ -83,6 +88,7 @@ function _test_backToEntry(transition?: NavigationTransition) {
 
     let back = pages => {
         topmost.goBack(topmost.backStack[topmost.backStack.length - pages]);
+        TKUnit.wait(0.21);
     };
 
     let currentPageMustBe = tag => {
@@ -110,6 +116,7 @@ function _test_backToEntry(transition?: NavigationTransition) {
     let page1 = topmost.currentPage;
     back(1);
     helper.waitUntilNavigatedFrom(page1);
+    TKUnit.wait(0.21);
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
@@ -125,33 +132,27 @@ export function test_backToEntry_WithTransition() {
 
 function _test_ClearHistory(transition?: NavigationTransition) {
     let topmost = topmostFrame();
-    let mainTestPage = topmost.currentPage;
-    let mainPageFactory = function (): Page {
-        return mainTestPage;
-    };
-
+    let x = 0;
+    console.log(`=========== NAV: ${x++}`);
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 0, "1.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "1.topmost.canGoBack().");
 
+    console.log(`=========== NAV: ${x++}`);
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 1, "2.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), true, "2.topmost.canGoBack().");
 
+    console.log(`=========== NAV: ${x++}`);
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 2, "3.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), true, "3.topmost.canGoBack().");
 
+    console.log(`=========== NAV: ${x++}`);
+    TKUnit.wait(0.5);
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 0, "4.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "4.topmost.canGoBack().");
-
-    helper.navigateWithEntry({ create: mainPageFactory, clearHistory: true, animated: false });
-    TKUnit.assertEqual(topmost.backStack.length, 0, "5.topmost.backStack.length");
-    TKUnit.assertEqual(topmost.canGoBack(), false, "5.topmost.canGoBack().");
-
-    TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
-    TKUnit.assertEqual(topmost.backStack.length, 0, "Back stack should be empty at the end of the test.");
 }
 
 // Clearing the history messes up the tests app.
@@ -165,18 +166,18 @@ export function test_ClearHistory_WithTransition() {
     _test_ClearHistory({ name: "fade" });
 }
 
-export function test_ClearHistory_WithTransition_WithCachePagesOnNavigate() {
-    androidGC();
-    let topmost = topmostFrame();
-    if (!topmost.android) {
-        return;
-    }
+// export function test_ClearHistory_WithTransition_WithCachePagesOnNavigate() {
+//     androidGC();
+//     let topmost = topmostFrame();
+//     if (!topmost.android) {
+//         return;
+//     }
 
-    let originalCachePagesOnNavigate = topmost.android.cachePagesOnNavigate;
-    topmostFrame().android.cachePagesOnNavigate = true;
-    _test_ClearHistory({ name: "fade" });
-    topmostFrame().android.cachePagesOnNavigate = originalCachePagesOnNavigate;
-}
+//     let originalCachePagesOnNavigate = topmost.android.cachePagesOnNavigate;
+//     topmostFrame().android.cachePagesOnNavigate = true;
+//     _test_ClearHistory({ name: "fade" });
+//     topmostFrame().android.cachePagesOnNavigate = originalCachePagesOnNavigate;
+// }
 
 // Test case for https://github.com/NativeScript/NativeScript/issues/1948
 export function test_ClearHistoryWithTransitionDoesNotBreakNavigation() {

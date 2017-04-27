@@ -132,7 +132,7 @@ export function _clearForwardTransitions(fragment: any): void {
     }
 }
 
-export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: android.app.FragmentTransaction): void {
+export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: android.app.FragmentTransaction): boolean {
     traceWrite(`Setting Android Fragment Transitions...`, traceCategories.Transition);
     let name;
     if (navigationTransition.name) {
@@ -214,6 +214,8 @@ export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, na
                     }
                     break;
             }
+
+            return true;
         }
         else if (name === "fade") {
             let fadeEnter = new (<any>android).transition.Fade((<any>android).transition.Fade.IN);
@@ -234,6 +236,8 @@ export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, na
                 _addNativeTransitionListener(currentFragment, fadeReenter);
                 currentFragment.setReenterTransition(fadeReenter);
             }
+
+            return true;
         }
         else if (name === "explode") {
             let explodeEnter = new (<any>android).transition.Explode();
@@ -246,13 +250,15 @@ export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, na
                 _addNativeTransitionListener(currentFragment, explodeExit);
                 currentFragment.setExitTransition(explodeExit);
             }
+
+            return true;
         }
     }
     else {
         let transition: TransitionDefinition;
         if (name) {
             if (name.indexOf("slide") === 0) {
-                let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
+                const direction = name.substr("slide".length) || "left"; //Extract the direction from the string
                 ensureSlideTransition();
                 transition = new slideTransition.SlideTransition(direction, navigationTransition.duration, navigationTransition.curve);
             }
@@ -261,7 +267,7 @@ export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, na
                 transition = new fadeTransition.FadeTransition(navigationTransition.duration, navigationTransition.curve);
             }
             else if (name.indexOf("flip") === 0) {
-                let direction = name.substr("flip".length) || "right"; //Extract the direction from the string
+                const direction = name.substr("flip".length) || "right"; //Extract the direction from the string
                 ensureFlipTransition();
                 transition = new flipTransition.FlipTransition(direction, navigationTransition.duration, navigationTransition.curve);
             }
@@ -283,6 +289,7 @@ export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, na
 
     _printTransitions(currentFragment);
     _printTransitions(newFragment);
+    return false;
 }
 
 function _setUpNativeTransition(navigationTransition: NavigationTransition, nativeTransition: any/*android.transition.Transition*/) {
@@ -370,11 +377,12 @@ function _completePageAddition(fragment: any, isBack: boolean) {
     // The original code that was once in Frame onFragmentShown
     frame._currentEntry = entry;
     page.onNavigatedTo(isBack);
-    frame._processNavigationQueue(page);
     entry.isNavigation = undefined;
     if (traceEnabled()) {
         traceWrite(`ADDITION of ${page} completed`, traceCategories.Transition);
     }
+
+    frame._processNavigationQueue(page);
 }
 
 function _completePageRemoval(fragment: any, isBack: boolean) {
@@ -383,20 +391,28 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
     let frame = fragment._callbacks.frame;
     let entry: BackstackEntry = fragment._callbacks.entry;
     let page: Page = entry.resolvedPage;
-    if (traceEnabled()) {
-        traceWrite(`STARTING REMOVAL of ${page}...`, traceCategories.Transition);
-    }
     if (page.frame) {
-        frame._removeView(page);
+        // On back navigation or clearing page in backstack we remove the page from frame.
+        if (isBack || expandedFragment.isDestroyed) {
+            console.log(`______ REMOVE ${page}`);
+            if (traceEnabled()) {
+                traceWrite(`REMOVE ${page}...`, traceCategories.Transition);
+            }
+            frame._removeView(page);
+        } else if (page.isLoaded) {
+            console.log(`______ UNLOAD ${page}`);
+            if (traceEnabled()) {
+                traceWrite(`UNLOAD ${page}...`, traceCategories.Transition);
+            }
+            // Forward navigation does not remove page from frame so we raise unloaded manually.
+            page.onUnloaded();
+        }
+
         // This could be undefined if activity is destroyed (e.g. without actual navigation).
         if (entry.isNavigation) {
             page.onNavigatedFrom(isBack);
         }
-        if (traceEnabled()) {
-            traceWrite(`REMOVAL of ${page} completed`, traceCategories.Transition);
-        }
-    }
-    else {
+    } else {
         if (traceEnabled()) {
             traceWrite(`REMOVAL of ${page} has already been done`, traceCategories.Transition);
         }
@@ -405,12 +421,12 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
     if (expandedFragment.isDestroyed) {
         expandedFragment.isDestroyed = undefined;
         if (page._context) {
+            console.log(`______ TEARDOWN ${page}`);
             page._tearDownUI(true);
             if (traceEnabled()) {
                 traceWrite(`DETACHMENT of ${page} completed`, traceCategories.Transition);
             }
-        }
-        else {
+        } else {
             if (traceEnabled()) {
                 traceWrite(`DETACHMENT of ${page} has already been done`, traceCategories.Transition);
             }
@@ -419,6 +435,7 @@ function _completePageRemoval(fragment: any, isBack: boolean) {
     }
 
     entry.isNavigation = undefined;
+    frame._processNavigationQueue(page);
 }
 
 export function _removePageNativeViewFromAndroidParent(page: Page): void {
@@ -442,6 +459,7 @@ function _toShortString(nativeTransition: any): string {
 }
 
 function _addNativeTransitionListener(fragment: any, nativeTransition: any/*android.transition.Transition*/) {
+
     let transitionListener = new (<any>android).transition.Transition.TransitionListener({
         onTransitionCancel: function (transition: any): void {
             let expandedFragment = this.fragment;

@@ -203,6 +203,7 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
         }
     }
     helper.navigateWithEntry(navigationEntry);
+    TKUnit.wait(0.2);
     helper.goBack();
 
     let expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "unloaded", "navigatedFrom"];

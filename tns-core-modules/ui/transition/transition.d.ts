@@ -33,7 +33,7 @@ export function _clearForwardTransitions(fragment: any): void;
 /**
  * @private
  */
-export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): void;
+export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, navigationTransition: NavigationTransition, currentFragment: any, newFragment: any, fragmentTransaction: any): boolean;
 /**
  * @private
  */
