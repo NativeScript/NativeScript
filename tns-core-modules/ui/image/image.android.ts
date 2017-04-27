@@ -1,5 +1,5 @@
 ﻿import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, unsetValue, Color,
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
 import { path, knownFolders } from "../../file-system";
@@ -67,7 +67,9 @@ export class Image extends ImageBase {
 
     public _createImageSourceFromSrc() {
         let imageView = this.nativeView;
-        this.imageSource = <any>unsetValue;
+        if (imageView) {
+            imageView.setUri(null, 0, 0, false, true);
+        }
 
         if (!imageView || !this.src) {
             return;
@@ -76,7 +78,7 @@ export class Image extends ImageBase {
         let value = this.src;
         let async = this.loadMode === ASYNC;
 
-        if (typeof value === "string") {
+        if (typeof value === "string" || value instanceof String) {
             value = value.trim();
             this.isLoading = true;
 
