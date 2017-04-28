@@ -48,31 +48,67 @@ export function isAttribute(sel: SimpleSelector): sel is AttributeSelector {
     return sel.type === "[]";
 }
 
-// var regex = /(\s*)(?:(\*)|(#|\.|:|\b)([_-\w][_-\w\d]*)|\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\])(?:\s*(\+|~|>|\s))?/g;
-// no lead ws     univ   type pref and ident          [    prop                   =                            ident    -or-    "string escapes \" \00aaff"    -or-   'string    escapes \' urf-8: \00aaff'       ]        combinator
+const regexParts = {
+    space: /\s*/,
+    openingBracket: /\[/,
+    closingBracket: /\]/,
+    universal: /(\*)/,
+    selectorTypes: /(#|\.|:|\b)/,
+    selectorName: /([_-\w][_-\w\d]*)/,
+    attributeName: /([_-\w][_-\w\d]*)/,
+    attributeEqual: /(=|\^=|\$=|\*=|\~=|\|=)/,
+    attributeValues: {
+        noQuotes: /([_-\w][_-\w\d]*)/,
+        doubleQuotes: /"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"/,
+        simpleQuotes: /'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)'/
+    },
+    combinators: /(?:\s*(\+|~|>|\s))?/
+};
 
-const spaceRegex = /(\s*)/
-const combinatorsRegex = /(?:\s*(\+|~|>|\s))?/
+const attributeValueRegex = "(?:" +
+    regexParts.attributeValues.noQuotes.source +
+    "|" +
+    regexParts.attributeValues.doubleQuotes.source +
+    "|" +
+    regexParts.attributeValues.simpleQuotes.source +
+")";
 
-const universalRegex = /(\*)/
-const selectorTypeRegex = /(#|\.|:|\b)/
-const selectorNameRegex = /([_-\w][_-\w\d]*)/
-const attributesRegex = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/
+const attributeValueAssertionRegex = "(?:" +
+    regexParts.attributeEqual.source +
+    regexParts.space.source +
+    attributeValueRegex +
+    regexParts.space.source +
+")?";
 
-const selectorRegex = `(?:${universalRegex.source}|${selectorTypeRegex.source}${selectorNameRegex.source}|${attributesRegex.source})`;
+const attributesRegex = "" +
+    regexParts.openingBracket.source +
+    regexParts.space.source +
+    regexParts.attributeName.source +
+    regexParts.space.source +
+    attributeValueAssertionRegex +
+    regexParts.closingBracket.source;
 
-const newRegex = new RegExp(
-    spaceRegex.source
-    + selectorRegex
-    + combinatorsRegex.source
+const selectorRegex = "(?:" +
+    regexParts.universal.source +
+    "|" +
+    regexParts.selectorTypes.source +
+    regexParts.selectorName.source +
+    "|" +
+    attributesRegex +
+")";
+
+const regex = new RegExp(
+    "(" + regexParts.space.source + ")" +
+    selectorRegex +
+    regexParts.combinators.source
 , 'g');
 
 export function parse(selector: string): SimpleSelector[] {
     let selectors: any[] = [];
 
     var result: RegExpExecArray;
-    var lastIndex = newRegex.lastIndex = 0;
-    while (result = newRegex.exec(selector)) {
+    var lastIndex = regex.lastIndex = 0;
+    while (result = regex.exec(selector)) {
         let pos = result.index;
         if (lastIndex !== pos) {
             throw new Error(`Unexpected characters at index, near: ${lastIndex}: ${result.input.substr(lastIndex, 32)}`);
@@ -80,7 +116,7 @@ export function parse(selector: string): SimpleSelector[] {
             throw new Error(`Last selector match got zero character result at index ${lastIndex}, near: ${result.input.substr(lastIndex, 32)}`);
         }
         pos += getLeadingWhiteSpace(result).length;
-        lastIndex = newRegex.lastIndex;
+        lastIndex = regex.lastIndex;
 
         var type = getType(result);
         let selector: SimpleSelector | SimpleIdentifierSelector | AttributeSelector;
