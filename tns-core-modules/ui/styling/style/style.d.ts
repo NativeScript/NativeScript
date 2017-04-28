@@ -2,7 +2,7 @@
  * @module "ui/styling/style"
  */ /** */
 
-import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment} from "../../core/view";
+import { Length, PercentLength, ViewBase, Observable, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
 import { Color } from "../../../color";
 import { Background } from "../background";
 import { Font, FontStyle, FontWeight } from "../font";
@@ -55,8 +55,8 @@ export class Style extends Observable {
     public rotate: number;
     public scaleX: number;
     public scaleY: number;
-    public translateX: Length;
-    public translateY: Length;
+    public translateX: dip;
+    public translateY: dip;
 
     public clipPath: string;
     public color: Color;

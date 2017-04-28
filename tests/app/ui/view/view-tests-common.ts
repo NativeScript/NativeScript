@@ -714,7 +714,7 @@ export function test_binding_style_minHeight() {
 };
 
 export function test_binding_style_margin() {
-    property_binding_style_test("margin", "1dip 2dip 3dip 4dip", "2dip 3dip 2dip 3dip");
+    property_binding_style_test("margin", "1 2 3 4", "2 3 2 3");
 };
 
 export function test_binding_style_marginLeft() {
@@ -734,7 +734,7 @@ export function test_binding_style_marginBottom() {
 };
 
 export function test_binding_style_padding() {
-    property_binding_style_test("padding", "1dip 2dip 3dip 4dip", "2dip 3dip 2dip 3dip");
+    property_binding_style_test("padding", "1 2 3 4", "2 3 2 3");
 };
 
 export function test_binding_style_paddingLeft() {

@@ -2,7 +2,7 @@ import { Style as StyleDefinition } from ".";
 import { Color } from "../../../color";
 import { Font, FontStyle, FontWeight } from "../font";
 import { Background } from "../background";
-import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment } from "../../core/view";
+import { Length, PercentLength, ViewBase, BackgroundRepeat, Visibility, HorizontalAlignment, VerticalAlignment, dip } from "../../core/view";
 import { Observable } from "../../../data/observable";
 
 import {
@@ -23,8 +23,8 @@ export class Style extends Observable implements StyleDefinition {
     public rotate: number;
     public scaleX: number;
     public scaleY: number;
-    public translateX: Length;
-    public translateY: Length;
+    public translateX: dip;
+    public translateY: dip;
 
     public clipPath: string;
     public color: Color;

@@ -2,6 +2,8 @@
  * @module "utils/utils"
  */ /** */
 
+import { dip, px } from "../ui/core/view";
+
 export const RESOURCE_PREFIX: string;
 export const FILE_PREFIX: string;
 
@@ -29,9 +31,6 @@ interface CacheLayerType {
  * Utility module related to layout.
  */
 export module layout {
-    export type px = number;
-    export type dip = number;
-
     /**
      * Bits that provide the actual measured size.
      */
@@ -68,12 +67,12 @@ export module layout {
      */
     export function getDisplayDensity(): number;
     /**
-     * Convert value to device pixels.
+     * Convert device independent pixels to device pixels - dip to px.
      * @param value - The pixel to convert.
      */
     export function toDevicePixels(value: dip): px;
     /**
-     * Convert value to device independent pixels.
+     * Convert device pixels to device independent pixels - px to dip.
      * @param value - The pixel to convert.
      */
     export function toDeviceIndependentPixels(value: px): dip;

@@ -1,5 +1,5 @@
 // Definitions.
-import { Point, CustomLayoutView as CustomLayoutViewDefinition } from ".";
+import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 
 // Types.
@@ -415,18 +415,18 @@ export class View extends ViewCommon {
         org.nativescript.widgets.ViewHelper.setScaleY(this.nativeView, float(value));
     }
 
-    [translateXProperty.getDefault](): Length | number {
-        return org.nativescript.widgets.ViewHelper.getTranslateX(this.nativeView);
+    [translateXProperty.getDefault](): dip {
+        return layout.toDeviceIndependentPixels(org.nativescript.widgets.ViewHelper.getTranslateX(this.nativeView));
     }
-    [translateXProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, Length.toDevicePixels(value, 0));
+    [translateXProperty.setNative](value: dip) {
+        org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, layout.toDevicePixels(value));
     }
 
-    [translateYProperty.getDefault](): Length | number {
-        return org.nativescript.widgets.ViewHelper.getTranslateY(this.nativeView);
+    [translateYProperty.getDefault](): dip {
+        return layout.toDeviceIndependentPixels(org.nativescript.widgets.ViewHelper.getTranslateY(this.nativeView));
     }
-    [translateYProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, Length.toDevicePixels(value, 0));
+    [translateYProperty.setNative](value: dip) {
+        org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, layout.toDevicePixels(value));
     }
 
     [zIndexProperty.getDefault](): number {
