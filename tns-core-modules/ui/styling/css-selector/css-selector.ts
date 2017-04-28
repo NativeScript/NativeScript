@@ -45,11 +45,31 @@ namespace Match {
     export var Static = false;
 }
 
-function getNodeDirectSibling (node) {
-    if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) return false;
-    const nodeIndex = node.parent.getChildIndex(node);
-    if (nodeIndex === 0) return false;
+function getNodeIndex(node): number {
+    if (!node.parent || !node.parent.getChildIndex) return -1;
+    return node.parent.getChildIndex(node);
+}
+
+function isFirstChild(node): boolean {
+    return getNodeIndex(node) === 0;
+}
+
+function isLastChild(node): boolean {
+    if (!node.parent || !node.parent.getChildrenCount) return false;
+    return getNodeIndex(node) === (node.parent.getChildrenCount());
+}
+
+function getNodePreviousDirectSibling(node): Node {
+    if (!node.parent || !node.parent.getChildAt) return false;
+    const nodeIndex = getNodeIndex(node);
+    if (nodeIndex <= 0) return false;
     return node.parent.getChildAt(nodeIndex - 1);
+}
+
+function getNodeNextDirectSibling(node): Node {
+    if (!node.parent || !node.parent.getChildAt) return false;
+    const nodeIndex = getNodeIndex(node);
+    return node.parent.getChildAt(nodeIndex + 1);
 }
 
 function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: boolean = false): ClassDecorator {
@@ -203,7 +223,11 @@ export class AttributeSelector extends SimpleSelector {
 export class PseudoClassSelector extends SimpleSelector {
     constructor(public cssPseudoClass: string) { super(); }
     public toString(): string { return `:${this.cssPseudoClass}${wrap(this.combinator)}`; }
-    public match(node: Node): boolean { return node.cssPseudoClasses && node.cssPseudoClasses.has(this.cssPseudoClass); }
+    public match(node: Node): boolean {
+        if (this.cssPseudoClass === "first-child") return isFirstChild(node);
+        if (this.cssPseudoClass === "last-child") return isLastChild(node);
+        return node.cssPseudoClasses && node.cssPseudoClasses.has(this.cssPseudoClass);
+    }
     public mayMatch(node: Node): boolean { return true; }
     public trackChanges(node: Node, map: ChangeAccumulator): void { map.addPseudoClass(node, this.cssPseudoClass); }
 }
@@ -366,15 +390,15 @@ export namespace Selector {
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodePreviousDirectSibling(node)) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodePreviousDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodePreviousDirectSibling(node)) && sel.trackChanges(node, map));
         }
     }
     export interface Bound {
