@@ -48,63 +48,80 @@ export function isAttribute(sel: SimpleSelector): sel is AttributeSelector {
     return sel.type === "[]";
 }
 
-const regexParts = {
-    space: /\s*/,
-    openingBracket: /\[/,
-    closingBracket: /\]/,
-    universal: /(\*)/,
-    selectorTypes: /(#|\.|:|\b)/,
-    selectorName: /([_-\w][_-\w\d]*)/,
-    attributeName: /([_-\w][_-\w\d]*)/,
-    attributeEqual: /(=|\^=|\$=|\*=|\~=|\|=)/,
-    attributeValues: {
-        noQuotes: /([_-\w][_-\w\d]*)/,
-        doubleQuotes: /"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"/,
-        simpleQuotes: /'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)'/
-    },
-    combinators: /(?:\s*(\+|~|>|\s))?/
-};
+var RegexSingleton = (function () {
+    let regex;
 
-const attributeValueRegex = "(?:" +
-    regexParts.attributeValues.noQuotes.source +
-    "|" +
-    regexParts.attributeValues.doubleQuotes.source +
-    "|" +
-    regexParts.attributeValues.simpleQuotes.source +
-")";
+    const regexParts = {
+        space: /\s*/,
+        openingBracket: /\[/,
+        closingBracket: /\]/,
+        universal: /(\*)/,
+        selectorTypes: /(#|\.|:|\b)/,
+        selectorName: /([_-\w][_-\w\d]*)/,
+        attributeName: /([_-\w][_-\w\d]*)/,
+        attributeEqual: /(=|\^=|\$=|\*=|\~=|\|=)/,
+        attributeValues: {
+            noQuotes: /([_-\w][_-\w\d]*)/,
+            doubleQuotes: /"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"/,
+            simpleQuotes: /'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)'/
+        },
+        combinators: /(?:\s*(\+|~|>|\s))?/
+    };
 
-const attributeValueAssertionRegex = "(?:" +
-    regexParts.attributeEqual.source +
-    regexParts.space.source +
-    attributeValueRegex +
-    regexParts.space.source +
-")?";
+    const attributeValueRegex = "(?:" +
+        regexParts.attributeValues.noQuotes.source +
+        "|" +
+        regexParts.attributeValues.doubleQuotes.source +
+        "|" +
+        regexParts.attributeValues.simpleQuotes.source +
+    ")";
 
-const attributesRegex = "" +
-    regexParts.openingBracket.source +
-    regexParts.space.source +
-    regexParts.attributeName.source +
-    regexParts.space.source +
-    attributeValueAssertionRegex +
-    regexParts.closingBracket.source;
+    const attributeValueAssertionRegex = "(?:" +
+        regexParts.attributeEqual.source +
+        regexParts.space.source +
+        attributeValueRegex +
+        regexParts.space.source +
+    ")?";
 
-const selectorRegex = "(?:" +
-    regexParts.universal.source +
-    "|" +
-    regexParts.selectorTypes.source +
-    regexParts.selectorName.source +
-    "|" +
-    attributesRegex +
-")";
+    const attributesRegex = "" +
+        regexParts.openingBracket.source +
+        regexParts.space.source +
+        regexParts.attributeName.source +
+        regexParts.space.source +
+        attributeValueAssertionRegex +
+        regexParts.closingBracket.source;
 
-const regex = new RegExp(
-    "(" + regexParts.space.source + ")" +
-    selectorRegex +
-    regexParts.combinators.source
-, 'g');
+    const selectorRegex = "(?:" +
+        regexParts.universal.source +
+        "|" +
+        regexParts.selectorTypes.source +
+        regexParts.selectorName.source +
+        "|" +
+        attributesRegex +
+    ")";
+
+    function createRegex() {
+        regex = new RegExp(
+            "(" + regexParts.space.source + ")" +
+            selectorRegex +
+            regexParts.combinators.source
+        , 'g');
+        return regex;
+    }
+
+    return {
+        getRegex: function() {
+            if (!regex) {
+                regex = createRegex();
+            }
+            return regex;
+        }
+    }
+})();
 
 export function parse(selector: string): SimpleSelector[] {
     let selectors: any[] = [];
+    const regex = RegexSingleton.getRegex();
 
     var result: RegExpExecArray;
     var lastIndex = regex.lastIndex = 0;
