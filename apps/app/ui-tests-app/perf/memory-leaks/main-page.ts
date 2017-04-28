@@ -2,6 +2,7 @@ import { EventData } from "tns-core-modules/data/observable";
 import { MainPageViewModel } from "../../mainPage";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
+import { isAndroid } from "tns-core-modules/platform";
 
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
@@ -10,8 +11,9 @@ export function pageLoaded(args: EventData) {
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
     let examples: Map<string, string> = new Map<string, string>();
-    examples.set("background-image", "perf/memory-leaks/background-image");
-
+    if (isAndroid) {
+        examples.set("background-image", "perf/memory-leaks/background-image");
+    }
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
 }

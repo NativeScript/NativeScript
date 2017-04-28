@@ -3,13 +3,14 @@ import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 import { Label } from "tns-core-modules/ui/label";
 
 const average = 3;
-
+const noValue = "noValue";
 const colors = ['red', 'green'];
 
 export function addRemove(counts: Array<number>, parent: LayoutBase): string {
     let result = `addRemove`;
     counts.forEach((count) => {
         if (count > 10000) {
+            result += setResultTime(noValue);
             return;
         }
 
@@ -46,6 +47,7 @@ export function setBackgroundColor(counts: Array<number>, parent?: LayoutBase): 
     let result = `setBackgroundColor ${parent ? 'with nativeView' : ''}`;
     counts.forEach((count) => {
         if (parent && count > 10000) {
+            result += setResultTime(noValue);
             return;
         }
 
@@ -67,7 +69,8 @@ export function setBorderWidths(counts: Array<number>, parent?: LayoutBase): str
     let result = `setBorderWidths ${parent ? 'with nativeView' : ''}`;
     counts.forEach((count) => {
         if (count > 10000 && parent) {
-            return;
+            result += setResultTime(noValue);
+            return;            
         }
 
         const lbl = setup(parent);
@@ -107,6 +110,7 @@ export function setColorWithParents(counts: Array<number>, parent: LayoutBase): 
     const style = parent.style;
     counts.forEach((count) => {
         if (count > 10000) {
+            result += setResultTime(noValue);
             return;
         }
 
@@ -144,6 +148,7 @@ export function setFontSizeWithParents(counts: Array<number>, parent: LayoutBase
     const style = parent.style;
     counts.forEach((count) => {
         if (count > 1000) {
+            result += setResultTime(noValue);
             return;
         }
 
@@ -180,6 +185,7 @@ export function setFontWeightWithParents(counts: Array<number>, parent: LayoutBa
     const style = parent.style;
     counts.forEach((count) => {
         if (count > 1000) {
+            result += setResultTime(noValue);
             return;
         }
 
@@ -214,6 +220,7 @@ export function setBindingContextWithParents(counts: Array<number>, parent: Layo
     let result = `setBindingContextWithParents`;
     counts.forEach((count) => {
         if (count > 10000) {
+            result += setResultTime(noValue);
             return;
         }
         setupParents(parent);
@@ -232,6 +239,7 @@ export function setBindingContextWithParentsBound(counts: Array<number>, parent:
     let result = `setBindingContextWithParentsBound`;
     counts.forEach((count) => {
         if (count > 1000) {
+            result += setResultTime(noValue);
             return;
         }
 
@@ -301,5 +309,5 @@ function executeTest(func: Function): string {
 }
 
 function setResultTime(time: string) {
-    return ' ' + `\t${time}` + ' ';
+    return `\t${time}`;
 }
