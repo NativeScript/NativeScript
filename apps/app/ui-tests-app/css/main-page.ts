@@ -45,6 +45,7 @@ export function pageLoaded(args: EventData) {
     examples.set("border-playground", "css/border-playground");
     examples.set("textview-hint-color", "css/textview-hint-color");
     examples.set("combinators", "css/combinators");
+    examples.set("positional-pseudo-selectors", "css/positional-pseudo-selectors");
     examples.set("hint-text-color", "css/hint-text-color");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
