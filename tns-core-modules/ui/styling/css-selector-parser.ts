@@ -48,15 +48,31 @@ export function isAttribute(sel: SimpleSelector): sel is AttributeSelector {
     return sel.type === "[]";
 }
 
-var regex = /(\s*)(?:(\*)|(#|\.|:|\b)([_-\w][_-\w\d]*)|\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\])(?:\s*(\+|~|>|\s))?/g;
+// var regex = /(\s*)(?:(\*)|(#|\.|:|\b)([_-\w][_-\w\d]*)|\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\])(?:\s*(\+|~|>|\s))?/g;
 // no lead ws     univ   type pref and ident          [    prop                   =                            ident    -or-    "string escapes \" \00aaff"    -or-   'string    escapes \' urf-8: \00aaff'       ]        combinator
+
+const spaceRegex = /(\s*)/
+const combinatorsRegex = /(?:\s*(\+|~|>|\s))?/
+
+const universalRegex = /(\*)/
+const selectorTypeRegex = /(#|\.|:|\b)/
+const selectorNameRegex = /([_-\w][_-\w\d]*)/
+const attributesRegex = /\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\]/
+
+const selectorRegex = `(?:${universalRegex.source}|${selectorTypeRegex.source}${selectorNameRegex.source}|${attributesRegex.source})`;
+
+const newRegex = new RegExp(
+    spaceRegex.source
+    + selectorRegex
+    + combinatorsRegex.source
+, 'g');
 
 export function parse(selector: string): SimpleSelector[] {
     let selectors: any[] = [];
 
     var result: RegExpExecArray;
-    var lastIndex = regex.lastIndex = 0;
-    while (result = regex.exec(selector)) {
+    var lastIndex = newRegex.lastIndex = 0;
+    while (result = newRegex.exec(selector)) {
         let pos = result.index;
         if (lastIndex !== pos) {
             throw new Error(`Unexpected characters at index, near: ${lastIndex}: ${result.input.substr(lastIndex, 32)}`);
@@ -64,7 +80,7 @@ export function parse(selector: string): SimpleSelector[] {
             throw new Error(`Last selector match got zero character result at index ${lastIndex}, near: ${result.input.substr(lastIndex, 32)}`);
         }
         pos += getLeadingWhiteSpace(result).length;
-        lastIndex = regex.lastIndex;
+        lastIndex = newRegex.lastIndex;
 
         var type = getType(result);
         let selector: SimpleSelector | SimpleIdentifierSelector | AttributeSelector;
