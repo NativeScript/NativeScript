@@ -14,28 +14,6 @@ interface Body {
     formData() : Promise<FormData>;
 }
 
-declare enum RequestMode { "same-origin", "no-cors", "cors" }
-declare enum RequestCredentials { "omit", "same-origin", "include" }
-declare enum RequestCache { "default", "no-store", "reload", "no-cache", "force-cache", "only-if-cached" }
-
-interface Blob {
-    readonly size: number;
-    readonly type: string;
-    msClose(): void;
-    msDetachStream(): any;
-    slice(start?: number, end?: number, contentType?: string): Blob;
-}
-
-declare var Blob: {
-    prototype: Blob;
-    new (blobParts?: any[], options?: BlobPropertyBag): Blob;
-}
-
-interface BlobPropertyBag {
-    type?: string;
-    endings?: string;
-}
-
 declare type HeaderInit = Headers|Array<string>;
 
 declare function fetch(url: string, init?: RequestInit): Promise<Response>;
