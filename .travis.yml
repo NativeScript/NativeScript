@@ -3,7 +3,7 @@ env:
   - DATE=$(date +%Y-%m-%d)
   - PACKAGE_VERSION=$DATE-$TRAVIS_BUILD_NUMBER
   - PACKAGE_NAME=tns-core-modules
-  - NODE_VERSION=5.10.1
+  - NODE_VERSION=6.9.4
   - EMULATOR_API_VER=21
     # HACK: revert to `next` runtime as soon as the console.log issue is fixed
   - RUNTIMEVERSION=2.5.0
@@ -15,7 +15,7 @@ addons:
 sudo: false
 language: android
 node_js:
-- 4.2.3
+- 6.9.4
 jdk:
 - oraclejdk8
 android:
