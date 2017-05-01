@@ -26,7 +26,6 @@ export class ViewModelWithPercentage extends ViewModelBase {
         }
     }
 
-
     public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
         let view = args.object;
         if (!PercentLength.equals(view.marginLeft, 105)) {
