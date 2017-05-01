@@ -34,11 +34,12 @@ export function pageLoaded(args: EventData) {
     examples.set("animeBG", "animations/background");
     examples.set("transitions", "transitions/page0");
     examples.set("segStyle", "segmented-bar/all");
-    examples.set("list-view", "list-view/list-view");
+    examples.set("list-view", "list-view/main-page");
     examples.set("issues", "issues/main-page");
     examples.set("page", "page/main-page");
 
     examples.set("perf", "perf/main-page");
+    examples.set("list-picker", "list-picker/main-page");
 
     //examples.set("listview_binding", "pages/listview_binding");
     //examples.set("textfield", "text-field/text-field");
