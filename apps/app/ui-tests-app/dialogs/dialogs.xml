@@ -5,6 +5,8 @@
     <Button text="alert" tap="{{ alertName }}" />
     <Button text="confirm" tap="{{ confirmName }}" />
     <Button text="login" tap="{{ loginName }}" />
-    <Button text="prompt" tap="{{ promptName }}" />  
+    <Button text="promptText" tap="{{ promptText }}" />
+    <Button text="promptPass" tap="{{ promptPass }}" />
+    <Button text="promptEmail" tap="{{ promptEmail }}" />   
   </StackLayout>
 </Page>
