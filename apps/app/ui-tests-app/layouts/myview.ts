@@ -1,164 +1,77 @@
-﻿import { LayoutBase, View, Observable, HorizontalAlignment, VerticalAlignment, Visibility} from "tns-core-modules/ui/layouts/layout-base";
+﻿import { View } from "tns-core-modules/ui/layouts/layout-base";
+import { ViewModelBase } from "./myview-base";
 
-export class ViewModel extends Observable {
+export class ViewModel extends ViewModelBase {
+
+    constructor() {
+        super();
+    }
 
     // View properties
     public onWidthHeight(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
         if (view.width !== 30) {
-            view.width = 30;
-            view.height = 50;
+            super.setWidthHeight(view, 105, 55);
         } else {
-            view.width = Number.NaN;
-            view.height = Number.NaN;
+            super.setWidthHeight(view, 0, 0);
         }
     }
 
     public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
         if (view.minWidth !== 105) {
-            view.minWidth = 105;
-            view.minHeight = 55;
+            super.setWidthHeight(view, 105, 55);
         } else {
-            view.minWidth = 0;
-            view.minHeight = 0;
+            super.setWidthHeight(view, 0, 0);
         }
     }
 
     public onMargins(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
         if (view.marginLeft !== 5) {
-            view.marginLeft = 5;
-            view.marginTop = 5;
-            view.marginRight = 5;
-            view.marginBottom = 5;
+            super.setMargins(view, 5, 5, 5, 5);
         } else {
-            view.marginLeft = 0;
-            view.marginTop = 0;
-            view.marginRight = 0;
-            view.marginBottom = 0;
-        }
-    }
-
-    public onAlignments(args: { eventName: string, object: any }): void {
-        var view: View = <View>args.object;
-        if (view.horizontalAlignment === "stretch") {
-            view.horizontalAlignment = "left";
-            view.verticalAlignment = "top";
-        } else if (view.horizontalAlignment === "left") {
-            view.horizontalAlignment = "center";
-            view.verticalAlignment = "middle";
-        } else if (view.horizontalAlignment === "center") {
-            view.horizontalAlignment = "right";
-            view.verticalAlignment = "bottom";
-        } else {
-            view.horizontalAlignment = "stretch";
-            view.verticalAlignment = "stretch";
-        }
-    }
-
-    public onCollapse(args: { eventName: string, object: any }): void {
-        var view: View = <View>args.object;
-        view.visibility = "collapse";
-    }
-
-    public onVisibile(args: { eventName: string, object: any }): void {
-        var view: View = <View>args.object;
-        var layout = <LayoutBase>view.parent;
-
-        var child = <View>layout.getViewById("collapse");
-        child.visibility = "visible";
-    }
-
-    // Layout properties
-    public onPaddings(args: { eventName: string, object: any }): void {
-        var layout = args.object.parent;
-        if (layout.paddingLeft !== 5) {
-            layout.paddingLeft = 5;
-            layout.paddingTop = 5;
-            layout.paddingRight = 5;
-            layout.paddingBottom = 5;
-        } else {
-            layout.paddingLeft = 0;
-            layout.paddingTop = 0;
-            layout.paddingRight = 0;
-            layout.paddingBottom = 0;
+            super.setMargins(view, 0, 0, 0, 0);
         }
     }
 
     public onAllProperties(args: { eventName: string, object: any }): void {
-        var child;
-        var layout = args.object.parent;
+        let child;
+        let layout = args.object.parent;
 
         // WidthHeight
         child = layout.getViewById("widthHeight");
         if (child.width !== 30) {
-            child.width = 30;
-            child.height = 50;
+            super.setWidthHeight(child, 30, 50);
         } else {
-            child.width = Number.NaN;
-            child.height = Number.NaN;
+            super.setWidthHeight(child, Number.NaN, Number.NaN);
         }
 
         // MinWidthMinHeight
         child = layout.getViewById("minWidthMinHeight");
         if (child.minWidth !== 105) {
-            child.minWidth = 105;
-            child.minHeight = 55;
+            super.setWidthHeight(child, 105, 55);
         } else {
-            child.minWidth = 0;
-            child.minHeight = 0;
+            super.setWidthHeight(child, 0, 0);
         }
-
         // Margins
         child = layout.getViewById("margins");
         if (child.marginLeft !== 5) {
-            child.marginLeft = 5;
-            child.marginTop = 5;
-            child.marginRight = 5;
-            child.marginBottom = 5;
+            super.setMargins(child, 5, 5, 5, 5);
         } else {
-            child.marginLeft = 0;
-            child.marginTop = 0;
-            child.marginRight = 0;
-            child.marginBottom = 0;
+            super.setMargins(child, 0, 0, 0, 0);
         }
 
         // Alignments
         child = layout.getViewById("alignments");
-        if (child.horizontalAlignment === HorizontalAlignment.STRETCH) {
-            child.horizontalAlignment = HorizontalAlignment.LEFT;
-            child.verticalAlignment = VerticalAlignment.TOP;
-        } else if (child.horizontalAlignment === HorizontalAlignment.LEFT) {
-            child.horizontalAlignment = HorizontalAlignment.CENTER;
-            child.verticalAlignment = VerticalAlignment.MIDDLE;
-        } else if (child.horizontalAlignment === HorizontalAlignment.CENTER) {
-            child.horizontalAlignment = HorizontalAlignment.RIGHT;
-            child.verticalAlignment = VerticalAlignment.BOTTOM;
-        } else {
-            child.horizontalAlignment = HorizontalAlignment.STRETCH;
-            child.verticalAlignment = VerticalAlignment.MIDDLE;
-        }
-
-        // Collapse
-        child = layout.getViewById("collapse");
-        if (child.visibility === Visibility.VISIBLE) {
-            child.visibility = Visibility.COLLAPSE;
-        } else {
-            child.visibility = Visibility.VISIBLE;
-        }
+        super.setAllPositioningProperties(child);
+        super.toggleVisibility(child);
 
         // Paddings
         if (layout.paddingLeft !== 5) {
-            layout.paddingLeft = 5;
-            layout.paddingTop = 5;
-            layout.paddingRight = 5;
-            layout.paddingBottom = 5;
+            super.setPaddings(layout, 5, 5, 5, 5);
         } else {
-            layout.paddingLeft = 0;
-            layout.paddingTop = 0;
-            layout.paddingRight = 0;
-            layout.paddingBottom = 0;
+            super.setPaddings(layout, 0, 0, 0, 0);
         }
     }
 }

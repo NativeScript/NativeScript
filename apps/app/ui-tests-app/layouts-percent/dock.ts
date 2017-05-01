@@ -3,7 +3,7 @@ import * as model from "./myview";
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <pageModule.Page>args.object;
-    page.bindingContext = new model.ViewModel();
+    page.bindingContext = new model.ViewModelWithPercentage();
 }
 
 export function onStretchLastChild(args: { eventName: string, object: any }) {
