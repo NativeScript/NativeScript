@@ -20,9 +20,9 @@ export class ViewModel extends ViewModelBase {
     public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
         var view: View = <View>args.object;
         if (view.minWidth !== 105) {
-            super.setWidthHeight(view, 105, 55);
+            super.setMinWidthHeight(view, 105, 55);
         } else {
-            super.setWidthHeight(view, 0, 0);
+            super.setMinWidthHeight(view, 0, 0);
         }
     }
 
@@ -50,9 +50,9 @@ export class ViewModel extends ViewModelBase {
         // MinWidthMinHeight
         child = layout.getViewById("minWidthMinHeight");
         if (child.minWidth !== 105) {
-            super.setWidthHeight(child, 105, 55);
+            super.setMinWidthHeight(child, 105, 55);
         } else {
-            super.setWidthHeight(child, 0, 0);
+            super.setMinWidthHeight(child, 0, 0);
         }
         // Margins
         child = layout.getViewById("margins");

@@ -26,6 +26,16 @@ export class ViewModelWithPercentage extends ViewModelBase {
         }
     }
 
+
+    public onMinWidthMinHeight(args: { eventName: string, object: any }): void {
+        let view = args.object;
+        if (!PercentLength.equals(view.marginLeft, 105)) {
+            super.setMinWidthHeight(view, 105, 55);
+        } else {
+            super.setMinWidthHeight(view, 0, 0);
+        }
+    }
+
     public onAllProperties(args: { eventName: string, object: any }): void {
         let child: any;
         let layout: any = args.object.parent;
@@ -41,9 +51,9 @@ export class ViewModelWithPercentage extends ViewModelBase {
         // MinWidthMinHeight
         child = <View>layout.getViewById("minWidthMinHeight");
         if (child.minWidth !== 105) {
-            super.setWidthHeight(child, 105, 55);
+            super.setMinWidthHeight(child, 105, 55);
         } else {
-            super.setWidthHeight(child, 0, 0);
+            super.setMinWidthHeight(child, 0, 0);
         }
 
         // Margins
