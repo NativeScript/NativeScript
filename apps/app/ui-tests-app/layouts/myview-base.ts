@@ -35,6 +35,11 @@ export class ViewModelBase extends Observable {
         child.height = height;
     }
 
+    protected setMinWidthHeight(child: any, minWidth: any, minHeight: any) {
+        child.minWidth = minWidth;
+        child.minHeight = minHeight;
+    }
+
     protected setMargins(child: any, marginLeft: any, marginTop: any, marginRight: any, marginBottom: any) {
         child.marginLeft = marginLeft;
         child.marginTop = marginTop;
