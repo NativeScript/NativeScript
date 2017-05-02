@@ -28,7 +28,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
         let value = this.src;
         let originalValue = value;
         let sync = this.loadMode === "sync";
-        if (typeof value === "string") {
+        if (typeof value === "string" || value instanceof String) {
             value = value.trim();
             this.imageSource = null;
             this["_url"] = value;
