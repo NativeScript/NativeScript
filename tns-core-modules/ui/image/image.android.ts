@@ -66,17 +66,18 @@ export class Image extends ImageBase {
     }
 
     public _createImageSourceFromSrc() {
-        let imageView = this.nativeView;
-        if (imageView) {
-            imageView.setUri(null, 0, 0, false, true);
-        }
-
-        if (!imageView || !this.src) {
+        const imageView = this.nativeView;
+        if (!imageView) {
             return;
         }
 
         let value = this.src;
-        let async = this.loadMode === ASYNC;
+        if (!value) {
+            imageView.setUri(null, 0, 0, false, true);
+            return;
+        }
+
+        const async = this.loadMode === ASYNC;
 
         if (typeof value === "string" || value instanceof String) {
             value = value.trim();
