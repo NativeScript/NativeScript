@@ -1,6 +1,32 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 3.0.0 (2017, May 03)
+
+### BREAKING CHANGES
+
+A full list of breaking changes could be found [here](https://github.com/NativeScript/NativeScript/blob/v3.0.0/Modules30Changes.md).
+
+### Fixed
+- [(# 3941)](https://github.com/NativeScript/NativeScript/issues/3941) JS: Error: Failed to apply property [color] ... Invalid color: inherit
+- [(# 3898)](https://github.com/NativeScript/NativeScript/issues/3898) IOS: http-request header User-Agent always reports iOS 6
+- [(# 3775)](https://github.com/NativeScript/NativeScript/issues/3775) IOS: Slide page transition causes "snap" behaviour
+- [(# 3654)](https://github.com/NativeScript/NativeScript/issues/3654) IOS: Button text disappears with "swipe left" gesture
+- [(# 3584)](https://github.com/NativeScript/NativeScript/issues/3584) IOS: TextView hint din't display numeric
+- [(# 3221)](https://github.com/NativeScript/NativeScript/issues/3221) IOS: Applying class to secure TextField randomly change it's font-size
+- [(# 3538)](https://github.com/NativeScript/NativeScript/issues/3538) Page navigation with whole page 'background-image' is very slow
+- [(# 3153)](https://github.com/NativeScript/NativeScript/issues/3153) Out of Memory Issues still in 2.4
+- [(# 3058)](https://github.com/NativeScript/NativeScript/issues/3058) Image is broken in Empty cases
+- [(# 2985)](https://github.com/NativeScript/NativeScript/issues/2985) Listpicker width does not compute properly
+- [(# 2724)](https://github.com/NativeScript/NativeScript/issues/2724) tns-platform-declarations 2.3.0 ERROR on build [iOS]
+- [(# 2095)](https://github.com/NativeScript/NativeScript/issues/2095) declarations.*.d.ts files missing from published package
+
+### New
+- [(# 3889)](https://github.com/NativeScript/NativeScript/issues/3889) Add support for both 'focusLost' and 'textChanged' events for Text input (or) add a focusLost/blur Event
+- [(# 3872)](https://github.com/NativeScript/NativeScript/issues/3872) Can't load a local HTML file with querystring via WebView.src (WebView.url works but is removed)
+- [(# 3118)](https://github.com/NativeScript/NativeScript/issues/3118) Feature: New Dialog-Prompt-Input-Type for E-Mails
+- [(# 3642)](https://github.com/NativeScript/NativeScript/issues/3642) BREAKING: Make typings compatible with DOM and Node typings
+
 ## 2.5.2 (2017, March 21)
 
 ### Fixed
