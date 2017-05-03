@@ -6,9 +6,7 @@ import { WebView } from "ui/web-view";
 import { isAndroid } from "platform"
 
 export function navigatingTo(args: EventData) {
-
     let page = <Page>args.object;
-
     page.bindingContext = new HelloWorldModel();
 }
 
