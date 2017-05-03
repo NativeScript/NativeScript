@@ -53,7 +53,11 @@ function onFragmentShown(fragment: android.app.Fragment) {
 
     const isBack = currentNavigationContext ? currentNavigationContext.isBackNavigation : false;
 
-    frame._addView(page);
+    // When cachePagesOnNavigate is true and activity is recreated
+    // we add pages to frame in fragment.onCreateView so no need to add them again.
+    if (page.parent !== frame) {
+        frame._addView(page);
+    }
 
     // onFragmentShown is called before NativeActivity.start where we call frame.onLoaded
     // We need to call frame.onLoaded() here so that the call to frame._addView(page) will emit the page.loaded event
