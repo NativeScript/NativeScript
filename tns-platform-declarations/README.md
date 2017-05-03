@@ -9,23 +9,23 @@ consider using TypeScript 2.0.3 or newer,
 and the following settings in your `tsconfig.json`:
 ```
 {
-    "compilerOptions": {
-        "module": "commonjs",
-        "target": "es5",
-        "experimentalDecorators": true,
-        "lib": [
-            "es2016"
-        ]
-    }
+  "compilerOptions": {
+    ...
+    "lib": ["es6", "dom"],
+    "baseUrl": ".",
+    "paths": {
+    "*": [
+      "./node_modules/tns-core-modules/*",
+      "./node_modules/*"]
+  }
 }
 ```
 
-And modify the content of `reference.d.ts` as follows:
+Projects created with NativeScript 3.0.0 will be shipped without `reference.d.ts`.
+Create `reference.d.ts` in the root directory of your project and add the following:
 ```
-/// <reference path="./node_modules/tns-core-modules/tns-core-modules.es2016.d.ts" />
-
-/// <reference path="./node_modules/tns-platform-declarations/ios.d.ts" />
-/// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
+/// <reference path="node_modules/tns-platform-declarations/android.d.ts" />
+/// <reference path="node_modules/tns-platform-declarations/ios.d.ts" />
 ```
 
 d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option to tsconfig file.
