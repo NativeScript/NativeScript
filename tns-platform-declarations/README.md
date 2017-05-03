@@ -1,11 +1,11 @@
 This plugin contains type information about the native platforms as exposed by the NativeScript framework.
 
-Offically supported entry points:
+Officially supported entry points:
  - `android.d.ts` - For android SDK and runtime types.
  - `ios.d.ts` - For iOS SDK and runtime types.
 
 Using the declarations may conflict with DOM typings,
-consider using TypeScript 2.0.3 or newer,
+consider using TypeScript 2.2.x or newer,
 and the following settings in your `tsconfig.json`:
 ```
 {
