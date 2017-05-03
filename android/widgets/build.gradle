@@ -20,7 +20,7 @@ def computeBuildToolsVersion() {
         return buildToolsVersion
     }
     else {
-        return "23.0.3"
+        return "25.0.2"
     }
 }
 
@@ -67,6 +67,6 @@ task copyAar << {
     }
 }
 
-assembleRelease.dependsOn(cleanBuildDir)
-copyAar.dependsOn(assembleRelease)
+assemble.dependsOn(cleanBuildDir)
+copyAar.dependsOn(assemble)
 build.dependsOn(copyAar)

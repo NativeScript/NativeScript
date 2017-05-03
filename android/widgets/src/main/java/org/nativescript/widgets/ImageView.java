@@ -167,6 +167,14 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
         mDecodeHeight = decodeHeight;
         mUseCache = useCache;
         mAsync = async;
+
+        // Clear current bitmap only if we set empty URI.
+        // We support settimg bitmap through ImageSource (e.g. Bitmap).
+        if (uri == null || uri.trim() == "") {
+            this.setImageBitmap(null);
+        }
+
+        // Begin loading image only if we are attached to window.
         if (mAttachedToWindow) {
             loadImage();
         }
@@ -181,8 +189,6 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
         if (mUri != null && fetcher != null) {
             // Get the Bitmap from cache.
             fetcher.loadImage(mUri, this, mDecodeWidth, mDecodeHeight, mUseCache, mAsync, mListener);
-        } else {
-            this.setImageBitmap(null);
         }
     }
 
