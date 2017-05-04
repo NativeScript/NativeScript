@@ -24,8 +24,8 @@ and the following settings in your `tsconfig.json`:
 Projects created with NativeScript 3.0.0 will be shipped without `references.d.ts`.
 Create `references.d.ts` in the root directory of your project and add the following:
 ```
-/// <reference path="node_modules/tns-platform-declarations/android.d.ts" />
-/// <reference path="node_modules/tns-platform-declarations/ios.d.ts" />
+/// <reference path="./node_modules/tns-platform-declarations/android.d.ts" />
+/// <reference path="./node_modules/tns-platform-declarations/ios.d.ts" />
 ```
 
 d.ts files require a lot of memory and CPU. Consider adding skipLibCheck option to tsconfig file.
