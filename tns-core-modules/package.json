@@ -24,7 +24,7 @@
   "license": "Apache-2.0",
   "typings": "tns-core-modules.d.ts",
   "dependencies": {
-    "tns-core-modules-widgets": "internal-preview"
+    "tns-core-modules-widgets": "next"
   },
   "devDependencies": {
     "@types/node": "~7.0.5",

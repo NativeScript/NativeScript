@@ -60,7 +60,7 @@ before_deploy:
 - cd $PACKAGE_NAME
 - rm ../.deploymentpackage
 - mv ../build ./
-- node ./build/travis-scripts/add-publishConfig.js internal-preview
+- node ./build/travis-scripts/add-publishConfig.js next
 deploy:
   provider: npm
   email: nativescript@telerik.com
