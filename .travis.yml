@@ -5,8 +5,7 @@ env:
   - PACKAGE_NAME=tns-core-modules
   - NODE_VERSION=6.9.4
   - EMULATOR_API_VER=21
-    # HACK: revert to `next` runtime as soon as the console.log issue is fixed
-  - RUNTIMEVERSION=2.5.0
+  - RUNTIMEVERSION=next
   - AVD_NAME=Arm$EMULATOR_API_VER
 addons:
   artifacts:
