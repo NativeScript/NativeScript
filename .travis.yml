@@ -15,7 +15,7 @@ before_script:
 script: ./build.sh $PACKAGE_VERSION
 before_deploy:
   - cd ./dist/package/
-  - node ../../.travis/add-publishConfig.js internal-preview
+  - node ../../.travis/add-publishConfig.js next
 deploy:
   skip_cleanup: true
   provider: npm
