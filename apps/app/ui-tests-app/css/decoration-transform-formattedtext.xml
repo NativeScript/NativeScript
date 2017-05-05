@@ -1,8 +1,8 @@
 ﻿<Page>
     <StackLayout>
     
-      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;" />
-      <Label style="text-transform: uppercase; text-decoration: underline line-through;">
+      <Label autocorrect="false" text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <Label autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -12,7 +12,7 @@
           </FormattedString>
         </Label.formattedText>
       </Label>
-      <Label>
+      <Label autocorrect="false" >
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -24,7 +24,7 @@
       </Label>
 
       <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;" />
-      <Button style="text-transform: uppercase; text-decoration: underline line-through;">
+      <Button autocorrect="false"  style="text-transform: uppercase; text-decoration: underline line-through;">
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -34,7 +34,7 @@
           </FormattedString>
         </Button.formattedText>
       </Button>
-      <Button>
+      <Button autocorrect="false" >
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -45,8 +45,8 @@
         </Button.formattedText>
       </Button>
 
-      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through;" />
-      <TextField style="text-transform: uppercase; text-decoration: underline line-through;">
+      <TextField autocorrect="false" text="textField" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <TextField autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
         <TextField.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -56,7 +56,7 @@
           </FormattedString>
         </TextField.formattedText>
       </TextField>
-      <TextField>
+      <TextField autocorrect="false">
         <TextField.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -67,8 +67,8 @@
         </TextField.formattedText>
       </TextField>
 
-      <TextView text="textView" style="text-transform: uppercase; text-decoration: underline line-through;" />
-      <TextView style="text-transform: uppercase; text-decoration: underline line-through;">
+      <TextView autocorrect="false" text="textView" style="text-transform: uppercase; text-decoration: underline line-through;" />
+      <TextView autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;">
         <TextView.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -78,7 +78,7 @@
           </FormattedString>
         </TextView.formattedText>
       </TextView>
-      <TextView>
+      <TextView autocorrect="false">
         <TextView.formattedText>
           <FormattedString>
             <FormattedString.spans>

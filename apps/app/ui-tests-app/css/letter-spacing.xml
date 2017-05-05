@@ -2,15 +2,15 @@
   <ScrollView>
     <StackLayout>
       <WrapLayout>
-        <Label text="labelLabel" style="letter-spacing: -0.1;" />
-        <Label text="labelLabel" style="letter-spacing: 0;" />
-        <Label text="labelLabel" style="letter-spacing: 0.1;" />
+        <Label text="labelLabel" autocorrect="false" style="letter-spacing: -0.1;" />
+        <Label text="labelLabel" autocorrect="false" style="letter-spacing: 0;" />
+        <Label text="labelLabel" autocorrect="false" style="letter-spacing: 0.1;" />
         <Label>
             <Span text="just bold" fontWeight="bold" />
         </Label>
       </WrapLayout>
-      <Label text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
-      <Label style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+      <Label autocorrect="false" text="labelLabel" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <Label autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <Label.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -21,13 +21,13 @@
         </Label.formattedText>
       </Label>
       <WrapLayout>
-        <Button text="buttonButton" style="letter-spacing: -0.1;" />
-        <Button text="buttonButton" style="letter-spacing: 0;" />
-        <Button text="buttonButton" style="letter-spacing: 0.1;" />
+        <Button text="buttonButton" autocorrect="false" style="letter-spacing: -0.1;" />
+        <Button text="buttonButton" autocorrect="false" style="letter-spacing: 0;" />
+        <Button text="buttonButton" autocorrect="false" style="letter-spacing: 0.1;" />
       </WrapLayout>
-      <Button text="buttonButton" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <Button text="buttonButton" autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
       <!--<android>-->
-      <Button style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+      <Button autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <Button.formattedText>
           <FormattedString>
             <FormattedString.spans>
@@ -43,9 +43,9 @@
         <TextField text="textField" autocorrect="false" style="letter-spacing: 0;" />
         <TextField text="textField" autocorrect="false" style="letter-spacing: 0.1;" />
       </WrapLayout>
-      <TextField text="textField" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
+      <TextField text="textField" autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;" />
       <!--<android>-->
-      <TextField autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
+      <TextField autocorrect="false" autocorrect="false" style="text-transform: uppercase; text-decoration: underline line-through;letter-spacing: 0.1;">
         <TextField.formattedText>
           <FormattedString>
             <FormattedString.spans>
