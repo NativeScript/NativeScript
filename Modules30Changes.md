@@ -5,7 +5,7 @@
 We are moving the modules closer to ES6 standard. This introduces few limitations. One of them is modules can no longer export variable, in such cases variables were replaced with get/set functions.
 
 ## TypeScript
-TypeScript projects need to reference the **ES6 and DOM libraries**. Add this to your tsconfig.json:
+TypeScript projects need **TypeScript 2.2** or newer to transpile. You also need to reference the **ES6 and DOM libraries**. Add this to your `tsconfig.json`:
 
 ``` json
 {
