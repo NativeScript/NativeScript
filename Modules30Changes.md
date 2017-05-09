@@ -14,9 +14,10 @@ TypeScript projects need to reference the **ES6 and DOM libraries**. Add this to
     "lib": ["es6", "dom"],
     "baseUrl": ".",
     "paths": {
-    "*": [
-      "./node_modules/tns-core-modules/*",
-      "./node_modules/*"]
+      "*": [
+        "./node_modules/tns-core-modules/*",
+        "./node_modules/*"]
+    }
   }
 }
 ```
