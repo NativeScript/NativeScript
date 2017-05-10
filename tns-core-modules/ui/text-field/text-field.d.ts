@@ -1,7 +1,6 @@
 ﻿/**
- * @module "ui/text-base"
- * 
  * Contains the TextField class, which represents an editable single-line box.
+ * @module "ui/text-base"
  */ /** */
 
 import { EditableTextBase, Property } from "../editable-text-base";

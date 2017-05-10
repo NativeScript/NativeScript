@@ -1,7 +1,6 @@
 ﻿/**
- * @module "connectivity"
- * 
  * Contains connectivity utility methods.
+ * @module "connectivity"
  */ /** */
 
 /**

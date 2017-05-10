@@ -1,7 +1,6 @@
 ﻿/**
- * @module "application"
- * 
  * Contains the application abstraction with all related methods.
+ * @module "application"
  */ /** */
 
 ///<reference path="../tns-core-modules.d.ts" /> Include global typings

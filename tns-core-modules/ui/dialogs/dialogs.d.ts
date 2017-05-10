@@ -1,7 +1,6 @@
 ﻿/**
- * @module "ui/dialogs"
- * 
  * Allows you to show different dialogs such as alerts, prompts, etc.
+ * @module "ui/dialogs"
  */ /** */
 
 /**

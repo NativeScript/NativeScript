@@ -1,7 +1,6 @@
 ﻿/**
- * @module "timer"
- * 
  * Allows you to create, start, stop and react to timers.
+ * @module "timer"
  */ /** */
 
 /**
