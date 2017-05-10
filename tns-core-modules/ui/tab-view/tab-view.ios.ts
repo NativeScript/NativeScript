@@ -119,6 +119,10 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
     }
 }
 
+function updateItemIconPosition(tabBarItem: UITabBarItem): void {
+    tabBarItem.imageInsets = new UIEdgeInsets({top: 6, left: 0, bottom: -6, right: 0});
+}
+
 export class TabViewItem extends TabViewItemBase {
     private _iosViewController: UIViewController;
 
@@ -144,6 +148,9 @@ export class TabViewItem extends TabViewItemBase {
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
+            }
+            else if (!title) {
+                updateItemIconPosition(tabBarItem);
             }
 
             // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
@@ -272,6 +279,10 @@ export class TabView extends TabViewBase {
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
             }
+            else if (!item.title) {
+                updateItemIconPosition(tabBarItem);
+            }
+
             applyStatesToItem(tabBarItem, states);
 
             newController.tabBarItem = tabBarItem;
