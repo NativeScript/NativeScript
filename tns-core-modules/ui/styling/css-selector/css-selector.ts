@@ -45,6 +45,17 @@ namespace Match {
     export var Static = false;
 }
 
+function getNodeDirectSibling(node): null | Node {
+    if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) {
+        return null;
+    }
+    const nodeIndex = node.parent.getChildIndex(node);
+    if (nodeIndex === 0) {
+        return null;
+    }
+    return node.parent.getChildAt(nodeIndex - 1);
+}
+
 function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: boolean = false): ClassDecorator {
     return cls => {
         cls.prototype.specificity = specificity;
@@ -229,21 +240,27 @@ export class Selector extends SelectorCore {
 
     constructor(public selectors: SimpleSelector[]) {
         super();
-        let lastGroup: SimpleSelector[];
-        let groups: SimpleSelector[][] = [];
+        const supportedCombinator = [undefined, " ", ">", "+"];
+        let siblingGroup: SimpleSelector[];
+        let lastGroup: SimpleSelector[][];
+        let groups: SimpleSelector[][][] = [];
         selectors.reverse().forEach(sel => {
-            switch(sel.combinator) {
-                case undefined:
-                case " ":
-                    groups.push(lastGroup = []);
-                case ">":
-                    lastGroup.push(sel);
-                    break;
-                default:
-                    throw new Error(`Unsupported combinator "${sel.combinator}".`);
+            if (supportedCombinator.indexOf(sel.combinator) === -1) {
+                throw new Error(`Unsupported combinator "${sel.combinator}".`);
             }
+            if (sel.combinator === undefined || sel.combinator === " ") {
+                groups.push(lastGroup = [siblingGroup = []]);
+            }
+            if (sel.combinator === ">") {
+                lastGroup.push(siblingGroup = []);
+            }
+            siblingGroup.push(sel);
         });
-        this.groups = groups.map(g => new Selector.ChildGroup(g));
+        this.groups = groups.map(g =>
+            new Selector.ChildGroup(g.map(sg =>
+                new Selector.SiblingGroup(sg)
+            ))
+        );
         this.last = selectors[0];
         this.specificity = selectors.reduce((sum, sel) => sel.specificity + sum, 0);
         this.dynamic = selectors.some(sel => sel.dynamic);
@@ -329,20 +346,39 @@ export namespace Selector {
     export class ChildGroup {
         public dynamic: boolean;
 
+        constructor(private selectors: SiblingGroup[]) {
+            this.dynamic = selectors.some(sel => sel.dynamic);
+        }
+
+        public match(node: Node): Node {
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && !!sel.match(node)) ? node : null;
+        }
+
+        public mayMatch(node: Node): Node {
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && !!sel.mayMatch(node)) ? node : null;
+        }
+
+        public trackChanges(node: Node, map: ChangeAccumulator) {
+            this.selectors.forEach((sel, i) => (i === 0 ? node : node = node.parent) && sel.trackChanges(node, map));
+        }
+    }
+    export class SiblingGroup {
+        public dynamic: boolean;
+
         constructor(private selectors: SimpleSelector[]) {
             this.dynamic = selectors.some(sel => sel.dynamic);
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = node.parent) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (i === 0 ? node : node = node.parent) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.trackChanges(node, map));
         }
     }
     export interface Bound {
@@ -381,7 +417,6 @@ function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | 
 
         let selectors = ast.map(createSimpleSelector);
         let sequences: (SimpleSelector | SimpleSelectorSequence)[] = [];
-
         // Join simple selectors into sequences, set combinators
         for (let seqStart = 0, seqEnd = 0, last = selectors.length - 1; seqEnd <= last; seqEnd++) {
             let sel = selectors[seqEnd];

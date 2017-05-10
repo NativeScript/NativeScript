@@ -15,6 +15,8 @@ export interface Node {
     cssType?: string;
     cssClasses?: Set<string>;
     cssPseudoClasses?: Set<string>;
+    getChildIndex?(node: Node): number
+    getChildAt?(index: number): Node
 }
 
 export interface Declaration {
