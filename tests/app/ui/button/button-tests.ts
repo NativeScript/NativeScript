@@ -78,7 +78,7 @@ var _createButtonFunc = function (): buttonModule.Button {
     // >>button-create
     var button = new buttonModule.Button();
     // << button-create
-    button.text = "Button";  
+    button.text = "Button";
     return button;
 }
 
@@ -370,5 +370,23 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
         TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
+    });
+}
+
+// Reported in https://github.com/NativeScript/NativeScript/issues/4109
+export function test_setting_formattedText_With_UnknownFont_DoesNotCrash() {
+    let btn = new buttonModule.Button();
+    btn.style.fontFamily = "_UnknownFont";
+
+    helper.buildUIAndRunTest(btn, function (views) {
+        TKUnit.waitUntilReady(() => { return btn.isLayoutValid; });
+
+        let span = new spanModule.Span();
+        span.text = "Login";
+        let formattedString = new formattedStringModule.FormattedString();
+        formattedString.spans.push(span);
+        btn.formattedText = formattedString;
+
+        TKUnit.waitUntilReady(() => { return btn.isLayoutValid; });
     });
 }
