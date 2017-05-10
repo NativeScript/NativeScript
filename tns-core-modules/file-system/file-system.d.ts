@@ -1,7 +1,6 @@
 ﻿/**
- * @module "file-system"
- * 
  * Provides high-level abstractions for file system entities such as files, folders, known folders, paths, separators, etc.
+ * @module "file-system"
  */ /** */
 
 /**

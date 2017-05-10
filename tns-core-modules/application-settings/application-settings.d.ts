@@ -1,7 +1,6 @@
 ﻿/**
- * @module "application-settings"
- * 
  * Allows you to save and restore any kind of information related to your application.
+ * @module "application-settings"
  */ /** */
 
 /**

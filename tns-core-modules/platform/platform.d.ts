@@ -1,7 +1,6 @@
 ﻿/**
- * @module "platform"
- * 
  * Contains all kinds of information about the device, its operating system and software.
+ * @module "platform"
  */ /** */
 
 /* tslint:disable:class-name */

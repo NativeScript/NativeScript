@@ -1,7 +1,6 @@
 ﻿/**
- * @module "data/virtual-array"
- * 
  * Contains the VirtualArray class, which is an advanced array like class that helps loading items on demand.
+ * @module "data/virtual-array"
  */ /** */
 
 import * as observable from "../observable";

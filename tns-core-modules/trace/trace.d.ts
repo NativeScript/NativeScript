@@ -1,7 +1,6 @@
 ﻿/**
- * @module "trace"
- * 
  * Allows you to trace and print specific information based on categories.
+ * @module "trace"
  */ /** */
 
 /**

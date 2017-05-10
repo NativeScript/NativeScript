@@ -57,7 +57,7 @@
     "test-watch-android": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync android --path tests --watch\"",
     "test-watch-ios": "npm run pretest && concurrently --kill-others \"npm run tsc-tiw\" \"tns livesync ios --path tests --watch\"",
     "prepublish": "echo \"Development reminder: npm run setup\n\"",
-    "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern tns-core-modules/module.d.ts tns-core-modules/tns-core-modules.d.ts",
+    "typedoc": "typedoc --tsconfig tsconfig.typedoc.json --out bin/dist/apiref --includeDeclarations --name NativeScript --theme ./node_modules/nativescript-typedoc-theme --excludeExternals --externalPattern \"**/+(tns-core-modules|module).d.ts\"",
     "dev-typedoc": "npm run typedoc && cd bin/dist/apiref && http-server",
     "test-tsc-es2016": "npm run tsc -- -p tsconfig.public.es2016.json",
     "tslint": "tslint --config build/tslint.json 'tns-core-modules/**/*.ts' 'tests/**/*.ts' 'apps/**/*.ts' -e '**/node_modules/**' -e '**/platforms/**'"
