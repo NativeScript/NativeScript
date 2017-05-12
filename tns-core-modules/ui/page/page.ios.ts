@@ -343,7 +343,7 @@ export class Page extends PageBase {
 
     public requestLayout(): void {
         super.requestLayout();
-        if (!this.parent && this.ios && this.nativeView) {
+        if ((!this.parent || this._modalParent) && this.ios && this.nativeView) {
             this.nativeView.setNeedsLayout();
         }
     }
