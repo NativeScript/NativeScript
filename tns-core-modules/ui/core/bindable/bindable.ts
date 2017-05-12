@@ -24,26 +24,33 @@ const contextKey = "context";
 const paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
 const bc = bindingConstants;
 const emptyArray = [];
+const propertiesCache = {};
 
 function getProperties(property: string): Array<string> {
-    let result: Array<string> = emptyArray;
-    if (property) {
-        // first replace all '$parents[..]' with a safe string
-        // second removes all ] since they are not important for property access and not needed 
-        // then split properties either on '.' or '['
-        const parentsMatches = property.match(parentsRegex);
-        result = property.replace(parentsRegex, "parentsMatch")
-            .replace(/\]/g, "")
-            .split(/\.|\[/);
-
-        let parentsMatchesCounter = 0;
-        for (let i = 0, resultLength = result.length; i < resultLength; i++) {
-            if (result[i] === "parentsMatch") {
-                result[i] = parentsMatches[parentsMatchesCounter++];
-            }
-        }
+    if (!property) {
+        return emptyArray;
     }
 
+    let result: Array<string> = propertiesCache[property];
+    if (result) {
+        return result;
+    }
+
+    // first replace all '$parents[..]' with a safe string
+    // second removes all ] since they are not important for property access and not needed 
+    // then split properties either on '.' or '['
+    const parentsMatches = property.match(parentsRegex);
+    result = property.replace(parentsRegex, "parentsMatch")
+        .replace(/\]/g, "")
+        .split(/\.|\[/);
+
+    let parentsMatchesCounter = 0;
+    for (let i = 0, resultLength = result.length; i < resultLength; i++) {
+        if (result[i] === "parentsMatch") {
+            result[i] = parentsMatches[parentsMatchesCounter++];
+        }
+    }
+    propertiesCache[property] = result;
     return result;
 }
 
