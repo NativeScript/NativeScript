@@ -31,6 +31,9 @@ export function isRunningOnEmulator(): boolean {
 
 export var allTests = {};
 
+import * as profilingTests from "./profiling/profiling-tests";
+allTests["PROFILING"] = profilingTests;
+
 import * as platformTests from "./platform/platform-tests";
 allTests["PLATFORM"] = platformTests;
 
