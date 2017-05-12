@@ -603,9 +603,12 @@ function test_native_font(style: "normal" | "italic", weight: "100" | "200" | "3
         fontNameSuffix += "Italic";
     }
 
-    if (testView.ios) {
-        TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.font.fontName.toLowerCase(), (fontName + "-" + fontNameSuffix).toLowerCase(), "native font " + weight + " " + style);
-    }
+    helper.buildUIAndRunTest(testView, function (views: Array<View>) {
+        if (isIOS) {
+            TKUnit.assertEqual((<UIButton>testView.ios).titleLabel.font.fontName.toLowerCase(), (fontName + "-" + fontNameSuffix).toLowerCase(), "native font " + weight + " " + style);
+        }
+    });
+
     //TODO: If needed add tests for other platforms
 }
 

@@ -214,6 +214,7 @@ export class TabViewItem extends TabViewItemBase {
 
     public setNativeView(textView: android.widget.TextView): void {
         this.nativeView = textView;
+        this._nativeViewCreated = !!textView;
         if (textView) {
             initNativeView(this);
         }

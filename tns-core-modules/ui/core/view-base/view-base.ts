@@ -176,6 +176,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     _oldRight: number;
     _oldBottom: number;
 
+    _nativeViewCreated: boolean;
+
     public effectiveMinWidth: number;
     public effectiveMinHeight: number;
     public effectiveWidth: number;
@@ -681,18 +683,16 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                 this.nativeView = this._iosView = nativeView;
             }
         }
-
         this.initNativeView();
+
+        this._nativeViewCreated = !!this.nativeView;
+        if (this._nativeViewCreated) {
+            initNativeView(this);
+        }
 
         if (this.parent) {
             let nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
             this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
-        }
-
-        if (this.nativeView) {
-            if (currentNativeView !== this.nativeView) {
-                initNativeView(this);
-            }
         }
 
         this.eachChild((child) => {
@@ -731,6 +731,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         this.disposeNativeView();
+
+        this._nativeViewCreated = false;
 
         if (isAndroid) {
             this.nativeView = null;
@@ -865,6 +867,7 @@ ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
 
 ViewBase.prototype._batchUpdateScope = 0;
+ViewBase.prototype._nativeViewCreated = false;
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);
