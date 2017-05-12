@@ -53,7 +53,7 @@ export declare function stop(name: string): TimerInfo;
  * Works only if profiling is enabled.
  * @param name Name of the timer which will be used for method calls. If not provided - the name of the method will be used.
  */
-export declare function profile(name?: string): (target, key, descriptor) => void;
+export declare function profile(name?: string): MethodDecorator;
 
 /**
  * Prints the timer for all methods instrumented with profile decorator.

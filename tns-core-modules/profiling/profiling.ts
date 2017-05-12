@@ -49,9 +49,8 @@ export function start(name: string): void {
         return;
     }
 
-    let info: TimerInfo;
-    if (timers.has(name)) {
-        info = timers.get(name);
+    let info = timers.get(name);
+    if (info) {
         if (info.isRunning) {
             throw new Error(`Timer already running: ${name}`);
         }
@@ -107,11 +106,10 @@ function pauseInternal(name: string): TimerInfo {
     return info;
 }
 
-export function profile(name?: string): (target, key, descriptor) => void {
+export function profile(name?: string): MethodDecorator {
     return (target, key, descriptor) => {
         if (!ENABLED) {
-            // Return the original descriptor if not enabled
-            return descriptor;
+            return;
         }
 
         // save a reference to the original method this way we keep the values currently in the
