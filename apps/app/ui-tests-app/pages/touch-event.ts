@@ -2,21 +2,21 @@
 import * as gestures from "tns-core-modules/ui/gestures";
 
 export function onTouch(args: gestures.TouchGestureEventData) {
-    var msg = " touch action: " + args.action +
+    let msg = " touch action: " + args.action +
         " x: " + Math.round(args.getX()) + " y: " + Math.round(args.getY()) +
         " count: " + args.getPointerCount();
 
-    var p;
+    let p;
     msg += " ACTIVE: ";
-    var pointers = args.getActivePointers();
-    for (var index = 0; index < pointers.length; index++) {
+    let pointers = args.getActivePointers();
+    for (let index = 0; index < pointers.length; index++) {
         p = pointers[index];
         msg += " p" + index + "[" + Math.round(p.getX()) + ", " + Math.round(p.getY()) + "]"
     }
 
     msg += " ALL: ";
     pointers = args.getAllPointers();
-    for (var index = 0; index < pointers.length; index++) {
+    for (let index = 0; index < pointers.length; index++) {
         p = pointers[index];
         msg += " p" + index + "[" + Math.round(p.getX()) + ", " + Math.round(p.getY()) + "]"
     }
