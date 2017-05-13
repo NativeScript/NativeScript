@@ -19,7 +19,7 @@ const bodies = [
 const items = [];
 for (var i = 0; i < 64; i++) {
     items.push({
-        icon: "~/ui-tests-app/flexbox/icons/icon" + (1 + (i % 3)) + ".jpg",
+        icon: "~/perf-app/icons/icon" + (1 + (i % 3)) + ".jpg",
         title: titles[i % titles.length],
         body: bodies[i % bodies.length],
         up: (i * 991) % 100,
