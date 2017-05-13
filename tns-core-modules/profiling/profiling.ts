@@ -11,11 +11,13 @@ interface TimerInfo extends TimerInfoDefinition {
     isRunning: boolean;
 }
 
-let anyGlobal = <any>global;
+// Use object instead of map as it is a bit faster
+const timers: { [ index: string ]: TimerInfo } = {};
+const anyGlobal = <any>global;
+const profileNames: string[] = [];
+
 let ENABLED = true;
 let nativeTimeFunc: () => number;
-let profileNames: string[] = [];
-let timers = new Map<string, TimerInfo>();
 
 export function enable() {
     ENABLED = true;
@@ -49,7 +51,8 @@ export function start(name: string): void {
         return;
     }
 
-    let info = timers.get(name);
+    let info = timers[ name ];
+
     if (info) {
         if (info.isRunning) {
             throw new Error(`Timer already running: ${name}`);
@@ -63,7 +66,7 @@ export function start(name: string): void {
             currentStart: time(),
             isRunning: true
         };
-        timers.set(name, info);
+        timers[ name ] = info;
     }
 }
 
@@ -85,17 +88,18 @@ export function stop(name: string): TimerInfo {
     let info = pauseInternal(name);
     console.log(`---- [${name}] STOP total: ${info.totalTime} count:${info.count}`);
 
-    timers.delete(name);
+    timers[ name ] = undefined;
     return info;
 }
 
 export function isRunning(name: string): boolean {
-    const info = timers.get(name);
+    const info = timers[ name ];
     return !!(info && info.isRunning);
 }
 
 function pauseInternal(name: string): TimerInfo {
-    const info = timers.get(name);
+    const info = timers[ name ];
+
     if (!info) {
         throw new Error(`No timer started: ${name}`);
     }
@@ -147,7 +151,8 @@ export function profile(name?: string): MethodDecorator {
 
 export function dumpProfiles(): void {
     profileNames.forEach(function (name) {
-        let info = timers.get(name);
+        const info = timers[ name ];
+
         if (info) {
             console.log("---- [" + name + "] STOP total: " + info.totalTime + " count:" + info.count);
         }
