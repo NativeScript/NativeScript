@@ -89,14 +89,19 @@ export function stop(name: string): TimerInfo {
     return info;
 }
 
+export function isRunning(name: string): boolean {
+    const info = timers.get(name);
+    return !!(info && info.isRunning);
+}
+
 function pauseInternal(name: string): TimerInfo {
-    let info = timers.get(name);
+    const info = timers.get(name);
     if (!info) {
         throw new Error(`No timer started: ${name}`);
     }
 
     if (info.isRunning) {
-        info.lastTime = Math.round(time() - info.currentStart);
+        info.lastTime = time() - info.currentStart;
         info.totalTime += info.lastTime;
         info.count++;
         info.currentStart = 0;
@@ -128,12 +133,11 @@ export function profile(name?: string): MethodDecorator {
         //editing the descriptor/value parameter
         descriptor.value = function () {
             start(name);
-
-            var result = originalMethod.apply(this, arguments);
-
-            pause(name)
-
-            return result;
+            try {
+                return originalMethod.apply(this, arguments);
+            } finally {
+                pause(name);
+            }
         };
 
         // return edited descriptor as opposed to overwriting the descriptor
