@@ -129,7 +129,12 @@ export function profile(name?: string): MethodDecorator {
         var originalMethod = descriptor.value;
 
         if (!name) {
-            name = key;
+            let className = "";
+            if (target && target.constructor && target.constructor.name) {
+                className = target.constructor.name + ".";
+            }
+
+            name = className + key;
         }
 
         profileNames.push(name);
