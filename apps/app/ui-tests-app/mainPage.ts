@@ -147,8 +147,12 @@ export class MainPageViewModel extends observable.Observable {
         })
 
         arrayOfKeys.sort((a, b) => {
-            if (a < b) return -1;
-            if (a > b) return 1;
+            if (a < b) {
+                return -1;
+            }
+            if (a > b) {
+                return 1;
+            }
             return a.localeCompare(b);
         })
 
