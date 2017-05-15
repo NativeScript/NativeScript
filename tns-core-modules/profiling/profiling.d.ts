@@ -49,6 +49,13 @@ export declare function pause(name: string): TimerInfo;
 export declare function stop(name: string): TimerInfo;
 
 /**
+ * Returns true if a timer is currently running.
+ * @param name Name of the timer.
+ * @returns true is the timer is currently running.
+ */
+export declare function isRunning(name: string): boolean;
+
+/**
  * Method decorator factory. It will intercept the method call and start and pause a timer before and after the method call.
  * Works only if profiling is enabled.
  * @param name Name of the timer which will be used for method calls. If not provided - the name of the method will be used.
