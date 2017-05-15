@@ -45,7 +45,7 @@ export class Frame extends FrameBase {
         super();
         this._ios = new iOSFrame(this);
         this.nativeView = this._ios.controller.view;
-        
+
         // When there is a 40px high "in-call" status bar, nobody moves the navigationBar top from 20 to 40 and it remains underneath the status bar.
         let frameRef = new WeakRef(this);
         application.ios.addNotificationObserver(UIApplicationDidChangeStatusBarFrameNotification, (notification: NSNotification) => {
@@ -201,6 +201,10 @@ export class Frame extends FrameBase {
     public _updateActionBar(page?: Page, disableNavBarAnimation: boolean = false): void {
 
         super._updateActionBar(page);
+
+        if (page && this.currentPage && this.currentPage.modal === page) {
+            return;
+        }
 
         page = page || this.currentPage;
         let newValue = this._getNavBarVisible(page);
