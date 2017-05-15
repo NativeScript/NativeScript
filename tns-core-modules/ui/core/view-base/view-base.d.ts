@@ -3,7 +3,9 @@
  */ /** */
 
 import { Property, InheritedProperty, Style } from "../properties";
-import { BindingOptions, Observable } from "../bindable";
+import { BindingOptions } from "../bindable";
+import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
+import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType, isCategorySet } from "../../../trace";
 
 import { SelectorCore } from "../../styling/css-selector";
 import { isIOS, isAndroid } from "../../../platform";
@@ -16,7 +18,8 @@ import { Color } from "../../../color";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
 
-export { isIOS, isAndroid, layout, Color };
+export { isIOS, isAndroid, layout, Color, Observable, WrappedValue, PropertyChangeData, EventData,
+    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet };
 export * from "../properties";
 export * from "../bindable";
 
@@ -291,6 +294,12 @@ export abstract class ViewBase extends Observable {
     //@endprivate
 }
 
+export class Binding {
+    constructor(target: ViewBase, options: BindingOptions);
+    public bind(source: Object): void;
+    public unbind();
+}
+
 export const idProperty: Property<ViewBase, string>;
 export const classNameProperty: Property<ViewBase, string>;
 export const bindingContextProperty: InheritedProperty<ViewBase, any>;
@@ -300,3 +309,6 @@ export const bindingContextProperty: InheritedProperty<ViewBase, any>;
  * Throws error if value is not 'true' or 'false'.
  */
 export function booleanConverter(v: string): boolean;
+
+export function getEventOrGestureName(name: string): string;
+export function isEventOrGesture(name: string, view: ViewBase): boolean;
