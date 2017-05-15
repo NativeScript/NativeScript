@@ -49,6 +49,13 @@ export class EditableTextBase extends TextBase {
      * Hides the soft input method, ususally a soft keyboard.
      */
     dismissSoftInput(): void;
+
+    //@private
+    /**
+     * @private
+     */
+    public _setInputType(inputType: number): void;
+    //@endprivate
 }
 
 export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email";

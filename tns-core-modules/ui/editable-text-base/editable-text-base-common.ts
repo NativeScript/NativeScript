@@ -15,6 +15,7 @@ export abstract class EditableTextBase extends TextBase implements EditableTextB
     public hint: string;
 
     public abstract dismissSoftInput();
+    public abstract _setInputType(inputType: number): void;
 }
 
 // TODO: Why not name it - hintColor property??

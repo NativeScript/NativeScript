@@ -10,12 +10,6 @@ export class TextField extends TextFieldBase {
         editText.setHorizontallyScrolling(true);
     }
 
-    public initNativeView(): void {
-        // TODO: We should be able to reset it using only our properties. Check it first.
-        super.initNativeView();
-        this.nativeView.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-    }
-
     public _onReturnPress() {
         this.notify({ eventName: TextField.returnPressEvent, object: this })
     }
@@ -48,7 +42,7 @@ export class TextField extends TextFieldBase {
             }
         }
 
-        nativeView.setInputType(newInputType);
+        this._setInputType(newInputType);
     }
 
     [whiteSpaceProperty.getDefault](): WhiteSpace {

@@ -48,7 +48,7 @@ function initializeEditTextListeners(): void {
 
         public afterTextChanged(editable: android.text.IEditable) {
             const owner = this.owner;
-            if (!owner) {
+            if (!owner || owner._inputTypeChange) {
                 return;
             }
 
@@ -133,6 +133,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     nativeView: android.widget.EditText;
     private _keyListenerCache: android.text.method.KeyListener;
+    private _inputType: number;
+
+    public _inputTypeChange: boolean;
 
     public abstract _configureEditText(editText: android.widget.EditText): void;
 
@@ -143,6 +146,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         const editText = new android.widget.EditText(this._context);
         this._configureEditText(editText);
 
+        this._inputType = editText.getInputType();
         const listeners = new EditTextListeners(this);
         editText.addTextChangedListener(listeners);
         editText.setOnFocusChangeListener(listeners);
@@ -159,7 +163,10 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     public _disposeNativeView(force?: boolean) {
-        (<any>this.nativeView).listener.owner = null;
+        const nativeView = this.nativeView;
+        (<any>nativeView).listener.owner = null;
+        nativeView.setInputType(this._inputType);
+        this._keyListenerCache = null;
     }
 
     public dismissSoftInput() {
@@ -167,8 +174,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     public focus(): boolean {
-        let result = super.focus();
-
+        const result = super.focus();
         if (result) {
             ad.showSoftInput(this.nativeView);
         }
@@ -176,12 +182,17 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return result;
     }
 
-    private _setInputType(inputType): void {
-        let nativeView = this.nativeView;
-        nativeView.setInputType(inputType);
+    public _setInputType(inputType: number): void {
+        const nativeView = this.nativeView;
+        try {
+            this._inputTypeChange = true;
+            nativeView.setInputType(inputType);
+        } finally {
+            this._inputTypeChange = false;
+        }
 
         // setInputType will change the keyListener so we should cache it again
-        let listener = nativeView.getKeyListener();
+        const listener = nativeView.getKeyListener();
         if (listener) {
             this._keyListenerCache = listener;
         }
