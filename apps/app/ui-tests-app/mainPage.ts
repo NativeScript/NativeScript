@@ -9,11 +9,9 @@ import * as observable from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 
-var examples: Map<string, string> = new Map<string, string>();
-//should be removed
-var oldExamples: Map<string, string> = new Map<string, string>();
-
 export function pageLoaded(args: EventData) {
+    let examples: Map<string, string> = new Map<string, string>();
+
     let page = <Page>args.object;
     let wrapLayout = page.getViewById<WrapLayout>("wrapLayoutWithExamples");
     examples.set("action-bar", "action-bar/main-page");
@@ -41,8 +39,8 @@ export function pageLoaded(args: EventData) {
     examples.set("perf", "perf/main-page");
     examples.set("list-picker", "list-picker/main-page");
 
-    //examples.set("listview_binding", "pages/listview_binding");
-    //examples.set("textfield", "text-field/text-field");
+    examples.set("listview_binding", "pages/listview_binding");
+    examples.set("textfield", "text-field/text-field");
 
     let viewModel = new MainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
@@ -55,93 +53,6 @@ export function pageLoaded(args: EventData) {
         parent.android.setFocusable(true);
         searchBar.android.clearFocus();
     }
-
-    refresh();
-}
-
-// should be removes
-export function refresh() {
-    oldExamples.set("actStyle", "action-bar/all");
-    oldExamples.set("actIcons", "action-bar/system-icons");
-    oldExamples.set("actView", "action-bar/action-view");
-
-    oldExamples.set("basics", "bindings/basics");
-    oldExamples.set("xmlbasics", "bindings/xmlbasics");
-
-    oldExamples.set("background", "css/background");
-    oldExamples.set("formatted", "css/decoration-transform-formattedtext");
-    oldExamples.set("csslv", "css/listview");
-    oldExamples.set("radius", "css/radius");
-    oldExamples.set("styles", "css/styles");
-    oldExamples.set("tabmore", "css/tab-view-more");
-    oldExamples.set("spacing", "css/letter-spacing");
-    oldExamples.set("decoration", "css/text-decoration");
-    oldExamples.set("transform", "css/text-transform");
-    oldExamples.set("whitespace", "css/white-space");
-    oldExamples.set("switch", "css/views");
-    oldExamples.set("zindex", "css/zindex");
-    oldExamples.set("clipPath", "css/clip-path");
-    oldExamples.set("dialogs", "dialogs/dialogs");
-
-    oldExamples.set("fontbtn", "font/button");
-    oldExamples.set("fontlbl", "font/label");
-    oldExamples.set("fontfield", "font/text-field");
-    oldExamples.set("fontview", "font/text-view");
-
-    oldExamples.set("customfonts", "font/custom-fonts");
-    oldExamples.set("material", "font/material-icons");
-    oldExamples.set("tabfont", "font/tab-view");
-
-    oldExamples.set("htmlview", "html-view/html-view");
-
-    oldExamples.set("roundbtn", "image-view/rounded-buttons");
-    oldExamples.set("roundimg", "image-view/rounded-images");
-
-    oldExamples.set("absolute", "layouts/absolute");
-    oldExamples.set("dock", "layouts/dock");
-    oldExamples.set("grid", "layouts/grid");
-    oldExamples.set("myview", "layouts/myview");
-    oldExamples.set("stack", "layouts/stack");
-    oldExamples.set("wrap", "layouts/wrap");
-
-    oldExamples.set("pabsolute", "layouts-percent/absolute");
-    oldExamples.set("pdock", "layouts-percent/dock");
-    oldExamples.set("pgrid", "layouts-percent/grid");
-    oldExamples.set("pmyview", "layouts-percent/myview");
-    oldExamples.set("pstack", "layouts-percent/stack");
-    oldExamples.set("pwrap", "layouts-percent/wrap");
-
-    oldExamples.set("modalview", "modal-view/modal-view");
-    oldExamples.set("nordic", "nordic/nordic");
-
-    oldExamples.set("padding", "padding/padding");
-    oldExamples.set("timePicker", "time-picker/time-picker");
-    oldExamples.set("gestures", "pages/gestures");
-    oldExamples.set("touch", "pages/touch-event");
-    oldExamples.set("pan", "pages/pan-event");
-    oldExamples.set("handlers", "pages/handlers");
-
-    oldExamples.set("animeBG", "animations/background");
-    oldExamples.set("transitions", "transitions/page0");
-
-    //oldExamples.set("listview_binding", "pages/listview_binding");
-    oldExamples.set("console", "pages/console");
-    oldExamples.set("i61", "pages/i61");
-    oldExamples.set("i73", "pages/i73");
-    oldExamples.set("i86", "pages/i86");
-
-    oldExamples.set("segStyle", "segmented-bar/all");
-
-    oldExamples.set("tabColor", "tab-view/color");
-    oldExamples.set("tabBG", "tab-view/background");
-    oldExamples.set("tabTabsBG", "tab-view/tabsBackground");
-    oldExamples.set("tabSelected", "tab-view/selected");
-    oldExamples.set("tabStyle", "tab-view/all");
-
-    //oldExamples.set("textfield", "text-field/text-field");
-
-    oldExamples.set("webview", "web-view/web-view");
-    oldExamples.set("webtest", "web-view/web-view-test");
 }
 
 export class MainPageViewModel extends observable.Observable {
@@ -158,6 +69,7 @@ export class MainPageViewModel extends observable.Observable {
         this.examples = _examples;
 
         if (this.shouldLoadBtns()) {
+            this.sortMap(this.examples);
             this.loadButtons();
         }
     }
@@ -173,17 +85,17 @@ export class MainPageViewModel extends observable.Observable {
         }
     }
 
-    public loadExample(exampleName: any) {
+    public loadExample(exampleName: string) {
         console.log("exampleName EXAMPLE: " + exampleName);
         this.selectExample(exampleName);
     }
 
-    public loadOldExmaples() {
-        if (oldExamples.has(this.exampleName)) {
-            frame.topmost().navigate("ui-tests-app/" + this.basePath + oldExamples.get(this.exampleName));
-        }
-        else {
-            dialogs.alert("Cannot find example: " + this.exampleName);
+    public loadExmaple() {
+        let selectedExample = this.exampleName.toLocaleLowerCase().trim();
+        if (selectedExample.indexOf("/") > 0) {
+            frame.topmost().navigate("ui-tests-app/" + selectedExample);
+        } else {
+            this.selectExample(this.exampleName.toLocaleLowerCase());
         }
     }
 
@@ -226,5 +138,30 @@ export class MainPageViewModel extends observable.Observable {
             btn.text = key;
             this.panel.addChild(btn)
         });
+    }
+
+    private sortMap(map: Map<string, string>) {
+        let arrayOfKeys = new Array<string>();
+        map.forEach((value, key, map) => {
+            arrayOfKeys.push(key);
+        })
+
+        arrayOfKeys.sort((a, b) => {
+            if (a < b) {
+                return -1;
+            }
+            if (a > b) {
+                return 1;
+            }
+            return a.localeCompare(b);
+        })
+
+        let sortedExamples = new Map<string, string>();
+        arrayOfKeys.forEach((k) => {
+            sortedExamples.set(k, this.examples.get(k));
+        })
+
+        this.examples.clear();
+        this.examples = sortedExamples;
     }
 }

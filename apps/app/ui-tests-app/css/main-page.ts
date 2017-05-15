@@ -46,6 +46,7 @@ export function pageLoaded(args: EventData) {
     examples.set("textview-hint-color", "css/textview-hint-color");
     examples.set("hint-text-color", "css/hint-text-color");
     examples.set("combinators", "css/combinators");
+    examples.set("styled-formatted-text", "css/styled-formatted-text");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
