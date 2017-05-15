@@ -1,11 +1,10 @@
 // >> web-view-loaded
 import { EventData } from 'tns-core-modules/data/observable';
-import { Page } from 'tns-core-modules/ui/page';
 import { WebView } from "tns-core-modules/ui/web-view";
 import { isAndroid } from "tns-core-modules/platform"
 
 export function navigatingTo(args: EventData) {
-    let page = <Page>args.object;
+    console.log("page navigating to");
 }
 
 export function webViewTouch(args){
