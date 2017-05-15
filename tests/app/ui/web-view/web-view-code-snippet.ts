@@ -1,13 +1,11 @@
 // >> web-view-loaded
-import { EventData } from 'data/observable';
-import { Page } from 'ui/page';
-import { HelloWorldModel } from './main-view-model';
-import { WebView } from "ui/web-view";
-import { isAndroid } from "platform"
+import { EventData } from 'tns-core-modules/data/observable';
+import { Page } from 'tns-core-modules/ui/page';
+import { WebView } from "tns-core-modules/ui/web-view";
+import { isAndroid } from "tns-core-modules/platform"
 
 export function navigatingTo(args: EventData) {
     let page = <Page>args.object;
-    page.bindingContext = new HelloWorldModel();
 }
 
 export function webViewTouch(args){
