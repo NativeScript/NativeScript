@@ -1,5 +1,6 @@
 import { assert, assertEqual, assertFalse, assertTrue, assertThrows } from "../TKUnit";
 import * as prof from "tns-core-modules/profiling";
+import { isAndroid } from "tns-core-modules/platform";
 
 prof.enable();
 class TestClass {
@@ -35,7 +36,7 @@ export function test_time_returns_number_if_enabled() {
 export function test_isRunning() {
     const name = "test_isRunning";
     assertFalse(prof.isRunning(name), "isRunning should be false before start");
- 
+
     prof.start(name);
     assertTrue(prof.isRunning(name), "isRunning should be true after start");
 
@@ -71,8 +72,31 @@ export function test_start_pause_count() {
     assertEqual(res.count, 10);
 };
 
+export function test_profile_decorator_count() {
+    const test = new TestClass();
+    for (var i = 0; i < 10; i++) {
+        test.doNothing();
+    }
+
+    const res = prof.stop("__func_decorator__");
+    assertEqual(res.count, 10);
+}
+
+export function test_profile_decorator_handles_exceptions() {
+    const test = new TestClass();
+
+    assertThrows(() => test.throwError());
+    assertFalse(prof.isRunning("__func_decorator_error__"), "Timer should be stopped on exception.");
+    assertEqual(prof.stop("__func_decorator_error__").count, 1, "Timer should be called once");
+}
+
 export function test_start_pause_performance() {
-    const count = 1000;
+    if (isAndroid) {
+        // TODO: skip these test for android as they are unstable
+        return;
+    }
+
+    const count = 10000;
     const name = "test_start_pause_performance";
 
     for (var i = 0; i < count; i++) {
@@ -85,19 +109,13 @@ export function test_start_pause_performance() {
     assert(res.totalTime <= 50, `Total time for ${count} timer operations is too much: ${res.totalTime}`);
 };
 
-export function test_profile_decorator_count() {
-    const test = new TestClass();
-    for (var i = 0; i < 10; i++) {
-        test.doNothing();
+export function test_profile_decorator_performance() {
+    if (isAndroid) {
+        // TODO: skip these test for android as they are unstable
+        return;
     }
 
-    const res = prof.stop("__func_decorator__");
-    assertEqual(res.count, 10);
-}
-
-export function test_profile_decorator_performance() {
-    const count = 1000;
-
+    const count = 10000;
     const test = new TestClass();
     for (var i = 0; i < count; i++) {
         test.doNothing();
@@ -106,12 +124,4 @@ export function test_profile_decorator_performance() {
     const res = prof.stop("__func_decorator__");
     assertEqual(res.count, count);
     assert(res.totalTime <= 50, `Total time for ${count} timer operations is too much: ${res.totalTime}`);
-}
-
-export function test_profile_decorator_handles_exceptions() {
-    const test = new TestClass();
-
-    assertThrows(() => test.throwError());
-    assertFalse(prof.isRunning("__func_decorator_error__"), "Timer should be stopped on exception.");
-    assertEqual(prof.stop("__func_decorator_error__").count, 1, "Timer should be called once");
 }
