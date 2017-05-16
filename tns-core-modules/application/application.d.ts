@@ -195,7 +195,9 @@ export function hasListeners(eventName: string): boolean;
 export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
 
 /**
- * This event is raised after the application has launched and was fully drawn.
+ * This event is raised after the application has performed most of its startup actions.
+ * Its intent is to be suitable for measuring app startup times.
+ * @experimental
  */
 export function on(event: "displayed", callback: (args: EventData) => void, thisArg?: any);
 
