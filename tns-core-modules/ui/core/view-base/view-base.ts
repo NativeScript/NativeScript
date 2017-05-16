@@ -863,6 +863,7 @@ ViewBase.prototype._defaultPaddingTop = 0;
 ViewBase.prototype._defaultPaddingRight = 0;
 ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
+ViewBase.prototype._isViewBase = true;
 
 ViewBase.prototype._batchUpdateScope = 0;
 

@@ -150,6 +150,13 @@ export class Observable {
      */
     _createPropertyChangeData(name: string, value: any, oldValue?: any): PropertyChangeData;
     
+    //@private
+    /**
+     * Filed to use instead of instanceof ViewBase.
+     * @private
+     */
+    public _isViewBase: boolean;
+
     /**
      * @private
      */

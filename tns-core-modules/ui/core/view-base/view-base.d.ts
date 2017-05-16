@@ -17,6 +17,7 @@ import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../la
 import { Length } from "../../styling/style-properties";
 
 export { isIOS, isAndroid, layout, Color };
+
 export * from "../properties";
 export * from "../bindable";
 
@@ -289,6 +290,12 @@ export abstract class ViewBase extends Observable {
      */
     public _batchUpdate<T>(callback: () => T): T;
     //@endprivate
+}
+
+export class Binding {
+    constructor(target: ViewBase, options: BindingOptions);
+    public bind(source: Object): void;
+    public unbind();
 }
 
 export const idProperty: Property<ViewBase, string>;

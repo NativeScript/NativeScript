@@ -22,10 +22,9 @@ const contextKey = "context";
 // from $parents['ListView'] will return 'ListView'
 // from $parents[1] will return 1
 const paramsRegex = /\[\s*(['"])*(\w*)\1\s*\]/;
-
 const bc = bindingConstants;
-
 const emptyArray = [];
+
 function getProperties(property: string): Array<string> {
     let result: Array<string> = emptyArray;
     if (property) {
@@ -55,7 +54,7 @@ export function getEventOrGestureName(name: string): string {
 // NOTE: method fromString from "ui/gestures";
 export function isGesture(eventOrGestureName: string): boolean {
     let t = eventOrGestureName.trim().toLowerCase();
-    return t === "tap" 
+    return t === "tap"
         || t === "doubletap"
         || t === "pinch"
         || t === "pan"
@@ -169,8 +168,9 @@ export class Binding {
             return;
         }
 
-        if (data.value) {
-            this.update(data.value);
+        const value = data.value;
+        if (value !== null && value !== undefined) {
+            this.update(value);
         } else {
             // TODO: Is this correct?
             // What should happen when bindingContext is null/undefined?
@@ -279,14 +279,16 @@ export class Binding {
         let prop = parentProperies || "";
 
         for (let i = 0, length = objectsAndProperties.length; i < length; i++) {
-            prop += "$" + objectsAndProperties[i].property;
+            const propName = objectsAndProperties[i].property;
+            prop += "$" + propName;
             let currentObject = objectsAndProperties[i].instance;
-            if (!this.propertyChangeListeners.has(prop) && currentObject instanceof Observable) {
-                addWeakEventListener(
-                    currentObject,
-                    Observable.propertyChangeEvent,
-                    this.onSourcePropertyChanged,
-                    this);
+            if (!this.propertyChangeListeners.has(prop) && currentObject instanceof Observable && currentObject._isViewBase) {
+                // Add listener for properties created with after 3.0 version
+                addWeakEventListener(currentObject, `${propName}Change`, this.onSourcePropertyChanged, this);
+                addWeakEventListener(currentObject, Observable.propertyChangeEvent, this.onSourcePropertyChanged, this);
+                this.propertyChangeListeners.set(prop, currentObject);
+            } else if (!this.propertyChangeListeners.has(prop) && currentObject instanceof Observable) {
+                addWeakEventListener(currentObject, Observable.propertyChangeEvent, this.onSourcePropertyChanged, this);
                 this.propertyChangeListeners.set(prop, currentObject);
             }
         }
