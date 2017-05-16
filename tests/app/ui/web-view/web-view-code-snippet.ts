@@ -21,4 +21,4 @@ export function webViewLoaded(args){
         webview.android.getSettings().setDisplayZoomControls(false);
     }
 }
-// >> web-view-loaded
+// << web-view-loaded
