@@ -12,6 +12,11 @@ import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 export var launchEvent: string;
 
 /**
+ * String value used when hooking to displayed event.
+ */
+export var displayedEvent: string;
+
+/**
  * String value used when hooking to uncaughtError event.
  */
 export var uncaughtErrorEvent: string;
@@ -188,6 +193,11 @@ export function hasListeners(eventName: string): boolean;
  * This event is raised on application launchEvent.
  */
 export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
+
+/**
+ * This event is raised after the application has launched and was fully drawn.
+ */
+export function on(event: "displayed", callback: (args: EventData) => void, thisArg?: any);
 
 /**
  * This event is raised when the Application is suspended.
