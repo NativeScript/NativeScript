@@ -3,9 +3,7 @@
  */ /** */
 
 import { Property, InheritedProperty, Style } from "../properties";
-import { BindingOptions } from "../bindable";
-import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../../data/observable";
-import { isEnabled as traceEnabled, write as traceWrite, categories as traceCategories, notifyEvent as traceNotifyEvent, messageType as traceMessageType, isCategorySet } from "../../../trace";
+import { BindingOptions, Observable } from "../bindable";
 
 import { SelectorCore } from "../../styling/css-selector";
 import { isIOS, isAndroid } from "../../../platform";
@@ -18,8 +16,8 @@ import { Color } from "../../../color";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
 
-export { isIOS, isAndroid, layout, Color, Observable, WrappedValue, PropertyChangeData, EventData,
-    traceEnabled, traceWrite, traceCategories, traceNotifyEvent, traceMessageType, isCategorySet };
+export { isIOS, isAndroid, layout, Color };
+
 export * from "../properties";
 export * from "../bindable";
 
@@ -309,6 +307,3 @@ export const bindingContextProperty: InheritedProperty<ViewBase, any>;
  * Throws error if value is not 'true' or 'false'.
  */
 export function booleanConverter(v: string): boolean;
-
-export function getEventOrGestureName(name: string): string;
-export function isEventOrGesture(name: string, view: ViewBase): boolean;

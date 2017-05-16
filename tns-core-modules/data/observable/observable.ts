@@ -32,6 +32,8 @@ let _wrappedValues = [
 
 export class Observable implements ObservableDefinition {
     public static propertyChangeEvent = "propertyChange";
+    public _isViewBase: boolean;
+
     private _observers = {};
 
     public get(name: string): any {

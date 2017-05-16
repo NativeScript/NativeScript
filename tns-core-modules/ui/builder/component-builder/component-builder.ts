@@ -3,7 +3,7 @@ import { ComponentModule } from ".";
 import { View } from "../../core/view";
 
 // Types.
-import { isEventOrGesture } from "../../core/view-base";
+import { isEventOrGesture } from "../../core/bindable";
 import { File, path, knownFolders } from "../../../file-system";
 import { getBindingOptions, bindingConstants } from "../binding-builder";
 import { resolveFileName } from "../../../file-system/file-name-resolver";
