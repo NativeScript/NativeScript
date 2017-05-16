@@ -5,6 +5,7 @@ import { topmost } from "tns-core-modules/ui/frame";
 export function btnClick(args: EventData) {
     (<Page>args.object).page.showModal("ui-tests-app/action-bar/modal-page-hidden-action-bar", "", function (arg: string) {
         // ...
+        console.log("Callback args: " + arg);
     }, true);
 }
 
