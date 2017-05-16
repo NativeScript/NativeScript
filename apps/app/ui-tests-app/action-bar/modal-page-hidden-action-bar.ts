@@ -7,5 +7,5 @@ export function onShownModally(args: ShownModallyData) {
 }
 
 export function onTap() {
-    closeCallback("sample text");
+    closeCallback("sample text\n");
 }
