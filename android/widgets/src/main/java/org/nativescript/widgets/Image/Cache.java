@@ -34,6 +34,7 @@ import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -56,6 +57,7 @@ public class Cache {
     private static final boolean DEFAULT_DISK_CACHE_ENABLED = true;
 
     private static Cache instance;
+    private HashMap<String, Integer> mMemoryCacheUsage;
     private LruCache<String, Bitmap> mMemoryCache;
     private CacheParams mParams;
 
@@ -121,6 +123,7 @@ public class Cache {
                         Collections.synchronizedSet(new HashSet<SoftReference<Bitmap>>());
             }
 
+            mMemoryCacheUsage = new HashMap<String, Integer>();
             mMemoryCache = new LruCache<String, Bitmap>(mParams.memCacheSize) {
 
                 /**
@@ -129,7 +132,8 @@ public class Cache {
                 @Override
                 protected void entryRemoved(boolean evicted, String key,
                                             Bitmap oldValue, Bitmap newValue) {
-                    if (Utils.hasHoneycomb()) {
+                    Integer count = mMemoryCacheUsage.get(key);
+                    if (Utils.hasHoneycomb() && (count == null || count == 0)) {
                         // We're running on Honeycomb or later, so add the bitmap
                         // to a SoftReference set for possible use with inBitmap later
                         mReusableBitmaps.add(new SoftReference<Bitmap>(oldValue));
@@ -167,6 +171,9 @@ public class Cache {
             // because this will make the previous bitmap free for reuse but it is used somewhere.
             // Probably won't happen often.
             if (currentValue == null) {
+                Integer count = mMemoryCacheUsage.get(data);
+                // NOTE: count should be null here.
+                mMemoryCacheUsage.put(data, count == null ? 1 : count + 1);
                 mMemoryCache.put(data, value);
             }
         }
@@ -183,6 +190,10 @@ public class Cache {
 
         if (mMemoryCache != null) {
             memValue = mMemoryCache.get(data);
+            if (memValue != null) {
+                Integer count = mMemoryCacheUsage.get(data);
+                mMemoryCacheUsage.put(data, count + 1);
+            }
         }
 
         if (Worker.debuggable > 0 && memValue != null) {
@@ -190,6 +201,19 @@ public class Cache {
         }
 
         return memValue;
+    }
+
+    public void reduceDisplayedCounter(String uri) {
+        if (mMemoryCache != null) {
+            Integer count = mMemoryCacheUsage.get(uri);
+            if (count != null) {
+                if (count == 1) {
+                    mMemoryCacheUsage.remove(uri);
+                } else {
+                    mMemoryCacheUsage.put(uri, count - 1);
+                }
+            }
+        }
     }
 
     /**
@@ -240,6 +264,11 @@ public class Cache {
                 Log.v(TAG, "Memory cache cleared");
             }
         }
+        if (mMemoryCacheUsage != null) {
+            mMemoryCacheUsage.clear();
+        }
+
+        mMemoryCacheUsage = null;
         mMemoryCache = null;
     }
 

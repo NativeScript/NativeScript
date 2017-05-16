@@ -77,6 +77,12 @@ public abstract class Worker {
         }
     }
 
+    public void removeBitmap(String uri) {
+        if (mCache != null) {
+            mCache.reduceDisplayedCounter(uri);
+        }
+    }
+
     /**
      * Load an image specified by the data parameter into an ImageView (override
      * {@link Worker#processBitmap(String, int, int, boolean)} to define the processing logic). A memory and
@@ -280,9 +286,8 @@ public abstract class Worker {
          */
         @Override
         protected Bitmap doInBackground(Void... params) {
-            final String dataString = String.valueOf(mUri);
             if (debuggable > 0) {
-                Log.v(TAG, "doInBackground - starting work: " + imageViewReference.get() + ", on: " + dataString);
+                Log.v(TAG, "doInBackground - starting work: " + imageViewReference.get() + ", on: " + mUri);
             }
 
 
@@ -313,9 +318,9 @@ public abstract class Worker {
             if (bitmap != null) {
                 if (mCache != null && mCacheImage) {
                     if (debuggable > 0) {
-                        Log.v(TAG, "addBitmapToCache: " + imageViewReference.get() + ", src: " + dataString);
+                        Log.v(TAG, "addBitmapToCache: " + imageViewReference.get() + ", src: " + mUri);
                     }
-                    mCache.addBitmapToCache(dataString, bitmap);
+                    mCache.addBitmapToCache(mUri, bitmap);
                 }
             }
 

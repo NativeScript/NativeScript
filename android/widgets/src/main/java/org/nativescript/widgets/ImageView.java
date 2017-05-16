@@ -169,7 +169,7 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
         mAsync = async;
 
         // Clear current bitmap only if we set empty URI.
-        // We support settimg bitmap through ImageSource (e.g. Bitmap).
+        // We support setting bitmap through ImageSource (e.g. Bitmap).
         if (uri == null || uri.trim() == "") {
             this.setImageBitmap(null);
         }
@@ -194,6 +194,13 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
 
     @Override
     public void setImageBitmap(Bitmap bm) {
+        Fetcher fetcher = Fetcher.getInstance(this.getContext());
+        // if we have existing bitmap from uri notify fetcher that this bitmap is not shown in this ImageView instance.
+        // This is needed so that fetcher inner cache could reuse the bitmap only when no other ImageView shows it.
+        if (mUseCache && mUri != null && mBitmap != null && fetcher != null) {
+            fetcher.removeBitmap(mUri);
+        }
+
         super.setImageBitmap(bm);
         this.mBitmap = bm;
     }
