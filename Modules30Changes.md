@@ -152,7 +152,7 @@ There are several type of Properties in modules 3.0:
 * `InheritedCssProperty `- property defined on `Style` type. These are inheritable CSS properties that could be set in CSS and propagates value on its children. These are properties like `FontSize`, `FontWeight`, `Color`, etc.
 
 ### Events raised when property value change
-One significant change is that properties before 3.0 were raising two events when a value is changed - `propertyChange` and  propertyName + `Change` (like `textChange`). The second event was added at some point to make module compatible with Anglular.
+One significant change is that properties before 3.0 were raising two events when a value is changed - `propertyChange` and  propertyName + `Change` (like `textChange`). The second event was added at some point to make module compatible with Angular.
 With 3.0 we removed `propertyChange` event and left only the second event. This was done in order to improve performance of our property system. This also leads to cleaner code (no need to listen for every `propertyChange` and then check the name of the poperty that raised the event).
 
 With 3.0 if you want to get notification when some property value change you have to specify the *`propertyName`Change* as eventName to `addEventListener` method (like `textField.addEventListener('textChange'`, handler...)).
