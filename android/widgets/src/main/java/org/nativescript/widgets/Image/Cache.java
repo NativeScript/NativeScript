@@ -192,7 +192,7 @@ public class Cache {
             memValue = mMemoryCache.get(data);
             if (memValue != null) {
                 Integer count = mMemoryCacheUsage.get(data);
-                mMemoryCacheUsage.put(data, count + 1);
+                mMemoryCacheUsage.put(data, count == null ? 1 : count + 1);
             }
         }
 
