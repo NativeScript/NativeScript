@@ -24,7 +24,7 @@ function onLivesync(args: EventData): void {
         }
 
         try {
-            reloadPage();
+            g.__onLiveSyncCore();
         } catch (ex) {
             // Show the error as modal page, save reference to the page in global context.
             g.errorPage = parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
@@ -73,6 +73,9 @@ export function reloadPage(): void {
         frame.navigate(newEntry);
     }
 }
+
+// attach on global, so it can be overwritten in NativeScript Angular
+(<any>global).__onLiveSyncCore = reloadPage;
 
 export function resolvePageFromEntry(entry: NavigationEntry): Page {
     let page: Page;
