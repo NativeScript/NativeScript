@@ -185,6 +185,10 @@ export class Observable implements ObservableDefinition {
 class ObservableFromObject extends Observable {
     public _map = {};
 
+    public get(name: string): any {
+        return this._map[name];
+    }
+    
     public set(name: string, value: any) {
         const currentValue = this._map[name];
         if (currentValue === value) {
