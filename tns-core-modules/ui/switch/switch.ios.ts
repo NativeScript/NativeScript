@@ -37,6 +37,8 @@ export class Switch extends SwitchBase {
         this._handler = SwitchChangeHandlerImpl.initWithOwner(new WeakRef(this));
         nativeView.addTargetActionForControlEvents(this._handler, "valueChanged", UIControlEvents.ValueChanged);
         this.nativeView = nativeView;
+        this.width = 51;
+        this.height = 31;
     }
 
     get ios(): UISwitch {
