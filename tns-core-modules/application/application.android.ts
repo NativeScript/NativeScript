@@ -4,7 +4,7 @@
 } from ".";
 
 import {
-    notify, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent,
+    notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent, displayedEvent,
     setApplication, livesync, Observable
 } from "./application-common";
 
@@ -181,7 +181,19 @@ function initLifecycleCallbacks() {
                 androidApp.startActivity = activity;
             }
 
-            androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity: activity, bundle: savedInstanceState });
+            androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
+
+            if (hasListeners(displayedEvent)) {
+                let rootView = activity.findViewById((<any>android).R.id.content);
+                let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
+                    onGlobalLayout() {
+                        notify({ eventName: displayedEvent, object: androidApp, activity });
+                        let viewTreeObserver = rootView.getViewTreeObserver();
+                        viewTreeObserver.removeOnGlobalLayoutListener(onGlobalLayoutListener);
+                    }
+                });
+                rootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
+            }
         },
 
         onActivityDestroyed: function (activity: android.app.Activity) {
