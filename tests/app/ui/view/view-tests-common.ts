@@ -249,7 +249,7 @@ export function test_InheritableStylePropertiesWhenUsedWithExtendedClass_AreInhe
     page.content = newButton;
 
     TKUnit.assertEqual(newButton.style.color, redColor);
-};
+}
 
 // TestView definition START
 const customCssProperty = new CssProperty<Style, string>({ name: "customCssProperty", cssName: "custom-css-property" });
@@ -919,3 +919,11 @@ export function test_getActualSize() {
         TKUnit.assertAreClose(actualSize.height, 200, delta, "actualSize.height");
     });
 };
+
+export function test_background_image_doesnt_throw() {
+   var btn = new Button();
+   btn.style.backgroundImage = 'https://www.bodybuilding.com/images/2016/june/8-benefits-to-working-out-in-the-morning-header-v2-830x467.jpg';
+   helper.buildUIAndRunTest(btn, function (views: Array<View>) {
+        TKUnit.waitUntilReady(() => btn.isLayoutValid);
+    });
+}
