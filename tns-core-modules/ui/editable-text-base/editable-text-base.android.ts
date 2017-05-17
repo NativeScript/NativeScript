@@ -139,7 +139,9 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     public abstract _configureEditText(editText: android.widget.EditText): void;
 
-    public abstract _onReturnPress(): void;
+    public _onReturnPress(): void {
+        //
+    }
 
     public createNativeView() {
         initializeEditTextListeners();
