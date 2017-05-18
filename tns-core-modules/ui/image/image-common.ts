@@ -103,7 +103,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
     }
 }
 
-// ImageBase.prototype.recycleNativeView = true;
+ImageBase.prototype.recycleNativeView = true;
 
 export const imageSourceProperty = new Property<ImageBase, ImageSource>({ name: "imageSource" });
 imageSourceProperty.register(ImageBase);

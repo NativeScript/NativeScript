@@ -291,4 +291,4 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 }
 
-// TextView.prototype.recycleNativeView = true;
+TextView.prototype.recycleNativeView = true;

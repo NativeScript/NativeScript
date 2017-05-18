@@ -209,7 +209,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
     }
 }
 
-// FlexboxLayoutBase.prototype.recycleNativeView = true;
+FlexboxLayoutBase.prototype.recycleNativeView = true;
 
 export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({ name: "flexDirection", cssName: "flex-direction", defaultValue: FlexDirection.ROW, affectsLayout: isIOS, valueConverter: FlexDirection.parse });
 flexDirectionProperty.register(Style);

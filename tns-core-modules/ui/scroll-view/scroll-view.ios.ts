@@ -150,4 +150,4 @@ export class ScrollView extends ScrollViewBase {
     }
 }
 
-// ScrollView.prototype.recycleNativeView = true;
+ScrollView.prototype.recycleNativeView = true;

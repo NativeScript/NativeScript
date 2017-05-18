@@ -7,7 +7,7 @@ export class SwitchBase extends View implements SwitchDefinition {
     public checked: boolean;
 }
 
-// SwitchBase.prototype.recycleNativeView = true;
+SwitchBase.prototype.recycleNativeView = true;
 
 export const checkedProperty = new Property<SwitchBase, boolean>({ name: "checked", defaultValue: false, valueConverter: booleanConverter });
 checkedProperty.register(SwitchBase);

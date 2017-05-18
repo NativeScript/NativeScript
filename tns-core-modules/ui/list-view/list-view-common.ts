@@ -130,7 +130,7 @@ export abstract class ListViewBase extends View implements ListViewDefinition {
     }
 }
 
-// ListViewBase.prototype.recycleNativeView = true;
+ListViewBase.prototype.recycleNativeView = true;
 
 /**
  * Represents the property backing the items property of each ListView instance.

@@ -43,7 +43,7 @@ export class AbsoluteLayoutBase extends LayoutBase implements AbsoluteLayoutDefi
     }
 }
 
-// AbsoluteLayoutBase.prototype.recycleNativeView = true;
+AbsoluteLayoutBase.prototype.recycleNativeView = true;
 
 export const leftProperty = new Property<View, Length>({
     name: "left", defaultValue: zeroLength,
