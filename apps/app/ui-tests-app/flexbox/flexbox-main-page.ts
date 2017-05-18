@@ -14,6 +14,7 @@ export function pageLoaded(args: EventData) {
     examples.set("flexboxdemo", "flexbox/flexbox-demo");
     examples.set("flexrepeat", "flexbox/flexbox-repeater");
     examples.set("flex-perf", "flexbox/flexbox-perf-comparison");
+    examples.set("flexbox-4143", "flexbox/flexbox-4143");
 
     let viewModel = new FlexboxMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
