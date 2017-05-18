@@ -20,7 +20,7 @@ export class ListPickerBase extends View implements ListPickerDefinition {
     }
 }
 
-// ListPickerBase.prototype.recycleNativeView = true;
+ListPickerBase.prototype.recycleNativeView = true;
 
 export const selectedIndexProperty = new CoercibleProperty<ListPickerBase, number>({
     name: "selectedIndex", defaultValue: -1,

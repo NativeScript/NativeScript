@@ -367,7 +367,7 @@ export class ActionBar extends ActionBarBase {
     }
 }
 
-// ActionBar.prototype.recycleNativeView = true;
+ActionBar.prototype.recycleNativeView = true;
 
 let defaultTitleTextColor: number;
 
