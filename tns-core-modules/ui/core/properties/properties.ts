@@ -636,8 +636,8 @@ export class CssAnimationProperty<T extends Style, U> {
         this.computedValueKey = computedValue;
         const computedSource = Symbol("computed-source:" + propertyName);
 
-        // Note the getDefault is unused, CssAnimationProperties are expected to have default JavaScript value.
         this.getDefault = Symbol(propertyName + ":getDefault");
+        const getDefault = this.getDefault;
         const setNative = this.setNative = Symbol(propertyName + ":setNative");
         const eventName = propertyName + "Change";
 
@@ -659,7 +659,7 @@ export class CssAnimationProperty<T extends Style, U> {
                                 this[computedValue] = this[cssValue];
                             } else {
                                 this[computedSource] = ValueSource.Default;
-                                this[computedValue] = defaultValue;
+                                this[computedValue] = defaultValueKey in this ? this[defaultValueKey] : defaultValue;
                             }
                         }
                     } else {
@@ -677,8 +677,13 @@ export class CssAnimationProperty<T extends Style, U> {
                         if (valueChanged) {
                             valueChanged(this, prev, next);
                         }
-                        if (this.view.nativeView && this.view[setNative]) {
-                            this.view[setNative](next);
+                        const view = this.view;
+                        if (view.nativeView && view[setNative]) {
+                            if (!(defaultValueKey in this)) {
+                                this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
+                            }
+
+                            view[setNative](next);
                         }
                         if (this.hasListeners(eventName)) {
                             this.notify<PropertyChangeData>({ eventName, object: this, propertyName, value, oldValue: prev });
@@ -697,7 +702,6 @@ export class CssAnimationProperty<T extends Style, U> {
         cssSymbolPropertyMap[computedValue] = this;
 
         this.register = (cls: { prototype: T }) => {
-            cls.prototype[defaultValueKey] = options.defaultValue;
             cls.prototype[computedValue] = options.defaultValue;
             cls.prototype[computedSource] = ValueSource.Default;
 
