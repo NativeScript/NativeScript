@@ -97,6 +97,10 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     _defaultPaddingLeft: number;
+    /**
+     * @private
+     */
+    _nativeViewCreated: boolean;
     //@endprivate
 
     public effectiveMinWidth: number;

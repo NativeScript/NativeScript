@@ -101,7 +101,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
-                const setNativeValue = this.nativeView && this[setNative];
+                const setNativeValue = this._nativeViewCreated && this[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -159,7 +159,7 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                     valueChanged(owner, currentValue, value);
                 }
 
-                if (owner.nativeView && !(defaultValueKey in owner)) {
+                if (owner._nativeViewCreated && !(defaultValueKey in owner)) {
                     owner[defaultValueKey] = owner[getDefault] ? owner[getDefault]() : defaultValue;
                 }
 
@@ -246,7 +246,7 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
             const changed: boolean = equalityComparer ? !equalityComparer(currentValue, unboxedValue) : currentValue !== unboxedValue;
 
             if (wrapped || changed) {
-                const setNativeValue = this.nativeView && this[setNative];
+                const setNativeValue = this._nativeViewCreated && this[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -432,7 +432,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
             if (changed) {
                 const view = this.view;
-                const setNativeValue = view.nativeView && view[setNative];
+                const setNativeValue = view._nativeViewCreated && view[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -502,7 +502,7 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
 
             if (changed) {
                 const view = this.view;
-                const setNativeValue = view.nativeView && view[setNative];
+                const setNativeValue = view._nativeViewCreated && view[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
@@ -677,7 +677,7 @@ export class CssAnimationProperty<T extends Style, U> {
                         if (valueChanged) {
                             valueChanged(this, prev, next);
                         }
-                        if (this.view.nativeView && this.view[setNative]) {
+                        if (this.view._nativeViewCreated && this.view[setNative]) {
                             this.view[setNative](next);
                         }
                         if (this.hasListeners(eventName)) {
@@ -786,7 +786,7 @@ export class InheritedCssProperty<T extends Style, U> extends CssProperty<T, U> 
 
             if (changed) {
                 const view = this.view;
-                const setNativeValue = view.nativeView && view[setNative];
+                const setNativeValue = view._nativeViewCreated && view[setNative];
                 if (reset) {
                     delete this[key];
                     if (valueChanged) {
