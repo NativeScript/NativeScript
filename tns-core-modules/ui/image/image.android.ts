@@ -2,12 +2,14 @@
     ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
-import { path, knownFolders } from "../../file-system";
+import { knownFolders } from "../../file-system";
 
 export * from "./image-common";
 
 const FILE_PREFIX = "file:///";
 const ASYNC = "async";
+
+let AndroidImageView: typeof org.nativescript.widgets.ImageView;
 
 interface ImageLoadedListener {
     new (owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
@@ -45,9 +47,12 @@ export class Image extends ImageBase {
     public useCache = true;
 
     public createNativeView() {
+        if (!AndroidImageView) {
+            AndroidImageView = org.nativescript.widgets.ImageView;
+        }
         initializeImageLoadedListener();
         
-        const imageView = new org.nativescript.widgets.ImageView(this._context);
+        const imageView = new AndroidImageView(this._context);
         const listener = new ImageLoadedListener(this);
         imageView.setImageLoadedListener(listener);
         (<any>imageView).listener = listener;
@@ -92,7 +97,7 @@ export class Image extends ImageBase {
                 } else {
                     let fileName = value;
                     if (fileName.indexOf("~/") === 0) {
-                        fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+                        fileName = knownFolders.currentApp().path + "/" + fileName.replace("~/", "");
                     }
 
                     imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async);

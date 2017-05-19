@@ -3,6 +3,8 @@ import { TextBase, WhiteSpace, whiteSpaceProperty } from "../text-base";
 
 export * from "../text-base";
 
+let TextView: typeof android.widget.TextView;
+
 export class Label extends TextBase implements LabelDefinition {
     nativeView: android.widget.TextView;
 
@@ -14,7 +16,10 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     public createNativeView() {
-        return new android.widget.TextView(this._context);
+        if (!TextView) {
+            TextView = android.widget.TextView;
+        }
+        return new TextView(this._context);
     }
 
     public initNativeView(): void {
