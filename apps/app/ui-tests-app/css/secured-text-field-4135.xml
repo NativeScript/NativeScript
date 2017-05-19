@@ -1,0 +1,5 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd">
+    <TextField hint="hint" secure="true" text="test"></TextField>
+    <TextField secure="true" text="text"></TextField>
+    <TextField hint="hint" secure="true"></TextField>
+</Page>

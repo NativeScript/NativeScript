@@ -47,6 +47,7 @@ export function pageLoaded(args: EventData) {
     examples.set("hint-text-color", "css/hint-text-color");
     examples.set("combinators", "css/combinators");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
+    examples.set("secured-text-field", "css/secured-text-field-4135");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
