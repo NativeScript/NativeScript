@@ -68,6 +68,11 @@ export declare function profile(name?: string): MethodDecorator;
 export declare function dumpProfiles(): void;
 
 /**
+ * Resets the timers for all methods instrumented with profile decorator.
+ */
+export function resetProfiles(): void;
+
+/**
  * Starts android cpu profiling.
  * @param name Name of the cpu profiling session.
  */

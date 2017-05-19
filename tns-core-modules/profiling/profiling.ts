@@ -12,11 +12,11 @@ interface TimerInfo extends TimerInfoDefinition {
 }
 
 // Use object instead of map as it is a bit faster
-const timers: { [ index: string ]: TimerInfo } = {};
+const timers: { [index: string]: TimerInfo } = {};
 const anyGlobal = <any>global;
 const profileNames: string[] = [];
 
-let ENABLED = true;
+let ENABLED = false;
 let nativeTimeFunc: () => number;
 
 export function enable() {
@@ -51,7 +51,7 @@ export function start(name: string): void {
         return;
     }
 
-    let info = timers[ name ];
+    let info = timers[name];
 
     if (info) {
         if (info.isRunning) {
@@ -66,7 +66,7 @@ export function start(name: string): void {
             currentStart: time(),
             isRunning: true
         };
-        timers[ name ] = info;
+        timers[name] = info;
     }
 }
 
@@ -88,17 +88,17 @@ export function stop(name: string): TimerInfo {
     let info = pauseInternal(name);
     console.log(`---- [${name}] STOP total: ${info.totalTime} count:${info.count}`);
 
-    timers[ name ] = undefined;
+    timers[name] = undefined;
     return info;
 }
 
 export function isRunning(name: string): boolean {
-    const info = timers[ name ];
+    const info = timers[name];
     return !!(info && info.isRunning);
 }
 
 function pauseInternal(name: string): TimerInfo {
-    const info = timers[ name ];
+    const info = timers[name];
 
     if (!info) {
         throw new Error(`No timer started: ${name}`);
@@ -156,13 +156,27 @@ export function profile(name?: string): MethodDecorator {
 
 export function dumpProfiles(): void {
     profileNames.forEach(function (name) {
-        const info = timers[ name ];
+        const info = timers[name];
 
         if (info) {
             console.log("---- [" + name + "] STOP total: " + info.totalTime + " count:" + info.count);
         }
         else {
             console.log("---- [" + name + "] Never called");
+        }
+    });
+}
+
+export function resetProfiles(): void {
+    profileNames.forEach(function (name) {
+        const info = timers[name];
+
+        if (info) {
+            if (!info.isRunning) {
+                timers[name] = undefined;
+            } else {
+                console.log("---- timer with name [" + name + "] is currently running and won't be reset");
+            }
         }
     });
 }
