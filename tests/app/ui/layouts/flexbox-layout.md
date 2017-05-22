@@ -47,6 +47,8 @@ The supported properties on the FlexboxLayout container are:
 
 > **NOTE:** There is a limitation for `align-items` in **iOS**, the `baseline` option can **not** be used.
 
+> **NOTE:** If the parent Element has `columns` property ,the `justify-content` can not be used.
+
 The supported flexbox properties on child elements are as follow:
  - **order:**
     - Set in CSS using `style="order: 1;"`
