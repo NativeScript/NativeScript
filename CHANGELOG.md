@@ -1,6 +1,26 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 3.0.1 (2017, May 23)
+
+### Fixed
+
+- [(# 4103)](https://github.com/NativeScript/NativeScript/issues/4103) A problem with base64 encoded images in Image element
+- [(# 4143)](https://github.com/NativeScript/NativeScript/issues/4143) Background Image Failing
+- [(# 4127)](https://github.com/NativeScript/NativeScript/issues/4127) Binding to 'bindingContext' of View is not working
+- [(# 4015)](https://github.com/NativeScript/NativeScript/issues/4015) Crash: View already has a parent on Android 7.0 with Split screen + pageTransitions
+- [(# 3747)](https://github.com/NativeScript/NativeScript/issues/3747) Images randomly get swapped on Android
+- [(# 3960)](https://github.com/NativeScript/NativeScript/issues/3960) TabView with ScrollView and MapView crashes
+- [(# 3983)](https://github.com/NativeScript/NativeScript/issues/3983) TextField: "0000" hint truncated to "0"
+- [(# 4135)](https://github.com/NativeScript/NativeScript/issues/4135) TextField: If the secure property is true, the text property doesn't work properly
+- [(# 4123)](https://github.com/NativeScript/NativeScript/issues/4123) Android: Pressing ENTER key from hardware keyboard in TextView throws an exception
+- [(# 4109)](https://github.com/NativeScript/NativeScript/issues/4109) Android: Formatted string does not work if defined in XML
+- [(# 4022)](https://github.com/NativeScript/NativeScript/issues/4022) Android: TabView & ScrollView causes crash on resume
+- [(# 4175)](https://github.com/NativeScript/NativeScript/issues/4175) IOS: Switch not visible
+- [(# 4141)](https://github.com/NativeScript/NativeScript/issues/4141) IOS: ActionBar will be hidden after closeCallback of modal page
+- [(# 4157)](https://github.com/NativeScript/NativeScript/issues/4157) IOS: Hidden ActionBar will be shown by showModal()
+- [(# 4151)](https://github.com/NativeScript/NativeScript/issues/4151) IOS: Layout will not update on modal page
+
 ## 3.0.0 (2017, May 03)
 
 ### BREAKING CHANGES
