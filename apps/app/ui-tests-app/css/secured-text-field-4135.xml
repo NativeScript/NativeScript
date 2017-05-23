@@ -1,7 +1,7 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd">
- <StackLayout>
-    <TextField hint="hint" secure="true" text="test" ></TextField>
-    <TextField secure="true" text="text"></TextField>
-    <TextField hint="hint" secure="true"></TextField>
+    <StackLayout>
+        <TextField secure="true" text="test" hint="hint"></TextField>
+        <TextField secure="true" text="text"></TextField>
+        <TextField secure="true" hint="hint"></TextField>
     </StackLayout>
 </Page>
