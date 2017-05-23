@@ -1,4 +1,4 @@
-import { ad } from "tns-core-modules/utils//utils";
+import { ad } from "tns-core-modules/utils/utils";
 import { isAndroid } from "tns-core-modules/platform";
 
 export function onButtonLoaded(args) {
