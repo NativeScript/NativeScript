@@ -10,6 +10,11 @@ trace.setCategories(trace.categories.concat(
 var countResume = 0;
 var countSuspend = 0;
 
+application.on("displayed", args => {
+    const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : (<any>global).__tns_uptime;
+    console.log("Startup time: " + uptime() + "ms.");
+});
+
 application.on("uncaughtError", args => {
     const error = args.error;
     console.warn(error.message);
