@@ -426,7 +426,7 @@ export class View extends ViewCommon {
     }
 
     [backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
-        const nativeView = this.nativeView; 
+        const nativeView = this.nativeView;
         const drawable = nativeView.getBackground();
         return drawable ? drawable.getConstantState().newDrawable(nativeView.getResources()) : null;
     }
@@ -451,10 +451,12 @@ export class View extends ViewCommon {
     }
 
     _redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
-        if (value instanceof android.graphics.drawable.Drawable) {
-            this.nativeView.setBackground(value);
-        } else {
+        if (value instanceof Background) {
             androidBackground.onBackgroundOrBorderPropertyChanged(this);
+        } else {
+            const nativeView = this.nativeView;
+            org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
+            nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
         }
     }
 }
@@ -525,7 +527,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
     const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
     if (getter) {
-        View.prototype[getter] = function(this: View): PercentLength {
+        View.prototype[getter] = function (this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -541,7 +543,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
         }
     }
     if (setter) {
-        View.prototype[setter] = function(this: View, length: PercentLength) {
+        View.prototype[setter] = function (this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;

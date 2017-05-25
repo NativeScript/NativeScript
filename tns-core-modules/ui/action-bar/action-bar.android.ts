@@ -9,6 +9,7 @@ export * from "./action-bar-common";
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 
+let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
     actionItemIdGenerator++;
@@ -26,6 +27,8 @@ function initializeMenuItemClickListener(): void {
     if (MenuItemClickListener) {
         return;
     }
+
+    AppCompatTextView = (<any>android).support.v7.widget.AppCompatTextView;
 
     @Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
     class MenuItemClickListenerImpl extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
@@ -354,17 +357,40 @@ export class ActionBar extends ActionBarBase {
     }
 
     [colorProperty.getDefault](): number {
+        const nativeView = this.nativeView;
         if (!defaultTitleTextColor) {
-            let textView = new android.widget.TextView(this._context);
-            defaultTitleTextColor = textView.getTextColors().getDefaultColor();
+            let tv: android.widget.TextView = getAppCompatTextView(nativeView);
+            if (!tv) {
+                const title = nativeView.getTitle();
+                // setTitle will create AppCompatTextView internally;
+                nativeView.setTitle("");
+                tv = getAppCompatTextView(nativeView);
+                if (title) {
+                    // restore title.
+                    nativeView.setTitle(title);
+                }
+            }
+
+            defaultTitleTextColor = tv.getTextColors().getDefaultColor();
         }
 
         return defaultTitleTextColor;
     }
     [colorProperty.setNative](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         this.nativeView.setTitleTextColor(color);
     }
+}
+
+function getAppCompatTextView(toolbar: android.support.v7.widget.Toolbar): typeof AppCompatTextView {
+    for (let i = 0, count = toolbar.getChildCount(); i < count; i++) {
+        const child = toolbar.getChildAt(i);
+        if (child instanceof AppCompatTextView) {
+            return child;
+        }
+    }
+
+    return null;
 }
 
 ActionBar.prototype.recycleNativeView = true;
