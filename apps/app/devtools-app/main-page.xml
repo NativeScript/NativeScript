@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page navigatedTo="print">
+    <GridLayout rows="* * *" columns="* * *">
+        
+        <Button id="btn"
+                customProp="custom" 
+                text="hi there" 
+                fontSize="30" 
+                row="1"
+                col="0"
+                color="red"
+                backgroundColor="lightgreen"
+                class="btn" />
+
+        <Button text="add" tap="add" />
+        <Button text="remove" tap="remove" col="2" />
+        
+        <Button text="move beach" tap="navigate" col="1" />
+        <StackLayout colSpan="3" row="2" id="container">
+            
+        </StackLayout>
+    </GridLayout>
+</Page>

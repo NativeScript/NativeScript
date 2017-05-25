@@ -129,7 +129,7 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
-    // Overriden in TextField becasue setSingleLine(false) will remove methodTransformation.
+    // Overridden in TextField because setSingleLine(false) will remove methodTransformation.
     // and we don't want to allow TextField to be multiline
     [whiteSpaceProperty.setNative](value: WhiteSpace) {
         const nativeView = this.nativeView;
