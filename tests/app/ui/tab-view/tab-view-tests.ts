@@ -306,7 +306,7 @@ export class TabViewTest extends testModule.UITest<tabViewModule.TabView> {
         //console.log(`>>>>>>>>>>>>> CREATE 3 ITEMS`);
         this.testView.items = this._createItems(1);
         this.waitUntilTestElementIsLoaded();
-        
+
         let originalFont = tabViewTestsNative.getNativeFont(this.testView);
         //console.log(`>>>>>>>>>>>>> originalFont: ${fontToString(originalFont)}`);
         let nativeFont: any;

@@ -13,7 +13,7 @@ export class ProxyViewContainer extends LayoutBase implements ProxyViewContainer
 
     constructor() {
         super();
-        this.nativeView = undefined;        
+        this.nativeView = undefined;
     }
     
     // No native view for proxy container.

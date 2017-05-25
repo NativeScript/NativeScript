@@ -285,8 +285,10 @@ export class PageBase extends ContentView implements PageDefinition {
 
     private _resetCssValues() {
         const resetCssValuesFunc = (view: View): boolean => {
-            view._cancelAllAnimations();
-            resetCSSProperties(view.style);
+            view._batchUpdate(() => {
+                view._cancelAllAnimations();
+                resetCSSProperties(view.style);
+            });
             return true;
         };
 

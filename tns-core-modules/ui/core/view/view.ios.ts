@@ -27,6 +27,13 @@ export class View extends ViewCommon {
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
+    /**
+     * Native background states.
+     *  - `unset` - is the default, from this state it transitions to "invalid" in the base backgroundInternalProperty.setNative, overriding it without calling `super` will prevent the background from ever being drawn.
+     *  - `invalid` - the view background must be redrawn on the next layot.
+     *  - `drawn` - the view background has been property drawn, on subsequent layouts it may need to be redrawn if the background depends on the view's size.
+     */
+    _nativeBackgroundState: "unset" | "invalid" | "drawn";
 
     // get nativeView(): UIView {
     //     return this.ios;
@@ -91,6 +98,9 @@ export class View extends ViewCommon {
 
         if (sizeChanged) {
             this._onSizeChanged();
+        } else if (this._nativeBackgroundState === "invalid") {
+            let background = this.style.backgroundInternal;
+            this._redrawNativeBackground(background);
         }
 
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
@@ -210,7 +220,7 @@ export class View extends ViewCommon {
 
         let myPointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
         let otherPointInWindow = otherView.nativeView.convertPointToView(otherView.nativeView.bounds.origin, null);
-        return {
+        return {  
             x: myPointInWindow.x - otherPointInWindow.x,
             y: myPointInWindow.y - otherPointInWindow.y
         };
@@ -223,8 +233,10 @@ export class View extends ViewCommon {
         }
 
         let background = this.style.backgroundInternal;
-        if (!background.isEmpty() && this[backgroundInternalProperty.setNative]) {
-            this[backgroundInternalProperty.setNative](background);
+        const backgroundDependsOnSize = background.image || !background.hasUniformBorder();
+
+        if (this._nativeBackgroundState === "invalid" || (this._nativeBackgroundState === "drawn" && backgroundDependsOnSize)) {
+            this._redrawNativeBackground(background);
         }
 
         let clipPath = this.style.clipPath;
@@ -274,7 +286,7 @@ export class View extends ViewCommon {
     }
 
     public _isPresentationLayerUpdateSuspeneded() {
-        return this._suspendCATransaction || this._batchUpdateScope;
+        return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
     [isEnabledProperty.getDefault](): boolean {
@@ -395,6 +407,13 @@ export class View extends ViewCommon {
         return this.nativeView.backgroundColor;
     }
     [backgroundInternalProperty.setNative](value: UIColor | Background) {
+        this._nativeBackgroundState = "invalid";
+        if (this.isLayoutValid) {
+            this._redrawNativeBackground(value);
+        }
+    }
+
+    _redrawNativeBackground(value: UIColor | Background): void {
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
             CATransaction.begin();
@@ -412,6 +431,8 @@ export class View extends ViewCommon {
         if (!updateSuspended) {
             CATransaction.commit();
         }
+
+        this._nativeBackgroundState = "drawn";
     }
 
     _setNativeClipToBounds() {
@@ -419,6 +440,7 @@ export class View extends ViewCommon {
         this.nativeView.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
     }
 }
+View.prototype._nativeBackgroundState = "unset";
 
 export class CustomLayoutView extends View {
 

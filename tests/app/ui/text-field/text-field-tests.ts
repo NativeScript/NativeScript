@@ -449,6 +449,8 @@ export var testNativeBackgroundColorFromCss = function () {
         var page = <pagesModule.Page>views[1];
         page.css = "textfield { background-color: " + expectedBackgroundColorHex + "; }";
 
+        helper.waitUntilLayoutReady(textField);
+
         var actualResult = textFieldTestsNative.getNativeBackgroundColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
@@ -458,6 +460,8 @@ export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
         textField.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
+
+        helper.waitUntilLayoutReady(textField);
 
         var actualResult = textFieldTestsNative.getNativeBackgroundColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
