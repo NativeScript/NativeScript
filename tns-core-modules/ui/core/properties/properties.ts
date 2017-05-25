@@ -1112,11 +1112,9 @@ export function applyAllNativeSetters(view: ViewBase): void {
         }
 
         if (view[property.setNative]) {
-            if (view[property.getDefault]) {
-                const defaultValueKey = property.defaultValueKey;
-                if (!(defaultValueKey in style)) {
-                    style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
-                }
+            const defaultValueKey = property.defaultValueKey;
+            if (!(defaultValueKey in style)) {
+                style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
             }
 
             const value = style[symbol];
