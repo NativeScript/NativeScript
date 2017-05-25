@@ -1,5 +1,6 @@
 ﻿import * as file_access_module from "./file-system-access";
 import * as platformModule from "../platform";
+import { profile } from "../profiling";
 
 // The FileSystemAccess implementation, used through all the APIs.
 var fileAccess;
@@ -257,6 +258,7 @@ export class File extends FileSystemEntity {
         });
     }
 
+    @profile
     public readTextSync(onError?: (error: any) => any, encoding?: string): string {
         this.checkAccess();
 

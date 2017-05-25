@@ -6,6 +6,7 @@ import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAst
 import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
 import { File, knownFolders, path } from "../../file-system";
 import * as application from "../../application";
+import { profile } from "../../profiling";
 
 import * as kam from "../animation/keyframe-animation";
 let keyframeAnimationModule: typeof kam;
@@ -37,7 +38,7 @@ const applicationKeyframes: any = {};
 const animationsSymbol: symbol = Symbol("animations");
 const pattern: RegExp = /('|")(.*?)\1/;
 
-function onCssChanged(args: application.CssChangedEventData): void {
+const onCssChanged = profile('"style-scope".onCssChanged', (args: application.CssChangedEventData) => {
     if (args.cssText) {
         const parsed = createSelectorsFromCss(args.cssText, args.cssFile, applicationKeyframes);
         if (parsed) {
@@ -47,13 +48,13 @@ function onCssChanged(args: application.CssChangedEventData): void {
     } else if (args.cssFile) {
         loadCss(args.cssFile);
     }
-}
+});
 
 function onLiveSync(args: application.CssChangedEventData): void {
     loadCss(application.getCssFileName());
 }
 
-function loadCss(cssFile?: string): RuleSet[] {
+const loadCss = profile(`"style-scope".loadCss`, (cssFile?: string) => {
     if (!cssFile) {
         return undefined;
     }
@@ -70,15 +71,16 @@ function loadCss(cssFile?: string): RuleSet[] {
             mergeCssSelectors();
         }
     }
-}
+});
 
 application.on("cssChanged", onCssChanged);
 application.on("livesync", onLiveSync);
 
-function loadCssOnLaunch() {
+export const loadCssOnLaunch = profile('"style-scope".loadCssOnLaunch', () => {
     loadCss(application.getCssFileName());
     application.off("launch", loadCssOnLaunch);
-}
+});
+
 if (application.hasLaunched()) {
     loadCssOnLaunch();
 } else {
@@ -180,6 +182,7 @@ export class StyleScope {
         this.appendCss(cssString, cssFileName)
     }
 
+    @profile
     private setCss(cssString: string, cssFileName?): void {
         this._css = cssString;
         this._reset();
@@ -188,6 +191,7 @@ export class StyleScope {
         this.ensureSelectors();
     }
 
+    @profile
     private appendCss(cssString: string, cssFileName?): void {
         if (!cssString) {
             return;
@@ -214,27 +218,32 @@ export class StyleScope {
     }
 
     public ensureSelectors(): number {
-        let toMerge: RuleSet[][];
         if (this._applicationCssSelectorsAppliedVersion !== applicationCssSelectorVersion ||
             this._localCssSelectorVersion !== this._localCssSelectorsAppliedVersion ||
             !this._mergedCssSelectors) {
-            toMerge = [];
-            toMerge.push(applicationCssSelectors);
-            this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
-            toMerge.push(this._localCssSelectors);
-            this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
-            for (let keyframe in applicationKeyframes) {
-                this._keyframes[keyframe] = applicationKeyframes[keyframe];
-            }
+
+            this._createSelectors();
         }
 
-        if (toMerge && toMerge.length > 0) {
+        return this._getSelectorsVersion();
+    }
+
+    @profile
+    private _createSelectors() {
+        let toMerge: RuleSet[][] = [];
+        toMerge.push(applicationCssSelectors);
+        this._applicationCssSelectorsAppliedVersion = applicationCssSelectorVersion;
+        toMerge.push(this._localCssSelectors);
+        this._localCssSelectorsAppliedVersion = this._localCssSelectorVersion;
+        for (let keyframe in applicationKeyframes) {
+            this._keyframes[keyframe] = applicationKeyframes[keyframe];
+        }
+
+        if (toMerge.length > 0) {
             this._mergedCssSelectors = toMerge.filter(m => !!m).reduce((merged, next) => merged.concat(next), []);
             this._applyKeyframesOnSelectors();
             this._selectors = new SelectorsMap(this._mergedCssSelectors);
         }
-
-        return this._getSelectorsVersion();
     }
 
     public applySelectors(view: ViewBase): void {

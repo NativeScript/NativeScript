@@ -3,6 +3,8 @@ declare var __stopCPUProfiler: any;
 
 import { TimerInfo as TimerInfoDefinition } from ".";
 
+export const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : (<any>global).__tns_uptime;
+
 interface TimerInfo extends TimerInfoDefinition {
     totalTime: number;
     lastTime?: number;
@@ -16,41 +18,19 @@ const timers: { [index: string]: TimerInfo } = {};
 const anyGlobal = <any>global;
 const profileNames: string[] = [];
 
-let ENABLED = false;
-let nativeTimeFunc: () => number;
+let instrumentationEnabled = false;
 
 export function enable() {
-    ENABLED = true;
-
-    if (!nativeTimeFunc) {
-        // init timeFunc
-        if (anyGlobal.android) {
-            const nanoTime = java.lang.System.nanoTime;
-            // 1 ms = 1000000 ns
-            nativeTimeFunc = () => { return nanoTime() / 1000000 };
-        } else {
-            nativeTimeFunc = () => { return CACurrentMediaTime() * 1000; };
-        }
-    }
+    instrumentationEnabled = true;
 }
 
 export function disable() {
-    ENABLED = false;
+    instrumentationEnabled = false;
 }
 
-export function time(): number {
-    if (!ENABLED) {
-        throw new Error("Profiling is not enabled");
-    }
-
-    return nativeTimeFunc();
-}
+export const time = (<any>global).__time || Date.now;
 
 export function start(name: string): void {
-    if (!ENABLED) {
-        return;
-    }
-
     let info = timers[name];
 
     if (info) {
@@ -71,20 +51,11 @@ export function start(name: string): void {
 }
 
 export function pause(name: string): TimerInfo {
-    if (!ENABLED) {
-        return;
-    }
-
     let info = pauseInternal(name);
-    // console.log(`---- [${name}] PAUSE last: ${info.lastTime} total: ${info.totalTime} count: ${info.count}`);
     return info;
 }
 
 export function stop(name: string): TimerInfo {
-    if (!ENABLED) {
-        return;
-    }
-
     let info = pauseInternal(name);
     console.log(`---- [${name}] STOP total: ${info.totalTime} count:${info.count}`);
 
@@ -115,11 +86,52 @@ function pauseInternal(name: string): TimerInfo {
     return info;
 }
 
-export function profile(name?: string): MethodDecorator {
-    return (target, key, descriptor) => {
-        if (!ENABLED) {
-            return;
+function profileFunction<F extends Function>(fn: F, customName?: string): F {
+    const name = customName || fn.name;
+    profileNames.push(name);
+    return <any>function() {
+        start(name);
+        try {
+            return fn.apply(this, arguments);
+        } finally {
+            pause(name);
         }
+    }
+}
+
+const profileMethodUnnamed = (target, key, descriptor) => {
+    // save a reference to the original method this way we keep the values currently in the
+    // descriptor and don't overwrite what another decorator might have done to the descriptor.
+    if (descriptor === undefined) {
+        descriptor = Object.getOwnPropertyDescriptor(target, key);
+    }
+    var originalMethod = descriptor.value;
+
+    let className = "";
+    if (target && target.constructor && target.constructor.name) {
+        className = target.constructor.name + ".";
+    }
+
+    let name = className + key;
+
+    profileNames.push(name);
+
+    //editing the descriptor/value parameter
+    descriptor.value = function () {
+        start(name);
+        try {
+            return originalMethod.apply(this, arguments);
+        } finally {
+            pause(name);
+        }
+    };
+
+    // return edited descriptor as opposed to overwriting the descriptor
+    return descriptor;
+}
+
+function profileMethodNamed(name: string): MethodDecorator {
+    return (target, key, descriptor) => {
 
         // save a reference to the original method this way we keep the values currently in the
         // descriptor and don't overwrite what another decorator might have done to the descriptor.
@@ -127,15 +139,6 @@ export function profile(name?: string): MethodDecorator {
             descriptor = Object.getOwnPropertyDescriptor(target, key);
         }
         var originalMethod = descriptor.value;
-
-        if (!name) {
-            let className = "";
-            if (target && target.constructor && target.constructor.name) {
-                className = target.constructor.name + ".";
-            }
-
-            name = className + key;
-        }
 
         profileNames.push(name);
 
@@ -151,6 +154,39 @@ export function profile(name?: string): MethodDecorator {
 
         // return edited descriptor as opposed to overwriting the descriptor
         return descriptor;
+    }
+}
+
+const voidMethodDecorator = () => {
+    // no op
+};
+
+export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: Function | string | symbol, descriptor?: PropertyDescriptor): Function | MethodDecorator {
+    if (typeof nameFnOrTarget === "object" && (typeof fnOrKey === "string" || typeof fnOrKey === "symbol")) {
+        if (!instrumentationEnabled) {
+            return;
+        }
+        return profileMethodUnnamed(nameFnOrTarget, fnOrKey, descriptor);
+    } else if (typeof nameFnOrTarget === "string" && typeof fnOrKey === "function") {
+        if (!instrumentationEnabled) {
+            return fnOrKey;
+        }
+        return profileFunction(fnOrKey, nameFnOrTarget);
+    } else if (typeof nameFnOrTarget === "function") {
+        if (!instrumentationEnabled) {
+            return nameFnOrTarget;
+        }
+        return profileFunction(nameFnOrTarget);
+    } else if (typeof nameFnOrTarget === "string") {
+        if (!instrumentationEnabled) {
+            return voidMethodDecorator;
+        }
+        return profileMethodNamed(nameFnOrTarget);
+    } else {
+        if (!instrumentationEnabled) {
+            return voidMethodDecorator;
+        }
+        return profileMethodUnnamed;
     }
 }
 
@@ -182,20 +218,12 @@ export function resetProfiles(): void {
 }
 
 export function startCPUProfile(name: string) {
-    if (!ENABLED) {
-        return;
-    }
-
     if (anyGlobal.android) {
         __startCPUProfiler(name);
     }
 }
 
 export function stopCPUProfile(name: string) {
-    if (!ENABLED) {
-        return;
-    }
-
     if (anyGlobal.android) {
         __stopCPUProfiler(name);
     }
