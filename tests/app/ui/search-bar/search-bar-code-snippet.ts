@@ -1,5 +1,4 @@
 import { EventData } from 'data/observable';
-import { Page } from 'ui/page';
 import { SearchBar } from "ui/search-bar"
 
 export function navigatingTo(args: EventData) {
