@@ -78,7 +78,7 @@ export module ad {
             }
         } else {
             // TODO: newDrawable for BitmapDrawable will fail if we don't speicfy resource. Use the other overload.
-            const defaultDrawable = androidView.background ? androidView.background.newDrawable() : null;
+            const defaultDrawable = androidView.background ? androidView.background.newDrawable(nativeView.getResources()) : null;
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, defaultDrawable);
             androidView.background = undefined;
             
