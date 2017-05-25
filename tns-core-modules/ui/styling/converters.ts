@@ -1,5 +1,17 @@
-﻿import { Color } from "../../color";
+﻿import {
+    TransformFunctionsInfo,
+    Transformation,
+    TransformationValue,
+    decompose2DTransformMatrix,
+    getTransformMatrix,
+    matrixArrayToCssMatrix,
+    multiplyNDimensionalMatriceArrays,
+} from "../../matrix";
+
+import { Color } from "../../color";
 import { CubicBezierAnimationCurve } from "../animation";
+
+const TRANSFORM_SPLITTER = new RegExp(/([a-zA-Z\-]+)\((.*?)\)/g);
 
 export function colorConverter(value: string): Color {
     return new Color(value);
@@ -82,37 +94,45 @@ export function animationTimingFunctionConverter(value: string): Object {
     return result;
 }
 
-export function transformConverter(value: any): Object {
-    if (value === "none") {
-        let operations = {};
-        operations[value] = value;
-        return operations;
+export function transformConverter(text: string): TransformFunctionsInfo {
+    if (text === "none" || text === "") {
+        return {
+            translate: { x: 0, y: 0 },
+            rotate: 0,
+            scale: { x: 1, y: 1 },
+        };
     }
-    else if (typeof value === "string") {
-        let operations = {};
-        let operator = "";
-        let pos = 0;
-        while (pos < value.length) {
-            if (value[pos] === " " || value[pos] === ",") {
-                pos++;
-            }
-            else if (value[pos] === "(") {
-                let start = pos + 1;
-                while (pos < value.length && value[pos] !== ")") {
-                    pos++;
-                }
-                let operand = value.substring(start, pos);
-                operations[operator] = operand.trim();
-                operator = "";
-                pos++;
-            }
-            else {
-                operator += value[pos++];
-            }
-        }
-        return operations;
-    }
-    else {
-        return undefined;
-    }
+
+    const affineMatrix = parseTransformString(text)
+        .map(getTransformMatrix)
+        .reduce((m1, m2) => multiplyNDimensionalMatriceArrays(3, m1, m2))
+   const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
+
+   return decompose2DTransformMatrix(cssMatrix);
 }
+
+export function parseTransformString(text: string): Transformation[] {
+    let matches: Transformation[] = [];
+    let match;
+
+    while ((match = TRANSFORM_SPLITTER.exec(text)) !== null) {
+        const property = match[1];
+        const value = convertTransformValue(match[2]);
+
+        matches.push({ property, value });
+    }
+
+    return matches;
+}
+
+function convertTransformValue(stringValue: string): TransformationValue {
+    const [x, y] = stringValue.split(",").map(parseFloat);
+
+    if (x && y) {
+        return { x, y };
+    } else {
+        return stringValue.slice(-3) === "rad" ? x : degreesToRadians(x);
+     }
+}
+
+const degreesToRadians = a => a * (Math.PI / 180);

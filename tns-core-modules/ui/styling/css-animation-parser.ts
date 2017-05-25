@@ -3,11 +3,6 @@ import { Color } from "../../color";
 import { KeyframeAnimationInfo, KeyframeInfo, KeyframeDeclaration } from "../animation/keyframe-animation";
 import { timeConverter, numberConverter, transformConverter, animationTimingFunctionConverter } from "../styling/converters";
 
-interface TransformInfo {
-    scale: Pair;
-    translate: Pair;
-}
-
 let animationProperties = {
     "animation-name": (info, declaration) => info.name = declaration.value,
     "animation-duration": (info, declaration) => info.duration = timeConverter(declaration.value),
@@ -122,61 +117,6 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
     }
 }
 
-function getTransformationValues(value: any): Array<{ propertyName: string, value: number }> {
-    let newTransform = transformConverter(value);
-    let array = new Array<{ propertyName: string, value: number }>();
-    let values = undefined;
-    for (let transform in newTransform) {
-        switch (transform) {
-            case "scaleX":
-                array.push({ propertyName: "scaleX", value: parseFloat(newTransform[transform]) });
-                break;
-            case "scaleY":
-                array.push({ propertyName: "scaleY", value: parseFloat(newTransform[transform]) });
-                break;
-            case "scale":
-            case "scale3d":
-                values = newTransform[transform].split(",");
-                if (values.length === 2 || values.length === 3) {
-                    array.push({ propertyName: "scaleX", value: parseFloat(values[0]) });
-                    array.push({ propertyName: "scaleY", value: parseFloat(values[1]) });
-                }
-                break;
-            case "translateX":
-                array.push({ propertyName: "translateX", value: parseFloat(newTransform[transform]) });
-                break;
-            case "translateY":
-                array.push({ propertyName: "translateY", value: parseFloat(newTransform[transform]) });
-                break;
-            case "translate":
-            case "translate3d":
-                values = newTransform[transform].split(",");
-                if (values.length === 2 || values.length === 3) {
-                    array.push({ propertyName: "translateX", value: parseFloat(values[0]) });
-                    array.push({ propertyName: "translateY", value: parseFloat(values[1]) });
-                }
-                break;
-            case "rotate":
-                let text = newTransform[transform];
-                let val = parseFloat(text);
-                if (text.slice(-3) === "rad") {
-                    val = val * (180.0 / Math.PI);
-                }
-                array.push({ propertyName: "rotate", value: val });
-                break;
-            case "none":
-                array.push({ propertyName: "scaleX", value: 1 });
-                array.push({ propertyName: "scaleY", value: 1 });
-                array.push({ propertyName: "translateX", value: 0 });
-                array.push({ propertyName: "translateY", value: 0 });
-                array.push({ propertyName: "rotate", value: 0 });
-                break;
-        }
-    }
-
-    return array;
-}
-
 function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration> {
     let declarations = {};
     let transforms = { scale: undefined, translate: undefined };
@@ -186,15 +126,13 @@ function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration>
         if (propertyName === "opacity") {
             declarations[propertyName] = parseFloat(value);
         }
+
         else if (propertyName === "transform") {
-            let values = getTransformationValues(value);
-            if (values) {
-                for (let pair of values) {
-                    if (!preprocessAnimationValues(pair.propertyName, pair.value, transforms)) {
-                        declarations[pair.propertyName] = pair.value;
-                    }
-                }
-            }
+            const transformations = transformConverter(value);
+            declarations = {...declarations, ...transformations};
+            console.log("TRANSFORMATIONS ---------------------")
+            console.dir(transformations)
+            console.log("---------------------")
             delete declarations[propertyName];
         }
         else if (propertyName === "backgroundColor" || propertyName === "background-color") {
@@ -218,36 +156,4 @@ function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration>
         array.push(keyframeDeclaration);
     }
     return array;
-}
-
-function preprocessAnimationValues(propertyName: string, value: number, transforms: TransformInfo) {
-    if (propertyName === "scaleX") {
-        if (transforms.scale === undefined) {
-            transforms.scale = { x: 1, y: 1 };
-        }
-        transforms.scale.x = value;
-        return true;
-    }
-    if (propertyName === "scaleY") {
-        if (transforms.scale === undefined) {
-            transforms.scale = { x: 1, y: 1 };
-        }
-        transforms.scale.y = value;
-        return true;
-    }
-    if (propertyName === "translateX") {
-        if (transforms.translate === undefined) {
-            transforms.translate = { x: 0, y: 0 };
-        }
-        transforms.translate.x = value;
-        return true;
-    }
-    if (propertyName === "translateY") {
-        if (transforms.translate === undefined) {
-            transforms.translate = { x: 0, y: 0 };
-        }
-        transforms.translate.y = value;
-        return true;
-    }
-    return false;
 }
