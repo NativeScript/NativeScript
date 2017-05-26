@@ -27,13 +27,13 @@ const MAIN_TRANSFORM_MATRIXES = {
 const ALL_TRANSFORM_MATRIXES = {
     "scale": MAIN_TRANSFORM_MATRIXES["scale"],
     "scale3d": MAIN_TRANSFORM_MATRIXES["scale"],
-    "scaleX": x => MAIN_TRANSFORM_MATRIXES["scale"]({x}),
-    "scaleY": y => MAIN_TRANSFORM_MATRIXES["scale"]({y}),
+    "scaleX": ({x}) => MAIN_TRANSFORM_MATRIXES["scale"]({x}),
+    "scaleY": ({y}) => MAIN_TRANSFORM_MATRIXES["scale"]({y}),
 
     "translate": MAIN_TRANSFORM_MATRIXES["translate"],
     "translate3d": MAIN_TRANSFORM_MATRIXES["translate"],
-    "translateX": x => MAIN_TRANSFORM_MATRIXES["translate"]({x}),
-    "translateY": y => MAIN_TRANSFORM_MATRIXES["translate"]({y}),
+    "translateX": ({x}) => MAIN_TRANSFORM_MATRIXES["translate"]({x}),
+    "translateY": ({y}) => MAIN_TRANSFORM_MATRIXES["translate"]({y}),
 
     "rotate": MAIN_TRANSFORM_MATRIXES["rotate"],
 };

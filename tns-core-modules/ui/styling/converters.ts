@@ -15,7 +15,7 @@ import {
 import { Color } from "../../color";
 import { CubicBezierAnimationCurve } from "../animation";
 
-const TRANSFORM_SPLITTER = new RegExp(/(.+?)\((.*?)\)/g);
+const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
 const TRANSFORMATIONS = Object.freeze([
     "rotate",
     "translate",
