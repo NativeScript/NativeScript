@@ -5,29 +5,13 @@
  * @module "matrix"
  */ /** */
 
-export type Transformation = {
-    property: TransformationType;
-    value?: TransformationValue;
-};
-
-export type TransformationType = "rotate" |
-    "translate" | "translateX" | "translateY" |
-    "scale" | "scaleX" | "scaleY";
-
-export type TransformationValue = number | {x: number, y: number};
-
-export type TransformFunctionsInfo = {
-    translate: TransformationValue,
-    rotate: number,
-    scale: TransformationValue,
-}
+ import { TransformFunctionsInfo } from "../ui/styling/converters";
 
 /**
  * Returns the affine matrix representation of the transformation.
  * @param transformation Property and value of the transformation.
  */
-export declare const getTransformMatrix: ({property, value}: Transformation) =>
-    number[];
+export declare const getTransformMatrix: ({property, value}) => number[];
 
 
 /**

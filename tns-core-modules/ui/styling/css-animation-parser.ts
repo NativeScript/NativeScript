@@ -119,35 +119,26 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
 
 function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration> {
     let declarations = {};
-    let transforms = { scale: undefined, translate: undefined };
     for (let declaration of (<any>keyframe).declarations) {
         let propertyName = declaration.property;
         let value = declaration.value;
+
         if (propertyName === "opacity") {
             declarations[propertyName] = parseFloat(value);
-        }
+        } else if (propertyName === "transform") {
 
-        else if (propertyName === "transform") {
             const transformations = transformConverter(value);
-            declarations = {...declarations, ...transformations};
-            console.log("TRANSFORMATIONS ---------------------")
-            console.dir(transformations)
-            console.log("---------------------")
+            Object.assign(declarations, transformations);
             delete declarations[propertyName];
-        }
-        else if (propertyName === "backgroundColor" || propertyName === "background-color") {
+        } else if (propertyName === "backgroundColor" || propertyName === "background-color") {
+
             declarations["backgroundColor"] = new Color(value);
         }
         else {
             declarations[propertyName] = value;
         }
     }
-    if (transforms.scale !== undefined) {
-        declarations["scale"] = transforms.scale;
-    }
-    if (transforms.translate !== undefined) {
-        declarations["translate"] = transforms.translate;
-    }
+
     let array = new Array<KeyframeDeclaration>();
     for (let declaration in declarations) {
         let keyframeDeclaration = <KeyframeDeclaration>{};
@@ -155,5 +146,6 @@ function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration>
         keyframeDeclaration.value = declarations[declaration];
         array.push(keyframeDeclaration);
     }
+
     return array;
 }

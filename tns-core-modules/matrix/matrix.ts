@@ -1,21 +1,9 @@
-export type Transformation = {
-    property: TransformationType;
-    value?: TransformationValue;
-};
+import {
+    TransformFunctionsInfo,
+    Pair,
+} from "../ui/animation/animation";
 
-export type TransformationType = "rotate" |
-    "translate" | "translateX" | "translateY" |
-    "scale" | "scaleX" | "scaleY";
-
-export type TransformationValue = number | { x: number, y: number };
-
-export type TransformFunctionsInfo = {
-    translate: TransformationValue,
-    rotate: number,
-    scale: TransformationValue,
-}
-
-export const getTransformMatrix = ({property, value}: Transformation) =>
+export const getTransformMatrix = ({property, value}) =>
     ALL_TRANSFORM_MATRIXES[property](value);
 
 const MAIN_TRANSFORM_MATRIXES = {
@@ -37,13 +25,13 @@ const MAIN_TRANSFORM_MATRIXES = {
 };
 
 const ALL_TRANSFORM_MATRIXES = {
-    "scale": a => MAIN_TRANSFORM_MATRIXES["scale"]({x: a, y: a}),
-    "scale3d": a => MAIN_TRANSFORM_MATRIXES["scale"]({x: a, y: a}),
+    "scale": MAIN_TRANSFORM_MATRIXES["scale"],
+    "scale3d": MAIN_TRANSFORM_MATRIXES["scale"],
     "scaleX": x => MAIN_TRANSFORM_MATRIXES["scale"]({x}),
     "scaleY": y => MAIN_TRANSFORM_MATRIXES["scale"]({y}),
 
-    "translate": a => MAIN_TRANSFORM_MATRIXES["translate"]({x: a, y: a}),
-    "translate3d": a => MAIN_TRANSFORM_MATRIXES["translate"]({x: a, y: a}),
+    "translate": MAIN_TRANSFORM_MATRIXES["translate"],
+    "translate3d": MAIN_TRANSFORM_MATRIXES["translate"],
     "translateX": x => MAIN_TRANSFORM_MATRIXES["translate"]({x}),
     "translateY": y => MAIN_TRANSFORM_MATRIXES["translate"]({y}),
 
@@ -77,11 +65,11 @@ export function decompose2DTransformMatrix(matrix: number[])
     : TransformFunctionsInfo {
 
     verifyTransformMatrix(matrix);
-    return {
-        ...getTranslate(matrix),
-        ...getRotate(matrix),
-        ...getScale(matrix),
-    };
+    return Object.assign({}, 
+        getTranslate(matrix),
+        getRotate(matrix),
+        getScale(matrix)
+    );
 }
 
 function verifyTransformMatrix(matrix: number[]) {
@@ -90,7 +78,7 @@ function verifyTransformMatrix(matrix: number[]) {
     }
 }
 
-const getTranslate = (matrix: number[]) => ({
+const getTranslate = (matrix: number[]): { translate: Pair} => ({
     translate: { x: matrix[4], y: matrix[5] }
 });
 
@@ -103,7 +91,7 @@ function getRotate(matrix: number[]): { rotate: number } {
     return {rotate};
 }
 
-function getScale(matrix: number[]): { scale: { x, y } } {
+function getScale(matrix: number[]): { scale: Pair } {
     const [A, B, C, D] = [...matrix];
     const determinant = A * D - B * C;
 
