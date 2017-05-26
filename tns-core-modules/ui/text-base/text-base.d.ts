@@ -93,7 +93,7 @@ export class TextBase extends View implements AddChildFromBuilder {
     /**
      * @private
      */
-    _setNativeText(reset: boolean = false): void;
+    _setNativeText(reset?: boolean): void;
     //@endprivate
 }
 

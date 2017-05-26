@@ -12,10 +12,10 @@ export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
-    [textProperty.getDefault](): string {
+    [textProperty.getDefault](): number {
         return -1;
     }
-    [textProperty.setNative](value: string) {
+    [textProperty.setNative](value: string | number) {
         const reset = value === -1;
         if (!reset && this.formattedText) {
             return;
