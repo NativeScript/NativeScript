@@ -1,9 +1,11 @@
 // Definitions.
 import {
+    Keyframes as KeyframesDefinition,
+    UnparsedKeyframe as UnparsedKeyframeDefinition,
     KeyframeDeclaration as KeyframeDeclarationDefinition,
     KeyframeInfo as KeyframeInfoDefinition,
     KeyframeAnimationInfo as KeyframeAnimationInfoDefinition,
-    KeyframeAnimation as KeyframeAnimationDefinition
+    KeyframeAnimation as KeyframeAnimationDefinition,
 } from "./keyframe-animation";
 
 import { View, Color } from "../core/view";
@@ -17,6 +19,16 @@ import {
     translateXProperty, translateYProperty,
     rotateProperty, opacityProperty
 } from "../styling/style-properties";
+
+export class Keyframes implements KeyframesDefinition {
+    name: string;
+    keyframes: Array<UnparsedKeyframe>;
+}
+
+export class UnparsedKeyframe implements UnparsedKeyframeDefinition {
+    values: Array<any>;
+    declarations: Array<KeyframeDeclaration>;
+}
 
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;

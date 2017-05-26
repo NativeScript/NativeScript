@@ -1,6 +1,13 @@
 import { Pair } from "../animation";
 import { Color } from "../../color";
-import { KeyframeAnimationInfo, KeyframeInfo, KeyframeDeclaration } from "../animation/keyframe-animation";
+
+import {
+    KeyframeAnimationInfo,
+    KeyframeDeclaration,
+    KeyframeInfo,
+    Keyframes,
+    UnparsedKeyframe,
+} from "../animation/keyframe-animation";
 import { timeConverter, numberConverter, transformConverter, animationTimingFunctionConverter } from "../styling/converters";
 
 let animationProperties = {
@@ -38,9 +45,9 @@ export class CssAnimationParser {
         return animations.length === 0 ? undefined : animations;
     }
 
-    public static keyframesArrayFromCSS(cssKeyframes: Object): Array<KeyframeInfo> {
+    public static keyframesArrayFromCSS(cssKeyframes: Keyframes): Array<KeyframeInfo> {
         let parsedKeyframes = new Array<KeyframeInfo>();
-        for (let keyframe of (<any>cssKeyframes).keyframes) {
+        for (let keyframe of cssKeyframes.keyframes) {
             let declarations = parseKeyframeDeclarations(keyframe);
             for (let time of keyframe.values) {
                 if (time === "from") {
@@ -64,7 +71,7 @@ export class CssAnimationParser {
                     current.duration = time;
                     parsedKeyframes[time] = current;
                 }
-                for (let declaration of <any>keyframe.declarations) {
+                for (let declaration of keyframe.declarations) {
                     if (declaration.property === "animation-timing-function") {
                         current.curve = animationTimingFunctionConverter(declaration.value);
                     }
@@ -117,9 +124,9 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
     }
 }
 
-function parseKeyframeDeclarations(keyframe: Object): Array<KeyframeDeclaration> {
+function parseKeyframeDeclarations(keyframe: UnparsedKeyframe): Array<KeyframeDeclaration> {
     let declarations = {};
-    for (let declaration of (<any>keyframe).declarations) {
+    for (let declaration of keyframe.declarations) {
         let propertyName = declaration.property;
         let value = declaration.value;
 

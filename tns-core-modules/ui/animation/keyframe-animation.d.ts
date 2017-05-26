@@ -4,6 +4,16 @@
 
 import { View } from "../core/view";
 
+export interface Keyframes {
+    name: string;
+    keyframes: Array<UnparsedKeyframe>;
+}
+
+export interface UnparsedKeyframe {
+    values: Array<any>;
+    declarations: Array<KeyframeDeclaration>;
+}
+
 export interface KeyframeDeclaration {
     property: string;
     value: any;

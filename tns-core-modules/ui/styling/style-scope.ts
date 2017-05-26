@@ -1,9 +1,27 @@
+import { UnparsedKeyframe, Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
 import { resetCSSProperties } from "../core/properties";
-import { SyntaxTree, Keyframes, parse as parseCss, Node as CssNode } from "../../css";
-import { RuleSet, SelectorsMap, SelectorCore, SelectorsMatch, ChangeMap, fromAstNodes, Node } from "./css-selector";
-import { write as traceWrite, categories as traceCategories, messageType as traceMessageType } from "../../trace";
+import {
+    SyntaxTree,
+    Keyframes as KeyframesDefinition,
+    parse as parseCss,
+    Node as CssNode,
+} from "../../css";
+import {
+    RuleSet,
+    SelectorsMap,
+    SelectorCore,
+    SelectorsMatch,
+    ChangeMap,
+    fromAstNodes,
+    Node,
+} from "./css-selector";
+import {
+    write as traceWrite,
+    categories as traceCategories,
+    messageType as traceMessageType,
+} from "../../trace";
 import { File, knownFolders, path } from "../../file-system";
 import * as application from "../../application";
 import { profile } from "../../profiling";
@@ -167,7 +185,7 @@ export class StyleScope {
     private _localCssSelectorVersion: number = 0;
     private _localCssSelectorsAppliedVersion: number = 0;
     private _applicationCssSelectorsAppliedVersion: number = 0;
-    private _keyframes = {};
+    private _keyframes = new Map<string, Keyframes>();
 
     get css(): string {
         return this._css;
@@ -292,7 +310,7 @@ export class StyleScope {
     }
 }
 
-function createSelectorsFromCss(css: string, cssFileName: string, keyframes: Object): RuleSet[] {
+function createSelectorsFromCss(css: string, cssFileName: string, keyframes: Map<string, Keyframes>): RuleSet[] {
     try {
         const pageCssSyntaxTree = css ? parseCss(css, { source: cssFileName }) : null;
         let pageCssSelectors: RuleSet[] = [];
@@ -306,7 +324,7 @@ function createSelectorsFromCss(css: string, cssFileName: string, keyframes: Obj
     }
 }
 
-function createSelectorsFromImports(tree: SyntaxTree, keyframes: Object): RuleSet[] {
+function createSelectorsFromImports(tree: SyntaxTree, keyframes: Map<string, Keyframes>): RuleSet[] {
     let selectors: RuleSet[] = [];
 
     if (tree !== null && tree !== undefined) {
@@ -336,9 +354,9 @@ function createSelectorsFromImports(tree: SyntaxTree, keyframes: Object): RuleSe
     return selectors;
 }
 
-function createSelectorsFromSyntaxTree(ast: SyntaxTree, keyframes: Object): RuleSet[] {
+function createSelectorsFromSyntaxTree(ast: SyntaxTree, keyframes: Map<string, Keyframes>): RuleSet[] {
     const nodes = ast.stylesheet.rules;
-    (<Keyframes[]>nodes.filter(isKeyframe)).forEach(node => keyframes[node.name] = node);
+    (<KeyframesDefinition[]>nodes.filter(isKeyframe)).forEach(node => keyframes[node.name] = node);
 
     const rulesets = fromAstNodes(nodes);
     if (rulesets && rulesets.length) {
@@ -371,7 +389,7 @@ export function resolveFileNameFromUrl(url: string, appDirectory: string, fileEx
 
 export function applyInlineStyle(view: ViewBase, styleStr: string) {
     let localStyle = `local { ${styleStr} }`;
-    let inlineRuleSet = createSelectorsFromCss(localStyle, null, {});
+    let inlineRuleSet = createSelectorsFromCss(localStyle, null, new Map());
     const style = view.style;
 
     inlineRuleSet[0].declarations.forEach(d => {
@@ -389,7 +407,7 @@ export function applyInlineStyle(view: ViewBase, styleStr: string) {
     });
 }
 
-function isKeyframe(node: CssNode): node is Keyframes {
+function isKeyframe(node: CssNode): node is KeyframesDefinition {
     return node.type === "keyframes";
 }
 
