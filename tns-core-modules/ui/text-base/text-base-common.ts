@@ -150,7 +150,7 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
         }
     }
 
-    _setNativeText(): void {
+    _setNativeText(reset: boolean = false): void {
         //
     }
 }
