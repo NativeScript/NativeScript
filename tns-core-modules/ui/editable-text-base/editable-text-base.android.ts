@@ -161,11 +161,12 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         super.initNativeView();
         const nativeView = this.nativeView;
         (<any>nativeView).listener.owner = this;
-        this._keyListenerCache = nativeView.getKeyListener();
+        // this._keyListenerCache = nativeView.getKeyListener();
     }
 
-    public _disposeNativeView(force?: boolean) {
+    public disposeNativeView(): void {
         const nativeView = this.nativeView;
+        super.disposeNativeView();
         (<any>nativeView).listener.owner = null;
         nativeView.setInputType(this._inputType);
         this._keyListenerCache = null;
@@ -328,11 +329,14 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         return true;
     }
     [editableProperty.setNative](value: boolean) {
+        const nativeView = this.nativeView
         if (value) {
-            this.nativeView.setKeyListener(this._keyListenerCache);
-        }
-        else {
-            this.nativeView.setKeyListener(null);
+            nativeView.setKeyListener(this._keyListenerCache);
+        } else {
+            if (!this._keyListenerCache) {
+                 this._keyListenerCache = nativeView.getKeyListener();
+            }
+            nativeView.setKeyListener(null);
         }
     }
 
