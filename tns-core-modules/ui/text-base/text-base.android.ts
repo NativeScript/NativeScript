@@ -49,18 +49,25 @@ function initializeTextTransformation(): void {
 
 export class TextBase extends TextBaseCommon {
     nativeView: android.widget.TextView;
-    _defaultTransformationMethod: android.text.method.TransformationMethod;
+    private _defaultTransformationMethod: android.text.method.TransformationMethod;
+    private _paintFlags: number;
 
     public initNativeView(): void {
-        this._defaultTransformationMethod = this.nativeView.getTransformationMethod();
+        const nativeView = this.nativeView;
+        this._defaultTransformationMethod = nativeView.getTransformationMethod();
+        this._paintFlags = nativeView.getPaintFlags();
         super.initNativeView();
     }
 
-    public resetNativeView(): void {
-        super.resetNativeView();
+    public disposeNativeView(): void {
+        super.disposeNativeView();
+        const nativeView = this.nativeView;
         // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-        this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+        nativeView.setTransformationMethod(this._defaultTransformationMethod);
         this._defaultTransformationMethod = null;
+        
+        nativeView.setPaintFlags(this._paintFlags);
+        this._paintFlags = null;
     }
 
     [textProperty.getDefault](): number {
