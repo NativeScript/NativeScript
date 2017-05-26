@@ -63,12 +63,17 @@ export class TextBase extends TextBaseCommon {
         this._defaultTransformationMethod = null;
     }
 
+    [textProperty.getDefault](): string {
+        return -1;
+    }
+
     [textProperty.setNative](value: string) {
-        if (this.formattedText) {
+        const reset = value === -1;
+        if (!reset && this.formattedText) {
             return;
         }
 
-        this._setNativeText();
+        this._setNativeText(reset);
     }
 
     [formattedTextProperty.setNative](value: FormattedString) {
@@ -237,7 +242,12 @@ export class TextBase extends TextBaseCommon {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 
-    _setNativeText() {
+    _setNativeText(reset: boolean = false): void {
+        if (reset) {
+            this.nativeView.setText(null);
+            return;
+        }
+
         let transformedText: any;
         if (this.formattedText) {
             transformedText = createSpannableStringBuilder(this.formattedText);

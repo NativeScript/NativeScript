@@ -657,8 +657,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public resetNativeView(): void {
-        if (this.nativeView && this.recycleNativeView && isAndroid) {
+        const nativeView = this.nativeView;
+        if (nativeView && this.recycleNativeView && isAndroid) {
             resetNativeView(this);
+            nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
         }
         if (this._cssState) {
             this._cancelAllAnimations();

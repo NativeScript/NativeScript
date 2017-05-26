@@ -12,12 +12,16 @@ export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
+    [textProperty.getDefault](): string {
+        return -1;
+    }
     [textProperty.setNative](value: string) {
-        if (this.formattedText) {
+        const reset = value === -1;
+        if (!reset && this.formattedText) {
             return;
         }
 
-        this._setNativeText();
+        this._setNativeText(reset);
         this._requestLayoutOnTextChanged();
     }
 
@@ -88,7 +92,22 @@ export class TextBase extends TextBaseCommon {
         this._setNativeText();
     }
 
-    _setNativeText() {
+    _setNativeText(reset: boolean = false): void {
+        if (reset) {
+            const nativeView = this.nativeView;
+            if (nativeView instanceof UIButton) {
+                // Clear attributedText or title won't be affected.
+                nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+                nativeView.setTitleForState(null, UIControlState.Normal);
+            } else {
+                // Clear attributedText or text won't be affected.
+                nativeView.attributedText = null;
+                nativeView.text = null;
+            }
+
+            return;
+        }
+
         if (this.formattedText) {
             this.setFormattedTextDecorationAndTransform();
         } else {
