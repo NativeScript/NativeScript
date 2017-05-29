@@ -394,37 +394,22 @@ export class View extends ViewCommon {
         }
     }
 
-    [rotateProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getRotate(this.nativeView);
-    }
     [rotateProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setRotate(this.nativeView, float(value));
     }
 
-    [scaleXProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getScaleX(this.nativeView);
-    }
     [scaleXProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setScaleX(this.nativeView, float(value));
     }
 
-    [scaleYProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getScaleY(this.nativeView);
-    }
     [scaleYProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setScaleY(this.nativeView, float(value));
     }
 
-    [translateXProperty.getDefault](): dip {
-        return layout.toDeviceIndependentPixels(org.nativescript.widgets.ViewHelper.getTranslateX(this.nativeView));
-    }
     [translateXProperty.setNative](value: dip) {
         org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, layout.toDevicePixels(value));
     }
 
-    [translateYProperty.getDefault](): dip {
-        return layout.toDeviceIndependentPixels(org.nativescript.widgets.ViewHelper.getTranslateY(this.nativeView));
-    }
     [translateYProperty.setNative](value: dip) {
         org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, layout.toDevicePixels(value));
     }
@@ -434,10 +419,6 @@ export class View extends ViewCommon {
     }
     [zIndexProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
-        // let nativeView = this.nativeView;
-        // if (nativeView instanceof android.widget.Button) {
-        //     nativeView.setStateListAnimator(null);
-        // }
     }
 
     [backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
