@@ -9,7 +9,8 @@ import * as color from "tns-core-modules/color";
 
 import {SelectorCore} from "tns-core-modules/ui/styling/css-selector";
 
-//import * as styling from "ui/styling";
+const DELTA = 1;
+const SCALE_DELTA = 0.001;
 
 function createAnimationFromCSS(css: string, name: string): keyframeAnimation.KeyframeAnimationInfo {
     let scope = new styleScope.StyleScope();
@@ -113,72 +114,179 @@ export function test_ReadKeyframe() {
     TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "backgroundColor", "Keyframe declarations are not correct");
 }
 
+export function test_ReadTransformAllSet() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(10) scaleX(5) translate(100, 200); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { rotate, scale, translate } = getTransformsValues(animation.keyframes[0].declarations);
+
+    TKUnit.assertAreClose(rotate, 10, DELTA);
+
+    TKUnit.assertAreClose(scale.x, 5, SCALE_DELTA);
+    TKUnit.assertAreClose(scale.y, 1, SCALE_DELTA);
+
+    TKUnit.assertAreClose(translate.x, 100, DELTA);
+    TKUnit.assertAreClose(translate.y, 200, DELTA);
+}
+
+export function test_ReadTransformNone() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: none; } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { rotate, scale, translate } = getTransformsValues(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(rotate, 0);
+
+    TKUnit.assertEqual(scale.x, 1);
+    TKUnit.assertEqual(scale.y, 1);
+
+    TKUnit.assert(translate.x === 0);
+    TKUnit.assert(translate.y === 0);
+}
+
 export function test_ReadScale() {
-    let animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scaleX(5),scaleY(10); } }", "test");
-    let scale = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "scale");
-    TKUnit.assert(scale.x === 5 && scale.y === 10);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scale(-5, 12.3pt); } }", "test");
-    scale = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "scale");
-    TKUnit.assert(scale.x === -5 && scale.y === 12.3);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scaleY(10); } }", "test");
-    scale = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "scale");
-    TKUnit.assert(scale.x === 1 && scale.y === 10);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scale3d(10, 20, 30); } }", "test");
-    scale = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "scale");
-    TKUnit.assert(scale.x === 10 && scale.y === 20);
+    const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scale(-5, 12.3pt); } }", "test");
+    const { scale, rotate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(scale.property, "scale");
+    TKUnit.assertAreClose(scale.value.x, -5, DELTA);
+    TKUnit.assertAreClose(scale.value.y, 12.3, DELTA);
+}
+
+export function test_ReadScaleSingle() {
+    const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: scale(2); } }", "test");
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(scale.property, "scale");
+    TKUnit.assertAreClose(scale.value.x, 2, DELTA);
+    TKUnit.assertAreClose(scale.value.y, 2, DELTA);
+}
+
+export function test_ReadScaleXY() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: scaleX(5) scaleY(10); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(scale.property, "scale");
+    TKUnit.assertAreClose(scale.value.x, 5, SCALE_DELTA);
+    TKUnit.assertAreClose(scale.value.y, 10, SCALE_DELTA);
+}
+
+export function test_ReadScaleX() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: scaleX(12.5); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(scale.property, "scale");
+    TKUnit.assertAreClose(scale.value.x, 12.5, SCALE_DELTA);
+    // y defaults to 1
+    TKUnit.assertAreClose(scale.value.y, 1, SCALE_DELTA);
+}
+
+export function test_ReadScaleY() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: scaleY(10); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(scale.property, "scale");
+    TKUnit.assertAreClose(scale.value.y, 10, SCALE_DELTA);
+    // x defaults to 1
+    TKUnit.assertAreClose(scale.value.x, 1, SCALE_DELTA);
+}
+
+export function test_ReadScale3d() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: scale3d(10, 20, 30); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { scale } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(scale.property, "scale");
+    TKUnit.assertAreClose(scale.value.x, 10, SCALE_DELTA);
+    TKUnit.assertAreClose(scale.value.y, 20, SCALE_DELTA);
 }
 
 export function test_ReadTranslate() {
-    let animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translateX(5),translateY(10); } }", "test");
-    let translate = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "translate");
-    TKUnit.assert(translate.x === 5 && translate.y === 10);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translate(-5, 12.3pt); } }", "test");
-    translate = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "translate");
-    TKUnit.assert(translate.x === -5 && translate.y === 12.3);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translateX(10); } }", "test");
-    translate = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "translate");
-    TKUnit.assert(translate.x === 10 && translate.y === 0);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translate3d(10, 20, 30); } }", "test");
-    translate = animation.keyframes[0].declarations[0].value;
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "translate");
-    TKUnit.assert(translate.x === 10 && translate.y === 20);
+    const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translate(100, 20); } }", "test");
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(translate.property, "translate");
+    TKUnit.assertAreClose(translate.value.x, 100, DELTA);
+    TKUnit.assertAreClose(translate.value.y, 20, DELTA);
+}
+
+export function test_ReadTranslateSingle() {
+    const animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: translate(30); } }", "test");
+    const { translate, rotate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(translate.property, "translate");
+    TKUnit.assertAreClose(translate.value.x, 30, DELTA);
+    TKUnit.assertAreClose(translate.value.y, 30, DELTA);
+}
+
+export function test_ReadTranslateXY() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: translateX(5) translateY(10); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(translate.property, "translate");
+    TKUnit.assertAreClose(translate.value.x, 5, DELTA);
+    TKUnit.assertAreClose(translate.value.y, 10, DELTA);
+}
+
+export function test_ReadTranslateX() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: translateX(12.5); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(translate.property, "translate");
+    TKUnit.assertAreClose(translate.value.x, 12.5, DELTA);
+    // y defaults to 0
+    TKUnit.assertAreClose(translate.value.y, 0, DELTA);
+}
+
+export function test_ReadTranslateY() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: translateY(10); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(translate.property, "translate");
+    TKUnit.assertAreClose(translate.value.y, 10, DELTA);
+    // x defaults to 0
+    TKUnit.assertAreClose(translate.value.x, 0, DELTA);
+}
+
+export function test_ReadTranslate3d() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: translate3d(10, 20, 30); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { translate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(translate.property, "translate");
+    TKUnit.assertAreClose(translate.value.x, 10, DELTA);
+    TKUnit.assertAreClose(translate.value.y, 20, DELTA);
 }
 
 export function test_ReadRotate() {
-    let animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(5); } }", "test");
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "rotate");
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].value, 5);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(45deg); } }", "test");
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "rotate");
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].value, 45);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: rotate(0.7853981634rad); } }", "test");
-    TKUnit.assertEqual(animation.keyframes[0].declarations[0].property, "rotate");
-    TKUnit.assertTrue(animation.keyframes[0].declarations[0].value - 45 < 0.1);
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(5); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { rotate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(rotate.property, "rotate");
+    TKUnit.assertAreClose(rotate.value, 5, DELTA);
 }
 
-export function test_ReadTransform() {
-    let css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(10),scaleX(5),translate(2,4); } }";
-    let animation = createAnimationFromCSS(css, "test");
-    let rotate = animation.keyframes[0].declarations[0].value;
-    let scale = animation.keyframes[0].declarations[1].value;
-    let translate = animation.keyframes[0].declarations[2].value;
-    TKUnit.assertEqual(rotate, 10);
-    TKUnit.assert(scale.x === 5 && scale.y === 1);
-    TKUnit.assert(translate.x === 2 && translate.y === 4);
-    animation = createAnimationFromCSS(".test { animation-name: test; } @keyframes test { to { transform: none; } }", "test");
-    rotate = animation.keyframes[0].declarations[0].value;
-    scale = animation.keyframes[0].declarations[1].value;
-    translate = animation.keyframes[0].declarations[2].value;
-    TKUnit.assertEqual(rotate, 0);
-    TKUnit.assert(scale.x === 1 && scale.y === 1);
-    TKUnit.assert(translate.x === 0 && translate.y === 0);
+export function test_ReadRotateDeg() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(45deg); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { rotate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(rotate.property, "rotate");
+    TKUnit.assertAreClose(rotate.value, 45, DELTA);
+}
+
+export function test_ReadRotateRad() {
+    const css = ".test { animation-name: test; } @keyframes test { to { transform: rotate(0.7853981634rad); } }";
+    const animation = createAnimationFromCSS(css, "test");
+    const { rotate } = getTransforms(animation.keyframes[0].declarations);
+
+    TKUnit.assertEqual(rotate.property, "rotate");
+    TKUnit.assertAreClose(rotate.value, 45, DELTA);
 }
 
 export function test_ReadAnimationWithUnsortedKeyframes() {
@@ -311,3 +419,16 @@ export function test_AnimationCurveInKeyframes() {
     TKUnit.assertEqual(realAnimation.animations[1].curve, enums.AnimationCurve.linear);
     TKUnit.assertEqual(realAnimation.animations[2].curve, enums.AnimationCurve.easeIn);
 }
+
+function getTransformsValues(declarations) {
+    return Object.assign({},
+        ...(<any>Object).entries(getTransforms(declarations))
+        .map(([k, v]) => ({[k]: v.value}))
+    );
+}
+
+function getTransforms(declarations) {
+    const [ translate, rotate, scale  ] = [...declarations];
+    return { translate, rotate, scale };
+}
+
