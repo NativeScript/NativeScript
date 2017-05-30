@@ -95,7 +95,7 @@ export class MainPageViewModel extends observable.Observable {
         this.exampleName = selectedExample;
         if (selectedExample.indexOf("/") > 0) {
             try {
-                rame.topmost().navigate("ui-tests-app/" + selectedExample);                
+                frame.topmost().navigate("ui-tests-app/" + selectedExample);                
             } catch (error) {
                 dialogs.alert("Cannot find example: " + selectedExample);
             }
