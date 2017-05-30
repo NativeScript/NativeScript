@@ -11,7 +11,7 @@ var images = ["gravatar", "gravatar2", "red"];
 export function onLoad(args: EventData) {
     let index = indexCounter++ % 3;
     let page = <Page>args.object;
-    page.backgroundImage = '~/ui-tests-app/image-view/' + images[index] + '.png';
+    page.backgroundImage = '~/ui-tests-app/resources/images/' + images[index] + '.png';
     setLabelText(page, navCounter, "countInfo");
     getMemoryUsage(args);
 }

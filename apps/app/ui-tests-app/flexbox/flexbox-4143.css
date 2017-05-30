@@ -1,5 +1,5 @@
 .bg-background {
-    background-image: url("~/ui-tests-app/image-view/gravatar.png");
+    background-image: url("~/ui-tests-app/resources/images/gravatar.png");
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;

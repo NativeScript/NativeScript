@@ -2,11 +2,11 @@
 <Page loaded="pageLoaded">
   <GridLayout rows="auto, *">
     <StackLayout id="parentLayout">
-      <TextView automationText="tv" id="textView" text="{{ exampleName }}"/>
-      <Button automationText="Run" id="btnRun" text="Run" tap="{{ loadExmaple }}"/>
+      <TextView automationText="tv" id="textView" text="{{ exampleName }}" />
+      <Button automationText="Run" id="btnRun" text="Run" tap="{{ loadExmaple }}" />
     </StackLayout>
     <ScrollView row="1">
       <WrapLayout id="wrapLayoutWithExamples"/>
     </ScrollView>
   </GridLayout>
-</Page>
+</Page> 

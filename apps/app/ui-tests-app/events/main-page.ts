@@ -11,16 +11,17 @@ export function pageLoaded(args: EventData) {
 
     let examples: Map<string, string> = new Map<string, string>();
 
-    examples.set("gestures", "pages/gestures");
-    examples.set("touch", "pages/touch-event");
-    examples.set("pan", "pages/pan-event");
-    examples.set("handlers", "pages/handlers");
-    examples.set("console", "pages/console");
-    examples.set("i61", "pages/i61");
-    examples.set("i73", "pages/i73");
-    examples.set("i86", "pages/i86");
+    examples.set("gestures", "gestures");
+    examples.set("touch", "touch-event");
+    examples.set("pan", "pan-event");
+    examples.set("handlers", "handlers");
+    examples.set("console", "console");
+    examples.set("i61", "i61");
+    examples.set("i73", "i73");
+    examples.set("i86", "i86");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    viewModel.basePath="events";
     page.bindingContext = viewModel;
 }
 

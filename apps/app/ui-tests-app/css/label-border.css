@@ -65,7 +65,7 @@ Label {
 }
 
 #s15 {
-    border-width: 5 10 15 20; border-color: red green blue yellow; background-image: url('~/ui-tests-app/pages/test2.png');
+    border-width: 5 10 15 20; border-color: red green blue yellow; background-image: url('~/ui-tests-app/resources/images/test2.png');
 }
 
 #s16 {

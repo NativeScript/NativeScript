@@ -31,7 +31,7 @@ export function onToggle(args: EventData){
         debugConsole.text += `> background-color: ${target.backgroundColor}\n`;
     }
     else if (button.text === "BGImage"){
-        target.backgroundImage = target.backgroundImage ? undefined : `~/ui-tests-app/pages/test2.png`; 
+        target.backgroundImage = target.backgroundImage ? undefined : `~/ui-tests-app/resources/images/test2.png`; 
         debugConsole.text += `> background-image: ${target.backgroundImage}\n`;
     }
 
