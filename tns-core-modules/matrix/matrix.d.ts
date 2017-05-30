@@ -5,7 +5,7 @@
  * @module "matrix"
  */ /** */
 
- import { TransformFunctionsInfo } from "../ui/animation/animation";
+import { TransformFunctionsInfo } from "../ui/animation/animation";
 
 /**
  * Returns the affine matrix representation of the transformation.

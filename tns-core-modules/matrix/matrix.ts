@@ -3,39 +3,31 @@ import {
     Pair,
 } from "../ui/animation/animation";
 
-export const getTransformMatrix = ({property, value}) =>
-    ALL_TRANSFORM_MATRIXES[property](value);
+import { radiansToDegrees, degreesToRadians } from "../utils/number-utils";
 
-const MAIN_TRANSFORM_MATRIXES = {
-    "scale": ({x = 1, y = 1}) => [
+export const getTransformMatrix = ({property, value}) =>
+    TRANSFORM_MATRIXES[property](value);
+
+const TRANSFORM_MATRIXES = {
+    "scale": ({x, y}) => [
         x, 0, 0,
         0, y, 0,
         0, 0, 1,
     ],
-    "translate": ({x = 0, y = 0}) => [
+    "translate": ({x, y}) => [
         1, 0, x,
         0, 1, y,
         0, 0, 1,
     ],
-    "rotate": angleInRad => [
-        Math.cos(angleInRad), -Math.sin(angleInRad), 0,
-        Math.sin(angleInRad), Math.cos(angleInRad), 0,
-        0, 0, 1,
-    ],
-};
+    "rotate": angleInDeg => {
+        const angleInRad = degreesToRadians(angleInDeg);
 
-const ALL_TRANSFORM_MATRIXES = {
-    "scale": MAIN_TRANSFORM_MATRIXES["scale"],
-    "scale3d": MAIN_TRANSFORM_MATRIXES["scale"],
-    "scaleX": ({x}) => MAIN_TRANSFORM_MATRIXES["scale"]({x}),
-    "scaleY": ({y}) => MAIN_TRANSFORM_MATRIXES["scale"]({y}),
-
-    "translate": MAIN_TRANSFORM_MATRIXES["translate"],
-    "translate3d": MAIN_TRANSFORM_MATRIXES["translate"],
-    "translateX": ({x}) => MAIN_TRANSFORM_MATRIXES["translate"]({x}),
-    "translateY": ({y}) => MAIN_TRANSFORM_MATRIXES["translate"]({y}),
-
-    "rotate": MAIN_TRANSFORM_MATRIXES["rotate"],
+        return [
+            Math.cos(angleInRad), -Math.sin(angleInRad), 0,
+            Math.sin(angleInRad), Math.cos(angleInRad), 0,
+            0, 0, 1,
+        ]
+    },
 };
 
 export const matrixArrayToCssMatrix = (m: number[]) => [
@@ -65,11 +57,27 @@ export function decompose2DTransformMatrix(matrix: number[])
     : TransformFunctionsInfo {
 
     verifyTransformMatrix(matrix);
-    return Object.assign({}, 
-        getTranslate(matrix),
-        getRotate(matrix),
-        getScale(matrix)
-    );
+
+    const [A, B, C, D, E, F] = [...matrix];
+    const determinant = A * D - B * C;
+    const translate = { x: E || 0, y: F || 0 };
+
+    // rewrite with obj desctructuring using the identity matrix
+    let rotate = 0;
+    let scale = { x: 1, y: 1 };
+    if (A || B) {
+        const R = Math.sqrt(A*A + B*B);
+        rotate = B > 0 ? Math.acos(A / R) : -Math.acos(A / R);
+        scale = { x: R, y: determinant / R };
+    } else if (C || D) {
+        const R = Math.sqrt(C*C + D*D);
+        rotate = Math.PI / 2 - (D > 0 ? Math.acos(-C / R) : -Math.acos(C / R));
+        scale = { x: determinant / R, y: R  };
+    }
+
+    rotate = radiansToDegrees(rotate);
+
+    return { translate, rotate, scale };
 }
 
 function verifyTransformMatrix(matrix: number[]) {
@@ -77,33 +85,3 @@ function verifyTransformMatrix(matrix: number[]) {
         throw new Error("Transform matrix should be 2x3.");
     }
 }
-
-const getTranslate = (matrix: number[]): { translate: Pair} => ({
-    translate: { x: matrix[4], y: matrix[5] }
-});
-
-function getRotate(matrix: number[]): { rotate: number } {
-    const [A, B] = [...matrix];
-
-    const radians = Math.atan2(B, A);
-    const rotate = radiansToDegrees(radians);
-
-    return {rotate};
-}
-
-function getScale(matrix: number[]): { scale: Pair } {
-    const [A, B, C, D] = [...matrix];
-    const determinant = A * D - B * C;
-
-    if (!determinant) {
-        return { scale: { x: 0, y: 0 } };
-    }
-
-    const multiplier = determinant > 0 ? 1 : -1;
-    const x = Math.sqrt(A * A + B * B) * multiplier;
-    const y = (determinant / x) * multiplier;
-
-    return { scale: { x, y } };
-}
-
-const radiansToDegrees = a => a * (180 / Math.PI);
