@@ -2,7 +2,7 @@
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, 
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout
 } from "../editable-text-base";
 
@@ -28,6 +28,13 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         return true;
     }
 
+    public textViewDidBeginEditing(textView: UITextView) {
+        var owner = this._owner.get();
+        if (owner) {
+            owner._isEditing = true;
+        }
+    }
+
     public textViewDidEndEditing(textView: UITextView) {
         const owner = this._owner.get();
         if (owner) {
@@ -35,6 +42,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
                 textProperty.nativeValueChange(owner, textView.text);
             }
 
+            owner._isEditing = false;
             owner.dismissSoftInput();
             owner._refreshHintState(owner.hint, textView.text);
         }
@@ -63,6 +71,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _ios: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
+    public _isEditing: boolean = false;
 
     constructor() {
         super();
@@ -96,9 +105,10 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         if (this.formattedText) {
             return;
         }
+
         if (text !== null && text !== undefined && text !== '') {
             this.showText();
-        } else if (hint !== null && hint !== undefined && hint !== '') {
+        } else if (!this._isEditing && hint !== null && hint !== undefined && hint !== '') {
             this.showHint(hint);
         } else {
             this._isShowingHint = false;
