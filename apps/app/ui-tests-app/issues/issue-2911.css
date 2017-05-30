@@ -1,6 +1,6 @@
 Button {
     background-color: red;
-    background-image: url('~/ui-tests-app/image-view/gravatar2.png');
+    background-image: url('~/ui-tests-app/resources/images/gravatar2.png');
     background-position: center;
     background-size: 50% 50%;
     background-repeat: no-repeat;

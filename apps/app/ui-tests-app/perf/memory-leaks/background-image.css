@@ -1,14 +1,6 @@
-/*.bg-main-page{
-    background-image: url('~/ui-tests-app/image-view/gravatar.png');
-}*/
-
-/*.image {
-width:100;
-height:100;
- background-image: url('~/ui-tests-app/image-view/gravatar.png');
-clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-}*/
-
+.bg-main-page{
+    background-image: url('~/ui-tests-app/resources/images/gravatar.png');
+}
 
 .info {
     font-size: 20;

@@ -21,7 +21,7 @@ export function pageLoaded(args: EventData) {
     examples.set("image-view", "image-view/main-page");
     examples.set("tab-view", "tab-view/main-page");
     examples.set("layouts", "layouts/main-page");
-    examples.set("pages-events", "pages/main-page");
+    examples.set("events", "events/main-page");
     examples.set("webview", "web-view/main-page");
     examples.set("flexbox", "flexbox/flexbox-main-page");
 
@@ -29,8 +29,6 @@ export function pageLoaded(args: EventData) {
     examples.set("dialogs", "dialogs/dialogs");
     examples.set("htmlview", "html-view/html-view");
     examples.set("timePicker", "time-picker/time-picker");
-    examples.set("animeBG", "animations/background");
-    examples.set("transitions", "transitions/page0");
     examples.set("segStyle", "segmented-bar/all");
     examples.set("list-view", "list-view/main-page");
     examples.set("issues", "issues/main-page");
@@ -40,7 +38,9 @@ export function pageLoaded(args: EventData) {
     examples.set("list-picker", "list-picker/main-page");
 
     examples.set("listview_binding", "pages/listview_binding");
-    examples.set("textfield", "text-field/text-field");
+    examples.set("textfield", "text-field/main-page");
+    examples.set("button","button/main-page");
+    examples.set("perf","perf/main-page");
 
     let viewModel = new MainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
@@ -57,9 +57,9 @@ export function pageLoaded(args: EventData) {
 
 export class MainPageViewModel extends observable.Observable {
     private _exampleName: string;
-    private basePath: string = "";
     private colors = ["#ff0000", "#0000cc", "#33cc33", "#33cc33"];
 
+    public basePath: string = "";
     public examples: Map<string, string> = new Map<string, string>();
 
     constructor(private panel: WrapLayout, private _examples: Map<string, string>) {
@@ -92,8 +92,13 @@ export class MainPageViewModel extends observable.Observable {
 
     public loadExmaple() {
         let selectedExample = this.exampleName.toLocaleLowerCase().trim();
+        this.exampleName = selectedExample;
         if (selectedExample.indexOf("/") > 0) {
-            frame.topmost().navigate("ui-tests-app/" + selectedExample);
+            try {
+                rame.topmost().navigate("ui-tests-app/" + selectedExample);                
+            } catch (error) {
+                dialogs.alert("Cannot find example: " + selectedExample);
+            }
         } else {
             this.selectExample(this.exampleName.toLocaleLowerCase());
         }
@@ -107,7 +112,7 @@ export class MainPageViewModel extends observable.Observable {
         console.log(" EXAMPLE: " + selectedExample);
 
         if (this.examples.has(selectedExample)) {
-            frame.topmost().navigate("ui-tests-app/" + this.basePath + this.examples.get(selectedExample));
+            frame.topmost().navigate("ui-tests-app/" + this.basePath + "/"+ this.examples.get(selectedExample));
         }
         else {
             dialogs.alert("Cannot find example: " + selectedExample);

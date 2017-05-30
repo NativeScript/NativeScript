@@ -10,16 +10,8 @@ export function pageLoaded(args: EventData) {
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
     let examples: Map<string, string> = new Map<string, string>();
+    examples.set("secured-text-field", "text-field/secured-text-field-4135");
 
-    examples.set("fontbtn", "font/button");
-    examples.set("fontlbl", "font/label");
-    examples.set("fontfield", "font/text-field");
-    examples.set("fontview", "font/text-view");
-    examples.set("nordic", "/font/nordic/nordic");
-    examples.set("customfonts", "font/custom-fonts");
-    examples.set("all-fonts", "font/all-fonts");
-    examples.set("awesome-3654", "font/font-awesome/issue-3654");
-    
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
 }
