@@ -15,6 +15,15 @@ import {
 import { Color } from "../../color";
 import { CubicBezierAnimationCurve } from "../animation";
 
+import { hasDuplicates } from "../../utils/utils";
+import { radiansToDegrees } from "../../utils/number-utils";
+
+const IDENTITY_TRANSFORMATION = {
+    translate: { x: 0, y: 0 },
+    rotate: 0,
+    scale: { x: 1, y: 1 },
+};
+
 const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
 const TRANSFORMATIONS = Object.freeze([
     "rotate",
@@ -27,12 +36,6 @@ const TRANSFORMATIONS = Object.freeze([
     "scaleX",
     "scaleY",
 ]);
-
-const IDENTITY_TRANSFORM = Object.freeze({
-    translate: { x: 0, y: 0 },
-    rotate: 0,
-    scale: { x: 1, y: 1 },
-});
 
 export function colorConverter(value: string): Color {
     return new Color(value);
@@ -115,13 +118,39 @@ export function animationTimingFunctionConverter(value: string): Object {
     return result;
 }
 
+const STYLE_TRANSFORMATION_MAP = Object.freeze({
+    "scale": value => ({ property: "scale", value }),
+    "scale3d": value => ({ property: "scale", value }),
+    "scaleX": ({x}) => ({ property: "scale", value: { x, y: IDENTITY_TRANSFORMATION.scale.y } }),
+    "scaleY": ({y}) => ({ property: "scale", value: { y, x: IDENTITY_TRANSFORMATION.scale.x } }),
+
+    "translate": value => ({ property: "translate", value }),
+    "translate3d": value => ({ property: "translate", value }),
+    "translateX": ({x}) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
+    "translateY": ({y}) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
+
+    "rotate": value => ({ property: "rotate", value }),
+});
+
 export function transformConverter(text: string): TransformFunctionsInfo {
     const transformations = parseTransformString(text);
+
     if (text === "none" || text === "" || !transformations.length) {
-        return IDENTITY_TRANSFORM;
+        return IDENTITY_TRANSFORMATION;
     }
 
-   const affineMatrix = transformations.map(getTransformMatrix)
+    const usedTransforms = transformations.map(t => t.property);
+    if (!hasDuplicates(usedTransforms)) {
+        const fullTransformations = Object.assign({}, IDENTITY_TRANSFORMATION);
+        transformations.forEach(transform => {
+            fullTransformations[transform.property] = transform.value;
+        });
+
+        return fullTransformations;
+    }
+
+   const affineMatrix = transformations
+        .map(getTransformMatrix)
         .reduce((m1, m2) => multiplyNDimensionalMatriceArrays(3, m1, m2))
    const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
 
@@ -141,11 +170,15 @@ export function parseTransformString(text: string): Transformation[] {
         const value = convertTransformValue(property, match[2]);
 
         if (TRANSFORMATIONS.indexOf(property) !== -1) {
-            matches.push({ property, value });
+            matches.push(normalizeTransformation({ property, value }));
         }
     }
 
     return matches;
+}
+
+function normalizeTransformation({ property, value }: Transformation) { 
+    return STYLE_TRANSFORMATION_MAP[property](value);
 }
 
 function convertTransformValue(property: string, stringValue: string)
@@ -154,10 +187,9 @@ function convertTransformValue(property: string, stringValue: string)
     const [x, y = x] = stringValue.split(",").map(parseFloat);
 
     if (property === "rotate") {
-        return stringValue.slice(-3) === "rad" ? x : degreesToRadians(x);
+        return stringValue.slice(-3) === "rad" ? radiansToDegrees(x) : x;
     }
 
-    return { x, y };
+    return y ? { x, y } : x;
 }
 
-const degreesToRadians = a => a * (Math.PI / 180);
