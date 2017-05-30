@@ -119,12 +119,8 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                     }
                 });
             },
-            toFile: (destinationFilePath?: string) => {
+            toFile: (destinationFilePath: string) => {
                 var fs: typeof fsModule = require("file-system");
-                var fileName = callbacks.url;
-                if (!destinationFilePath) {
-                    destinationFilePath = fs.path.join(fs.knownFolders.documents().path, fileName.substring(fileName.lastIndexOf('/') + 1));
-                }
                 var stream: java.io.FileOutputStream;
                 try {
                     var javaFile = new java.io.File(destinationFilePath);
