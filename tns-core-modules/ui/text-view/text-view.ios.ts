@@ -71,7 +71,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _ios: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
-    public _isEditing: boolean = false;
+    public _isEditing: boolean;
 
     constructor() {
         super();
