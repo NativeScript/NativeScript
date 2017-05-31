@@ -147,13 +147,16 @@ export class Button extends ButtonBase {
         switch (value) {
            case "left":
               this.nativeView.titleLabel.textAlignment = NSTextAlignment.Left;
+              this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
               break;
            case "initial":
            case "center":
               this.nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+              this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
               break;
            case "right":
               this.nativeView.titleLabel.textAlignment = NSTextAlignment.Right;
+              this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
               break;
         }
     }
