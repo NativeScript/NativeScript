@@ -2,6 +2,7 @@
  * @module "ui/styling/style-properties"
  */ /** */
 
+import { TransformFunctionsInfo, } from "../animation/animation";
 import { Color } from "../../color";
 import { Style, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from "../core/properties";
 import { Font, FontStyle, FontWeight } from "./font";
@@ -47,6 +48,8 @@ export const scaleXProperty: CssAnimationProperty<Style, number>;
 export const scaleYProperty: CssAnimationProperty<Style, number>;
 export const translateXProperty: CssAnimationProperty<Style, dip>;
 export const translateYProperty: CssAnimationProperty<Style, dip>;
+
+export function transformConverter(text: string): TransformFunctionsInfo;
 
 export const clipPathProperty: CssProperty<Style, string>;
 export const colorProperty: InheritedCssProperty<Style, Color>;

@@ -4,6 +4,8 @@
 
 import { View } from "../core/view";
 
+export declare const ANIMATION_PROPERTIES;
+
 export interface Keyframes {
     name: string;
     keyframes: Array<UnparsedKeyframe>;

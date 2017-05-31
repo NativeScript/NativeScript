@@ -1,7 +1,4 @@
-import {
-    TransformFunctionsInfo,
-    Pair,
-} from "../ui/animation/animation";
+import { TransformFunctionsInfo } from "../ui/animation/animation";
 
 import { radiansToDegrees, degreesToRadians } from "../utils/number-utils";
 

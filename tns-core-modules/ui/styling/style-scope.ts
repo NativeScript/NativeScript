@@ -1,4 +1,4 @@
-import { UnparsedKeyframe, Keyframes } from "../animation/keyframe-animation";
+import { Keyframes } from "../animation/keyframe-animation";
 import { ViewBase } from "../core/view-base";
 import { View } from "../core/view";
 import { resetCSSProperties } from "../core/properties";
@@ -224,15 +224,18 @@ export class StyleScope {
     }
 
     public getKeyframeAnimationWithName(animationName: string): kam.KeyframeAnimationInfo {
-        let keyframes = this._keyframes[animationName];
-        if (keyframes !== undefined) {
-            ensureKeyframeAnimationModule();
-            let animation = new keyframeAnimationModule.KeyframeAnimationInfo();
-            ensureCssAnimationParserModule();
-            animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframes);
-            return animation;
+        const cssKeyframes  = this._keyframes[animationName];
+        if (!cssKeyframes) {
+            return;
         }
-        return undefined;
+
+        ensureKeyframeAnimationModule();
+        const animation = new keyframeAnimationModule.KeyframeAnimationInfo();
+        ensureCssAnimationParserModule();
+        animation.keyframes = cssAnimationParserModule
+            .CssAnimationParser.keyframesArrayFromCSS(cssKeyframes.keyframes);
+
+        return animation;
     }
 
     public ensureSelectors(): number {
@@ -296,9 +299,10 @@ export class StyleScope {
             if (animations !== undefined && animations.length) {
                 ensureCssAnimationParserModule();
                 for (let animation of animations) {
-                    let keyframe = this._keyframes[animation.name];
-                    if (keyframe !== undefined) {
-                        animation.keyframes = cssAnimationParserModule.CssAnimationParser.keyframesArrayFromCSS(keyframe);
+                    const cssKeyframe = this._keyframes[animation.name];
+                    if (cssKeyframe !== undefined) {
+                        animation.keyframes = cssAnimationParserModule
+                            .CssAnimationParser.keyframesArrayFromCSS(cssKeyframe.keyframes);
                     }
                 }
             }
@@ -361,7 +365,11 @@ function createSelectorsFromSyntaxTree(ast: SyntaxTree, keyframes: Map<string, K
     const rulesets = fromAstNodes(nodes);
     if (rulesets && rulesets.length) {
         ensureCssAnimationParserModule();
-        rulesets.forEach(rule => rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser.keyframeAnimationsFromCSSDeclarations(rule.declarations));
+
+        rulesets.forEach(rule => {
+            rule[animationsSymbol] = cssAnimationParserModule.CssAnimationParser
+                .keyframeAnimationsFromCSSDeclarations(rule.declarations);
+        });
     }
 
     return rulesets;

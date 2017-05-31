@@ -13,14 +13,12 @@ import { TransformFunctionsInfo } from "../ui/animation/animation";
  */
 export declare const getTransformMatrix: ({property, value}) => number[];
 
-
 /**
  * Returns the css matrix representation of
  * an affine transformation matrix
  * @param m The flat matrix array to be transformed
  */
 export declare const matrixArrayToCssMatrix: (m: number[]) => number[];
-
 
 /**
  * Multiplies two nxn-dimensional matrix arrays

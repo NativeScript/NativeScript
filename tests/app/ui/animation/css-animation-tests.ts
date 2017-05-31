@@ -431,4 +431,3 @@ function getTransforms(declarations) {
     const [ translate, rotate, scale  ] = [...declarations];
     return { translate, rotate, scale };
 }
-
