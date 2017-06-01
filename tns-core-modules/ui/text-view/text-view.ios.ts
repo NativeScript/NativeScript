@@ -59,8 +59,17 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
     public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
-        if (owner && owner.formattedText) {
-            _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
+        if (owner) {
+            const delta = replacementString.length - range.length;
+            if (delta > 0) {
+                if (textView.text.length + delta > owner.maxLength) {
+                    return false;
+                }
+            }
+
+            if (owner.formattedText) {
+                _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
+            }
         }
 
         return true;

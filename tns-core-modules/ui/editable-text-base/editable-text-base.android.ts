@@ -2,7 +2,7 @@
     EditableTextBase as EditableTextBaseCommon, keyboardTypeProperty,
     returnKeyTypeProperty, editableProperty,
     autocapitalizationTypeProperty, autocorrectProperty, hintProperty,
-    textProperty, placeholderColorProperty, Color, textTransformProperty
+    textProperty, placeholderColorProperty, Color, textTransformProperty, maxLengthProperty
 } from "./editable-text-base-common";
 
 import { ad } from "../../utils/utils";
@@ -428,5 +428,24 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     [textTransformProperty.setNative](value: "default") {
         //
+    }
+
+    [maxLengthProperty.setNative](value: number) {
+        let lengthFilter = new android.text.InputFilter.LengthFilter(+value);
+        let filters = this.nativeView.getFilters();
+        let newFilters = [];
+
+        // retain existing filters
+        for (let i = 0; i < filters.length; i++) {
+            newFilters.push(filters[i]);
+            // update an existing length filter
+            if (filters[i] instanceof android.text.InputFilter.LengthFilter) {
+                filters[i] = lengthFilter;
+                return;
+            }
+        }
+        // no current length filter found, so add it
+        newFilters.push(lengthFilter);
+        this.nativeView.setFilters(newFilters);
     }
 }
