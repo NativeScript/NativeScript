@@ -50,6 +50,7 @@ export const autocorrectProperty = new Property<EditableTextBase, boolean>({ nam
 autocorrectProperty.register(EditableTextBase);
 
 export const hintProperty = new Property<EditableTextBase, string>({ name: "hint", defaultValue: "" });
+hintProperty.register(EditableTextBase);
 
 export const maxLengthProperty = new Property<EditableTextBase, number>({ name: "maxLength", defaultValue: Number.POSITIVE_INFINITY });
 maxLengthProperty.register(EditableTextBase);
