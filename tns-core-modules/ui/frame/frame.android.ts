@@ -10,6 +10,8 @@ import { FrameBase, application, NavigationContext, stack, goBack, View, Observa
 import { DIALOG_FRAGMENT_TAG } from "../page/constants";
 import * as transitionModule from "../transition";
 
+import { profile } from "../../profiling";
+
 export * from "./frame-common";
 
 const HIDDEN = "_hidden";
@@ -117,6 +119,7 @@ export class Frame extends FrameBase {
         return this._android;
     }
 
+    @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
         super._navigateCore(backstackEntry);
 
@@ -631,6 +634,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
     public entry: BackstackEntry;
     public clearHistory: boolean;
 
+    @profile
     public onHiddenChanged(fragment: android.app.Fragment, hidden: boolean, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onHiddenChanged(${hidden})`, traceCategories.NativeLifecycle);
@@ -644,6 +648,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
     }
 
+    @profile
     public onCreateAnimator(fragment: android.app.Fragment, transit: number, enter: boolean, nextAnim: number, superFunc: Function): android.animation.Animator {
         let nextAnimString: string;
         switch (nextAnim) {
@@ -665,6 +670,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         return animator;
     }
 
+    @profile
     public onCreate(fragment: android.app.Fragment, savedInstanceState: android.os.Bundle, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
@@ -687,6 +693,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
     }
 
+    @profile
     public onCreateView(fragment: android.app.Fragment, inflater: android.view.LayoutInflater, container: android.view.ViewGroup, savedInstanceState: android.os.Bundle, superFunc: Function): android.view.View {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onCreateView(inflater, container, ${savedInstanceState})`, traceCategories.NativeLifecycle);
@@ -709,6 +716,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         return page.nativeView;
     }
 
+    @profile
     public onSaveInstanceState(fragment: android.app.Fragment, outState: android.os.Bundle, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onSaveInstanceState(${outState})`, traceCategories.NativeLifecycle);
@@ -719,6 +727,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         }
     }
 
+    @profile
     public onDestroyView(fragment: android.app.Fragment, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroyView()`, traceCategories.NativeLifecycle);
@@ -728,6 +737,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         onFragmentHidden(fragment, true);
     }
 
+    @profile
     public onDestroy(fragment: android.app.Fragment, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`${fragment}.onDestroy()`, traceCategories.NativeLifecycle);
@@ -735,6 +745,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
         superFunc.call(fragment);
     }
 
+    @profile
     public toStringOverride(fragment: android.app.Fragment, superFunc: Function): string {
         return `${fragment.getTag()}<${this.entry ? this.entry.resolvedPage : ""}>`;
     }
@@ -743,6 +754,7 @@ class FragmentCallbacksImplementation implements AndroidFragmentCallbacks {
 class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
     private _rootView: View;
 
+    @profile
     public onCreate(activity: android.app.Activity, savedInstanceState: android.os.Bundle, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite(`Activity.onCreate(${savedInstanceState})`, traceCategories.NativeLifecycle);
@@ -812,6 +824,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         activityInitialized = true;
     }
 
+    @profile
     public onSaveInstanceState(activity: android.app.Activity, outState: android.os.Bundle, superFunc: Function): void {
         superFunc.call(activity, outState);
         let view = this._rootView;
@@ -820,6 +833,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
     }
 
+    @profile
     public onStart(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
@@ -832,6 +846,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
     }
 
+    @profile
     public onStop(activity: any, superFunc: Function): void {
         superFunc.call(activity);
 
@@ -844,6 +859,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
     }
 
+    @profile
     public onDestroy(activity: any, superFunc: Function): void {
         let rootView = this._rootView;
         if (rootView && rootView._context) {
@@ -860,6 +876,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         application.notify(exitArgs);
     }
 
+    @profile
     public onBackPressed(activity: any, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onBackPressed;", traceCategories.NativeLifecycle);
@@ -882,6 +899,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         }
     }
 
+    @profile
     public onRequestPermissionsResult(activity: any, requestCode: number, permissions: Array<String>, grantResults: Array<number>, superFunc: Function): void {
         if (traceEnabled()) {
             traceWrite("NativeScriptActivity.onRequestPermissionsResult;", traceCategories.NativeLifecycle);
@@ -897,6 +915,7 @@ class ActivityCallbacksImplementation implements AndroidActivityCallbacks {
         });
     }
 
+    @profile
     public onActivityResult(activity: any, requestCode: number, resultCode: number, data: android.content.Intent, superFunc: Function): void {
         superFunc.call(activity, requestCode, resultCode, data);
         if (traceEnabled()) {

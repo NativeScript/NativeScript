@@ -17,6 +17,8 @@ import * as types from "../../../utils/types";
 
 import { Color } from "../../../color";
 
+import { profile } from "../../../profiling";
+
 export { isIOS, isAndroid, layout, Color };
 export * from "../bindable";
 export * from "../properties";
@@ -260,6 +262,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this[name] = WrappedValue.unwrap(value);
     }
 
+    @profile
     public onLoaded() {
         this._isLoaded = true;
         this._loadEachChild();
@@ -273,6 +276,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         });
     }
 
+    @profile
     public onUnloaded() {
         this._unloadEachChild();
         this._isLoaded = false;
@@ -299,6 +303,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         });
     }
 
+    @profile
     public _applyStyleFromScope() {
         const scope = this._styleScope;
         if (scope) {
@@ -309,6 +314,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     // TODO: Make sure the state is set to null and this is called on unloaded to clean up change listeners...
+    @profile
     _setCssState(next: ssm.CssState): void {
         const previous = this._cssState;
         this._cssState = next;
@@ -380,6 +386,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _invalidateCssHandler;
     private _invalidateCssHandlerSuspended: boolean;
 
+    @profile
     private applyCssState(): void {
         this._batchUpdate(() => {
             if (!this._cssState) {
@@ -412,6 +419,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         return allStates;
     }
 
+    @profile
     public addPseudoClass(name: string): void {
         let allStates = this.getAllAliasedStates(name);
         for (let i = 0; i < allStates.length; i++) {
@@ -422,6 +430,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
+    @profile
     public deletePseudoClass(name: string): void {
         let allStates = this.getAllAliasedStates(name);
         for (let i = 0; i < allStates.length; i++) {
@@ -432,6 +441,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
+    @profile
     private _applyInlineStyle(inlineStyle) {
         if (typeof inlineStyle === "string") {
             try {
@@ -504,6 +514,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
+    @profile
     public requestLayout(): void {
         let parent = this.parent;
         if (parent) {
@@ -515,6 +526,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         //
     }
 
+    @profile
     public _addView(view: ViewBase, atIndex?: number) {
         if (traceEnabled()) {
             traceWrite(`${this}._addView(${view}, ${atIndex})`, traceCategories.ViewHierarchy);
@@ -535,6 +547,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         view._parentChanged(null);
     }
 
+    @profile
     private _setStyleScope(scope: ssm.StyleScope): void {
         this._styleScope = scope;
         this._applyStyleFromScope();
@@ -623,6 +636,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
     }
 
+    @profile
     public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean) {
         traceNotifyEvent(this, "_setupUI");
         if (traceEnabled()) {
@@ -701,6 +715,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         });
     }
 
+    @profile
     public _tearDownUI(force?: boolean) {
         // No context means we are already teared down.
         if (!this._context) {

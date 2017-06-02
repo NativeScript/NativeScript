@@ -5,10 +5,10 @@ import {
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
     View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, initNativeView
 } from "./tab-view-common"
-
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { Page } from "../page";
+import { profile } from "../../profiling";
 
 export * from "./tab-view-common";
 
@@ -184,6 +184,7 @@ export class TabView extends TabViewBase {
         //This delegate is set on the last line of _addTabs method.
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;

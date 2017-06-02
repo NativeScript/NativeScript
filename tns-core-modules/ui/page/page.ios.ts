@@ -8,6 +8,7 @@ import { device } from "../../platform";
 // HACK: Webpack. Use a fully-qualified import to allow resolve.extensions(.ios.js) to
 // kick in. `../utils` doesn't seem to trigger the webpack extensions mechanism.
 import * as uiUtils from "tns-core-modules/ui/utils";
+import { profile } from "../../profiling";
 
 export * from "./page-common";
 
@@ -354,6 +355,7 @@ export class Page extends PageBase {
         this._addNativeView(newView);
     }
 
+    @profile
     public onLoaded() {
         // loaded/unloaded events are handled in page viewWillAppear/viewDidDisappear
         if (this._enableLoadedEvents) {

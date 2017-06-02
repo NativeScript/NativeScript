@@ -1,5 +1,6 @@
 ﻿import { Label as LabelDefinition } from ".";
 import { TextBase, WhiteSpace, whiteSpaceProperty } from "../text-base";
+import { profile } from "../../profiling";
 
 export * from "../text-base";
 
@@ -15,6 +16,7 @@ export class Label extends TextBase implements LabelDefinition {
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
+    @profile
     public createNativeView() {
         if (!TextView) {
             TextView = android.widget.TextView;

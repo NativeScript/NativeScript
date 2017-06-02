@@ -5,6 +5,7 @@ import {
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout
 } from "../editable-text-base";
+import { profile } from "../../profiling";
 
 export * from "../editable-text-base";
 
@@ -92,6 +93,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;

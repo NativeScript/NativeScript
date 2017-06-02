@@ -3,7 +3,7 @@
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty,
     Length, zIndexProperty, textAlignmentProperty, TextAlignment
 } from "./button-common";
-
+import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
 
 export * from "./button-common";
@@ -41,6 +41,7 @@ export class Button extends ButtonBase {
 
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
+    @profile
     public createNativeView() {
         initializeClickListener();
         const button = new android.widget.Button(this._context);

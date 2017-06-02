@@ -7,6 +7,7 @@ import {
     notify, hasListeners, lowMemoryEvent, orientationChangedEvent, suspendEvent, resumeEvent, displayedEvent,
     setApplication, livesync, Observable
 } from "./application-common";
+import { profile } from "../profiling";
 
 // First reexport so that app module is initialized.
 export * from "./application-common";
@@ -167,7 +168,7 @@ global.__onLiveSync = function () {
 function initLifecycleCallbacks() {
     // TODO: Verify whether the logic for triggerring application-wide events based on Activity callbacks is working properly
     const lifecycleCallbacks = new android.app.Application.ActivityLifecycleCallbacks({
-        onActivityCreated: function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
+        onActivityCreated: profile("onActivityCreated", function (activity: android.app.Activity, savedInstanceState: android.os.Bundle) {
             // Set app theme after launch screen was used during startup
             const activityInfo = activity.getPackageManager().getActivityInfo(activity.getComponentName(), android.content.pm.PackageManager.GET_META_DATA);
             if (activityInfo.metaData) {
@@ -194,9 +195,9 @@ function initLifecycleCallbacks() {
                 });
                 rootView.getViewTreeObserver().addOnGlobalLayoutListener(onGlobalLayoutListener);
             }
-        },
+        }),
 
-        onActivityDestroyed: function (activity: android.app.Activity) {
+        onActivityDestroyed: profile("onActivityDestroyed", function (activity: android.app.Activity) {
             if (activity === androidApp.foregroundActivity) {
                 androidApp.foregroundActivity = undefined;
             }
@@ -208,18 +209,18 @@ function initLifecycleCallbacks() {
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityDestroyed, object: androidApp, activity: activity });
             // TODO: This is a temporary workaround to force the V8's Garbage Collector, which will force the related Java Object to be collected.
             gc();
-        },
+        }),
 
-        onActivityPaused: function (activity: android.app.Activity) {
+        onActivityPaused: profile("onActivityPaused", function (activity: android.app.Activity) {
             if ((<any>activity).isNativeScriptActivity) {
                 androidApp.paused = true;
                 notify(<ApplicationEventData>{ eventName: suspendEvent, object: androidApp, android: activity });
             }
 
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityPaused, object: androidApp, activity: activity });
-        },
+        }),
 
-        onActivityResumed: function (activity: android.app.Activity) {
+        onActivityResumed: profile("onActivityResumed", function (activity: android.app.Activity) {
             androidApp.foregroundActivity = activity;
 
             if ((<any>activity).isNativeScriptActivity) {
@@ -228,19 +229,19 @@ function initLifecycleCallbacks() {
             }
 
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityResumed, object: androidApp, activity: activity });
-        },
+        }),
 
-        onActivitySaveInstanceState: function (activity: android.app.Activity, outState: android.os.Bundle) {
+        onActivitySaveInstanceState: profile("onActivityResumed", function (activity: android.app.Activity, outState: android.os.Bundle) {
             androidApp.notify(<AndroidActivityBundleEventData>{ eventName: SaveActivityState, object: androidApp, activity: activity, bundle: outState });
-        },
+        }),
 
-        onActivityStarted: function (activity: android.app.Activity) {
+        onActivityStarted: profile("onActivityStarted", function (activity: android.app.Activity) {
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityStarted, object: androidApp, activity: activity });
-        },
+        }),
 
-        onActivityStopped: function (activity: android.app.Activity) {
+        onActivityStopped: profile("onActivityStopped", function (activity: android.app.Activity) {
             androidApp.notify(<AndroidActivityEventData>{ eventName: ActivityStopped, object: androidApp, activity: activity });
-        }
+        })
     });
 
     return lifecycleCallbacks;
@@ -249,17 +250,17 @@ function initLifecycleCallbacks() {
 let currentOrientation: number;
 function initComponentCallbacks() {
     let componentCallbacks = new android.content.ComponentCallbacks2({
-        onLowMemory: function () {
+        onLowMemory: profile("onLowMemory", function () {
             gc();
             java.lang.System.gc();
             notify(<ApplicationEventData>{ eventName: lowMemoryEvent, object: this, android: this });
-        },
+        }),
 
-        onTrimMemory: function (level: number) {
+        onTrimMemory: profile("onTrimMemory", function (level: number) {
             // TODO: This is skipped for now, test carefully for OutOfMemory exceptions
-        },
+        }),
 
-        onConfigurationChanged: function (newConfig: android.content.res.Configuration) {
+        onConfigurationChanged: profile("onConfigurationChanged", function (newConfig: android.content.res.Configuration) {
             const newOrientation = newConfig.orientation;
             if (newOrientation === currentOrientation) {
                 return;
@@ -286,7 +287,7 @@ function initComponentCallbacks() {
                 newValue: newValue,
                 object: androidApp
             });
-        }
+        })
     });
 
     return componentCallbacks;

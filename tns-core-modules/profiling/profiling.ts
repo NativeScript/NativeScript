@@ -1,7 +1,7 @@
 declare var __startCPUProfiler: any;
 declare var __stopCPUProfiler: any;
 
-import { TimerInfo as TimerInfoDefinition } from ".";
+import { TimerInfo as TimerInfoDefinition, InstrumentationMode } from ".";
 
 export const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : (<any>global).__tns_uptime;
 
@@ -10,7 +10,10 @@ interface TimerInfo extends TimerInfoDefinition {
     lastTime?: number;
     count: number;
     currentStart: number;
-    isRunning: boolean;
+    /**
+     * Counts the number of entry and exits a function had.
+     */
+    runCount: number;
 }
 
 // Use object instead of map as it is a bit faster
@@ -18,85 +21,117 @@ const timers: { [index: string]: TimerInfo } = {};
 const anyGlobal = <any>global;
 const profileNames: string[] = [];
 
-let instrumentationEnabled = false;
-
-export function enable() {
-    instrumentationEnabled = true;
-}
-
-export function disable() {
-    instrumentationEnabled = false;
-}
-
 export const time = (<any>global).__time || Date.now;
 
 export function start(name: string): void {
     let info = timers[name];
 
     if (info) {
-        if (info.isRunning) {
-            throw new Error(`Timer already running: ${name}`);
-        }
         info.currentStart = time();
-        info.isRunning = true;
+        info.runCount++;
     } else {
         info = {
             totalTime: 0,
             count: 0,
             currentStart: time(),
-            isRunning: true
+            runCount: 1
         };
         timers[name] = info;
     }
 }
 
-export function pause(name: string): TimerInfo {
-    let info = pauseInternal(name);
-    return info;
-}
-
 export function stop(name: string): TimerInfo {
-    let info = pauseInternal(name);
-    console.log(`---- [${name}] STOP total: ${info.totalTime} count:${info.count}`);
-
-    timers[name] = undefined;
-    return info;
-}
-
-export function isRunning(name: string): boolean {
-    const info = timers[name];
-    return !!(info && info.isRunning);
-}
-
-function pauseInternal(name: string): TimerInfo {
     const info = timers[name];
 
     if (!info) {
         throw new Error(`No timer started: ${name}`);
     }
 
-    if (info.isRunning) {
-        info.lastTime = time() - info.currentStart;
-        info.totalTime += info.lastTime;
-        info.count++;
-        info.currentStart = 0;
-        info.isRunning = false;
+    if (info.runCount) {
+        info.runCount--;
+        if (info.runCount) {
+            info.count++;
+        } else {
+            info.lastTime = time() - info.currentStart;
+            info.totalTime += info.lastTime;
+            info.count++;
+            info.currentStart = 0;
+        }
+    } else {
+        throw new Error(`Timer ${name} paused more times than started.`);
     }
 
     return info;
 }
 
-function profileFunction<F extends Function>(fn: F, customName?: string): F {
-    const name = customName || fn.name;
+export function timer(name: string): TimerInfo {
+    return timers[name];
+}
+
+export function print(name: string): TimerInfo {
+    const info = timers[name];
+    if (!info) {
+        throw new Error(`No timer started: ${name}`);
+    }
+
+    console.log(`---- [${name}] STOP total: ${info.totalTime} count:${info.count}`);
+    return info;
+}
+
+export function isRunning(name: string): boolean {
+    const info = timers[name];
+    return !!(info && info.runCount);
+}
+
+function countersProfileFunctionFactory<F extends Function>(fn: F, name: string): F {
     profileNames.push(name);
     return <any>function() {
         start(name);
         try {
             return fn.apply(this, arguments);
         } finally {
-            pause(name);
+            stop(name);
         }
     }
+}
+
+function timelineProfileFunctionFactory<F extends Function>(fn: F, name: string): F {
+    return <any>function() {
+        const start = time();
+        try {
+            return fn.apply(this, arguments);
+        } finally {
+            const end = time();
+            console.log(`Timeline: Modules: ${name}  (${start}ms. - ${end}ms.)`);
+        }
+    }
+}
+
+let profileFunctionFactory: <F extends Function>(fn: F, name: string) => F;
+export function enable(mode: InstrumentationMode = "counters") {
+    profileFunctionFactory = mode && {
+        counters: countersProfileFunctionFactory,
+        timeline: timelineProfileFunctionFactory
+    }[mode];
+}
+
+try {
+    const appConfig = global.require("~/package.json");
+    if (appConfig && appConfig.profiling) {
+        if (appConfig && appConfig.profiling) {
+            enable(appConfig.profiling);
+        }
+    }
+} catch(e) {
+    console.log("Profiling startup failed to figure out defaults from package.json, error: " + e);
+}
+
+export function disable() {
+    profileFunctionFactory = undefined;
+}
+
+function profileFunction<F extends Function>(fn: F, customName?: string): F {
+    return profileFunctionFactory(fn, customName || fn.name);
 }
 
 const profileMethodUnnamed = (target, key, descriptor) => {
@@ -114,17 +149,8 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 
     let name = className + key;
 
-    profileNames.push(name);
-
     //editing the descriptor/value parameter
-    descriptor.value = function () {
-        start(name);
-        try {
-            return originalMethod.apply(this, arguments);
-        } finally {
-            pause(name);
-        }
-    };
+    descriptor.value = profileFunctionFactory(originalMethod, name);
 
     // return edited descriptor as opposed to overwriting the descriptor
     return descriptor;
@@ -140,17 +166,8 @@ function profileMethodNamed(name: string): MethodDecorator {
         }
         var originalMethod = descriptor.value;
 
-        profileNames.push(name);
-
         //editing the descriptor/value parameter
-        descriptor.value = function () {
-            start(name);
-            try {
-                return originalMethod.apply(this, arguments);
-            } finally {
-                pause(name);
-            }
-        };
+        descriptor.value = profileFunctionFactory(originalMethod, name);
 
         // return edited descriptor as opposed to overwriting the descriptor
         return descriptor;
@@ -163,27 +180,27 @@ const voidMethodDecorator = () => {
 
 export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: Function | string | symbol, descriptor?: PropertyDescriptor): Function | MethodDecorator {
     if (typeof nameFnOrTarget === "object" && (typeof fnOrKey === "string" || typeof fnOrKey === "symbol")) {
-        if (!instrumentationEnabled) {
+        if (!profileFunctionFactory) {
             return;
         }
         return profileMethodUnnamed(nameFnOrTarget, fnOrKey, descriptor);
     } else if (typeof nameFnOrTarget === "string" && typeof fnOrKey === "function") {
-        if (!instrumentationEnabled) {
+        if (!profileFunctionFactory) {
             return fnOrKey;
         }
         return profileFunction(fnOrKey, nameFnOrTarget);
     } else if (typeof nameFnOrTarget === "function") {
-        if (!instrumentationEnabled) {
+        if (!profileFunctionFactory) {
             return nameFnOrTarget;
         }
         return profileFunction(nameFnOrTarget);
     } else if (typeof nameFnOrTarget === "string") {
-        if (!instrumentationEnabled) {
+        if (!profileFunctionFactory) {
             return voidMethodDecorator;
         }
         return profileMethodNamed(nameFnOrTarget);
     } else {
-        if (!instrumentationEnabled) {
+        if (!profileFunctionFactory) {
             return voidMethodDecorator;
         }
         return profileMethodUnnamed;
@@ -193,7 +210,6 @@ export function profile(nameFnOrTarget?: string | Function | Object, fnOrKey?: F
 export function dumpProfiles(): void {
     profileNames.forEach(function (name) {
         const info = timers[name];
-
         if (info) {
             console.log("---- [" + name + "] STOP total: " + info.totalTime + " count:" + info.count);
         }
@@ -206,12 +222,11 @@ export function dumpProfiles(): void {
 export function resetProfiles(): void {
     profileNames.forEach(function (name) {
         const info = timers[name];
-
         if (info) {
-            if (!info.isRunning) {
-                timers[name] = undefined;
-            } else {
+            if (info.runCount) {
                 console.log("---- timer with name [" + name + "] is currently running and won't be reset");
+            } else {
+                timers[name] = undefined;
             }
         }
     });
