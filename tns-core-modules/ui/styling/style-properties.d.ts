@@ -2,7 +2,7 @@
  * @module "ui/styling/style-properties"
  */ /** */
 
-import { TransformFunctionsInfo, } from "../animation/animation";
+import { TransformFunctionsInfo } from "../animation/animation";
 import { Color } from "../../color";
 import { Style, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from "../core/properties";
 import { Font, FontStyle, FontWeight } from "./font";
