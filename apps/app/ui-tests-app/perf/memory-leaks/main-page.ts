@@ -1,5 +1,5 @@
 import { EventData } from "tns-core-modules/data/observable";
-import { MainPageViewModel } from "../../mainPage";
+import { TestPageMainViewModel } from "../../test-page-main-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
 import { isAndroid } from "tns-core-modules/platform";
@@ -18,7 +18,7 @@ export function pageLoaded(args: EventData) {
     page.bindingContext = viewModel;
 }
 
-export class SubMainPageViewModel extends MainPageViewModel {
+export class SubMainPageViewModel extends TestPageMainViewModel {
     constructor(container: WrapLayout, examples: Map<string, string>) {
         super(container, examples);
     }
