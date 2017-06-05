@@ -11,6 +11,7 @@ export function pageLoaded(args: EventData) {
 
     let examples: Map<string, string> = new Map<string, string>();
     examples.set("secured-text-field", "text-field/secured-text-field-4135");
+    examples.set("max-length", "text-field/max-length");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;

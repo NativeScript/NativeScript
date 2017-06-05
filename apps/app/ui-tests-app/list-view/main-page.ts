@@ -13,6 +13,7 @@ export function pageLoaded(args: EventData) {
     
     examples.set("list-view-templates", "list-view/list-view");
     examples.set("images-template", "list-view/images-template");
+    examples.set("bindings", "list-view/listview-binding");
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
