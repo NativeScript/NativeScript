@@ -6,11 +6,14 @@ import { Page } from "tns-core-modules/ui/page";
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
     let view = require("ui/core/view");
-
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
+    let examples: Map<string, string> = loadExamples();
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    page.bindingContext = viewModel;
+}
 
-    let examples: Map<string, string> = new Map<string, string>();
-
+export function loadExamples() {
+    let examples = new Map<string, string>();    
     examples.set("tabColor", "tab-view/color");
     examples.set("tabBG", "tab-view/background");
     examples.set("tabTabsBG", "tab-view/tabsBackground");
@@ -20,9 +23,7 @@ export function pageLoaded(args: EventData) {
     examples.set("tabViewCss", "tab-view/tab-view-css");
     examples.set("tab-view-icons", "tab-view/tab-view-icon");
     examples.set("text-transform", "tab-view/text-transform");
-
-    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {

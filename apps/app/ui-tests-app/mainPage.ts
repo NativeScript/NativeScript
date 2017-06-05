@@ -8,6 +8,7 @@ import * as trace from "tns-core-modules/trace";
 import * as observable from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
+import { ListView } from "tns-core-modules/ui/list-view";
 import { ObservableArray } from "tns-core-modules/data/observable-array";
 import { Observable } from "tns-core-modules/data/observable";
 
@@ -57,13 +58,15 @@ export function pageLoaded(args: EventData) {
 }
 
 export class MainPageViewModel extends observable.Observable {
+    private static APP_NAME: string = "ui-tests-app";
     private _exampleName: string;
-    private colors = ["#ff0000", "#0000cc", "#33cc33", "#33cc33"];
+    private _colors = ["#ff0000", "#0000cc", "#33cc33", "#33cc33"];
+    private _allExamples: ObservableArray<TestExample>;
+
+    public static ALL_EXAMPLES: ObservableArray<TestExample>;
 
     public basePath: string = "";
     public examples: Map<string, string> = new Map<string, string>();
-
-    public static ALL_EXAMPLES: ObservableArray<TestExample>;
 
     constructor(private panel: WrapLayout, private _examples: Map<string, string>) {
         super();
@@ -71,43 +74,30 @@ export class MainPageViewModel extends observable.Observable {
         trace.setCategories(trace.categories.Test);
         this.examples = _examples;
 
-        if (MainPageViewModel.ALL_EXAMPLES == null) {
+        if (MainPageViewModel.ALL_EXAMPLES === undefined || MainPageViewModel.ALL_EXAMPLES.length == 0) {
             MainPageViewModel.ALL_EXAMPLES = new ObservableArray<TestExample>();
+            this._allExamples = new ObservableArray<TestExample>();
+            this.loadAllExamplesRecursive(this.examples);
+            let listView = <ListView>this.panel.page.getViewById("allExamplesListView");
+            listView.visibility = "hidden";
         }
 
         if (this.shouldLoadBtns()) {
             this.sortMap(this.examples);
-            this.loadAllExamplesRecursive(this.examples);
             this.loadButtons();
         }
     }
 
-    loadAllExamplesRecursive(examples: Map<string, string>) {
-        this.examples.forEach((value, key, map) => {
-            if (value.indexOf("main") > 0) {
-                let requiredExample = "~/ui-tests-app/" + value;
-
-                try {
-                    let module = require(requiredExample);
-                    if (module.loadExamples !== undefined) {
-                        let currentExamples = new Map<string, string>();
-                        module.loadExamples(currentExamples);
-                        currentExamples.forEach((value, key, map) => {
-                            this.loadAllExamplesRecursive(currentExamples);
-                        });
-                    }
-                } catch (error) {
-                    console.log(error.message);
-                }
-            } else {
-                let requiredExample = "~/ui-tests-app/" + value;
-                MainPageViewModel.ALL_EXAMPLES.push(new TestExample(key, value));
-            }
-        });
+    get allExamples(): ObservableArray<TestExample> {
+        return this._allExamples;
     }
 
-    get allExamples(): ObservableArray<TestExample> {
-        return MainPageViewModel.ALL_EXAMPLES;
+    set allExamples(array: ObservableArray<TestExample>) {
+        if (this._allExamples != array) {
+            this._allExamples = array
+            this.notifyPropertyChange("allExamples", array);
+            this.toggleExamplePanels(array);
+        }
     }
 
     get exampleName(): string {
@@ -117,8 +107,22 @@ export class MainPageViewModel extends observable.Observable {
     set exampleName(value: string) {
         if (this._exampleName !== value) {
             this._exampleName = value;
-            this.notifyPropertyChange("exampleName", value)
+            this.notifyPropertyChange("exampleName", value);
+            if (value !== "") {
+                let array = MainPageViewModel.ALL_EXAMPLES.filter((testExample, index, array) => {
+                    return testExample.path.toLowerCase().indexOf(value.toLowerCase()) >= 0 
+                           || testExample.name.toLowerCase().indexOf(value.toLowerCase()) >= 0;
+                });
+                this.allExamples = new ObservableArray(array);
+            } else {
+                this.allExamples = null;
+            }
         }
+    }
+
+    public loadExampleFromListView(example) {
+        let exmaplePath = this.allExamples.getItem(example.index).path;
+        frame.topmost().navigate(MainPageViewModel.APP_NAME + "/" + exmaplePath);
     }
 
     public loadExample(exampleName: string) {
@@ -127,17 +131,47 @@ export class MainPageViewModel extends observable.Observable {
     }
 
     public loadExmaple() {
+        if (this.exampleName === "" || this.exampleName === null || this.exampleName === undefined) {
+            return;
+        }
         let selectedExample = this.exampleName.toLocaleLowerCase().trim();
         this.exampleName = selectedExample;
         if (selectedExample.indexOf("/") > 0) {
             try {
-                frame.topmost().navigate("ui-tests-app/" + selectedExample);
+                frame.topmost().navigate(MainPageViewModel.APP_NAME + "/" + selectedExample);
             } catch (error) {
                 dialogs.alert("Cannot find example: " + selectedExample);
             }
         } else {
             this.selectExample(this.exampleName.toLocaleLowerCase());
         }
+    }
+
+    private loadAllExamplesRecursive(examples: Map<string, string>) {
+        examples.forEach((value, key, map) => {
+            let requiredExample = "~/" + MainPageViewModel.APP_NAME + "/" + value;
+            if (value.indexOf("main") > 0) {
+                try {
+                    let module = require(requiredExample);
+                    if (module.loadExamples !== undefined) {
+                        var currentExamples = new Map<string, string>();
+                        currentExamples = module.loadExamples();
+                        currentExamples.forEach((v, key, map) => {
+                            this.loadAllExamplesRecursive(currentExamples);
+                        });
+                    }
+                } catch (error) {
+                    console.log(error.message);
+                }
+            } else {
+                if (!this.checkIfExampleAlreadyExists(MainPageViewModel.ALL_EXAMPLES, value)) {
+                    this._allExamples.push(new TestExample(key, value));
+                    MainPageViewModel.ALL_EXAMPLES.push(new TestExample(key, value));
+                } else {
+                    console.log(value);
+                }
+            }
+        });
     }
 
     private shouldLoadBtns(): boolean {
@@ -148,9 +182,8 @@ export class MainPageViewModel extends observable.Observable {
         console.log(" EXAMPLE: " + selectedExample);
 
         if (this.examples.has(selectedExample)) {
-            frame.topmost().navigate("ui-tests-app/" + this.basePath + "/" + this.examples.get(selectedExample));
-        }
-        else {
+            frame.topmost().navigate(MainPageViewModel.APP_NAME + "/" + this.basePath + "/" + this.examples.get(selectedExample));
+        } else {
             dialogs.alert("Cannot find example: " + selectedExample);
         }
     }
@@ -170,7 +203,7 @@ export class MainPageViewModel extends observable.Observable {
                 btn.style.padding = "5";
             }
 
-            btn.style.color = new colorModule.Color(this.colors[count++ % 3]);
+            btn.style.color = new colorModule.Color(this._colors[count++ % 3]);
             btn.on(buttonModule.Button.tapEvent, function (eventData) {
                 let text = btn.text;
                 this.loadExample(text);
@@ -204,6 +237,29 @@ export class MainPageViewModel extends observable.Observable {
 
         this.examples.clear();
         this.examples = sortedExamples;
+    }
+
+    private checkIfExampleAlreadyExists(array: ObservableArray<TestExample>, value: string): boolean {
+        let result = false;
+        array.forEach(element => {
+            if (element.path.toLowerCase() === value.toLowerCase()) {
+                result = true;
+                return;
+            }
+        });
+
+        return result;
+    }
+
+    private toggleExamplePanels(array: ObservableArray<TestExample>) {
+        let listView = <ListView>this.panel.page.getViewById("allExamplesListView");
+        if (array !== null && array !== undefined && array.length > 0) {
+            this.panel.visibility = "hidden";
+            listView.visibility = "visible";
+        } else {
+            this.panel.visibility = "visible";
+            listView.visibility = "hidden";
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
-  <GridLayout rows="auto, *, *">
+  <GridLayout rows="auto, *">
     <StackLayout id="parentLayout">
       <TextView automationText="tv" id="textView" text="{{ exampleName }}" />
       <Button automationText="Run" id="btnRun" text="Run" tap="{{ loadExmaple }}" />
@@ -8,9 +8,12 @@
     <ScrollView row="1">
       <WrapLayout id="wrapLayoutWithExamples"/>
     </ScrollView>
-    <ListView items="{{ allExamples }}" row="2" >
+    <ListView items="{{ allExamples }}" row="1" itemTap="{{ loadExampleFromListView }}" id="allExamplesListView">
         <ListView.itemTemplate>
+        <GridLayout columns="*,*">
             <Label text="{{ name }}" />
+            <Label text="{{ path }}" col="1"/>           
+        </GridLayout>
         </ListView.itemTemplate>
     </ListView>
   </GridLayout>

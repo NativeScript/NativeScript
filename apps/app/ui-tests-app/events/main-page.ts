@@ -9,8 +9,16 @@ export function pageLoaded(args: EventData) {
 
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
-    let examples: Map<string, string> = new Map<string, string>();
+    let examples: Map<string, string> = loadExamples();
 
+
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    viewModel.basePath="events";
+    page.bindingContext = viewModel;
+}
+
+export function loadExamples() {
+    let examples = new Map<string, string>();
     examples.set("gestures", "gestures");
     examples.set("touch", "touch-event");
     examples.set("pan", "pan-event");
@@ -20,9 +28,7 @@ export function pageLoaded(args: EventData) {
     examples.set("i73", "i73");
     examples.set("i86", "i86");
 
-    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
-    viewModel.basePath="events";
-    page.bindingContext = viewModel;
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {
