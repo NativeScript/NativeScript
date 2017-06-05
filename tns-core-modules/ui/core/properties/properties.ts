@@ -6,6 +6,8 @@ import { ViewBase } from "../view-base";
 import { WrappedValue, PropertyChangeData } from "../../../data/observable";
 import { Style } from "../../styling/style";
 
+import { profile } from "../../../profiling";
+
 export { Style };
 
 export const unsetValue: any = new Object();
@@ -964,7 +966,7 @@ function inheritableCssPropertyValuesOn(style: Style): Array<{ property: Inherit
     return array;
 }
 
-export function initNativeView(view: ViewBase): void {
+export const initNativeView = profile('"properties".initNativeView', function initNativeView(view: ViewBase): void {
     let symbols = Object.getOwnPropertySymbols(view);
     for (let symbol of symbols) {
         const property: Property<any, any> = symbolPropertyMap[symbol];
@@ -1005,7 +1007,7 @@ export function initNativeView(view: ViewBase): void {
             view[property.setNative](value);
         }
     }
-}
+});
 
 export function resetNativeView(view: ViewBase): void {
     let symbols = Object.getOwnPropertySymbols(view);

@@ -1,6 +1,7 @@
 ﻿// Definitions.
 import { iOSFrame as iOSFrameDefinition, BackstackEntry, NavigationTransition } from ".";
 import { Page } from "../page";
+import { profile } from "../../profiling";
 
 //Types.
 import { FrameBase, View, application, layout, traceEnabled, traceWrite, traceCategories, isCategorySet } from "./frame-common";
@@ -59,6 +60,7 @@ export class Frame extends FrameBase {
         });
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
 
@@ -78,6 +80,7 @@ export class Frame extends FrameBase {
         }
     }
 
+    @profile
     public _navigateCore(backstackEntry: BackstackEntry) {
         super._navigateCore(backstackEntry);
 
@@ -491,6 +494,7 @@ class UINavigationControllerImpl extends UINavigationController {
         return this._owner.get();
     }
 
+    @profile
     public viewDidLoad(): void {
         super.viewDidLoad();
         let owner = this._owner.get();

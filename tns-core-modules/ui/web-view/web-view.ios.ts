@@ -1,4 +1,5 @@
 import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
+import { profile } from "../../profiling";
 
 export * from "./web-view-common";
 
@@ -91,6 +92,7 @@ export class WebView extends WebViewBase {
         this._delegate = UIWebViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;

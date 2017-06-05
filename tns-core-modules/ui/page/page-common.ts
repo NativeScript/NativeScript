@@ -8,6 +8,7 @@ import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 import { StyleScope } from "../styling/style-scope";
 import { File, path, knownFolders } from "../../file-system";
+import { profile } from "../../profiling";
 
 export * from "../content-view";
 
@@ -93,6 +94,7 @@ export class PageBase extends ContentView implements PageDefinition {
         return this;
     }
 
+    @profile
     public onLoaded(): void {
         this._refreshCss();
         super.onLoaded();

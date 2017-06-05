@@ -17,6 +17,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty
 } from "../../styling/style-properties";
+import { profile } from "../../../profiling";
 
 export * from "./view-common";
 
@@ -82,11 +83,13 @@ export class View extends ViewCommon {
         }
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this.setOnTouchListener();
     }
 
+    @profile
     public onUnloaded() {
         if (this.touchListenerIsSet) {
             this.nativeView.setOnTouchListener(null);
@@ -132,6 +135,7 @@ export class View extends ViewCommon {
         }
     }
 
+    @profile
     public requestLayout(): void {
         super.requestLayout();
         if (this.nativeView) {

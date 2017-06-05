@@ -1,5 +1,5 @@
 import { assert, assertEqual, assertFalse, assertTrue, assertThrows } from "../TKUnit";
-import { enable, disable, profile, time, start, stop, pause, isRunning } from "tns-core-modules/profiling";
+import { enable, disable, profile, time, start, stop, timer, isRunning, resetProfiles } from "tns-core-modules/profiling";
 
 enable();
 class TestClass {
@@ -21,6 +21,20 @@ class TestClass {
     @profile()
     unnamed2() {
         // noop
+    }
+
+    private isInReentrant = false;
+
+    @profile
+    reentrant() {
+        try {
+            if (!this.isInReentrant) {
+                this.isInReentrant = true;
+                this.reentrant();
+            }
+        } finally {
+            this.isInReentrant = false;
+        }
     }
 }
 
@@ -45,41 +59,54 @@ function retry(count: number, action: () => void) {
     }
 }
 
-export function setUp() {
-    enable();
-}
-
-export function tearDown() {
-    disable();
-}
-
 export function test_time_returns_number() {
     assertEqual(typeof time(), "number");
 };
 
 export function test_isRunning() {
+    resetProfiles();
     const name = "test_isRunning";
     assertFalse(isRunning(name), "isRunning should be false before start");
 
     start(name);
     assertTrue(isRunning(name), "isRunning should be true after start");
 
-    pause(name);
-    assertFalse(isRunning(name), "isRunning should be false after pause");
+    stop(name);
+    assertFalse(isRunning(name), "isRunning should be false after stop");
 
     start(name);
     assertTrue(isRunning(name), "isRunning should be true after second start");
 
     stop(name);
-    assertFalse(isRunning(name), "isRunning should be false after stop");
+    assertFalse(isRunning(name), "isRunning should be false after second stop");
+}
+
+export function test_isRunning_withReentrancy() {
+    resetProfiles();
+    const name = "test_isRunning";
+    assertFalse(isRunning(name), "isRunning should be false before start");
+
+    start(name);
+    assertTrue(isRunning(name), "isRunning should be true after start");
+
+    start(name);
+    assertTrue(isRunning(name), "isRunning should be true after second start");
+
+    stop(name);
+    assertTrue(isRunning(name), "isRunning should be true after first stop");
+
+    stop(name);
+    assertFalse(isRunning(name), "isRunning should be false after second stop");
 }
 
 export function test_start_stop() {
+    resetProfiles();
     retry(5, () => {
         const name = "test_start_stop";
 
         start(name);
-        const res = stop(name);
+        stop(name);
+        const res = timer(name);
 
         assertEqual(res.count, 1);
         assert(res.totalTime <= 1);
@@ -87,18 +114,20 @@ export function test_start_stop() {
 };
 
 export function test_start_pause_count() {
+    resetProfiles();
     const name = "test_start_pause_count";
 
     for (var i = 0; i < 10; i++) {
         start(name);
-        pause(name);
+        stop(name);
     }
 
-    const res = stop(name);
+    const res = timer(name);
     assertEqual(res.count, 10);
 };
 
 export function test_profile_decorator_count() {
+    resetProfiles();
     const test = new TestClass();
     for (var i = 0; i < 10; i++) {
         test.doNothing();
@@ -109,36 +138,39 @@ export function test_profile_decorator_count() {
     }
 
     ["__func_decorator__", "TestClass.unnamed1", "TestClass.unnamed2", "testFunction1", "testFunction2"].forEach(key => {
-        const res = stop(key);
+        const res = timer(key);
         assertEqual(res.count, 10, "Expected profile with name ${key} to have traced 10 calls.");
     });
 }
 
 export function test_profile_decorator_handles_exceptions() {
+    resetProfiles();
     const test = new TestClass();
 
     assertThrows(() => test.throwError());
     assertFalse(isRunning("__func_decorator_error__"), "Timer should be stopped on exception.");
-    assertEqual(stop("__func_decorator_error__").count, 1, "Timer should be called once");
+    assertEqual(timer("__func_decorator_error__").count, 1, "Timer should be called once");
 }
 
 export function test_start_pause_performance() {
+    resetProfiles();
     retry(5, () => {
         const count = 10000;
         const name = "test_start_pause_performance";
 
         for (var i = 0; i < count; i++) {
             start(name);
-            pause(name);
+            stop(name);
         }
 
-        const res = stop(name);
+        const res = timer(name);
         assertEqual(res.count, count);
         assert(res.totalTime <= 500, `Total time for ${count} timer operations is too much: ${res.totalTime}`);
     });
 };
 
 export function test_profile_decorator_performance() {
+    resetProfiles();
     retry(5, () => {
         var start = Date.now();
         const count = 10000;
@@ -147,11 +179,20 @@ export function test_profile_decorator_performance() {
             test.doNothing();
         }
 
-        const res = stop("__func_decorator__");
+        const res = timer("__func_decorator__");
         assertEqual(res.count, count);
 
         assert(res.totalTime <= 500, `Total time for ${count} timer operations is too much: ${res.totalTime}`);
         var end = Date.now();
         assert(end - start <= 1000, `Total time for test execution is too much: ${end - start}ms`);
+    });
+}
+
+export function test_reentrancy() {
+    resetProfiles();
+    // reentrant
+    retry(5, () => {
+        const test = new TestClass();
+        test.reentrant();
     });
 }

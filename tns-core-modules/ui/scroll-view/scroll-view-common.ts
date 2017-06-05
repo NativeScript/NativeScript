@@ -1,5 +1,6 @@
 ﻿import { ScrollView as ScrollViewDefinition, Orientation } from ".";
 import { ContentView, Property, makeParser, makeValidator } from "../content-view";
+import { profile } from "../../profiling";
 
 export * from "../content-view";
 
@@ -27,6 +28,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
         }
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
 

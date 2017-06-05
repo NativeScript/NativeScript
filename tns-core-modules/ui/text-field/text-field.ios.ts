@@ -2,6 +2,7 @@
     TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty,
     Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
+import { profile } from "../../profiling";
 
 export * from "./text-field-common";
 
@@ -145,6 +146,7 @@ export class TextField extends TextFieldBase {
         this.nativeView = this._ios;
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;

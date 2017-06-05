@@ -5,6 +5,7 @@ import { StackLayout } from "../layouts/stack-layout";
 import { ObservableArray, ChangedData } from "../../data/observable-array";
 import { addWeakEventListener, removeWeakEventListener } from "../core/weak-event-listener";
 import { parse } from "../builder";
+import { profile } from "../../profiling";
 
 export * from "../layouts/layout-base";
 
@@ -27,6 +28,7 @@ export class Repeater extends CustomLayoutView implements RepeaterDefinition {
     public itemTemplate: string | Template;
     public itemsLayout: LayoutBase;
 
+    @profile
     public onLoaded() {
         if (this._isDirty) {
             this.refresh();

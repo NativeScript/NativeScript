@@ -6,7 +6,6 @@ import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories
 } from "./view-common";
-
 import {
     Visibility,
     visibilityProperty, opacityProperty,
@@ -14,6 +13,7 @@ import {
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
+import { profile } from "../../../profiling";
 
 export * from "./view-common";
 
@@ -80,6 +80,7 @@ export class View extends ViewCommon {
         }
     }
 
+    @profile
     public layout(left: number, top: number, right: number, bottom: number): void {
         let { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.layoutNativeView(left, top, right, bottom);
@@ -100,6 +101,7 @@ export class View extends ViewCommon {
         this._privateFlags |= PFLAG_MEASURED_DIMENSION_SET;
     }
 
+    @profile
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         const view = this.nativeView;
         const width = layout.getMeasureSpecSize(widthMeasureSpec);

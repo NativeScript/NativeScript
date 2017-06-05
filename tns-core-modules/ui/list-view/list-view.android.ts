@@ -6,6 +6,7 @@ import {
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { LayoutBase } from "../layouts/layout-base";
+import { profile } from "../../profiling";
 
 export * from "./list-view-common";
 
@@ -49,6 +50,7 @@ export class ListView extends ListViewBase {
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
+    @profile
     public createNativeView() {
         initializeItemClickListener();
 
@@ -238,6 +240,7 @@ function ensureListViewAdapterClass() {
             return itemViewType;
         }
 
+        @profile
         public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
             //this.owner._dumpRealizedTemplates();
 
