@@ -8,6 +8,8 @@ import * as trace from "tns-core-modules/trace";
 import * as observable from "tns-core-modules/data/observable";
 import * as dialogs from "tns-core-modules/ui/dialogs";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
+import { ObservableArray } from "tns-core-modules/data/observable-array";
+import { Observable } from "tns-core-modules/data/observable";
 
 export function pageLoaded(args: EventData) {
     let examples: Map<string, string> = new Map<string, string>();
@@ -17,7 +19,6 @@ export function pageLoaded(args: EventData) {
     examples.set("action-bar", "action-bar/main-page");
     examples.set("bindings", "bindings/main-page");
     examples.set("css", "css/main-page");
-    examples.set("fonts", "font/main-page");
     examples.set("image-view", "image-view/main-page");
     examples.set("tab-view", "tab-view/main-page");
     examples.set("layouts", "layouts/main-page");
@@ -39,8 +40,8 @@ export function pageLoaded(args: EventData) {
 
     examples.set("listview_binding", "pages/listview_binding");
     examples.set("textfield", "text-field/main-page");
-    examples.set("button","button/main-page");
-    examples.set("perf","perf/main-page");
+    examples.set("button", "button/main-page");
+    examples.set("perf", "perf/main-page");
 
     let viewModel = new MainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
@@ -62,16 +63,51 @@ export class MainPageViewModel extends observable.Observable {
     public basePath: string = "";
     public examples: Map<string, string> = new Map<string, string>();
 
+    public static ALL_EXAMPLES: ObservableArray<TestExample>;
+
     constructor(private panel: WrapLayout, private _examples: Map<string, string>) {
         super();
         trace.enable();
         trace.setCategories(trace.categories.Test);
         this.examples = _examples;
 
+        if (MainPageViewModel.ALL_EXAMPLES == null) {
+            MainPageViewModel.ALL_EXAMPLES = new ObservableArray<TestExample>();
+        }
+
         if (this.shouldLoadBtns()) {
             this.sortMap(this.examples);
+            this.loadAllExamplesRecursive(this.examples);
             this.loadButtons();
         }
+    }
+
+    loadAllExamplesRecursive(examples: Map<string, string>) {
+        this.examples.forEach((value, key, map) => {
+            if (value.indexOf("main") > 0) {
+                let requiredExample = "~/ui-tests-app/" + value;
+
+                try {
+                    let module = require(requiredExample);
+                    if (module.loadExamples !== undefined) {
+                        let currentExamples = new Map<string, string>();
+                        module.loadExamples(currentExamples);
+                        currentExamples.forEach((value, key, map) => {
+                            this.loadAllExamplesRecursive(currentExamples);
+                        });
+                    }
+                } catch (error) {
+                    console.log(error.message);
+                }
+            } else {
+                let requiredExample = "~/ui-tests-app/" + value;
+                MainPageViewModel.ALL_EXAMPLES.push(new TestExample(key, value));
+            }
+        });
+    }
+
+    get allExamples(): ObservableArray<TestExample> {
+        return MainPageViewModel.ALL_EXAMPLES;
     }
 
     get exampleName(): string {
@@ -95,7 +131,7 @@ export class MainPageViewModel extends observable.Observable {
         this.exampleName = selectedExample;
         if (selectedExample.indexOf("/") > 0) {
             try {
-                frame.topmost().navigate("ui-tests-app/" + selectedExample);                
+                frame.topmost().navigate("ui-tests-app/" + selectedExample);
             } catch (error) {
                 dialogs.alert("Cannot find example: " + selectedExample);
             }
@@ -112,7 +148,7 @@ export class MainPageViewModel extends observable.Observable {
         console.log(" EXAMPLE: " + selectedExample);
 
         if (this.examples.has(selectedExample)) {
-            frame.topmost().navigate("ui-tests-app/" + this.basePath + "/"+ this.examples.get(selectedExample));
+            frame.topmost().navigate("ui-tests-app/" + this.basePath + "/" + this.examples.get(selectedExample));
         }
         else {
             dialogs.alert("Cannot find example: " + selectedExample);
@@ -168,5 +204,38 @@ export class MainPageViewModel extends observable.Observable {
 
         this.examples.clear();
         this.examples = sortedExamples;
+    }
+}
+
+export class TestExample extends Observable {
+    private _name: string;
+    private _path: string;
+
+    constructor(name: string, path: string) {
+        super();
+        this._name = name;
+        this._path = path;
+    }
+
+    get name(): string {
+        return this._name;
+    }
+
+    set name(value: string) {
+        if (this._name !== value) {
+            this._name = value;
+            this.notifyPropertyChange('name', value)
+        }
+    }
+
+    get path(): string {
+        return this._path;
+    }
+
+    set path(value: string) {
+        if (this._path !== value) {
+            this._path = value;
+            this.notifyPropertyChange('path', value)
+        }
     }
 }
