@@ -6,17 +6,19 @@ import { Page } from "tns-core-modules/ui/page";
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
     let view = require("ui/core/view");
-
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
+    let examples: Map<string, string> = loadExamples();
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    page.bindingContext = viewModel;
+}
 
-    let examples: Map<string, string> = new Map<string, string>();
-    
+export function loadExamples() {
+    let examples = new Map<string, string>();    
     examples.set("list-view-templates", "list-view/list-view");
     examples.set("images-template", "list-view/images-template");
     examples.set("bindings", "list-view/listview-binding");
 
-    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {

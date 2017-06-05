@@ -9,7 +9,14 @@ export function pageLoaded(args: EventData) {
 
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
-    let examples: Map<string, string> = new Map<string, string>();
+    let examples: Map<string, string> = loadExamples();
+
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    page.bindingContext = viewModel;
+}
+
+export function loadExamples() {
+    let examples = new Map<string, string>();
     examples.set("background", "css/background");
     examples.set("formatted", "css/decoration-transform-formattedtext");
     examples.set("csslv", "css/listview");
@@ -47,9 +54,7 @@ export function pageLoaded(args: EventData) {
     examples.set("hint-text-color", "css/hint-text-color");
     examples.set("combinators", "css/combinators");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
-
-    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {

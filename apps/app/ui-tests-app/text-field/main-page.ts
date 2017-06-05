@@ -6,15 +6,17 @@ import { Page } from "tns-core-modules/ui/page";
 export function pageLoaded(args: EventData) {
     let page = <Page>args.object;
     let view = require("ui/core/view");
-
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
-
-    let examples: Map<string, string> = new Map<string, string>();
-    examples.set("secured-text-field", "text-field/secured-text-field-4135");
-    examples.set("max-length", "text-field/max-length");
-
+    let examples: Map<string, string> = loadExamples();
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
+}
+
+export function loadExamples() {
+    let examples = new Map<string, string>();    
+    examples.set("secured-text-field", "text-field/secured-text-field-4135");
+    examples.set("max-length", "text-field/max-length");
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {

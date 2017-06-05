@@ -9,12 +9,18 @@ export function pageLoaded(args: EventData) {
 
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
-    let examples: Map<string, string> = new Map<string, string>();
-    examples.set("basics", "bindings/basics");
-    examples.set("xmlbasics", "bindings/xmlbasics");
+    let examples: Map<string, string> = loadExamples();
 
     let viewModel = new SubMainPageViewModel(wrapLayout, examples);
     page.bindingContext = viewModel;
+}
+
+export function loadExamples() {
+    let examples = new Map<string, string>();
+    examples.set("basics", "bindings/basics");
+    examples.set("xmlbasics", "bindings/xmlbasics");
+
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {

@@ -9,13 +9,17 @@ export function pageLoaded(args: EventData) {
 
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
-    let examples: Map<string, string> = new Map<string, string>();
-    
+    let examples: Map<string, string> = loadExamples();
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    page.bindingContext = viewModel;
+}
+
+export function loadExamples() {
+    let examples = new Map<string, string>();
     examples.set("roundbtn", "image-view/rounded-buttons");
     examples.set("roundimg", "image-view/rounded-images");
 
-    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {

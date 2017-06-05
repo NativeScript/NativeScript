@@ -9,8 +9,14 @@ export function pageLoaded(args: EventData) {
 
     let wrapLayout = view.getViewById(page, "wrapLayoutWithExamples");
 
-    let examples: Map<string, string> = new Map<string, string>();
-    
+    let examples: Map<string, string> = loadExamples();
+
+    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
+    page.bindingContext = viewModel;
+}
+
+export function loadExamples() {
+    let examples = new Map<string, string>();    
     examples.set("2911", "issues/issue-2911");
     examples.set("2674", "issues/issue-2674");
     examples.set("2942", "issues/issue-2942");
@@ -25,8 +31,7 @@ export function pageLoaded(args: EventData) {
     examples.set("tabview-with-scrollview_4022","issues/tabview-with-scrollview_4022");
     examples.set("3354-ios", "issues/issue-3354");
 
-    let viewModel = new SubMainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
+    return examples;
 }
 
 export class SubMainPageViewModel extends MainPageViewModel {
