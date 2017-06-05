@@ -1,6 +1,7 @@
 <Page xmlns="http://schemas.nativescript.org/tns.xsd">
     <StackLayout class="p-20">
-        <TextView id="tv" text="" hint="the hint" ></TextView>
+        <TextView id="tv" text="" hint="the hint"></TextView>
+        <TextView text="" hint="the hint"></TextView>
         <Button text="clear text" tap="clear"></Button>
     </StackLayout>
 </Page>
