@@ -269,9 +269,6 @@ export class View extends ViewCommon {
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
-    [isEnabledProperty.getDefault](): boolean {
-        return this.nativeView.isEnabled();
-    }
     [isEnabledProperty.setNative](value: boolean) {
         this.nativeView.setEnabled(value);
     }
@@ -297,9 +294,6 @@ export class View extends ViewCommon {
         this.nativeView.setContentDescription(value);
     }
 
-    [isUserInteractionEnabledProperty.getDefault](): boolean {
-        return true;
-    }
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
         if (!value) {
             initializeDisabledListener();
@@ -419,7 +413,7 @@ export class View extends ViewCommon {
     }
 
     [zIndexProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
+        return 0;
     }
     [zIndexProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);

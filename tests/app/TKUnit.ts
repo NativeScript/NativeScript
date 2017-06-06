@@ -210,7 +210,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
     }
 
     if (equals) {
-        throw new Error(message + " Actual: " + actual + " Expected: " + expected);
+        throw new Error(message + " Actual: " + actual + " Not_Expected: " + expected);
     }
 }
 
@@ -233,59 +233,59 @@ export function assertEqual<T extends { equals?(arg: T): boolean }>(actual: T, e
 /**
  * Assert two json like objects are deep equal.
  */
-export function assertDeepEqual(actual, expected, path: any[] = []): void {
+export function assertDeepEqual(actual, expected, message: string = '', path: any[] = []): void {
     let typeofActual: string = typeof actual;
     let typeofExpected: string = typeof expected;
     if (typeofActual !== typeofExpected) {
-        throw new Error("At /" + path.join("/") + " types of actual " + typeofActual + " and expected " + typeofExpected + " differ.");
+        throw new Error(message + ' ' + "At /" + path.join("/") + " types of actual " + typeofActual + " and expected " + typeofExpected + " differ.");
     } else if (typeofActual === "object" || typeofActual === "array") {
         if (expected instanceof Map) {
             if (actual instanceof Map) {
                 expected.forEach((value, key) => {
                     if (actual.has(key)) {
-                        assertDeepEqual(actual.get(key), value, path.concat([key]));
+                        assertDeepEqual(actual.get(key), value, message, path.concat([key]));
                     } else {
-                        throw new Error("At /" + path.join("/") + " expected Map has key '" + key + "' but actual does not.");
+                        throw new Error(message + ' ' + "At /" + path.join("/") + " expected Map has key '" + key + "' but actual does not.");
                     }
                 });
                 actual.forEach((value, key) => {
                     if (!expected.has(key)) {
-                        throw new Error("At /" + path.join("/") + " actual Map has key '" + key + "' but expected does not.");
+                        throw new Error(message + ' ' + "At /" + path.join("/") + " actual Map has key '" + key + "' but expected does not.");
                     }
                 });
             } else {
-                throw new Error("At /" + path.join("/") + " expected is Map but actual is not.");
+                throw new Error(message + ' ' + "At /" + path.join("/") + " expected is Map but actual is not.");
             }
         }
         if (expected instanceof Set) {
             if (actual instanceof Set) {
                 expected.forEach(i => {
                     if (!actual.has(i)) {
-                        throw new Error("At /" + path.join("/") + " expected Set has item '" + i + "' but actual does not.");
+                        throw new Error(message + ' ' + "At /" + path.join("/") + " expected Set has item '" + i + "' but actual does not.");
                     }
                 });
                 actual.forEach(i => {
                     if (!expected.has(i)) {
-                        throw new Error("At /" + path.join("/") + " actual Set has item '" + i + "' but expected does not.");
+                        throw new Error(message + ' ' + "At /" + path.join("/") + " actual Set has item '" + i + "' but expected does not.");
                     }
                 })
             } else {
-                throw new Error("At /" + path.join("/") + " expected is Set but actual is not.");
+                throw new Error(message + ' ' + "At /" + path.join("/") + " expected is Set but actual is not.");
             }
         }
         for (let key in actual) {
             if (!(key in expected)) {
-                throw new Error("At /" + path.join("/") + " found unexpected key " + key + ".");
+                throw new Error(message + ' ' + "At /" + path.join("/") + " found unexpected key " + key + ".");
             }
-            assertDeepEqual(actual[key], expected[key], path.concat([key]));
+            assertDeepEqual(actual[key], expected[key], message, path.concat([key]));
         }
         for (let key in expected) {
             if (!(key in actual)) {
-                throw new Error("At /" + path.join("/") + " expected a key " + key + ".");
+                throw new Error(message + ' ' + "At /" + path.join("/") + " expected a key " + key + ".");
             }
         }
     } else if (actual !== expected) {
-        throw new Error("At /" + path.join("/") + " actual: '" + actual + "' and expected: '" + expected + "' differ.");
+        throw new Error(message + ' ' + "At /" + path.join("/") + " actual: '" + actual + "' and expected: '" + expected + "' differ.");
     }
 }
 

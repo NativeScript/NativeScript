@@ -22,13 +22,17 @@ import { Label } from "tns-core-modules/ui/label";
 import { EventData } from "tns-core-modules/data/observable";
 import { PercentLength } from "tns-core-modules/ui/core/view";
 import * as platform from "tns-core-modules/platform";
-import {unsetValue} from "tns-core-modules/ui/core/view";
+import { unsetValue } from "tns-core-modules/ui/core/view";
 import { Color } from "tns-core-modules/color";
 
 export function addLabelToPage(page: Page, text?: string) {
     let label = new Label();
     label.text = text || "The quick brown fox jumps over the lazy dog.";
     page.content = label;
+}
+
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new Page());
 }
 
 export function test_AfterPageLoaded_is_called_NativeInstance_is_created() {
@@ -122,11 +126,11 @@ export function test_NavigateToNewPage() {
     // << article-navigating-backward
 
     TKUnit.waitUntilReady(() => { return topFrame.currentPage !== null && topFrame.currentPage === currentPage });
-    TKUnit.assert(testPage.parent === undefined, "Page.parent should become undefined after navigating back");
-    TKUnit.assert(testPage._context === null, "Page._context should become undefined after navigating back");
-    TKUnit.assert(testPage.isLoaded === false, "Page.isLoaded should become false after navigating back");
-    TKUnit.assert(testPage.frame === undefined, "Page.frame should become undefined after navigating back");
-    TKUnit.assert(testPage._isAddedToNativeVisualTree === false, "Page._isAddedToNativeVisualTree should become false after navigating back");
+    TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
+    TKUnit.assertNull(testPage._context, "Page._context should become undefined after navigating back");
+    TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
+    TKUnit.assertNull(testPage.frame, "Page.frame should become undefined after navigating back");
+    TKUnit.assertFalse(testPage._isAddedToNativeVisualTree, "Page._isAddedToNativeVisualTree should become false after navigating back");
 }
 
 export function test_PageNavigation_EventSequence_WithTransition() {

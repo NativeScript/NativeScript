@@ -320,3 +320,7 @@ export function createPageAndNavigate() {
 
     return page;
 }
+
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new actionBarModule.ActionBar());
+}

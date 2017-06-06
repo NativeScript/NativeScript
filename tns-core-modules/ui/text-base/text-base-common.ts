@@ -172,6 +172,11 @@ function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: Form
     }
 
     if (newValue) {
+        const oldParent = newValue.parent;
+        // In case formattedString is attached to new TextBase
+        if (oldParent) {
+            oldParent._removeView(newValue);
+        }
         textBase._addView(newValue);
         newValue.on(Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
     }

@@ -371,7 +371,9 @@ export class ActionBar extends ActionBarBase {
                 }
             }
 
-            defaultTitleTextColor = tv.getTextColors().getDefaultColor();
+            // Fallback to hardcoded falue if we don't find TextView instance...
+            // using new TextView().getTextColors().getDefaultColor() returns different value: -1979711488 
+            defaultTitleTextColor = tv ? tv.getTextColors().getDefaultColor() : -570425344;
         }
 
         return defaultTitleTextColor;

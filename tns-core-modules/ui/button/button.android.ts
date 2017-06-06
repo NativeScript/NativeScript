@@ -108,9 +108,6 @@ export class Button extends ButtonBase {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 
-    [zIndexProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
-    }
     [zIndexProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
         // API >= 21

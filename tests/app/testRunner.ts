@@ -217,9 +217,6 @@ allTests["HTML-VIEW"] = htmlViewTests;
 import * as repeaterTests from "./ui/repeater/repeater-tests";
 allTests["REPEATER"] = repeaterTests;
 
-import * as searchBarTests from "./ui/search-bar/search-bar-tests";
-allTests["SEARCH-BAR"] = searchBarTests;
-
 import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
 allTests["SEGMENTED-BAR"] = segmentedBarTests;
 
@@ -240,6 +237,9 @@ if (!(platform.device.os === platform.platformNames.android && parseInt(platform
 
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;
+
+import * as searchBarTests from "./ui/search-bar/search-bar-tests";
+allTests["SEARCH-BAR"] = searchBarTests;
 
 var testsWithLongDelay = {
     test_Transitions: 3 * 60 * 1000,

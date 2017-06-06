@@ -1,7 +1,8 @@
 ﻿// >> border-require
 import { Border } from "tns-core-modules/ui/border";
 // << border-require
+import * as helper from "../helper";
 
-if (Border) {
-    // NOOP
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new Border());
 }

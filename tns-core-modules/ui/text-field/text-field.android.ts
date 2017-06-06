@@ -14,35 +14,66 @@ export class TextField extends TextFieldBase {
         this.notify({ eventName: TextField.returnPressEvent, object: this })
     }
 
-    [secureProperty.getDefault](): boolean {
-        return false;
-    }
     [secureProperty.setNative](value: boolean) {
-        const nativeView = this.nativeView;
-        const currentInputType = nativeView.getInputType();
-        const currentClass = currentInputType & android.text.InputType.TYPE_MASK_CLASS;
-        const currentFlags = currentInputType & android.text.InputType.TYPE_MASK_FLAGS;
-        let newInputType = currentInputType;
+        let inputType: number;
 
         // Password variations are supported only for Text and Number classes.
         if (value) {
-            if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
-                newInputType = currentClass | currentFlags | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
-            } else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
-                newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+            if (this.keyboardType === "number") {
+                inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_NUMBER_VARIATION_PASSWORD;
+            } else {
+                inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD;
+            }
+        } else {
+            // default
+            inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
+
+            // add autocorrect flags
+            if (this.autocorrect) {
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE;
+                inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
+                inputType = inputType & ~android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
             }
 
-            // Lower all autocapitalization bits, because password bits don't like them and we will receive "Unsupported input type: 16513" error for example.
-            newInputType = newInputType & ~28672; //28672 (0x0070000) 13,14,15 bits (111 0000 0000 0000)
-        } else {
-            if (currentClass === android.text.InputType.TYPE_CLASS_TEXT) {
-                newInputType = currentClass | currentFlags | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
-            } else if (currentClass === android.text.InputType.TYPE_CLASS_NUMBER) {
-                newInputType = currentClass | currentFlags | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL;
+            // add autocapitalization type
+            switch (this.autocapitalizationType) {
+                case "words":
+                    inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS; //8192 (0x00020000) 14th bit
+                    break;
+                case "sentences":
+                    inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES; //16384(0x00040000) 15th bit
+                    break;
+                case "allcharacters":
+                    inputType = inputType | android.text.InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS; //4096 (0x00010000) 13th bit
+                    break;
+                default:
+                    break;
+            }
+
+            // add keyboardType flags.
+            // They override previous if set.
+            switch (this.keyboardType) {
+                case "datetime":
+                    inputType = android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL;
+                    break;
+                case "phone":
+                    inputType = android.text.InputType.TYPE_CLASS_PHONE;
+                    break;
+                case "number":
+                    inputType = android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL;
+                    break;
+                case "url":
+                    inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI;
+                    break;
+                case "email":
+                    inputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS;
+                    break;
+                default:
+                    break;
             }
         }
 
-        this._setInputType(newInputType);
+        this._setInputType(inputType);
     }
 
     [whiteSpaceProperty.getDefault](): WhiteSpace {
