@@ -1,5 +1,5 @@
 ﻿import { Label as LabelDefinition } from ".";
-import { TextBase, WhiteSpace, whiteSpaceProperty } from "../text-base";
+import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter } from "../text-base";
 import { profile } from "../../profiling";
 
 export * from "../text-base";
@@ -13,6 +13,10 @@ export class Label extends TextBase implements LabelDefinition {
         return this.style.whiteSpace === "normal";
     }
     set textWrap(value: boolean) {
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
+        
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 

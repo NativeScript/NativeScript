@@ -1,5 +1,5 @@
 ﻿import { Button as ButtonDefinition } from ".";
-import { TextBase } from "../text-base";
+import { TextBase, booleanConverter } from "../text-base";
 
 export * from "../text-base";
 
@@ -10,6 +10,10 @@ export abstract class ButtonBase extends TextBase implements ButtonDefinition {
         return this.style.whiteSpace === "normal";
     }
     set textWrap(value: boolean) {
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
+            
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 }

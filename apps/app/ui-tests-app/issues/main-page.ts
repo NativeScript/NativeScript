@@ -24,6 +24,7 @@ export function loadExamples() {
     examples.set("1657-ios", "issues/issue-1657-ios");
     examples.set("tabview-with-scrollview_4022","issues/tabview-with-scrollview_4022");
     examples.set("3354-ios", "issues/issue-3354");
+    examples.set("4287", "issues/issue-4287");
 
     return examples;
 }
