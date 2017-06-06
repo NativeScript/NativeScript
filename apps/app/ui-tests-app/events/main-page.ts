@@ -11,14 +11,14 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("gestures", "gestures");
-    examples.set("touch", "touch-event");
-    examples.set("pan", "pan-event");
-    examples.set("handlers", "handlers");
-    examples.set("console", "console");
-    examples.set("i61", "i61");
-    examples.set("i73", "i73");
-    examples.set("i86", "i86");
+    examples.set("gestures", "events/gestures");
+    examples.set("touch", "events/touch-event");
+    examples.set("pan", "events/pan-event");
+    examples.set("handlers", "events/handlers");
+    examples.set("console", "events/console");
+    examples.set("i61", "events/i61");
+    examples.set("i73", "events/i73");
+    examples.set("i86", "events/i86");
 
     return examples;
 }
