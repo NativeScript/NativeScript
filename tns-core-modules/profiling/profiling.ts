@@ -115,15 +115,17 @@ export function enable(mode: InstrumentationMode = "counters") {
     }[mode];
 }
 
-try {
-    const appConfig = global.require("~/package.json");
-    if (appConfig && appConfig.profiling) {
+if (!(<any>global).__snapshot) {
+    try {
+        const appConfig = global.require("~/package.json");
         if (appConfig && appConfig.profiling) {
-            enable(appConfig.profiling);
+            if (appConfig && appConfig.profiling) {
+                enable(appConfig.profiling);
+            }
         }
+    } catch(e) {
+            console.log("Profiling startup failed to figure out defaults from package.json, error: " + e);
     }
-} catch(e) {
-    console.log("Profiling startup failed to figure out defaults from package.json, error: " + e);
 }
 
 export function disable() {
