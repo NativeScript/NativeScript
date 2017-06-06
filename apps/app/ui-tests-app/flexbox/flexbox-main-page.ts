@@ -2,7 +2,6 @@ import { EventData } from "tns-core-modules/data/observable";
 import { TestPageMainViewModel } from "../test-page-main-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
-import { getViewById } from "tns-core-modules/ui/core/view"
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
