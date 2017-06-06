@@ -13,7 +13,7 @@ export function pageLoaded(args: EventData) {
 }
 
 export function loadExamples() {
-    let examples = new Map<string, string>();    
+        let examples = new Map<string, string>();    
     examples.set("webview", "web-view/web-view");
     examples.set("webtest", "web-view/web-view-test");
     examples.set("query", "web-view/query-params");

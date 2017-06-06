@@ -13,7 +13,7 @@ export class TestPageMainViewModel extends Observable {
     public basePath: string = "";
     public examples: Map<string, string> = new Map<string, string>();
 
-    constructor(protected panel: WrapLayout, private _examples: Map<string, string>) {
+    constructor(protected buttonsPanel: WrapLayout, private _examples: Map<string, string>) {
         super();
         this.examples = _examples;
         if (this.shouldLoadBtns()) {
@@ -38,7 +38,7 @@ export class TestPageMainViewModel extends Observable {
     }
 
     private shouldLoadBtns(): boolean {
-        return this.panel.getChildrenCount() <= 0;
+        return this.buttonsPanel.getChildrenCount() <= 0;
     }
 
     private loadButtons() {
@@ -63,7 +63,7 @@ export class TestPageMainViewModel extends Observable {
             }, this);
 
             btn.text = key;
-            this.panel.addChild(btn)
+            this.buttonsPanel.addChild(btn)
         });
     }
 

@@ -11,16 +11,20 @@ export class MainPageViewModel extends TestPageMainViewModel {
     private _exampleName: string;
     private _allExamples: ObservableArray<TestExample>;
     public static ALL_EXAMPLES: ObservableArray<TestExample>;
+    public static _examplesDictionary: Map<string, TestExample>;
 
-    constructor(panel: WrapLayout, examples: Map<string, string>) {
-        super(panel, examples);
+    constructor(buttonsPanel: WrapLayout, examples: Map<string, string>) {
+        super(buttonsPanel, examples);
         if (MainPageViewModel.ALL_EXAMPLES === undefined || MainPageViewModel.ALL_EXAMPLES.length === 0) {
             MainPageViewModel.ALL_EXAMPLES = new ObservableArray<TestExample>();
+            MainPageViewModel._examplesDictionary = new Map<string, TestExample>();
             this._allExamples = new ObservableArray<TestExample>();
-            this.loadAllExamplesRecursive(examples);
-            let listView = <ListView>panel.page.getViewById("allExamplesListView");
+            this.loadAllExamplesRecursive(this.examples);
+            let listView = <ListView>buttonsPanel.page.getViewById("allExamplesListView");
             listView.visibility = "hidden";
         }
+        this.filterListView(this.exampleName);
+        this.toggleExamplePanels(this.allExamples);
     }
 
     get exampleName(): string {
@@ -70,7 +74,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
     }
 
     private filterListView(value: string) {
-        if (value !== "") {
+        if (value !== "" && value !== undefined) {
             let array = MainPageViewModel.ALL_EXAMPLES.filter((testExample, index, array) => {
                 return testExample.path.toLowerCase().indexOf(value.toLowerCase()) >= 0
                     || testExample.name.toLowerCase().indexOf(value.toLowerCase()) >= 0;
@@ -81,25 +85,21 @@ export class MainPageViewModel extends TestPageMainViewModel {
         }
     }
 
-    private checkIfExampleAlreadyExists(array: ObservableArray<TestExample>, value: string): boolean {
-        let result = false;
-        array.forEach(element => {
-            if (element.path.toLowerCase() === value.toLowerCase()) {
-                result = true;
-                return;
-            }
-        });
+    private checkIfExampleAlreadyExists(dictionary: Map<string, TestExample>, value: string): boolean {
+        if (dictionary.has(value)) {
+            return true;
+        }
 
-        return result;
+        return false;
     }
 
     private toggleExamplePanels(array: ObservableArray<TestExample>) {
-        let listView = <ListView>this.panel.page.getViewById("allExamplesListView");
+        let listView = <ListView>this.buttonsPanel.page.getViewById("allExamplesListView");
         if (array !== null && array !== undefined && array.length > 0) {
-            this.panel.visibility = "hidden";
+            this.buttonsPanel.visibility = "hidden";
             listView.visibility = "visible";
         } else {
-            this.panel.visibility = "visible";
+            this.buttonsPanel.visibility = "visible";
             listView.visibility = "hidden";
         }
     }
@@ -121,11 +121,11 @@ export class MainPageViewModel extends TestPageMainViewModel {
                     console.log(error.message);
                 }
             } else {
-                if (!this.checkIfExampleAlreadyExists(MainPageViewModel.ALL_EXAMPLES, value)) {
-                    this._allExamples.push(new TestExample(key, value));
-                    MainPageViewModel.ALL_EXAMPLES.push(new TestExample(key, value));
-                } else {
-                    console.log(value);
+                if (!this.checkIfExampleAlreadyExists(MainPageViewModel._examplesDictionary, value)) {
+                    const testExample = new TestExample(key, value);
+                    this._allExamples.push(testExample);
+                    MainPageViewModel.ALL_EXAMPLES.push(testExample);
+                    MainPageViewModel._examplesDictionary.set(value, testExample)
                 }
             }
         });
