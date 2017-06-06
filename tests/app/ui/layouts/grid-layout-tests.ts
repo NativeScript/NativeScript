@@ -9,6 +9,7 @@ import * as testModule from "../../ui-test";
 import * as layoutHelper from "./layout-helper";
 import * as platform from "tns-core-modules/platform";
 import * as commonTests from "./common-layout-tests";
+import * as helper from "../helper";
 
 var DELTA = 1;
 
@@ -31,6 +32,14 @@ export class GridLayoutTest extends testModule.UITest<RemovalTrackingGridLayout>
 
     public create(): RemovalTrackingGridLayout {
         return new RemovalTrackingGridLayout();
+    }
+
+    public test_recycling() {
+        helper.nativeView_recycling_test(() => new GridLayout());
+    }
+
+    public test_item_recycling() {
+        helper.nativeView_recycling_test(() => new Button(), () => new GridLayout());
     }
 
     private row(view: view.View): number {

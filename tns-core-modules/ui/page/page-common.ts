@@ -154,7 +154,8 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get frame(): Frame {
-        return <Frame>this.parent;
+        const frame = this.parent;
+        return frame instanceof Frame ? frame : undefined;
     }
 
     private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {

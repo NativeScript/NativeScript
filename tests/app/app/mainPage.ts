@@ -24,7 +24,7 @@ page.id = "mainPage";
 page.on(Page.navigatedToEvent, onNavigatedTo);
 
 function runTests() {
-    setTimeout(() => tests.runAll(""), 10);
+    setTimeout(() => tests.runAll(''), 10);
 }
 
 function onNavigatedTo(args) {

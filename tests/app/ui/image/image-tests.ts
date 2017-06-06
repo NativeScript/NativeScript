@@ -21,6 +21,10 @@ import * as backgroundModule from "tns-core-modules/ui/styling/background";
 import { android as androidApp } from "tns-core-modules/application";
 const imagePath = "~/logo.png";
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new Image());
+}
+
 if (isAndroid) {
     (<any>backgroundModule).initImageCache(androidApp.startActivity, (<any>backgroundModule).CacheMode.memory); // use memory cache only.
 }

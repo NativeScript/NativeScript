@@ -2,6 +2,8 @@
 import { FlexboxLayout } from "tns-core-modules/ui/layouts/flexbox-layout";
 // << flexbox-layout-require
 
+import { Button } from "tns-core-modules/ui/button";
+
 export namespace FlexDirection {
     export const ROW: "row" = "row";
     export const ROW_REVERSE: "row-reverse" = "row-reverse";
@@ -49,12 +51,12 @@ export namespace AlignSelf {
     export const STRETCH: "stretch" = "stretch";
 }
 
-import {View, unsetValue, Length, PercentLength} from "tns-core-modules/ui/core/view";
-import {Label} from "tns-core-modules/ui/label";
+import { View, unsetValue, Length, PercentLength } from "tns-core-modules/ui/core/view";
+import { Label } from "tns-core-modules/ui/label";
 import * as TKUnit from "../../TKUnit";
 import * as helper from "../helper";
-import {layout} from "tns-core-modules/utils/utils";
-import {parse} from "tns-core-modules/ui/builder";
+import { layout } from "tns-core-modules/utils/utils";
+import { parse } from "tns-core-modules/ui/builder";
 
 // TODO: Test the flexbox-layout-page.xml can be loaded and displayed
 
@@ -85,7 +87,7 @@ function commonAncestor(view1: View, view2: View): View {
             set.add(view2);
             view2 = <View>view2.parent;
         }
-    } while(view1 || view2);
+    } while (view1 || view2);
     return null;
 }
 
@@ -106,7 +108,7 @@ function bounds(view: View): Bounds {
  */
 function boundsToAncestor(child: View, ancestor: View = null) {
     let currentBounds = bounds(child);
-    while(child && child !== ancestor) {
+    while (child && child !== ancestor) {
         child = <View>child.parent;
         let childBounds = bounds(child);
         currentBounds.left += childBounds.left;
@@ -239,7 +241,8 @@ function test<U extends { root: View }>(ui: () => U, setup: (ui: U) => void, tes
 
 let getViews = (template: string) => {
     let root = parse(template);
-    return { root,
+    return {
+        root,
         flexbox: root.getViewById("flexbox") as FlexboxLayout,
         text1: root.getViewById("text1") as Label,
         text2: root.getViewById("text2") as Label,
@@ -262,10 +265,18 @@ let activity_flex_wrap = () => getViews(
     </FlexboxLayout>`
 );
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new FlexboxLayout());
+}
+
+export function test_item_recycling() {
+    helper.nativeView_recycling_test(() => new Button(), () => new FlexboxLayout());
+}
+
 export const testFlexWrap_wrap = test(
     activity_flex_wrap,
-    ({flexbox}) => flexbox.flexWrap = FlexWrap.WRAP,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexWrap = FlexWrap.WRAP,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
@@ -279,8 +290,8 @@ export const testFlexWrap_wrap = test(
 
 export const testFlexWrap_nowrap = test(
     activity_flex_wrap,
-    ({flexbox}) => flexbox.flexWrap = FlexWrap.NOWRAP,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexWrap = FlexWrap.NOWRAP,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
@@ -293,8 +304,8 @@ export const testFlexWrap_nowrap = test(
 
 export const testFlexWrap_wrap_reverse = test(
     activity_flex_wrap,
-    ({flexbox}) => flexbox.flexWrap = FlexWrap.WRAP_REVERSE,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexWrap = FlexWrap.WRAP_REVERSE,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isAbove(text3, text1);
@@ -306,8 +317,8 @@ export const testFlexWrap_wrap_reverse = test(
 
 export const testFlexWrap_wrap_flexDirection_column = test(
     activity_flex_wrap,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
@@ -321,10 +332,10 @@ export const testFlexWrap_wrap_flexDirection_column = test(
 
 export const testFlexWrap_nowrap_flexDirection_column = test(
     activity_flex_wrap,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexDirection = FlexDirection.COLUMN;
         flexbox.flexWrap = FlexWrap.NOWRAP;
-    }, ({root, flexbox, text1, text2, text3}) => {
+    }, ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
@@ -337,10 +348,10 @@ export const testFlexWrap_nowrap_flexDirection_column = test(
 
 export const testFlexWrap_wrap_reverse_flexDirection_column = test(
     activity_flex_wrap,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexDirection = FlexDirection.COLUMN;
         flexbox.flexWrap = FlexWrap.WRAP_REVERSE;
-    }, ({root, flexbox, text1, text2, text3}) => {
+    }, ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isRightAlignedWith(text1, flexbox);
         isBelow(text2, text1);
@@ -369,7 +380,7 @@ let activity_flex_item_match_parent = () => getViews(
 export const testFlexItem_match_parent = test(
     activity_flex_item_match_parent,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         widthEqual(text1, flexbox);
         widthEqual(text2, flexbox);
         widthEqual(text3, flexbox);
@@ -395,7 +406,7 @@ let activity_flex_item_match_parent_direction_column = () => getViews(
 export const testFlexItem_match_parent_flexDirection_column = test(
     activity_flex_item_match_parent_direction_column,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         heightEqual(text1, flexbox);
         heightEqual(text2, flexbox);
         heightEqual(text3, flexbox);
@@ -419,7 +430,7 @@ let activity_flexbox_wrap_content = () => getViews(
 export const testFlexboxLayout_wrapContent = test(
     activity_flexbox_wrap_content,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isBottomAlignedWith(text1, flexbox);
@@ -453,7 +464,7 @@ let activity_flexbox_wrapped_with_scrollview = () => getViews(
 export const testFlexboxLayout_wrapped_with_ScrollView = test(
     activity_flexbox_wrapped_with_scrollview,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
 
@@ -481,7 +492,7 @@ let activity_flexbox_wrapped_with_horizontalscrollview = () => getViews(
 export const testFlexboxLayout_wrapped_with_HorizontalScrollView = test(
     activity_flexbox_wrapped_with_horizontalscrollview,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
 
@@ -510,7 +521,7 @@ let activity_justify_content_test = () => getViews(
 export const testJustifyContent_flexStart = test(
     activity_justify_content_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
@@ -531,7 +542,7 @@ let activity_justify_content_with_parent_padding = () => getViews(
 export const testJustifyContent_flexStart_withParentPadding = test(
     activity_justify_content_with_parent_padding,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         isRightOf(text3, text2);
         equal(left(text1), Length.toDevicePixels(flexbox.style.paddingLeft, 0), `Expected ${text1}.left to equal ${flexbox}.paddingLeft`);
@@ -541,8 +552,8 @@ export const testJustifyContent_flexStart_withParentPadding = test(
 
 export const testJustifyContent_flexEnd = test(
     activity_justify_content_test,
-    ({flexbox}) => flexbox.justifyContent = JustifyContent.FLEX_END,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.justifyContent = JustifyContent.FLEX_END,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text3, flexbox);
         isRightAlignedWith(text3, flexbox);
         isLeftOf(text2, text3);
@@ -552,8 +563,8 @@ export const testJustifyContent_flexEnd = test(
 
 export const testJustifyContent_flexEnd_withParentPadding = test(
     activity_justify_content_with_parent_padding,
-    ({flexbox}) => flexbox.justifyContent = JustifyContent.FLEX_END,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.justifyContent = JustifyContent.FLEX_END,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftOf(text2, text3);
         isLeftOf(text1, text2);
         closeEnough(width(flexbox) - right(text3), Length.toDevicePixels(flexbox.style.paddingRight, 0));
@@ -563,8 +574,8 @@ export const testJustifyContent_flexEnd_withParentPadding = test(
 
 export const testJustifyContent_center = test(
     activity_justify_content_test,
-    ({flexbox}) => flexbox.justifyContent = JustifyContent.CENTER,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.justifyContent = JustifyContent.CENTER,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isTopAlignedWith(text2, flexbox);
@@ -580,8 +591,8 @@ export const testJustifyContent_center = test(
 
 export const testJustifyContent_center_withParentPadding = test(
     activity_justify_content_with_parent_padding,
-    ({flexbox}) => flexbox.justifyContent = JustifyContent.CENTER,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.justifyContent = JustifyContent.CENTER,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         isRightOf(text3, text2);
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - Length.toDevicePixels(flexbox.style.paddingLeft, 0) - Length.toDevicePixels(flexbox.style.paddingRight, 0);
@@ -593,8 +604,8 @@ export const testJustifyContent_center_withParentPadding = test(
 
 export const testJustifyContent_spaceBetween = test(
     activity_justify_content_test,
-    ({flexbox}) => flexbox.justifyContent = JustifyContent.SPACE_BETWEEN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.justifyContent = JustifyContent.SPACE_BETWEEN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -609,11 +620,11 @@ export const testJustifyContent_spaceBetween = test(
 
 export const testJustifyContent_spaceBetween_withPadding = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.SPACE_BETWEEN;
         flexbox.style.padding = padding;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(padding) * 2;
         space = space / 2;
         closeEnough(left(text1), dipToDp(padding));
@@ -625,8 +636,8 @@ export const testJustifyContent_spaceBetween_withPadding = test(
 
 export const testJustifyContent_spaceAround = test(
     activity_justify_content_test,
-    ({flexbox}) => flexbox.justifyContent = JustifyContent.SPACE_AROUND,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.justifyContent = JustifyContent.SPACE_AROUND,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
         isTopAlignedWith(text3, flexbox);
@@ -646,11 +657,11 @@ const padding: any = 40;
 
 export const testJustifyContent_spaceAround_withPadding = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.SPACE_AROUND;
         flexbox.style.padding = padding;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         let space = width(flexbox) - width(text1) - width(text2) - width(text3) - dipToDp(padding) * 2;
         space = space / 6; // Divide by the number of children * 2
         check(space - 1 <= left(text1) - dipToDp(padding) && left(text1) - dipToDp(padding) <= space + 1);
@@ -664,8 +675,8 @@ export const testJustifyContent_spaceAround_withPadding = test(
 
 export const testJustifyContent_flexStart_flexDirection_column = test(
     activity_justify_content_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isBelow(text2, text1);
@@ -677,11 +688,11 @@ export const testJustifyContent_flexStart_flexDirection_column = test(
 
 export const testJustifyContent_flexEnd_flexDirection_column = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isBottomAlignedWith(text3, flexbox);
         isRightAlignedWith(text3, flexbox);
         isAbove(text2, text3);
@@ -691,11 +702,11 @@ export const testJustifyContent_flexEnd_flexDirection_column = test(
 
 export const testJustifyContent_center_flexDirection_column = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.CENTER;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isLeftAlignedWith(text2, flexbox);
@@ -711,11 +722,11 @@ export const testJustifyContent_center_flexDirection_column = test(
 
 export const testJustifyContent_spaceBetween_flexDirection_column = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.SPACE_BETWEEN;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -731,12 +742,12 @@ export const testJustifyContent_spaceBetween_flexDirection_column = test(
 
 export const testJustifyContent_spaceBetween_flexDirection_column_withPadding = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.SPACE_BETWEEN;
         flexbox.flexDirection = FlexDirection.COLUMN;
         flexbox.style.padding = padding;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
         space = space / 2;
         closeEnough(top(text1), dipToDp(padding));
@@ -748,11 +759,11 @@ export const testJustifyContent_spaceBetween_flexDirection_column_withPadding = 
 
 export const testJustifyContent_spaceAround_flexDirection_column = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.SPACE_AROUND
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
         isLeftAlignedWith(text3, flexbox);
@@ -770,12 +781,12 @@ export const testJustifyContent_spaceAround_flexDirection_column = test(
 
 export const testJustifyContent_spaceAround_flexDirection_column_withPadding = test(
     activity_justify_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.justifyContent = JustifyContent.SPACE_AROUND;
         flexbox.flexDirection = FlexDirection.COLUMN;
         flexbox.style.padding = padding;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         let space = height(flexbox) - height(text1) - height(text2) - height(text3) - dipToDp(padding) * 2;
         space = space / 6; // Divide by the number of children * 2
         check(space - 1 <= top(text1) - dipToDp(padding) && top(text1) - dipToDp(padding) <= space + 1);
@@ -788,7 +799,7 @@ export const testJustifyContent_spaceAround_flexDirection_column_withPadding = t
 );
 
 let activity_flex_grow_test = () => getViews(
-        `<FlexboxLayout id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
+    `<FlexboxLayout id="flexbox" width="100%" height="100%" flexDirection="${FlexDirection.ROW}" flexWrap="${FlexWrap.WRAP}" backgroundColor="gray">
             <Label id="text1" width="60" height="60" text="1" backgroundColor="red" />
             <Label id="text2" width="60" height="60" text="2" backgroundColor="green" />
             <Label id="text3" width="60" height="60" text="3" backgroundColor="blue" flexGrow="1" />
@@ -798,7 +809,7 @@ let activity_flex_grow_test = () => getViews(
 export const testFlexGrow_withExactParentLength = test(
     activity_flex_grow_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -813,8 +824,8 @@ export const testFlexGrow_withExactParentLength = test(
 
 export const testFlexGrow_withExactParentLength_flexDirection_column = test(
     activity_flex_grow_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -830,8 +841,8 @@ export const testFlexGrow_withExactParentLength_flexDirection_column = test(
 
 export const testFlexGrow_including_view_gone = test(
     activity_flex_grow_test,
-    ({flexbox, text2}) => text2.visibility = "collapse",
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox, text2 }) => text2.visibility = "collapse",
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
 
@@ -854,12 +865,12 @@ let activity_align_content_test = () => getViews(
 export const testAlignContent_stretch = test(
     activity_align_content_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
-        isRightOf(text2,text1);
-        
+        isRightOf(text2, text1);
+
         isLeftAlignedWith(text3, flexbox);
         isBelow(text3, text1);
         isBelow(text3, text2);
@@ -870,8 +881,8 @@ export const testAlignContent_stretch = test(
 
 export const testAlignContent_flexStart = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.alignContent = AlignContent.FLEX_START,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignContent = AlignContent.FLEX_START,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -887,8 +898,8 @@ export const testAlignContent_flexStart = test(
 
 export const testAlignContent_flexEnd = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.alignContent = AlignContent.FLEX_END,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignContent = AlignContent.FLEX_END,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text3, flexbox);
         isBottomAlignedWith(text3, flexbox);
         isAbove(text1, text3);
@@ -901,11 +912,11 @@ export const testAlignContent_flexEnd = test(
 
 export const testAlignContent_flexEnd_parentPadding = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.FLEX_END;
         flexbox.style.padding = "32";
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isAbove(text1, text3);
         isAbove(text1, text3);
         isAbove(text2, text3);
@@ -916,12 +927,12 @@ export const testAlignContent_flexEnd_parentPadding = test(
 
 export const testAlignContent_flexEnd_parentPadding_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
         flexbox.style.padding = "32";
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftOf(text1, text3);
         isLeftOf(text2, text3);
 
@@ -932,8 +943,8 @@ export const testAlignContent_flexEnd_parentPadding_column = test(
 
 export const testAlignContent_center = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.alignContent = AlignContent.CENTER,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignContent = AlignContent.CENTER,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isBelow(text3, text1);
@@ -950,8 +961,8 @@ export const testAlignContent_center = test(
 
 export const testAlignContent_spaceBetween = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.alignContent = AlignContent.SPACE_BETWEEN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignContent = AlignContent.SPACE_BETWEEN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
@@ -964,8 +975,8 @@ export const testAlignContent_spaceBetween = test(
 
 export const testAlignContent_spaceBetween_withPadding = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.alignContent = AlignContent.SPACE_BETWEEN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignContent = AlignContent.SPACE_BETWEEN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
@@ -977,8 +988,8 @@ export const testAlignContent_spaceBetween_withPadding = test(
 
 export const testAlignContent_spaceAround = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.alignContent = AlignContent.SPACE_AROUND,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignContent = AlignContent.SPACE_AROUND,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isLeftAlignedWith(text3, flexbox);
@@ -996,11 +1007,11 @@ export const testAlignContent_spaceAround = test(
 
 export const testAlignContent_stretch_parentWrapContent = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.height = unsetValue; // TODO: Check that "NaN" is auto-ish
         flexbox.verticalAlignment = "top";
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1017,8 +1028,8 @@ export const testAlignContent_stretch_parentWrapContent = test(
 
 export const testAlignContent_stretch_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1035,11 +1046,11 @@ export const testAlignContent_stretch_flexDirection_column = test(
 
 export const testAlignContent_flexStart_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.FLEX_START;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1055,11 +1066,11 @@ export const testAlignContent_flexStart_flexDirection_column = test(
 
 export const testAlignContent_flexEnd_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isRightAlignedWith(text3, flexbox);
         isTopAlignedWith(text3, flexbox);
         isLeftOf(text1, text3);
@@ -1072,11 +1083,11 @@ export const testAlignContent_flexEnd_flexDirection_column = test(
 
 export const testAlignContent_center_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.CENTER;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isRightOf(text3, text1);
@@ -1093,11 +1104,11 @@ export const testAlignContent_center_flexDirection_column = test(
 
 export const testAlignContent_spaceBetween_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.SPACE_BETWEEN;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
@@ -1109,11 +1120,11 @@ export const testAlignContent_spaceBetween_flexDirection_column = test(
 
 export const testAlignContent_spaceAround_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignContent = AlignContent.SPACE_AROUND;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isTopAlignedWith(text3, flexbox);
@@ -1130,12 +1141,12 @@ export const testAlignContent_spaceAround_flexDirection_column = test(
 
 export const testAlignContent_stretch_parentWrapContent_flexDirection_column = test(
     activity_align_content_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.width = unsetValue; // TODO: Check default is Number.NaN
         flexbox.horizontalAlignment = "left";
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1160,7 +1171,7 @@ let activity_stretch_test = () => getViews(
 export const testAlignItems_stretch = test(
     activity_stretch_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1187,7 +1198,7 @@ let activity_align_self_stretch_test = () => getViews(
 export const testAlignSelf_stretch = test(
     activity_align_self_stretch_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1208,8 +1219,8 @@ export const testAlignSelf_stretch = test(
 
 export const testAlignSelf_stretch_flexDirection_column = test(
     activity_align_self_stretch_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1236,8 +1247,8 @@ let activity_align_items_test = () => getViews(
 
 export const testAlignItems_flexStart = test(
     activity_align_items_test,
-    ({flexbox}) => flexbox.alignItems = AlignItems.FLEX_START,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignItems = AlignItems.FLEX_START,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1257,8 +1268,8 @@ export const testAlignItems_flexStart = test(
 
 export const testAlignItems_flexEnd = test(
     activity_align_items_test,
-    ({flexbox}) => flexbox.alignItems = AlignItems.FLEX_END,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignItems = AlignItems.FLEX_END,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isLeftAlignedWith(text3, flexbox);
@@ -1286,8 +1297,8 @@ let activity_align_items_parent_padding_test = () => getViews(
 
 export const testAlignItems_flexEnd_parentPadding = test(
     activity_align_items_parent_padding_test,
-    ({flexbox}) => flexbox.alignItems = AlignItems.FLEX_END,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignItems = AlignItems.FLEX_END,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         closeEnough(bottom(text1), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
         closeEnough(bottom(text2), height(flexbox) - Length.toDevicePixels(flexbox.style.paddingBottom, 0));
@@ -1296,11 +1307,11 @@ export const testAlignItems_flexEnd_parentPadding = test(
 
 export const testAlignItems_flexEnd_parentPadding_column = test(
     activity_align_items_parent_padding_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignItems = AlignItems.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isBelow(text2, text1);
         closeEnough(right(text1), width(flexbox) - Length.toDevicePixels(flexbox.style.paddingRight, 0));
         closeEnough(right(text2), width(flexbox) - Length.toDevicePixels(flexbox.style.paddingRight, 0));
@@ -1309,8 +1320,8 @@ export const testAlignItems_flexEnd_parentPadding_column = test(
 
 export const testAlignItems_center = test(
     activity_align_items_test,
-    ({flexbox}) => flexbox.alignItems = AlignItems.CENTER,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.alignItems = AlignItems.CENTER,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isLeftAlignedWith(text3, flexbox);
@@ -1331,11 +1342,11 @@ export const testAlignItems_center = test(
 
 export const testAlignItems_flexEnd_wrapReverse = test(
     activity_align_items_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexWrap = FlexWrap.WRAP_REVERSE;
         flexbox.alignItems = AlignItems.FLEX_END;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isLeftAlignedWith(text3, flexbox);
@@ -1356,11 +1367,11 @@ export const testAlignItems_flexEnd_wrapReverse = test(
 
 export const testAlignItems_center_wrapReverse = test(
     activity_align_items_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexWrap = FlexWrap.WRAP_REVERSE;
         flexbox.alignItems = AlignItems.CENTER;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isLeftAlignedWith(text1, flexbox);
         isRightOf(text2, text1);
         isLeftAlignedWith(text3, flexbox);
@@ -1382,8 +1393,8 @@ export const testAlignItems_center_wrapReverse = test(
 
 export const testAlignItems_flexStart_flexDirection_column = test(
     activity_align_items_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1402,11 +1413,11 @@ export const testAlignItems_flexStart_flexDirection_column = test(
 
 export const testAlignItems_flexEnd_flexDirection_column = test(
     activity_align_items_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignItems = AlignItems.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isTopAlignedWith(text3, flexbox);
@@ -1427,11 +1438,11 @@ export const testAlignItems_flexEnd_flexDirection_column = test(
 
 export const testAlignItems_center_flexDirection_column = test(
     activity_align_items_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.alignItems = AlignItems.CENTER;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isTopAlignedWith(text3, flexbox);
@@ -1452,12 +1463,12 @@ export const testAlignItems_center_flexDirection_column = test(
 
 export const testAlignItems_flexEnd_wrapReverse_flexDirection_column = test(
     activity_align_items_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexWrap = FlexWrap.WRAP_REVERSE;
         flexbox.alignItems = AlignItems.FLEX_END;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isLeftAlignedWith(text3, flexbox);
@@ -1478,12 +1489,12 @@ export const testAlignItems_flexEnd_wrapReverse_flexDirection_column = test(
 
 export const testAlignItems_center_wrapReverse_flexDirection_column = test(
     activity_align_items_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexWrap = FlexWrap.WRAP_REVERSE;
         flexbox.alignItems = AlignItems.CENTER;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isBelow(text2, text1);
         isTopAlignedWith(text3, flexbox);
@@ -1513,7 +1524,7 @@ let activity_align_items_baseline_test = () => getViews(
 export const testAlignItems_baseline = test(
     activity_align_items_baseline_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         let topPluBaseline1 = top(text1) + baseline(text1);
         let topPluBaseline2 = top(text2) + baseline(text2);
         let topPluBaseline3 = top(text3) + baseline(text3);
@@ -1525,8 +1536,8 @@ export const testAlignItems_baseline = test(
 
 export const testAlignItems_baseline_wrapReverse = test(
     activity_align_items_baseline_test,
-    ({flexbox}) => flexbox.flexWrap = FlexWrap.WRAP_REVERSE,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexWrap = FlexWrap.WRAP_REVERSE,
+    ({ root, flexbox, text1, text2, text3 }) => {
         let bottomPluBaseline1 = bottom(text1) + baseline(text1);
         let bottomPluBaseline2 = bottom(text2) + baseline(text2);
         let bottomPluBaseline3 = bottom(text3) + baseline(text3);
@@ -1546,8 +1557,8 @@ let activity_flex_wrap_test = () => getViews(
 
 export const testFlexDirection_row_reverse = test(
     activity_flex_wrap_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.ROW_REVERSE,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.ROW_REVERSE,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isRightAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1560,8 +1571,8 @@ export const testFlexDirection_row_reverse = test(
 
 export const testFlexDirection_column_reverse = test(
     activity_flex_wrap_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN_REVERSE,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN_REVERSE,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isBottomAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1583,7 +1594,7 @@ let activity_flex_basis_percent_test = () => getViews(
 export const testFlexBasisPercent_wrap = test(
     activity_flex_basis_percent_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1598,8 +1609,8 @@ export const testFlexBasisPercent_wrap = test(
 
 export const testFlexBasisPercent_nowrap = test(
     activity_flex_basis_percent_test,
-    ({flexbox}) => flexbox.flexWrap = FlexWrap.NOWRAP,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexWrap = FlexWrap.NOWRAP,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1614,8 +1625,8 @@ export const testFlexBasisPercent_nowrap = test(
 
 export const testFlexBasisPercent_wrap_flexDirection_column = test(
     activity_flex_basis_percent_test,
-    ({flexbox}) => flexbox.flexDirection = FlexDirection.COLUMN,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexDirection = FlexDirection.COLUMN,
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1629,11 +1640,11 @@ export const testFlexBasisPercent_wrap_flexDirection_column = test(
 
 export const testFlexBasisPercent_nowrap_flexDirection_column = test(
     activity_flex_basis_percent_test,
-    ({flexbox}) => {
+    ({ flexbox }) => {
         flexbox.flexWrap = FlexWrap.NOWRAP;
         flexbox.flexDirection = FlexDirection.COLUMN;
     },
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1648,16 +1659,16 @@ export const testFlexBasisPercent_nowrap_flexDirection_column = test(
 );
 
 let activity_minwidth_test = () => getViews(
-        `<FlexboxLayout id="flexbox" width="400" height="400" backgroundColor="gray">
+    `<FlexboxLayout id="flexbox" width="400" height="400" backgroundColor="gray">
             <Label id="text1" horizontalAlignment="left" verticalAlignment="top" text="1" minWidth="100" backgroundColor="red" />
             <Label id="text2" horizontalAlignment="left" verticalAlignment="top" text="2" minWidth="100" backgroundColor="green" flexGrow="1" />
         </FlexboxLayout>`
-    );
+);
 
 export const testMinWidth_initial_width_less_than_minWidth = test(
     activity_minwidth_test,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         let minWidth = 100;
         closeEnough(width(text1), dipToDp(100));
         closeEnough(width(text2), width(flexbox) - dipToDp(100));
@@ -1676,7 +1687,7 @@ let activity_minwidth_lower_bound_test = () => getViews(
 export const testMinWidth_works_as_lower_bound_shrink_to = test(
     activity_minwidth_lower_bound_test,
     noop,
-    ({root, flexbox, text1, text2, text3, text4}) => {
+    ({ root, flexbox, text1, text2, text3, text4 }) => {
         closeEnough(width(text1), dipToDp(150));
         closeEnough(width(flexbox), width(text1) + width(text2) + width(text3) + width(text4));
     }
@@ -1692,7 +1703,7 @@ let activity_minheight_test = () => getViews(
 export const testMinHeight_initial_height_less_than_minHeight = test(
     activity_minheight_test,
     noop,
-    ({root, flexbox, text1, text2}) => {
+    ({ root, flexbox, text1, text2 }) => {
         closeEnough(height(text1), dipToDp(100));
         closeEnough(height(text2), height(flexbox) - dipToDp(100));
     }
@@ -1710,7 +1721,7 @@ let activity_minheight_lower_bound_test = () => getViews(
 export const testMinHeight_works_as_lower_bound_shrink_to = test(
     activity_minheight_lower_bound_test,
     noop,
-    ({root, flexbox, text1, text2, text3, text4}) => {
+    ({ root, flexbox, text1, text2, text3, text4 }) => {
         closeEnough(height(text1), dipToDp(150));
         closeEnough(height(flexbox), height(text1) + height(text2) + height(text3) + height(text4));
     }
@@ -1735,7 +1746,7 @@ let activity_views_visibility_gone = () => getViews(
 export const testView_visibility_gone = test(
     activity_views_visibility_gone,
     noop,
-    ({root, flexbox, text1, text2, text3, text4, text5}) => {
+    ({ root, flexbox, text1, text2, text3, text4, text5 }) => {
         isTopAlignedWith(text3, flexbox);
         isLeftAlignedWith(text3, flexbox);
         isTopAlignedWith(text4, flexbox);
@@ -1759,7 +1770,7 @@ let activity_visibility_gone_first_item_in_flex_line_row = () => getViews(
 export const testView_visibility_gone_first_item_in_flex_line_horizontal = test(
     activity_visibility_gone_first_item_in_flex_line_row,
     noop,
-    ({root, flexbox, text1, text2, text3}) => {
+    ({ root, flexbox, text1, text2, text3 }) => {
         check(height(flexbox) > 0);
         equal(height(flexbox), height(text1) + height(text3));
     }
@@ -1776,7 +1787,7 @@ let activity_visibility_gone_first_item_in_flex_line_column = () => getViews(
 export const testView_visibility_gone_first_item_in_flex_line_vertical = test(
     activity_visibility_gone_first_item_in_flex_line_column,
     noop,
-    ({flexbox, text1, text3}) => {
+    ({ flexbox, text1, text3 }) => {
         check(width(flexbox) > 0);
         equal(width(flexbox), width(text1) + width(text3));
     }
@@ -1793,7 +1804,7 @@ let activity_wrap_before_test = () => getViews(
 export const testWrapBefore = test(
     activity_wrap_before_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1805,8 +1816,8 @@ export const testWrapBefore = test(
 
 export const testWrapBefore2 = test(
     activity_wrap_before_test,
-    ({text2}) => FlexboxLayout.setFlexWrapBefore(text2, false),
-    ({flexbox, text1, text2, text3}) => {
+    ({ text2 }) => FlexboxLayout.setFlexWrapBefore(text2, false),
+    ({ flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1820,8 +1831,8 @@ export const testWrapBefore2 = test(
 
 export const testWrapBefore_nowrap = test(
     activity_wrap_before_test,
-    ({flexbox}) => flexbox.flexWrap = FlexWrap.NOWRAP,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox }) => flexbox.flexWrap = FlexWrap.NOWRAP,
+    ({ flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isBottomAlignedWith(text1, flexbox);
@@ -1845,7 +1856,7 @@ let activity_wrap_parent_padding_horizontal_test = () => getViews(
 export const testWrap_parentPadding_horizontal = test(
     activity_wrap_parent_padding_horizontal_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isBelow(text2, text1);
         isRightOf(text3, text2);
         closeEnough(height(flexbox), Length.toDevicePixels(flexbox.style.paddingTop, 0) + Length.toDevicePixels(flexbox.style.paddingBottom, 0) + height(text1) + height(text2));
@@ -1863,7 +1874,7 @@ let activity_wrap_parent_padding_vertical_test = () => getViews(
 export const testWrap_parentPadding_vertical = test(
     activity_wrap_parent_padding_vertical_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         isBelow(text3, text2);
         closeEnough(width(flexbox), Length.toDevicePixels(flexbox.style.paddingLeft, 0) + Length.toDevicePixels(flexbox.style.paddingRight, 0) + width(text1) + width(text2));
@@ -1881,7 +1892,7 @@ let activity_wrap_child_margin_horizontal_test = () => getViews(
 export const testWrap_childMargin_horizontal = test(
     activity_wrap_child_margin_horizontal_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isBelow(text2, text1);
         isRightOf(text3, text2);
         closeEnough(height(flexbox), height(text1) + height(text2) + PercentLength.toDevicePixels(text2.style.marginTop, 0, Number.NaN) + PercentLength.toDevicePixels(text2.style.marginBottom, 0, Number.NaN));
@@ -1899,7 +1910,7 @@ let activity_first_item_large_horizontal_test = () => getViews(
 export const testFirstItemLarge_horizontal = test(
     activity_first_item_large_horizontal_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isLeftAlignedWith(text2, flexbox);
@@ -1921,7 +1932,7 @@ let activity_first_item_large_vertical_test = () => getViews(
 export const testFirstItemLarge_vertical = test(
     activity_first_item_large_vertical_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isTopAlignedWith(text1, flexbox);
         isLeftAlignedWith(text1, flexbox);
         isTopAlignedWith(text2, flexbox);
@@ -1943,7 +1954,7 @@ let activity_wrap_child_margin_vertical_test = () => getViews(
 export const testWrap_childMargin_vertical = test(
     activity_wrap_child_margin_vertical_test,
     noop,
-    ({flexbox, text1, text2, text3}) => {
+    ({ flexbox, text1, text2, text3 }) => {
         isRightOf(text2, text1);
         isBelow(text3, text2);
         // dips anyone?
@@ -1960,7 +1971,7 @@ let activity_flexbox_with_proxy_view_container = () => getViews(
 export const testFlexboxLayout_does_not_crash_with_proxy_view_container = test(
     activity_flexbox_with_proxy_view_container,
     noop,
-    ({root, flexbox}) => {
+    ({ root, flexbox }) => {
         TKUnit.assert(flexbox.id === "flexbox", "FlexboxLayout actually there");
     }
 );

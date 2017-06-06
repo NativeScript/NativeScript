@@ -293,7 +293,7 @@ Object.defineProperty(View.prototype, "alignSelf", {
 
 // flex-flow: <flex-direction> || <flex-wrap>
 const flexFlowProperty = new ShorthandProperty<Style, string>({
-    name: "flex-flow", cssName: "flex-flow",
+    name: "flexFlow", cssName: "flex-flow",
     getter: function (this: Style) {
         return `${this.flexDirection} ${this.flexWrap}`;
     },

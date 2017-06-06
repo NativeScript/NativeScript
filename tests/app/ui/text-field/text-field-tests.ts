@@ -21,13 +21,17 @@ import * as observable from "tns-core-modules/data/observable";
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
 function pageLoaded(args) {
-  var page = args.object;
-  var obj = new observable.Observable();
-  obj.set("someProperty", "Please change this text!");
-  page.bindingContext = obj;
+    var page = args.object;
+    var obj = new observable.Observable();
+    obj.set("someProperty", "Please change this text!");
+    page.bindingContext = obj;
 }
 exports.pageLoaded = pageLoaded;
 // << binding-text-property-textfield
+
+export function test_recycling() {
+    helper.nativeView_recycling_test(_createTextFieldFunc);
+}
 
 var _createTextFieldFunc = function (): textFieldModule.TextField {
     // >> creating-textfield
@@ -40,7 +44,7 @@ var _createTextFieldFunc = function (): textFieldModule.TextField {
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-        
+
         // >> setting-text-property
         textField.text = "Hello, world!";
         // << setting-text-property
@@ -48,13 +52,13 @@ export var testSetText = function () {
         var expectedValue = "Hello, world!";
         var actualValue = textFieldTestsNative.getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
-    });    
+    });
 }
 
 export var testSetTextNull = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-        
+
         textField.text = null;
 
         var expectedValue = "";
@@ -98,7 +102,7 @@ function createFormattedString(value: any): formattedStringModule.FormattedStrin
 export var testSetTextWithSpan = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-  
+
         textField.formattedText = createFormattedString("Hello, world!");
 
         var expectedValue = "Hello, world!";
@@ -155,6 +159,7 @@ export var testSetHintToNumber = function () {
 
         var actualValue = textFieldTestsNative.getNativeHint(textField);
         TKUnit.assert(<any>actualValue == expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+
     });
 }
 /* tslint:enable */
@@ -551,8 +556,8 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
 
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform,  "uppercase", "TextTransform");
+
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
@@ -564,7 +569,7 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
+
         TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
         TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");

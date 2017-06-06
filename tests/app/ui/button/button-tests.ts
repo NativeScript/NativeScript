@@ -16,6 +16,10 @@ import * as bindable from "tns-core-modules/ui/core/bindable";
 import * as observable from "tns-core-modules/data/observable";
 // << button-require-others
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new buttonModule.Button());
+}
+
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createButtonFunc(), _testSetText);
 }

@@ -75,19 +75,13 @@ function initializeNativeClasses() {
             return item.view.nativeView;
         }
 
-        destroyItem(container: android.view.ViewGroup, index: number, _object: any) {
+        destroyItem(container: android.view.ViewGroup, index: number, nativeView: android.view.View) {
             if (traceEnabled()) {
-                traceWrite("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; _object: " + _object, traceCategory);
+                traceWrite("TabView.PagerAdapter.destroyItem; container: " + container + "; index: " + index + "; nativeView: " + nativeView, traceCategory);
             }
-            let item = this.items[index];
-            let nativeView = item.view.nativeView;
 
-            if (!nativeView || !_object) {
+            if (!nativeView) {
                 return;
-            }
-
-            if (nativeView.toString() !== _object.toString()) {
-                throw new Error("Expected " + nativeView.toString() + " to equal " + _object.toString());
             }
 
             container.removeView(nativeView);
@@ -362,6 +356,7 @@ export class TabView extends TabViewBase {
         const length = items ? items.length : 0;
         if (length === 0) {
             this._tabLayout.setItems(null, null);
+            this._pagerAdapter.notifyDataSetChanged();
             return;
         }
 
