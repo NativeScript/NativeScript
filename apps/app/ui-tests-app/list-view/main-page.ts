@@ -1,5 +1,5 @@
 import { EventData } from "tns-core-modules/data/observable";
-import { MainPageViewModel } from "../mainPage";
+import { TestPageMainViewModel } from "../test-page-main-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
 
@@ -16,11 +16,12 @@ export function loadExamples() {
     let examples = new Map<string, string>();    
     examples.set("list-view-templates", "list-view/list-view");
     examples.set("images-template", "list-view/images-template");
+    examples.set("bindings", "list-view/listview-binding");
 
     return examples;
 }
 
-export class SubMainPageViewModel extends MainPageViewModel {
+export class SubMainPageViewModel extends TestPageMainViewModel {
     constructor(container: WrapLayout, examples: Map<string, string>) {
         super(container, examples);
     }
