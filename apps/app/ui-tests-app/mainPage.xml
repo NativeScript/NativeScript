@@ -8,5 +8,13 @@
     <ScrollView row="1">
       <WrapLayout id="wrapLayoutWithExamples"/>
     </ScrollView>
+    <ListView items="{{ allExamples }}" row="1" itemTap="{{ loadExampleFromListView }}" id="allExamplesListView">
+        <ListView.itemTemplate>
+        <GridLayout columns="*,*">
+            <Label text="{{ name }}" />
+            <Label text="{{ path }}" col="1"/>           
+        </GridLayout>
+        </ListView.itemTemplate>
+    </ListView>
   </GridLayout>
 </Page> 
