@@ -4,9 +4,9 @@ import { Page } from "tns-core-modules/ui/page";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 
 export function pageLoaded(args: EventData) {
-    let page = <Page>args.object;
-    let wrapLayout = page.getViewById<WrapLayout>("wrapLayoutWithExamples");
-    let examples: Map<string, string> = new Map<string, string>();
+    const page = <Page>args.object;
+    const wrapLayout = page.getViewById<WrapLayout>("wrapLayoutWithExamples");
+    const examples: Map<string, string> = new Map<string, string>();
     examples.set("action-bar", "action-bar/main-page");
     examples.set("bindings", "bindings/main-page");
     examples.set("button", "button/main-page");
@@ -29,11 +29,10 @@ export function pageLoaded(args: EventData) {
     examples.set("timePicker", "time-picker/time-picker");
     examples.set("text-field", "text-field/main-page");
     examples.set("webview", "web-view/main-page");
-    const viewModel = new MainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
-    var parent = page.getViewById('parentLayout');
-    var searchBar = page.getViewById('textView');
+    page.bindingContext = new MainPageViewModel(wrapLayout, examples);
 
+    const parent = page.getViewById('parentLayout');
+    const searchBar = page.getViewById('textView');
     if (parent.android) {
         parent.android.setFocusableInTouchMode(true);
         parent.android.setFocusable(true);

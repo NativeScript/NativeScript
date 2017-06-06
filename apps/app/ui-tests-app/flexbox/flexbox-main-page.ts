@@ -5,16 +5,13 @@ import { Page } from "tns-core-modules/ui/page";
 import { getViewById } from "tns-core-modules/ui/core/view"
 
 export function pageLoaded(args: EventData) {
-    let page = <Page>args.object;
-    let wrapLayout = <WrapLayout>getViewById(page, "wrapLayout");
-    let examples = loadExamples();
-
-    let viewModel = new FlexboxMainPageViewModel(wrapLayout, examples);
-    page.bindingContext = viewModel;
+    const page = <Page>args.object;
+    const wrapLayout = <WrapLayout>page.getViewById("wrapLayoutWithExamples");
+    page.bindingContext = new FlexboxMainPageViewModel(wrapLayout, loadExamples());
 }
 
 export function loadExamples() {
-    let examples = new Map<string, string>();
+    const examples = new Map<string, string>();
     examples.set("flexboxall", "flexbox/flexbox");
     examples.set("flexboxcss", "flexbox/flexbox-css");
     examples.set("flexboxdemo", "flexbox/flexbox-demo");
