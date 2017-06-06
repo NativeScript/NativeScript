@@ -11,14 +11,6 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("gestures", "gestures");
-    examples.set("touch", "touch-event");
-    examples.set("pan", "pan-event");
-    examples.set("handlers", "handlers");
-    examples.set("console", "console");
-    examples.set("i61", "i61");
-    examples.set("i73", "i73");
-    examples.set("i86", "i86");
-
+     examples.set("issue-4147", "search-bar/issue-4147");
     return examples;
 }

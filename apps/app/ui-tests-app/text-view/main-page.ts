@@ -1,5 +1,5 @@
 import { EventData } from "tns-core-modules/data/observable";
-import { TestPageMainViewModel } from "../test-page-main-view-model";
+import { SubMainPageViewModel } from "../sub-main-page-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
 
@@ -15,10 +15,4 @@ export function loadExamples() {
     examples.set("max-length", "text-field/max-length");
     examples.set("text-field-border", "text-field/text-field-border");
     return examples;
-}
-
-export class SubMainPageViewModel extends TestPageMainViewModel {
-    constructor(container: WrapLayout, examples: Map<string, string>) {
-        super(container, examples);
-    }
 }
