@@ -25,9 +25,11 @@ export function pageLoaded(args: EventData) {
     examples.set("page", "page/main-page");
     examples.set("perf", "perf/main-page");
     examples.set("segStyle", "segmented-bar/all");
+    examples.set("search-bar", "search-bar/main-page");
     examples.set("tab-view", "tab-view/main-page");
     examples.set("timePicker", "time-picker/time-picker");
     examples.set("text-field", "text-field/main-page");
+    examples.set("text-view", "text-view/main-page");
     examples.set("webview", "web-view/main-page");
     page.bindingContext = new MainPageViewModel(wrapLayout, examples);
 

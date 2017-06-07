@@ -1,12 +1,12 @@
 import { EventData } from "tns-core-modules/data/observable";
-import { TestPageMainViewModel } from "../test-page-main-view-model";
+import { SubMainPageViewModel } from "../sub-main-page-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { Page } from "tns-core-modules/ui/page";
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
-    const wrapLayout = <WrapLayout>page.getViewById("wrapLayoutWithExamples");
-    page.bindingContext = new FlexboxMainPageViewModel(wrapLayout, loadExamples());
+    const wrapLayout = <WrapLayout>page.getViewById("wrapLayout");
+    page.bindingContext = new SubMainPageViewModel(wrapLayout, loadExamples());
 }
 
 export function loadExamples() {
@@ -19,10 +19,4 @@ export function loadExamples() {
     examples.set("flexbox-4143", "flexbox/flexbox-4143");
 
     return examples;
-}
-
-export class FlexboxMainPageViewModel extends TestPageMainViewModel {
-    constructor(container: WrapLayout, examples: Map<string, string>) {
-        super(container, examples);
-    }
 }

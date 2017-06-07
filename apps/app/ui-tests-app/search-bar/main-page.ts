@@ -10,15 +10,7 @@ export function pageLoaded(args: EventData) {
 }
 
 export function loadExamples() {
-    const examples = new Map<string, string>();    
-    examples.set("tabColor", "tab-view/color");
-    examples.set("tabBG", "tab-view/background");
-    examples.set("tabTabsBG", "tab-view/tabsBackground");
-    examples.set("tabSelected", "tab-view/selected");
-    examples.set("tabStyle", "tab-view/all");
-    examples.set("tabmore", "tab-view/tab-view-more");
-    examples.set("tabViewCss", "tab-view/tab-view-css");
-    examples.set("tab-view-icons", "tab-view/tab-view-icon");
-    examples.set("text-transform", "tab-view/text-transform");
+    const examples = new Map<string, string>();
+     examples.set("issue-4147", "search-bar/issue-4147");
     return examples;
 }

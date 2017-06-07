@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Page >
+    <StackLayout>
+        <SearchBar id="bg-color" hint="bg-color" text="" textFieldHintColor="green" />
+        <SearchBar class="color" hint="color" text="color" />
+        <SearchBar hint="Hint Text" id="searchBar" textFieldHintColor="#FFFFFF" 
+        style="color:#FFFFFF;background-color: #795548;height:60" />
+    </StackLayout>
+</Page>
