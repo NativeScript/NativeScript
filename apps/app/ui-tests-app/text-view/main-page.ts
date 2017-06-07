@@ -11,8 +11,7 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("secured-text-field", "text-field/secured-text-field-4135");
-    examples.set("max-length", "text-field/max-length");
-    examples.set("text-field-border", "text-field/text-field-border");
+    examples.set("text-view-border", "text-view/text-view-border");
+    examples.set("text-view-hint-color", "text-view/text-view-hint-color");
     return examples;
 }

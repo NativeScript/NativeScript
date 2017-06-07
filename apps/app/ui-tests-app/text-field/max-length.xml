@@ -7,7 +7,7 @@
         <TextField id="maxLenghtFromCodeBehind" hint="set only max length from code behind" />
         <TextField id="inXml" text="in xml" hint="in xml" maxLength="3" />
         <TextField id="useInput" hint="user input" maxLength="3" />
-        <TextField id="useInput" hint="user input" maxLength="3" secure="true" />        
+        <TextField id="useInput" hint="secured" maxLength="3" secure="true" />        
         <Button tap="setText" text="Revert to initial state" />
     </StackLayout>
 </Page>

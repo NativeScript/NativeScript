@@ -37,7 +37,6 @@ export function loadExamples() {
     examples.set("margins-paddings-with-percentage", "css/margins-paddings-with-percentage");
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("border-playground", "css/border-playground");
-    examples.set("textview-hint-color", "css/textview-hint-color");
     examples.set("hint-text-color", "css/hint-text-color");
     examples.set("combinators", "css/combinators");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
