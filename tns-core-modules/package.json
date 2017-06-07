@@ -35,5 +35,12 @@
       "ios": "2.1.1",
       "android": "2.1.1"
     }
+  },
+  "snapshot": {
+    "android": {
+      "tns-java-classes": {
+        "modules": ["ui/frame/activity", "ui/frame/fragment"]
+      }
+    }
   }
 }
