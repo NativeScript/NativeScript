@@ -235,11 +235,11 @@ if (!(platform.device.os === platform.platformNames.android && parseInt(platform
     allTests["TANSITIONS"] = transitionTests;
 }
 
-import * as navigationTests from "./navigation/navigation-tests";
-allTests["NAVIGATION"] = navigationTests;
-
 import * as searchBarTests from "./ui/search-bar/search-bar-tests";
 allTests["SEARCH-BAR"] = searchBarTests;
+
+import * as navigationTests from "./navigation/navigation-tests";
+allTests["NAVIGATION"] = navigationTests;
 
 var testsWithLongDelay = {
     test_Transitions: 3 * 60 * 1000,
