@@ -7,10 +7,8 @@ export function navigatingTo(args: EventData) {
 }
 
 export class ImagesTemplateViewModel extends Observable {
-
-    public items: Array<string> = ["res://icon", null, "~/ui-tests-app/resources/images/no-image.png", null, "~/ui-tests-app/resources/images/git no-image.png", null, "res://icon", null];
+    public items: Array<string> = ["res://icon", null, "~/ui-tests-app/resources/images/no-image.png", null, "~/ui-tests-app/resources/images/no-image.png", null, "res://icon", null];
     constructor() {
         super();
-
     }
 }

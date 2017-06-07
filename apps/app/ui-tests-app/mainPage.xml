@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Page loaded="pageLoaded">
   <GridLayout rows="auto, *">
-    <StackLayout id="parentLayout">
+    <StackLayout id="parentLayout" row="0" >
       <TextView automationText="tv" id="textView" text="{{ exampleName }}" />
       <Button automationText="Run" id="btnRun" text="Run" tap="{{ loadExmaple }}" />
     </StackLayout>
     <ScrollView row="1">
       <WrapLayout id="wrapLayoutWithExamples"/>
     </ScrollView>
-    <ListView items="{{ allExamples }}" row="1" itemTap="{{ loadExampleFromListView }}" id="allExamplesListView">
-        <ListView.itemTemplate>
-        <GridLayout columns="*,*">
-            <Label text="{{ name }}" />
-            <Label text="{{ path }}" col="1"/>           
+    <ListView items="{{ allExamples }}" row="1" itemTap="{{ loadExampleFromListView }}" id="allExamplesListView" >
+      <ListView.itemTemplate>
+        <GridLayout columns="*,2*" >
+          <Label text="{{ name }}" />
+          <Label text="{{ path }}" textWrap="true" col="1"/>
         </GridLayout>
-        </ListView.itemTemplate>
+      </ListView.itemTemplate>
     </ListView>
   </GridLayout>
 </Page> 
