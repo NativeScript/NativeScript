@@ -3,8 +3,6 @@ import { TestExample } from "./test-example-model";
 import { TestPageMainViewModel } from "./test-page-main-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { ListView } from "tns-core-modules/ui/list-view";
-import * as frame from "tns-core-modules/ui/frame";
-import * as dialogs from "tns-core-modules/ui/dialogs";
 
 export class MainPageViewModel extends TestPageMainViewModel {
 
