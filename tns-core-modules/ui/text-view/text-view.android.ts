@@ -9,6 +9,11 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE);
         editText.setGravity(android.view.Gravity.TOP | android.view.Gravity.LEFT);
     }
+
+  public initNativeView(): void {
+        this.nativeView.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE  | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        super.initNativeView();
+    }
 }
 
 TextView.prototype.recycleNativeView = true;
