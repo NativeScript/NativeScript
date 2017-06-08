@@ -244,7 +244,7 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     }
     setupSetters();
     const page = getClearCurrentPage();
-    const layout = new FlexboxLayout();
+    const layout = createLayout ? createLayout() : new FlexboxLayout();
     page.content = layout;
 
     const first = createNew();
