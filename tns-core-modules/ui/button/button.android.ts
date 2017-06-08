@@ -39,6 +39,7 @@ function initializeClickListener(): void {
 export class Button extends ButtonBase {
     nativeView: android.widget.Button;
 
+    private _stateListAnimator: any;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     @profile
@@ -52,13 +53,22 @@ export class Button extends ButtonBase {
     }
 
     public initNativeView(): void {
-        (<any>this.nativeView).clickListener.owner = this;
+        const nativeView = this.nativeView;
+        (<any>nativeView).clickListener.owner = this;
+        if (APILEVEL >= 21) {
+            this._stateListAnimator = (<any>nativeView).getStateListAnimator();
+        }
         super.initNativeView();
     }
 
     public disposeNativeView() {
-        (<any>this.nativeView).clickListener.owner = null;
+        const nativeView = this.nativeView;
+        (<any>nativeView).clickListener.owner = null;
         super.disposeNativeView();
+        if (APILEVEL >= 21) {
+            (<any>nativeView).setStateListAnimator(this._stateListAnimator);
+            this._stateListAnimator = undefined;
+        }
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
@@ -109,11 +119,12 @@ export class Button extends ButtonBase {
     }
 
     [zIndexProperty.setNative](value: number) {
-        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
         // API >= 21
         if (APILEVEL >= 21) {
-            (<any>this.nativeView).setStateListAnimator(null);
+            (<any>this.nativeView).setStateListAnimator(value !== 0 ? null : this._stateListAnimator);
         }
+
+        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
     }
 
     [textAlignmentProperty.setNative](value: TextAlignment) {
