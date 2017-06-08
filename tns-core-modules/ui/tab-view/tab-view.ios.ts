@@ -3,7 +3,7 @@
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, initNativeView
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
 } from "./tab-view-common"
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
@@ -128,13 +128,12 @@ export class TabViewItem extends TabViewItemBase {
 
     public setViewController(controller: UIViewController) {
         this._iosViewController = controller;
-        (<any>this)._nativeView = this.nativeView = controller.view;
-        initNativeView(this);
+        this.setNativeView((<any>this)._nativeView = controller.view);
     }
     
     public disposeNativeView() {
         this._iosViewController = undefined;
-        this.nativeView = undefined;
+        this.setNativeView(undefined);
     }
 
     public _update() {

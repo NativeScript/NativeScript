@@ -153,6 +153,10 @@ export function waitUntilNavigatedFrom(oldPage: page.Page) {
     TKUnit.waitUntilReady(() => getCurrentPage() && getCurrentPage() !== oldPage);
 }
 
+export function waitUntilLayoutReady(view: view.View): void {
+    TKUnit.waitUntilReady(() => view.isLayoutValid);
+}
+
 export function navigateWithEntry(entry: frame.NavigationEntry): page.Page {
     let page = frame.resolvePageFromEntry(entry);
     entry.moduleName = null;

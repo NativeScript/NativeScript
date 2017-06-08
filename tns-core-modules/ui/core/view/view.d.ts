@@ -554,6 +554,10 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
      * @private
      */
     _setMinHeightNative(value: Length): void;
+    /**
+     * @private
+     */
+    _redrawNativeBackground(value: any): void;
     //@endprivate
 
     /**

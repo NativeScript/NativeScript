@@ -429,11 +429,7 @@ export class View extends ViewCommon {
         return this.nativeView.getBackground();
     }
     [backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
-        if (value instanceof android.graphics.drawable.Drawable) {
-            this.nativeView.setBackground(value);
-        } else {
-            androidBackground.onBackgroundOrBorderPropertyChanged(this);
-        }
+        this._redrawNativeBackground(value);
     }
 
     [minWidthProperty.setNative](value: Length) {
@@ -449,6 +445,14 @@ export class View extends ViewCommon {
             this.parent._setChildMinHeightNative(this);
         } else {
             this._setMinHeightNative(this.minHeight);
+        }
+    }
+
+    _redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
+        if (value instanceof android.graphics.drawable.Drawable) {
+            this.nativeView.setBackground(value);
+        } else {
+            androidBackground.onBackgroundOrBorderPropertyChanged(this);
         }
     }
 }

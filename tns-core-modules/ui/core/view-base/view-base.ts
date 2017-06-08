@@ -6,7 +6,7 @@ import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../la
 import { KeyframeAnimation } from "../../animation/keyframe-animation";
 
 // Types.
-import { Property, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style, clearInheritedProperties, propagateInheritableProperties, propagateInheritableCssProperties, resetCSSProperties, initNativeView, resetNativeView } from "../properties";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories, traceNotifyEvent } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
@@ -141,6 +141,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _registeredAnimations: Array<KeyframeAnimation>;
     private _visualState: string;
     private _inlineStyleSelector: SelectorCore;
+    private __nativeView: any;
 
     public bindingContext: any;
     public nativeView: any;
@@ -155,6 +156,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _isAddedToNativeVisualTree: boolean;
     public _cssState: ssm.CssState;
     public _styleScope: ssm.StyleScope;
+    public _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
+    public _suspendNativeUpdatesCount: number;
 
     // Dynamic properties.
     left: Length;
@@ -265,6 +268,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     @profile
     public onLoaded() {
         this._isLoaded = true;
+        this._resumeNativeUpdates();
         this._loadEachChild();
         this._emit("loaded");
     }
@@ -278,18 +282,27 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public onUnloaded() {
+        this._suspendNativeUpdates();
         this._unloadEachChild();
         this._isLoaded = false;
         this._emit("unloaded");
     }
 
-    public _batchUpdateScope: number;
+    public _suspendNativeUpdates(): void {
+        this._suspendNativeUpdatesCount++;
+    }
+    public _resumeNativeUpdates(): void {
+        this._suspendNativeUpdatesCount--;
+        if (!this._suspendNativeUpdatesCount) {
+            this.onResumeNativeUpdates();
+        }
+    }
     public _batchUpdate<T>(callback: () => T): T {
         try {
-            ++this._batchUpdateScope;
+            this._suspendNativeUpdates();
             return callback();
         } finally {
-            --this._batchUpdateScope;
+            this._resumeNativeUpdates();
         }
     }
 
@@ -638,6 +651,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     @profile
     public _setupUI(context: android.content.Context, atIndex?: number, parentIsLoaded?: boolean) {
+
         traceNotifyEvent(this, "_setupUI");
         if (traceEnabled()) {
             traceWrite(`${this}._setupUI(${context})`, traceCategories.VisualTreeEvents);
@@ -650,9 +664,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._context = context;
         traceNotifyEvent(this, "_onContextChanged");
 
-        let currentNativeView = this.nativeView;
+        let nativeView;
         if (isAndroid) {
-            let nativeView: android.view.View;
             if (this.recycleNativeView) {
                 nativeView = <android.view.View>getNativeView(context, this.typeName);
             }
@@ -661,7 +674,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                 nativeView = <android.view.View>this.createNativeView();
             }
 
-            this._androidView = this.nativeView = nativeView;
+            this._androidView = nativeView;
             if (nativeView) {
                 let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
                 if (result === undefined) {
@@ -690,29 +703,44 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             }
         } else {
             // TODO: Implement _createNativeView for iOS
-            const nativeView = this.createNativeView();
-            if (!currentNativeView && nativeView) {
-                this.nativeView = this._iosView = nativeView;
+            nativeView = this.createNativeView();
+            if (nativeView) {
+                this._iosView = nativeView;
             }
         }
 
-        this.initNativeView();
+        // This will account for nativeView that is created in createNativeView, recycled
+        // or for backward compatability - set before _setupUI in iOS contructor.
+        this.setNativeView(nativeView || this.nativeView);
 
         if (this.parent) {
             let nativeIndex = this.parent._childIndexToNativeChildIndex(atIndex);
             this._isAddedToNativeVisualTree = this.parent._addViewToNativeVisualTree(this, nativeIndex);
         }
 
-        if (this.nativeView) {
-            if (currentNativeView !== this.nativeView) {
-                initNativeView(this);
-            }
-        }
+        this._resumeNativeUpdates();
 
         this.eachChild((child) => {
             child._setupUI(context);
             return true;
         });
+    }
+
+    setNativeView(value: any): void {
+        if (this.__nativeView === value) {
+            return;
+        }
+
+        if (this.__nativeView) {
+            this._suspendNativeUpdates();
+            // We may do a `this.resetNativeView()` here?
+        }
+        this.__nativeView = this.nativeView = value;
+        if (this.__nativeView) {
+            this._suspendedUpdates = undefined;
+            this.initNativeView();
+            this._resumeNativeUpdates();
+        }
     }
 
     @profile
@@ -747,8 +775,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this.disposeNativeView();
 
+        this._suspendNativeUpdates();
+
         if (isAndroid) {
-            this.nativeView = null;
+            this.setNativeView(null);
             this._androidView = null;
         }
 
@@ -813,6 +843,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public _parentChanged(oldParent: ViewBase): void {
+        const newParent = this.parent;
+
         //Overridden
         if (oldParent) {
             clearInheritedProperties(this);
@@ -820,10 +852,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
                 oldParent.off("bindingContextChange", this.bindingContextChanged, this);
             }
         } else if (this.shouldAddHandlerToParentBindingContextChanged) {
-            const parent = this.parent;
-            parent.on("bindingContextChange", this.bindingContextChanged, this);
-            this.bindings.get("bindingContext").bind(parent.bindingContext);
+            newParent.on("bindingContextChange", this.bindingContextChanged, this);
+            this.bindings.get("bindingContext").bind(newParent.bindingContext);
         }
+    }
+
+    public onResumeNativeUpdates(): void {
+        // Apply native setters...
+        initNativeView(this);
     }
 
     public _registerAnimation(animation: KeyframeAnimation) {
@@ -880,7 +916,11 @@ ViewBase.prototype._defaultPaddingBottom = 0;
 ViewBase.prototype._defaultPaddingLeft = 0;
 ViewBase.prototype._isViewBase = true;
 
-ViewBase.prototype._batchUpdateScope = 0;
+// Removing from visual tree does +1, adding to visual tree does -1, see parentChanged
+// Removing the nativeView does +1, adding the nativeView does -1, see set nativeView
+// Pre _setupUI and post _tearDownUI does +1, in between _setupUI and _tearDownUI is -1
+// Initially launch with 2, native updates wont fire unless both added to the JS visual tree and got nativeView.
+ViewBase.prototype._suspendNativeUpdatesCount = 3;
 
 export const bindingContextProperty = new InheritedProperty<ViewBase, any>({ name: "bindingContext" });
 bindingContextProperty.register(ViewBase);

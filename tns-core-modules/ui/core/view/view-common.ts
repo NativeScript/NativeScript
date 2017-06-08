@@ -770,6 +770,10 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     public _setNativeClipToBounds() {
         //
     }
+
+    public _redrawNativeBackground(value: any): void {
+        //
+    }
 }
 
 export const automationTextProperty = new Property<ViewCommon, string>({ name: "automationText" });

@@ -586,6 +586,10 @@ export function test_setting_font_properties_sets_native_font() {
 
 function test_native_font(style: "normal" | "italic", weight: "100" | "200" | "300" | "normal" | "400" | "500" | "600" | "bold" | "700" | "800" | "900") {
     const testView = new Button();
+
+    const page = helper.getCurrentPage();
+    page.content = testView;
+
     const fontName = "Roboto";
     let fontNameSuffix = "";
 

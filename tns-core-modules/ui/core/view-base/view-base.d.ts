@@ -2,7 +2,7 @@
  * @module "ui/core/view-base"
  */ /** */
 
-import { Property, InheritedProperty, Style } from "../properties";
+import { Property, CssProperty, CssAnimationProperty, InheritedProperty, Style } from "../properties";
 import { BindingOptions, Observable } from "../bindable";
 
 import { SelectorCore } from "../../styling/css-selector";
@@ -97,6 +97,15 @@ export abstract class ViewBase extends Observable {
      * @private
      */
     _defaultPaddingLeft: number;
+
+    /**
+     * A property bag holding suspended native updates.
+     * Native setters that had to execute while there was no native view,
+     * or the view was detached from the visual tree etc. will accumulate in this object,
+     * and will be applied when all prerequisites are met.
+     * @private
+     */
+    _suspendedUpdates: { [propertyName: string]: Property<ViewBase, any> | CssProperty<Style, any> | CssAnimationProperty<Style, any> };
     //@endprivate
 
     public effectiveMinWidth: number;
@@ -128,7 +137,12 @@ export abstract class ViewBase extends Observable {
 
     public ios: any;
     public android: any;
+
+    /**
+     * read-only. If you want to set out-of-band the nativeView use the setNativeView method.
+     */
     public nativeView: any;
+
     public bindingContext: any;
     public recycleNativeView: boolean;
 
@@ -181,6 +195,7 @@ export abstract class ViewBase extends Observable {
 
     public onLoaded(): void;
     public onUnloaded(): void;
+    public onResumeNativeUpdates(): void;
 
     public bind(options: BindingOptions, source?: Object): void;
     public unbind(property: string): void;
@@ -251,6 +266,13 @@ export abstract class ViewBase extends Observable {
      */
     resetNativeView(): void;
 
+    /**
+     * Set the nativeView field performing extra checks and updates to the native properties on the new view.
+     * Use in cases where the createNativeView is not suitable.
+     * As an example use in item controls where the native parent view will create the native views for child items.
+     */
+    setNativeView(view: any): void;
+
     _isAddedToNativeVisualTree: boolean;
 
     /**
@@ -278,12 +300,13 @@ export abstract class ViewBase extends Observable {
     public _styleScope: any;
 
     /**
-     * Determines the depth of batchUpdates.
-     * When the value is 0 the current updates are not batched.
-     * If the value is 1 or greater, the current updates are batched.
-     * Do not set this field, the _batchUpdate method is responsible to keep the count up to date.
+     * Determines the depth of suspended updates.
+     * When the value is 0 the current property updates are not batched nor scoped and must be immediately applied.
+     * If the value is 1 or greater, the current updates are batched and does not have to provide immediate update.
+     * Do not set this field, the _batchUpdate method is responsible to keep the count up to date,
+     * as well as adding/rmoving the view to/from the visual tree.
      */
-    public _batchUpdateScope: number;
+    public _suspendNativeUpdatesCount: number;
 
     /**
      * Allow multiple updates to be performed on the instance at once.

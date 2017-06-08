@@ -96,6 +96,7 @@ export class CssAnimationProperty<T extends Style, U> {
 
     public readonly getDefault: symbol;
     public readonly setNative: symbol;
+    public readonly key: symbol;
 
     public readonly name: string;
     public readonly cssName: string;
