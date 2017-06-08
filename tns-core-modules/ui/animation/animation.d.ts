@@ -107,9 +107,9 @@ export interface Pair {
  * Defines full information for css transformation
  */
 export type TransformFunctionsInfo = {
-    translate: TransformationValue,
+    translate: Pair,
     rotate: number,
-    scale: TransformationValue,
+    scale: Pair,
 }
 
 export interface Cancelable {

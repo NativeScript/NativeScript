@@ -468,65 +468,20 @@ const STYLE_TRANSFORMATION_MAP = Object.freeze({
 });
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
-    let newTransform = value === unsetValue ? { "none": "none" } : transformConverter(value);
-    let array = [];
-    let values: Array<string>;
-    for (let transform in newTransform) {
-        switch (transform) {
-            case "scaleX":
-                array.push([scaleXProperty, newTransform[transform]]);
-                break;
-            case "scaleY":
-                array.push([scaleYProperty, newTransform[transform]]);
-                break;
-            case "scale":
-            case "scale3d":
-                values = newTransform[transform].split(",");
-                if (values.length >= 2) {
-                    array.push([scaleXProperty, values[0]]);
-                    array.push([scaleYProperty, values[1]]);
-                }
-                else if (values.length === 1) {
-                    array.push([scaleXProperty, values[0]]);
-                    array.push([scaleYProperty, values[0]]);
-                }
-                break;
-            case "translateX":
-                array.push([translateXProperty, newTransform[transform]]);
-                break;
-            case "translateY":
-                array.push([translateYProperty, newTransform[transform]]);
-                break;
-            case "translate":
-            case "translate3d":
-                values = newTransform[transform].split(",");
-                if (values.length >= 2) {
-                    array.push([translateXProperty, values[0]]);
-                    array.push([translateYProperty, values[1]]);
-                }
-                else if (values.length === 1) {
-                    array.push([translateXProperty, values[0]]);
-                    array.push([translateYProperty, values[0]]);
-                }
-                break;
-            case "rotate":
-                let text = newTransform[transform];
-                let val = parseFloat(text);
-                if (text.slice(-3) === "rad") {
-                    val = val * (180.0 / Math.PI);
-                }
-                array.push([rotateProperty, val]);
-                break;
-            case "none":
-                array.push([scaleXProperty, 1]);
-                array.push([scaleYProperty, 1]);
-                array.push([translateXProperty, 0]);
-                array.push([translateYProperty, 0]);
-                array.push([rotateProperty, 0]);
-                break;
-        }
+    if (value === unsetValue) {
+        value = "none";
     }
-    return array;
+
+    const { translate, rotate, scale } = transformConverter(value);
+    return [
+        [translateXProperty, translate.x],
+        [translateYProperty, translate.y],
+
+        [scaleXProperty, scale.x],
+        [scaleYProperty, scale.y],
+
+        [rotateProperty, rotate],
+    ];
 }
 
 export function transformConverter(text: string): TransformFunctionsInfo {
