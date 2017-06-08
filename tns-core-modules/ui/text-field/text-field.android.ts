@@ -10,6 +10,15 @@ export class TextField extends TextFieldBase {
         editText.setHorizontallyScrolling(true);
     }
 
+     public initNativeView(): void {
+        const nativeView = this.nativeView;
+        nativeView.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        nativeView.setLines(1);
+        nativeView.setMaxLines(1);
+
+        super.initNativeView();
+    }
+
     public _onReturnPress() {
         this.notify({ eventName: TextField.returnPressEvent, object: this })
     }
