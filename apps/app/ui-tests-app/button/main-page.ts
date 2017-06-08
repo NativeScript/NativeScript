@@ -14,5 +14,8 @@ export function loadExamples() {
     examples.set("btn-wrap-text-alignment-4266", "button/btn-wrap-text-alignment-4266");
     examples.set("button-border", "button/button-border");
     examples.set("styles", "button/styles");
+    examples.set("background", "button/background");
+    examples.set("border-playground","button/border-playground");
+    examples.set("issue-4287","button/issue-4287");
     return examples;
 }
