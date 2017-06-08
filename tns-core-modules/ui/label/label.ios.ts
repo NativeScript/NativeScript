@@ -4,7 +4,7 @@ import {
     TextBase, View, layout,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
-    Length, WhiteSpace
+    Length, WhiteSpace, booleanConverter
 } from "../text-base";
 
 import { ios } from "../styling/background";
@@ -36,7 +36,11 @@ export class Label extends TextBase implements LabelDefinition {
     get textWrap(): boolean {
         return this.style.whiteSpace === "normal";
     }
-    set textWrap(value: boolean) {
+    set textWrap(value: boolean) {        
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
+
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
