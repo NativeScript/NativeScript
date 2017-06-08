@@ -1,5 +1,5 @@
 /**
- * Contains contains utility methods for transforming css matrixes.
+ * Contains utility methods for transforming css matrixes.
  * All methods in this module are experimental and
  * may be changed in a non-major version.
  * @module "matrix"
