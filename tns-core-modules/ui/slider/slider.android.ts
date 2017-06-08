@@ -80,8 +80,7 @@ export class Slider extends SliderBase {
         try {
             nativeView.setMax(newMaxValue);
             nativeView.setProgress(newValue);
-        }
-        finally {
+        } finally {
             this._supressNativeValue = false;
         }
     }
@@ -102,7 +101,7 @@ export class Slider extends SliderBase {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this.nativeView.setMax(value - this.minValue);
+        this.setNativeValuesSilently(value - this.minValue, value);
     }
 
     [colorProperty.getDefault](): number {
