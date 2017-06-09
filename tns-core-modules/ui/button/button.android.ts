@@ -121,7 +121,7 @@ export class Button extends ButtonBase {
     [zIndexProperty.setNative](value: number) {
         // API >= 21
         if (APILEVEL >= 21) {
-            (<any>this.nativeView).setStateListAnimator(value !== 0 ? null : this._stateListAnimator);
+            (<any>this.nativeView).setStateListAnimator(null);
         }
 
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
