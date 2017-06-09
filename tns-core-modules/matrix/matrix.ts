@@ -32,22 +32,15 @@ export const matrixArrayToCssMatrix = (m: number[]) => [
     m[4], m[2], m[5],
 ];
 
-export function multiplyNDimensionalMatriceArrays(
-    n: number, m1: number[], m2: number[]): number[] {
-
-    let result = [];
-
-    for (let i = 0; i < n; i += 1) {
-        for (let j = 0; j < n; j += 1) {
-            let sum = 0;
-            for (let k = 0; k < n; k += 1) {
-                sum += m1[i * n + k] * m2[k * n + j];
-            }
-            result[i * n + j] = sum;
-        }
-    }
-
-    return result;
+export function multiplyAffine2d(m1: number[], m2: number[]): number[] {
+    return [
+        m1[0] * m2[0] + m1[1] * m2[3],
+        m1[0] * m2[1] + m1[1] * m2[4],
+        m1[0] * m2[2] + m1[1] * m2[5] + m1[2],
+        m1[3] * m2[0] + m1[4] * m2[3],
+        m1[3] * m2[1] + m1[4] * m2[4],
+        m1[3] * m2[2] + m1[4] * m2[5] + m1[5]
+    ]
 }
 
 export function decompose2DTransformMatrix(matrix: number[])

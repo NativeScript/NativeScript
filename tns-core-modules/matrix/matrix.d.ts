@@ -21,13 +21,12 @@ export declare const getTransformMatrix: ({property, value}) => number[];
 export declare const matrixArrayToCssMatrix: (m: number[]) => number[];
 
 /**
- * Multiplies two nxn-dimensional matrix arrays
- * @param n Denotes if the matrices are 2x2-, 3x3-, ..., or nxn- dimensional
+ * Multiplies two two-dimensional affine matrices
+ * https://jsperf.com/array-vs-object-affine-matrices/
  * @param m1 Left-side matrix array
  * @param m2 Right-side matrix array
  */
-export declare function multiplyNDimensionalMatriceArrays(
-    n: number, m1: number[], m2: number[]): number[];
+export declare function multiplyAffine2d(m1: number[], m2: number[]): number[];
 
 /**
  * QR decomposition using the Gram–Schmidt process.

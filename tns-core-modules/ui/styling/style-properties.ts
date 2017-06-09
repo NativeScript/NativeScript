@@ -24,7 +24,7 @@ import {
     decompose2DTransformMatrix,
     getTransformMatrix,
     matrixArrayToCssMatrix,
-    multiplyNDimensionalMatriceArrays,
+    multiplyAffine2d,
 } from "../../matrix";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
@@ -503,7 +503,7 @@ export function transformConverter(text: string): TransformFunctionsInfo {
 
    const affineMatrix = transformations
         .map(getTransformMatrix)
-        .reduce((m1, m2) => multiplyNDimensionalMatriceArrays(3, m1, m2))
+        .reduce(multiplyAffine2d)
    const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
 
    return decompose2DTransformMatrix(cssMatrix);
