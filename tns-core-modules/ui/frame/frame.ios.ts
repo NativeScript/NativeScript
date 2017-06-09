@@ -625,6 +625,20 @@ class UINavigationControllerImpl extends UINavigationController {
 
         return null;
     }
+
+
+    /**
+     * Support Escape: A two-finger Z-shaped gesture that dismisses a modal dialog, or goes back one level in a navigation hierarchy.
+     */
+    public accessibiliityPerformEscape() {
+      if (this.owner.canGoBack()) {
+        this.owner.goBack();
+
+        return true;
+      }
+
+      return false;
+    }
 }
 
 function _getTransitionId(nativeTransition: UIViewAnimationTransition, transitionType: string): string {
