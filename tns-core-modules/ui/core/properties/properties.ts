@@ -188,6 +188,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 if (affectsLayout) {
                     owner.requestLayout();
                 }
+
+                if (owner.domNode) {
+                    owner.domNode.attributeModified(propertyName, value);
+                }
             }
         };
 

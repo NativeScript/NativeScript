@@ -1,0 +1,13 @@
+.btn1 {
+    background-color: lightgreen;
+    color: coral;
+    font-size: 20;
+    font-family: monospace;
+}
+
+.btn2 {
+    background-color: coral;
+    color: lightgreen;
+    font-size: 24;
+    font-family: serif;
+}

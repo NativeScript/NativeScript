@@ -5,6 +5,8 @@ import { unsetValue } from "tns-core-modules/ui/core/properties";
 import { Button } from "tns-core-modules/ui/button";
 import { Slider } from "tns-core-modules/ui/slider";
 import { Label } from "tns-core-modules/ui/label";
+import { textProperty } from "tns-core-modules/ui/text-base";
+import { TextView } from "tns-core-modules/ui/text-view";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 
 let originalInspectorGlobal: Inspector;
@@ -189,6 +191,24 @@ export function test_property_change_calls_attributeModified() {
     }
 
     btn.text = "new value";
+
+    assert(callbackCalled, "attributeModified not called");
+}
+
+export function test_property_change_from_native_calls_attributeModified() {
+    const tv = new TextView();
+    tv.ensureDomNode();
+    const domNode = tv.domNode;
+
+    let callbackCalled = false;
+    currentInspector.attributeModified = (nodeId: number, attrName: string, attrValue: string) => {
+        assertEqual(nodeId, domNode.nodeId, "nodeId");
+        assertEqual(attrName, "text", "attrName");
+        assertEqual(attrValue, "new value", "attrValue");
+        callbackCalled = true;
+    }
+
+    textProperty.nativeValueChange(tv, "new value");
 
     assert(callbackCalled, "attributeModified not called");
 }
