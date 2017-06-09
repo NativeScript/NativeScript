@@ -541,7 +541,7 @@ function convertTransformValue(property: string, stringValue: string)
         return stringValue.slice(-3) === "rad" ? radiansToDegrees(x) : x;
     }
 
-    return y ? { x, y } : x;
+    return { x, y };
 }
 
 // Background properties.
