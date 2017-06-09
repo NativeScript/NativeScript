@@ -1,4 +1,10 @@
 // Types
+import { 
+    Transformation,
+    TransformationValue,
+    TransformFunctionsInfo,
+} from "../animation/animation";
+
 import { dip, px, percent } from "../core/view";
 
 import { Color } from "../../color";
@@ -10,6 +16,16 @@ import { isIOS } from "../../platform";
 import { Style } from "./style";
 
 import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
+
+import { hasDuplicates } from "../../utils/utils";
+import { radiansToDegrees } from "../../utils/number-utils";
+
+import {
+    decompose2DTransformMatrix,
+    getTransformMatrix,
+    matrixArrayToCssMatrix,
+    multiplyAffine2d,
+} from "../../matrix";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -418,97 +434,114 @@ const transformProperty = new ShorthandProperty<Style, string>({
 });
 transformProperty.register(Style);
 
-function transformConverter(value: string): Object {
-    if (value.indexOf("none") !== -1) {
-        let operations = {};
-        operations[value] = value;
-        return operations;
-    }
+const IDENTITY_TRANSFORMATION = {
+    translate: { x: 0, y: 0 },
+    rotate: 0,
+    scale: { x: 1, y: 1 },
+};
 
-    let operations = {};
-    let operator = "";
-    let pos = 0;
-    while (pos < value.length) {
-        if (value[pos] === " " || value[pos] === ",") {
-            pos++;
-        }
-        else if (value[pos] === "(") {
-            let start = pos + 1;
-            while (pos < value.length && value[pos] !== ")") {
-                pos++;
-            }
-            let operand = value.substring(start, pos);
-            operations[operator] = operand.trim();
-            operator = "";
-            pos++;
-        }
-        else {
-            operator += value[pos++];
-        }
-    }
-    return operations;
-}
+const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
+const TRANSFORMATIONS = Object.freeze([
+    "rotate",
+    "translate",
+    "translate3d",
+    "translateX",
+    "translateY",
+    "scale",
+    "scale3d",
+    "scaleX",
+    "scaleY",
+]);
+
+const STYLE_TRANSFORMATION_MAP = Object.freeze({
+    "scale": value => ({ property: "scale", value }),
+    "scale3d": value => ({ property: "scale", value }),
+    "scaleX": ({x}) => ({ property: "scale", value: { x, y: IDENTITY_TRANSFORMATION.scale.y } }),
+    "scaleY": ({y}) => ({ property: "scale", value: { y, x: IDENTITY_TRANSFORMATION.scale.x } }),
+
+    "translate": value => ({ property: "translate", value }),
+    "translate3d": value => ({ property: "translate", value }),
+    "translateX": ({x}) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
+    "translateY": ({y}) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
+
+    "rotate": value => ({ property: "rotate", value }),
+});
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
-    let newTransform = value === unsetValue ? { "none": "none" } : transformConverter(value);
-    let array = [];
-    let values: Array<string>;
-    for (let transform in newTransform) {
-        switch (transform) {
-            case "scaleX":
-                array.push([scaleXProperty, newTransform[transform]]);
-                break;
-            case "scaleY":
-                array.push([scaleYProperty, newTransform[transform]]);
-                break;
-            case "scale":
-            case "scale3d":
-                values = newTransform[transform].split(",");
-                if (values.length >= 2) {
-                    array.push([scaleXProperty, values[0]]);
-                    array.push([scaleYProperty, values[1]]);
-                }
-                else if (values.length === 1) {
-                    array.push([scaleXProperty, values[0]]);
-                    array.push([scaleYProperty, values[0]]);
-                }
-                break;
-            case "translateX":
-                array.push([translateXProperty, newTransform[transform]]);
-                break;
-            case "translateY":
-                array.push([translateYProperty, newTransform[transform]]);
-                break;
-            case "translate":
-            case "translate3d":
-                values = newTransform[transform].split(",");
-                if (values.length >= 2) {
-                    array.push([translateXProperty, values[0]]);
-                    array.push([translateYProperty, values[1]]);
-                }
-                else if (values.length === 1) {
-                    array.push([translateXProperty, values[0]]);
-                    array.push([translateYProperty, values[0]]);
-                }
-                break;
-            case "rotate":
-                let text = newTransform[transform];
-                let val = parseFloat(text);
-                if (text.slice(-3) === "rad") {
-                    val = val * (180.0 / Math.PI);
-                }
-                array.push([rotateProperty, val]);
-                break;
-            case "none":
-                array.push([scaleXProperty, 1]);
-                array.push([scaleYProperty, 1]);
-                array.push([translateXProperty, 0]);
-                array.push([translateYProperty, 0]);
-                array.push([rotateProperty, 0]);
-                break;
+    if (value === unsetValue) {
+        value = "none";
+    }
+
+    const { translate, rotate, scale } = transformConverter(value);
+    return [
+        [translateXProperty, translate.x],
+        [translateYProperty, translate.y],
+
+        [scaleXProperty, scale.x],
+        [scaleYProperty, scale.y],
+
+        [rotateProperty, rotate],
+    ];
+}
+
+export function transformConverter(text: string): TransformFunctionsInfo {
+    const transformations = parseTransformString(text);
+
+    if (text === "none" || text === "" || !transformations.length) {
+        return IDENTITY_TRANSFORMATION;
+    }
+
+    const usedTransforms = transformations.map(t => t.property);
+    if (!hasDuplicates(usedTransforms)) {
+        const fullTransformations = Object.assign({}, IDENTITY_TRANSFORMATION);
+        transformations.forEach(transform => {
+            fullTransformations[transform.property] = transform.value;
+        });
+
+        return fullTransformations;
+    }
+
+   const affineMatrix = transformations
+        .map(getTransformMatrix)
+        .reduce(multiplyAffine2d)
+   const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
+
+   return decompose2DTransformMatrix(cssMatrix);
+}
+
+// using general regex and manually checking the matched
+// properties is faster than using more specific regex
+// https://jsperf.com/cssparse
+function parseTransformString(text: string): Transformation[] {
+    let matches: Transformation[] = [];
+    let match;
+
+    while ((match = TRANSFORM_SPLITTER.exec(text)) !== null) {
+        const property = match[1];
+        const value = convertTransformValue(property, match[2]);
+
+        if (TRANSFORMATIONS.indexOf(property) !== -1) {
+            matches.push(normalizeTransformation({ property, value }));
         }
     }
-    return array;
+
+    return matches;
+}
+
+function normalizeTransformation({ property, value }: Transformation) { 
+    return STYLE_TRANSFORMATION_MAP[property](value);
+}
+
+function convertTransformValue(property: string, stringValue: string)
+    : TransformationValue {
+
+    const [x, y = x] = stringValue.split(",").map(parseFloat);
+
+    if (property === "rotate") {
+        return stringValue.slice(-3) === "rad" ? radiansToDegrees(x) : x;
+    }
+
+    return y ? { x, y } : x;
 }
 
 // Background properties.
