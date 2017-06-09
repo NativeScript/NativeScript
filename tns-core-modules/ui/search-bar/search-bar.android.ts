@@ -192,14 +192,17 @@ export class SearchBar extends SearchBarBase {
         const text = (value === null || value === undefined) ? '' : value.toString();
         this.nativeView.setQueryHint(text);
     }
-    [textFieldBackgroundColorProperty.getDefault](): number {
+    [textFieldBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
         const textView = this._getTextView();
-        return textView.getCurrentTextColor();
+        return textView.getBackground();
     }
     [textFieldBackgroundColorProperty.setNative](value: Color) {
         const textView = this._getTextView();
-        const color = value instanceof Color ? value.android : value;
-        textView.setBackgroundColor(color);
+        if (value instanceof Color) {
+            textView.setBackgroundColor(value.android);
+        } else {
+            org.nativescript.widgets.ViewHelper.setBackground(textView, value);
+        }        
     }
     [textFieldHintColorProperty.getDefault](): number {
         const textView = this._getTextView();
