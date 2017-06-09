@@ -11,14 +11,13 @@ export function pageLoaded(args: EventData) {
 
 export function loadExamples() {
     const examples = new Map<string, string>();
-    examples.set("background", "css/background");
     examples.set("formatted", "css/decoration-transform-formattedtext");
     examples.set("radius", "css/radius");
     examples.set("spacing", "css/letter-spacing");
     examples.set("decoration", "css/text-decoration");
     examples.set("transform", "css/text-transform");
     examples.set("whitespace", "css/white-space");
-    examples.set("switch", "css/views");
+    examples.set("progress-switch", "css/progress-switch");
     examples.set("zindex", "css/zindex");
     examples.set("clipPath", "css/clip-path");
     examples.set("clipPathInset", "css/clip-path-inset");
@@ -36,8 +35,6 @@ export function loadExamples() {
     examples.set("all-non-uniform-border", "css/all-non-uniform-border");
     examples.set("margins-paddings-with-percentage", "css/margins-paddings-with-percentage");
     examples.set("padding-and-border", "css/padding-and-border");
-    examples.set("border-playground", "css/border-playground");
-    examples.set("hint-text-color", "css/hint-text-color");
     examples.set("combinators", "css/combinators");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
     

@@ -3,13 +3,11 @@ import { TestExample } from "./test-example-model";
 import { TestPageMainViewModel } from "./test-page-main-view-model";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
 import { ListView } from "tns-core-modules/ui/list-view";
-import * as frame from "tns-core-modules/ui/frame";
-import * as dialogs from "tns-core-modules/ui/dialogs";
 
 export class MainPageViewModel extends TestPageMainViewModel {
 
     private _exampleName: string;
-    private _allExamples: ObservableArray<TestExample>;
+    private _filteredListOfExamples: ObservableArray<TestExample>;
     public static ALL_EXAMPLES: ObservableArray<TestExample>;
     public static _examplesDictionary: Map<string, TestExample>;
 
@@ -18,13 +16,12 @@ export class MainPageViewModel extends TestPageMainViewModel {
         if (MainPageViewModel.ALL_EXAMPLES === undefined || MainPageViewModel.ALL_EXAMPLES.length === 0) {
             MainPageViewModel.ALL_EXAMPLES = new ObservableArray<TestExample>();
             MainPageViewModel._examplesDictionary = new Map<string, TestExample>();
-            this._allExamples = new ObservableArray<TestExample>();
-            this.loadAllExamplesRecursive(this.examples);
-            let listView = <ListView>buttonsPanel.page.getViewById("allExamplesListView");
-            listView.visibility = "hidden";
+            this._filteredListOfExamples = new ObservableArray<TestExample>();
+            this.loadFilteredListOfExamplesRecursive(this.examples);
+            this.getFilteredExamplesContainer().visibility = "hidden";
         }
         this.filterListView(this.exampleName);
-        this.toggleExamplePanels(this.allExamples);
+        this.toggleExamplePanels(this.filteredListOfExamples);
     }
 
     get exampleName(): string {
@@ -39,49 +36,49 @@ export class MainPageViewModel extends TestPageMainViewModel {
         }
     }
 
-    get allExamples(): ObservableArray<TestExample> {
-        return this._allExamples;
+    get filteredListOfExamples(): ObservableArray<TestExample> {
+        return this._filteredListOfExamples;
     }
 
-    set allExamples(array: ObservableArray<TestExample>) {
-        if (this._allExamples !== array) {
-            this._allExamples = array
-            this.notifyPropertyChange("allExamples", array);
+    set filteredListOfExamples(array: ObservableArray<TestExample>) {
+        if (this._filteredListOfExamples !== array) {
+            this._filteredListOfExamples = array
+            this.notifyPropertyChange("filteredListOfExamples", array);
             this.toggleExamplePanels(array);
         }
     }
 
-    public loadExampleFromListView(example) {
-        let exmaplePath = this.allExamples.getItem(example.index).path;
-        frame.topmost().navigate(MainPageViewModel.APP_NAME + "/" + exmaplePath);
+    public static checkIfStringIsNullEmptyOrUndefined(value: string): boolean {
+        return value === "" || value === null || value === undefined;
     }
 
-    public loadExmaple() {
-        if (this.exampleName === "" || this.exampleName === null || this.exampleName === undefined) {
+    public static stringContains(value: string, searchString: string): boolean {
+        return value.indexOf(searchString) >= 0;
+    }
+
+    public loadExampleFromTextField() {
+        super.loadExample(this.exampleName);
+    }
+
+    public loadExampleFromListView(example) {
+        let examplePath = this.filteredListOfExamples.getItem(example.index).path;
+        this.exampleName = examplePath;
+        if (MainPageViewModel.checkIfStringIsNullEmptyOrUndefined(this.exampleName)) {
             return;
         }
-        let selectedExample = this.exampleName.toLocaleLowerCase().trim();
-        this.exampleName = selectedExample;
-        if (selectedExample.indexOf("/") > 0) {
-            try {
-                frame.topmost().navigate(MainPageViewModel.APP_NAME + "/" + selectedExample);
-            } catch (error) {
-                dialogs.alert("Cannot find example: " + selectedExample);
-            }
-        } else {
-            this.selectExample(this.exampleName.toLocaleLowerCase());
-        }
+
+        super.navigateToExample(this.exampleName);
     }
 
     private filterListView(value: string) {
-        if (value !== "" && value !== undefined) {
+        if (!MainPageViewModel.checkIfStringIsNullEmptyOrUndefined(value)) {
             let array = MainPageViewModel.ALL_EXAMPLES.filter((testExample, index, array) => {
-                return testExample.path.toLowerCase().indexOf(value.toLowerCase()) >= 0
-                    || testExample.name.toLowerCase().indexOf(value.toLowerCase()) >= 0;
+                return MainPageViewModel.stringContains(testExample.path.toLowerCase(), value.toLowerCase())
+                    || MainPageViewModel.stringContains(testExample.name.toLowerCase(), value.toLowerCase());
             });
-            this.allExamples = new ObservableArray(array);
+            this.filteredListOfExamples = new ObservableArray(array);
         } else {
-            this.allExamples = null;
+            this.filteredListOfExamples = null;
         }
     }
 
@@ -94,7 +91,7 @@ export class MainPageViewModel extends TestPageMainViewModel {
     }
 
     private toggleExamplePanels(array: ObservableArray<TestExample>) {
-        let listView = <ListView>this.buttonsPanel.page.getViewById("allExamplesListView");
+        let listView = this.getFilteredExamplesContainer();
         if (array !== null && array !== undefined && array.length > 0) {
             this.buttonsPanel.visibility = "hidden";
             listView.visibility = "visible";
@@ -104,17 +101,17 @@ export class MainPageViewModel extends TestPageMainViewModel {
         }
     }
 
-    private loadAllExamplesRecursive(examples: Map<string, string>) {
+    private loadFilteredListOfExamplesRecursive(examples: Map<string, string>) {
         examples.forEach((value, key, map) => {
             let requiredExample = "~/" + MainPageViewModel.APP_NAME + "/" + value;
-            if (value.indexOf("main") > 0) {
+            if (MainPageViewModel.stringContains(value, "main")) {
                 try {
                     let module = require(requiredExample);
                     if (module.loadExamples !== undefined) {
                         var currentExamples = new Map<string, string>();
                         currentExamples = module.loadExamples();
                         currentExamples.forEach((v, key, map) => {
-                            this.loadAllExamplesRecursive(currentExamples);
+                            this.loadFilteredListOfExamplesRecursive(currentExamples);
                         });
                     }
                 } catch (error) {
@@ -123,11 +120,15 @@ export class MainPageViewModel extends TestPageMainViewModel {
             } else {
                 if (!this.checkIfExampleAlreadyExists(MainPageViewModel._examplesDictionary, value)) {
                     const testExample = new TestExample(key, value);
-                    this._allExamples.push(testExample);
+                    this.filteredListOfExamples.push(testExample);
                     MainPageViewModel.ALL_EXAMPLES.push(testExample);
                     MainPageViewModel._examplesDictionary.set(value, testExample)
                 }
             }
         });
+    }
+
+    private getFilteredExamplesContainer() {
+        return <ListView>this.buttonsPanel.page.getViewById("filteredListOfExamplesListView");
     }
 }

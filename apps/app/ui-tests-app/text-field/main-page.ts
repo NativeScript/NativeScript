@@ -14,5 +14,6 @@ export function loadExamples() {
     examples.set("secured-text-field", "text-field/secured-text-field-4135");
     examples.set("max-length", "text-field/max-length");
     examples.set("text-field-border", "text-field/text-field-border");
+    examples.set("hint-text-color", "text-field/hint-text-color");
     return examples;
 }

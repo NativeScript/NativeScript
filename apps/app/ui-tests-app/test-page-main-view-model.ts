@@ -26,9 +26,18 @@ export class TestPageMainViewModel extends Observable {
         console.log(" EXAMPLE: " + selectedExample);
 
         if (this.examples.has(selectedExample)) {
-            frame.topmost().navigate(TestPageMainViewModel.APP_NAME + "/" + this.basePath + "/" + this.examples.get(selectedExample));
+            this.navigateToExample(this.examples.get(selectedExample));
         } else {
             dialogs.alert("Cannot find example: " + selectedExample);
+        }
+    }
+
+    protected navigateToExample(exampleFullPath: string) {
+        try {
+            frame.topmost().navigate(TestPageMainViewModel.APP_NAME + "/" + exampleFullPath);
+        } catch (error) {
+            dialogs.alert("Cannot find example: " + exampleFullPath);
+
         }
     }
 
