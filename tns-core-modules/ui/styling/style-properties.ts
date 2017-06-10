@@ -962,7 +962,7 @@ export const fontFamilyProperty = new InheritedCssProperty<Style, string>({
 fontFamilyProperty.register(Style);
 
 export const fontSizeProperty = new InheritedCssProperty<Style, number>({
-    name: "fontSize", cssName: "font-size", affectsLayout: isIOS, valueChanged: (target, oldValue, newValue) => {
+    name: "fontSize", cssName: "font-size", affectsLayout: isIOS, defaultValue: Number.NaN, valueChanged: (target, oldValue, newValue) => {
         let currentFont = target.fontInternal;
         if (currentFont.fontSize !== newValue) {
             const newFont = currentFont.withFontSize(newValue);
