@@ -143,7 +143,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _visualState: string;
     private _inlineStyleSelector: SelectorCore;
     private __nativeView: any;
-    private _domNode: DOMNode;
+    public domNode: DOMNode;
 
     public bindingContext: any;
     public nativeView: any;
@@ -261,13 +261,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         return null;
     }
 
-    get domNode(): DOMNode {
-        return this._domNode;
-    }
-
     public ensureDomNode() {
         if (!this.domNode) {
-            this._domNode = new DOMNode(this);
+            this.domNode = new DOMNode(this);
         }
     }
 
@@ -571,8 +567,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         this._addViewCore(view, atIndex);
         view._parentChanged(null);
 
-        if (this._domNode) {
-            this._domNode.onChildAdded(view);
+        if (this.domNode) {
+            this.domNode.onChildAdded(view);
         }
     }
 
@@ -617,8 +613,8 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
         }
 
-        if (this._domNode) {
-            this._domNode.onChildRemoved(view);
+        if (this.domNode) {
+            this.domNode.onChildRemoved(view);
         }
 
         this._removeViewCore(view);
@@ -806,9 +802,9 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         this._context = null;
 
-        if (this._domNode) {
-            this._domNode.dispose();
-            this._domNode = undefined;
+        if (this.domNode) {
+            this.domNode.dispose();
+            this.domNode = undefined;
         }
 
         traceNotifyEvent(this, "_onContextChanged");
