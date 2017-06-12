@@ -12,6 +12,7 @@ export { Style };
 
 export const unsetValue: any = new Object();
 
+let cssPropertyNames: string[] = [];
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
 
@@ -152,6 +153,14 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 if (affectsLayout) {
                     this.requestLayout();
                 }
+
+                if (this.domNode) {
+                    if (reset) {
+                        this.domNode.attributeRemoved(propertyName);
+                    } else {
+                        this.domNode.attributeModified(propertyName, value);
+                    }
+                }
             }
         };
 
@@ -178,6 +187,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
                 if (affectsLayout) {
                     owner.requestLayout();
+                }
+
+                if (owner.domNode) {
+                    owner.domNode.attributeModified(propertyName, value);
                 }
             }
         };
@@ -299,6 +312,14 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                 if (affectsLayout) {
                     this.requestLayout();
                 }
+
+                if (this.domNode) {
+                    if (reset) {
+                        this.domNode.attributeRemoved(propertyName);
+                    } else {
+                        this.domNode.attributeModified(propertyName, value);
+                    }
+                }
             }
         }
     }
@@ -398,6 +419,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
     constructor(options: definitions.CssPropertyOptions<T, U>) {
         const propertyName = options.name;
         this.name = propertyName;
+
+        cssPropertyNames.push(options.cssName);
 
         this.cssName = `css:${options.cssName}`;
         this.cssLocalName = options.cssName;
@@ -634,6 +657,8 @@ export class CssAnimationProperty<T extends Style, U> {
         const { valueConverter, equalityComparer, valueChanged, defaultValue } = options;
         const propertyName = options.name;
         this.name = propertyName;
+
+        cssPropertyNames.push(options.cssName);
 
         CssAnimationProperty.properties[propertyName] = this;
         if (options.cssName && options.cssName !== propertyName) {
@@ -1206,4 +1231,34 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
             throw new Error("Invalid value: " + value);
         }
     };
+}
+
+export function getSetProperties(view: ViewBase): [string, any][] {
+    const result = [];
+
+    Object.getOwnPropertyNames(view).forEach(prop => {
+        result.push([prop, view[prop]]);
+    });
+
+    let symbols = Object.getOwnPropertySymbols(view);
+    for (let symbol of symbols) {
+        const property = symbolPropertyMap[symbol];
+        if (!property) {
+            continue;
+        }
+
+        const value = view[property.key];
+        result.push([property.name, value]);
+    }
+
+    return result;
+}
+
+export function getComputedCssValues(view: ViewBase): [string, any][] {
+    const result = [];
+    const style = view.style;
+    for (var prop of cssPropertyNames) {
+        result.push([prop, style[prop]]);
+    }
+    return result;
 }
