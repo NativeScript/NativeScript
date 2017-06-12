@@ -351,15 +351,27 @@ export class View extends ViewCommon {
             switch (value) {
                 case "left":
                     lp.gravity = android.view.Gravity.LEFT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -2;
+                    }
                     break;
                 case "center":
                     lp.gravity = android.view.Gravity.CENTER_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -2;
+                    }
                     break;
                 case "right":
                     lp.gravity = android.view.Gravity.RIGHT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -2;
+                    }
                     break;
                 case "stretch":
                     lp.gravity = android.view.Gravity.FILL_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -1;
+                    }
                     break;
             }
             nativeView.setLayoutParams(lp);
@@ -377,15 +389,27 @@ export class View extends ViewCommon {
             switch (value) {
                 case "top":
                     lp.gravity = android.view.Gravity.TOP | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -2;
+                    }
                     break;
                 case "middle":
                     lp.gravity = android.view.Gravity.CENTER_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -2;
+                    }
                     break;
                 case "bottom":
                     lp.gravity = android.view.Gravity.BOTTOM | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -2;
+                    }
                     break;
                 case "stretch":
                     lp.gravity = android.view.Gravity.FILL_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -1;
+                    }
                     break;
             }
             nativeView.setLayoutParams(lp);
@@ -495,10 +519,12 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (this.nativeView && child.nativeView) {
-            this.nativeView.removeView(child.nativeView);
+        const nativeView = this.nativeView;
+        const childView = child.nativeView;
+        if (nativeView && childView) {
+            nativeView.removeView(childView);
             if (traceEnabled()) {
-                traceWrite(`${this}.nativeView.removeView(${child}.nativeView)`, traceCategories.VisualTreeEvents);
+                traceWrite(`${nativeView}.removeView(${childView})`, traceCategories.VisualTreeEvents);
                 traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
             }
         }
