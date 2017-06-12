@@ -27,9 +27,7 @@ function getViewById(nodeId: number): ViewBase {
     return view;
 }
 
-if (global && global.__inspector) {
-    const inspector: Inspector = global.__inspector;
-
+export function attachInspectorCallbacks(inspector: Inspector) {
     inspector.getDocument = function () {
         const topMostFrame = topmost();
         topMostFrame.ensureDomNode();
@@ -87,8 +85,13 @@ if (global && global.__inspector) {
                 // delete attribute
                 view[name] = unsetValue;
             }
-            
+
             view.domNode.loadAttributes();
         }
     }
+}
+
+// Automatically attach callbacks if there is __inspector
+if (global && global.__inspector) {
+    attachInspectorCallbacks(global.__inspector)
 }

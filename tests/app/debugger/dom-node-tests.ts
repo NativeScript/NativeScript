@@ -1,5 +1,6 @@
 import { assert, assertEqual } from "../TKUnit";
 import { DOMNode } from "tns-core-modules/debugger/dom-node";
+import { attachInspectorCallbacks } from "tns-core-modules/debugger/devtools-elements";
 import { Inspector } from "tns-core-modules/debugger/devtools-elements";
 import { unsetValue } from "tns-core-modules/ui/core/properties";
 import { Button } from "tns-core-modules/ui/button";
@@ -12,29 +13,21 @@ import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
 let originalInspectorGlobal: Inspector;
 let currentInspector: Inspector;
 function getTestInspector(): Inspector {
-    return {
-        getDocument(): string {
-            return originalInspectorGlobal ? originalInspectorGlobal.getDocument() : "";
-        },
-        removeNode(nodeId: number): void {
-            if (originalInspectorGlobal) {
-                originalInspectorGlobal.removeNode(nodeId);
-            }
-        },
-        getComputedStylesForNode(nodeId: number): string {
-            return originalInspectorGlobal ? originalInspectorGlobal.getComputedStylesForNode(nodeId) : "";
-        },
-        setAttributeAsText(nodeId: number, text: string, name: string): void {
-            if (originalInspectorGlobal) {
-                originalInspectorGlobal.setAttributeAsText(nodeId, text, name);
-            }
-        },
+    let inspector = {
+        getDocument(): string { return ""; },
+        removeNode(nodeId: number): void { /* */ },
+        getComputedStylesForNode(nodeId: number): string { return ""; },
+        setAttributeAsText(nodeId: number, text: string, name: string): void { /* */},
 
         childNodeInserted(parentId: number, lastId: number, nodeStr: string): void { /* to be replaced */ },
         childNodeRemoved(parentId: number, nodeId: number): void { /* to be replaced */ },
         attributeModified(nodeId: number, attrName: string, attrValue: string) { /* to be replaced */ },
         attributeRemoved(nodeId: number, attrName: string) { /* to be replaced */ }
     }
+
+    attachInspectorCallbacks(inspector);
+
+    return inspector;
 }
 
 export function setUp(): void {

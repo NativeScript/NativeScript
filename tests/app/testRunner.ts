@@ -32,10 +32,7 @@ export function isRunningOnEmulator(): boolean {
 export var allTests = {};
 
 import * as domNodeTest from "./debugger/dom-node-tests";
-if (platform.isAndroid) {
-    // Run dom inspector tests only for Android
-    allTests["DOM-NODE"] = domNodeTest;
-}
+allTests["DOM-NODE"] = domNodeTest;
 
 import * as profilingTests from "./profiling/profiling-tests";
 allTests["PROFILING"] = profilingTests;
