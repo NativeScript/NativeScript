@@ -14,16 +14,20 @@ let currentInspector: Inspector;
 function getTestInspector(): Inspector {
     return {
         getDocument(): string {
-            return originalInspectorGlobal.getDocument();
+            return originalInspectorGlobal ? originalInspectorGlobal.getDocument() : "";
         },
         removeNode(nodeId: number): void {
-            originalInspectorGlobal.removeNode(nodeId);
+            if (originalInspectorGlobal) {
+                originalInspectorGlobal.removeNode(nodeId);
+            }
         },
         getComputedStylesForNode(nodeId: number): string {
-            return originalInspectorGlobal.getComputedStylesForNode(nodeId);
+            return originalInspectorGlobal ? originalInspectorGlobal.getComputedStylesForNode(nodeId) : "";
         },
         setAttributeAsText(nodeId: number, text: string, name: string): void {
-            originalInspectorGlobal.setAttributeAsText(nodeId, text, name);
+            if (originalInspectorGlobal) {
+                originalInspectorGlobal.setAttributeAsText(nodeId, text, name);
+            }
         },
 
         childNodeInserted(parentId: number, lastId: number, nodeStr: string): void { /* to be replaced */ },
@@ -277,7 +281,7 @@ export function test_inspector_ui_setAttributeAsText_set_existing_property() {
 
     // Act
     // simulate call from the inspector UI
-    global.__inspector.setAttributeAsText(label.domNode.nodeId, "text='" + expectedValue + "'", "text");
+    currentInspector.setAttributeAsText(label.domNode.nodeId, "text='" + expectedValue + "'", "text");
 
     // Assert
     assertEqual(label.text, expectedValue);
