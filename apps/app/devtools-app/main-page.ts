@@ -1,15 +1,14 @@
-import * as observable from "tns-core-modules/data/observable";
 import * as frame from "tns-core-modules/ui/frame";
 import { Label } from "tns-core-modules/ui/label";
 import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
-import { DOMNode } from "tns-core-modules/debugger/dom-node";
+// import { DOMNode } from "tns-core-modules/debugger/dom-node";
 
 export function print(args) {
-    const node = new DOMNode(frame.topmost());
+    // const node = new DOMNode(frame.topmost());
     // console.dir(node.toJSON());
 
-    const btn = args.object.page.getViewById("btn");
-    btn.ensureDomNode();
+    // const btn = args.object.page.getViewById("btn");
+    // btn.ensureDomNode();
     // console.dir(btn.domNode.getComputedProperties());
 }
 

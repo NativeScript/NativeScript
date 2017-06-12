@@ -1,4 +1,4 @@
-import { assert, assertEqual, assertFalse, assertTrue, assertThrows } from "../TKUnit";
+import { assert, assertEqual } from "../TKUnit";
 import { DOMNode } from "tns-core-modules/debugger/dom-node";
 import { Inspector } from "tns-core-modules/debugger/devtools-elements";
 import { unsetValue } from "tns-core-modules/ui/core/properties";
@@ -164,17 +164,16 @@ export function test_childNodeRemoved_in_dom_node() {
     assertEqual(actualRemovedNodeId, expectedRemovedNodeId);
 }
 
-function test_falsy_property_is_reported_in_dom_node() {
-    //TODO: Enable this test when attribute change detection is implemented
-
+export function test_falsy_property_is_reported_in_dom_node() {
     const btn = new Button();
     btn.text = null;
     btn.ensureDomNode();
     const domNode = btn.domNode;
-    assertAttribute(domNode, "text", null);
+    assertAttribute(domNode, "text", "null");
 
     btn.text = undefined;
-    assertAttribute(domNode, "text", undefined);
+    domNode.loadAttributes();
+    assertAttribute(domNode, "text", "undefined");
 }
 
 export function test_property_change_calls_attributeModified() {

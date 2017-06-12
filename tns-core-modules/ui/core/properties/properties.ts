@@ -1236,7 +1236,7 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
 export function getSetProperties(view: ViewBase): [string, any][] {
     const result = [];
 
-    const ownProp = Object.getOwnPropertyNames(view).forEach(prop => {
+    Object.getOwnPropertyNames(view).forEach(prop => {
         result.push([prop, view[prop]]);
     });
 

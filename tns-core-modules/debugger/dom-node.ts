@@ -1,5 +1,5 @@
 import { getSetProperties, getComputedCssValues } from "../ui/core/properties";
-import { PercentLength, Length } from "../ui/styling/style-properties";
+import { PercentLength } from "../ui/styling/style-properties";
 import { ViewBase } from "../ui/core/view";
 import { Color } from "../color";
 import { CSSComputedStyleProperty } from "./css-agent";
