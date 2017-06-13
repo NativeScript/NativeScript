@@ -11,11 +11,11 @@ const SEARCHTEXT = Symbol("searchText");
 const QUERY = Symbol("query");
 
 interface QueryTextListener {
-    new (owner: SearchBar): android.widget.SearchView.OnQueryTextListener;
+    new (owner: SearchBar): android.support.v7.widget.SearchView.OnQueryTextListener;
 }
 
 interface CloseListener {
-    new (owner: SearchBar): android.widget.SearchView.OnCloseListener;
+    new (owner: SearchBar): android.support.v7.widget.SearchView.OnCloseListener;
 }
 
 let QueryTextListener: QueryTextListener;
@@ -26,8 +26,8 @@ function initializeNativeClasses(): void {
         return;
     }
 
-    @Interfaces([android.widget.SearchView.OnQueryTextListener])
-    class QueryTextListenerImpl extends java.lang.Object implements android.widget.SearchView.OnQueryTextListener {
+    @Interfaces([android.support.v7.widget.SearchView.OnQueryTextListener])
+    class QueryTextListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnQueryTextListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -58,8 +58,8 @@ function initializeNativeClasses(): void {
         }
     }
 
-    @Interfaces([android.widget.SearchView.OnCloseListener])
-    class CloseListenerImpl extends java.lang.Object implements android.widget.SearchView.OnCloseListener {
+    @Interfaces([android.support.v7.widget.SearchView.OnCloseListener])
+    class CloseListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnCloseListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -76,7 +76,7 @@ function initializeNativeClasses(): void {
 }
 
 export class SearchBar extends SearchBarBase {
-    nativeView: android.widget.SearchView;
+    nativeView: android.support.v7.widget.SearchView;
 
     public dismissSoftInput() {
         ad.dismissSoftInput(this.nativeView);
@@ -93,7 +93,7 @@ export class SearchBar extends SearchBarBase {
 
     public createNativeView() {
         initializeNativeClasses();
-        const nativeView = new android.widget.SearchView(this._context);
+        const nativeView = new android.support.v7.widget.SearchView(this._context)
         nativeView.setIconified(false);
 
         const queryTextListener = new QueryTextListener(this);
