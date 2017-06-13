@@ -18,10 +18,14 @@ const propertyBlacklist = [
     "effectiveBorderBottomWidth",
     "effectiveBorderLeftWidth",
     "effectiveMinWidth",
+    "effectiveMinHeight",
     "nodeName",
     "nodeType",
     "decodeWidth",
-    "decodeHeight"
+    "decodeHeight",
+    "ng-reflect-items",
+    "domNode",
+    "touchListenerIsSet"
 ];
 
 function notifyInspector(callback: (inspector: Inspector) => void) {
