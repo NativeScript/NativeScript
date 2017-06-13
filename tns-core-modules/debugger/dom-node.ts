@@ -18,14 +18,19 @@ const propertyBlacklist = [
     "effectiveBorderBottomWidth",
     "effectiveBorderLeftWidth",
     "effectiveMinWidth",
+    "effectiveMinHeight",
     "nodeName",
     "nodeType",
     "decodeWidth",
-    "decodeHeight"
-]
+    "decodeHeight",
+    "ng-reflect-items",
+    "domNode",
+    "touchListenerIsSet",
+    "bindingContext"
+];
 
 function notifyInspector(callback: (inspector: Inspector) => void) {
-    const ins = (<any>global).__inspector
+    const ins = (<any>global).__inspector;
     if (ins) {
         callback(ins);
     }
@@ -35,9 +40,9 @@ function valueToString(value: any): string {
     if (typeof value === "undefined" || value === null) {
         return "";
     } else if (value instanceof Color) {
-        return value.toString()
-    } else if (typeof value === "object") {
-        return PercentLength.convertToString(value)
+        return value.toString();
+    } else if (typeof value === "object" && value.unit) {
+        return PercentLength.convertToString(value);
     } else {
         return value + "";
     }
@@ -76,7 +81,7 @@ export class DOMNode {
     nodeType;
     nodeName;
     localName;
-    nodeValue = '';
+    nodeValue = "";
     attributes: string[] = [];
     viewRef: WeakRef<ViewBase>;
 
@@ -89,7 +94,7 @@ export class DOMNode {
 
         // Load all attributes
         this.loadAttributes();
-        
+
         registerNode(this);
     }
 
@@ -121,7 +126,6 @@ export class DOMNode {
     onChildAdded(childView: ViewBase): void {
         notifyInspector((ins) => {
             const view = this.viewRef.get();
-            childView.ensureDomNode();
 
             let previousChild: ViewBase;
             view.eachChild((child) => {
@@ -135,19 +139,22 @@ export class DOMNode {
             });
             const index = !!previousChild ? previousChild._domId : 0;
 
+            childView.ensureDomNode();
             ins.childNodeInserted(this.nodeId, index, childView.domNode.toJSON());
         });
     }
 
     onChildRemoved(view: ViewBase): void {
         notifyInspector((ins) => {
-            ins.childNodeRemoved(this.nodeId, view.domNode.nodeId);
+            ins.childNodeRemoved(this.nodeId, view._domId);
         });
     }
 
     attributeModified(name: string, value: any) {
         notifyInspector((ins) => {
-            ins.attributeModified(this.nodeId, name, valueToString(value));
+            if (propertyBlacklist.indexOf(name) < 0) {
+                ins.attributeModified(this.nodeId, name, valueToString(value));
+            }
         });
     }
 
@@ -193,5 +200,5 @@ export class DOMNode {
             children: this.children.map(c => c.toObject()),
             attributes: this.attributes
         };
-    };
+    }
 }
