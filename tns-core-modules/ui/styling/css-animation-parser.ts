@@ -21,7 +21,10 @@ const ANIMATION_PROPERTY_HANDLERS = Object.freeze({
 });
 
 export class CssAnimationParser {
-    public static keyframeAnimationsFromCSSDeclarations(declarations: { property: string, value: string }[]): Array<KeyframeAnimationInfo> {
+    public static keyframeAnimationsFromCSSDeclarations(
+        declarations: Array<KeyframeDeclaration>)
+        : Array<KeyframeAnimationInfo> {
+
         if (declarations === null || declarations === undefined) {
             return undefined;
         }
@@ -124,7 +127,7 @@ function keyframeAnimationsFromCSSProperty(value: any, animations: Array<Keyfram
     }
 }
 
-function parseKeyframeDeclarations(unparsedKeyframeDeclarations: Array<KeyframeDeclaration>)
+export function parseKeyframeDeclarations(unparsedKeyframeDeclarations: Array<KeyframeDeclaration>)
     : Array<KeyframeDeclaration> {
 
     const declarations = unparsedKeyframeDeclarations
