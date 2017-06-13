@@ -25,7 +25,8 @@ const propertyBlacklist = [
     "decodeHeight",
     "ng-reflect-items",
     "domNode",
-    "touchListenerIsSet"
+    "touchListenerIsSet",
+    "bindingContext"
 ];
 
 function notifyInspector(callback: (inspector: Inspector) => void) {
@@ -40,7 +41,7 @@ function valueToString(value: any): string {
         return "";
     } else if (value instanceof Color) {
         return value.toString();
-    } else if (typeof value === "object") {
+    } else if (typeof value === "object" && value.unit) {
         return PercentLength.convertToString(value);
     } else {
         return value + "";
@@ -151,7 +152,9 @@ export class DOMNode {
 
     attributeModified(name: string, value: any) {
         notifyInspector((ins) => {
-            ins.attributeModified(this.nodeId, name, valueToString(value));
+            if (propertyBlacklist.indexOf(name) < 0) {
+                ins.attributeModified(this.nodeId, name, valueToString(value));
+            }
         });
     }
 
