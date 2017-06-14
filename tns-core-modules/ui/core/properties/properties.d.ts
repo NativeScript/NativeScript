@@ -130,10 +130,10 @@ export function getComputedCssValues(view: ViewBase): [string, any][];
 /**
  * @private get all properties defined on ViewBase
  */
-export function getProperties(): Property<any, any>[];
+export function _getProperties(): Property<any, any>[];
 
 /**
  * @private get all properties defined on Style
  */
-export function getStyleProperties(): CssProperty<any, any>[];
+export function _getStyleProperties(): CssProperty<any, any>[];
 //@endprivate
