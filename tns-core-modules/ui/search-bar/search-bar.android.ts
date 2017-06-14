@@ -77,6 +77,8 @@ function initializeNativeClasses(): void {
 
 export class SearchBar extends SearchBarBase {
     nativeView: android.support.v7.widget.SearchView;
+    private _searchTextView: android.widget.TextView;
+    private _searchPlate: android.widget.LinearLayout;
 
     public dismissSoftInput() {
         ad.dismissSoftInput(this.nativeView);
@@ -118,6 +120,8 @@ export class SearchBar extends SearchBarBase {
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = null;
         nativeView.queryTextListener.owner = null;
+        this._searchPlate = null;
+        this._searchTextView = null;
         super.disposeNativeView();
     }
 
@@ -208,12 +212,22 @@ export class SearchBar extends SearchBarBase {
     }
 
     private _getTextView(): android.widget.TextView {
-        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        return <android.widget.TextView>this.nativeView.findViewById(id);
+        if (!this._searchTextView) {
+            const pkgName = this.nativeView.getContext().getPackageName();
+            const id = this.nativeView.getContext().getResources().getIdentifier("search_src_text", "id", pkgName);
+            this._searchTextView = <android.widget.TextView>this.nativeView.findViewById(id);
+        }
+        
+        return this._searchTextView;
     }
 
     private _getSearchPlate(): android.widget.LinearLayout {
-        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
-        return <android.widget.LinearLayout>this.nativeView.findViewById(id);
+        if (!this._searchPlate) {
+            const pkgName = this.nativeView.getContext().getPackageName();
+            const id = this.nativeView.getContext().getResources().getIdentifier("search_plate", "id", pkgName);
+            this._searchPlate = <android.widget.LinearLayout>this.nativeView.findViewById(id);
+        }
+
+        return this._searchPlate;
     }
 }
