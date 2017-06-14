@@ -27,7 +27,7 @@ function initializeNativeClasses(): void {
     }
 
     @Interfaces([android.support.v7.widget.SearchView.OnQueryTextListener])
-    class QueryTextListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnQueryTextListener {
+    class CompatQueryTextListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnQueryTextListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -59,7 +59,7 @@ function initializeNativeClasses(): void {
     }
 
     @Interfaces([android.support.v7.widget.SearchView.OnCloseListener])
-    class CloseListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnCloseListener {
+    class CompatCloseListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnCloseListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -71,8 +71,8 @@ function initializeNativeClasses(): void {
         }
     }
 
-    QueryTextListener = QueryTextListenerImpl;
-    CloseListener = CloseListenerImpl;
+    QueryTextListener = CompatQueryTextListenerImpl;
+    CloseListener = CompatCloseListenerImpl;
 }
 
 export class SearchBar extends SearchBarBase {
