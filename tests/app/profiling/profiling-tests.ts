@@ -51,7 +51,7 @@ function retry(count: number, action: () => void) {
         try {
             action();
             return;
-        } catch(e) {
+        } catch (e) {
             if (i === count) {
                 throw e;
             }
@@ -101,21 +101,18 @@ export function test_isRunning_withReentrancy() {
 
 export function test_start_stop() {
     resetProfiles();
-    retry(5, () => {
-        const name = "test_start_stop";
+    const name = "test_start_stop";
 
-        start(name);
-        stop(name);
-        const res = timer(name);
+    start(name);
+    stop(name);
+    const res = timer(name);
 
-        assertEqual(res.count, 1);
-        assert(res.totalTime <= 1);
-    });
+    assertEqual(res.count, 1);
 };
 
-export function test_start_pause_count() {
+export function test_start_stop_count() {
     resetProfiles();
-    const name = "test_start_pause_count";
+    const name = "test_start_stop_count";
 
     for (var i = 0; i < 10; i++) {
         start(name);
@@ -152,11 +149,11 @@ export function test_profile_decorator_handles_exceptions() {
     assertEqual(timer("__func_decorator_error__").count, 1, "Timer should be called once");
 }
 
-export function test_start_pause_performance() {
+export function test_start_stop_performance() {
     resetProfiles();
     retry(5, () => {
         const count = 10000;
-        const name = "test_start_pause_performance";
+        const name = "test_start_stop_performance";
 
         for (var i = 0; i < count; i++) {
             start(name);
