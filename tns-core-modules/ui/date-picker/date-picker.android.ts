@@ -58,7 +58,10 @@ export class DatePicker extends DatePickerBase {
         const picker = new android.widget.DatePicker(this._context);
         picker.setCalendarViewShown(false);
         const listener = new DateChangedListener(this);
-        picker.init(0, 0, 0, listener);
+
+        // DatePicker Months are 1-based, whereas
+        // Native and JS Months are 0-based
+        picker.init(this.year, this.month - 1, this.day, listener);
         (<any>picker).listener = listener;
         return picker;
     }
