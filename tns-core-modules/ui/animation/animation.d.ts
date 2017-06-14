@@ -76,11 +76,40 @@ export class CubicBezierAnimationCurve {
 }
 
 /**
+ * Defines a key-value pair for css transformation
+ */
+export type Transformation = {
+    property: TransformationType;
+    value: TransformationValue;
+};
+
+/**
+ * Defines possible css transformations
+ */
+export type TransformationType = "rotate" |
+    "translate" | "translateX" | "translateY" |
+    "scale" | "scaleX" | "scaleY";
+
+/**
+ * Defines possible css transformation values
+ */
+export type TransformationValue = Pair | number;
+
+/**
  * Defines a pair of values (horizontal and vertical) for translate and scale animations.
  */
 export interface Pair {
     x: number;
     y: number;
+}
+
+/**
+ * Defines full information for css transformation
+ */
+export type TransformFunctionsInfo = {
+    translate: Pair,
+    rotate: number,
+    scale: Pair,
 }
 
 export interface Cancelable {

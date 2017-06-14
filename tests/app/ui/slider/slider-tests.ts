@@ -23,7 +23,15 @@ import { Slider } from "tns-core-modules/ui/slider";
 // exports.pageLoaded = pageLoaded;
 // << article-binding-slider-properties
 
-const TEST_VALUE = 5;
+interface SliderValues {
+    min?: number,
+    max?: number,
+    value?: number,
+}
+
+const TEST_VALUE = 50;
+const MAX_TEST_VALUE = 70;
+const MIN_TEST_VALUE = 10;
 const VALUE_EVENT = "valueChange";
 const MIN_VALUE_EVENT = "minValueChange";
 const MAX_VALUE_EVENT = "maxValueChange";
@@ -131,12 +139,90 @@ export function test_default_native_values() {
     helper.buildUIAndRunTest(slider, testAction);
 }
 
+export function test_set_min_max_value() {
+    const slider = new Slider();
+    slider.minValue = MIN_TEST_VALUE;
+    slider.maxValue = MAX_TEST_VALUE;
+    slider.value = TEST_VALUE;
+
+    function testAction(views: Array<View>) {
+        assertSliderValuesDefault(slider);
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_min_value_max() {
+    const slider = new Slider();
+    slider.minValue = MIN_TEST_VALUE;
+    slider.value = TEST_VALUE;
+    slider.maxValue = MAX_TEST_VALUE;
+
+    function testAction(views: Array<View>) {
+        assertSliderValuesDefault(slider);
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_max_min_value() {
+    const slider = new Slider();
+    slider.maxValue = MAX_TEST_VALUE;
+    slider.minValue = MIN_TEST_VALUE;
+    slider.value = TEST_VALUE;
+
+    function testAction(views: Array<View>) {
+        assertSliderValuesDefault(slider);
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_max_value_min() {
+    const slider = new Slider();
+    slider.maxValue = MAX_TEST_VALUE;
+    slider.value = TEST_VALUE;
+    slider.minValue = MIN_TEST_VALUE;
+
+    function testAction(views: Array<View>) {
+        assertSliderValuesDefault(slider);
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_value_min_max() {
+    const slider = new Slider();
+    slider.value = TEST_VALUE;
+    slider.minValue = MIN_TEST_VALUE;
+    slider.maxValue = MAX_TEST_VALUE;
+
+    function testAction(views: Array<View>) {
+        assertSliderValuesDefault(slider);
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
+export function test_set_value_max_min() {
+    const slider = new Slider();
+    slider.value = TEST_VALUE;
+    slider.maxValue = MAX_TEST_VALUE;
+    slider.minValue = MIN_TEST_VALUE;
+
+    function testAction(views: Array<View>) {
+        assertSliderValuesDefault(slider);
+    };
+
+    helper.buildUIAndRunTest(slider, testAction);
+}
+
 export function test_set_value_less_than_min_should_set_value_to_min() {
     const slider = new Slider();
 
     function testAction(views: Array<View>) {
         slider.value = -10;
-        TKUnit.assertEqual(slider.value, 0, "slider.value");
+        assertSliderValues(slider, { value: 0 });
     };
 
     helper.buildUIAndRunTest(slider, testAction);
@@ -148,7 +234,7 @@ export function test_set_value_greater_than_max_should_set_value_to_max() {
     function testAction(views: Array<View>) {
         slider.maxValue = 10;
         slider.value = 20;
-        TKUnit.assertEqual(slider.value, 10, "slider.value");
+        assertSliderValues(slider, { value: 10 });
     };
 
     helper.buildUIAndRunTest(slider, testAction);
@@ -181,10 +267,7 @@ export function test_set_maxValue_should_adjust_value_but_respect_minValue() {
 
     function testAction(views: Array<View>) {
         slider.maxValue = 30;
-
-        TKUnit.assertEqual(slider.maxValue, 50, "slider.maxValue");
-        TKUnit.assertEqual(slider.minValue, 50, "slider.minValue");
-        TKUnit.assertEqual(slider.value, 50, "slider.value");
+        assertSliderValues(slider, { min: 50, max: 50, value: 50 });
     };
 
     helper.buildUIAndRunTest(slider, testAction);
@@ -198,9 +281,7 @@ export function test_set_minValue_should_adjust_value() {
 
     function testAction(views: Array<View>) {
         slider.minValue = 60;
-
-        TKUnit.assertEqual(slider.minValue, 60, "slider.minValue");
-        TKUnit.assertEqual(slider.value, 60, "slider.value");
+        assertSliderValues(slider, { min: 60, value: 60 });
     };
 
     helper.buildUIAndRunTest(slider, testAction);
@@ -213,11 +294,9 @@ export function test_set_minValue_should_adjust_value_and_maxValue() {
     slider.minValue = 0;
 
     function testAction(views: Array<View>) {
-        slider.minValue = 120;
-
-        TKUnit.assertEqual(slider.minValue, 120, "slider.minValue");
-        TKUnit.assertEqual(slider.maxValue, 120, "slider.maxValue");
-        TKUnit.assertEqual(slider.value, 120, "slider.value");
+        const newMin = 120;
+        slider.minValue = newMin;
+        assertSliderValues(slider, { min: newMin, max: newMin, value: newMin });
     };
 
     helper.buildUIAndRunTest(slider, testAction);
@@ -381,26 +460,22 @@ export function test_binding_value_to_bindingContext() {
     helper.buildUIAndRunTest(slider, testAction);
 }
 
-export function test_set_value_min_max_have_correct_values_after_load() {
-    const slider = new Slider();
-    slider.minValue = 10;
-    slider.maxValue = 300;
-    slider.value = 250;
+function assertSliderValuesDefault(slider: Slider) {
+    return assertSliderValues(slider, { min: MIN_TEST_VALUE, max: MAX_TEST_VALUE, value: TEST_VALUE });
+}
 
-    function testAction(views: Array<View>) {
-        TKUnit.assertEqual(slider.minValue, 10, "slider.minValue");
-        TKUnit.assertEqual(slider.value, 250, "slider.value");
-        TKUnit.assertEqual(slider.maxValue, 300, "slider.maxValue");
-    };
-
-    helper.buildUIAndRunTest(slider, testAction);
+function assertSliderValues(slider: Slider, { min, max, value }: SliderValues) {
+    // tslint:disable
+    min !== undefined && TKUnit.assertEqual(slider.minValue, min, "slider.minValue");
+    max !== undefined && TKUnit.assertEqual(slider.maxValue, max, "slider.maxValue");
+    value !== undefined && TKUnit.assertEqual(slider.value, value, "slider.value");
+    // tslint:enable
 }
 
 function getNativeValue(slider: Slider): number {
     if (slider.android) {
         return slider.android.getProgress();
-    }
-    else if (slider.ios) {
+    } else if (slider.ios) {
         return slider.ios.value;
     }
 }

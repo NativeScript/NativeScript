@@ -11,6 +11,7 @@ import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, 
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
+import { DOMNode } from "../../../debugger/dom-node";
 
 // TODO: Remove this import!
 import * as types from "../../../utils/types";
@@ -142,6 +143,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _visualState: string;
     private _inlineStyleSelector: SelectorCore;
     private __nativeView: any;
+    public domNode: DOMNode;
 
     public bindingContext: any;
     public nativeView: any;
@@ -259,7 +261,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         return null;
     }
 
-    // Overriden so we don't raise `poropertyChange`
+    public ensureDomNode() {
+        if (!this.domNode) {
+            this.domNode = new DOMNode(this);
+        }
+    }
+
+    // Overridden so we don't raise `poropertyChange`
     // The property will raise its own event.
     public set(name: string, value: any) {
         this[name] = WrappedValue.unwrap(value);
@@ -558,6 +566,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         view.parent = this;
         this._addViewCore(view, atIndex);
         view._parentChanged(null);
+
+        if (this.domNode) {
+            this.domNode.onChildAdded(view);
+        }
     }
 
     @profile
@@ -590,7 +602,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     /**
-    * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not outside the UI Stack implementation.
+    * Core logic for removing a child view from this instance. Used by the framework to handle lifecycle events more centralized. Do not use outside the UI Stack implementation.
     */
     public _removeView(view: ViewBase) {
         if (traceEnabled()) {
@@ -599,6 +611,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         if (view.parent !== this) {
             throw new Error("View not added to this instance. View: " + view + " CurrentParent: " + view.parent + " ExpectedParent: " + this);
+        }
+
+        if (this.domNode) {
+            this.domNode.onChildRemoved(view);
         }
 
         this._removeViewCore(view);
@@ -785,6 +801,12 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         // this._iosView = null;
 
         this._context = null;
+
+        if (this.domNode) {
+            this.domNode.dispose();
+            this.domNode = undefined;
+        }
+
         traceNotifyEvent(this, "_onContextChanged");
         traceNotifyEvent(this, "_tearDownUI");
     }

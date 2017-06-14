@@ -153,3 +153,11 @@ export function merge(left, right, compareFunc) {
 
     return result;
 }
+
+export function hasDuplicates(arr: Array<any>): boolean {
+    return arr.length !== eliminateDuplicates(arr).length;
+}
+
+export function eliminateDuplicates(arr: Array<any>): Array<any> {
+    return Array.from(new Set(arr));
+}

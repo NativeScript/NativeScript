@@ -34,6 +34,10 @@ function onLivesync(args: EventData): void {
 }
 application.on("livesync", onLivesync);
 
+if (global && global.__inspector) {
+    require("tns-core-modules/debugger/devtools-elements");
+}
+
 let frameStack: Array<FrameBase> = [];
 
 function buildEntryFromArgs(arg: any): NavigationEntry {

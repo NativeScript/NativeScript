@@ -11,11 +11,11 @@ const SEARCHTEXT = Symbol("searchText");
 const QUERY = Symbol("query");
 
 interface QueryTextListener {
-    new (owner: SearchBar): android.widget.SearchView.OnQueryTextListener;
+    new (owner: SearchBar): android.support.v7.widget.SearchView.OnQueryTextListener;
 }
 
 interface CloseListener {
-    new (owner: SearchBar): android.widget.SearchView.OnCloseListener;
+    new (owner: SearchBar): android.support.v7.widget.SearchView.OnCloseListener;
 }
 
 let QueryTextListener: QueryTextListener;
@@ -26,8 +26,8 @@ function initializeNativeClasses(): void {
         return;
     }
 
-    @Interfaces([android.widget.SearchView.OnQueryTextListener])
-    class QueryTextListenerImpl extends java.lang.Object implements android.widget.SearchView.OnQueryTextListener {
+    @Interfaces([android.support.v7.widget.SearchView.OnQueryTextListener])
+    class CompatQueryTextListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnQueryTextListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -58,8 +58,8 @@ function initializeNativeClasses(): void {
         }
     }
 
-    @Interfaces([android.widget.SearchView.OnCloseListener])
-    class CloseListenerImpl extends java.lang.Object implements android.widget.SearchView.OnCloseListener {
+    @Interfaces([android.support.v7.widget.SearchView.OnCloseListener])
+    class CompatCloseListenerImpl extends java.lang.Object implements android.support.v7.widget.SearchView.OnCloseListener {
         constructor(private owner: SearchBar) {
             super();
             return global.__native(this);
@@ -71,12 +71,14 @@ function initializeNativeClasses(): void {
         }
     }
 
-    QueryTextListener = QueryTextListenerImpl;
-    CloseListener = CloseListenerImpl;
+    QueryTextListener = CompatQueryTextListenerImpl;
+    CloseListener = CompatCloseListenerImpl;
 }
 
 export class SearchBar extends SearchBarBase {
-    nativeView: android.widget.SearchView;
+    nativeView: android.support.v7.widget.SearchView;
+    private _searchTextView: android.widget.TextView;
+    private _searchPlate: android.widget.LinearLayout;
 
     public dismissSoftInput() {
         ad.dismissSoftInput(this.nativeView);
@@ -93,7 +95,7 @@ export class SearchBar extends SearchBarBase {
 
     public createNativeView() {
         initializeNativeClasses();
-        const nativeView = new android.widget.SearchView(this._context);
+        const nativeView = new android.support.v7.widget.SearchView(this._context)
         nativeView.setIconified(false);
 
         const queryTextListener = new QueryTextListener(this);
@@ -118,6 +120,8 @@ export class SearchBar extends SearchBarBase {
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = null;
         nativeView.queryTextListener.owner = null;
+        this._searchPlate = null;
+        this._searchTextView = null;
         super.disposeNativeView();
     }
 
@@ -208,12 +212,22 @@ export class SearchBar extends SearchBarBase {
     }
 
     private _getTextView(): android.widget.TextView {
-        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
-        return <android.widget.TextView>this.nativeView.findViewById(id);
+        if (!this._searchTextView) {
+            const pkgName = this.nativeView.getContext().getPackageName();
+            const id = this.nativeView.getContext().getResources().getIdentifier("search_src_text", "id", pkgName);
+            this._searchTextView = <android.widget.TextView>this.nativeView.findViewById(id);
+        }
+        
+        return this._searchTextView;
     }
 
     private _getSearchPlate(): android.widget.LinearLayout {
-        const id = this.nativeView.getContext().getResources().getIdentifier("android:id/search_plate", null, null);
-        return <android.widget.LinearLayout>this.nativeView.findViewById(id);
+        if (!this._searchPlate) {
+            const pkgName = this.nativeView.getContext().getPackageName();
+            const id = this.nativeView.getContext().getResources().getIdentifier("search_plate", "id", pkgName);
+            this._searchPlate = <android.widget.LinearLayout>this.nativeView.findViewById(id);
+        }
+
+        return this._searchPlate;
     }
 }
