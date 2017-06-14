@@ -16,6 +16,7 @@ const CHILD_FORMATTED_STRING = "FormattedString";
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 
+    public _isSingleLine: boolean;
     public text: string;
     public formattedText: FormattedString;
 
@@ -154,6 +155,8 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
         //
     }
 }
+
+TextBaseCommon.prototype._isSingleLine = false;
 
 export function isBold(fontWeight: FontWeight): boolean {
     return fontWeight === "bold" || fontWeight === "700" || fontWeight === "800" || fontWeight === "900";

@@ -159,17 +159,19 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     public initNativeView(): void {
         super.initNativeView();
         const nativeView = this.nativeView;
-        this._inputType = nativeView.getInputType();
         (<any>nativeView).listener.owner = this;
-        // this._keyListenerCache = nativeView.getKeyListener();
+        this._inputType = nativeView.getInputType();
     }
 
     public disposeNativeView(): void {
-        const nativeView = this.nativeView;
         super.disposeNativeView();
-        (<any>nativeView).listener.owner = null;
-        nativeView.setInputType(this._inputType);
+        (<any>this.nativeView).listener.owner = null;
         this._keyListenerCache = null;
+    }
+
+    public resetNativeView(): void {
+        super.resetNativeView();
+        this.nativeView.setInputType(this._inputType);
     }
 
     public dismissSoftInput() {
@@ -219,29 +221,30 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    [keyboardTypeProperty.getDefault](): "datetime" | "phone" | "number" | "url" | "email" | string {
-        let inputType = this.nativeView.getInputType();
-        switch (inputType) {
-            case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
-                return "datetime";
+    [keyboardTypeProperty.getDefault](): number {
+        return this.nativeView.getInputType();
+        // let inputType = this.nativeView.getInputType();
+        // switch (inputType) {
+        //     case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
+        //         return "datetime";
 
-            case android.text.InputType.TYPE_CLASS_PHONE:
-                return "phone";
+        //     case android.text.InputType.TYPE_CLASS_PHONE:
+        //         return "phone";
 
-            case android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL:
-                return "number";
+        //     case android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL:
+        //         return "number";
 
-            case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI:
-                return "url";
+        //     case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI:
+        //         return "url";
 
-            case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
-                return "email";
+        //     case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
+        //         return "email";
 
-            default:
-                return inputType.toString();
-        }
+        //     default:
+        //         return inputType.toString();
+        // }
     }
-    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | string) {
+    [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | number) {
         let newInputType;
         switch (value) {
             case "datetime":
@@ -265,12 +268,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
                 break;
 
             default:
-                let inputType = +value;
-                if (!isNaN(inputType)) {
-                    newInputType = inputType;
-                } else {
-                    newInputType = android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL;
-                }
+                newInputType = value;
                 break;
         }
 

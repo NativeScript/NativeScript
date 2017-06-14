@@ -588,51 +588,39 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 }
 
 createNativePercentLengthProperty({
-    getter: marginTopProperty.getDefault,
     setter: marginTopProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginTop },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginTop },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginTopPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: marginRightProperty.getDefault,
     setter: marginRightProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginRight },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginRight },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginRightPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: marginBottomProperty.getDefault,
     setter: marginBottomProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginBottom },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginBottom },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginBottomPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: marginLeftProperty.getDefault,
     setter: marginLeftProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginLeft },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginLeft },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginLeftPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: widthProperty.getDefault,
     setter: widthProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getWidth },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setWidth },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setWidthPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: heightProperty.getDefault,
     setter: heightProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getHeight },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setHeight },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setHeightPercent }
 });

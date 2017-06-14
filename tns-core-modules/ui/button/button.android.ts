@@ -55,18 +55,22 @@ export class Button extends ButtonBase {
     public initNativeView(): void {
         const nativeView = this.nativeView;
         (<any>nativeView).clickListener.owner = this;
-        if (APILEVEL >= 21) {
+        if (this.recycleNativeView && APILEVEL >= 21) {
             this._stateListAnimator = (<any>nativeView).getStateListAnimator();
         }
         super.initNativeView();
     }
 
     public disposeNativeView() {
-        const nativeView = this.nativeView;
-        (<any>nativeView).clickListener.owner = null;
+        (<any>this.nativeView).clickListener.owner = null;
         super.disposeNativeView();
+    }
+
+    public resetNativeView(): void {
+        super.resetNativeView();
+
         if (APILEVEL >= 21) {
-            (<any>nativeView).setStateListAnimator(this._stateListAnimator);
+            (<any>this.nativeView).setStateListAnimator(this._stateListAnimator);
             this._stateListAnimator = undefined;
         }
     }

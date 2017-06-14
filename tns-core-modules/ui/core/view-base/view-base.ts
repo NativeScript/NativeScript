@@ -657,10 +657,15 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     }
 
     public resetNativeView(): void {
+        //    
+    }
+
+    private resetNativeViewInternal(): void {
         const nativeView = this.nativeView;
         if (nativeView && this.recycleNativeView && isAndroid) {
             resetNativeView(this);
             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            this.resetNativeView();
         }
         if (this._cssState) {
             this._cancelAllAnimations();
@@ -772,7 +777,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
             traceWrite(`${this}._tearDownUI(${force})`, traceCategories.VisualTreeEvents);
         }
 
-        this.resetNativeView();
+        this.resetNativeViewInternal();
 
         this.eachChild((child) => {
             child._tearDownUI(force);

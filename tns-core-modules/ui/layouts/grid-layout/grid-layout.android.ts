@@ -63,7 +63,7 @@ export class GridLayout extends GridLayoutBase {
         this.columnsInternal.forEach((itemSpec: ItemSpec, index, rows) => { this._onColumnAdded(itemSpec); }, this);
     }
 
-    public disposeNativeView() {
+    public resetNativeView() {
         // Update native GridLayout
         for (let i = this.rowsInternal.length; i--; i >= 0) {
             const itemSpec = <ItemSpec>this.rowsInternal[i];
@@ -75,7 +75,7 @@ export class GridLayout extends GridLayoutBase {
             this._onColumnRemoved(itemSpec, i);
         }
 
-        super.disposeNativeView();
+        super.resetNativeView();
     }
 
     public _onRowAdded(itemSpec: ItemSpec) {

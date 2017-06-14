@@ -161,7 +161,7 @@ export function waitUntilLayoutReady(view: View): void {
 export function navigateWithEntry(entry: frame.NavigationEntry): Page {
     let page = frame.resolvePageFromEntry(entry);
     entry.moduleName = null;
-    entry.create = function () {
+    entry.create = function() {
         return page;
     };
 
@@ -236,6 +236,7 @@ const props = _getProperties();
 const styleProps = _getStyleProperties();
 let setters: Map<string, any>;
 let cssSetters: Map<string, any>;
+let defaultNativeGetters: Map<string, (view) => any>;
 
 export function nativeView_recycling_test(createNew: () => View, createLayout?: () => LayoutBase, nativeGetters?: Map<string, (view) => any>, customSetters?: Map<string, any>) {
     if (isIOS) {
@@ -258,8 +259,10 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
 
     layout.addChild(test);
 
-    setValue(test, setters, customSetters);
     setValue(test.style, cssSetters);
+    setValue(test, setters, customSetters);
+    // Needed so we can reset formattedText
+    test["secure"] = false;
 
     const nativeView = test.nativeView;
     // Mark so we reuse the native views.
@@ -271,20 +274,22 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     layout.addChild(first);
 
     TKUnit.assertEqual(newer.nativeView, nativeView, "nativeView not reused.");
-    checkDefaults(newer, first, props, nativeGetters);
-    checkDefaults(newer, first, styleProps, nativeGetters);
+    checkDefaults(newer, first, props, nativeGetters || defaultNativeGetters);
+    checkDefaults(newer, first, styleProps, nativeGetters || defaultNativeGetters);
     layout.removeChild(newer);
     layout.removeChild(first);
 }
 
-function checkDefaults(newer: Object, first: Object, props: Array<any>, nativeGetters?: Map<string, (view) => any>): void {
+function checkDefaults(newer: View, first: View, props: Array<any>, nativeGetters: Map<string, (view) => any>): void {
     props.forEach(prop => {
         const name = (<any>prop).name;
-        if (newer[prop.getDefault]) {
-            TKUnit.assertDeepEqual(newer[prop.getDefault](), first[prop.getDefault](), name);
-        } else if (nativeGetters && nativeGetters.has(name)) {
+        if (nativeGetters.has(name)) {
             const getter = nativeGetters.get(name);
             TKUnit.assertDeepEqual(getter(newer), getter(first), name);
+        } else if (newer[prop.getDefault]) {
+            TKUnit.assertDeepEqual(newer[prop.getDefault](), first[prop.getDefault](), name);
+        } else if (newer[prop.setNative]) {
+            console.log(`Type: ${newer.typeName} has no getter for ${name} property.`)
         }
     });
 }
@@ -556,4 +561,145 @@ function setupSetters(): void {
     cssSetters.set('alignSelf', 'center');
     cssSetters.set('flexFlow', 'row-reverse wrap');
     cssSetters.set('flex', '2 0.2');
+
+    const nativeGetters = defaultNativeGetters = new Map<string, (view) => any>();
+
+    nativeGetters.set("marginLeft", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof android.view.ViewGroup.MarginLayoutParams) ? lp.leftMargin : 0;
+    });
+
+    nativeGetters.set("marginTop", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof android.view.ViewGroup.MarginLayoutParams) ? lp.topMargin : 0;
+    });
+
+    nativeGetters.set("marginRight", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof android.view.ViewGroup.MarginLayoutParams) ? lp.rightMargin : 0;
+    });
+
+    nativeGetters.set("marginBottom", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof android.view.ViewGroup.MarginLayoutParams) ? lp.bottomMargin : 0;
+    });
+
+    nativeGetters.set("col", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.CommonLayoutParams) ? lp.column : 0;
+    });
+
+    nativeGetters.set("colSpan", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.CommonLayoutParams) ? lp.columnSpan : 1;
+    });
+
+    nativeGetters.set("row", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.CommonLayoutParams) ? lp.column : 0;
+    });
+
+    nativeGetters.set("rowSpan", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.CommonLayoutParams) ? lp.columnSpan : 1;
+    });
+
+    nativeGetters.set("width", (v: { nativeView: android.view.View }) => {
+        const native = v.nativeView;
+        if (native.getParent() instanceof org.nativescript.widgets.FlexboxLayout) {
+            return -2;
+        }
+        return native.getLayoutParams().width;
+    });
+    nativeGetters.set("height", (v: { nativeView: android.view.View }) => {
+        const native = v.nativeView;
+        if (native.getParent() instanceof org.nativescript.widgets.FlexboxLayout) {
+            return -2;
+        }
+        return native.getLayoutParams().height;
+    });
+
+    nativeGetters.set("paddingLeft", (v: { nativeView: android.view.View }) => v.nativeView.getPaddingLeft());
+    nativeGetters.set("paddingTop", (v: { nativeView: android.view.View }) => v.nativeView.getPaddingTop());
+    nativeGetters.set("paddingRight", (v: { nativeView: android.view.View }) => v.nativeView.getPaddingRight());
+    nativeGetters.set("paddingBottom", (v: { nativeView: android.view.View }) => v.nativeView.getPaddingBottom());
+
+    nativeGetters.set("minWidth", (v: { nativeView: android.view.View }) => v.nativeView.getMinimumWidth());
+    nativeGetters.set("minHeight", (v: { nativeView: android.view.View }) => v.nativeView.getMinimumHeight());
+
+    nativeGetters.set("scaleX", (v: { nativeView: android.view.View }) => v.nativeView.getScaleX());
+    nativeGetters.set("scaleY", (v: { nativeView: android.view.View }) => v.nativeView.getScaleY());
+    nativeGetters.set("translateX", (v: { nativeView: android.view.View }) => v.nativeView.getTranslationX());
+    nativeGetters.set("translateY", (v: { nativeView: android.view.View }) => v.nativeView.getTranslationY());
+    nativeGetters.set("isEnabled", (v: { nativeView: android.view.View }) => v.nativeView.isEnabled());
+    nativeGetters.set("rotate", (v: { nativeView: android.view.View }) => v.nativeView.getRotation());
+
+    nativeGetters.set("order", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) ? lp.order : 1;
+    });
+
+    nativeGetters.set("flexGrow", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) ? lp.flexGrow : 0;
+    });
+
+    nativeGetters.set("flexShrink", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) ? lp.flexShrink : 1;
+    });
+
+    nativeGetters.set("flexWrapBefore", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) ? lp.wrapBefore : false;
+    });
+
+    nativeGetters.set("alignSelf", (v: { nativeView: android.view.View }) => {
+        const lp = v.nativeView.getLayoutParams();
+        return (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) ? lp.alignSelf : "auto";
+    });
+
+    nativeGetters.set("formattedText", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        return (nativeView instanceof android.widget.TextView) ? nativeView.getText().toString() : undefined;
+    });
+
+    nativeGetters.set("isUserInteractionEnabled", (v) => true);
+
+    nativeGetters.set("orientation", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        if (nativeView instanceof org.nativescript.widgets.StackLayout) {
+            return nativeView.getOrientation();
+        } else if (nativeView instanceof org.nativescript.widgets.WrapLayout) {
+            return nativeView.getOrientation();
+        }
+    });
+
+    nativeGetters.set("textTransform", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        if (nativeView instanceof android.widget.TextView) {
+            return nativeView.getTransformationMethod();
+        }
+    });
+
+    nativeGetters.set("editable", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        if (nativeView instanceof android.widget.TextView) {
+            return nativeView.getKeyListener();
+        }
+    });
+
+    nativeGetters.set("maxLength", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        if (nativeView instanceof android.widget.TextView) {
+            return nativeView.getFilters();
+        }
+    });
+
+    nativeGetters.set("whiteSpace", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        if (nativeView instanceof android.widget.TextView) {
+            return { lineCount: nativeView.getLineCount(), ellipsize: nativeView.getEllipsize() };
+        }
+    });
 }
