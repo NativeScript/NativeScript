@@ -196,6 +196,7 @@ export class TextField extends TextFieldBase {
         // }
         let color = value instanceof Color ? value.ios : value;
         this.nativeView.textColor = color;
+        this.nativeView.tintColor = color;
     }
 
     [placeholderColorProperty.getDefault](): UIColor {

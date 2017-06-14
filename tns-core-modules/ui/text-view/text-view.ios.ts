@@ -145,6 +145,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
             if (color) {
                 this.nativeView.textColor = color.ios;
+                this.nativeView.tintColor = color.ios;
             } else {
                 this.nativeView.textColor = UIColor.blackColor;
             }
