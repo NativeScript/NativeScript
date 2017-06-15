@@ -39,6 +39,23 @@ export function test_setTimeout() {
     TKUnit.assert(completed, "Callback should be called!");
 };
 
+export function test_setTimeout_extraArgs() {
+    let completed: boolean;
+    let rnd: number = Math.random();
+
+    // >> timer-set-zero
+    const id = timer.setTimeout((arg) => {
+        // >> (hide)
+        completed = rnd === arg;
+        // << (hide)
+    }, 0, rnd);
+    // << timer-set-zero
+
+    TKUnit.waitUntilReady(() => completed, 0.5, false);
+    timer.clearTimeout(id);
+    TKUnit.assert(completed, "Callback called with expected argument!");
+};
+
 export function test_setTimeout_callbackCalledAfterSpecifiedTime() {
     let completed = false;
 
@@ -108,6 +125,24 @@ export function test_setInterval_callbackCalledDuringPeriod() {
     TKUnit.waitUntilReady(() => counter >= expected, 0.25, false);
     timer.clearInterval(id);
     TKUnit.assert(counter >= expected, "Callback should be raised at least" + expected + "times! Callback raised " + counter + " times.");
+};
+
+export function test_setInterval_callbackCalledWithExtraArgs() {
+    let counter: number = 0;
+    let expected: number = 4;
+    let rnd: number = Math.random();
+
+    // >> timer-set-expression
+    const id = timer.setInterval((arg) => {
+        // >> (hide)
+        counter += arg === rnd ? 1 : -1;
+        // << (hide)
+    }, 50, rnd);
+    // << timer-set-expression
+
+    TKUnit.waitUntilReady(() => counter >= expected, 0.25, false);
+    timer.clearInterval(id);
+    TKUnit.assert(counter >= expected, "Callback raised " + counter + " times with arguments.");
 };
 
 export function test_setInterval_callbackShouldBeCleared() {
