@@ -14,9 +14,10 @@ function createHandlerAndGetId(): number {
     return timerId;
 }
 
-export function setTimeout(callback: Function, milliseconds = 0): number {
+export function setTimeout(callback: Function, milliseconds = 0, ...args): number {
     const id = createHandlerAndGetId();
-    const zoneBound = zonedCallback(callback);
+    const invoke = () => callback(...args);
+    const zoneBound = zonedCallback(invoke);
 
     var runnable = new java.lang.Runnable({
         run: () => {
@@ -45,10 +46,11 @@ export function clearTimeout(id: number): void {
     }
 }
 
-export function setInterval(callback: Function, milliseconds = 0): number {
+export function setInterval(callback: Function, milliseconds = 0, ...args): number {
     const id = createHandlerAndGetId();
     const handler = timeoutHandler;
-    const zoneBound = zonedCallback(callback);
+    const invoke = () => callback(...args);
+    const zoneBound = zonedCallback(invoke);
 
     var runnable = new java.lang.Runnable({
         run: () => {

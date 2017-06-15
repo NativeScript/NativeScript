@@ -63,8 +63,9 @@ function createTimerAndGetId(callback: Function, milliseconds: number, shouldRep
     return id;
 }
 
-export function setTimeout(callback: Function, milliseconds = 0): number {
-    return createTimerAndGetId(zonedCallback(callback), milliseconds, false);
+export function setTimeout(callback: Function, milliseconds = 0, ...args): number {
+    let invoke = () => callback(...args);
+    return createTimerAndGetId(zonedCallback(invoke), milliseconds, false);
 }
 
 export function clearTimeout(id: number): void {
@@ -74,8 +75,9 @@ export function clearTimeout(id: number): void {
     }
 }
 
-export function setInterval(callback: Function, milliseconds = 0): number {
-    return createTimerAndGetId(zonedCallback(callback), milliseconds, true);
+export function setInterval(callback: Function, milliseconds = 0, ...args): number {
+    let invoke = () => callback(...args);
+    return createTimerAndGetId(zonedCallback(invoke), milliseconds, true);
 }
 
 export var clearInterval = clearTimeout;
