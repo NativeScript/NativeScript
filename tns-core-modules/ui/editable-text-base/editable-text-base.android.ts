@@ -214,8 +214,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     [textProperty.setNative](value: string) {
         try {
             this._changeFromCode = true;
-            const text = (value === null || value === undefined) ? '' : value.toString();
-            this.nativeView.setText(text, android.widget.TextView.BufferType.EDITABLE);
+            this._setNativeText(value === null || value === undefined);
         } finally {
             this._changeFromCode = false;
         }
