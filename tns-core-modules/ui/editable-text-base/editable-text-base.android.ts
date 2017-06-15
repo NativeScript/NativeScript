@@ -208,13 +208,13 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
         }
     }
 
-    [textProperty.getDefault](): string {
-        return this.nativeView.getText();
+    [textProperty.getDefault](): number {
+        return -1;
     }
-    [textProperty.setNative](value: string) {
+    [textProperty.setNative](value: string | number) {
         try {
             this._changeFromCode = true;
-            this._setNativeText(value === null || value === undefined);
+            this._setNativeText(value === -1);
         } finally {
             this._changeFromCode = false;
         }
@@ -222,26 +222,6 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
 
     [keyboardTypeProperty.getDefault](): number {
         return this.nativeView.getInputType();
-        // let inputType = this.nativeView.getInputType();
-        // switch (inputType) {
-        //     case android.text.InputType.TYPE_CLASS_DATETIME | android.text.InputType.TYPE_DATETIME_VARIATION_NORMAL:
-        //         return "datetime";
-
-        //     case android.text.InputType.TYPE_CLASS_PHONE:
-        //         return "phone";
-
-        //     case android.text.InputType.TYPE_CLASS_NUMBER | android.text.InputType.TYPE_NUMBER_VARIATION_NORMAL | android.text.InputType.TYPE_NUMBER_FLAG_SIGNED | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL:
-        //         return "number";
-
-        //     case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_URI:
-        //         return "url";
-
-        //     case android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS:
-        //         return "email";
-
-        //     default:
-        //         return inputType.toString();
-        // }
     }
     [keyboardTypeProperty.setNative](value: "datetime" | "phone" | "number" | "url" | "email" | number) {
         let newInputType;
@@ -328,7 +308,7 @@ export abstract class EditableTextBase extends EditableTextBaseCommon {
     }
 
     [editableProperty.setNative](value: boolean) {
-        const nativeView = this.nativeView
+        const nativeView = this.nativeView;
         if (value) {
             nativeView.setKeyListener(this._keyListenerCache);
         } else {

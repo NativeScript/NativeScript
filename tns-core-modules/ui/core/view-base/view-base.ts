@@ -94,7 +94,7 @@ export function eachDescendant(view: ViewBaseDefinition, callback: (child: ViewB
 
 let viewIdCounter = 1;
 
-const contextMap = new Map<Object, Map<string, WeakRef<Object>[]>>();
+const contextMap = new WeakMap<Object, Map<string, WeakRef<Object>[]>>();
 
 function getNativeView(context: Object, typeName: string): Object {
     let typeMap = contextMap.get(context);

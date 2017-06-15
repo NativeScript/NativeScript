@@ -14,6 +14,7 @@ interface ClickListener {
 
 let ClickListener: ClickListener;
 let APILEVEL: number;
+let AndroidButton: typeof android.widget.Button;
 
 function initializeClickListener(): void {
     if (ClickListener) {
@@ -34,6 +35,7 @@ function initializeClickListener(): void {
 
     ClickListener = ClickListenerImpl;
     APILEVEL = android.os.Build.VERSION.SDK_INT;
+    AndroidButton = android.widget.Button;
 }
 
 export class Button extends ButtonBase {
@@ -45,7 +47,7 @@ export class Button extends ButtonBase {
     @profile
     public createNativeView() {
         initializeClickListener();
-        const button = new android.widget.Button(this._context);
+        const button = new AndroidButton(this._context);
         const clickListener = new ClickListener(this);
         button.setOnClickListener(clickListener);
         (<any>button).clickListener = clickListener;

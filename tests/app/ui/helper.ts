@@ -161,7 +161,7 @@ export function waitUntilLayoutReady(view: View): void {
 export function navigateWithEntry(entry: frame.NavigationEntry): Page {
     let page = frame.resolvePageFromEntry(entry);
     entry.moduleName = null;
-    entry.create = function() {
+    entry.create = function () {
         return page;
     };
 
@@ -245,7 +245,13 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     }
     setupSetters();
     const page = getClearCurrentPage();
-    const layout = createLayout ? createLayout() : new FlexboxLayout();
+    let layout: LayoutBase = new FlexboxLayout();
+    if (createLayout) {
+        // This is done on purpose. We need the constructor of Flexbox
+        // to run otherwise some module fileds stays uninitialized.
+        layout = createLayout();
+    }
+
     page.content = layout;
 
     const first = createNew();
@@ -700,6 +706,14 @@ function setupSetters(): void {
         const nativeView = v.nativeView;
         if (nativeView instanceof android.widget.TextView) {
             return { lineCount: nativeView.getLineCount(), ellipsize: nativeView.getEllipsize() };
+        }
+    });
+
+    nativeGetters.set("text", (v: { nativeView: android.view.View }) => {
+        const nativeView = v.nativeView;
+        if (nativeView instanceof android.widget.TextView) {
+            const text = nativeView.getText();
+            return text ? text.toString() : text;
         }
     });
 }
