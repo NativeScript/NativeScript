@@ -31,7 +31,6 @@ export class MainPageViewModel extends TestPageMainViewModel {
     set exampleName(value: string) {
         if (this._exampleName !== value) {
             this._exampleName = value;
-            this.notifyPropertyChange("exampleName", value);
             this.filterListView(value);
         }
     }

@@ -17,7 +17,6 @@ export class TestExample extends Observable {
     set name(value: string) {
         if (this._name !== value) {
             this._name = value;
-            this.notifyPropertyChange('name', value)
         }
     }
 
@@ -28,7 +27,6 @@ export class TestExample extends Observable {
     set path(value: string) {
         if (this._path !== value) {
             this._path = value;
-            this.notifyPropertyChange('path', value)
         }
     }
 }
