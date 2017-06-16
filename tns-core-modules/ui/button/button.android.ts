@@ -57,9 +57,6 @@ export class Button extends ButtonBase {
     public initNativeView(): void {
         const nativeView = this.nativeView;
         (<any>nativeView).clickListener.owner = this;
-        if (this.recycleNativeView && APILEVEL >= 21) {
-            this._stateListAnimator = (<any>nativeView).getStateListAnimator();
-        }
         super.initNativeView();
     }
 
@@ -71,7 +68,7 @@ export class Button extends ButtonBase {
     public resetNativeView(): void {
         super.resetNativeView();
 
-        if (APILEVEL >= 21) {
+        if (this._stateListAnimator && APILEVEL >= 21) {
             (<any>this.nativeView).setStateListAnimator(this._stateListAnimator);
             this._stateListAnimator = undefined;
         }
@@ -127,7 +124,11 @@ export class Button extends ButtonBase {
     [zIndexProperty.setNative](value: number) {
         // API >= 21
         if (APILEVEL >= 21) {
-            (<any>this.nativeView).setStateListAnimator(null);
+            const nativeView = this.nativeView;
+            if (!this._stateListAnimator) {
+                this._stateListAnimator = (<any>nativeView).getStateListAnimator();
+            }
+            (<any>nativeView).setStateListAnimator(null);
         }
 
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
