@@ -59,12 +59,10 @@ export class TextBase extends TextBaseCommon {
     public initNativeView(): void {
         const nativeView = this.nativeView;
         this._defaultTransformationMethod = nativeView.getTransformationMethod();
-        if (this.recycleNativeView) {
-            this._minHeight = nativeView.getMinHeight();
-            this._maxHeight = nativeView.getMaxHeight();
-            this._minLines = nativeView.getMinLines();
-            this._maxLines = nativeView.getMaxLines();
-        }
+        this._minHeight = nativeView.getMinHeight();
+        this._maxHeight = nativeView.getMaxHeight();
+        this._minLines = nativeView.getMinLines();
+        this._maxLines = nativeView.getMaxLines();
         super.initNativeView();
     }
 

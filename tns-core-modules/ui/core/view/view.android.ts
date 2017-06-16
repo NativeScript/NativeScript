@@ -301,6 +301,9 @@ export class View extends ViewCommon {
             this.nativeView.setOnTouchListener(disableUserInteractionListener);
         } else {
             this.setOnTouchListener();
+            if (!this.touchListenerIsSet) {
+                this.nativeView.setOnTouchListener(null);
+            }
         }
     }
 
