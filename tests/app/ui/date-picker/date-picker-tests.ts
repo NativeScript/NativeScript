@@ -13,7 +13,7 @@ import * as helper from "../helper";
 export function test_recycling() {
     helper.nativeView_recycling_test(() => new datePickerModule.DatePicker());
 }
-const currentDateFactory = () => new Date();
+const currentDate = new Date();
 
 function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {
     TKUnit.assertEqual(datePicker.year, expectedYear, "datePicker.year");
@@ -83,24 +83,24 @@ export class DatePickerTest extends testModule.UITest<datePickerModule.DatePicke
     
     public test_WhenCreated_YearIsCurrentYear() {
         const actualValue = this.testView.year;
-        const expectedValue = currentDateFactory().getFullYear();
+        const expectedValue = currentDate.getFullYear();
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
     public test_WhenCreated_MonthIsCurrentMonth() {
         const actualValue = this.testView.month;
-        const expectedValue = currentDateFactory().getMonth();
+        const expectedValue = currentDate.getMonth();
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
     public test_WhenCreated_DayIsCurrentDay() {
         const actualValue = this.testView.day;
-        const expectedValue = currentDateFactory().getDay();
+        const expectedValue = currentDate.getDay();
         TKUnit.assertEqual(actualValue, expectedValue);
     }
 
     public test_WhenCreated_DateIsCurrentDate() {
-        const expectedValue = currentDateFactory();
+        const expectedValue = currentDate;
         assertDate(this.testView, expectedValue.getFullYear(), expectedValue.getMonth(), expectedValue.getDay());
     }
 

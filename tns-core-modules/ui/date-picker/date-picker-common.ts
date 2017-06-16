@@ -3,7 +3,7 @@ import { View, Property } from "../core/view";
 
 export * from "../core/view";
 
-const defaultDateFactory = () => new Date();
+const defaultDate = new Date();
 const dateComparer = (x: Date, y: Date): boolean => (x <= y && x >= y);
 
 export class DatePickerBase extends View implements DatePickerDefinition {
@@ -19,21 +19,21 @@ DatePickerBase.prototype.recycleNativeView = "auto";
 
 export const yearProperty = new Property<DatePickerBase, number>({
     name: "year",
-    defaultValue: defaultDateFactory().getFullYear(),
+    defaultValue: defaultDate.getFullYear(),
     valueConverter: v => parseInt(v),
 });
 yearProperty.register(DatePickerBase);
 
 export const monthProperty = new Property<DatePickerBase, number>({
     name: "month",
-    defaultValue: defaultDateFactory().getMonth(),
+    defaultValue: defaultDate.getMonth(),
     valueConverter: v => parseInt(v),
 });
 monthProperty.register(DatePickerBase);
 
 export const dayProperty = new Property<DatePickerBase, number>({
     name: "day",
-    defaultValue: defaultDateFactory().getDay(),
+    defaultValue: defaultDate.getDay(),
     valueConverter: v => parseInt(v),
 });
 dayProperty.register(DatePickerBase);
@@ -55,7 +55,7 @@ minDateProperty.register(DatePickerBase);
 
 export const dateProperty = new Property<DatePickerBase, Date>({
     name: "date",
-    defaultValue: defaultDateFactory(),
+    defaultValue: defaultDate,
     equalityComparer: dateComparer,
     valueConverter: v => new Date(v),
 });
