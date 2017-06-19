@@ -36,15 +36,7 @@ export class Font extends FontBase {
 
     public getAndroidTypeface(): android.graphics.Typeface {
         if (!this._typeface) {
-            let fontStyle = 0;
-            if (this.isBold) {
-                fontStyle |= android.graphics.Typeface.BOLD;
-            }
-            if (this.isItalic) {
-                fontStyle |= android.graphics.Typeface.ITALIC;
-            }
-
-            this._typeface = createTypeface(this, fontStyle);
+            this._typeface = createTypeface(this);
         }
         return this._typeface;
     }
@@ -95,7 +87,15 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
     return result;
 }
 
-function createTypeface(font: Font, fontStyle: number): android.graphics.Typeface {
+function createTypeface(font: Font): android.graphics.Typeface {
+    let fontStyle = 0;
+    if (font.isBold) {
+        fontStyle |= android.graphics.Typeface.BOLD;
+    }
+    if (font.isItalic) {
+        fontStyle |= android.graphics.Typeface.ITALIC;
+    }
+
     //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
     const fonts = parseFontFamily(font.fontFamily);
     let result = null;
@@ -124,9 +124,10 @@ function createTypeface(font: Font, fontStyle: number): android.graphics.Typefac
     }
 
     if (fontStyle && !result) {
-        result = android.graphics.Typeface.create(result, fontStyle);
+        // result = android.graphics.Typeface.create(result, fontStyle);
+        result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
     }
-    
+
     return result;
 }
 
