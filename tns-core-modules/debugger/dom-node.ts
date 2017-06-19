@@ -26,7 +26,8 @@ const propertyBlacklist = [
     "ng-reflect-items",
     "domNode",
     "touchListenerIsSet",
-    "bindingContext"
+    "bindingContext",
+    "nativeView"
 ];
 
 function notifyInspector(callback: (inspector: Inspector) => void) {
