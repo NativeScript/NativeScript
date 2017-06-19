@@ -221,7 +221,6 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
     TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
 }
 
-
 export function test_ActionBar_set_title_as_number_doesnt_thrown() {
     let gotException = false;
 
