@@ -51,7 +51,6 @@ export function test_setTimeout_extraArgs() {
     }, 0, rnd);
     // << timer-set-zero-args
 
-
     TKUnit.waitUntilReady(() => completed, 0.5, false);
     timer.clearTimeout(id);
     TKUnit.assert(completed, "Callback called with expected argument!");
