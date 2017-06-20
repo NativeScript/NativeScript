@@ -32,8 +32,8 @@
   },
   "nativescript": {
     "platforms": {
-      "ios": "2.1.1",
-      "android": "2.1.1"
+      "ios": "3.0.0",
+      "android": "3.0.0"
     }
   },
   "snapshot": {
