@@ -491,6 +491,7 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     _eachLayoutView(callback: (View) => void): void;
 
     public _applyXmlAttribute(attribute: string, value: any): boolean;
+    public _redrawNativeBackground(value: any): void;
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
@@ -554,10 +555,6 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
      * @private
      */
     _setMinHeightNative(value: Length): void;
-    /**
-     * @private
-     */
-    _redrawNativeBackground(value: any): void;
     //@endprivate
 
     /**
