@@ -43,13 +43,13 @@ export function test_setTimeout_extraArgs() {
     let completed: boolean;
     let rnd: number = Math.random();
 
-    // >> timer-set-zero
+    // >> timer-set-zero-args
     const id = timer.setTimeout((arg) => {
         // >> (hide)
         completed = rnd === arg;
         // << (hide)
     }, 0, rnd);
-    // << timer-set-zero
+    // << timer-set-zero-args
 
     TKUnit.waitUntilReady(() => completed, 0.5, false);
     timer.clearTimeout(id);
