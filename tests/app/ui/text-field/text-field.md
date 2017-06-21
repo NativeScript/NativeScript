@@ -10,12 +10,8 @@ Using a TextField requires the text-field module.
 {%snippet require-textfield%}
 ### Binding two TextFields text property to observable view-model property.
 ```XML
- <Page loaded="pageLoaded">
-  <StackLayout orientation="vertical">
-    {%raw%}<TextField text="{{ someProperty }}" />
-    <TextField text="{{ someProperty }}" />{%endraw%}
-  </StackLayout>
- </Page>
+{%raw%}<TextField text="{{ someProperty }}" />
+<TextField text="{{ someProperty }}" />{%endraw%}
 ```
 {%snippet binding-text-property-textfield%}
 ## Creating a TextField
