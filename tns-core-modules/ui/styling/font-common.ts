@@ -39,8 +39,13 @@ export class Font implements definitios.Font {
     }
 
     get isBold(): boolean {
-        return this._fontWeight.toLowerCase() === enums.FontWeight.bold
-            || this._fontWeight.toLowerCase() === "700";
+        const val = this._fontWeight.toLowerCase();
+        
+        return val === enums.FontWeight.semiBold ||
+            val === enums.FontWeight.bold ||
+            val === "700" ||
+            val === enums.FontWeight.extraBold ||
+            val === enums.FontWeight.black;
     }
     set isBold(value: boolean) {
         throw new Error("isBold is read-only");

@@ -64,16 +64,7 @@ export class Font extends common.Font {
 
     public getAndroidTypeface(): android.graphics.Typeface {
         if (!this._typeface) {
-            var fontStyle = 0;
-            if (this.isBold) {
-                fontStyle |= android.graphics.Typeface.BOLD;
-            }
-            if (this.isItalic) {
-                fontStyle |= android.graphics.Typeface.ITALIC;
-            }
-
-            var typeFace  = createTypeface(this);
-            this._typeface = android.graphics.Typeface.create(typeFace, fontStyle);
+            this._typeface = createTypeface(this);
         }
         return this._typeface;
     }
@@ -128,39 +119,46 @@ function loadFontFromFile(fontFamily: string): android.graphics.Typeface {
 }
 
 function createTypeface(font: Font): android.graphics.Typeface {
-    //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
-    var fonts = common.parseFontFamily(font.fontFamily);
-    var result = null;
-    if (fonts.length === 0) {
-        return null;
+    let fontStyle = 0;
+    if (font.isBold) {
+        fontStyle |= android.graphics.Typeface.BOLD;
+    }
+    if (font.isItalic) {
+        fontStyle |= android.graphics.Typeface.ITALIC;
     }
 
-    for (var i = 0; i < fonts.length; i++) {
+    //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
+    const fonts = common.parseFontFamily(font.fontFamily);
+    let result = null;
+    for (let i = 0; i < fonts.length && !result; i++) {
         switch (fonts[i].toLowerCase()) {
             case common.genericFontFamilies.serif:
-                result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), 0);
+                result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
                 break;
 
             case common.genericFontFamilies.sansSerif:
             case common.genericFontFamilies.system:
-                result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), 0);
+                result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
                 break;
 
             case common.genericFontFamilies.monospace:
-                result = android.graphics.Typeface.create("monospace" + getFontWeightSuffix(font.fontWeight), 0);
+                result = android.graphics.Typeface.create("monospace" + getFontWeightSuffix(font.fontWeight), fontStyle);
                 break;
 
             default:
                 result = loadFontFromFile(fonts[i]);
+                if (fontStyle) {
+                    result = android.graphics.Typeface.create(result, fontStyle);
+                }
                 break;
-        }
-
-        if (result) {
-            return result;
         }
     }
 
-    return null;
+    if (fontStyle && !result) {
+        result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
+    }
+
+    return result;
 }
 
 function getFontWeightSuffix(fontWeight: string): string {
