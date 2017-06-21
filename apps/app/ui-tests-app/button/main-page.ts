@@ -17,5 +17,6 @@ export function loadExamples() {
     examples.set("background", "button/background");
     examples.set("border-playground","button/border-playground");
     examples.set("issue-4287","button/issue-4287");
+    examples.set("issue-4385","button/issue-4385");
     return examples;
 }
