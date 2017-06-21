@@ -626,7 +626,6 @@ class UINavigationControllerImpl extends UINavigationController {
         return null;
     }
 
-
     /**
      * Support Escape: A two-finger Z-shaped gesture that dismisses a modal dialog, or goes back one level in a navigation hierarchy.
      * https://developer.apple.com/library/content/featuredarticles/ViewControllerPGforiPhoneOS/SupportingAccessibility.html#//apple_ref/doc/uid/TP40007457-CH12-SW5
