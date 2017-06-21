@@ -36,10 +36,6 @@ Using a TextField requires the text-field module.
 {%snippet binding-secure-property%}
 ### Setting the maxLength property of a TextField
 ```
-<Page loaded="pageLoaded">
-    <StackLayout>
-        <TextField autocorrect="false" hint="Setting Max text length(max 3 characters)" maxLength="3" />
-        <TextField autocorrect="false"  hint="Setting Max text length(max 3 characters) with secure='true'" maxLength="3" secure="true" />
-    </StackLayout>
-</Page>
+<TextField autocorrect="false" hint="Setting Max text length(max 3 characters)" maxLength="3" />
+<TextField autocorrect="false"  hint="Setting Max text length(max 3 characters) with secure='true'" maxLength="3" secure="true" />
 ```
