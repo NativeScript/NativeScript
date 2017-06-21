@@ -221,6 +221,19 @@ export function test_Setting_ActionItemsWithNumberAsText_doesnt_thrown() {
     TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
 }
 
+export function test_ActionBar_set_title_as_number_doesnt_thrown() {
+    let gotException = false;
+
+    try {
+        helper.navigateToModule("ui/action-bar/ActionBar_NumberAsTitle");
+    }
+    catch (e) {
+        gotException = true;
+    }
+
+    TKUnit.assert(!gotException, "Expected: false, Actual: " + gotException);
+};
+
 export function test_CanDefineEverythingAsContentBetweenTheTwoTags() {
 
     helper.navigateToModuleAndRunTest("ui/action-bar/ActionBar_BetweenTags", undefined, (page: Page) => {
