@@ -132,13 +132,9 @@ export function test_setInterval_callbackCalledWithExtraArgs() {
     let expected: number = 4;
     let rnd: number = Math.random();
 
-    // >> timer-set-expression
     const id = timer.setInterval((arg) => {
-        // >> (hide)
         counter += arg === rnd ? 1 : -1;
-        // << (hide)
     }, 50, rnd);
-    // << timer-set-expression
 
     TKUnit.waitUntilReady(() => counter >= expected, 0.25, false);
     timer.clearInterval(id);
