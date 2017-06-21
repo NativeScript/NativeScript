@@ -12,6 +12,9 @@ previous_url: /ApiReference/timer/HOW-TO
 ### Evaluates an expression after 0 milliseconds.
 {%snippet timer-set-zero%}
 
+### Evaluates an expression after 0 milliseconds.
+{%snippet timer-set-zero-args%}
+
 ### Evaluates an expression after a specified number of milliseconds.
 {%snippet timer-set-ten%}
 

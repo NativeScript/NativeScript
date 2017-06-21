@@ -68,8 +68,8 @@ npm run setup
 # After changes in the modules or the tests
 tsc
 
-tns livesync ios --path tests
-tns livesync android --path tests
+tns run ios --path tests
+tns run android --path tests
 ```
 
 ## Platform declarations
