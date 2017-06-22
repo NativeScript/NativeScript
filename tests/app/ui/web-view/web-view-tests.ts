@@ -87,6 +87,44 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
         // << webview-localfile
     }
 
+    public testLoadLocalFileWithSpaceInPath(done) {
+        let webView = this.testView;
+
+        // >> webview-localfile
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            // >> (hide)
+            let actual;
+            let expectedTitle = 'MyTitle';
+            let expectedHtml = '<span style="color:red">TestÖ with Spaces</span>';
+
+            if (webView.ios) {
+                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
+            } else if (webView.android) {
+                actual = webView.android.getTitle();
+            }
+
+            try {
+                TKUnit.assertNull(args.error, args.error);
+                TKUnit.assertEqual(actual, webView.ios ? expectedHtml : expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+            // << (hide)
+
+            let message;
+            if (!args.error) {
+                message = "WebView finished loading " + args.url;
+            }
+            else {
+                message = "Error loading " + args.url + ": " + args.error;
+            }
+        });
+        webView.src = "~/ui/web-view/test with spaces.html";
+        // << webview-localfile
+    }
+
     public testLoadHTMLString(done) {
         let webView = this.testView;
 
