@@ -1,6 +1,21 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 3.1.0 (2017, June 22)
+
+### Fixed
+
+- [(# 4147)](https://github.com/NativeScript/NativeScript/issues/4147) SearchBar style creates error
+- [(# 4272)](https://github.com/NativeScript/NativeScript/issues/4272) SearchBar is not displayed on Android API 24
+- [(# 4287)](https://github.com/NativeScript/NativeScript/issues/4287) Margin value with TextWrap overlapping problem
+- [(# 4266)](https://github.com/NativeScript/NativeScript/issues/4266) IOS: Wrapped text in Button not properly centered
+- [(# 3354)](https://github.com/NativeScript/NativeScript/issues/3354) IOS: TextView hint becomes text
+
+### New
+
+- [(# 3614)](https://github.com/NativeScript/NativeScript/issues/3614) TextField `maxLength` property support
+- [(# 3957)](https://github.com/NativeScript/NativeScript/issues/3957) http.getFile(url) should strip query string from saved file name
+
 ## 3.0.1 (2017, May 23)
 
 ### Fixed
