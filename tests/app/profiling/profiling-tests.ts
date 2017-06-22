@@ -150,8 +150,9 @@ export function test_profile_decorator_handles_exceptions() {
 }
 
 export function test_start_stop_performance() {
-    resetProfiles();
     retry(5, () => {
+        resetProfiles();
+
         const count = 10000;
         const name = "test_start_stop_performance";
 
@@ -167,8 +168,9 @@ export function test_start_stop_performance() {
 };
 
 export function test_profile_decorator_performance() {
-    resetProfiles();
     retry(5, () => {
+        resetProfiles();
+
         var start = Date.now();
         const count = 10000;
         const test = new TestClass();
@@ -186,9 +188,9 @@ export function test_profile_decorator_performance() {
 }
 
 export function test_reentrancy() {
-    resetProfiles();
     // reentrant
     retry(5, () => {
+        resetProfiles();
         const test = new TestClass();
         test.reentrant();
     });
