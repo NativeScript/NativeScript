@@ -2,6 +2,7 @@
 import { MainPageViewModel } from "./main-page-view-model";
 import { Page } from "tns-core-modules/ui/page";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
+import { isAndroid } from "tns-core-modules/platform"
 
 export function pageLoaded(args: EventData) {
     const page = <Page>args.object;
@@ -35,9 +36,11 @@ export function pageLoaded(args: EventData) {
 
     const parent = page.getViewById('parentLayout');
     const searchBar = page.getViewById('textView');
-    if (parent.android) {
+    if (isAndroid) {
         parent.android.setFocusableInTouchMode(true);
         parent.android.setFocusable(true);
         searchBar.android.clearFocus();
+    }else{
+        parent.style.marginBottom=10;
     }
 }

@@ -1,5 +1,10 @@
 <Page 
     xmlns="http://schemas.nativescript.org/tns.xsd" loaded="navigatingTo">
+    <Page.actionBar>
+        <ActionBar title="4385">
+            <NavigationButton text="Go Back" android.systemIcon="ic_menu_back" tap="onNavBtnTap"/>
+        </ActionBar>
+    </Page.actionBar>
     <StackLayout>
         <!--In xml the new line can be set with &#xA;-->
         <Button style="text-align:center; background-color:yellow" textWrap="true" class="btnIcon" >
@@ -14,7 +19,7 @@
                 </formattedString>
             </Button.formattedText>
         </Button>
-        <Button style="text-align:right; background-color:green" textWrap="true" class="btnIcon" >
+        <Button style="text-align:center; background-color:green" textWrap="true" class="btnIcon" >
             <button.formattedText>
                 <formattedString>
                     <formattedString.spans>

@@ -2,12 +2,12 @@ import { Observable } from "tns-core-modules/data/observable";
 import { Button } from "tns-core-modules/ui/button";
 import { Color } from "tns-core-modules/color";
 import { WrapLayout } from "tns-core-modules/ui/layouts/wrap-layout";
-import * as dialogs from "tns-core-modules/ui/dialogs";
+import { alert } from "tns-core-modules/ui/dialogs";
 import * as frame from "tns-core-modules/ui/frame";
 import * as platform from "tns-core-modules/platform";
 
 export class TestPageMainViewModel extends Observable {
-    private _colors = ["#ff0000", "#0000cc", "#33cc33", "#33cc33"];
+    private _colors = ["#0000cc", "#33cc33", "#0000cc"];
 
     public static APP_NAME: string = "ui-tests-app";
     public basePath: string = "";
@@ -28,7 +28,7 @@ export class TestPageMainViewModel extends Observable {
         if (this.examples.has(selectedExample)) {
             this.navigateToExample(this.examples.get(selectedExample));
         } else {
-            dialogs.alert("Cannot find example: " + selectedExample);
+            alert("Cannot find example: " + selectedExample);
         }
     }
 
@@ -36,7 +36,7 @@ export class TestPageMainViewModel extends Observable {
         try {
             frame.topmost().navigate(TestPageMainViewModel.APP_NAME + "/" + exampleFullPath);
         } catch (error) {
-            dialogs.alert("Cannot find example: " + exampleFullPath);
+            alert("Cannot find example: " + exampleFullPath);
 
         }
     }
@@ -55,17 +55,19 @@ export class TestPageMainViewModel extends Observable {
 
         this.examples.forEach((element, key) => {
             var btn = new Button();
-
             if (platform.isAndroid) {
                 btn.style.height = 25;
                 btn.style.fontSize = 10;
-                btn.style.margin = "0";
-                btn.style.padding = "0";
+                btn.style.padding = 0;
             } else {
-                btn.style.padding = "5";
+                btn.style.padding = 5;
             }
+            btn.style.marginRight = 5;
+            btn.style.marginBottom = 5;
 
-            btn.style.color = new Color(this._colors[count++ % 3]);
+            btn.style.color = new Color("white");
+            btn.style.backgroundColor = new Color(this._colors[count++ % 3]);
+            btn.style.borderRadius = 5;
             btn.on(Button.tapEvent, function (eventData) {
                 let text = btn.text;
                 this.loadExample(text);
