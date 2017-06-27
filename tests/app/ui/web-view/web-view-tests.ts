@@ -90,9 +90,7 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
     public testLoadLocalFileWithSpaceInPath(done) {
         let webView = this.testView;
 
-        // >> webview-localfile
         webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
-            // >> (hide)
             let actual;
             let expectedTitle = 'MyTitle';
             let expectedHtml = '<span style="color:red">TestÖ with Spaces</span>';
@@ -111,7 +109,6 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             catch (e) {
                 done(e);
             }
-            // << (hide)
 
             let message;
             if (!args.error) {
@@ -122,7 +119,6 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             }
         });
         webView.src = "~/ui/web-view/test with spaces.html";
-        // << webview-localfile
     }
 
     public testLoadHTMLString(done) {
