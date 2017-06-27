@@ -99,7 +99,7 @@ function createTypeface(font: Font): android.graphics.Typeface {
     //http://stackoverflow.com/questions/19691530/valid-values-for-androidfontfamily-and-what-they-map-to
     const fonts = parseFontFamily(font.fontFamily);
     let result = null;
-    for (let i = 0; i < fonts.length && !result; i++) {
+    for (let i = 0; i < fonts.length; i++) {
         switch (fonts[i].toLowerCase()) {
             case genericFontFamilies.serif:
                 result = android.graphics.Typeface.create("serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
@@ -116,15 +116,19 @@ function createTypeface(font: Font): android.graphics.Typeface {
 
             default:
                 result = loadFontFromFile(fonts[i]);
-                if (fontStyle) {
+                if (result && fontStyle) {
                     result = android.graphics.Typeface.create(result, fontStyle);
                 }
                 break;
         }
+
+        if (result) {
+            // Found the font!
+            break;
+        }
     }
 
-    if (fontStyle && !result) {
-        // result = android.graphics.Typeface.create(result, fontStyle);
+    if (!result) {
         result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
     }
 
