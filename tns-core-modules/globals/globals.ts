@@ -88,7 +88,7 @@ function registerOnGlobalContext(name: string, module: string): void {
 
 let snapshotGlobals;
 export function install() {
-    if ((<any>global).__snapshotEnabled) {
+    if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
         if (!snapshotGlobals) {
             // require in snapshot mode is cheap
             var timer: typeof timerModule = require("timer");
