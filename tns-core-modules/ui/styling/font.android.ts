@@ -147,14 +147,20 @@ function createTypeface(font: Font): android.graphics.Typeface {
 
             default:
                 result = loadFontFromFile(fonts[i]);
-                if (fontStyle) {
+                if (result && fontStyle) {
                     result = android.graphics.Typeface.create(result, fontStyle);
                 }
                 break;
         }
+
+        // Found font!
+        if (result) {
+            break;
+        }
     }
 
-    if (fontStyle && !result) {
+    if (!result) {
+        // fallback to sans-serif font with weight and style
         result = android.graphics.Typeface.create("sans-serif" + getFontWeightSuffix(font.fontWeight), fontStyle);
     }
 
