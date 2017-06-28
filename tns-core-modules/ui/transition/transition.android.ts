@@ -149,19 +149,21 @@ export function _setAndroidFragmentTransitions(cachePagesOnNavigate: boolean, na
         useLollipopTransition = false;
     }
 
-    if (useLollipopTransition) {
-        // setEnterTransition: Enter
-        // setExitTransition: Exit
-        // setReenterTransition: Pop Enter, same as Exit if not specified
-        // setReturnTransition: Pop Exit, same as Enter if not specified
-
+    if (_sdkVersion() >= 21) {
         newFragment.setAllowEnterTransitionOverlap(true);
         newFragment.setAllowReturnTransitionOverlap(true);
         if (currentFragment) {
             currentFragment.setAllowEnterTransitionOverlap(true);
             currentFragment.setAllowReturnTransitionOverlap(true);
         }
+    }
 
+    if (useLollipopTransition) {
+        // setEnterTransition: Enter
+        // setExitTransition: Exit
+        // setReenterTransition: Pop Enter, same as Exit if not specified
+        // setReturnTransition: Pop Exit, same as Enter if not specified
+        
         if (name.indexOf("slide") === 0) {
             let direction = name.substr("slide".length) || "left"; //Extract the direction from the string
             switch (direction) {
