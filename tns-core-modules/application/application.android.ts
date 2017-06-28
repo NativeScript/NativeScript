@@ -185,7 +185,7 @@ function initLifecycleCallbacks() {
             androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
 
             if (hasListeners(displayedEvent)) {
-                let rootView = activity.findViewById((<any>android).R.id.content);
+                const rootView = activity.getWindow().getDecorView().getRootView();
                 let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
                     onGlobalLayout() {
                         notify({ eventName: displayedEvent, object: androidApp, activity });
