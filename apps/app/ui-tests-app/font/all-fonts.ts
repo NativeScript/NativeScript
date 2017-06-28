@@ -6,7 +6,8 @@ import { Label } from "tns-core-modules/ui/label";
 import { FontStyle, FontWeight } from "tns-core-modules/ui/enums";
 import * as typeUtils from "tns-core-modules/utils/types";
 import { Color } from "tns-core-modules/color";
-import * as font from "tns-core-modules/ui/styling/font";
+import * as utils from "tns-core-modules/utils/utils";
+import { isIOS } from "tns-core-modules/platform";
 
 const genericFontFamilies = [
     "system",
@@ -46,18 +47,20 @@ let compareIgnoreCase = function (a, b) {
     return a.toLowerCase().localeCompare(b.toLowerCase());
 };
 
-if (font.ios) {
-    // for (let f = 0; f < embeddedFontNames.length; f++) {
-    //     font.ios.registerFont(`fonts/${embeddedFontNames[f]}.ttf`);
-    // }
+if (isIOS) {
+    const nsFontFamilies = utils.ios.getter(UIFont, UIFont.familyNames);
+    for (let i = 0; i < nsFontFamilies.count; i++) {
+        const family = nsFontFamilies.objectAtIndex(i);
+        fontFamilies.push(family)
 
-    let font_internal = <any>font;
-    font_internal.ensureSystemFontSets();
+        const nsFonts = UIFont.fontNamesForFamilyName(family);
+        for (let j = 0; j < nsFonts.count; j++) {
+            const font = nsFonts.objectAtIndex(j);
+            fontNames.push(font)
+        }
+    }
 
-    (<Set<string>>font_internal.systemFontFamilies).forEach(f => fontFamilies.push(f));
     fontFamilies = fontFamilies.sort(compareIgnoreCase);
-
-    (<Set<string>>font_internal.systemFonts).forEach(f => fontNames.push(f));
     fontNames = fontNames.sort(compareIgnoreCase);
 }
 
@@ -82,8 +85,7 @@ function generateLabels(layout: StackLayout) {
         }
     }
 
-    if (fontFamilies.length > 0)
-    {
+    if (fontFamilies.length > 0) {
         layout.addChild(prepareTitle("Font Families", 24));
     }
     for (let f = 0; f < fontFamilies.length; f++) {
@@ -134,12 +136,12 @@ function prepareLabel(fontFamily: string, fontStyle: string, fontWeight: string)
     let fontStyleCss = fontStyle !== FontStyle.normal ? `font-style: ${fontStyle}; ` : "";
     let fontWeightCss = fontWeight !== FontWeight.normal ? `font-weight: ${fontWeight}; ` : "";
     let css = `${fontFamilyCss}${fontStyleCss}${fontWeightCss}`;
-    label.text = `${typeUtils.getClass(label) } {${css}};`;
+    label.text = `${typeUtils.getClass(label)} {${css}};`;
     label.textWrap = true;
     label.style.textAlignment = "left";
     label.borderWidth = 1;
     label.borderColor = black;
-    label.style.padding = "2"; 
+    label.style.padding = "2";
     label.setInlineStyle(css);
     label.on("loaded", args => {
         let sender = <Label>args.object;
