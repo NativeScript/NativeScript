@@ -117,16 +117,16 @@ export function enable(mode: InstrumentationMode = "counters") {
     }[mode];
 }
 
-if (!(<any>global).__snapshot) {
+try {
+    const appConfig = require("~/package.json");
+    if (appConfig && appConfig.profiling) {
+        enable(appConfig.profiling);
+    }
+} catch(e1) {
     try {
-        const appConfig = global.require("~/package.json");
-        if (appConfig && appConfig.profiling) {
-            if (appConfig && appConfig.profiling) {
-                enable(appConfig.profiling);
-            }
-        }
-    } catch(e) {
-            console.log("Profiling startup failed to figure out defaults from package.json, error: " + e);
+        console.log("Profiling startup failed to figure out defaults from package.json, error: " + e1);
+    } catch(e2) {
+        // We can get here if an exception is thrown in the mksnapshot as there is no console there.
     }
 }
 
