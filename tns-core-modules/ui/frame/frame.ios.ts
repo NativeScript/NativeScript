@@ -391,10 +391,10 @@ export class Frame extends FrameBase {
         this._ios.controller.navigationBar.autoresizingMask = UIViewAutoresizing.None;
         this._ios.controller.navigationBar.removeConstraints((<any>this)._ios.controller.navigationBar.constraints);
         this._ios.controller.navigationBar.frame = CGRectMake(
-            utils.layout.toDeviceIndependentPixels(this._ios.controller.navigationBar.frame.origin.x),
+            this._ios.controller.navigationBar.frame.origin.x,
             utils.layout.toDeviceIndependentPixels(statusBarHeight),
-            utils.layout.toDeviceIndependentPixels(this._ios.controller.navigationBar.frame.size.width),
-            utils.layout.toDeviceIndependentPixels(this._ios.controller.navigationBar.frame.size.height));
+            this._ios.controller.navigationBar.frame.size.width,
+            this._ios.controller.navigationBar.frame.size.height);
     }
 }
 
