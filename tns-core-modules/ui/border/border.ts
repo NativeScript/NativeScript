@@ -41,4 +41,4 @@ export class Border extends ContentView implements BorderDefinition {
     }
 }
 
-// Border.prototype.recycleNativeView = true;
+Border.prototype.recycleNativeView = true;

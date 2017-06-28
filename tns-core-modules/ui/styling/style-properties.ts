@@ -555,16 +555,16 @@ backgroundInternalProperty.register(Style);
 // const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 export const backgroundImageProperty = new CssProperty<Style, string>({
     name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withImage(newValue);
+        const background = target.backgroundInternal.withImage(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundImageProperty.register(Style);
 
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withColor(newValue);
+        const background = target.backgroundInternal.withColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 backgroundColorProperty.register(Style);
@@ -582,24 +582,24 @@ export namespace BackgroundRepeat {
 export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
     name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse,
     valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withRepeat(newValue);
+        const background = target.backgroundInternal.withRepeat(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundRepeatProperty.register(Style);
 
 export const backgroundSizeProperty = new CssProperty<Style, string>({
     name: "backgroundSize", cssName: "background-size", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withSize(newValue);
+        const background = target.backgroundInternal.withSize(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundSizeProperty.register(Style);
 
 export const backgroundPositionProperty = new CssProperty<Style, string>({
     name: "backgroundPosition", cssName: "background-position", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withPosition(newValue);
+        const background = target.backgroundInternal.withPosition(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundPositionProperty.register(Style);
@@ -689,32 +689,32 @@ borderColorProperty.register(Style);
 
 export const borderTopColorProperty = new CssProperty<Style, Color>({
     name: "borderTopColor", cssName: "border-top-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopColor(newValue);
+        const background = target.backgroundInternal.withBorderTopColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderTopColorProperty.register(Style);
 
 export const borderRightColorProperty = new CssProperty<Style, Color>({
     name: "borderRightColor", cssName: "border-right-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderRightColor(newValue);
+        const background = target.backgroundInternal.withBorderRightColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderRightColorProperty.register(Style);
 
 export const borderBottomColorProperty = new CssProperty<Style, Color>({
     name: "borderBottomColor", cssName: "border-bottom-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomColor(newValue);
+        const background = target.backgroundInternal.withBorderBottomColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderBottomColorProperty.register(Style);
 
 export const borderLeftColorProperty = new CssProperty<Style, Color>({
     name: "borderLeftColor", cssName: "border-left-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderLeftColor(newValue);
+        const background = target.backgroundInternal.withBorderLeftColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderLeftColorProperty.register(Style);
@@ -763,8 +763,8 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderTopWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopWidth(value);
+        const background = target.backgroundInternal.withBorderTopWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderTopWidthProperty.register(Style);
@@ -778,8 +778,8 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderRightWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderRightWidth(value);
+        const background = target.backgroundInternal.withBorderRightWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderRightWidthProperty.register(Style);
@@ -793,8 +793,8 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderBottomWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomWidth(value);
+        const background = target.backgroundInternal.withBorderBottomWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderBottomWidthProperty.register(Style);
@@ -808,8 +808,8 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderLeftWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderLeftWidth(value);
+        const background = target.backgroundInternal.withBorderLeftWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderLeftWidthProperty.register(Style);
@@ -853,8 +853,8 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopLeftRadius(value);
+        const background = target.backgroundInternal.withBorderTopLeftRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderTopLeftRadiusProperty.register(Style);
@@ -865,8 +865,8 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopRightRadius(value);
+        const background = target.backgroundInternal.withBorderTopRightRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderTopRightRadiusProperty.register(Style);
@@ -877,8 +877,8 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomRightRadius(value);
+        const background = target.backgroundInternal.withBorderBottomRightRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderBottomRightRadiusProperty.register(Style);
@@ -889,8 +889,8 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomLeftRadius(value);
+        const background = target.backgroundInternal.withBorderBottomLeftRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderBottomLeftRadiusProperty.register(Style);
@@ -914,8 +914,8 @@ export const clipPathProperty = new CssProperty<Style, string>({
             throw new Error("clip-path is not valid.");
         }
 
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withClipPath(newValue);
+        const background = target.backgroundInternal.withClipPath(newValue);
+        target.backgroundInternal = background;
     }
 });
 clipPathProperty.register(Style);
@@ -929,7 +929,7 @@ function isFloatValueConverter(value: string): number {
     return newValue;
 }
 
-export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: Number.NaN, valueConverter: isFloatValueConverter });
+export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", valueConverter: isFloatValueConverter });
 zIndexProperty.register(Style);
 
 function opacityConverter(value: any): number {

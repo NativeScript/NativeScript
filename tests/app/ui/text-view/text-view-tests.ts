@@ -35,6 +35,10 @@ export function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << observable-declare
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(_createTextViewFunc);
+}
+
 var _createTextViewFunc = function (): textViewModule.TextView {
     // >> text-view-create
     var textView = new textViewModule.TextView();

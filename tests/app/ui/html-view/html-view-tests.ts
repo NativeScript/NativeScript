@@ -6,6 +6,10 @@ import * as types from "tns-core-modules/utils/types";
 import * as htmlViewModule from "tns-core-modules/ui/html-view";
 // << htmlview-require
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new htmlViewModule.HtmlView());
+}
+
 var _createHtmlViewFunc = function (): htmlViewModule.HtmlView {
     // >> htmlview-create
     var htmlView = new htmlViewModule.HtmlView();

@@ -95,7 +95,7 @@ export abstract class TimePickerBase extends View implements TimePickerDefinitio
     public maxMinute: number;
 }
 
-// TimePickerBase.prototype.recycleNativeView = true;
+TimePickerBase.prototype.recycleNativeView = true;
 
 export var minHourProperty = new Property<TimePickerBase, number>({
     name: "minHour", defaultValue: 0, valueChanged: (picker, oldValue, newValue) => {

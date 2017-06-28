@@ -5,6 +5,8 @@
     NavigationButton, IOSActionItemSettings, AndroidActionItemSettings, AndroidActionBarSettings
 } from ".";
 
+import { profile } from "../../profiling";
+
 export * from "../core/view";
 
 import { View, ViewBase, Property, unsetValue, horizontalAlignmentProperty, verticalAlignmentProperty } from "../core/view";
@@ -262,8 +264,6 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
 
             if (this._actionView) {
                 this._addView(this._actionView);
-                this._actionView.style[horizontalAlignmentProperty.cssName] = "center";
-                this._actionView.style[verticalAlignmentProperty.cssName] = "middle";
             }
 
             if (this._actionBar) {
@@ -279,6 +279,15 @@ export class ActionItemBase extends ViewBase implements ActionItemDefinition {
         if (value !== this._actionBar) {
             this._actionBar = value;
         }
+    }
+
+    @profile
+    public onLoaded() {
+        if (this._actionView) {
+            this._actionView.style[horizontalAlignmentProperty.cssName] = "center";
+            this._actionView.style[verticalAlignmentProperty.cssName] = "middle";
+        }
+        super.onLoaded();
     }
 
     public _raiseTap() {

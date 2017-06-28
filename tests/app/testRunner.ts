@@ -217,9 +217,6 @@ allTests["HTML-VIEW"] = htmlViewTests;
 import * as repeaterTests from "./ui/repeater/repeater-tests";
 allTests["REPEATER"] = repeaterTests;
 
-import * as searchBarTests from "./ui/search-bar/search-bar-tests";
-allTests["SEARCH-BAR"] = searchBarTests;
-
 import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
 allTests["SEGMENTED-BAR"] = segmentedBarTests;
 
@@ -237,6 +234,9 @@ import * as transitionTests from "./navigation/transition-tests";
 if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
     allTests["TANSITIONS"] = transitionTests;
 }
+
+import * as searchBarTests from "./ui/search-bar/search-bar-tests";
+allTests["SEARCH-BAR"] = searchBarTests;
 
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;

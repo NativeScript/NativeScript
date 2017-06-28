@@ -90,7 +90,7 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
     }
 }
 
-// SegmentedBarBase.prototype.recycleNativeView = true;
+SegmentedBarBase.prototype.recycleNativeView = true;
 
 /**
  * Gets or sets the selected index dependency property of the SegmentedBar.

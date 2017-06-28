@@ -31,7 +31,7 @@
             "appRoot": "${workspaceRoot}",
             "sourceMaps": true,
             "watch": true,
-            "stopOnEntry": false,
+            "stopOnEntry": true,
             "tnsArgs": [
                 "--sync-all-files"
             ]

@@ -18,6 +18,10 @@ export function test_default_TNS_values() {
     TKUnit.assertEqual(progress.maxValue, 100, "Default progress.maxValue");
 }
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new progressModule.Progress());
+}
+
 export function test_default_native_values() {
     var progress = new progressModule.Progress();
 
