@@ -214,7 +214,7 @@ export function assertNotEqual(actual: any, expected: any, message?: string) {
     }
 }
 
-export function assertEqual<T extends { equals?(arg: T): boolean }>(actual: T, expected: T, message: string = '') {
+export function assertEqual<T extends { equals?(arg: T): boolean } | any>(actual: T, expected: T, message: string = '') {
     if (!types.isNullOrUndefined(actual)
         && !types.isNullOrUndefined(expected)
         && types.getClass(actual) === types.getClass(expected)

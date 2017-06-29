@@ -1,5 +1,5 @@
 import { WebView as WebViewDefinition, LoadEventData, NavigationType } from ".";
-import { View, Property } from "../core/view";
+import { View, Property, EventData } from "../core/view";
 import { File, knownFolders, path } from "../../file-system";
 
 export { File, knownFolders, path, NavigationType };
@@ -91,6 +91,11 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
     set url(value: string) {
         throw new Error("Property url of WebView is deprecated. Use src instead")
     }
+}
+export interface WebViewBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "loadFinished", callback: (args: LoadEventData) => void, thisArg?: any);
+    on(event: "loadStarted", callback: (args: LoadEventData) => void, thisArg?: any);
 }
 
 srcProperty.register(WebViewBase);

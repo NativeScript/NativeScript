@@ -1,6 +1,7 @@
 ﻿import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
-    AndroidApplication as AndroidApplicationDefinition
+    AndroidApplication as AndroidApplicationDefinition,
+    AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
 } from ".";
 
 import {
@@ -101,6 +102,19 @@ export class AndroidApplication extends Observable implements AndroidApplication
             delete this._registeredReceivers[intentFilter];
         }
     }
+}
+export interface AndroidApplication {
+    on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+    on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+    on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
+    on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+    on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
 }
 
 const androidApp = new AndroidApplication();

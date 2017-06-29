@@ -45,7 +45,7 @@ export interface CssAnimationPropertyOptions<T, U> {
     readonly valueConverter?: (value: string) => U;
 }
 
-export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
+export class Property<T extends ViewBase, U> {
     constructor(options: PropertyOptions<T, U>);
 
     public readonly getDefault: symbol;
@@ -55,11 +55,15 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
     public nativeValueChange(T, U): void;
     public isSet(instance: T): boolean;
 }
+export interface Property<T extends ViewBase, U> extends TypedPropertyDescriptor<U> {
+}
 
-export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements TypedPropertyDescriptor<U> {
+export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> {
     constructor(options: CoerciblePropertyOptions<T, U>);
 
     public readonly coerce: (target: T) => void;
+}
+export interface CoercibleProperty<T extends ViewBase, U> extends TypedPropertyDescriptor<U> {
 }
 
 export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {

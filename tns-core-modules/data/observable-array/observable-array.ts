@@ -324,3 +324,7 @@ export class ObservableArray<T> extends observable.Observable implements observa
         return this._array.reduceRight(callbackfn, initialValue);
     }
 }
+export interface ObservableArray<T> {
+    on(eventNames: string, callback: (data: observable.EventData) => void, thisArg?: any);
+    on(event: "change", callback: (args: observableArrayDef.ChangedData<T>) => void, thisArg?: any);
+}

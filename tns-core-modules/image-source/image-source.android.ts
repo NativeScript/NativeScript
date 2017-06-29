@@ -242,7 +242,7 @@ export function fromNativeSource(source: any): ImageSource {
     return image.setNativeSource(source) ? image : null;
 }
 
-export function fromUrl(url: string): Promise<ImageSource> {
+export function fromUrl(url: string): Promise<ImageSourceDefinition> {
     ensureHttp();
     return http.getImage(url);
 }
