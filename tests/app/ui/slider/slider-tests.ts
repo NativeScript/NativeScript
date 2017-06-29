@@ -48,6 +48,10 @@ function detachValueChangedEvents(slider: Slider) {
     slider.off(MAX_VALUE_EVENT);
 }
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new Slider());
+}
+
 export function test_set_TNS_value_updates_native_value() {
     // >> article-creating-slider
     const slider = new Slider();

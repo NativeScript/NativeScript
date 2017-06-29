@@ -14,6 +14,7 @@ interface ClickListener {
 
 let ClickListener: ClickListener;
 let APILEVEL: number;
+let AndroidButton: typeof android.widget.Button;
 
 function initializeClickListener(): void {
     if (ClickListener) {
@@ -34,17 +35,19 @@ function initializeClickListener(): void {
 
     ClickListener = ClickListenerImpl;
     APILEVEL = android.os.Build.VERSION.SDK_INT;
+    AndroidButton = android.widget.Button;
 }
 
 export class Button extends ButtonBase {
     nativeView: android.widget.Button;
 
+    private _stateListAnimator: any;
     private _highlightedHandler: (args: TouchGestureEventData) => void;
 
     @profile
     public createNativeView() {
         initializeClickListener();
-        const button = new android.widget.Button(this._context);
+        const button = new AndroidButton(this._context);
         const clickListener = new ClickListener(this);
         button.setOnClickListener(clickListener);
         (<any>button).clickListener = clickListener;
@@ -52,13 +55,23 @@ export class Button extends ButtonBase {
     }
 
     public initNativeView(): void {
-        (<any>this.nativeView).clickListener.owner = this;
+        const nativeView = this.nativeView;
+        (<any>nativeView).clickListener.owner = this;
         super.initNativeView();
     }
 
     public disposeNativeView() {
         (<any>this.nativeView).clickListener.owner = null;
         super.disposeNativeView();
+    }
+
+    public resetNativeView(): void {
+        super.resetNativeView();
+
+        if (this._stateListAnimator && APILEVEL >= 21) {
+            (<any>this.nativeView).setStateListAnimator(this._stateListAnimator);
+            this._stateListAnimator = undefined;
+        }
     }
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
@@ -108,15 +121,17 @@ export class Button extends ButtonBase {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 
-    [zIndexProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
-    }
     [zIndexProperty.setNative](value: number) {
-        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
         // API >= 21
         if (APILEVEL >= 21) {
-            (<any>this.nativeView).setStateListAnimator(null);
+            const nativeView = this.nativeView;
+            if (!this._stateListAnimator) {
+                this._stateListAnimator = (<any>nativeView).getStateListAnimator();
+            }
+            (<any>nativeView).setStateListAnimator(null);
         }
+
+        org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
     }
 
     [textAlignmentProperty.setNative](value: TextAlignment) {

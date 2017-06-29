@@ -5,10 +5,10 @@
             <NavigationButton text="Go Back" android.systemIcon="ic_menu_back" tap="onNavBtnTap"/>
         </ActionBar>
     </Page.actionBar>
-    <GridLayout rows="auto auto auto auto *">
-        <SearchBar row="0" id="bg-color" hint="bg-color" text="" textFieldHintColor="green" />
-        <SearchBar row="1" class="color" hint="color" text="color" />
-        <SearchBar row="2" hint="Hint Text" id="searchBar" textFieldHintColor="#FFFFFF" style="color:#FFFFFF;background-color: #795548;height:60" />
-        <SearchBar row="3" hint="Hint Text" textFieldHintColor="#FFFFFF" textFieldBackgroundColor="red" style="background-color:green;" />
-    </GridLayout>
+    <StackLayout>
+        <SearchBar id="bg-color" hint="bg-color" text="" textFieldHintColor="green" />
+        <SearchBar class="color" hint="color" text="color" />
+        <SearchBar hint="Hint Text" id="searchBar" textFieldHintColor="#FFFFFF" style="color:#FFFFFF;background-color: #795548;height:60" />
+        <SearchBar hint="Hint Text" textFieldHintColor="#FFFFFF" textFieldBackgroundColor="red" style="background-color:green;" />
+    </StackLayout>
 </Page>

@@ -27,7 +27,7 @@ export class DockLayoutBase extends LayoutBase implements DockLayoutDefinition {
     }
 }
 
-// DockLayoutBase.prototype.recycleNativeView = true;
+DockLayoutBase.prototype.recycleNativeView = true;
 
 const dockConverter = makeParser<Dock>(makeValidator<Dock>("left", "top", "right", "bottom"));
 export const dockProperty = new Property<View, Dock>({

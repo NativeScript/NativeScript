@@ -29,6 +29,10 @@ export class LabelTest extends testModule.UITest<LabelModule.Label> {
         return label;
     }
 
+    public test_recycling() {
+        helper.nativeView_recycling_test(() => new LabelModule.Label());
+    }
+
     public test_Label_Members() {
         const label = new LabelModule.Label();
         TKUnit.assert(types.isDefined(label.text), "Label.text is not defined");

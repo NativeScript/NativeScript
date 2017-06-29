@@ -42,6 +42,20 @@ const enum ValueSource {
     Keyframe = 4
 }
 
+export function _getProperties(): Property<any, any>[] {
+    return getPropertiesFromMap(symbolPropertyMap) as Property<any, any>[];
+}
+
+export function _getStyleProperties(): CssProperty<any, any>[] {
+    return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
+}
+
+function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
+    const props = [];
+    Object.getOwnPropertySymbols(map).forEach(symbol => props.push(map[symbol]));
+    return props;
+}
+
 export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, definitions.Property<T, U> {
     private registered: boolean;
 
@@ -1112,11 +1126,9 @@ export function applyAllNativeSetters(view: ViewBase): void {
         }
 
         if (view[property.setNative]) {
-            if (view[property.getDefault]) {
-                const defaultValueKey = property.defaultValueKey;
-                if (!(defaultValueKey in style)) {
-                    style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
-                }
+            const defaultValueKey = property.defaultValueKey;
+            if (!(defaultValueKey in style)) {
+                style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
             }
 
             const value = style[symbol];

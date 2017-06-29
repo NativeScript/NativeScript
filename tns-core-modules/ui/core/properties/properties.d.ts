@@ -125,3 +125,15 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
 
 export function getSetProperties(view: ViewBase): [string, any][];
 export function getComputedCssValues(view: ViewBase): [string, any][];
+
+//@private
+/**
+ * @private get all properties defined on ViewBase
+ */
+export function _getProperties(): Property<any, any>[];
+
+/**
+ * @private get all properties defined on Style
+ */
+export function _getStyleProperties(): CssProperty<any, any>[];
+//@endprivate

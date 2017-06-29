@@ -128,7 +128,7 @@ export class Page extends PageBase {
     }
 
     public _tearDownUI(force?: boolean) {
-        const skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
+        const skipDetached = !force && this.frame && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
         if (!skipDetached) {
             super._tearDownUI();

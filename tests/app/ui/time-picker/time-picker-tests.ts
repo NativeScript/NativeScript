@@ -3,6 +3,7 @@ import * as testModule from "../../ui-test";
 import * as timePickerTestsNative from "./time-picker-tests-native";
 import * as color from "tns-core-modules/color";
 import * as platform from "tns-core-modules/platform";
+import * as helper from "../helper";
 
 // >> require-time-picker
 import * as timePickerModule from "tns-core-modules/ui/time-picker";
@@ -22,7 +23,11 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
         timePicker.id = "TimePicker";
         return timePicker;
     }
-    
+
+    public test_recycling() {
+        helper.nativeView_recycling_test(this.create);
+    }
+
     public test_DummyForCodeSnippet() {
         // >> declare-time-picker
         var timePicker = new timePickerModule.TimePicker();
@@ -30,12 +35,12 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
         timePicker.minute = 25;
         // << declare-time-picker
     }
-    
+
     private setUpTimePicker(hour?: number, minute?: number) {
         if (hour) {
             this.testView.hour = hour;
         }
-        
+
         if (minute) {
             this.testView.minute = minute;
         }
@@ -220,18 +225,18 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
     public testSetHourMinute_BeforeLoaded() {
         let expectedHour = 12;
         let expectedMinute = 34;
-        
+
         this.setUpTimePicker(expectedHour, expectedMinute);
-        
+
         assertTime(this.testView, expectedHour, expectedMinute);
     }
 
     public testTimeSetHourMinute_BeforeLoaded() {
         let expectedHour = 12;
         let expectedMinute = 34;
-        
+
         this.setUpTimePicker(expectedHour, expectedMinute);
-        
+
         TKUnit.assertEqual(this.testView.time.getHours(), expectedHour);
         TKUnit.assertEqual(this.testView.time.getMinutes(), expectedMinute);
     }
@@ -261,7 +266,7 @@ export class TimePickerTest extends testModule.UITest<timePickerModule.TimePicke
     public testSetTimeChangesHourAndMinute() {
         let expectedHour = 12;
         let expectedMinute = 34;
-        
+
         this.testView.time = new Date(0, 0, 0, expectedHour, expectedMinute);
         assertTime(this.testView, expectedHour, expectedMinute);
     }

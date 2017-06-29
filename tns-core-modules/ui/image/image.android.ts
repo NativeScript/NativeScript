@@ -70,13 +70,17 @@ export class Image extends ImageBase {
         super.disposeNativeView();
     }
 
-    public _createImageSourceFromSrc() {
+    public resetNativeView(): void {
+        super.resetNativeView();
+        this.nativeView.setImageMatrix(new android.graphics.Matrix());        
+    }
+
+    public _createImageSourceFromSrc(value: string | ImageSource) {
         const imageView = this.nativeView;
         if (!imageView) {
             return;
         }
 
-        let value = this.src;
         if (!value) {
             imageView.setUri(null, 0, 0, false, true);
             return;
@@ -90,7 +94,7 @@ export class Image extends ImageBase {
 
             if (isDataURI(value)) {
                 // TODO: Check with runtime what should we do in case of base64 string.
-                super._createImageSourceFromSrc();
+                super._createImageSourceFromSrc(value);
             } else if (isFileOrResourcePath(value)) {
                 if (value.indexOf(RESOURCE_PREFIX) === 0) {
                     imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async);
@@ -107,7 +111,7 @@ export class Image extends ImageBase {
                 imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true);
             }
         } else {
-            super._createImageSourceFromSrc();
+            super._createImageSourceFromSrc(value);
         }
     }
 
@@ -162,6 +166,6 @@ export class Image extends ImageBase {
         return undefined;
     }
     [srcProperty.setNative](value: any) {
-        this._createImageSourceFromSrc();
+        this._createImageSourceFromSrc(value);
     }
 }

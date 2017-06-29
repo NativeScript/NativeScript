@@ -17,6 +17,10 @@ export class Style extends Observable implements StyleDefinition {
         super();
     }
 
+    toString() {
+        return `${this.view}.style`;
+    }
+
     public fontInternal: Font;
     public backgroundInternal: Background;
 
