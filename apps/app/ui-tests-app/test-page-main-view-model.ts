@@ -24,11 +24,10 @@ export class TestPageMainViewModel extends Observable {
 
     protected selectExample(selectedExample: any) {
         console.log(" EXAMPLE: " + selectedExample);
-
         if (this.examples.has(selectedExample)) {
             this.navigateToExample(this.examples.get(selectedExample));
-        } else {
-            alert("Cannot find example: " + selectedExample);
+        } else if (selectedExample.indexOf("/") > 0) {
+            this.navigateToExample(selectedExample);
         }
     }
 
