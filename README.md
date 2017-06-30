@@ -15,6 +15,8 @@ Check out the links below to get started:
 * [Contributing](#contributing)
 * [Angular](#angular)
 
+> **IMPORTANT**: NativeScript is an inclusive community, and we expect all NativeScript community members, users, and contributors to treat each other respectfully. As such, all users of this repository must adhere to the [NativeScript community code of conduct](https://github.com/NativeScript/codeofconduct).
+
 ## For CTOs
 
 Making the right technology choices is key to success. Our [CTO’s guide to NativeScript](https://www.nativescript.org/ctos-guide) helps you understand why NativeScript is the right choice for your next mobile project.
