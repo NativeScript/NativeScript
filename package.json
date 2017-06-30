@@ -1,6 +1,6 @@
 {
   "name": "tns-core-modules-widgets",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Native widgets used in the NativeScript framework.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,8 +17,8 @@
   "homepage": "https://github.com/NativeScript/android-widgets#readme",
   "nativescript": {
     "platforms": {
-      "ios": "2.0.0",
-      "android": "2.0.0"
+      "ios": "3.0.0",
+      "android": "3.0.0"
     }
   }
 }

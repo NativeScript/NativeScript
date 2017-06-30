@@ -13,14 +13,3 @@ install:
 before_script:
   - export ANDROID_HOME=/usr/local/share/android-sdk
 script: ./build.sh $PACKAGE_VERSION
-before_deploy:
-  - cd ./dist/package/
-  - node ../../.travis/add-publishConfig.js next
-deploy:
-  skip_cleanup: true
-  provider: npm
-  email: nativescript@telerik.com
-  on:
-    branch: master
-  api_key:
-    secure: hVa2B3T89H5v1YIYzmcU+ucYLzDVWf17kI+wDMONW4JK0h/7RBNM+tiYYFp4t4yVE42uJVQMTT0DJfG4mbJG5MozABkADsrxW2LfRO05Qvg3F7LLLORSDuCl5WQBy/ncQaGsS/C5GZqwoRIMiRCFRdWEIgGa5erUduBuQ56tqAABT2WK85EpU9f/74mBmraVOQ+/x8nJFB2goUcGky4n2iXqj1lOT+pKSRlSlKnlNKjB43eSuHrbbjz6VzA7AJN/HqX0mxlxdWPQEhvnx1WmUymGTlmALY9LN0l0IpypTdrmCZS0EuqkCL4eoZss9w1E5ncMKKuSGasiRqAU7Vgjv97tZYyKqfazfTzimZruelhbjIzUbrQfOATqVe2x4IPcR+iThtK1c6fJhlPhM7pGpX1GE73GsTj8B6t9+UfYPtvJH0qM4gu6GHScyYpHxwbfUE5MnAK0P/3qEv2MWk+EHyKaj5dj2ECTpaev2kQH1JRmjytaPPV2Nqq6E8d6zGHwRuo6s9I+nCK4oGZPk9cHlhMQ4EUnrwyBb6umw51mtaV+uD56nPuD5knQtGOCdDnSt3Nh1q4TXDqD7QwWpFZyUd0jOVUx8C6/hkRtm4mxDBS6RZ/TQuvwAD1apW4QKD+vUUaIrERcyzu8bW1GL3QQZdBxggomS8wFuqK/jDMmFng=
