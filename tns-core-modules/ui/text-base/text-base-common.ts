@@ -16,6 +16,7 @@ const CHILD_FORMATTED_STRING = "FormattedString";
 
 export abstract class TextBaseCommon extends View implements TextBaseDefinition {
 
+    public _isSingleLine: boolean;
     public text: string;
     public formattedText: FormattedString;
 
@@ -150,10 +151,12 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
         }
     }
 
-    _setNativeText(): void {
+    _setNativeText(reset: boolean = false): void {
         //
     }
 }
+
+TextBaseCommon.prototype._isSingleLine = false;
 
 export function isBold(fontWeight: FontWeight): boolean {
     return fontWeight === "bold" || fontWeight === "700" || fontWeight === "800" || fontWeight === "900";
@@ -172,6 +175,11 @@ function onFormattedTextPropertyChanged(textBase: TextBaseCommon, oldValue: Form
     }
 
     if (newValue) {
+        const oldParent = newValue.parent;
+        // In case formattedString is attached to new TextBase
+        if (oldParent) {
+            oldParent._removeView(newValue);
+        }
         textBase._addView(newValue);
         newValue.on(Observable.propertyChangeEvent, textBase._onFormattedTextContentsChanged, textBase);
     }

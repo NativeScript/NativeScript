@@ -18,11 +18,16 @@ import * as observableArray from "tns-core-modules/data/observable-array";
 import * as labelModule from "tns-core-modules/ui/label";
 // << article-require-modules-repeater
 
-var ASYNC = 0.2;
 var FEW_ITEMS = [0, 1, 2];
 var MANY_ITEMS = [];
 for (var i = 0; i < 100; i++) {
     MANY_ITEMS[i] = i;
+}
+
+export function test_recycling() {
+    const setters = new Map<string, stackLayoutModule.StackLayout>();
+    setters.set('itemsLayout', new stackLayoutModule.StackLayout());
+    helper.nativeView_recycling_test(() => new repeaterModule.Repeater(), null, null, setters);
 }
 
 export function test_set_items_to_array_loads_all_items() {
@@ -72,7 +77,8 @@ export function test_refresh_after_adding_items_to_array_loads_new_items() {
         // Manually trigger the update so that the new color is shown.
         repeater.refresh();
         // << artcle-array-push-element
-        TKUnit.wait(ASYNC);
+        // TKUnit.wait(ASYNC);
+        TKUnit.waitUntilReady(() => repeater.isLayoutValid);
         TKUnit.assertEqual(getChildrenCount(repeater), colors.length, "views count.");
     };
 

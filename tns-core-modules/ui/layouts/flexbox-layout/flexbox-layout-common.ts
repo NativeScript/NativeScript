@@ -209,7 +209,7 @@ export abstract class FlexboxLayoutBase extends LayoutBase {
     }
 }
 
-// FlexboxLayoutBase.prototype.recycleNativeView = true;
+FlexboxLayoutBase.prototype.recycleNativeView = true;
 
 export const flexDirectionProperty = new CssProperty<Style, FlexDirection>({ name: "flexDirection", cssName: "flex-direction", defaultValue: FlexDirection.ROW, affectsLayout: isIOS, valueConverter: FlexDirection.parse });
 flexDirectionProperty.register(Style);
@@ -293,7 +293,7 @@ Object.defineProperty(View.prototype, "alignSelf", {
 
 // flex-flow: <flex-direction> || <flex-wrap>
 const flexFlowProperty = new ShorthandProperty<Style, string>({
-    name: "flex-flow", cssName: "flex-flow",
+    name: "flexFlow", cssName: "flex-flow",
     getter: function (this: Style) {
         return `${this.flexDirection} ${this.flexWrap}`;
     },

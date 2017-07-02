@@ -1,7 +1,6 @@
 ﻿/**
- * @module "color"
- * 
  * Allows creating colors to be used when styling the UI.
+ * @module "color"
  */ /** */
 
 /**

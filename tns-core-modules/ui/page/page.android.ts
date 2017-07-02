@@ -3,6 +3,7 @@ import { ActionBar } from "../action-bar";
 import { GridLayout } from "../layouts/grid-layout";
 import { DIALOG_FRAGMENT_TAG } from "./constants";
 import { device } from "../../platform";
+import { profile } from "../../profiling";
 
 export * from "./page-common";
 
@@ -118,6 +119,7 @@ export class Page extends PageBase {
         return super._addViewToNativeVisualTree(child, atIndex);
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         if (this.actionBarHidden !== undefined) {
@@ -126,7 +128,7 @@ export class Page extends PageBase {
     }
 
     public _tearDownUI(force?: boolean) {
-        const skipDetached = !force && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
+        const skipDetached = !force && this.frame && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
 
         if (!skipDetached) {
             super._tearDownUI();

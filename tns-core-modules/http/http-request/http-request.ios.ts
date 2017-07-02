@@ -11,6 +11,7 @@ import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
 import * as domainDebugger from "../../debugger/debugger";
+import { getFilenameFromUrl } from "./http-request-common";
 
 export enum HttpResponseEncoding {
     UTF8,
@@ -148,11 +149,11 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                         });
                                     });
                                 },
-                                toFile: (destinationFilePath?: string) => {
+                                toFile: (destinationFilePath?: string) => {  
                                     var fs: typeof fsModule = require("file-system");
-                                    var fileName = options.url;
+                                    
                                     if (!destinationFilePath) {
-                                        destinationFilePath = fs.path.join(fs.knownFolders.documents().path, fileName.substring(fileName.lastIndexOf('/') + 1));
+                                        destinationFilePath = getFilenameFromUrl(options.url);
                                     }
                                     if (data instanceof NSData) {
                                         data.writeToFileAtomically(destinationFilePath, true);

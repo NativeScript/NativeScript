@@ -4,6 +4,7 @@ import * as labelModule from "tns-core-modules/ui/label";
 import * as colorModule from "tns-core-modules/color";
 import * as layoutHelper from "./layout-helper";
 import * as commonTests from "./common-layout-tests";
+import * as helper from "../helper";
 
 // >> absolute-layout-require
 import * as absoluteLayoutModule from "tns-core-modules/ui/layouts/absolute-layout";
@@ -13,6 +14,14 @@ export class AbsoluteLayoutTest extends testModule.UITest<absoluteLayoutModule.A
 
     public create(): absoluteLayoutModule.AbsoluteLayout {
         return new absoluteLayoutModule.AbsoluteLayout();
+    }
+
+    public test_recycling() {
+        helper.nativeView_recycling_test(() => new absoluteLayoutModule.AbsoluteLayout());
+    }
+
+    public test_item_recycling() {
+        helper.nativeView_recycling_test(() => new labelModule.Label(), () => new absoluteLayoutModule.AbsoluteLayout());
     }
 
     public snippet() {

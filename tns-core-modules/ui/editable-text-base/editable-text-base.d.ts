@@ -46,9 +46,21 @@ export class EditableTextBase extends TextBase {
     hint: string;
 
     /**
+     * Limits input to a certain number of characters.
+     */
+    maxLength: number;
+
+    /**
      * Hides the soft input method, ususally a soft keyboard.
      */
     dismissSoftInput(): void;
+
+    //@private
+    /**
+     * @private
+     */
+    public _setInputType(inputType: number): void;
+    //@endprivate
 }
 
 export type KeyboardType = "datetime" | "phone" | "number" | "url" | "email";
@@ -64,6 +76,7 @@ export const autocapitalizationTypeProperty: Property<EditableTextBase, Autocapi
 export const autocorrectProperty: Property<EditableTextBase, boolean>;
 export const hintProperty: Property<EditableTextBase, string>;
 export const placeholderColorProperty: CssProperty<Style, Color>;
+export const maxLengthProperty: Property<EditableTextBase, number>;
 
 //@private
 /**

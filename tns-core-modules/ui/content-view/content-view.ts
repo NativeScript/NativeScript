@@ -92,4 +92,4 @@ export class ContentView extends CustomLayoutView implements ContentViewDefiniti
     }
 }
 
-// ContentView.prototype.recycleNativeView = true;
+ContentView.prototype.recycleNativeView = true;

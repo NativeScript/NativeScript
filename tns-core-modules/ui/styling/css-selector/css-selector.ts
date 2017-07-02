@@ -72,6 +72,17 @@ function getNodeNextDirectSibling(node): Node {
     return node.parent.getChildAt(nodeIndex + 1);
 }
 
+function getNodeDirectSibling(node): null | Node {
+    if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) {
+        return null;
+    }
+    const nodeIndex = node.parent.getChildIndex(node);
+    if (nodeIndex === 0) {
+        return null;
+    }
+    return node.parent.getChildAt(nodeIndex - 1);
+}
+
 function SelectorProperties(specificity: Specificity, rarity: Rarity, dynamic: boolean = false): ClassDecorator {
     return cls => {
         cls.prototype.specificity = specificity;
@@ -422,15 +433,15 @@ export namespace Selector {
         }
 
         public match(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodePreviousDirectSibling(node)) && sel.match(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.match(node)) ? node : null;
         }
 
         public mayMatch(node: Node): Node {
-            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodePreviousDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
+            return this.selectors.every((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.mayMatch(node)) ? node : null;
         }
 
         public trackChanges(node: Node, map: ChangeAccumulator) {
-            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodePreviousDirectSibling(node)) && sel.trackChanges(node, map));
+            this.selectors.forEach((sel, i) => (i === 0 ? node : node = getNodeDirectSibling(node)) && sel.trackChanges(node, map));
         }
     }
     export interface Bound {
@@ -556,7 +567,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
         let selectors = selectorClasses
             .filter(arr => !!arr)
             .reduce((cur, next) => cur.concat(next), []);
-        
+
         let selectorsMatch = new SelectorsMatch<T>();
 
         selectorsMatch.selectors = selectors

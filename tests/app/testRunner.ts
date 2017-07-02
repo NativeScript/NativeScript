@@ -31,6 +31,12 @@ export function isRunningOnEmulator(): boolean {
 
 export var allTests = {};
 
+import * as domNodeTest from "./debugger/dom-node-tests";
+allTests["DOM-NODE"] = domNodeTest;
+
+import * as profilingTests from "./profiling/profiling-tests";
+allTests["PROFILING"] = profilingTests;
+
 import * as platformTests from "./platform/platform-tests";
 allTests["PLATFORM"] = platformTests;
 
@@ -211,14 +217,14 @@ allTests["HTML-VIEW"] = htmlViewTests;
 import * as repeaterTests from "./ui/repeater/repeater-tests";
 allTests["REPEATER"] = repeaterTests;
 
-import * as searchBarTests from "./ui/search-bar/search-bar-tests";
-allTests["SEARCH-BAR"] = searchBarTests;
-
 import * as segmentedBarTests from "./ui/segmented-bar/segmented-bar-tests";
 allTests["SEGMENTED-BAR"] = segmentedBarTests;
 
 import * as animationTests from "./ui/animation/animation-tests";
 allTests["ANIMATION"] = animationTests;
+
+import * as lifecycle from "./ui/lifecycle/lifecycle-tests";
+allTests["LIFECYCLE"] = lifecycle;
 
 import * as cssAnimationTests from "./ui/animation/css-animation-tests";
 allTests["CSS-ANIMATION"] = cssAnimationTests;
@@ -228,6 +234,9 @@ import * as transitionTests from "./navigation/transition-tests";
 if (!(platform.device.os === platform.platformNames.android && parseInt(platform.device.sdkVersion) === 23 && isRunningOnEmulator())) {
     allTests["TANSITIONS"] = transitionTests;
 }
+
+import * as searchBarTests from "./ui/search-bar/search-bar-tests";
+allTests["SEARCH-BAR"] = searchBarTests;
 
 import * as navigationTests from "./navigation/navigation-tests";
 allTests["NAVIGATION"] = navigationTests;

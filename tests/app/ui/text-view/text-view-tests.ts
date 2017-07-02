@@ -35,6 +35,10 @@ export function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << observable-declare
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(_createTextViewFunc);
+}
+
 var _createTextViewFunc = function (): textViewModule.TextView {
     // >> text-view-create
     var textView = new textViewModule.TextView();
@@ -427,6 +431,8 @@ export var testNativeBackgroundColorFromCss = function () {
         var page = <pagesModule.Page>views[1];
         page.css = "textview { background-color: " + expectedBackgroundColorHex + "; }";
 
+        helper.waitUntilLayoutReady(textView);
+
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
@@ -436,6 +442,8 @@ export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
         textView.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
+
+        helper.waitUntilLayoutReady(textView);
 
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);

@@ -1,7 +1,6 @@
 ﻿/**
- * @module "ui/progress"
- * 
  * Contains the Progress class, which represents a component capable of showing progress.
+ * @module "ui/progress"
  */ /** */
 
 import { View, Property } from "../core/view";

@@ -6,6 +6,7 @@ import {
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { LayoutBase } from "../layouts/layout-base";
+import { profile } from "../../profiling";
 
 export * from "./list-view-common";
 
@@ -49,6 +50,7 @@ export class ListView extends ListViewBase {
     public _realizedItems = new Map<android.view.View, View>();
     public _realizedTemplates = new Map<string, Map<android.view.View, View>>();
 
+    @profile
     public createNativeView() {
         initializeItemClickListener();
 
@@ -78,7 +80,7 @@ export class ListView extends ListViewBase {
         const nativeView: any = this.nativeView;
         (<any>nativeView).itemClickListener.owner = this;
         const adapter = (<any>nativeView).adapter;
-        adapter.owner = this;       
+        adapter.owner = this;
         nativeView.setAdapter(adapter);
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
@@ -88,7 +90,7 @@ export class ListView extends ListViewBase {
 
     public disposeNativeView() {
         const nativeView = this.nativeView;
-         nativeView.setAdapter(null);
+        nativeView.setAdapter(null);
         (<any>nativeView).itemClickListener.owner = null;
         (<any>nativeView).adapter.owner = null;
         this.clearRealizedCells();
@@ -238,6 +240,7 @@ function ensureListViewAdapterClass() {
             return itemViewType;
         }
 
+        @profile
         public getView(index: number, convertView: android.view.View, parent: android.view.ViewGroup): android.view.View {
             //this.owner._dumpRealizedTemplates();
 

@@ -270,3 +270,16 @@ export function convertString(value: any): any
  * @param compareFunc - function that will be used to compare two elements of the array
  */
 export function mergeSort(arr: Array<any>, compareFunc: (a: any, b: any) => number): Array<any>
+
+/**
+ * 
+ * Checks if array has any duplicate elements.
+ * @param arr - The array to be checked.
+ */
+export function hasDuplicates(arr: Array<any>): boolean;
+
+/**
+ * Removes duplicate elements from array.
+ * @param arr - The array.
+ */
+export function eliminateDuplicates(arr: Array<any>): Array<any>;

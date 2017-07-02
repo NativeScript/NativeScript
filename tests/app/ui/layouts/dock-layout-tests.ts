@@ -4,6 +4,7 @@ import * as TKUnit from "../../TKUnit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
+import * as testHelper from "../helper";
 
 // >> dock-layout-require
 import * as dockModule from "tns-core-modules/ui/layouts/dock-layout";
@@ -20,6 +21,14 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         rootLayout.height = { value: 300, unit: "px" };
         rootLayout.width = { value: 300, unit: "px" };
         return rootLayout;
+    }
+
+    public test_recycling() {
+        testHelper.nativeView_recycling_test(() => new DockLayout());
+    }
+
+    public test_item_recycling() {
+        testHelper.nativeView_recycling_test(() => new button.Button(), () => new DockLayout());
     }
 
     public test_stretchLastChild_DefaultValue() {

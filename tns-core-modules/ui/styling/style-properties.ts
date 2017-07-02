@@ -1,4 +1,10 @@
 // Types
+import { 
+    Transformation,
+    TransformationValue,
+    TransformFunctionsInfo,
+} from "../animation/animation";
+
 import { dip, px, percent } from "../core/view";
 
 import { Color } from "../../color";
@@ -10,6 +16,16 @@ import { isIOS } from "../../platform";
 import { Style } from "./style";
 
 import { unsetValue, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty, makeValidator, makeParser } from "../core/properties";
+
+import { hasDuplicates } from "../../utils/utils";
+import { radiansToDegrees } from "../../utils/number-utils";
+
+import {
+    decompose2DTransformMatrix,
+    getTransformMatrix,
+    matrixArrayToCssMatrix,
+    multiplyAffine2d,
+} from "../../matrix";
 
 export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
 export type LengthPxUnit = { readonly unit: "px", readonly value: px };
@@ -418,97 +434,114 @@ const transformProperty = new ShorthandProperty<Style, string>({
 });
 transformProperty.register(Style);
 
-function transformConverter(value: string): Object {
-    if (value.indexOf("none") !== -1) {
-        let operations = {};
-        operations[value] = value;
-        return operations;
-    }
+const IDENTITY_TRANSFORMATION = {
+    translate: { x: 0, y: 0 },
+    rotate: 0,
+    scale: { x: 1, y: 1 },
+};
 
-    let operations = {};
-    let operator = "";
-    let pos = 0;
-    while (pos < value.length) {
-        if (value[pos] === " " || value[pos] === ",") {
-            pos++;
-        }
-        else if (value[pos] === "(") {
-            let start = pos + 1;
-            while (pos < value.length && value[pos] !== ")") {
-                pos++;
-            }
-            let operand = value.substring(start, pos);
-            operations[operator] = operand.trim();
-            operator = "";
-            pos++;
-        }
-        else {
-            operator += value[pos++];
-        }
-    }
-    return operations;
-}
+const TRANSFORM_SPLITTER = new RegExp(/\s*(.+?)\((.*?)\)/g);
+const TRANSFORMATIONS = Object.freeze([
+    "rotate",
+    "translate",
+    "translate3d",
+    "translateX",
+    "translateY",
+    "scale",
+    "scale3d",
+    "scaleX",
+    "scaleY",
+]);
+
+const STYLE_TRANSFORMATION_MAP = Object.freeze({
+    "scale": value => ({ property: "scale", value }),
+    "scale3d": value => ({ property: "scale", value }),
+    "scaleX": ({x}) => ({ property: "scale", value: { x, y: IDENTITY_TRANSFORMATION.scale.y } }),
+    "scaleY": ({y}) => ({ property: "scale", value: { y, x: IDENTITY_TRANSFORMATION.scale.x } }),
+
+    "translate": value => ({ property: "translate", value }),
+    "translate3d": value => ({ property: "translate", value }),
+    "translateX": ({x}) => ({ property: "translate", value: { x, y: IDENTITY_TRANSFORMATION.translate.y } }),
+    "translateY": ({y}) => ({ property: "translate", value: { y, x: IDENTITY_TRANSFORMATION.translate.x } }),
+
+    "rotate": value => ({ property: "rotate", value }),
+});
 
 function convertToTransform(value: string): [CssProperty<any, any>, any][] {
-    let newTransform = value === unsetValue ? { "none": "none" } : transformConverter(value);
-    let array = [];
-    let values: Array<string>;
-    for (let transform in newTransform) {
-        switch (transform) {
-            case "scaleX":
-                array.push([scaleXProperty, newTransform[transform]]);
-                break;
-            case "scaleY":
-                array.push([scaleYProperty, newTransform[transform]]);
-                break;
-            case "scale":
-            case "scale3d":
-                values = newTransform[transform].split(",");
-                if (values.length >= 2) {
-                    array.push([scaleXProperty, values[0]]);
-                    array.push([scaleYProperty, values[1]]);
-                }
-                else if (values.length === 1) {
-                    array.push([scaleXProperty, values[0]]);
-                    array.push([scaleYProperty, values[0]]);
-                }
-                break;
-            case "translateX":
-                array.push([translateXProperty, newTransform[transform]]);
-                break;
-            case "translateY":
-                array.push([translateYProperty, newTransform[transform]]);
-                break;
-            case "translate":
-            case "translate3d":
-                values = newTransform[transform].split(",");
-                if (values.length >= 2) {
-                    array.push([translateXProperty, values[0]]);
-                    array.push([translateYProperty, values[1]]);
-                }
-                else if (values.length === 1) {
-                    array.push([translateXProperty, values[0]]);
-                    array.push([translateYProperty, values[0]]);
-                }
-                break;
-            case "rotate":
-                let text = newTransform[transform];
-                let val = parseFloat(text);
-                if (text.slice(-3) === "rad") {
-                    val = val * (180.0 / Math.PI);
-                }
-                array.push([rotateProperty, val]);
-                break;
-            case "none":
-                array.push([scaleXProperty, 1]);
-                array.push([scaleYProperty, 1]);
-                array.push([translateXProperty, 0]);
-                array.push([translateYProperty, 0]);
-                array.push([rotateProperty, 0]);
-                break;
+    if (value === unsetValue) {
+        value = "none";
+    }
+
+    const { translate, rotate, scale } = transformConverter(value);
+    return [
+        [translateXProperty, translate.x],
+        [translateYProperty, translate.y],
+
+        [scaleXProperty, scale.x],
+        [scaleYProperty, scale.y],
+
+        [rotateProperty, rotate],
+    ];
+}
+
+export function transformConverter(text: string): TransformFunctionsInfo {
+    const transformations = parseTransformString(text);
+
+    if (text === "none" || text === "" || !transformations.length) {
+        return IDENTITY_TRANSFORMATION;
+    }
+
+    const usedTransforms = transformations.map(t => t.property);
+    if (!hasDuplicates(usedTransforms)) {
+        const fullTransformations = Object.assign({}, IDENTITY_TRANSFORMATION);
+        transformations.forEach(transform => {
+            fullTransformations[transform.property] = transform.value;
+        });
+
+        return fullTransformations;
+    }
+
+   const affineMatrix = transformations
+        .map(getTransformMatrix)
+        .reduce(multiplyAffine2d)
+   const cssMatrix = matrixArrayToCssMatrix(affineMatrix)
+
+   return decompose2DTransformMatrix(cssMatrix);
+}
+
+// using general regex and manually checking the matched
+// properties is faster than using more specific regex
+// https://jsperf.com/cssparse
+function parseTransformString(text: string): Transformation[] {
+    let matches: Transformation[] = [];
+    let match;
+
+    while ((match = TRANSFORM_SPLITTER.exec(text)) !== null) {
+        const property = match[1];
+        const value = convertTransformValue(property, match[2]);
+
+        if (TRANSFORMATIONS.indexOf(property) !== -1) {
+            matches.push(normalizeTransformation({ property, value }));
         }
     }
-    return array;
+
+    return matches;
+}
+
+function normalizeTransformation({ property, value }: Transformation) { 
+    return STYLE_TRANSFORMATION_MAP[property](value);
+}
+
+function convertTransformValue(property: string, stringValue: string)
+    : TransformationValue {
+
+    const [x, y = x] = stringValue.split(",").map(parseFloat);
+
+    if (property === "rotate") {
+        return stringValue.slice(-3) === "rad" ? radiansToDegrees(x) : x;
+    }
+
+    return { x, y };
 }
 
 // Background properties.
@@ -522,16 +555,16 @@ backgroundInternalProperty.register(Style);
 // const pattern: RegExp = /url\(('|")(.*?)\1\)/;
 export const backgroundImageProperty = new CssProperty<Style, string>({
     name: "backgroundImage", cssName: "background-image", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withImage(newValue);
+        const background = target.backgroundInternal.withImage(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundImageProperty.register(Style);
 
 export const backgroundColorProperty = new CssAnimationProperty<Style, Color>({
     name: "backgroundColor", cssName: "background-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withColor(newValue);
+        const background = target.backgroundInternal.withColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 backgroundColorProperty.register(Style);
@@ -549,24 +582,24 @@ export namespace BackgroundRepeat {
 export const backgroundRepeatProperty = new CssProperty<Style, BackgroundRepeat>({
     name: "backgroundRepeat", cssName: "background-repeat", valueConverter: BackgroundRepeat.parse,
     valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withRepeat(newValue);
+        const background = target.backgroundInternal.withRepeat(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundRepeatProperty.register(Style);
 
 export const backgroundSizeProperty = new CssProperty<Style, string>({
     name: "backgroundSize", cssName: "background-size", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withSize(newValue);
+        const background = target.backgroundInternal.withSize(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundSizeProperty.register(Style);
 
 export const backgroundPositionProperty = new CssProperty<Style, string>({
     name: "backgroundPosition", cssName: "background-position", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withPosition(newValue);
+        const background = target.backgroundInternal.withPosition(newValue);
+        target.backgroundInternal = background;
     }
 });
 backgroundPositionProperty.register(Style);
@@ -656,32 +689,32 @@ borderColorProperty.register(Style);
 
 export const borderTopColorProperty = new CssProperty<Style, Color>({
     name: "borderTopColor", cssName: "border-top-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopColor(newValue);
+        const background = target.backgroundInternal.withBorderTopColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderTopColorProperty.register(Style);
 
 export const borderRightColorProperty = new CssProperty<Style, Color>({
     name: "borderRightColor", cssName: "border-right-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderRightColor(newValue);
+        const background = target.backgroundInternal.withBorderRightColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderRightColorProperty.register(Style);
 
 export const borderBottomColorProperty = new CssProperty<Style, Color>({
     name: "borderBottomColor", cssName: "border-bottom-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomColor(newValue);
+        const background = target.backgroundInternal.withBorderBottomColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderBottomColorProperty.register(Style);
 
 export const borderLeftColorProperty = new CssProperty<Style, Color>({
     name: "borderLeftColor", cssName: "border-left-color", valueChanged: (target, oldValue, newValue) => {
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderLeftColor(newValue);
+        const background = target.backgroundInternal.withBorderLeftColor(newValue);
+        target.backgroundInternal = background;
     }, equalityComparer: Color.equals, valueConverter: (value) => new Color(value)
 });
 borderLeftColorProperty.register(Style);
@@ -730,8 +763,8 @@ export const borderTopWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderTopWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopWidth(value);
+        const background = target.backgroundInternal.withBorderTopWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderTopWidthProperty.register(Style);
@@ -745,8 +778,8 @@ export const borderRightWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderRightWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderRightWidth(value);
+        const background = target.backgroundInternal.withBorderRightWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderRightWidthProperty.register(Style);
@@ -760,8 +793,8 @@ export const borderBottomWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderBottomWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomWidth(value);
+        const background = target.backgroundInternal.withBorderBottomWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderBottomWidthProperty.register(Style);
@@ -775,8 +808,8 @@ export const borderLeftWidthProperty = new CssProperty<Style, Length>({
         }
 
         target.view.effectiveBorderLeftWidth = value;
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderLeftWidth(value);
+        const background = target.backgroundInternal.withBorderLeftWidth(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderLeftWidthProperty.register(Style);
@@ -820,8 +853,8 @@ export const borderTopLeftRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-left-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopLeftRadius(value);
+        const background = target.backgroundInternal.withBorderTopLeftRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderTopLeftRadiusProperty.register(Style);
@@ -832,8 +865,8 @@ export const borderTopRightRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-top-right-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderTopRightRadius(value);
+        const background = target.backgroundInternal.withBorderTopRightRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderTopRightRadiusProperty.register(Style);
@@ -844,8 +877,8 @@ export const borderBottomRightRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-right-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomRightRadius(value);
+        const background = target.backgroundInternal.withBorderBottomRightRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderBottomRightRadiusProperty.register(Style);
@@ -856,8 +889,8 @@ export const borderBottomLeftRadiusProperty = new CssProperty<Style, Length>({
         if (!isNonNegativeFiniteNumber(value)) {
             throw new Error(`border-bottom-left-radius should be Non-Negative Finite number. Value: ${value}`);
         }
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withBorderBottomLeftRadius(value);
+        const background = target.backgroundInternal.withBorderBottomLeftRadius(value);
+        target.backgroundInternal = background;
     }, valueConverter: Length.parse
 });
 borderBottomLeftRadiusProperty.register(Style);
@@ -881,8 +914,8 @@ export const clipPathProperty = new CssProperty<Style, string>({
             throw new Error("clip-path is not valid.");
         }
 
-        let background = target.backgroundInternal;
-        target.backgroundInternal = background.withClipPath(newValue);
+        const background = target.backgroundInternal.withClipPath(newValue);
+        target.backgroundInternal = background;
     }
 });
 clipPathProperty.register(Style);
@@ -896,7 +929,7 @@ function isFloatValueConverter(value: string): number {
     return newValue;
 }
 
-export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", defaultValue: Number.NaN, valueConverter: isFloatValueConverter });
+export const zIndexProperty = new CssProperty<Style, number>({ name: "zIndex", cssName: "z-index", valueConverter: isFloatValueConverter });
 zIndexProperty.register(Style);
 
 function opacityConverter(value: any): number {

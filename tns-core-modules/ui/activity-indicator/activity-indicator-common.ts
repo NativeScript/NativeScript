@@ -7,7 +7,7 @@ export class ActivityIndicatorBase extends View implements ActivityIndicatorDefi
     public busy: boolean;
 }
 
-// ActivityIndicatorBase.prototype.recycleNativeView = true;
+ActivityIndicatorBase.prototype.recycleNativeView = true;
 
 export const busyProperty = new Property<ActivityIndicatorBase, boolean>({ name: "busy", defaultValue: false, valueConverter: booleanConverter });
 busyProperty.register(ActivityIndicatorBase);

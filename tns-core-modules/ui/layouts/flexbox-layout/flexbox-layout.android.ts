@@ -12,11 +12,14 @@ import {
 
 export * from "./flexbox-layout-common";
 
+let widgetFlexboxLayout: typeof org.nativescript.widgets.FlexboxLayout;
+let widgetLayoutParams: typeof org.nativescript.widgets.FlexboxLayout.LayoutParams;
+
 function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams, value: T) => void) {
-    return function(this: View, value: T) {
+    return function (this: View, value: T) {
         const nativeView: android.view.View = this.nativeView;
-        const lp = nativeView.getLayoutParams() || new org.nativescript.widgets.FlexboxLayout.LayoutParams();
-        if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
+        const lp = nativeView.getLayoutParams() || new widgetLayoutParams();
+        if (lp instanceof widgetLayoutParams) {
             setter(lp, value);
             nativeView.setLayoutParams(lp);
         }
@@ -79,13 +82,21 @@ const alignSelfMap = {
 export class FlexboxLayout extends FlexboxLayoutBase {
     nativeView: org.nativescript.widgets.FlexboxLayout;
 
+    constructor() {
+        super();
+        if (!widgetFlexboxLayout) {
+            widgetFlexboxLayout = org.nativescript.widgets.FlexboxLayout;
+            widgetLayoutParams = widgetFlexboxLayout.LayoutParams;
+        }
+    }
+    
     public createNativeView() {
-        return new org.nativescript.widgets.FlexboxLayout(this._context);
+        return new widgetFlexboxLayout(this._context);
     }
 
-    public disposeNativeView() {
-        (<any>this.nativeView).invalidateOrdersCache();
-        super.disposeNativeView();
+    public resetNativeView(): void {
+        super.resetNativeView();
+        (<any>this.nativeView).invalidateOrdersCache();   
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {
@@ -127,29 +138,32 @@ export class FlexboxLayout extends FlexboxLayoutBase {
         super._updateNativeLayoutParams(child);
 
         const lp = <org.nativescript.widgets.FlexboxLayout.LayoutParams>child.nativeView.getLayoutParams();
-        lp.order = child.order;
-        lp.flexGrow = child.flexGrow;
-        lp.flexShrink = child.flexShrink;
-        lp.wrapBefore = child.flexWrapBefore;
-        lp.alignSelf = alignSelfMap[child.alignSelf];
+        const style = child.style;
+        lp.order = style.order;
+        lp.flexGrow = style.flexGrow;
+        lp.flexShrink = style.flexShrink;
+        lp.wrapBefore = style.flexWrapBefore;
+        lp.alignSelf = alignSelfMap[style.alignSelf];
         child.nativeView.setLayoutParams(lp);
     }
 
     public _setChildMinWidthNative(child: View): void {
         child._setMinWidthNative(0);
-        const lp = child.nativeView.getLayoutParams();
-        if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
-            lp.minWidth = Length.toDevicePixels(child.minWidth, 0);
-            child.nativeView.setLayoutParams(lp);
+        const nativeView = child.nativeView;
+        const lp = nativeView.getLayoutParams();
+        if (lp instanceof widgetLayoutParams) {
+            lp.minWidth = Length.toDevicePixels(child.style.minWidth, 0);
+            nativeView.setLayoutParams(lp);
         }
     }
 
     public _setChildMinHeightNative(child: View): void {
         child._setMinHeightNative(0);
-        const lp = child.nativeView.getLayoutParams();
-        if (lp instanceof org.nativescript.widgets.FlexboxLayout.LayoutParams) {
-            lp.minHeight = Length.toDevicePixels(child.minHeight, 0);
-            child.nativeView.setLayoutParams(lp);
+        const nativeView = child.nativeView;
+        const lp = nativeView.getLayoutParams();
+        if (lp instanceof widgetLayoutParams) {
+            lp.minHeight = Length.toDevicePixels(child.style.minHeight, 0);
+            nativeView.setLayoutParams(lp);
         }
     }
 }

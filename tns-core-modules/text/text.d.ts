@@ -1,7 +1,6 @@
 ﻿/**
- * @module "text"
- * 
  * Defines specific text related enumerations.
+ * @module "text"
  */ /** */
 
 /**

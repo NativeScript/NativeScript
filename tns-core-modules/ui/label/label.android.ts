@@ -1,7 +1,10 @@
 ﻿import { Label as LabelDefinition } from ".";
-import { TextBase, WhiteSpace, whiteSpaceProperty } from "../text-base";
+import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter } from "../text-base";
+import { profile } from "../../profiling";
 
 export * from "../text-base";
+
+let TextView: typeof android.widget.TextView;
 
 export class Label extends TextBase implements LabelDefinition {
     nativeView: android.widget.TextView;
@@ -10,11 +13,19 @@ export class Label extends TextBase implements LabelDefinition {
         return this.style.whiteSpace === "normal";
     }
     set textWrap(value: boolean) {
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
+        
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
+    @profile
     public createNativeView() {
-        return new android.widget.TextView(this._context);
+        if (!TextView) {
+            TextView = android.widget.TextView;
+        }
+        return new TextView(this._context);
     }
 
     public initNativeView(): void {
@@ -31,4 +42,5 @@ export class Label extends TextBase implements LabelDefinition {
     }
 }
 
-// Label.prototype.recycleNativeView = true;
+Label.prototype._isSingleLine = true;
+Label.prototype.recycleNativeView = true;

@@ -1,7 +1,6 @@
 ﻿/**
- * @module "ui/action-bar"
- * 
  * Contains the action bar related classes.
+ * @module "ui/action-bar"
  */ /** */
 
 import { EventData, ViewBase, View } from "../core/view";

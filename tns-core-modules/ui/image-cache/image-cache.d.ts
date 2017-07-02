@@ -1,7 +1,6 @@
 ﻿/**
- * @module "ui/image-cache"
- * 
  * Contains the Cache class, which handles image download requests and caches the already downloaded images.
+ * @module "ui/image-cache"
  */ /** */
 
 import * as observable from "../../data/observable";

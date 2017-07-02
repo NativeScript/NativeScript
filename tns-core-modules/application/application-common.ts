@@ -21,6 +21,7 @@ import { UnhandledErrorEventData, iOSApplication, AndroidApplication, CssChanged
 
 export const launchEvent = "launch";
 export const suspendEvent = "suspend";
+export const displayedEvent = "displayed";
 export const resumeEvent = "resume";
 export const exitEvent = "exit";
 export const lowMemoryEvent = "lowMemory";
@@ -45,6 +46,7 @@ export let ios = undefined;
 export const on: typeof events.on = events.on.bind(events);
 export const off: typeof events.off = events.off.bind(events);
 export const notify: typeof events.notify = events.notify.bind(events);
+export const hasListeners: typeof events.hasListeners = events.hasListeners.bind(events);
 
 let app: iOSApplication | AndroidApplication;
 export function setApplication(instance: iOSApplication | AndroidApplication): void {

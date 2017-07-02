@@ -2,7 +2,7 @@
 
 import {
     notify, launchEvent, resumeEvent, suspendEvent, exitEvent, lowMemoryEvent,
-    orientationChangedEvent, setApplication, livesync
+    orientationChangedEvent, setApplication, livesync, displayedEvent
 } from "./application-common";
 
 // First reexport so that app module is initialized.
@@ -15,6 +15,8 @@ import * as utils from "../utils/utils";
 class Responder extends UIResponder {
     //
 }
+
+let displayedOnce = false;
 
 class Window extends UIWindow {
     public content;
@@ -138,7 +140,13 @@ class IOSApplication implements IOSApplicationDefinition {
     }
 
     private didBecomeActive(notification: NSNotification) {
-        notify(<ApplicationEventData>{ eventName: resumeEvent, object: this, ios: utils.ios.getter(UIApplication, UIApplication.sharedApplication) });
+        let ios = utils.ios.getter(UIApplication, UIApplication.sharedApplication);
+        let object = this;
+        notify(<ApplicationEventData>{ eventName: resumeEvent, object, ios });
+        if (!displayedOnce) {
+            notify(<ApplicationEventData>{ eventName: displayedEvent, object, ios });
+            displayedOnce = true;
+        }
     }
 
     private didEnterBackground(notification: NSNotification) {

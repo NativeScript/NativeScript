@@ -5,7 +5,7 @@
 We are moving the modules closer to ES6 standard. This introduces few limitations. One of them is modules can no longer export variable, in such cases variables were replaced with get/set functions.
 
 ## TypeScript
-TypeScript projects need to reference the **ES6 and DOM libraries**. Add this to your tsconfig.json:
+TypeScript projects need **TypeScript 2.2** or newer to transpile. You also need to reference the **ES6 and DOM libraries**. Add this to your `tsconfig.json`:
 
 ``` json
 {
@@ -14,9 +14,10 @@ TypeScript projects need to reference the **ES6 and DOM libraries**. Add this to
     "lib": ["es6", "dom"],
     "baseUrl": ".",
     "paths": {
-    "*": [
-      "./node_modules/tns-core-modules/*",
-      "./node_modules/*"]
+      "*": [
+        "./node_modules/tns-core-modules/*",
+        "./node_modules/*"]
+    }
   }
 }
 ```
@@ -149,6 +150,12 @@ There are several type of Properties in modules 3.0:
 * `Property` – property defined on `ViewBase` or another view class. These are properties like `id` on `ViewBase` or `text` on `Label`. 
 * `CssProperty` – property defined on `Style` type. These are properties that could be set in CSS.
 * `InheritedCssProperty `- property defined on `Style` type. These are inheritable CSS properties that could be set in CSS and propagates value on its children. These are properties like `FontSize`, `FontWeight`, `Color`, etc.
+
+### Events raised when property value change
+One significant change is that properties before 3.0 were raising two events when a value is changed - `propertyChange` and  propertyName + `Change` (like `textChange`). The second event was added at some point to make module compatible with Angular.
+With 3.0 we removed `propertyChange` event and left only the second event. This was done in order to improve performance of our property system. This also leads to cleaner code (no need to listen for every `propertyChange` and then check the name of the poperty that raised the event).
+
+With 3.0 if you want to get notification when some property value change you have to specify the *`propertyName`Change* as eventName to `addEventListener` method (like `textField.addEventListener('textChange'`, handler...)).
 
 ### NativeView property
 There is a new property `nativeView` in `ViewBase` class. It is recommended to use `nativeView` instead of `ios` and `android` properties. The `ios` and `android` properties are left for compatibility, however all view-lifecycle methods and native property callbacks (explained below) should work with the `nativeView` property.

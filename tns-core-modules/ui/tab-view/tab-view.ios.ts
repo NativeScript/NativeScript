@@ -3,12 +3,12 @@
 import {
     TabViewBase, TabViewItemBase, itemsProperty, selectedIndexProperty,
     tabTextColorProperty, tabBackgroundColorProperty, selectedTabTextColorProperty, iosIconRenderingModeProperty,
-    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color, initNativeView
+    View, fontInternalProperty, layout, traceEnabled, traceWrite, traceCategories, Color
 } from "./tab-view-common"
-
 import { textTransformProperty, TextTransform, getTransformedText } from "../text-base";
 import { fromFileOrResource } from "../../image-source";
 import { Page } from "../page";
+import { profile } from "../../profiling";
 
 export * from "./tab-view-common";
 
@@ -119,18 +119,21 @@ function updateItemTitlePosition(tabBarItem: UITabBarItem): void {
     }
 }
 
+function updateItemIconPosition(tabBarItem: UITabBarItem): void {
+    tabBarItem.imageInsets = new UIEdgeInsets({top: 6, left: 0, bottom: -6, right: 0});
+}
+
 export class TabViewItem extends TabViewItemBase {
     private _iosViewController: UIViewController;
 
     public setViewController(controller: UIViewController) {
         this._iosViewController = controller;
-        (<any>this)._nativeView = this.nativeView = controller.view;
-        initNativeView(this);
+        this.setNativeView((<any>this)._nativeView = controller.view);
     }
     
     public disposeNativeView() {
         this._iosViewController = undefined;
-        this.nativeView = undefined;
+        this.setNativeView(undefined);
     }
 
     public _update() {
@@ -144,6 +147,9 @@ export class TabViewItem extends TabViewItemBase {
             const tabBarItem = UITabBarItem.alloc().initWithTitleImageTag(title, icon, index);
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
+            }
+            else if (!title) {
+                updateItemIconPosition(tabBarItem);
             }
 
             // TODO: Repeating code. Make TabViewItemBase - ViewBase and move the colorProperty on tabViewItem.
@@ -177,6 +183,7 @@ export class TabView extends TabViewBase {
         //This delegate is set on the last line of _addTabs method.
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
@@ -272,6 +279,10 @@ export class TabView extends TabViewBase {
             if (!icon) {
                 updateItemTitlePosition(tabBarItem);
             }
+            else if (!item.title) {
+                updateItemIconPosition(tabBarItem);
+            }
+
             applyStatesToItem(tabBarItem, states);
 
             newController.tabBarItem = tabBarItem;

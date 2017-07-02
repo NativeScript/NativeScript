@@ -1,0 +1,6 @@
+{
+  "name" : "profiling",
+  "main" : "profiling",
+  "types" : "profiling.d.ts",
+  "nativescript": {}
+}

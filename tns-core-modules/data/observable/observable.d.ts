@@ -1,7 +1,6 @@
 ﻿/**
- * @module "data/observable"
- * 
  * Contains the Observable class, which represents an observable object, or "data" in the model-view paradigm.
+ * @module "data/observable"
  */ /** */
 
 /**
@@ -151,6 +150,13 @@ export class Observable {
      */
     _createPropertyChangeData(name: string, value: any, oldValue?: any): PropertyChangeData;
     
+    //@private
+    /**
+     * Filed to use instead of instanceof ViewBase.
+     * @private
+     */
+    public _isViewBase: boolean;
+
     /**
      * @private
      */

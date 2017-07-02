@@ -262,6 +262,7 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
 function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
     if (!img) {
         callback(null);
+        return;
     }
 
     const nativeView = view.nativeView as UIView;

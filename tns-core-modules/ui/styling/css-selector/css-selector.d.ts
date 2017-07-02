@@ -69,7 +69,7 @@ export class SelectorsMatch<T extends Node> {
     selectors: SelectorCore[];
 
     /**
-     * Gets a map of nodes to attributes and pseudo classes, that may affect the state of the dynamic 
+     * Gets a map of nodes to attributes and pseudo classes, that may affect the state of the dynamic
      */
     changeMap: ChangeMap<T>;
 }

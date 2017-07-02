@@ -2,12 +2,14 @@
     ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
-import { path, knownFolders } from "../../file-system";
+import { knownFolders } from "../../file-system";
 
 export * from "./image-common";
 
 const FILE_PREFIX = "file:///";
 const ASYNC = "async";
+
+let AndroidImageView: typeof org.nativescript.widgets.ImageView;
 
 interface ImageLoadedListener {
     new (owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
@@ -45,9 +47,12 @@ export class Image extends ImageBase {
     public useCache = true;
 
     public createNativeView() {
+        if (!AndroidImageView) {
+            AndroidImageView = org.nativescript.widgets.ImageView;
+        }
         initializeImageLoadedListener();
         
-        const imageView = new org.nativescript.widgets.ImageView(this._context);
+        const imageView = new AndroidImageView(this._context);
         const listener = new ImageLoadedListener(this);
         imageView.setImageLoadedListener(listener);
         (<any>imageView).listener = listener;
@@ -65,18 +70,23 @@ export class Image extends ImageBase {
         super.disposeNativeView();
     }
 
-    public _createImageSourceFromSrc() {
-        let imageView = this.nativeView;
-        if (imageView) {
-            imageView.setUri(null, 0, 0, false, true);
-        }
+    public resetNativeView(): void {
+        super.resetNativeView();
+        this.nativeView.setImageMatrix(new android.graphics.Matrix());        
+    }
 
-        if (!imageView || !this.src) {
+    public _createImageSourceFromSrc(value: string | ImageSource) {
+        const imageView = this.nativeView;
+        if (!imageView) {
             return;
         }
 
-        let value = this.src;
-        let async = this.loadMode === ASYNC;
+        if (!value) {
+            imageView.setUri(null, 0, 0, false, true);
+            return;
+        }
+
+        const async = this.loadMode === ASYNC;
 
         if (typeof value === "string" || value instanceof String) {
             value = value.trim();
@@ -84,14 +94,14 @@ export class Image extends ImageBase {
 
             if (isDataURI(value)) {
                 // TODO: Check with runtime what should we do in case of base64 string.
-                super._createImageSourceFromSrc();
+                super._createImageSourceFromSrc(value);
             } else if (isFileOrResourcePath(value)) {
                 if (value.indexOf(RESOURCE_PREFIX) === 0) {
                     imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async);
                 } else {
                     let fileName = value;
                     if (fileName.indexOf("~/") === 0) {
-                        fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+                        fileName = knownFolders.currentApp().path + "/" + fileName.replace("~/", "");
                     }
 
                     imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async);
@@ -101,7 +111,7 @@ export class Image extends ImageBase {
                 imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true);
             }
         } else {
-            super._createImageSourceFromSrc();
+            super._createImageSourceFromSrc(value);
         }
     }
 
@@ -156,6 +166,6 @@ export class Image extends ImageBase {
         return undefined;
     }
     [srcProperty.setNative](value: any) {
-        this._createImageSourceFromSrc();
+        this._createImageSourceFromSrc(value);
     }
 }

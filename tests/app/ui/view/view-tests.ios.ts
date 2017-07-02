@@ -10,15 +10,12 @@ import * as utils from "tns-core-modules/utils/utils";
 global.moduleMerge(commonTests, exports);
 
 class MyGrid extends grid.GridLayout {
-    public backgroundSetterCount: number = 0;
+    public backgroundDrawCount: number = 0;
 
-    [view.backgroundInternalProperty.getDefault](): any {
-        return null;
+    _redrawNativeBackground(background: any) {
+        this.backgroundDrawCount++;
+        super._redrawNativeBackground(background);
     }
-    [view.backgroundInternalProperty.setNative](value: any) {
-        this.backgroundSetterCount ++;
-    }
-
 }
 
 export function getUniformNativeBorderWidth(v: view.View): number {
@@ -26,7 +23,7 @@ export function getUniformNativeBorderWidth(v: view.View): number {
 }
 
 export function checkUniformNativeBorderColor(v: view.View): boolean {
-    if (v.borderColor instanceof color.Color){
+    if (v.borderColor instanceof color.Color) {
         return (<UIView>v.ios).layer.borderColor === (<color.Color>v.borderColor).ios.CGColor;
     }
 
@@ -58,12 +55,12 @@ export function testBackgroundInternalChangedOnceOnResize() {
     layout.className = "myClass";
     layout.backgroundColor = new color.Color(255, 255, 0, 0);
 
-    root.css = ".myClass { background-image: url('~/tests/logo.png') }";
+    root.css = ".myClass { background-image: url('~/logo.png') }";
     root.content = layout;
 
     function trackCount() {
-        let result = layout.backgroundSetterCount;
-        layout.backgroundSetterCount = 0;
+        let result = layout.backgroundDrawCount;
+        layout.backgroundDrawCount = 0;
         return result;
     }
 
@@ -87,6 +84,7 @@ export function testBackgroundInternalChangedOnceOnResize() {
 export function test_automation_text_set_to_native() {
     var newButton = new button.Button();
     newButton.automationText = "Button1";
+    helper.getCurrentPage().content = newButton;
     TKUnit.assertEqual((<UIView>newButton.ios).accessibilityIdentifier, "Button1", "accessibilityIdentifier not set to native view.");
     TKUnit.assertEqual((<UIView>newButton.ios).accessibilityLabel, "Button1", "accessibilityIdentifier not set to native view.");
 }

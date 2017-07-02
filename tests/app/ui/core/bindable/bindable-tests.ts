@@ -29,6 +29,15 @@ export function test_Bindable_Members() {
     TKUnit.assert(types.isDefined(obj.unbind), "Bindable.unbind not defined");
 };
 
+export function test_Binding_to_bindingContext_of_View() {
+    const target = new Button();
+    const source = new Button();
+
+    target.bind({ targetProperty: "bindingContext", sourceProperty: "text" }, source);
+    source.text = 'a';
+    TKUnit.assertEqual(target.bindingContext, 'a');
+};
+
 export function test_Bindable_Bind_ToTarget_OneWay() {
     const model = new Observable();
     model.set("name", "John");

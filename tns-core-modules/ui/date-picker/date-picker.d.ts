@@ -1,7 +1,6 @@
 ﻿/**
- * @module "ui/date-picker"
- * 
  * Contains the DatePicker class.
+ * @module "ui/date-picker"
  */ /** */
 
 import { View, Property } from "../core/view";

@@ -8,6 +8,7 @@ import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 import { StyleScope } from "../styling/style-scope";
 import { File, path, knownFolders } from "../../file-system";
+import { profile } from "../../profiling";
 
 export * from "../content-view";
 
@@ -93,6 +94,7 @@ export class PageBase extends ContentView implements PageDefinition {
         return this;
     }
 
+    @profile
     public onLoaded(): void {
         this._refreshCss();
         super.onLoaded();
@@ -152,7 +154,8 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get frame(): Frame {
-        return <Frame>this.parent;
+        const frame = this.parent;
+        return frame instanceof Frame ? frame : undefined;
     }
 
     private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
@@ -283,8 +286,10 @@ export class PageBase extends ContentView implements PageDefinition {
 
     private _resetCssValues() {
         const resetCssValuesFunc = (view: View): boolean => {
-            view._cancelAllAnimations();
-            resetCSSProperties(view.style);
+            view._batchUpdate(() => {
+                view._cancelAllAnimations();
+                resetCSSProperties(view.style);
+            });
             return true;
         };
 

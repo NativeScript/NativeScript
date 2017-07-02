@@ -6,6 +6,7 @@ import {
 import { StackLayout } from "../layouts/stack-layout";
 import { ProxyViewContainer } from "../proxy-view-container";
 import { ios } from "../../utils/utils";
+import { profile } from "../../profiling";
 
 export * from "./list-view-common";
 
@@ -225,6 +226,7 @@ export class ListView extends ListViewBase {
         this._ios.clipsToBounds = true;
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         if (this._isDataDirty) {

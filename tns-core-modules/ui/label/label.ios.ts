@@ -1,10 +1,10 @@
 ﻿import { Label as LabelDefinition } from ".";
 import { Background } from "../styling/background";
 import {
-    TextBase, View, layout, backgroundInternalProperty,
+    TextBase, View, layout,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
-    Length, WhiteSpace
+    Length, WhiteSpace, booleanConverter
 } from "../text-base";
 
 import { ios } from "../styling/background";
@@ -36,7 +36,11 @@ export class Label extends TextBase implements LabelDefinition {
     get textWrap(): boolean {
         return this.style.whiteSpace === "normal";
     }
-    set textWrap(value: boolean) {
+    set textWrap(value: boolean) {        
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
+
         this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
@@ -95,10 +99,7 @@ export class Label extends TextBase implements LabelDefinition {
         }
     }
 
-    [backgroundInternalProperty.getDefault](): any /* CGColor */ {
-        return this.nativeView.layer.backgroundColor;
-    }
-    [backgroundInternalProperty.setNative](value: Background) {
+    _redrawNativeBackground(value: UIColor | Background): void {
         if (value instanceof Background) {
             ios.createBackgroundUIColor(this, (color: UIColor) => {
                 const cgColor = color ? color.CGColor : null;
@@ -198,4 +199,4 @@ export class Label extends TextBase implements LabelDefinition {
     }
 }
 
-// Label.prototype.recycleNativeView = true;
+Label.prototype.recycleNativeView = true;

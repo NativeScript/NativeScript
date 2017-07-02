@@ -71,6 +71,11 @@ export abstract class WebViewBase extends View implements WebViewDefinition {
             src = "file://" + src;
         }
 
+        // loading local files from paths with spaces may fail
+        if (src.toLowerCase().indexOf("file:///") === 0) {
+            src = encodeURI(src);
+        }
+
         if (src.toLowerCase().indexOf("http://") === 0 ||
             src.toLowerCase().indexOf("https://") === 0 ||
             src.toLowerCase().indexOf("file:///") === 0) {
