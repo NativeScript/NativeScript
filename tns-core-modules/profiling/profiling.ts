@@ -161,7 +161,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 }
 
 function profileMethodNamed(name: string): MethodDecorator {
-    return (target, key, descriptor) => {
+    return (target, key, descriptor: PropertyDescriptor) => {
 
         // save a reference to the original method this way we keep the values currently in the
         // descriptor and don't overwrite what another decorator might have done to the descriptor.

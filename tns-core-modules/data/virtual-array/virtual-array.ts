@@ -1,4 +1,4 @@
-﻿import { Observable } from "../observable";
+﻿import { Observable, EventData } from "../observable";
 import * as virtualArrayDef from ".";
 
 const CHANGE = "change";
@@ -157,4 +157,9 @@ export class VirtualArray<T> extends Observable implements virtualArrayDef.Virtu
             });
         }
     }
+}
+export interface VirtualArray<T> {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "itemsLoading", callback: (args: virtualArrayDef.ItemsLoading) => void, thisArg?: any);
+    on(event: "change", callback: (args: virtualArrayDef.ChangedData<T>) => void, thisArg?: any);
 }

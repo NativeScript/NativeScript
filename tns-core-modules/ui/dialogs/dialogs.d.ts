@@ -27,7 +27,7 @@ export module inputType {
  * The alert() method displays an alert box with a specified message.
  * @param message Specifies the text to display in the alert box.
  */
-export function alert(message: string): Promise<void>;
+export function alert(message: string | number | boolean): Promise<void>;
 
 /**
  * The alert() method displays an alert box with a specified message.

@@ -1,7 +1,7 @@
 ﻿import { SegmentedBar as SegmentedBarDefinition, SegmentedBarItem as SegmentedBarItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, InheritedCssProperty, Color, Style
+    Property, CoercibleProperty, InheritedCssProperty, Color, Style, EventData
 } from "../core/view";
 
 export * from "../core/view";
@@ -88,6 +88,10 @@ export abstract class SegmentedBarBase extends View implements SegmentedBarDefin
             });
         }
     }
+}
+export interface SegmentedBarBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
 }
 
 SegmentedBarBase.prototype.recycleNativeView = true;

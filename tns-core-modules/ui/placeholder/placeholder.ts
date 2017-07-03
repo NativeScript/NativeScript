@@ -1,5 +1,5 @@
 ﻿import { Placeholder as PlaceholderDefinition, CreateViewEventData } from "."
-import { View } from "../core/view"
+import { View, EventData } from "../core/view"
 
 export class Placeholder extends View implements PlaceholderDefinition {
     public static creatingViewEvent = "creatingView";
@@ -9,4 +9,8 @@ export class Placeholder extends View implements PlaceholderDefinition {
         this.notify(args);
         return args.view;
     }
+}
+export interface Placeholder {
+    on(eventNames: string, callback: (args: EventData) => void);
+    on(event: "creatingView", callback: (args: CreateViewEventData) => void);
 }

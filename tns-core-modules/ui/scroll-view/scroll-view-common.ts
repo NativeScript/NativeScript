@@ -1,5 +1,5 @@
-﻿import { ScrollView as ScrollViewDefinition, Orientation } from ".";
-import { ContentView, Property, makeParser, makeValidator } from "../content-view";
+﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
+import { ContentView, Property, makeParser, makeValidator, EventData } from "../content-view";
 import { profile } from "../../profiling";
 
 export * from "../content-view";
@@ -80,6 +80,10 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public abstract scrollToVerticalOffset(value: number, animated: boolean);
     public abstract scrollToHorizontalOffset(value: number, animated: boolean);
     public abstract _onOrientationChanged();
+}
+export interface ScrollViewBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
 }
 
 const converter = makeParser<Orientation>(makeValidator("horizontal", "vertical"));

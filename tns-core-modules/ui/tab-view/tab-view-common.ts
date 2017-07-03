@@ -1,7 +1,7 @@
 ﻿import { TabView as TabViewDefinition, TabViewItem as TabViewItemDefinition, SelectedIndexChangedEventData } from ".";
 import {
     View, ViewBase, Style, Property, CssProperty, CoercibleProperty,
-    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder
+    Color, isIOS, AddArrayFromBuilder, AddChildFromBuilder, EventData
 } from "../core/view";
 
 export * from "../core/view";
@@ -181,6 +181,10 @@ export class TabViewBase extends View implements TabViewDefinition, AddChildFrom
             }
         }
     }
+}
+export interface TabViewBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "selectedIndexChanged", callback: (args: SelectedIndexChangedEventData) => void, thisArg?: any);
 }
 
 export const selectedIndexProperty = new CoercibleProperty<TabViewBase, number>({
