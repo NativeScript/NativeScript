@@ -27,7 +27,7 @@
     "nativescript-typedoc-theme": "git://github.com/NativeScript/nativescript-typedoc-theme.git#master",
     "shelljs": "^0.7.0",
     "time-grunt": "1.3.0",
-    "tslint": "^4.4.2",
+    "tslint": "^5.4.3",
     "typedoc": "^0.5.10",
     "typedoc-plugin-external-module-name": "git://github.com/PanayotCankov/typedoc-plugin-external-module-name.git#with-js",
     "typescript": "^2.4.1"
