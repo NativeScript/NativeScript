@@ -1,6 +1,8 @@
 Development Workflow
 ====================
 
+## Project Structure
+
 The repository contains several packages and apps:
  - `tns-core-modules` - Core ui, io and sensor modules
  - `apps` - UI app used for manual testing and automation
@@ -62,7 +64,7 @@ You can compile the typescript files in the `tns-core-modules`, `tns-platform-de
 npm run tsc
 ```
 
-## Running Tests
+## Running Unit Tests
 The test app is an ordinary NativeScript app that logs the test results as it go.
 After the [initial setup](#initial-setup) ypu can run the tests with:
 ```bash
