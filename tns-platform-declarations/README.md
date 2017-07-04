@@ -5,8 +5,7 @@ Offically supported entry points:
  - `ios.d.ts` - For iOS SDK and runtime types.
 
 Using the declarations may conflict with DOM typings,
-consider using TypeScript 2.x.x or newer,
-and the following settings in your `tsconfig.json`:
+consider using TypeScript 2.x.x and the following settings in your `tsconfig.json`:
 ```
 {
     "compilerOptions": {
