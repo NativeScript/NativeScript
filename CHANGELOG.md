@@ -62,6 +62,12 @@ A full list of breaking changes could be found [here](https://github.com/NativeS
 - [(# 3118)](https://github.com/NativeScript/NativeScript/issues/3118) Feature: New Dialog-Prompt-Input-Type for E-Mails
 - [(# 3642)](https://github.com/NativeScript/NativeScript/issues/3642) BREAKING: Make typings compatible with DOM and Node typings
 
+## 2.5.3 (2017, June 29)
+
+### Fixed
+
+- [(#4342)](https://github.com/NativeScript/NativeScript/issues/4342) Unable to change the fontWeight for both iOS and Android
+
 ## 2.5.2 (2017, March 21)
 
 ### Fixed
