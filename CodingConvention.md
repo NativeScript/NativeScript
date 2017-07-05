@@ -2,7 +2,7 @@
 
 ## Linting
 
-We use [Tslint](https://palantir.github.io/tslint/) for linting. Rules are defined in `build/tslint.json`.
+We use [TSLint](https://palantir.github.io/tslint/) for linting. Rules are defined in `build/tslint.json`.
 Run the tslint form the root of the repo with:
 
 ```bash
