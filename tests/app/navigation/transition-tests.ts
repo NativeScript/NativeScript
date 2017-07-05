@@ -24,7 +24,6 @@ function _testTransition(navigationTransition: NavigationTransition) {
     }
 
     helper.navigateWithEntry(navigationEntry);
-    TKUnit.wait(0.100);
 }
 
 // Extremely slow. Run only if needed.

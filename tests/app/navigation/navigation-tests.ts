@@ -37,20 +37,15 @@ function _test_backstackVisible(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let mainTestPage = topmost.currentPage;
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
-    TKUnit.wait(0.2);
     // page1 should not be added to the backstack
     let page0 = topmost.currentPage;
     helper.navigateWithEntry({ create: pageFactory, backstackVisible: false, transition: transition, animated: true });
-    TKUnit.wait(0.2);
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
-    TKUnit.wait(0.2);
     helper.goBack();
-    TKUnit.wait(0.2);
     // From page2 we have to go directly to page0, skipping page1.
     TKUnit.assert(topmost.currentPage === page0, "Page 1 should be skipped when going back.");
 
     helper.goBack();
-    TKUnit.wait(0.2);
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
@@ -77,7 +72,6 @@ function _test_backToEntry(transition?: NavigationTransition) {
     let mainTestPage = topmost.currentPage;
     let waitFunc = tag => {
         TKUnit.waitUntilReady(() => topmost.currentPage["tag"] === tag, 1);
-        TKUnit.wait(0.21);
     };
 
     let navigate = tag => {
@@ -88,7 +82,6 @@ function _test_backToEntry(transition?: NavigationTransition) {
 
     let back = pages => {
         topmost.goBack(topmost.backStack[topmost.backStack.length - pages]);
-        TKUnit.wait(0.21);
     };
 
     let currentPageMustBe = tag => {
@@ -116,7 +109,6 @@ function _test_backToEntry(transition?: NavigationTransition) {
     let page1 = topmost.currentPage;
     back(1);
     helper.waitUntilNavigatedFrom(page1);
-    TKUnit.wait(0.21);
     TKUnit.assertEqual(topmost.currentPage, mainTestPage, "We should be on the main test page at the end of the test.");
 }
 
@@ -133,23 +125,18 @@ export function test_backToEntry_WithTransition() {
 function _test_ClearHistory(transition?: NavigationTransition) {
     let topmost = topmostFrame();
     let x = 0;
-    console.log(`=========== NAV: ${x++}`);
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 0, "1.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "1.topmost.canGoBack().");
 
-    console.log(`=========== NAV: ${x++}`);
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 1, "2.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), true, "2.topmost.canGoBack().");
 
-    console.log(`=========== NAV: ${x++}`);
     helper.navigateWithEntry({ create: pageFactory, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 2, "3.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), true, "3.topmost.canGoBack().");
 
-    console.log(`=========== NAV: ${x++}`);
-    TKUnit.wait(0.5);
     helper.navigateWithEntry({ create: pageFactory, clearHistory: true, transition: transition, animated: true });
     TKUnit.assertEqual(topmost.backStack.length, 0, "4.topmost.backStack.length");
     TKUnit.assertEqual(topmost.canGoBack(), false, "4.topmost.canGoBack().");

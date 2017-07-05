@@ -264,8 +264,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             traceWrite(`NAVIGATE`, traceCategories.Navigation);
         }
 
-        let entry = buildEntryFromArgs(param);
-        let page = resolvePageFromEntry(entry);
+        const entry = buildEntryFromArgs(param);
+        const page = resolvePageFromEntry(entry);
 
         // Attempts to implement https://github.com/NativeScript/NativeScript/issues/1311
         // if (page["isBiOrientational"] && entry.moduleName && !this._subscribedToOrientationChangedEvent){
@@ -279,16 +279,14 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         this._pushInFrameStack();
 
-        let backstackEntry: BackstackEntry = {
+        const backstackEntry: BackstackEntry = {
             entry: entry,
             resolvedPage: page,
             navDepth: undefined,
-            fragmentTag: undefined,
-            isBack: undefined,
-            isNavigation: true
+            fragmentTag: undefined
         };
 
-        let navigationContext: NavigationContext = {
+        const navigationContext: NavigationContext = {
             entry: backstackEntry,
             isBackNavigation: false
         }
@@ -297,12 +295,19 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         if (this._navigationQueue.length === 1) {
             this._processNavigationContext(navigationContext);
-        }
-        else {
+        } else {
             if (traceEnabled()) {
                 traceWrite(`Navigation scheduled`, traceCategories.Navigation);
             }
         }
+    }
+
+    public isCurrent(entry: BackstackEntry): boolean {
+        return this._currentEntry === entry;
+    }
+
+    public setCurrent(entry: BackstackEntry): void {
+        this._currentEntry = entry;
     }
 
     public _processNavigationQueue(page: Page) {
@@ -314,7 +319,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         let entry = this._navigationQueue[0].entry;
         let currentNavigationPage = entry.resolvedPage;
         if (page !== currentNavigationPage) {
-            throw new Error(`Corrupted navigation stack; page: ${page}; currentNavigationPage: ${currentNavigationPage}`);
+            // If the page is not the one that requested navigation - skip it.
+            return;
         }
 
         // remove completed operation.
@@ -337,8 +343,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             return false;
         }
 
-        let backstackVisibleValue = entry.entry.backstackVisible;
-        let backstackHidden = backstackVisibleValue !== undefined && !backstackVisibleValue;
+        const backstackVisibleValue = entry.entry.backstackVisible;
+        const backstackHidden = backstackVisibleValue !== undefined && !backstackVisibleValue;
 
         return !backstackHidden;
     }
@@ -350,8 +356,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     protected _processNavigationContext(navigationContext: NavigationContext) {
         if (navigationContext.isBackNavigation) {
             this.performGoBack(navigationContext);
-        }
-        else {
+        } else {
             this.performNavigation(navigationContext);
         }
     }
@@ -362,18 +367,16 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
         // TODO: This should happen once navigation is completed.
         if (navigationContext.entry.entry.clearHistory) {
             this._backStack.length = 0;
-        }
-        else if (FrameBase._isEntryBackstackVisible(this._currentEntry)) {
+        } else if (FrameBase._isEntryBackstackVisible(this._currentEntry)) {
             this._backStack.push(this._currentEntry);
         }
 
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
-
         this._navigateCore(navContext);
     }
 
     private performGoBack(navigationContext: NavigationContext) {
-        let navContext = navigationContext.entry;
+        const navContext = navigationContext.entry;
         this._onNavigatingTo(navContext, navigationContext.isBackNavigation);
         this._goBackCore(navContext);
     }
@@ -448,7 +451,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             return;
         }
 
-        let top = topmost();
+        const top = topmost();
         if (top !== this) {
             throw new Error("Cannot pop a Frame which is not at the top of the navigation stack.");
         }
@@ -482,8 +485,8 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
 
         return FrameBase.defaultAnimatedNavigation;
     }
-    public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
 
+    public _getNavigationTransition(entry: NavigationEntry): NavigationTransition {
         if (entry) {
             if (isIOS && entry.transitioniOS !== undefined) {
                 return entry.transitioniOS;
@@ -524,7 +527,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     }
 
     public _printFrameBackStack() {
-        let length = this.backStack.length;
+        const length = this.backStack.length;
         let i = length - 1;
         console.log(`Frame Back Stack: `);
         while (i >= 0) {
@@ -536,7 +539,7 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
     public _backstackEntryTrace(b: BackstackEntry): string {
         let result = `${b.resolvedPage}`;
 
-        let backstackVisible = FrameBase._isEntryBackstackVisible(b);
+        const backstackVisible = FrameBase._isEntryBackstackVisible(b);
         if (!backstackVisible) {
             result += ` | INVISIBLE`;
         }
@@ -545,12 +548,12 @@ export class FrameBase extends CustomLayoutView implements FrameDefinition {
             result += ` | CLEAR HISTORY`;
         }
 
-        let animated = this._getIsAnimatedNavigation(b.entry);
+        const animated = this._getIsAnimatedNavigation(b.entry);
         if (!animated) {
             result += ` | NOT ANIMATED`;
         }
 
-        let t = this._getNavigationTransition(b.entry);
+        const t = this._getNavigationTransition(b.entry);
         if (t) {
             result += ` | Transition[${JSON.stringify(t)}]`;
         }
@@ -568,7 +571,7 @@ export function topmost(): FrameBase {
 }
 
 export function goBack(): boolean {
-    let top = topmost();
+    const top = topmost();
     if (top.canGoBack()) {
         top.goBack();
         return true;

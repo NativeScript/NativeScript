@@ -98,7 +98,7 @@ export function test_PageLoaded_is_called_once() {
 }
 
 export function test_NavigateToNewPage() {
-    // >> artivle-create-navigate-to-page
+    // >> article-create-navigate-to-page
     let currentPage;
     let topFrame = frameModule.topmost();
     currentPage = topFrame.currentPage;
@@ -116,16 +116,16 @@ export function test_NavigateToNewPage() {
         create: pageFactory,
         animated: false
     };
-    topFrame.navigate(navEntry);
-    // << artivle-create-navigate-to-page
+      topFrame.navigate(navEntry);
+    // << article-create-navigate-to-page
 
-    TKUnit.waitUntilReady(() => { return testPage.isLayoutValid });
+    TKUnit.waitUntilReady(() => testPage.isLayoutValid);
 
     // >> article-navigating-backward
     topFrame.goBack();
     // << article-navigating-backward
 
-    TKUnit.waitUntilReady(() => { return topFrame.currentPage !== null && topFrame.currentPage === currentPage });
+    TKUnit.waitUntilReady(() => topFrame.currentPage === currentPage);
     TKUnit.assertNull(testPage.parent, "Page.parent should become undefined after navigating back");
     TKUnit.assertNull(testPage._context, "Page._context should become undefined after navigating back");
     TKUnit.assertFalse(testPage.isLoaded, "Page.isLoaded should become false after navigating back");
@@ -203,7 +203,6 @@ function _test_PageNavigation_EventSequence(withTransition: boolean) {
         }
     }
     helper.navigateWithEntry(navigationEntry);
-    TKUnit.wait(0.2);
     helper.goBack();
 
     let expectedEventSequence = ["navigatingTo", "loaded", "navigatedTo", "navigatingFrom", "unloaded", "navigatedFrom"];

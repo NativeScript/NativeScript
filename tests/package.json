@@ -4,12 +4,12 @@
   "readme": "NativeScript Application",
   "repository": "<fill-your-repository-here>",
   "nativescript": {
-    "id": "org.nativescript.UnitTestApp",
+    "id": "org.nativescript.tests",
     "tns-ios": {
       "version": "3.1.0"
     },
     "tns-android": {
-      "version": "3.1.1"
+      "version": "3.1.0"
     }
   },
   "dependencies": {

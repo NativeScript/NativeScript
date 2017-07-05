@@ -639,9 +639,8 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
     }
 
     public test_LoadedUnloaded() {
-        let listView = this.testView;
-        let count = 10;
-        let modifier = listView.ios ? 1 : 0; // iOS has one fake measure cell that raises loaded.
+        const listView = this.testView;
+        const count = 10;
 
         let items = new observableArray.ObservableArray<Item>();
         for (let i = 0; i < count; i++) {
@@ -664,10 +663,15 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         this.waitUntilListViewReady();
 
         helper.navigateWithHistory(() => new Page());
+        for (let i = 0; i < count; i++) {
+            TKUnit.assertEqual(items.getItem(i).loadedCount, 1, "Loaded Count");
+            TKUnit.assertEqual(items.getItem(i).unloadedCount, 1, "Unloaded Count");
+        }
+
         helper.goBack();
 
         for (let i = 0; i < count; i++) {
-            TKUnit.assertEqual(items.getItem(i).loadedCount, 1 + modifier, "Loaded Count");
+            TKUnit.assertEqual(items.getItem(i).loadedCount, 2, "Loaded Count");
             TKUnit.assertEqual(items.getItem(i).unloadedCount, 1, "Unloaded Count");
         }
     }

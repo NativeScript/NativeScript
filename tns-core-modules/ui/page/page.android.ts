@@ -127,20 +127,6 @@ export class Page extends PageBase {
         }
     }
 
-    public _tearDownUI(force?: boolean) {
-        const skipDetached = !force && this.frame && this.frame.android.cachePagesOnNavigate && !this._isBackNavigation;
-
-        if (!skipDetached) {
-            super._tearDownUI();
-            this._isAddedToNativeVisualTree = false;
-        }
-    }
-
-    public onNavigatedFrom(isBackNavigation: boolean) {
-        this._isBackNavigation = isBackNavigation;
-        super.onNavigatedFrom(isBackNavigation);
-    }
-
     /* tslint:disable */
     private _dialogFragment: android.app.DialogFragment;
     /* tslint:enable */

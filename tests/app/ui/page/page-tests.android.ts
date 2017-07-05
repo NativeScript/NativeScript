@@ -76,34 +76,6 @@ export function test_NavigateToNewPage_InnerControl() {
     TKUnit.assertFalse(label._isAddedToNativeVisualTree, "InnerControl._isAddedToNativeVisualTree should become false after navigating back");
 }
 
-export var test_ChangePageCaching_AfterNavigated_Throws = function () {
-    var testPage: PageModule.Page;
-    var pageFactory = function () {
-        var testPage = new PageModule.Page();
-        testPage.id = "testPage_test_ChangePageCaching_AfterNavigated_Throws";
-        testPage.content = new LabelModule.Label();
-        return testPage;
-    };
-
-    var androidFrame = frame.topmost().android;
-    var cachingBefore = androidFrame.cachePagesOnNavigate;
-    
-    helper.navigateWithHistory(pageFactory);
-    
-    try {
-        TKUnit.assertThrows(() => {
-            // Set caching to different value.
-            androidFrame.cachePagesOnNavigate = !cachingBefore;
-        },
-            "Changing cachePagesOnNavigate value after navigations should throw error.",
-            "Cannot set cachePagesOnNavigate if there are items in the back stack."
-            );
-    }
-    finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-}
-
 export var test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow = function () {
     var testPage: PageModule.Page;
     var pageFactory = function () {
@@ -121,20 +93,6 @@ export var test_SetPageCaching_ToTheSameValue_AfterNavigated_DoesNotThrow = func
     try {
         // Set caching to same value.
         androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-    finally {
-        androidFrame.cachePagesOnNavigate = cachingBefore;
-    }
-}
-
-export var test_ChangePageCaching_BeforeNavigated_DoesNotThrow = function () {
-    var androidFrame = frame.topmost().android;
-    var cachingBefore = androidFrame.cachePagesOnNavigate;
-    try {
-        androidFrame.cachePagesOnNavigate = !cachingBefore;
-    }
-    catch (e) {
-        TKUnit.assert(false, "Changing cachePagesOnNavigate before navigation should not throw.");
     }
     finally {
         androidFrame.cachePagesOnNavigate = cachingBefore;

@@ -104,6 +104,16 @@ export class Frame extends View {
     //@private
     /**
      * @private
+     * @param entry to check
+     */
+    isCurrent(entry: BackstackEntry): boolean;
+    /**
+     * @private
+     * @param entry to set as current
+     */
+    setCurrent(entry: BackstackEntry): void;
+    /**
+     * @private
      */
     navigationQueueIsEmpty(): boolean;
     /**
@@ -270,14 +280,6 @@ export interface BackstackEntry {
      * @private
      */
     fragmentTag: string;
-    /**
-     * @private
-     */
-    isBack: boolean;
-    /**
-     * @private
-     */
-    isNavigation: boolean;
     //@endprivate
 }
 
@@ -330,6 +332,7 @@ export interface AndroidFrame extends Observable {
 
     /**
      * Gets or sets whether the page UI will be cached when navigating away from the page.
+     * Deprecated. This property is not used internally.
      */
     cachePagesOnNavigate: boolean;
 
