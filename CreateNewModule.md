@@ -10,7 +10,7 @@ There are several major scenarios when writing modules:
 
 ### The module implementation contains pure JavaScript code ONLY and does not depend on native APIs. In this case the entire logic is executed on the JS Virtual Machine side and the TNS Runtime is not involved.
 
-_Example:_ [matrix module](/NativeScript/NativeScript/tree/master/tns-core-modules/matrix)
+_Example:_ [matrix module](tns-core-modules/matrix)
 
 **Declaration file (foo.d.ts):**
 
@@ -39,7 +39,7 @@ export class Foo implements FooDefinition {
 
 ### The module implementation depends on native APIs ONLY and the common pure JavaScript code between platform-specific implementations is minimal. 
 
-_Example:_ [timer module](/NativeScript/NativeScript/tree/master/tns-core-modules/timer)
+_Example:_ [timer module](tns-core-modules/timer)
 
 
 **Declaration file (foo.d.ts):**
@@ -98,7 +98,7 @@ In this case we will need to reuse the common JavaScript code and to split the i
 
 This is the way most of the UI modules are written.
 
-_Example:_ [image module](/NativeScript/NativeScript/tree/master/tns-core-modules/ui/image)
+_Example:_ [image module](tns-core-modules/ui/image)
 
 **Declaration file (foo.d.ts):**
 
@@ -171,7 +171,7 @@ export class Foo extends FooBase {
 
 #### Extract the platform specific implementation in a separate Facade and aggregate/use it within the JavaScript implementation
 
-_Example:_ [file-system module](/NativeScript/NativeScript/tree/master/tns-core-modules/file-system) (_Note:_ `file-system-access` is the platform specific implementation)
+_Example:_ [file-system module](tns-core-modules/file-system) (_Note:_ `file-system-access` is the platform specific implementation)
 
 **Declaration file (foo.d.ts):**
 
