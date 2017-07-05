@@ -55,9 +55,11 @@ npm run setup
 git checkout -b my-fix-branch master
 ```
 
-* The fun part! Make your code changes
+* The fun part! Make your code changes.
 
-* Follow the [code conventions guide](CodeConvention.md)
+* Follow the [code conventions guide](CodeConvention.md).
+
+* Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
 
 * All bugs and features should have unit tests. 
 
@@ -67,6 +69,9 @@ git checkout -b my-fix-branch master
     * Tslint is passing (run `npm run tslint` in the root of the repo).
 
 * Push your fork and [submit a pull request](https://github.com/NativeScript/NativeScript/compare). Please fill in the Pull Request template - it will help us better understand the PR and increase the chances of it getting merged quickly.
+
+* It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
+
 
 ### Where to Start
 
