@@ -694,7 +694,7 @@ export class CssAnimationProperty<T extends Style, U> {
         this.defaultValue = defaultValue;
 
         const cssValue = Symbol(cssName);
-        const styleValue = Symbol(propertyName);
+        const styleValue = Symbol(`local:${propertyName}`);
         const keyframeValue = Symbol(keyframeName);
         const computedValue = Symbol("computed-value:" + propertyName);
         this.key = computedValue;
@@ -789,6 +789,16 @@ export class CssAnimationProperty<T extends Style, U> {
                 Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
             }
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
+        }
+    }
+
+    public _initDefaultNativeValue(target: T): void {
+        const defaultValueKey = this.defaultValueKey;
+
+        if (!(defaultValueKey in target)) {
+            const view = target.view;
+            const getDefault = this.getDefault;
+            target[defaultValueKey] = view[getDefault] ? view[getDefault]() : this.defaultValue;
         }
     }
 
