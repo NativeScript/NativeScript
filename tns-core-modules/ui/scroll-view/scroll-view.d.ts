@@ -35,6 +35,11 @@ export class ScrollView extends ContentView {
     scrollableWidth: number;
 
     /**
+     * Toggles scrollbar visibility
+     */
+    scrollBar: boolean;
+
+    /**
      * Scrolls the content the specified vertical offset position.
      * @param value The offset value
      * @param animated true for animated scroll, false for immediate scroll.

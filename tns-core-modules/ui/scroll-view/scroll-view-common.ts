@@ -1,5 +1,5 @@
 ﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
-import { ContentView, Property, makeParser, makeValidator, EventData } from "../content-view";
+import { ContentView, Property, makeParser, makeValidator, EventData, booleanConverter } from "../content-view";
 import { profile } from "../../profiling";
 
 export * from "../content-view";
@@ -77,6 +77,10 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
         return 0;
     }
 
+    get scrollBar(): boolean {
+        return true;
+    }
+
     public abstract scrollToVerticalOffset(value: number, animated: boolean);
     public abstract scrollToHorizontalOffset(value: number, animated: boolean);
     public abstract _onOrientationChanged();
@@ -95,3 +99,9 @@ export const orientationProperty = new Property<ScrollViewBase, Orientation>({
     valueConverter: converter
 });
 orientationProperty.register(ScrollViewBase);
+
+export const scrollBarProperty = new Property<ScrollViewBase, boolean>({
+    name: "scrollBar", defaultValue: true,
+    valueConverter: booleanConverter
+});
+scrollBarProperty.register(ScrollViewBase);
