@@ -1,6 +1,12 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 2.5.3 (2017, June 29)
+
+### Fixed
+
+- [(#4342)](https://github.com/NativeScript/NativeScript/issues/4342) Unable to change the fontWeight for both iOS and Android
+
 ##2.5.2 (2017, March 21)
 
 ### Fixed
