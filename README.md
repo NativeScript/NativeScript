@@ -64,7 +64,7 @@ In addition to the code that makes up the NativeScript framework itself, we also
 
 ## Contributing
 
-We love PRs, and accept them for all of our repositories—even docs! Please follow our [contribution guide](https://www.nativescript.org/contribute) if you want to become part of the project.
+We love PRs, and accept them for all of our repositories—even docs! Please follow our [contribution guide](CONTRIBUTING.md) if you want to become part of the project.
 
 ## Angular
 
@@ -72,12 +72,6 @@ We [worked together with the Google Angular team](http://angularjs.blogspot.com/
 
 ## Get Help
 
-The NativeScript framework has a vibrant community that can help when you run into problems.
-
-If you have a question, start by seeing if anyone else has encountered the scenario on [Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript). If you cannot find any information, try [asking the question yourself](http://stackoverflow.com/questions/ask/advice?). Make sure to add any details needed to recreate the issue and include the “NativeScript” tag, so your question is visible to the NativeScript community.
-
-If you need more help than the Q&A format Stack Overflow can provide, try [joining the NativeScript community Slack](http://developer.telerik.com/wp-login.php?action=slack-invitation). The Slack chat is a great place to get help troubleshooting problems, as well as connect with other NativeScript developers.
-
-Finally, if you have found an issue with the NativeScript framework itself, please report the problem in the   [Issues](https://github.com/NativeScript/NativeScript/issues).
+Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](CONTRIBUTING.md#bugs) or [requesting features](CONTRIBUTING.md#features). For general NativeScript questions and support, check out the [NativeScript community forum](https://discourse.nativescript.org/).
 
 ![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
