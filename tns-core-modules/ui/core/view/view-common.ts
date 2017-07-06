@@ -738,7 +738,7 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     }
 
     public _getValue(): never {
-        throw new Error("The View._setValue is obsolete. There is a new property system.");
+        throw new Error("The View._getValue is obsolete. There is a new property system.");
     }
 
     public _setValue(): never {

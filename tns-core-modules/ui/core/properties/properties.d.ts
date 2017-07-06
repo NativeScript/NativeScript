@@ -113,7 +113,17 @@ export class CssAnimationProperty<T extends Style, U> {
     public register(cls: { prototype: T }): void;
     public isSet(instance: T): boolean;
 
+    /**
+     * @private
+     */
+    public _initDefaultNativeValue(target: T): void;
+    /**
+     * @private
+     */
     public _valueConverter?: (value: string) => any;
+    /**
+     * @private
+     */
     public static _getByCssName(name: string): CssAnimationProperty<any, any>;
 }
 

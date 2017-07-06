@@ -250,9 +250,11 @@ export class Animation extends AnimationBase {
         }
 
         let setLocal = this._valueSource === "animation";
-
+        const style = propertyAnimation.target.style;
         switch (propertyAnimation.property) {
             case Properties.opacity:
+                opacityProperty._initDefaultNativeValue(style);
+
                 originalValue1 = nativeView.getAlpha();
                 nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
@@ -273,6 +275,8 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.backgroundColor:
+                backgroundColorProperty._initDefaultNativeValue(style);
+
                 ensureArgbEvaluator();
                 originalValue1 = propertyAnimation.target.backgroundColor;
                 nativeArray = Array.create(java.lang.Object, 2);
@@ -303,6 +307,9 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.translate:
+                translateXProperty._initDefaultNativeValue(style);
+                translateYProperty._initDefaultNativeValue(style);
+
                 xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
                 nativeArray = Array.create("float", 1);
@@ -344,6 +351,9 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.scale:
+                scaleXProperty._initDefaultNativeValue(style);
+                scaleYProperty._initDefaultNativeValue(style);
+                
                 xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
                 nativeArray = Array.create("float", 1);
@@ -385,6 +395,8 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.rotate:
+                rotateProperty._initDefaultNativeValue(style);
+
                 originalValue1 = nativeView.getRotation();
                 nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
