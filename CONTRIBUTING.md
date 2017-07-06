@@ -6,9 +6,7 @@ Here are some guides on how to do that:
  - [Code of Conduct](#coc)
  - [Reporting Bugs](#bugs)
  - [Requesting New Features](#features)
- - [Asking for Help](#help)
  - [Submitting a PR](#pr)
-
 
 ##  <a name="coc"></a> Code of Conduct
 Help us keep a healthy and open community. We expect all participants in this project to adhere to the the [NativeScript Code Of Conduct](https://github.com/NativeScript/codeofconduct).
@@ -26,23 +24,24 @@ Help us keep a healthy and open community. We expect all participants in this pr
 2. First, search for a similar request and extend it if applicable. This way it would be easier for the community to track the features.
 3. When requesting a new feature, please provide as much detail as possible about why you need the feature in your apps. We prefer that you explain a need rather than explain a technical solution for it. That might trigger a nice conversation on finding the best and broadest technical solution to a specific need.
 
-## <a name="help"></a> Asking for Help
-
-We tend to keep GitHub issues strictly for bug reports and feature request (a.k.a "things you can address with a PR").
-
-If you have a question or need help with your project, start by seeing if anyone else has encountered the scenario on [Stack Overflow](http://stackoverflow.com/questions/tagged/nativescript). If you cannot find any information, try [asking the question yourself](http://stackoverflow.com/questions/ask/advice?). Make sure to add any details needed to recreate the issue and include the `NativeScript` tag, so your question is visible to the NativeScript community.
-
-If you need more help than the Q&A format Stack Overflow can provide, try [joining the NativeScript community Slack](http://developer.telerik.com/wp-login.php?action=slack-invitation). The Slack chat is a great place to get help troubleshooting problems, as well as connect with other NativeScript developers.
-
 ## <a name="pr"></a> Submitting a PR
 
+Before you begin:
 * Read and sign the [NativeScript Contribution License Agreement](http://www.nativescript.org/cla).
 * Make sure there is an issue for the bug or feature you will be working on.
-* Fork and clone the NativeScript repo:
+
+Following these steps is the best way to get you code included in the project:
+
+1. Fork and clone the NativeScript repo:
 ```bash
 git clone https://github.com/<your-git-username>/NativeScript.git
+# Navigate to the newly cloned directory
+cd NativeScript
+# Add an "upstream" remote pointing to the original {N} repo.
+git remote add upstream https://github.com/NativeScript/NativeScript.git
 ```
-* Set up the project (for detailed info check our [development workflow guide](DevelopmentWorkflow.md)):
+
+2. Set up the project (for detailed info check our [development workflow guide](DevelopmentWorkflow.md)):
 
 ```bash
 #In the repo root
@@ -50,27 +49,28 @@ npm install
 npm run setup
 ```
 
-* Create a branch for your PR
+3. Create a branch for your PR
 ```bash
-git checkout -b my-fix-branch master
+git checkout -b <my-fix-branch> master
 ```
 
-* The fun part! Make your code changes.
+4. The fun part! Make your code changes. Make sure you:
+    - Follow the [code conventions guide](CodeConvention.md).
+    - Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
 
-* Follow the [code conventions guide](CodeConvention.md).
+5. Before you submit your PR:
+    - Rebase your changes to the latest master: `git pull --rebase upstream master`.
+    - Ensure all unit test are green for Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
+    - Ensure your changes pass tslint validation. (run `npm run tslint` in the root of the repo).
 
-* Write unit tests for your fix or feature. Check out [writing unit tests guide](WritingUnitTests.md).
+6. Push your fork. If you have rebased you might have to use force-push your branch:
+```
+git push origin <my-fix-branch> --force
+```
 
-* All bugs and features should have unit tests. 
+7. [Submit your pull request](https://github.com/NativeScript/NativeScript/compare). Please, fill in the Pull Request template - it will help us better understand the PR and increase the chances of it getting merged quickly.
 
-* Before you submit your PR make sure:
-    * Rebase your changes to the latest master.
-    * All unit test are green for both Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
-    * Tslint is passing (run `npm run tslint` in the root of the repo).
-
-* Push your fork and [submit a pull request](https://github.com/NativeScript/NativeScript/compare). Please fill in the Pull Request template - it will help us better understand the PR and increase the chances of it getting merged quickly.
-
-* It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
+It's our turn from there on! We will review the PR and discuss changes you might have to make before merging it! Thanks! 
 
 
 ### Where to Start
