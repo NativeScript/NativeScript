@@ -5,8 +5,8 @@ The purpose of this document is to get you familiar with it, so that you can uni
 
 # Run Unit Tests Project
 
-Refer to the [development-workflow guide](DevelopmentWorkflow.md) for instruction on how to setup your repo ready for development.
-After the setup just navigate to the `tests` project and run it. It will execute all the tests and output the results in the console.
+Refer to the [development-workflow guide](DevelopmentWorkflow.md) for instructions on how to set up your repo and get it ready for development.
+After the setup, navigate to the `tests` project and run it. It will execute all the tests and output the results in the console.
 
 ```bash
 cd tests
@@ -19,7 +19,7 @@ tns run ios
 # Test Modules
 
 All unit tests are organized into test modules(bundles).
-By default the test app will run all the tests form all registered test modules. This happens in [`runTests()`](/tests/app/app/mainPage.ts#L26-L28) method in the main page of the test-app. By modifying this method, you can configure the app to:
+By default the test app will run all the tests from all registered test modules. This happens in [`runTests()`](/tests/app/app/mainPage.ts#L26-L28) method in the main page of the test-app. By modifying this method, you can configure the app to:
 
 * **Execute only the tests from a specific test module**:
 
@@ -48,14 +48,14 @@ allTests["HTTP"] = httpTests;
 ## Writing Test Module
 The test modules are actually TypeScript modules which export unit tests and hooks as functions following this convention:
 
-* All exported function which begin with `test` prefix are unit-tests.
+* All exported functions which with a `test` prefix are unit-tests.
 * The `setUpModule()` hook is called once - before all the tests in the module.
 * The `setUp()` hook is called before each tests.
 * The `tearDown()` hook called after each tests.
 * The `tearDownModule()` hook is called once - after all the tests in the module.
 
 # Asserting
-Test will fail if assert is not satisfied or if error is thrown during execution.
+A test will fail if assert is not satisfied or if an error is thrown during execution.
 There is a large set of asserting functions available in the [`tests/app/TKUnit.ts`](tests/app/TKUnit.ts) module. We recommend using those in your tests.
 
 ```typescript
@@ -72,7 +72,7 @@ export function testSomethingWorksFast() {
 
 # Async Tests
 
-Unit test can accept a single argument - a done callback. Test framework will wait for the `done()` callback to be called (or the test to timeout) before moving on.
+Unit tests can accept a single argument - a done callback. The test framework will wait for the `done()` callback to be called (or the test to timeout) before moving on.
 Passing an `Error` to the `done()` callback will cause the test to fail:
 
 ```typescript

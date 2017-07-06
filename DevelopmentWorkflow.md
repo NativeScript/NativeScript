@@ -4,10 +4,10 @@ Development Workflow
 ## Project Structure
 
 The repository contains several packages and apps:
- - `tns-core-modules` - Core ui, io and sensor modules
- - `apps` - UI app used for manual testing and automation
- - `tests` - Unit tests for the `tns-core-modules`
- - `tns-platform-declarations` - Android and iOS native APIs supported in JavaScript
+ - `tns-core-modules` - The core NativeScript TypeScript modules used to develop NativeScript apps.
+ - `apps` - UI app used for manual testing and automation.
+ - `tests` - Unit tests app for the `tns-core-modules`.
+ - `tns-platform-declarations` - TypeScript definitions for Android and iOS native APIs.
 
 Working with the repo is organized with npm scripts,
 go and read through the `scripts` section in the [package.json](./package.json).
@@ -54,21 +54,21 @@ tsc --skipLibCheck
 tsc --skipLibCheck -w
 ```
 
-The modules have `typescript` as devDependency so you should also be able to use locally installed TypeScript compiler from node_modules:
+The modules have `typescript` as a devDependency so you should also be able to use the locally installed TypeScript compiler from node_modules:
 ```bash
 ./node_modules/.bin/tsc
 ```
 
-You can compile the typescript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
+You can compile the TypeScript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
 ```bash
 npm run tsc
 ```
 
 ## Running Unit Tests
 The test app is an ordinary NativeScript app that logs the test results as it go.
-After the [initial setup](#initial-setup) ypu can run the tests with:
+After the [initial setup](#initial-setup) you can run the tests with:
 ```bash
-# Make sure typescript is transpiled
+# Make sure TypeScript is transpiled
 tsc
 
 # Run the tests app
@@ -79,10 +79,10 @@ tns run android --path tests
 ## Running the Test App
 
 The test app is an ordinary NativeScript app that logs the test results as it go.
-After the [initial setup](#initial-setup) ypu can run the tests with:
+After the [initial setup](#initial-setup) you can run the tests with:
 
 ```
-# Make sure typescript is transpiled
+# Make sure TypeScript is transpiled
 tsc
 
 # Run the app
@@ -101,7 +101,7 @@ npm link tns-core-modules
 tns run ios
 tns run android
 ```
->Note: You still have to rebuild the typescrpit if you have made changes in the code of the core-modules.
+>Note: You still have to rebuild the TypeScript if you have made changes in the code of the core-modules.
 
 
 ## Platform declarations

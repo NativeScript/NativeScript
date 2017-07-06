@@ -23,8 +23,8 @@ Help us keep a healthy and open community. We expect all participants in this pr
 ## <a name="features"></a> Requesting Features
 
 1. Use Github Issues to submit feature requests.
-2. First search for a similar request and extend it if applicable. This way it would be easier for the community to track the features.
-3. When a brand new feature requested, try to give as many details on your need as possible. We prefer that you explain a need than explain a technical solution for it. That might trigger a nice conversation on finding the best and broadest technical solution to a specific need.
+2. First, search for a similar request and extend it if applicable. This way it would be easier for the community to track the features.
+3. When requesting a new feature, please provide as much detail as possible about why you need the feature in your apps. We prefer that you explain a need rather than explain a technical solution for it. That might trigger a nice conversation on finding the best and broadest technical solution to a specific need.
 
 ## <a name="help"></a> Asking for Help
 
@@ -42,7 +42,7 @@ If you need more help than the Q&A format Stack Overflow can provide, try [joini
 ```bash
 git clone https://github.com/<your-git-username>/NativeScript.git
 ```
-* Setup the project (for detailed info check our [development workflow guide](DevelopmentWorkflow.md)):
+* Set up the project (for detailed info check our [development workflow guide](DevelopmentWorkflow.md)):
 
 ```bash
 #In the repo root
@@ -65,7 +65,7 @@ git checkout -b my-fix-branch master
 
 * Before you submit your PR make sure:
     * Rebase your changes to the latest master.
-    * All unit test are green for both Android and IOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
+    * All unit test are green for both Android and iOS. Check [running unit tests](DevelopmentWorkflow.md#running-unit-tests).
     * Tslint is passing (run `npm run tslint` in the root of the repo).
 
 * Push your fork and [submit a pull request](https://github.com/NativeScript/NativeScript/compare). Please fill in the Pull Request template - it will help us better understand the PR and increase the chances of it getting merged quickly.
