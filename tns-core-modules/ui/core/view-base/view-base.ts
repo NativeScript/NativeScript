@@ -638,6 +638,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (this._styleScope === view._styleScope) {
             view._setStyleScope(null);
         }
+        
         if (view.isLoaded) {
             view.onUnloaded();
         }
