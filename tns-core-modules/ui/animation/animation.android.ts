@@ -1,4 +1,7 @@
-﻿import { AnimationDefinition } from ".";
+﻿// Definitions.
+import { AnimationDefinition } from ".";
+import { View } from "../core/view";
+
 import { AnimationBase, Properties, PropertyAnimation, CubicBezierAnimationCurve, AnimationPromise, Color, traceWrite, traceEnabled, traceCategories } from "./animation-common";
 import {
     opacityProperty, backgroundColorProperty, rotateProperty,
@@ -88,6 +91,7 @@ export class Animation extends AnimationBase {
     private _propertyUpdateCallbacks: Array<Function>;
     private _propertyResetCallbacks: Array<Function>;
     private _valueSource: "animation" | "keyframe";
+    private _target: View;
 
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
@@ -185,23 +189,17 @@ export class Animation extends AnimationBase {
             return;
         }
 
-        let i = 0;
-        let length = this._propertyUpdateCallbacks.length;
-        for (; i < length; i++) {
-            this._propertyUpdateCallbacks[i]();
-        }
+        this._propertyUpdateCallbacks.forEach(v => v());
         this._disableHardwareAcceleration();
         this._resolveAnimationFinishedPromise();
+        this._target._removeAnimation(this);
     }
 
     private _onAndroidAnimationCancel() { // tslint:disable-line 
-        let i = 0;
-        let length = this._propertyResetCallbacks.length;
-        for (; i < length; i++) {
-            this._propertyResetCallbacks[i]();
-        }
+        this._propertyResetCallbacks.forEach(v => v());
         this._disableHardwareAcceleration();
         this._rejectAnimationFinishedPromise();
+        this._target._removeAnimation(this);
     }
 
     private _createAnimators(propertyAnimation: PropertyAnimation): void {
@@ -225,14 +223,16 @@ export class Animation extends AnimationBase {
             throw new Error(`Animation value cannot be null or undefined; target: ${propertyAnimation.target}; property: ${propertyAnimation.property};`);
         }
 
+        this._target = propertyAnimation.target;
+
         let nativeArray;
-        let nativeView = <android.view.View>propertyAnimation.target.nativeView;
-        let animators = new Array<android.animation.Animator>();
-        let propertyUpdateCallbacks = new Array<Function>();
-        let propertyResetCallbacks = new Array<Function>();
+        const nativeView = <android.view.View>propertyAnimation.target.nativeView;
+        const animators = new Array<android.animation.Animator>();
+        const propertyUpdateCallbacks = new Array<Function>();
+        const propertyResetCallbacks = new Array<Function>();
         let originalValue1;
         let originalValue2;
-        let density = layout.getDisplayDensity();
+        const density = layout.getDisplayDensity();
         let xyObjectAnimators: any;
         let animatorSet: android.animation.AnimatorSet;
 
@@ -298,9 +298,10 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[backgroundColorProperty.name] = originalValue1;
                     } else {
                         propertyAnimation.target.style[backgroundColorProperty.keyframe] = originalValue1;
-                        if (propertyAnimation.target.nativeView && propertyAnimation.target[backgroundColorProperty.setNative]) {
-                            propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
-                        }
+                    }
+                    
+                    if (propertyAnimation.target.nativeView && propertyAnimation.target[backgroundColorProperty.setNative]) {
+                        propertyAnimation.target[backgroundColorProperty.setNative](propertyAnimation.target.style.backgroundColor);
                     }
                 }));
                 animators.push(animator);
@@ -337,10 +338,11 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[translateXProperty.keyframe] = originalValue1;
                         propertyAnimation.target.style[translateYProperty.keyframe] = originalValue2;
-                        if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[translateXProperty.setNative](propertyAnimation.target.style.translateX);
-                            propertyAnimation.target[translateYProperty.setNative](propertyAnimation.target.style.translateY);
-                        }
+                    }
+
+                    if (propertyAnimation.target.nativeView) {
+                        propertyAnimation.target[translateXProperty.setNative](propertyAnimation.target.style.translateX);
+                        propertyAnimation.target[translateYProperty.setNative](propertyAnimation.target.style.translateY);
                     }
                 }));
 
@@ -353,7 +355,7 @@ export class Animation extends AnimationBase {
             case Properties.scale:
                 scaleXProperty._initDefaultNativeValue(style);
                 scaleYProperty._initDefaultNativeValue(style);
-                
+
                 xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
                 nativeArray = Array.create("float", 1);
@@ -381,10 +383,11 @@ export class Animation extends AnimationBase {
                     } else {
                         propertyAnimation.target.style[scaleXProperty.keyframe] = originalValue1;
                         propertyAnimation.target.style[scaleYProperty.keyframe] = originalValue2;
-                        if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[scaleXProperty.setNative](propertyAnimation.target.style.scaleX);
-                            propertyAnimation.target[scaleYProperty.setNative](propertyAnimation.target.style.scaleY);
-                        }
+                    }
+
+                    if (propertyAnimation.target.nativeView) {
+                        propertyAnimation.target[scaleXProperty.setNative](propertyAnimation.target.style.scaleX);
+                        propertyAnimation.target[scaleYProperty.setNative](propertyAnimation.target.style.scaleY);
                     }
                 }));
 
@@ -408,9 +411,10 @@ export class Animation extends AnimationBase {
                         propertyAnimation.target.style[rotateProperty.name] = originalValue1;
                     } else {
                         propertyAnimation.target.style[rotateProperty.keyframe] = originalValue1;
-                        if (propertyAnimation.target.nativeView) {
-                            propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
-                        }
+                    }
+                    
+                    if (propertyAnimation.target.nativeView) {
+                        propertyAnimation.target[rotateProperty.setNative](propertyAnimation.target.style.rotate);
                     }
                 }));
                 animators.push(android.animation.ObjectAnimator.ofFloat(nativeView, "rotation", nativeArray));

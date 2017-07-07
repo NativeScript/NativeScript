@@ -50,14 +50,16 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
     private _measuredWidth: number;
     private _measuredHeight: number;
 
+    private _isLayoutValid: boolean;
+    private _cssType: string;
+
+    private _localAnimations: Set<am.Animation>;
+
     _currentWidthMeasureSpec: number;
     _currentHeightMeasureSpec: number;
 
     _setMinWidthNative: (value: Length) => void;
     _setMinHeightNative: (value: Length) => void;
-
-    private _isLayoutValid: boolean;
-    private _cssType: string;
 
     public _gestureObservers = {};
 
@@ -714,8 +716,35 @@ export abstract class ViewCommon extends ViewBase implements ViewDefinition {
 
     public createAnimation(animation: any): am.Animation {
         ensureAnimationModule();
+        if (!this._localAnimations) {
+            this._localAnimations = new Set();
+        }
         animation.target = this;
-        return new animationModule.Animation([animation]);
+        const anim = new animationModule.Animation([animation]);
+        this._localAnimations.add(anim);
+        return anim;
+    }
+
+    public _removeAnimation(animation: am.Animation): boolean {
+        const localAnimations = this._localAnimations;
+        if (localAnimations && localAnimations.has(animation)) {
+            localAnimations.delete(animation);
+            if (animation.isPlaying) {
+                animation.cancel();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public resetNativeView(): void {
+        if (this._localAnimations) {
+            this._localAnimations.forEach(a => this._removeAnimation(a));
+        }
+
+        super.resetNativeView();
     }
 
     public toString(): string {
