@@ -162,7 +162,7 @@ export class TextBase extends TextBaseCommon {
         switch (value) {
             case "initial":
             case "left":
-                this.nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
+                this.nativeView.setGravity(android.view.Gravity.START | verticalGravity);
                 break;
 
             case "center":
@@ -170,7 +170,7 @@ export class TextBase extends TextBaseCommon {
                 break;
 
             case "right":
-                this.nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+                this.nativeView.setGravity(android.view.Gravity.END | verticalGravity);
                 break;
         }
     }

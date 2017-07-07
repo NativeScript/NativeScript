@@ -116,6 +116,7 @@ export class SearchBar extends SearchBarBase {
         nativeView.queryTextListener.owner = this;
     }
 
+
     public disposeNativeView() {
         const nativeView: any = this.nativeView;
         nativeView.closeListener.owner = null;
@@ -186,11 +187,14 @@ export class SearchBar extends SearchBarBase {
         this.nativeView.setQuery(text, false);
     }
     [hintProperty.getDefault](): string {
-        return "";
+        return null;
     }
     [hintProperty.setNative](value: string) {
-        const text = (value === null || value === undefined) ? '' : value.toString();
-        this.nativeView.setQueryHint(text);
+        if (value === null || value === undefined) {
+            this.nativeView.setQueryHint(null);
+        } else {
+            this.nativeView.setQueryHint(value.toString());
+        }
     }
     [textFieldBackgroundColorProperty.getDefault](): android.graphics.drawable.Drawable {
         const textView = this._getTextView();
@@ -202,7 +206,7 @@ export class SearchBar extends SearchBarBase {
             textView.setBackgroundColor(value.android);
         } else {
             org.nativescript.widgets.ViewHelper.setBackground(textView, value);
-        }        
+        }
     }
     [textFieldHintColorProperty.getDefault](): number {
         const textView = this._getTextView();
@@ -220,7 +224,7 @@ export class SearchBar extends SearchBarBase {
             const id = this.nativeView.getContext().getResources().getIdentifier("search_src_text", "id", pkgName);
             this._searchTextView = <android.widget.TextView>this.nativeView.findViewById(id);
         }
-        
+
         return this._searchTextView;
     }
 
