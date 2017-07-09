@@ -4,13 +4,14 @@
 import * as imageSourceModule from "../../image-source";
 import * as platformModule from "../../platform";
 import * as fsModule from "../../file-system";
+import { getFilenameFromUrl } from "./http-request-common";
 
 // this is imported for definition purposes only
 import * as http from "../../http";
 
 import { NetworkAgent } from "../../debugger/debugger";
 
-export const enum HttpResponseEncoding {
+export enum HttpResponseEncoding {
     UTF8,
     GBK
 }
@@ -119,11 +120,11 @@ function onRequestComplete(requestId: number, result: org.nativescript.widgets.A
                     }
                 });
             },
-            toFile: (destinationFilePath?: string) => {
-                var fs: typeof fsModule = require("file-system");
-                var fileName = callbacks.url;
+            toFile: (destinationFilePath: string) => {
+               var fs: typeof fsModule = require("file-system");
+                                    
                 if (!destinationFilePath) {
-                    destinationFilePath = fs.path.join(fs.knownFolders.documents().path, fileName.substring(fileName.lastIndexOf('/') + 1));
+                    destinationFilePath = getFilenameFromUrl(callbacks.url);
                 }
                 var stream: java.io.FileOutputStream;
                 try {

@@ -4,7 +4,6 @@ import * as viewModule from "tns-core-modules/ui/core/view";
 import * as pagesModule from "tns-core-modules/ui/page";
 import * as textFieldTestsNative from "./text-field-tests-native";
 import * as colorModule from "tns-core-modules/color";
-import * as enums from "tns-core-modules/ui/enums";
 import * as platform from "tns-core-modules/platform";
 import * as formattedStringModule from "tns-core-modules/text/formatted-string";
 import * as spanModule from "tns-core-modules/text/span";
@@ -22,13 +21,17 @@ import * as observable from "tns-core-modules/data/observable";
 // ### Binding two TextFields text property to observable view-model property.
 // >> binding-text-property-textfield
 function pageLoaded(args) {
-  var page = args.object;
-  var obj = new observable.Observable();
-  obj.set("someProperty", "Please change this text!");
-  page.bindingContext = obj;
+    var page = args.object;
+    var obj = new observable.Observable();
+    obj.set("someProperty", "Please change this text!");
+    page.bindingContext = obj;
 }
 exports.pageLoaded = pageLoaded;
 // << binding-text-property-textfield
+
+export function test_recycling() {
+    helper.nativeView_recycling_test(_createTextFieldFunc);
+}
 
 var _createTextFieldFunc = function (): textFieldModule.TextField {
     // >> creating-textfield
@@ -41,7 +44,7 @@ var _createTextFieldFunc = function (): textFieldModule.TextField {
 export var testSetText = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-        
+
         // >> setting-text-property
         textField.text = "Hello, world!";
         // << setting-text-property
@@ -49,13 +52,13 @@ export var testSetText = function () {
         var expectedValue = "Hello, world!";
         var actualValue = textFieldTestsNative.getNativeText(textField);
         TKUnit.assertEqual(actualValue, expectedValue, "TextField native text");
-    });    
+    });
 }
 
 export var testSetTextNull = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-        
+
         textField.text = null;
 
         var expectedValue = "";
@@ -99,7 +102,7 @@ function createFormattedString(value: any): formattedStringModule.FormattedStrin
 export var testSetTextWithSpan = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
-  
+
         textField.formattedText = createFormattedString("Hello, world!");
 
         var expectedValue = "Hello, world!";
@@ -156,6 +159,7 @@ export var testSetHintToNumber = function () {
 
         var actualValue = textFieldTestsNative.getNativeHint(textField);
         TKUnit.assert(<any>actualValue == expectedValue, "Actual: " + actualValue + "; Expected: " + expectedValue);
+
     });
 }
 /* tslint:enable */
@@ -450,6 +454,8 @@ export var testNativeBackgroundColorFromCss = function () {
         var page = <pagesModule.Page>views[1];
         page.css = "textfield { background-color: " + expectedBackgroundColorHex + "; }";
 
+        helper.waitUntilLayoutReady(textField);
+
         var actualResult = textFieldTestsNative.getNativeBackgroundColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
@@ -459,6 +465,8 @@ export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextFieldFunc(), function (views: Array<viewModule.View>) {
         var textField = <textFieldModule.TextField>views[0];
         textField.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
+
+        helper.waitUntilLayoutReady(textField);
 
         var actualResult = textFieldTestsNative.getNativeBackgroundColor(textField).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
@@ -542,15 +550,15 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithoutFormatt
     let view = new textFieldModule.TextField();
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         TKUnit.assertEqual(view.text, "", "Text");
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.none, "TextTransform default value");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.none, "TextDecoration default value");
+        TKUnit.assertEqual(view.style.textTransform, "initial", "TextTransform default value");
+        TKUnit.assertEqual(view.style.textDecoration, "none", "TextDecoration default value");
         TKUnit.assertTrue(view.style.letterSpacing === 0, "LetterSpacing default value");
 
         view.text = "NormalText";
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }
@@ -561,9 +569,9 @@ export function test_IntegrationTest_Transform_Decoration_Spacing_WithFormattedT
     helper.buildUIAndRunTest(view, function (views: Array<viewModule.View>) {
         view.formattedText = formattedString;
         view.setInlineStyle("text-transform: uppercase; text-decoration: underline; letter-spacing: 1;");
-        
-        TKUnit.assertEqual(view.style.textTransform, enums.TextTransform.uppercase, "TextTransform");
-        TKUnit.assertEqual(view.style.textDecoration, enums.TextDecoration.underline, "TextDecoration");
+
+        TKUnit.assertEqual(view.style.textTransform, "uppercase", "TextTransform");
+        TKUnit.assertEqual(view.style.textDecoration, "underline", "TextDecoration");
         TKUnit.assertEqual(view.style.letterSpacing, 1, "LetterSpacing");
     });
 }

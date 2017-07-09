@@ -1,5 +1,6 @@
-﻿import { ScrollView as ScrollViewDefinition } from ".";
-import { ContentView, Property } from "../content-view";
+﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
+import { ContentView, Property, makeParser, makeValidator, EventData } from "../content-view";
+import { profile } from "../../profiling";
 
 export * from "../content-view";
 
@@ -7,7 +8,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     private _scrollChangeCount: number = 0;
     public static scrollEvent = "scroll";
 
-    public orientation: "horizontal" | "vertical";
+    public orientation: Orientation;
 
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
@@ -27,6 +28,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
         }
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
 
@@ -79,20 +81,17 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public abstract scrollToHorizontalOffset(value: number, animated: boolean);
     public abstract _onOrientationChanged();
 }
+export interface ScrollViewBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
+}
 
-export const orientationProperty = new Property<ScrollViewBase, "horizontal" | "vertical">({
+const converter = makeParser<Orientation>(makeValidator("horizontal", "vertical"));
+export const orientationProperty = new Property<ScrollViewBase, Orientation>({
     name: "orientation", defaultValue: "vertical", affectsLayout: true,
-    valueChanged: (target: ScrollViewBase, oldValue: "horizontal" | "vertical", newValue: "horizontal" | "vertical") => {
+    valueChanged: (target: ScrollViewBase, oldValue: Orientation, newValue: Orientation) => {
         target._onOrientationChanged();
     },
-    valueConverter: (value) => {
-        if (value === "vertical") {
-            return "vertical";
-        } else if (value === "horizontal") {
-            return "horizontal";
-        }
-
-        throw new Error(`Orientation should be 'horizontal' or 'vertical'. Given: ${value}`);
-    }
+    valueConverter: converter
 });
 orientationProperty.register(ScrollViewBase);

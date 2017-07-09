@@ -174,7 +174,7 @@ export class GridLayout extends GridLayoutBase {
 
             actualLength = offset - roundedOffset;
             roundedLength = Math.round(actualLength);
-            columnGroup.rowOrColumn._actualLength = layout.toDeviceIndependentPixels(roundedLength);
+            columnGroup.rowOrColumn._actualLength = layout.round(layout.toDeviceIndependentPixels(roundedLength));
             roundedOffset += roundedLength;
 
             this.columnOffsets.push(roundedOffset);
@@ -191,7 +191,7 @@ export class GridLayout extends GridLayoutBase {
 
             actualLength = offset - roundedOffset;
             roundedLength = Math.round(actualLength);
-            rowGroup.rowOrColumn._actualLength = layout.toDeviceIndependentPixels(roundedLength);
+            rowGroup.rowOrColumn._actualLength = layout.round(layout.toDeviceIndependentPixels(roundedLength));
             roundedOffset += roundedLength;
 
             this.rowOffsets.push(roundedOffset);

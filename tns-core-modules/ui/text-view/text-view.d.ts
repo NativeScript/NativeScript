@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the TextView class, which represents an editable multi-line line box.
- */
+ * @module "ui/text-view"
+ */ /** */
+
 import { EditableTextBase } from "../editable-text-base";
 
 /**

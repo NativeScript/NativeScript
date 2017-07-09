@@ -1,13 +1,20 @@
-﻿///<reference path="../tns-core-modules.d.ts" /> Include global typings
-/**
+﻿/**
  * Contains the application abstraction with all related methods.
- */
+ * @module "application"
+ */ /** */
+
+///<reference path="../tns-core-modules.d.ts" /> Include global typings
 import { NavigationEntry, View, Observable, EventData } from "../ui/frame";
 
 /**
  * String value used when hooking to launch event.
  */
 export var launchEvent: string;
+
+/**
+ * String value used when hooking to displayed event.
+ */
+export var displayedEvent: string;
 
 /**
  * String value used when hooking to uncaughtError event.
@@ -186,6 +193,13 @@ export function hasListeners(eventName: string): boolean;
  * This event is raised on application launchEvent.
  */
 export function on(event: "launch", callback: (args: LaunchEventData) => void, thisArg?: any);
+
+/**
+ * This event is raised after the application has performed most of its startup actions.
+ * Its intent is to be suitable for measuring app startup times.
+ * @experimental
+ */
+export function on(event: "displayed", callback: (args: EventData) => void, thisArg?: any);
 
 /**
  * This event is raised when the Application is suspended.

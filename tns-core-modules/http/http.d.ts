@@ -1,6 +1,8 @@
 ﻿/**
  * Allows you to send web requests and receive the responses.
- */
+ * @module "http"
+ */ /** */
+
 import * as image from "../image-source";
 import * as fs from "../file-system";
 
@@ -117,7 +119,7 @@ export interface HttpResponse {
 
 export type Headers = { [key: string]: string | string[] };
 
-export const enum HttpResponseEncoding {
+export enum HttpResponseEncoding {
   UTF8,
   GBK
 }

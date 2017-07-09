@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the Border class, which represents a UI border component.
- */
+ * @module "ui/animation/keyframe-animation"
+ */ /** */
+
 import { ContentView } from "../content-view";
 
 /**

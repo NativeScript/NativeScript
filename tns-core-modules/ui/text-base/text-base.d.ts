@@ -1,4 +1,8 @@
-﻿import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
+﻿/**
+ * @module "ui/text-base"
+ */ /** */
+
+import { View, AddChildFromBuilder, Property, CssProperty, InheritedCssProperty, Style, Length } from "../core/view";
 import { FormattedString } from "../../text/formatted-string";
 
 export * from "../core/view";
@@ -69,64 +73,42 @@ export class TextBase extends View implements AddChildFromBuilder {
      * Specify the top padding of this layout.
      */
     paddingTop: Length;
-
+    
     /**
      * Called for every child element declared in xml.
      * This method will add a child element (value) to current element.
+     * @private
      * @param name - Name of the element.
      * @param value - Value of the element.
      */
     _addChildFromBuilder(name: string, value: any): void;
 
+    //@private
     /**
-     * @private
      * Called when the text property is changed to request layout.
+     * @private
      */
     _requestLayoutOnTextChanged(): void;
 
-    _setNativeText(): void;
+    /**
+     * @private
+     */
+    _setNativeText(reset?: boolean): void;
+
+    /**
+     * @private
+     */
+    _isSingleLine: boolean;
     //@endprivate
 }
 
 export const textProperty: Property<TextBase, string>;
 export const formattedTextProperty: Property<TextBase, FormattedString>;
 
-export type TextAlignment = "left" | "center" | "right";
-export namespace TextAlignment {
-    export const LEFT: "left";
-    export const CENTER: "center";
-    export const RIGHT: "right";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): TextAlignment;
-}
-
+export type WhiteSpace = "initial" | "normal" | "nowrap";
+export type TextAlignment = "initial" | "left" | "center" | "right";
+export type TextTransform = "initial" | "none" | "capitalize" | "uppercase" | "lowercase";
 export type TextDecoration = "none" | "underline" | "line-through" | "underline line-through";
-export namespace TextDecoration {
-    export const NONE: "none";
-    export const UNDERLINE: "underline";
-    export const LINE_THROUGH: "line-through";
-    export const UNDERLINE_LINE_THROUGH: "underline line-through";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): TextDecoration;
-}
-
-export type TextTransform = "none" | "capitalize" | "uppercase" | "lowercase";
-export namespace TextTransform {
-    export const NONE: "none";
-    export const CAPITALIZE: "capitalize";
-    export const UPPERCASE: "uppercase";
-    export const LOWERCASE: "lowercase";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): TextTransform;
-}
-
-export type WhiteSpace = "normal" | "nowrap";
-export namespace WhiteSpace {
-    export const NORMAL: "normal";
-    export const NO_WRAP: "nowrap";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): WhiteSpace;
-}
 
 export const textAlignmentProperty: InheritedCssProperty<Style, TextAlignment>;
 export const textDecorationProperty: CssProperty<Style, TextDecoration>;

@@ -1,16 +1,9 @@
-import * as pages from "tns-core-modules/ui/page";
-import * as labelModule from "tns-core-modules/ui/label";
-import * as observable from "tns-core-modules/data/observable";
+import { Page } from "tns-core-modules/ui/page";
+import { Label } from "tns-core-modules/ui/label";
 
-var page: pages.Page;
-var label: labelModule.Label;
-
-export function pageLoaded(args: observable.EventData) {
-    page = <pages.Page>args.object;
-    label = page.getViewById<labelModule.Label>("label");
-}
-
-export function onTap(args: observable.EventData) {
+export function onTap(args) {
+    const page = <Page>args.object.page;
+    const label = page.getViewById<Label>("label");
     var fullscreen = (<any>args.object).text.indexOf("(full-screen)") !== -1;
     page.showModal("ui-tests-app/modal-view/login-page", "context", function (username: string, password: string) {
         console.log(username + "/" + password);

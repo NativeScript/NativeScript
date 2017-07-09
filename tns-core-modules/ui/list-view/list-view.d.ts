@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the ListView class, which represents a standard list view widget.
- */
+ * @module "ui/list-view"
+ */ /** */
+
 import { EventData, View, Template, KeyedTemplate, Length, Property, CssProperty, Color, Style } from "../core/view";
 
 /**

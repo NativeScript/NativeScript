@@ -24,7 +24,7 @@ function onLivesync(args: EventData): void {
         }
 
         try {
-            reloadPage();
+            g.__onLiveSyncCore();
         } catch (ex) {
             // Show the error as modal page, save reference to the page in global context.
             g.errorPage = parse(`<Page><ScrollView><Label text="${ex}" textWrap="true" style="color: red;" /></ScrollView></Page>`);
@@ -33,6 +33,10 @@ function onLivesync(args: EventData): void {
     });
 }
 application.on("livesync", onLivesync);
+
+if (global && global.__inspector) {
+    require("tns-core-modules/debugger/devtools-elements");
+}
 
 let frameStack: Array<FrameBase> = [];
 
@@ -74,6 +78,9 @@ export function reloadPage(): void {
     }
 }
 
+// attach on global, so it can be overwritten in NativeScript Angular
+(<any>global).__onLiveSyncCore = reloadPage;
+
 export function resolvePageFromEntry(entry: NavigationEntry): Page {
     let page: Page;
 
@@ -83,14 +90,16 @@ export function resolvePageFromEntry(entry: NavigationEntry): Page {
         if (!page) {
             throw new Error("Failed to create Page with entry.create() function.");
         }
+
+        page._refreshCss();
     }
     else if (entry.moduleName) {
         // Current app full path.
         let currentAppPath = knownFolders.currentApp().path;
         //Full path of the module = current app full path + module name.
         let moduleNamePath = path.join(currentAppPath, entry.moduleName);
-        console.log("frame module path: " + moduleNamePath);
-        console.log("frame module module: " + entry.moduleName);
+        traceWrite("frame module path: " + moduleNamePath, traceCategories.Navigation);
+        traceWrite("frame module module: " + entry.moduleName, traceCategories.Navigation);
 
         let moduleExports;
         // web-pack case where developers register their page JS file manually.

@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the Label class, which represents a standard label widget.
- */
+ * @module "ui/label"
+ */ /** */
+
 import { TextBase } from "../text-base";
 
 /**

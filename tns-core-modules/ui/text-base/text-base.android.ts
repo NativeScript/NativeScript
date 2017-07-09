@@ -1,11 +1,11 @@
-﻿import { Font } from "../styling/font";
+﻿import { TextDecoration, TextAlignment, TextTransform, WhiteSpace } from "./text-base";
+import { Font } from "../styling/font";
 import { backgroundColorProperty } from "../styling/style-properties";
 import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    whiteSpaceProperty, FormattedString, TextDecoration, TextAlignment, TextTransform, WhiteSpace,
-    layout, Span, Color, isBold
+    whiteSpaceProperty, FormattedString, layout, Span, Color, isBold
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -49,35 +49,75 @@ function initializeTextTransformation(): void {
 
 export class TextBase extends TextBaseCommon {
     nativeView: android.widget.TextView;
-    _defaultTransformationMethod: android.text.method.TransformationMethod;
+    private _defaultTransformationMethod: android.text.method.TransformationMethod;
+    private _paintFlags: number;
+    private _minHeight: number;
+    private _maxHeight: number;
+    private _minLines: number;
+    private _maxLines: number;
 
     public initNativeView(): void {
-        this._defaultTransformationMethod = this.nativeView.getTransformationMethod();
+        const nativeView = this.nativeView;
+        this._defaultTransformationMethod = nativeView.getTransformationMethod();
+        this._minHeight = nativeView.getMinHeight();
+        this._maxHeight = nativeView.getMaxHeight();
+        this._minLines = nativeView.getMinLines();
+        this._maxLines = nativeView.getMaxLines();
         super.initNativeView();
     }
 
     public resetNativeView(): void {
         super.resetNativeView();
+        const nativeView = this.nativeView;
         // We reset it here too because this could be changed by multiple properties - whiteSpace, secure, textTransform
-        this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+        nativeView.setSingleLine(this._isSingleLine);
+        nativeView.setTransformationMethod(this._defaultTransformationMethod);
         this._defaultTransformationMethod = null;
+
+        if (this._paintFlags !== undefined) {
+            nativeView.setPaintFlags(this._paintFlags);
+            this._paintFlags = undefined;
+        }
+
+        if (this._minLines !== -1) {
+            nativeView.setMinLines(this._minLines);
+        } else {
+            nativeView.setMinHeight(this._minHeight);
+        }
+
+        this._minHeight = this._minLines = undefined;
+
+        if (this._maxLines !== -1) {
+            nativeView.setMaxLines(this._maxLines);
+        } else {
+            nativeView.setMaxHeight(this._maxHeight);
+        }
+
+        this._maxHeight = this._maxLines = undefined;
     }
 
-    [textProperty.getDefault](): string {
-        return '';
+    [textProperty.getDefault](): number {
+        return -1;
     }
-    [textProperty.setNative](value: string) {
-        if (this.formattedText) {
+
+    [textProperty.setNative](value: string | number) {
+        const reset = value === -1;
+        if (!reset && this.formattedText) {
             return;
         }
 
-        this._setNativeText();
+        this._setNativeText(reset);
     }
 
-    [formattedTextProperty.getDefault](): FormattedString {
-        return null;
-    }
     [formattedTextProperty.setNative](value: FormattedString) {
+        const nativeView = this.nativeView;
+        if (!value) {
+            if (nativeView instanceof android.widget.Button &&
+                nativeView.getTransformationMethod() instanceof TextTransformation) {
+                nativeView.setTransformationMethod(this._defaultTransformationMethod);
+            }
+        }
+
         // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
         if ((<any>this).secure) {
             return;
@@ -86,27 +126,23 @@ export class TextBase extends TextBaseCommon {
         initializeTextTransformation();
 
         const spannableStringBuilder = createSpannableStringBuilder(value);
-        this.nativeView.setText(<any>spannableStringBuilder);
+        nativeView.setText(<any>spannableStringBuilder);
 
         textProperty.nativeValueChange(this, (value === null || value === undefined) ? '' : value.toString());
 
-        if (spannableStringBuilder && this.nativeView instanceof android.widget.Button &&
-            !(this.nativeView.getTransformationMethod() instanceof TextTransformation)) {
+        if (spannableStringBuilder && nativeView instanceof android.widget.Button &&
+            !(nativeView.getTransformationMethod() instanceof TextTransformation)) {
             // Replace Android Button's default transformation (in case the developer has not already specified a text-transform) method 
             // with our transformation method which can handle formatted text.
             // Otherwise, the default tranformation method of the Android Button will overwrite and ignore our spannableStringBuilder.
-            this.nativeView.setTransformationMethod(new TextTransformation(this));
+            nativeView.setTransformationMethod(new TextTransformation(this));
         }
     }
 
-    [textTransformProperty.getDefault](): "default" {
-        return "default";
-    }
-    [textTransformProperty.setNative](value: "default" | TextTransform | android.text.method.TransformationMethod) {
-        // In case of reset.
-        if (value === "default") {
-             this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
-             return;
+    [textTransformProperty.setNative](value: TextTransform) {
+        if (value === "initial") {
+            this.nativeView.setTransformationMethod(this._defaultTransformationMethod);
+            return;
         }
 
         // Don't change the transformation method if this is secure TextField or we'll lose the hiding characters.
@@ -115,11 +151,44 @@ export class TextBase extends TextBaseCommon {
         }
 
         initializeTextTransformation();
+        this.nativeView.setTransformationMethod(new TextTransformation(this));
+    }
 
-        if (typeof value === "string") {
-            this.nativeView.setTransformationMethod(new TextTransformation(this));
-        } else {
-            this.nativeView.setTransformationMethod(value);
+    [textAlignmentProperty.getDefault](): TextAlignment {
+        return "initial";
+    }
+    [textAlignmentProperty.setNative](value: TextAlignment) {
+        let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
+        switch (value) {
+            case "initial":
+            case "left":
+                this.nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
+                break;
+
+            case "center":
+                this.nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
+                break;
+
+            case "right":
+                this.nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
+                break;
+        }
+    }
+
+    // Overridden in TextField because setSingleLine(false) will remove methodTransformation.
+    // and we don't want to allow TextField to be multiline
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
+        const nativeView = this.nativeView;
+        switch (value) {
+            case "initial":
+            case "normal":
+                nativeView.setSingleLine(false);
+                nativeView.setEllipsize(null);
+                break;
+            case "nowrap":
+                nativeView.setSingleLine(true);
+                nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                break;
         }
     }
 
@@ -157,84 +226,28 @@ export class TextBase extends TextBaseCommon {
             this.nativeView.setTypeface(value instanceof Font ? value.getAndroidTypeface() : value);
         }
     }
-    [textAlignmentProperty.getDefault](): TextAlignment {
-        let textAlignmentGravity = this.nativeView.getGravity() & android.view.Gravity.HORIZONTAL_GRAVITY_MASK;
-        switch (textAlignmentGravity) {
-            case android.view.Gravity.CENTER_HORIZONTAL:
-                return "center";
-            case android.view.Gravity.RIGHT:
-                return "right";
-            case android.view.Gravity.LEFT:
-            default:
-                return "left";
-        }
-    }
-    [textAlignmentProperty.setNative](value: TextAlignment) {
-        let verticalGravity = this.nativeView.getGravity() & android.view.Gravity.VERTICAL_GRAVITY_MASK;
-        switch (value) {
-            case "left":
-                this.nativeView.setGravity(android.view.Gravity.LEFT | verticalGravity);
-                break;
-            case "center":
-                this.nativeView.setGravity(android.view.Gravity.CENTER_HORIZONTAL | verticalGravity);
-                break;
-            case "right":
-                this.nativeView.setGravity(android.view.Gravity.RIGHT | verticalGravity);
-                break;
-            default:
-                throw new Error(`Invalid text alignment value: ${value}. Valid values are: 'left', 'center', 'right'.`);
-        }
+
+    [textDecorationProperty.getDefault](value: number) {
+        return this._paintFlags = this.nativeView.getPaintFlags();
     }
 
-    [textDecorationProperty.getDefault](): number {
-        return -1;
-    }
     [textDecorationProperty.setNative](value: number | TextDecoration) {
-        const isReset = typeof value === "number";
-        if (!this.formattedText || isReset) {
-            value = isReset ? "none" : value;
-            let flags: number;
-            switch (value) {
-                case "none":
-                    flags = 0;
-                    break;
-                case "underline":
-                    flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG;
-                    break;
-                case "line-through":
-                    flags = android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
-                    break;
-                case "underline line-through":
-                    flags = android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG;
-                    break;
-                default:
-                    throw new Error(`Invalid text decoration value: ${value}. Valid values are: 'none', 'underline', 'line-through', 'underline line-through'.`);
-            }
-            this.nativeView.setPaintFlags(flags);
-        } else {
-            this._setNativeText();
-        }
-    }
-
-    // Overriden in TextField becasue setSingleLine(false) will remove methodTransformation.
-    // and we don't want to allow TextField to be multiline
-    [whiteSpaceProperty.getDefault](): WhiteSpace {
-        return "normal";
-    }
-
-    [whiteSpaceProperty.setNative](value: WhiteSpace) {
-        const nativeView = this.nativeView;
         switch (value) {
-            case "normal":
-                nativeView.setSingleLine(false);
-                nativeView.setEllipsize(null);
+            case "none":
+                this.nativeView.setPaintFlags(0);
                 break;
-            case "nowrap":
-                nativeView.setSingleLine(true);
-                nativeView.setEllipsize(android.text.TextUtils.TruncateAt.END);
+            case "underline":
+                this.nativeView.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG);
+                break;
+            case "line-through":
+                this.nativeView.setPaintFlags(android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
+                break;
+            case "underline line-through":
+                this.nativeView.setPaintFlags(android.graphics.Paint.UNDERLINE_TEXT_FLAG | android.graphics.Paint.STRIKE_THRU_TEXT_FLAG);
                 break;
             default:
-                throw new Error(`Invalid whitespace value: ${value}. Valid values are: 'normal', nowrap'.`);
+                this.nativeView.setPaintFlags(value);
+                break;
         }
     }
 
@@ -273,7 +286,12 @@ export class TextBase extends TextBaseCommon {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));
     }
 
-    _setNativeText() {
+    _setNativeText(reset: boolean = false): void {
+        if (reset) {
+            this.nativeView.setText(null);
+            return;
+        }
+
         let transformedText: any;
         if (this.formattedText) {
             transformedText = createSpannableStringBuilder(this.formattedText);
@@ -300,16 +318,15 @@ function getCapitalizedString(str: string): string {
 
 export function getTransformedText(text: string, textTransform: TextTransform): string {
     switch (textTransform) {
-        case "none":
-            return text;
         case "uppercase":
             return text.toUpperCase();
         case "lowercase":
             return text.toLowerCase();
         case "capitalize":
             return getCapitalizedString(text);
+        case "none":
         default:
-            throw new Error(`Invalid text transform value: ${textTransform}. Valid values are: 'none', 'capitalize', 'uppercase', 'lowercase'.`);
+            return text;
     }
 }
 
@@ -324,7 +341,7 @@ function createSpannableStringBuilder(formattedString: FormattedString): android
         const text = span.text;
         const textTransform = (<TextBase>formattedString.parent).textTransform;
         let spanText = (text === null || text === undefined) ? '' : text.toString();
-        if (textTransform !== "none") {
+        if (textTransform && textTransform !== "none") {
             spanText = getTransformedText(spanText, textTransform);
         }
 
@@ -357,7 +374,8 @@ function setSpanModifiers(ssb: android.text.SpannableStringBuilder, span: Span, 
     const fontFamily = span.fontFamily;
     if (fontFamily) {
         const font = new Font(fontFamily, 0, (italic) ? "italic" : "normal", (bold) ? "bold" : "normal");
-        const typefaceSpan: android.text.style.TypefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(fontFamily, font.getAndroidTypeface());
+        const typeface = font.getAndroidTypeface() || android.graphics.Typeface.create(fontFamily, 0);
+        const typefaceSpan: android.text.style.TypefaceSpan = new org.nativescript.widgets.CustomTypefaceSpan(fontFamily, typeface);
         ssb.setSpan(typefaceSpan, start, end, android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 

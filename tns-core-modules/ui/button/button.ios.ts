@@ -1,8 +1,9 @@
 ﻿import { ControlStateChangeListener } from "../core/control-state-change";
 import {
-    ButtonBase, PseudoClassHandler, whiteSpaceProperty,
-    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty, textAlignmentProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, Length, WhiteSpace, TextAlignment, layout
+    ButtonBase, PseudoClassHandler, Length, layout,
+    borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
+    whiteSpaceProperty, WhiteSpace, textAlignmentProperty, TextAlignment, View
 } from "./button-common";
 
 export * from "./button-common";
@@ -43,25 +44,6 @@ export class Button extends ButtonBase {
             this._stateChangedHandler.start();
         } else {
             this._stateChangedHandler.stop();
-        }
-    }
-
-    [whiteSpaceProperty.getDefault](): WhiteSpace {
-        return WhiteSpace.NO_WRAP;
-    }
-    [whiteSpaceProperty.setNative](value: WhiteSpace) {
-        const nativeView = this.nativeView.titleLabel;
-        switch (value) {
-            case WhiteSpace.NORMAL:
-                nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
-                nativeView.numberOfLines = 0;
-                break;
-            case WhiteSpace.NO_WRAP:
-                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
-                nativeView.numberOfLines = 1;
-                break;
-            default:
-                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
 
@@ -161,23 +143,77 @@ export class Button extends ButtonBase {
         this.nativeView.contentEdgeInsets = { top: inset.top, left: left, bottom: inset.bottom, right: inset.right };
     }
 
-    [textAlignmentProperty.getDefault](): TextAlignment {
-        return Button.nativeToJsTextAlignment[this.nativeView.contentHorizontalAlignment];
-    }
     [textAlignmentProperty.setNative](value: TextAlignment) {
-        this.nativeView.contentHorizontalAlignment = Button.jsToNativeTextAlignment[value];
+        switch (value) {
+            case "left":
+                this.nativeView.titleLabel.textAlignment = NSTextAlignment.Left;
+                this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Left;
+                break;
+            case "initial":
+            case "center":
+                this.nativeView.titleLabel.textAlignment = NSTextAlignment.Center;
+                this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Center;
+                break;
+            case "right":
+                this.nativeView.titleLabel.textAlignment = NSTextAlignment.Right;
+                this.nativeView.contentHorizontalAlignment = UIControlContentHorizontalAlignment.Right;
+                break;
+        }
     }
 
-    private static nativeToJsTextAlignment: { [key: number]: TextAlignment } = {
-        [UIControlContentHorizontalAlignment.Left]: "left",
-        [UIControlContentHorizontalAlignment.Center]: "center",
-        [UIControlContentHorizontalAlignment.Right]: "right",
-        [UIControlContentHorizontalAlignment.Fill]: "center"
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
+        const nativeView = this.nativeView.titleLabel;
+        switch (value) {
+            case "normal":
+                nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
+                nativeView.numberOfLines = 0;
+                break;
+            case "nowrap":
+            case "initial":
+                nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingMiddle;
+                nativeView.numberOfLines = 1;
+                break;
+        }
     }
-    private static jsToNativeTextAlignment: { [key in TextAlignment]: UIControlContentHorizontalAlignment } = {
-        "left": UIControlContentHorizontalAlignment.Left,
-        "center": UIControlContentHorizontalAlignment.Center,
-        "right": UIControlContentHorizontalAlignment.Right
+
+    public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
+        // If there is text-wrap UIButton.sizeThatFits will return wrong result (not respecting the text wrap).
+        // So fallback to original onMeasure if there is no text-wrap and use custom measure otherwise.
+        if (!this.textWrap) {
+            return super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        }
+
+        let nativeView = this.nativeView;
+        if (nativeView) {
+            const width = layout.getMeasureSpecSize(widthMeasureSpec);
+            const widthMode = layout.getMeasureSpecMode(widthMeasureSpec);
+            const height = layout.getMeasureSpecSize(heightMeasureSpec);
+            const heightMode = layout.getMeasureSpecMode(heightMeasureSpec);
+
+            const horizontalPadding = this.effectivePaddingLeft + this.effectiveBorderLeftWidth + this.effectivePaddingRight + this.effectiveBorderRightWidth;
+            let verticalPadding = this.effectivePaddingTop + this.effectiveBorderTopWidth + this.effectivePaddingBottom + this.effectiveBorderBottomWidth;
+
+            // The default button padding for UIButton - 6dip top and bottom.
+            if (verticalPadding === 0) {
+                verticalPadding = layout.toDevicePixels(12);
+            }
+
+            const desiredSize = layout.measureNativeView(
+                nativeView.titleLabel,
+                width - horizontalPadding, widthMode,
+                height - verticalPadding, heightMode);
+
+            desiredSize.width = desiredSize.width + horizontalPadding;
+            desiredSize.height = desiredSize.height + verticalPadding;
+
+            const measureWidth = Math.max(desiredSize.width, this.effectiveMinWidth);
+            const measureHeight = Math.max(desiredSize.height, this.effectiveMinHeight);
+
+            const widthAndState = View.resolveSizeAndState(measureWidth, width, widthMode, 0);
+            const heightAndState = View.resolveSizeAndState(measureHeight, height, heightMode, 0);
+
+            this.setMeasuredDimension(widthAndState, heightAndState);
+        }
     }
 }
 

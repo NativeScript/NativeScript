@@ -1,4 +1,5 @@
-import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories } from "./web-view-common";
+import { WebViewBase, knownFolders, traceWrite, traceEnabled, traceCategories, NavigationType } from "./web-view-common";
+import { profile } from "../../profiling";
 
 export * from "./web-view-common";
 
@@ -17,30 +18,30 @@ class UIWebViewDelegateImpl extends NSObject implements UIWebViewDelegate {
         let owner = this._owner.get();
 
         if (owner && request.URL) {
-            let navTypeIndex = WebViewBase.navigationTypes.indexOf("other");
+            let navType: NavigationType = "other";
 
             switch (navigationType) {
                 case UIWebViewNavigationType.LinkClicked:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("linkClicked");
+                    navType = "linkClicked";
                     break;
                 case UIWebViewNavigationType.FormSubmitted:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("formSubmitted");
+                    navType = "formSubmitted";
                     break;
                 case UIWebViewNavigationType.BackForward:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("backForward");
+                    navType = "backForward";
                     break;
                 case UIWebViewNavigationType.Reload:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("reload");
+                    navType = "reload";
                     break;
                 case UIWebViewNavigationType.FormResubmitted:
-                    navTypeIndex = WebViewBase.navigationTypes.indexOf("formResubmitted");
+                    navType = "formResubmitted";
                     break;
             }
 
             if (traceEnabled()) {
                 traceWrite("UIWebViewDelegateClass.webViewShouldStartLoadWithRequestNavigationType(" + request.URL.absoluteString + ", " + navigationType + ")", traceCategories.Debug);
             }
-            owner._onLoadStarted(request.URL.absoluteString, WebViewBase.navigationTypes[navTypeIndex]);
+            owner._onLoadStarted(request.URL.absoluteString, navType);
         }
 
         return true;
@@ -91,6 +92,7 @@ export class WebView extends WebViewBase {
         this._delegate = UIWebViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
@@ -109,12 +111,7 @@ export class WebView extends WebViewBase {
         this._ios.stopLoading();
     }
 
-    public _loadFileOrResource(path: string, content: string) {
-        var baseURL = NSURL.fileURLWithPath(NSString.stringWithString(path).stringByDeletingLastPathComponent);
-        this._ios.loadHTMLStringBaseURL(content, baseURL);
-    }
-
-    public _loadHttp(src: string) {
+    public _loadUrl(src: string) {
         this._ios.loadRequest(NSURLRequest.requestWithURL(NSURL.URLWithString(src)));
     }
 

@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the Cache class, which handles image download requests and caches the already downloaded images.
- */
+ * @module "ui/image-cache"
+ */ /** */
+
 import * as observable from "../../data/observable";
 import * as imageSource from "../../image-source";
 
@@ -88,7 +90,13 @@ export class Cache extends observable.Observable {
     on(event: "downloaded", callback: (args: DownloadedData) => void , thisArg?: any);
 
     //@private
+    /**
+     * @private
+     */
     _downloadCore(request: DownloadRequest);
+    /**
+     * @private
+     */
     _onDownloadCompleted(key: string, image: any);
     //@endprivate
 }

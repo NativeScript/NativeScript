@@ -23,7 +23,7 @@ global.moduleMerge = function (sourceExports: any, destExports: any) {
 import * as timerModule from "../timer";
 import * as dialogsModule from "../ui/dialogs";
 
-type ModuleLoader = () => any;
+type ModuleLoader = (name?: string) => any;
 const modules: Map<string, ModuleLoader> = new Map<string, ModuleLoader>();
 
 global.registerModule = function(name: string, loader: ModuleLoader): void {
@@ -86,49 +86,62 @@ function registerOnGlobalContext(name: string, module: string): void {
     });
 }
 
-if ((<any>global).__snapshot) {
-    // when we have a snapshot, it is better to pre-populate these on the global context to get them saved within the blob
-    var timer: typeof timerModule = require("timer");
-    (<any>global).setTimeout = timer.setTimeout;
-    (<any>global).clearTimeout = timer.clearTimeout;
-    (<any>global).setInterval = timer.setInterval;
-    (<any>global).clearInterval = timer.clearInterval;
+let snapshotGlobals;
+export function install() {
+    if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
+        if (!snapshotGlobals) {
+            // require in snapshot mode is cheap
+            var timer: typeof timerModule = require("timer");
+            var dialogs: typeof dialogsModule = require("ui/dialogs");
+            var xhr = require("xhr");
+            var fetch = require("fetch");
+            var consoleModule = require("console");
 
-    var dialogs: typeof dialogsModule = require("ui/dialogs");
-    (<any>global).alert = dialogs.alert;
-    (<any>global).confirm = dialogs.confirm;
-    (<any>global).prompt = dialogs.prompt;
+            snapshotGlobals = snapshotGlobals || {
+                setTimeout: timer.setTimeout,
+                clearTimeout: timer.clearTimeout,
+                setInterval: timer.setInterval,
+                clearInterval: timer.clearInterval,
 
-    var xhr = require("xhr");
-    (<any>global).XMLHttpRequest = xhr.XMLHttpRequest;
-    (<any>global).FormData = xhr.FormData;
+                alert: dialogs.alert,
+                confirm: dialogs.confirm,
+                prompt: dialogs.prompt,
 
-    var fetch = require("fetch");
-    (<any>global).fetch = fetch.fetch;
-    (<any>global).Headers = fetch.Headers;
-    (<any>global).Request = fetch.Request;
-    (<any>global).Response = fetch.Response;
-} else {
-    registerOnGlobalContext("setTimeout", "timer");
-    registerOnGlobalContext("clearTimeout", "timer");
-    registerOnGlobalContext("setInterval", "timer");
-    registerOnGlobalContext("clearInterval", "timer");
-    registerOnGlobalContext("alert", "ui/dialogs");
-    registerOnGlobalContext("confirm", "ui/dialogs");
-    registerOnGlobalContext("prompt", "ui/dialogs");
-    registerOnGlobalContext("XMLHttpRequest", "xhr");
-    registerOnGlobalContext("FormData", "xhr");
-    registerOnGlobalContext("fetch", "fetch");
+                XMLHttpRequest: xhr.XMLHttpRequest,
+                FormData: xhr.FormData,
+
+                fetch: fetch.fetch,
+                Headers: fetch.Headers,
+                Request: fetch.Request,
+                Response: fetch.Response,
+
+                console: new consoleModule.Console()
+            }
+        }
+        Object.assign(global, snapshotGlobals);
+    } else {
+        registerOnGlobalContext("setTimeout", "timer");
+        registerOnGlobalContext("clearTimeout", "timer");
+        registerOnGlobalContext("setInterval", "timer");
+        registerOnGlobalContext("clearInterval", "timer");
+        registerOnGlobalContext("alert", "ui/dialogs");
+        registerOnGlobalContext("confirm", "ui/dialogs");
+        registerOnGlobalContext("prompt", "ui/dialogs");
+        registerOnGlobalContext("XMLHttpRequest", "xhr");
+        registerOnGlobalContext("FormData", "xhr");
+        registerOnGlobalContext("fetch", "fetch");
+
+        // check whether the 'android' namespace is exposed
+        // if positive - the current device is an Android 
+        // so a custom implementation of the global 'console' object is attached.
+        // otherwise do nothing on iOS - the NS runtime provides a native 'console' functionality.
+        if ((<any>global).android) {
+            const consoleModule = require("console");
+            (<any>global).console = new consoleModule.Console();
+        }
+    }
 }
-
-// check whether the 'android' namespace is exposed
-// if positive - the current device is an Android 
-// so a custom implementation of the global 'console' object is attached.
-// otherwise do nothing on iOS - the NS runtime provides a native 'console' functionality.
-if ((<any>global).android || (<any>global).__snapshot) {
-    const consoleModule = require("console");
-    (<any>global).console = new consoleModule.Console();
-}
+install();
 
 export function Deprecated(target: Object, key?: string | symbol, descriptor?: any) {
     if (descriptor) {

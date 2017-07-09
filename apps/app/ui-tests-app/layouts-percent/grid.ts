@@ -5,7 +5,7 @@ import { GridLayout, ItemSpec, GridUnitType } from "tns-core-modules/ui/layouts/
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <Page>args.object;
-    page.bindingContext = new model.ViewModel();
+    page.bindingContext = new model.ViewModelWithPercentage();
 }
 
 export function onAddRowColumn(args: { eventName: string, object: any }) {

@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the ScrollView class, which represents a scrollable area that can have content that is larger than its bounds.
- */
+ * @module "ui/scroll-view"
+ */ /** */
+
 import { ContentView, EventData, Property } from "../content-view";
 
 /**
@@ -49,7 +51,7 @@ export class ScrollView extends ContentView {
     /**
      * Gets or sets direction in which the content can be scrolled.
      */
-    orientation: string;
+    orientation: Orientation;
 
     /**
      * A basic method signature to hook an event listener (shortcut alias to the addEventListener method).
@@ -72,4 +74,6 @@ export interface ScrollEventData extends EventData {
     scrollY: number;
 }
 
-export const orientationProperty: Property<ScrollView, "horizontal" | "vertical">;
+export type Orientation = "horizontal" | "vertical";
+
+export const orientationProperty: Property<ScrollView, Orientation>;

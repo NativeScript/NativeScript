@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the ActivityIndicator class, which represents a widget for showing that something is currently busy.
- */
+ * @module "ui/activity-indicator"
+ */ /** */
+
 import { View } from "../core/view";
 
 /**

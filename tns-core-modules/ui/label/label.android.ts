@@ -1,23 +1,31 @@
 ﻿import { Label as LabelDefinition } from ".";
-import { TextBase, WhiteSpace } from "../text-base";
+import { TextBase, WhiteSpace, whiteSpaceProperty, booleanConverter } from "../text-base";
+import { profile } from "../../profiling";
 
 export * from "../text-base";
+
+let TextView: typeof android.widget.TextView;
 
 export class Label extends TextBase implements LabelDefinition {
     nativeView: android.widget.TextView;
 
     get textWrap(): boolean {
-        return this.style.whiteSpace === WhiteSpace.NORMAL;
+        return this.style.whiteSpace === "normal";
     }
     set textWrap(value: boolean) {
-        this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
+        
+        this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
+    @profile
     public createNativeView() {
-        const textView = new android.widget.TextView(this._context);
-        textView.setSingleLine(true);
-        textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        return textView;
+        if (!TextView) {
+            TextView = android.widget.TextView;
+        }
+        return new TextView(this._context);
     }
 
     public initNativeView(): void {
@@ -26,6 +34,13 @@ export class Label extends TextBase implements LabelDefinition {
         textView.setSingleLine(true);
         textView.setEllipsize(android.text.TextUtils.TruncateAt.END);
     }
+
+    [whiteSpaceProperty.setNative](value: WhiteSpace) {
+        // Label initial value is no-wrap. set in initNativeView
+        const newValue = value === "initial" ? "nowrap" : value;
+        super[whiteSpaceProperty.setNative](newValue);
+    }
 }
 
-// Label.prototype.recycleNativeView = true;
+Label.prototype._isSingleLine = true;
+Label.prototype.recycleNativeView = true;

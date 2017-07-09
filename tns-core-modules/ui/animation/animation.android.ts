@@ -70,10 +70,10 @@ export function _resolveAnimationCurve(curve: string | CubicBezierAnimationCurve
             }
             if (curve instanceof CubicBezierAnimationCurve) {
                 return (<any>android).support.v4.view.animation.PathInterpolatorCompat.create(curve.x1, curve.y1, curve.x2, curve.y2);
-            } else if (curve instanceof android.view.animation.Interpolator) {
-                return curve;
+            } else if (curve && (<any>curve).getInterpolation) {
+                return <android.view.animation.Interpolator>curve;
             } else if ((<any>curve) instanceof android.view.animation.LinearInterpolator) {
-                return <android.view.animation.Interpolator><any>curve;
+                return <android.view.animation.Interpolator>curve;
             } else {
                 throw new Error(`Invalid animation curve: ${curve}`);
             }
@@ -92,6 +92,7 @@ export class Animation extends AnimationBase {
     constructor(animationDefinitions: Array<AnimationDefinitionInternal>, playSequentially?: boolean) {
         super(animationDefinitions, playSequentially);
 
+        this._valueSource = "animation";
         if (animationDefinitions.length > 0 && animationDefinitions[0].valueSource !== undefined) {
             this._valueSource = animationDefinitions[0].valueSource;
         }
@@ -112,13 +113,19 @@ export class Animation extends AnimationBase {
                 if (traceEnabled()) {
                     traceWrite("MainAnimatorListener.onAnimationEnd(" + animator + ")", traceCategories.Animation);
                 }
-                that.get()._onAndroidAnimationEnd();
+                const thisRef = that.get();
+                if (thisRef) {
+                    thisRef._onAndroidAnimationEnd();
+                }
             },
             onAnimationCancel: function (animator: android.animation.Animator): void {
                 if (traceEnabled()) {
                     traceWrite("MainAnimatorListener.onAnimationCancel(" + animator + ")", traceCategories.Animation);
                 }
-                that.get()._onAndroidAnimationCancel();
+                const thisRef = that.get();
+                if (thisRef) {
+                    thisRef._onAndroidAnimationCancel();
+                }
             }
         });
     }
@@ -243,9 +250,11 @@ export class Animation extends AnimationBase {
         }
 
         let setLocal = this._valueSource === "animation";
-
+        const style = propertyAnimation.target.style;
         switch (propertyAnimation.property) {
             case Properties.opacity:
+                opacityProperty._initDefaultNativeValue(style);
+
                 originalValue1 = nativeView.getAlpha();
                 nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;
@@ -266,6 +275,8 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.backgroundColor:
+                backgroundColorProperty._initDefaultNativeValue(style);
+
                 ensureArgbEvaluator();
                 originalValue1 = propertyAnimation.target.backgroundColor;
                 nativeArray = Array.create(java.lang.Object, 2);
@@ -275,7 +286,7 @@ export class Animation extends AnimationBase {
                 animator.addUpdateListener(new android.animation.ValueAnimator.AnimatorUpdateListener({
                     onAnimationUpdate(animator: android.animation.ValueAnimator) {
                         let argb = (<java.lang.Integer>animator.getAnimatedValue()).intValue();
-                        propertyAnimation.target.style[backgroundColorProperty.cssName] = new Color(argb);
+                        propertyAnimation.target.style[setLocal ? backgroundColorProperty.name : backgroundColorProperty.keyframe] = new Color(argb);
                     }
                 }));
 
@@ -296,6 +307,9 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.translate:
+                translateXProperty._initDefaultNativeValue(style);
+                translateYProperty._initDefaultNativeValue(style);
+
                 xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
                 nativeArray = Array.create("float", 1);
@@ -337,6 +351,9 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.scale:
+                scaleXProperty._initDefaultNativeValue(style);
+                scaleYProperty._initDefaultNativeValue(style);
+                
                 xyObjectAnimators = Array.create(android.animation.Animator, 2);
 
                 nativeArray = Array.create("float", 1);
@@ -378,6 +395,8 @@ export class Animation extends AnimationBase {
                 break;
 
             case Properties.rotate:
+                rotateProperty._initDefaultNativeValue(style);
+
                 originalValue1 = nativeView.getRotation();
                 nativeArray = Array.create("float", 1);
                 nativeArray[0] = propertyAnimation.value;

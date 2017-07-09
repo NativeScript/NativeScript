@@ -1,0 +1,12 @@
+<Page xmlns:btnCount="ui/lifecycle/pages/button-counter">
+    <StackLayout>
+        <!-- This little piggy has just attributes -->
+        <btnCount:Button id="btn1" borderWidth="1" borderColor="gray" borderRadius="16" fontWeight="bold" fontSize="16" />
+        <!-- This little piggy has just CSS -->
+        <btnCount:Button id="btn2" />
+        <!-- This little piggy has both attributes and CSS -->
+        <btnCount:Button id="btn3" borderWidth="1" borderColor="gray" borderRadius="16" fontWeight="bold" fontSize="16" />
+        <!-- This one has it all -->
+        <btnCount:Button id="btn4" borderRadius="3" style="background-image: url('~/logo.png'); background-position: center; background-repeat: no-repeat; background-size: cover;" />
+    </StackLayout>
+</Page>

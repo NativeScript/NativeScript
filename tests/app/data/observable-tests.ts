@@ -539,3 +539,23 @@ export function test_NestedObservableWithNullShouldNotCrash() {
     });
     TKUnit.assert(testObservable !== undefined);
 }
+
+export function test_get_set_on_observables_fromObject_without_property_in_json() {
+    const array = new ObservableArray<any>();
+    const vm = fromObject({});
+    vm.set("p", array);
+    const value1 = vm.get("p");
+    const value2 = (<any>vm).p;
+    TKUnit.assertEqual(value1, array);
+    TKUnit.assertNull(value2);
+}
+
+export function test_get_set_on_observables_fromObject_with_property_in_json() {
+    const array = new ObservableArray<any>();
+    const vm = fromObject({ p: null});
+    vm.set("p", array);
+    const value1 = vm.get("p");
+    const value2 = (<any>vm).p;
+    TKUnit.assertEqual(value1, array);
+    TKUnit.assertEqual(value2, array);
+}

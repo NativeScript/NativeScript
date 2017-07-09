@@ -1,10 +1,9 @@
 ﻿import * as TKUnit from "../../TKUnit";
 import * as app from "tns-core-modules/application";
 import * as button from "tns-core-modules/ui/button";
-import * as enums from "tns-core-modules/ui/enums";
 import * as testModule from "../../ui-test";
 import * as layoutHelper from "../layouts/layout-helper";
-import {Page} from "tns-core-modules/ui/page";
+import { Page } from "tns-core-modules/ui/page";
 import * as frame from "tns-core-modules/ui/frame";
 
 // >> article-require-scrollview-module
@@ -15,7 +14,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public create(): scrollViewModule.ScrollView {
         let scrollView = new scrollViewModule.ScrollView();
-        scrollView.orientation = enums.Orientation.vertical;
+        scrollView.orientation = "vertical";
 
         scrollView.width = { value: 200, unit: "px" };
         scrollView.height = { value: 300, unit: "px" };
@@ -38,13 +37,13 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
 
     public test_default_TNS_values() {
         let scroll = new scrollViewModule.ScrollView();
-        TKUnit.assertEqual(scroll.orientation, enums.Orientation.vertical, "Default this.testView.orientation");
+        TKUnit.assertEqual(scroll.orientation, "vertical", "Default this.testView.orientation");
         TKUnit.assertEqual(scroll.verticalOffset, 0, "Default this.testView.verticalOffset");
         TKUnit.assertEqual(scroll.horizontalOffset, 0, "Default this.testView.horizontalOffset");
     }
 
     public test_vertical_oriantation_creates_correct_native_view() {
-        this.testView.orientation = enums.Orientation.vertical;
+        this.testView.orientation = "vertical";
 
         if (app.android) {
             TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.VerticalScrollView, "android property should be instanceof org.nativescript.widgets.VerticalScrollView");
@@ -55,7 +54,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_horizontal_oriantation_creates_correct_native_view() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
 
         if (app.android) {
             TKUnit.assert(this.testView.android instanceof org.nativescript.widgets.HorizontalScrollView, "android property should be instanceof org.nativescript.widgets.HorizontalScrollView");
@@ -83,7 +82,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollableWidth_horizontal_orientation_when_content_is_small() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.testView.content.width = { value: 100, unit: "px" };
         this.testView.content.height = { value: 100, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
@@ -93,7 +92,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollableWidth_horizontal_orientation_when_content_is_big() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.testView.content.height = { value: 100, unit: "px" };
         this.waitUntilTestElementLayoutIsValid();
 
@@ -125,7 +124,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollToHorizontalOffset_no_animation() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
@@ -134,7 +133,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollToHorizontalOffset_with_animation() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         TKUnit.assertEqual(this.testView.horizontalOffset, 0, "this.testView.horizontalOffset");
@@ -173,7 +172,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_persistsState_horizontal() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         this.testView.scrollToHorizontalOffset(layoutHelper.dp(100), false);
@@ -211,7 +210,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_horizontal_raised_scroll_event() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
 
         var scrollX: number;
         this.testView.on(scrollViewModule.ScrollView.scrollEvent, (args: scrollViewModule.ScrollEventData) => {
@@ -240,7 +239,7 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
     }
 
     public test_scrollView_horizontal_raised_scroll_event_after_loaded() {
-        this.testView.orientation = enums.Orientation.horizontal;
+        this.testView.orientation = "horizontal";
         this.waitUntilTestElementLayoutIsValid();
 
         var scrollX: number;

@@ -131,7 +131,8 @@ export class XMLHttpRequest {
     private textTypes: string[] = [
         'text/plain',
         'application/xml',
-        'text/html'
+        'text/html',
+        'text/xml'
     ];
 
     private isTextContentType(contentType: string): boolean {

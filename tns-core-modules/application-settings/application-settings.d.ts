@@ -1,6 +1,8 @@
 ﻿/**
  * Allows you to save and restore any kind of information related to your application.
- */
+ * @module "application-settings"
+ */ /** */
+
 /**
 * Checks whether such a key exists.
 * @param key The key to check for.

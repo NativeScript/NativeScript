@@ -1,6 +1,7 @@
 ﻿import * as types from "./types";
 
-export var RESOURCE_PREFIX = "res://";
+export const RESOURCE_PREFIX = "res://";
+export const FILE_PREFIX = "file:///";
 
 export function escapeRegexSymbols(source: string): string {
     let escapeRegex = /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g;
@@ -116,8 +117,7 @@ export function isDataURI(uri: string): boolean {
         return false;
     }
 
-    var firstSegment = uri.trim().split(',')[0];
-
+    const firstSegment = uri.trim().split(',')[0];
     return firstSegment && firstSegment.indexOf("data:") === 0 && firstSegment.indexOf('base64') >= 0;
 }
 
@@ -152,4 +152,12 @@ export function merge(left, right, compareFunc) {
     }
 
     return result;
+}
+
+export function hasDuplicates(arr: Array<any>): boolean {
+    return arr.length !== eliminateDuplicates(arr).length;
+}
+
+export function eliminateDuplicates(arr: Array<any>): Array<any> {
+    return Array.from(new Set(arr));
 }

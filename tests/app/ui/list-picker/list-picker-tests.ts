@@ -24,6 +24,10 @@ function _createItems(count: number): Array<number> {
     return items;
 }
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new listPickerModule.ListPicker());
+}
+
 export var testWhenlistPickerIsCreatedItemsAreUndefined = function () {
     helper.buildUIAndRunTest(_createListPicker(), function (views: Array<viewModule.View>) {
         var listPicker = <listPickerModule.ListPicker>views[0];

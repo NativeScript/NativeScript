@@ -4,6 +4,7 @@ import * as TKUnit from "../../TKUnit";
 import * as helper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
+import * as testHelper from "../helper";
 
 // >> dock-layout-require
 import * as dockModule from "tns-core-modules/ui/layouts/dock-layout";
@@ -22,6 +23,14 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         return rootLayout;
     }
 
+    public test_recycling() {
+        testHelper.nativeView_recycling_test(() => new DockLayout());
+    }
+
+    public test_item_recycling() {
+        testHelper.nativeView_recycling_test(() => new button.Button(), () => new DockLayout());
+    }
+
     public test_stretchLastChild_DefaultValue() {
         TKUnit.assertEqual(this.testView.stretchLastChild, true, "Default stretchLastChild.");
     }
@@ -36,7 +45,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
         var testBtn = new button.Button();
 
         TKUnit.assertThrows(() => {
-            dockModule.DockLayout.setDock(testBtn, "invalid");
+            dockModule.DockLayout.setDock(testBtn, <"left">"invalid");
         });
     }
 
@@ -54,7 +63,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     public test_dock_right() {
         var testBtn = new helper.MyButton();
         testBtn.width = { value: 20, unit: "px" };
-        dockModule.DockLayout.setDock(testBtn, enums.Dock.right);
+        dockModule.DockLayout.setDock(testBtn, "right");
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
 
@@ -66,7 +75,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     public test_dock_top() {
         var testBtn = new helper.MyButton();
         testBtn.height = { value: 20, unit: "px" };
-        dockModule.DockLayout.setDock(testBtn, enums.Dock.top);
+        dockModule.DockLayout.setDock(testBtn, "top");
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
 
@@ -78,7 +87,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
     public test_dock_button() {
         var testBtn = new helper.MyButton();
         testBtn.height = { value: 20, unit: "px" };
-        dockModule.DockLayout.setDock(testBtn, enums.Dock.bottom);
+        dockModule.DockLayout.setDock(testBtn, "bottom");
         this.testView.stretchLastChild = false;
         this.testView.addChild(testBtn);
 
@@ -103,21 +112,21 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
         var testBtnTop = new helper.MyButton();
         testBtnTop.height = { value: 20, unit: "px" };
-        dockModule.DockLayout.setDock(testBtnTop, enums.Dock.top);
+        dockModule.DockLayout.setDock(testBtnTop, "top");
         this.testView.addChild(testBtnTop);
 
         var testBtnRight = new helper.MyButton();
         testBtnRight.width = { value: 20, unit: "px" }
-        dockModule.DockLayout.setDock(testBtnRight, enums.Dock.right);
+        dockModule.DockLayout.setDock(testBtnRight, "right");
         this.testView.addChild(testBtnRight);
 
         var testBtnBottom = new helper.MyButton();
         testBtnBottom.height = { value: 20, unit: "px" }
-        dockModule.DockLayout.setDock(testBtnBottom, enums.Dock.bottom);
+        dockModule.DockLayout.setDock(testBtnBottom, "bottom");
         this.testView.addChild(testBtnBottom);
 
         var testBtnFill = new helper.MyButton();
-        dockModule.DockLayout.setDock(testBtnFill, enums.Dock.bottom);
+        dockModule.DockLayout.setDock(testBtnFill, "bottom");
         this.testView.addChild(testBtnFill);
 
         this.waitUntilTestElementLayoutIsValid();
@@ -159,7 +168,7 @@ export class DockLayoutTest extends testModule.UITest<DockLayout> {
 
         // >> dock-layout-setdocl
         var btnDockedToRight = new button.Button();
-        dockModule.DockLayout.setDock(btnDockedToRight, enums.Dock.right);
+        dockModule.DockLayout.setDock(btnDockedToRight, "right");
         dockLayout.addChild(btnDockedToRight);
         // << dock-layout-setdocl
     }

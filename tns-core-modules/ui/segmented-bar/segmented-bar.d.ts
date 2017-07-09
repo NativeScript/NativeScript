@@ -1,9 +1,12 @@
 ﻿/**
+ * @module "ui/segmented-bar"
+ * 
  * Contains the SegmentedBar class, which represents a SegmentedBar component.
- */
+ */ /** */
+
 import {
     ViewBase, View, AddChildFromBuilder, AddArrayFromBuilder,
-    Property, CoercibleProperty, EventData, Color
+    Property, CoercibleProperty, EventData, Color, CssProperty, Style
 } from "../core/view";
 
 /**
@@ -85,7 +88,7 @@ export const selectedIndexProperty: CoercibleProperty<SegmentedBar, number>;
 /**
  * Gets or sets the selected background color property of the SegmentedBar.
  */
-export const selectedBackgroundColorProperty: Property<SegmentedBar, Color>;
+export const selectedBackgroundColorProperty: CssProperty<Style, Color>;
 
 /**
  * Gets or sets the items dependency property of the SegmentedBar.

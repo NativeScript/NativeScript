@@ -6,7 +6,7 @@ var count = 0;
 
 export function onLoaded(args: { eventName: string, object: any }) {
     var page = <pageModule.Page>args.object;
-    page.bindingContext = new model.ViewModel();
+    page.bindingContext = new model.ViewModelWithPercentage();
 }
 
 export function onSetLeftSetTop(args: { eventName: string, object: any }) {

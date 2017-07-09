@@ -52,6 +52,10 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
         return new listViewModule.ListView();
     }
 
+    public test_recycling() {
+        helper.nativeView_recycling_test(() => new listViewModule.ListView());
+    }
+
     public test_default_TNS_values() {
         // >> article-create-listview
         var listView = new listViewModule.ListView();
@@ -870,7 +874,7 @@ export class ListViewTest extends testModule.UITest<listViewModule.ListView> {
 
         // Back
         const count = listView.items.length - 1;
-         listView.items.forEach((item, i, arr) => {
+        listView.items.forEach((item, i, arr) => {
             listView.scrollToIndex(count - i);
             TKUnit.wait(0.01);
         });

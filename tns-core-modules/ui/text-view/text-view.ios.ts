@@ -2,9 +2,10 @@
 import {
     EditableTextBase, editableProperty, hintProperty, textProperty, colorProperty, placeholderColorProperty,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
-    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, 
+    paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty,
     Length, _updateCharactersInRangeReplacementString, Color, layout
 } from "../editable-text-base";
+import { profile } from "../../profiling";
 
 export * from "../editable-text-base";
 
@@ -28,6 +29,13 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
         return true;
     }
 
+    public textViewDidBeginEditing(textView: UITextView) {
+        var owner = this._owner.get();
+        if (owner) {
+            owner._isEditing = true;
+        }
+    }
+
     public textViewDidEndEditing(textView: UITextView) {
         const owner = this._owner.get();
         if (owner) {
@@ -35,6 +43,7 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
                 textProperty.nativeValueChange(owner, textView.text);
             }
 
+            owner._isEditing = false;
             owner.dismissSoftInput();
             owner._refreshHintState(owner.hint, textView.text);
         }
@@ -51,8 +60,17 @@ class UITextViewDelegateImpl extends NSObject implements UITextViewDelegate {
 
     public textViewShouldChangeTextInRangeReplacementText(textView: UITextView, range: NSRange, replacementString: string): boolean {
         const owner = this._owner.get();
-        if (owner && owner.formattedText) {
-            _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
+        if (owner) {
+            const delta = replacementString.length - range.length;
+            if (delta > 0) {
+                if (textView.text.length + delta > owner.maxLength) {
+                    return false;
+                }
+            }
+
+            if (owner.formattedText) {
+                _updateCharactersInRangeReplacementString(owner.formattedText, range.location, range.length, replacementString);
+            }
         }
 
         return true;
@@ -63,6 +81,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     private _ios: UITextView;
     private _delegate: UITextViewDelegateImpl;
     private _isShowingHint: boolean;
+    public _isEditing: boolean;
 
     constructor() {
         super();
@@ -74,6 +93,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         this._delegate = UITextViewDelegateImpl.initWithOwner(new WeakRef(this));
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this._ios.delegate = this._delegate;
@@ -96,9 +116,10 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
         if (this.formattedText) {
             return;
         }
+
         if (text !== null && text !== undefined && text !== '') {
             this.showText();
-        } else if (hint !== null && hint !== undefined && hint !== '') {
+        } else if (!this._isEditing && hint !== null && hint !== undefined && hint !== '') {
             this.showHint(hint);
         } else {
             this._isShowingHint = false;
@@ -270,4 +291,4 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
     }
 }
 
-// TextView.prototype.recycleNativeView = true;
+TextView.prototype.recycleNativeView = true;

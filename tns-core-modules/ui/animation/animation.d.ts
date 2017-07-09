@@ -1,4 +1,8 @@
-﻿import { View, Color } from "../core/view";
+﻿/**
+ * @module "ui/animation"
+ */ /** */
+
+import { View, Color } from "../core/view";
 
 /**
  * Defines animation options for the View.animate method.
@@ -52,7 +56,7 @@ export interface AnimationDefinition {
     iterations?: number;
 
     /**
-     * An optional animation curve. Possible values are contained in the [AnimationCurve enumeration](../enums/AnimationCurve/README.md).
+     * An optional animation curve. Possible values are contained in the [AnimationCurve enumeration](../modules/_ui_enums_.animationcurve.html).
      * Alternatively, you can pass an instance of type UIViewAnimationCurve for iOS or android.animation.TimeInterpolator for Android.
      */
     curve?: any;
@@ -72,11 +76,40 @@ export class CubicBezierAnimationCurve {
 }
 
 /**
+ * Defines a key-value pair for css transformation
+ */
+export type Transformation = {
+    property: TransformationType;
+    value: TransformationValue;
+};
+
+/**
+ * Defines possible css transformations
+ */
+export type TransformationType = "rotate" |
+    "translate" | "translateX" | "translateY" |
+    "scale" | "scaleX" | "scaleY";
+
+/**
+ * Defines possible css transformation values
+ */
+export type TransformationValue = Pair | number;
+
+/**
  * Defines a pair of values (horizontal and vertical) for translate and scale animations.
  */
 export interface Pair {
     x: number;
     y: number;
+}
+
+/**
+ * Defines full information for css transformation
+ */
+export type TransformFunctionsInfo = {
+    translate: Pair,
+    rotate: number,
+    scale: Pair,
 }
 
 export interface Cancelable {

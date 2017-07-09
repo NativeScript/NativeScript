@@ -7,13 +7,13 @@ export function getString(arg: any): Promise<string> {
     return new Promise<string>((resolve, reject) => {
         httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
             .then(r => {
-            try {
-                var str = r.content.toString();
-                resolve(str);
-            } catch (e) {
-                reject(e);
-            }
-        }, e => reject(e));
+                try {
+                    var str = r.content.toString();
+                    resolve(str);
+                } catch (e) {
+                    reject(e);
+                }
+            }, e => reject(e));
     });
 }
 
@@ -21,13 +21,13 @@ export function getJSON<T>(arg: any): Promise<T> {
     return new Promise<T>((resolve, reject) => {
         httpRequest.request(typeof arg === "string" ? { url: arg, method: "GET" } : arg)
             .then(r => {
-            try {
-                var json = r.content.toJSON();
-                resolve(json);
-            } catch (e) {
-                reject(e);
-            }
-        }, e => reject(e));
+                try {
+                    var json = r.content.toJSON();
+                    resolve(json);
+                } catch (e) {
+                    reject(e);
+                }
+            }, e => reject(e));
     });
 }
 

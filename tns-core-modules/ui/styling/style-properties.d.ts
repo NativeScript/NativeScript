@@ -1,12 +1,20 @@
+/**
+ * @module "ui/styling/style-properties"
+ */ /** */
+
+import { TransformFunctionsInfo } from "../animation/animation";
 import { Color } from "../../color";
 import { Style, CssProperty, CssAnimationProperty, ShorthandProperty, InheritedCssProperty } from "../core/properties";
 import { Font, FontStyle, FontWeight } from "./font";
 import { Background } from "./background";
+import { dip, px, percent } from "../core/view";
 
-export type Length = "auto" | number | {
-    readonly unit: "dip" | "px";
-    readonly value: number;
-}
+export type LengthDipUnit = { readonly unit: "dip", readonly value: dip };
+export type LengthPxUnit = { readonly unit: "px", readonly value: px };
+export type LengthPercentUnit = { readonly unit: "%", readonly value: percent };
+
+export type Length = "auto" | dip | LengthDipUnit | LengthPxUnit;
+export type PercentLength = "auto" | dip | LengthDipUnit | LengthPxUnit | LengthPercentUnit;
 
 export namespace Length {
     export function parse(text: string): Length;
@@ -14,19 +22,10 @@ export namespace Length {
     /**
      * Converts Length unit to device pixels.
      * @param length The Length to convert.
-     * @param auto Value to use for conversion of "auto".
+     * @param auto Value to use for conversion of "auto". By default is Math.NaN.
      */
-    export function toDevicePixels(length: Length, auto: number): number;
+    export function toDevicePixels(length: Length, auto?: number): number;
     export function convertToString(length: Length): string;
-
-}
-
-export type PercentLength = "auto" | number | {
-    readonly unit: "%" | "dip" | "px";
-    /**
-     * Length value. When unit is "%" the value is normalized (ex. for 5% the value is 0.05)
-     */
-    readonly value: number;
 }
 
 export namespace PercentLength {
@@ -35,10 +34,10 @@ export namespace PercentLength {
     /**
      * Converts PercentLength unit to device pixels.
      * @param length The PercentLength to convert.
-     * @param auto Value to use for conversion of "auto".
-     * @param parentAvailableWidth Value to use as base when converting percent unit.
+     * @param auto Value to use for conversion of "auto". By default is Math.NaN.
+     * @param parentAvailableWidth Value to use as base when converting percent unit. By default is Math.NaN.
      */
-    export function toDevicePixels(length: PercentLength, auto: number, parentAvailableWidth: number): number;
+    export function toDevicePixels(length: PercentLength, auto?: number, parentAvailableWidth?: px): number;
     export function convertToString(length: PercentLength): string;
 }
 
@@ -47,8 +46,10 @@ export const zeroLength: Length;
 export const rotateProperty: CssAnimationProperty<Style, number>;
 export const scaleXProperty: CssAnimationProperty<Style, number>;
 export const scaleYProperty: CssAnimationProperty<Style, number>;
-export const translateXProperty: CssAnimationProperty<Style, Length>;
-export const translateYProperty: CssAnimationProperty<Style, Length>;
+export const translateXProperty: CssAnimationProperty<Style, dip>;
+export const translateYProperty: CssAnimationProperty<Style, dip>;
+
+export function transformConverter(text: string): TransformFunctionsInfo;
 
 export const clipPathProperty: CssProperty<Style, string>;
 export const colorProperty: InheritedCssProperty<Style, Color>;
@@ -81,10 +82,10 @@ export const zIndexProperty: CssProperty<Style, number>;
 export const visibilityProperty: CssProperty<Style, Visibility>;
 export const opacityProperty: CssAnimationProperty<Style, number>;
 
-export const minWidthProperty: CssProperty<Style, Length>;
-export const minHeightProperty: CssProperty<Style, Length>;
-export const widthProperty: CssProperty<Style, Length>;
-export const heightProperty: CssProperty<Style, Length>;
+export const minWidthProperty: CssProperty<Style, dip | LengthDipUnit | LengthPxUnit>;
+export const minHeightProperty: CssProperty<Style, dip | LengthDipUnit | LengthPxUnit>;
+export const widthProperty: CssProperty<Style, PercentLength>;
+export const heightProperty: CssProperty<Style, PercentLength>;
 export const marginProperty: ShorthandProperty<Style, string | PercentLength>;
 export const marginLeftProperty: CssProperty<Style, PercentLength>;
 export const marginRightProperty: CssProperty<Style, PercentLength>;
@@ -109,40 +110,6 @@ export const backgroundInternalProperty: CssProperty<Style, Background>;
 export const fontInternalProperty: InheritedCssProperty<Style, Font>;
 
 export type BackgroundRepeat = "repeat" | "repeat-x" | "repeat-y" | "no-repeat";
-export namespace BackgroundRepeat {
-    export const REPEAT: "repeat";
-    export const REPEAT_X: "repeat-x";
-    export const REPEAT_Y: "repeat-y";
-    export const NO_REPEAT: "no-repeat";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): BackgroundRepeat;
-}
-
 export type Visibility = "visible" | "hidden" | "collapse";
-export namespace Visibility {
-    export const VISIBLE: "visible";
-    export const HIDDEN: "hidden";
-    export const COLLAPSE: "collapse";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): Visibility;
-}
-
 export type HorizontalAlignment = "left" | "center" | "right" | "stretch";
-export namespace HorizontalAlignment {
-    export const LEFT: "left";
-    export const CENTER: "center";
-    export const RIGHT: "right";
-    export const STRETCH: "stretch";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): HorizontalAlignment;
-}
-
 export type VerticalAlignment = "top" | "middle" | "bottom" | "stretch";
-export namespace VerticalAlignment {
-    export const TOP: "top";
-    export const MIDDLE: "middle";
-    export const BOTTOM: "bottom";
-    export const STRETCH: "stretch";
-    export function isValid(value: any): boolean;
-    export function parse(value: string): VerticalAlignment;
-}

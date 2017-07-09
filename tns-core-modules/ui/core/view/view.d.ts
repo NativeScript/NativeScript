@@ -1,3 +1,7 @@
+/**
+ * @module "ui/core/view"
+ */ /** */
+
 ///<reference path="../../../tns-core-modules.d.ts" /> Include global typings
 import { ViewBase, Property, EventData, Color } from "../view-base";
 import { Animation, AnimationDefinition, AnimationPromise } from "../../animation";
@@ -8,6 +12,24 @@ export * from "../view-base";
 export * from "../../styling/style-properties";
 
 export function PseudoClassHandler(...pseudoClasses: string[]): MethodDecorator;
+
+/**
+ * Denotes a length number that is in device independent pixels units.
+ */
+export type dip = number;
+
+/**
+ * Denotes a length number that is in phisical device pixels.
+ */
+export type px = number;
+
+/**
+ * Denotes a normalized percent number.
+ * 0% is represented as 0
+ * 50% is represented as 0.5
+ * 100% is represented as 1
+ */
+export type percent = number;
 
 /**
  * The Point interface describes a two dimensional location. 
@@ -224,14 +246,14 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     rotate: number;
 
     /**
-     * Gets or sets the translateX affine transform of the view.
+     * Gets or sets the translateX affine transform of the view in device independent pixels.
      */
-    translateX: Length;
+    translateX: dip;
 
     /**
-     * Gets or sets the translateY affine transform of the view.
+     * Gets or sets the translateY affine transform of the view in device independent pixels.
      */
-    translateY: Length;
+    translateY: dip;
 
     /**
      * Gets or sets the scaleX affine transform of the view.
@@ -472,38 +494,70 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     public eachChildView(callback: (view: View) => boolean): void;
 
     //@private
+    /**
+     * @private
+     */
     isLayoutRequired: boolean;
+    /**
+     * @private
+     */
     _gestureObservers: any;
+    /**
+     * @private
+     */
     _setNativeClipToBounds(): void;
-
+    /**
+     * @private
+     */
     _updateLayout(): void;
-
     /**
      * Called by measure method to cache measureSpecs.
+     * @private
      */
     _setCurrentMeasureSpecs(widthMeasureSpec: number, heightMeasureSpec: number): boolean;
-
     /**
      * Called by layout method to cache view bounds.
+     * @private
      */
     _setCurrentLayoutBounds(left: number, top: number, right: number, bottom: number): void;
-
     /**
      * Return view bounds.
+     * @private
      */
     _getCurrentLayoutBounds(): { left: number; top: number; right: number; bottom: number };
-
+    /**
+     * @private
+     */
     _goToVisualState(state: string);
+    /**
+     * @private
+     */
     _setNativeViewFrame(nativeView: any, frame: any): void;
     // _onStylePropertyChanged(property: dependencyObservable.Property): void;
-
+    /**
+     * @private
+     */
     _updateEffectiveLayoutValues(parent: View): void;
-
+    /**
+     * @private
+     */
     _currentWidthMeasureSpec: number;
+    /**
+     * @private
+     */
     _currentHeightMeasureSpec: number;
-
+    /**
+     * @private
+     */
     _setMinWidthNative(value: Length): void;
+    /**
+     * @private
+     */
     _setMinHeightNative(value: Length): void;
+    /**
+     * @private
+     */
+    _redrawNativeBackground(value: any): void;
     //@endprivate
 
     /**
@@ -522,8 +576,17 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
  */
 export class CustomLayoutView extends View {
     //@private
+    /**
+     * @private
+     */
     _updateNativeLayoutParams(child: View): void;
+    /**
+     * @private
+     */
     _setChildMinWidthNative(child: View): void;
+    /**
+     * @private
+     */
     _setChildMinHeightNative(child: View): void;
     //@endprivate
 }

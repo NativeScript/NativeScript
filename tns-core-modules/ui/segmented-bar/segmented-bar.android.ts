@@ -1,7 +1,7 @@
 ﻿import { Font } from "../styling/font";
 import {
     SegmentedBarItemBase, SegmentedBarBase, selectedIndexProperty, itemsProperty, selectedBackgroundColorProperty,
-    colorProperty, fontInternalProperty, fontSizeProperty, Color, initNativeView, layout
+    colorProperty, fontInternalProperty, fontSizeProperty, Color, layout
 } from "./segmented-bar-common";
 
 export * from "./segmented-bar-common";
@@ -97,9 +97,8 @@ export class SegmentedBarItem extends SegmentedBarItemBase {
         // http://stackoverflow.com/questions/2935781/modify-tab-indicator-dynamically-in-android
         const titleTextView = <android.widget.TextView>this.parent.nativeView.getTabWidget().getChildAt(tabIndex).findViewById(TITLE_TEXT_VIEW_ID);
 
-        this.nativeView = titleTextView;
+        this.setNativeView(titleTextView);
         if (titleTextView) {
-            initNativeView(this);
             if (this.titleDirty) {
                 this._update();
             }

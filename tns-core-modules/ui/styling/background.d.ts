@@ -1,20 +1,14 @@
-import { ImageSource } from "../../image-source";
+/**
+ * @module "ui/styling/background"
+ */ /** */
+
 import { Color } from "../../color";
 import { View, BackgroundRepeat } from "../core/view";
-
-export interface BackgroundDrawParams {
-    repeatX: boolean;
-    repeatY: boolean;
-    posX: number;
-    posY: number;
-    sizeX?: number;
-    sizeY?: number;
-}
 
 export class Background {
     public static default: Background;
     public color: Color;
-    public image: ImageSource;
+    public image: string;
     public repeat: BackgroundRepeat;
     public position: string;
     public size: string;
@@ -33,7 +27,7 @@ export class Background {
     public clipPath: string;
 
     public withColor(value: Color): Background;
-    public withImage(value: ImageSource): Background;
+    public withImage(value: string): Background;
     public withRepeat(value: BackgroundRepeat): Background;
     public withPosition(value: string): Background;
     public withSize(value: string): Background;
@@ -50,8 +44,6 @@ export class Background {
     public withBorderBottomRightRadius(value: number): Background;
     public withBorderBottomLeftRadius(value: number): Background;
     public withClipPath(value: string): Background;
-
-    public getDrawParams(width: number, height: number): BackgroundDrawParams;
 
     public isEmpty(): boolean;
 
@@ -70,7 +62,7 @@ export class Background {
 }
 
 export module ios {
-    export function createBackgroundUIColor(view: View, flip?: boolean): any /* UIColor */;
+    export function createBackgroundUIColor(view: View, callback: (uiColor: any /* UIColor */) => void, flip?: boolean): void;
 }
 
 export module ad {

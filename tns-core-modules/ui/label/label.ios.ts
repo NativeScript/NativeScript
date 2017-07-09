@@ -1,10 +1,10 @@
 ﻿import { Label as LabelDefinition } from ".";
 import { Background } from "../styling/background";
 import {
-    TextBase, View, layout, backgroundInternalProperty,
+    TextBase, View, layout,
     borderTopWidthProperty, borderRightWidthProperty, borderBottomWidthProperty, borderLeftWidthProperty,
     paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, whiteSpaceProperty,
-    Length, WhiteSpace
+    Length, WhiteSpace, booleanConverter
 } from "../text-base";
 
 import { ios } from "../styling/background";
@@ -18,13 +18,8 @@ enum FixedSize {
     BOTH = 3
 }
 
-const zeroLength: Length = {
-    value: 0,
-    unit: "px"
-};
-
 export class Label extends TextBase implements LabelDefinition {
-    public nativeView: TNSLabel;
+    nativeView: TNSLabel;
     private _fixedSize: FixedSize;
 
     constructor() {
@@ -39,14 +34,14 @@ export class Label extends TextBase implements LabelDefinition {
     }
 
     get textWrap(): boolean {
-        return this.style.whiteSpace === WhiteSpace.NORMAL;
+        return this.style.whiteSpace === "normal";
     }
-    set textWrap(value: boolean) {
-        this.style.whiteSpace = value ? WhiteSpace.NORMAL : WhiteSpace.NO_WRAP;
-    }
+    set textWrap(value: boolean) {        
+        if (typeof value === "string") {
+            value = booleanConverter(value)
+        }
 
-    public onLoaded() {
-        super.onLoaded();
+        this.style.whiteSpace = value ? "normal" : "nowrap";
     }
 
     _requestLayoutOnTextChanged(): void {
@@ -89,44 +84,35 @@ export class Label extends TextBase implements LabelDefinition {
         }
     }
 
-    [whiteSpaceProperty.getDefault](): WhiteSpace {
-        return WhiteSpace.NO_WRAP;
-    }
     [whiteSpaceProperty.setNative](value: WhiteSpace) {
         const nativeView = this.nativeView;
         switch (value) {
-            case WhiteSpace.NORMAL:
+            case "normal":
                 nativeView.lineBreakMode = NSLineBreakMode.ByWordWrapping;
                 nativeView.numberOfLines = 0;
                 break;
-            case WhiteSpace.NO_WRAP:
+            case "nowrap":
+            case "initial":
                 nativeView.lineBreakMode = NSLineBreakMode.ByTruncatingTail;
                 nativeView.numberOfLines = 1;
                 break;
-            default:
-                throw new Error(`Invalid whitespace value: ${value}. Valid values are: "${WhiteSpace.NORMAL}", "${WhiteSpace.NO_WRAP}".`);
         }
     }
 
-    [backgroundInternalProperty.getDefault](): any /* CGColor */ {
-        return this.nativeView.layer.backgroundColor;
-    }
-    [backgroundInternalProperty.setNative](value: Background) {
+    _redrawNativeBackground(value: UIColor | Background): void {
         if (value instanceof Background) {
-            const uiColor = <UIColor>ios.createBackgroundUIColor(this, true);
-            value = uiColor ? uiColor.CGColor : null;
+            ios.createBackgroundUIColor(this, (color: UIColor) => {
+                const cgColor = color ? color.CGColor : null;
+                this.nativeView.layer.backgroundColor = cgColor;
+            }, true);
         }
 
         this._setNativeClipToBounds();
-        this.nativeView.layer.backgroundColor = value;
     }
 
-    [borderTopWidthProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [borderTopWidthProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: layout.toDeviceIndependentPixels(this.effectiveBorderTopWidth),
             right: border.right,
@@ -135,12 +121,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [borderRightWidthProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [borderRightWidthProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: layout.toDeviceIndependentPixels(this.effectiveBorderRightWidth),
@@ -149,12 +132,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [borderBottomWidthProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [borderBottomWidthProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
@@ -163,12 +143,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [borderLeftWidthProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [borderLeftWidthProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let border = nativeView.borderThickness;
+        const nativeView = this.nativeView;
+        const border = nativeView.borderThickness;
         nativeView.borderThickness = {
             top: border.top,
             right: border.right,
@@ -177,12 +154,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [paddingTopProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [paddingTopProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: layout.toDeviceIndependentPixels(this.effectivePaddingTop),
             right: padding.right,
@@ -191,12 +165,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [paddingRightProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [paddingRightProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: layout.toDeviceIndependentPixels(this.effectivePaddingRight),
@@ -205,12 +176,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [paddingBottomProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [paddingBottomProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
@@ -219,12 +187,9 @@ export class Label extends TextBase implements LabelDefinition {
         };
     }
 
-    [paddingLeftProperty.getDefault](): Length {
-        return zeroLength;
-    }
     [paddingLeftProperty.setNative](value: Length) {
-        let nativeView = this.nativeView;
-        let padding = nativeView.padding;
+        const nativeView = this.nativeView;
+        const padding = nativeView.padding;
         nativeView.padding = {
             top: padding.top,
             right: padding.right,
@@ -234,4 +199,4 @@ export class Label extends TextBase implements LabelDefinition {
     }
 }
 
-// Label.prototype.recycleNativeView = true;
+Label.prototype.recycleNativeView = true;

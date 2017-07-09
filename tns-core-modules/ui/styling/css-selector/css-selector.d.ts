@@ -1,4 +1,8 @@
-﻿import * as parser from "../../../css";
+﻿/**
+ * @module "ui/styling/css-selector"
+ */ /** */
+
+import * as parser from "../../../css";
 
 /**
  * An interface describing the shape of a type on which the selectors may apply.
@@ -11,6 +15,8 @@ export interface Node {
     cssType?: string;
     cssClasses?: Set<string>;
     cssPseudoClasses?: Set<string>;
+    getChildIndex?(node: Node): number
+    getChildAt?(index: number): Node
 }
 
 export interface Declaration {

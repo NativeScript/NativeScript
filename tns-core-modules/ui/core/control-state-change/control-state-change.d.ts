@@ -1,4 +1,8 @@
 ﻿/**
+ * @module "ui/core/control-state-change"
+ */ /** */
+
+/**
  * An utility class used for supporting styling infrastructure.
  */
 export class ControlStateChangeListener {

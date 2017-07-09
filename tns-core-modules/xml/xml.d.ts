@@ -1,6 +1,7 @@
 ﻿/**
- * Contains the XmlParser class, which is a SAX parser using the easysax implementation
- */
+ * Contains the XmlParser class, which is a SAX parser using the easysax implementation.
+ * @module "xml"
+ */ /** */
 
 /**
  * Specifies the type of parser event.

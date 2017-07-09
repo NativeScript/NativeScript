@@ -4,9 +4,10 @@ import * as utils from "tns-core-modules/utils/utils";
 
 function getTextView(bar: android.widget.SearchView): android.widget.TextView {
     if (bar) {
-        var id = bar.getContext().getResources().getIdentifier("android:id/search_src_text", null, null);
+        const pkgName = bar.getContext().getPackageName();
+        var id = bar.getContext().getResources().getIdentifier("search_src_text", "id", pkgName);
         if (id) {
-            return <android.widget.TextView> bar.findViewById(id);
+            return <android.widget.TextView>bar.findViewById(id);
         }
     }
 

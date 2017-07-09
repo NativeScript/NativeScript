@@ -5,6 +5,7 @@ import { View } from "tns-core-modules/ui/core/view";
 import { BindingOptions } from "tns-core-modules/ui/core/bindable";
 import { Observable } from "tns-core-modules/data/observable";
 import { Color } from "tns-core-modules/color";
+import * as helper from "../helper";
 
 // >> article-require-segmentedbar-module
 import * as segmentedBarModule from "tns-core-modules/ui/segmented-bar";
@@ -16,6 +17,12 @@ function _createSegmentedBar(): segmentedBarModule.SegmentedBar {
     // << article-create-segmentedbar
     segmentedBar.id = "SegmentedBar";
     return segmentedBar;
+}
+
+export function test_recycling() {
+    const setters = new Map<string, Array<any>>();
+    setters.set('items', _createItems(3));
+    helper.nativeView_recycling_test(() => new segmentedBarModule.SegmentedBar(), null, null, setters);
 }
 
 function _createItems(count: number): Array<segmentedBarModule.SegmentedBarItem> {

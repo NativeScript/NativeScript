@@ -1,9 +1,0 @@
-<Page loaded="pageLoaded">
-  <StackLayout>
-    <Button text="Animate" tap="onAnimate"/>
-    <Button text="Reset" tap="onReset"/>
-    <AbsoluteLayout width="300" height="300" clipToBounds="true" backgroundColor="LightGray">
-      <Button id="view" text="{N}" width="100" height="100" left="100" top="100" style.textAlignment="center" backgroundColor="White" style.fontSize="30"/>
-    </AbsoluteLayout>
-  </StackLayout>
-</Page>

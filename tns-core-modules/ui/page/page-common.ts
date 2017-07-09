@@ -1,13 +1,14 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
 import {
     ContentView, View, eachDescendant, Property, CssProperty, Color, isIOS,
-    booleanConverter, resetCSSProperties, Style
+    booleanConverter, resetCSSProperties, Style, EventData
 } from "../content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "../frame";
 import { ActionBar } from "../action-bar";
 import { KeyframeAnimationInfo } from "../animation/keyframe-animation";
 import { StyleScope } from "../styling/style-scope";
 import { File, path, knownFolders } from "../../file-system";
+import { profile } from "../../profiling";
 
 export * from "../content-view";
 
@@ -26,15 +27,15 @@ export class PageBase extends ContentView implements PageDefinition {
     private _navigationContext: any;
 
     private _actionBar: ActionBar;
+    private _cssAppliedVersion: number;
 
+    public _styleScope: StyleScope; // same as in ViewBase, but strongly typed
     public _modal: PageBase;
     public _fragmentTag: string;
-
+    
     public actionBarHidden: boolean;
     public enableSwipeBackNavigation: boolean;
     public backgroundSpanUnderStatusBar: boolean;
-    public statusBarStyle: "light" | "dark";
-    public androidStatusBarBackground: Color;
 
     constructor() {
         super();
@@ -75,20 +76,27 @@ export class PageBase extends ContentView implements PageDefinition {
         }
     }
 
+    get statusBarStyle(): "light" | "dark" {
+        return this.style.statusBarStyle;
+    }
+    set statusBarStyle(value: "light" | "dark") {
+        this.style.statusBarStyle = value;
+    }
+
+    public get androidStatusBarBackground(): Color {
+        return this.style.androidStatusBarBackground;
+    }
+    public set androidStatusBarBackground(value: Color) {
+        this.style.androidStatusBarBackground = value;
+    }
+
     get page(): PageDefinition {
         return this;
     }
 
-    public refreshCssIfAppCssChanged(): void {
-        // If app css changed ensureSelectors will return true.
-        // Need when app css change and page is in the backstack.
-        if (this._styleScope.ensureSelectors()) {
-            this._refreshCss();
-        }
-    }
-
+    @profile
     public onLoaded(): void {
-        this.refreshCssIfAppCssChanged();
+        this._refreshCss();
         super.onLoaded();
     }
 
@@ -124,16 +132,21 @@ export class PageBase extends ContentView implements PageDefinition {
         }
     }
 
+    // Used in component-builder.ts
     public _refreshCss(): void {
-        const styleScope = this._styleScope;
-        this._resetCssValues();
-        const checkSelectors = (view: View): boolean => {
-            styleScope.applySelectors(view);
-            return true;
-        };
+        const scopeVersion = this._styleScope.ensureSelectors();
+        if (scopeVersion !== this._cssAppliedVersion) {
+            const styleScope = this._styleScope;
+            this._resetCssValues();
+            const checkSelectors = (view: View): boolean => {
+                styleScope.applySelectors(view);
+                return true;
+            };
 
-        checkSelectors(this);
-        eachDescendant(this, checkSelectors);
+            checkSelectors(this);
+            eachDescendant(this, checkSelectors);
+            this._cssAppliedVersion = scopeVersion;
+        }
     }
 
     public getKeyframeAnimationWithName(animationName: string): KeyframeAnimationInfo {
@@ -141,7 +154,8 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get frame(): Frame {
-        return <Frame>this.parent;
+        const frame = this.parent;
+        return frame instanceof Frame ? frame : undefined;
     }
 
     private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
@@ -272,14 +286,25 @@ export class PageBase extends ContentView implements PageDefinition {
 
     private _resetCssValues() {
         const resetCssValuesFunc = (view: View): boolean => {
-            view._cancelAllAnimations();
-            resetCSSProperties(view.style);
+            view._batchUpdate(() => {
+                view._cancelAllAnimations();
+                resetCSSProperties(view.style);
+            });
             return true;
         };
 
         resetCssValuesFunc(this);
         eachDescendant(this, resetCssValuesFunc);
     }
+}
+export interface PageBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+    on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
+    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
 }
 
 /**
@@ -310,6 +335,8 @@ statusBarStyleProperty.register(Style);
 /**
  * Property backing androidStatusBarBackground.
  */
-export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>({ name: "androidStatusBarBackground", cssName:"android-status-bar-background", 
-    equalityComparer: Color.equals, valueConverter: (v) => new Color(v) });
+export const androidStatusBarBackgroundProperty = new CssProperty<Style, Color>({
+    name: "androidStatusBarBackground", cssName: "android-status-bar-background",
+    equalityComparer: Color.equals, valueConverter: (v) => new Color(v)
+});
 androidStatusBarBackgroundProperty.register(Style);

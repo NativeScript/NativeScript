@@ -1,5 +1,5 @@
 // Definitions.
-import { Point, CustomLayoutView as CustomLayoutViewDefinition } from ".";
+import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 
 // Types.
@@ -17,6 +17,7 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty
 } from "../../styling/style-properties";
+import { profile } from "../../../profiling";
 
 export * from "./view-common";
 
@@ -82,11 +83,13 @@ export class View extends ViewCommon {
         }
     }
 
+    @profile
     public onLoaded() {
         super.onLoaded();
         this.setOnTouchListener();
     }
 
+    @profile
     public onUnloaded() {
         if (this.touchListenerIsSet) {
             this.nativeView.setOnTouchListener(null);
@@ -132,6 +135,7 @@ export class View extends ViewCommon {
         }
     }
 
+    @profile
     public requestLayout(): void {
         super.requestLayout();
         if (this.nativeView) {
@@ -265,9 +269,6 @@ export class View extends ViewCommon {
         return result | (childMeasuredState & layout.MEASURED_STATE_MASK);
     }
 
-    [isEnabledProperty.getDefault](): boolean {
-        return this.nativeView.isEnabled();
-    }
     [isEnabledProperty.setNative](value: boolean) {
         this.nativeView.setEnabled(value);
     }
@@ -293,9 +294,6 @@ export class View extends ViewCommon {
         this.nativeView.setContentDescription(value);
     }
 
-    [isUserInteractionEnabledProperty.getDefault](): boolean {
-        return true;
-    }
     [isUserInteractionEnabledProperty.setNative](value: boolean) {
         if (!value) {
             initializeDisabledListener();
@@ -303,6 +301,9 @@ export class View extends ViewCommon {
             this.nativeView.setOnTouchListener(disableUserInteractionListener);
         } else {
             this.setOnTouchListener();
+            if (!this.touchListenerIsSet) {
+                this.nativeView.setOnTouchListener(null);
+            }
         }
     }
 
@@ -339,7 +340,7 @@ export class View extends ViewCommon {
         return this.nativeView.getAlpha();
     }
     [opacityProperty.setNative](value: number) {
-        this.nativeView.setAlpha(value);
+        this.nativeView.setAlpha(float(value));
     }
 
     [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
@@ -353,15 +354,27 @@ export class View extends ViewCommon {
             switch (value) {
                 case "left":
                     lp.gravity = android.view.Gravity.LEFT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -2;
+                    }
                     break;
                 case "center":
                     lp.gravity = android.view.Gravity.CENTER_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -2;
+                    }
                     break;
                 case "right":
                     lp.gravity = android.view.Gravity.RIGHT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -2;
+                    }
                     break;
                 case "stretch":
                     lp.gravity = android.view.Gravity.FILL_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
+                    if (lp.weight < 0) {
+                        lp.weight = -1;
+                    }
                     break;
             }
             nativeView.setLayoutParams(lp);
@@ -379,76 +392,67 @@ export class View extends ViewCommon {
             switch (value) {
                 case "top":
                     lp.gravity = android.view.Gravity.TOP | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -2;
+                    }
                     break;
                 case "middle":
                     lp.gravity = android.view.Gravity.CENTER_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -2;
+                    }
                     break;
                 case "bottom":
                     lp.gravity = android.view.Gravity.BOTTOM | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -2;
+                    }
                     break;
                 case "stretch":
                     lp.gravity = android.view.Gravity.FILL_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
+                    if (lp.height < 0) {
+                        lp.height = -1;
+                    }
                     break;
             }
             nativeView.setLayoutParams(lp);
         }
     }
 
-    [rotateProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getRotate(this.nativeView);
-    }
     [rotateProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setRotate(this.nativeView, float(value));
     }
 
-    [scaleXProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getScaleX(this.nativeView);
-    }
     [scaleXProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setScaleX(this.nativeView, float(value));
     }
 
-    [scaleYProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getScaleY(this.nativeView);
-    }
     [scaleYProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setScaleY(this.nativeView, float(value));
     }
 
-    [translateXProperty.getDefault](): Length | number {
-        return org.nativescript.widgets.ViewHelper.getTranslateX(this.nativeView);
-    }
-    [translateXProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, Length.toDevicePixels(value, 0));
+    [translateXProperty.setNative](value: dip) {
+        org.nativescript.widgets.ViewHelper.setTranslateX(this.nativeView, layout.toDevicePixels(value));
     }
 
-    [translateYProperty.getDefault](): Length | number {
-        return org.nativescript.widgets.ViewHelper.getTranslateY(this.nativeView);
-    }
-    [translateYProperty.setNative](value: Length) {
-        org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, Length.toDevicePixels(value, 0));
+    [translateYProperty.setNative](value: dip) {
+        org.nativescript.widgets.ViewHelper.setTranslateY(this.nativeView, layout.toDevicePixels(value));
     }
 
     [zIndexProperty.getDefault](): number {
-        return org.nativescript.widgets.ViewHelper.getZIndex(this.nativeView);
+        return 0;
     }
     [zIndexProperty.setNative](value: number) {
         org.nativescript.widgets.ViewHelper.setZIndex(this.nativeView, value);
-        // let nativeView = this.nativeView;
-        // if (nativeView instanceof android.widget.Button) {
-        //     nativeView.setStateListAnimator(null);
-        // }
     }
 
     [backgroundInternalProperty.getDefault](): android.graphics.drawable.Drawable {
-        return this.nativeView.getBackground();
+        const nativeView = this.nativeView;
+        const drawable = nativeView.getBackground();
+        return drawable ? drawable.getConstantState().newDrawable(nativeView.getResources()) : null;
     }
     [backgroundInternalProperty.setNative](value: android.graphics.drawable.Drawable | Background) {
-        if (value instanceof android.graphics.drawable.Drawable) {
-            this.nativeView.setBackground(value);
-        } else {
-            androidBackground.onBackgroundOrBorderPropertyChanged(this);
-        }
+        this._redrawNativeBackground(value);
     }
 
     [minWidthProperty.setNative](value: Length) {
@@ -464,6 +468,16 @@ export class View extends ViewCommon {
             this.parent._setChildMinHeightNative(this);
         } else {
             this._setMinHeightNative(this.minHeight);
+        }
+    }
+
+    _redrawNativeBackground(value: android.graphics.drawable.Drawable | Background): void {
+        if (value instanceof Background) {
+            androidBackground.onBackgroundOrBorderPropertyChanged(this);
+        } else {
+            const nativeView = this.nativeView;
+            org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
+            nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
         }
     }
 }
@@ -508,10 +522,12 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
     public _removeViewFromNativeVisualTree(child: ViewCommon): void {
         super._removeViewFromNativeVisualTree(child);
 
-        if (this.nativeView && child.nativeView) {
-            this.nativeView.removeView(child.nativeView);
+        const nativeView = this.nativeView;
+        const childView = child.nativeView;
+        if (nativeView && childView) {
+            nativeView.removeView(childView);
             if (traceEnabled()) {
-                traceWrite(`${this}.nativeView.removeView(${child}.nativeView)`, traceCategories.VisualTreeEvents);
+                traceWrite(`${nativeView}.removeView(${childView})`, traceCategories.VisualTreeEvents);
                 traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");
             }
         }
@@ -534,7 +550,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
     const { getter, setter, auto = 0 } = options;
     let setPixels, getPixels, setPercent;
     if (getter) {
-        View.prototype[getter] = function(this: View): PercentLength {
+        View.prototype[getter] = function (this: View): PercentLength {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -550,7 +566,7 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
         }
     }
     if (setter) {
-        View.prototype[setter] = function(this: View, length: PercentLength) {
+        View.prototype[setter] = function (this: View, length: PercentLength) {
             if (options) {
                 setPixels = options.setPixels;
                 getPixels = options.getPixels;
@@ -575,51 +591,39 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 }
 
 createNativePercentLengthProperty({
-    getter: marginTopProperty.getDefault,
     setter: marginTopProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginTop },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginTop },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginTopPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: marginRightProperty.getDefault,
     setter: marginRightProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginRight },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginRight },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginRightPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: marginBottomProperty.getDefault,
     setter: marginBottomProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginBottom },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginBottom },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginBottomPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: marginLeftProperty.getDefault,
     setter: marginLeftProperty.setNative,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getMarginLeft },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setMarginLeft },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setMarginLeftPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: widthProperty.getDefault,
     setter: widthProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getWidth },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setWidth },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setWidthPercent }
 });
 
 createNativePercentLengthProperty({
-    getter: heightProperty.getDefault,
     setter: heightProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get getPixels() { return org.nativescript.widgets.ViewHelper.getHeight },
     get setPixels() { return org.nativescript.widgets.ViewHelper.setHeight },
     get setPercent() { return org.nativescript.widgets.ViewHelper.setHeightPercent }
 });

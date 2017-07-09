@@ -26,14 +26,18 @@ import * as observable from "tns-core-modules/data/observable";
 // </Page>
 // << text-view-xml
 // >> observable-declare
-// function pageLoaded(args) {
-//   var page = args.object;
-//   var obj = new observable.Observable();
-//   obj.set("someProperty", "Please change this text!");
-//   page.bindingContext = obj;
-// }
-// exports.pageLoaded = pageLoaded;
+export function pageLoaded(args) {
+  let page = args.object;
+  let obj = new observable.Observable();
+  obj.set("someProperty", "Please change this text!");
+  page.bindingContext = obj;
+}
+exports.pageLoaded = pageLoaded;
 // << observable-declare
+
+export function test_recycling() {
+    helper.nativeView_recycling_test(_createTextViewFunc);
+}
 
 var _createTextViewFunc = function (): textViewModule.TextView {
     // >> text-view-create
@@ -427,6 +431,8 @@ export var testNativeBackgroundColorFromCss = function () {
         var page = <pagesModule.Page>views[1];
         page.css = "textview { background-color: " + expectedBackgroundColorHex + "; }";
 
+        helper.waitUntilLayoutReady(textView);
+
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);
     });
@@ -436,6 +442,8 @@ export var testNativeBackgroundColorFromLocal = function () {
     helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
         var textView = <textViewModule.TextView>views[0];
         textView.style.backgroundColor = new colorModule.Color(expectedBackgroundColorHex);
+
+        helper.waitUntilLayoutReady(textView);
 
         var actualResult = textViewTestsNative.getNativeBackgroundColor(textView).hex;
         TKUnit.assert(actualResult === expectedNormalizedBackgroundColorHex, "Actual: " + actualResult + "; Expected: " + expectedNormalizedBackgroundColorHex);

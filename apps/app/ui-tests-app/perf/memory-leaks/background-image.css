@@ -1,0 +1,7 @@
+.bg-main-page{
+    background-image: url('~/ui-tests-app/resources/images/gravatar.png');
+}
+
+.info {
+    font-size: 20;
+}

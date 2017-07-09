@@ -9,8 +9,11 @@ export abstract class FontBase implements FontDefinition {
     }
 
     get isBold(): boolean {
-        return this.fontWeight === FontWeight.BOLD
-            || this.fontWeight === "700";
+        return this.fontWeight === FontWeight.SEMI_BOLD ||
+            this.fontWeight === FontWeight.BOLD ||
+            this.fontWeight === "700" ||
+            this.fontWeight === FontWeight.EXTRA_BOLD ||
+            this.fontWeight === FontWeight.BLACK;
     }
 
     protected constructor(

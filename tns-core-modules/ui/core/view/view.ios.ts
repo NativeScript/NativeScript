@@ -1,19 +1,19 @@
 ﻿// Definitions.
-import { Point, View as ViewDefinition } from ".";
+import { Point, View as ViewDefinition, dip } from ".";
 
 import { ios, Background } from "../../styling/background";
 import {
     ViewCommon, layout, isEnabledProperty, originXProperty, originYProperty, automationTextProperty, isUserInteractionEnabledProperty,
     traceEnabled, traceWrite, traceCategories
 } from "./view-common";
-
 import {
-    Visibility, Length,
+    Visibility,
     visibilityProperty, opacityProperty,
     rotateProperty, scaleXProperty, scaleYProperty,
     translateXProperty, translateYProperty, zIndexProperty,
     backgroundInternalProperty, clipPathProperty
 } from "../../styling/style-properties";
+import { profile } from "../../../profiling";
 
 export * from "./view-common";
 
@@ -22,10 +22,18 @@ const PFLAG_MEASURED_DIMENSION_SET = 1 << 1;
 const PFLAG_LAYOUT_REQUIRED = 1 << 2;
 
 export class View extends ViewCommon {
+    nativeView: UIView;
     private _hasTransfrom = false;
     private _privateFlags: number = PFLAG_LAYOUT_REQUIRED | PFLAG_FORCE_LAYOUT;
     private _cachedFrame: CGRect;
     private _suspendCATransaction = false;
+    /**
+     * Native background states.
+     *  - `unset` - is the default, from this state it transitions to "invalid" in the base backgroundInternalProperty.setNative, overriding it without calling `super` will prevent the background from ever being drawn.
+     *  - `invalid` - the view background must be redrawn on the next layot.
+     *  - `drawn` - the view background has been property drawn, on subsequent layouts it may need to be redrawn if the background depends on the view's size.
+     */
+    _nativeBackgroundState: "unset" | "invalid" | "drawn";
 
     // get nativeView(): UIView {
     //     return this.ios;
@@ -79,6 +87,7 @@ export class View extends ViewCommon {
         }
     }
 
+    @profile
     public layout(left: number, top: number, right: number, bottom: number): void {
         let { boundsChanged, sizeChanged } = this._setCurrentLayoutBounds(left, top, right, bottom);
         this.layoutNativeView(left, top, right, bottom);
@@ -89,6 +98,9 @@ export class View extends ViewCommon {
 
         if (sizeChanged) {
             this._onSizeChanged();
+        } else if (this._nativeBackgroundState === "invalid") {
+            let background = this.style.backgroundInternal;
+            this._redrawNativeBackground(background);
         }
 
         this._privateFlags &= ~PFLAG_FORCE_LAYOUT;
@@ -99,6 +111,7 @@ export class View extends ViewCommon {
         this._privateFlags |= PFLAG_MEASURED_DIMENSION_SET;
     }
 
+    @profile
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number): void {
         const view = this.nativeView;
         const width = layout.getMeasureSpecSize(widthMeasureSpec);
@@ -207,7 +220,7 @@ export class View extends ViewCommon {
 
         let myPointInWindow = this.nativeView.convertPointToView(this.nativeView.bounds.origin, null);
         let otherPointInWindow = otherView.nativeView.convertPointToView(otherView.nativeView.bounds.origin, null);
-        return {
+        return {  
             x: myPointInWindow.x - otherPointInWindow.x,
             y: myPointInWindow.y - otherPointInWindow.y
         };
@@ -220,8 +233,10 @@ export class View extends ViewCommon {
         }
 
         let background = this.style.backgroundInternal;
-        if (!background.isEmpty() && this[backgroundInternalProperty.setNative]) {
-            this[backgroundInternalProperty.setNative](background);
+        const backgroundDependsOnSize = background.image || !background.hasUniformBorder();
+
+        if (this._nativeBackgroundState === "invalid" || (this._nativeBackgroundState === "drawn" && backgroundDependsOnSize)) {
+            this._redrawNativeBackground(background);
         }
 
         let clipPath = this.style.clipPath;
@@ -231,18 +246,23 @@ export class View extends ViewCommon {
     }
 
     public updateNativeTransform() {
-        let translateX = Length.toDevicePixels(this.translateX || 0, 0);
-        let translateY = Length.toDevicePixels(this.translateY || 0, 0);
-        let scaleX = this.scaleX || 1;
-        let scaleY = this.scaleY || 1;
+        let scaleX = this.scaleX || 1e-6;
+        let scaleY = this.scaleY || 1e-6;
         let rotate = this.rotate || 0;
         let newTransform = CGAffineTransformIdentity;
-        newTransform = CGAffineTransformTranslate(newTransform, translateX, translateY);
+        newTransform = CGAffineTransformTranslate(newTransform, this.translateX, this.translateY);
         newTransform = CGAffineTransformRotate(newTransform, rotate * Math.PI / 180);
-        newTransform = CGAffineTransformScale(newTransform, scaleX === 0 ? 0.001 : scaleX, scaleY === 0 ? 0.001 : scaleY);
+        newTransform = CGAffineTransformScale(newTransform, scaleX, scaleY);
         if (!CGAffineTransformEqualToTransform(this.nativeView.transform, newTransform)) {
+            let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
+            if (!updateSuspended) {
+                CATransaction.begin();
+            }
             this.nativeView.transform = newTransform;
             this._hasTransfrom = this.nativeView && !CGAffineTransformEqualToTransform(this.nativeView.transform, CGAffineTransformIdentity);
+            if (!updateSuspended) {
+                CATransaction.commit();
+            }
         }
     }
 
@@ -266,7 +286,7 @@ export class View extends ViewCommon {
     }
 
     public _isPresentationLayerUpdateSuspeneded() {
-        return this._suspendCATransaction;
+        return this._suspendCATransaction || this._suspendNativeUpdatesCount;
     }
 
     [isEnabledProperty.getDefault](): boolean {
@@ -362,17 +382,17 @@ export class View extends ViewCommon {
         this.updateNativeTransform();
     }
 
-    [translateXProperty.getDefault](): Length | number {
+    [translateXProperty.getDefault](): dip {
         return 0;
     }
-    [translateXProperty.setNative](value: Length) {
+    [translateXProperty.setNative](value: dip) {
         this.updateNativeTransform();
     }
 
-    [translateYProperty.getDefault](): Length | number {
+    [translateYProperty.getDefault](): dip {
         return 0;
     }
-    [translateYProperty.setNative](value: Length) {
+    [translateYProperty.setNative](value: dip) {
         this.updateNativeTransform();
     }
 
@@ -387,6 +407,13 @@ export class View extends ViewCommon {
         return this.nativeView.backgroundColor;
     }
     [backgroundInternalProperty.setNative](value: UIColor | Background) {
+        this._nativeBackgroundState = "invalid";
+        if (this.isLayoutValid) {
+            this._redrawNativeBackground(value);
+        }
+    }
+
+    _redrawNativeBackground(value: UIColor | Background): void {
         let updateSuspended = this._isPresentationLayerUpdateSuspeneded();
         if (!updateSuspended) {
             CATransaction.begin();
@@ -395,12 +422,17 @@ export class View extends ViewCommon {
         if (value instanceof UIColor) {
             this.nativeView.backgroundColor = value;
         } else {
-            this.nativeView.backgroundColor = ios.createBackgroundUIColor(this);
+            ios.createBackgroundUIColor(this, (color: UIColor) => {
+                this.nativeView.backgroundColor = color;
+            });
             this._setNativeClipToBounds();
         }
+
         if (!updateSuspended) {
             CATransaction.commit();
         }
+
+        this._nativeBackgroundState = "drawn";
     }
 
     _setNativeClipToBounds() {
@@ -408,6 +440,7 @@ export class View extends ViewCommon {
         this.nativeView.clipsToBounds = backgroundInternal.hasBorderWidth() || backgroundInternal.hasBorderRadius();
     }
 }
+View.prototype._nativeBackgroundState = "unset";
 
 export class CustomLayoutView extends View {
 

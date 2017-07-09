@@ -26,28 +26,28 @@ export class LayoutBase extends LayoutBaseCommon {
     }
 
     [paddingTopProperty.getDefault](): Length {
-        return { value: this._defaultPaddingTop, unit: "px" }
+        return { value: this._defaultPaddingTop, unit: "px" };
     }
     [paddingTopProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingTop(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderTopWidth, 0));
     }
 
     [paddingRightProperty.getDefault](): Length {
-        return { value: this._defaultPaddingRight, unit: "px" }
+        return { value: this._defaultPaddingRight, unit: "px" };
     }
     [paddingRightProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingRight(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderRightWidth, 0));
     }
 
     [paddingBottomProperty.getDefault](): Length {
-        return { value: this._defaultPaddingBottom, unit: "px" }
+        return { value: this._defaultPaddingBottom, unit: "px" };
     }
     [paddingBottomProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingBottom(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderBottomWidth, 0));
     }
 
     [paddingLeftProperty.getDefault](): Length {
-        return { value: this._defaultPaddingLeft, unit: "px" }
+        return { value: this._defaultPaddingLeft, unit: "px" };
     }
     [paddingLeftProperty.setNative](value: Length) {
         org.nativescript.widgets.ViewHelper.setPaddingLeft(this.nativeView, Length.toDevicePixels(value, 0) + Length.toDevicePixels(this.style.borderLeftWidth, 0));

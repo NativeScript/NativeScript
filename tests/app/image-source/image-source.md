@@ -25,3 +25,6 @@ This is similar to loading Bitmap from `R.drawable.logo` on Android or calling `
 
 ### Load image from a local file
 {%snippet imagesource-load-local%}
+
+### Save image source from imageAsset to PNG file
+{%snippet imagesource-from-imageasset-save-to%}

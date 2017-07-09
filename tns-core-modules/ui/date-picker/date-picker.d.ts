@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the DatePicker class.
- */
+ * @module "ui/date-picker"
+ */ /** */
+
 import { View, Property } from "../core/view";
 
 export const yearProperty: Property<DatePicker, number>;

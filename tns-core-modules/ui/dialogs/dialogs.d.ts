@@ -1,6 +1,8 @@
 ﻿/**
  * Allows you to show different dialogs such as alerts, prompts, etc.
- */
+ * @module "ui/dialogs"
+ */ /** */
+
 /**
  * Defines the input type for prompt dialog.
  */
@@ -14,13 +16,18 @@ export module inputType {
      * Password input type.
      */
     export var password: string;
+
+    /**
+     * Email input type.
+     */
+    export var email: string;
 }
 
 /**
  * The alert() method displays an alert box with a specified message.
  * @param message Specifies the text to display in the alert box.
  */
-export function alert(message: string): Promise<void>;
+export function alert(message: string | number | boolean): Promise<void>;
 
 /**
  * The alert() method displays an alert box with a specified message.
@@ -167,7 +174,7 @@ export interface PromptOptions extends ConfirmOptions {
     defaultText?: string;
 
     /**
-     * Gets or sets the prompt input type (plain text or password).
+     * Gets or sets the prompt input type (plain text, password, or email).
      */
     inputType?: string;
 }

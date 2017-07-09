@@ -8,9 +8,15 @@ previous_url: /ApiReference/ui/text-view/HOW-TO
 # TextView
 Using a TextView requires the text-view module.
 {%snippet require-textmodules%}
-{%snippet require-observable-textview%}
 ### Binding two TextViews text property to observable view-model property.
-{%snippet text-view-xml%}
+```XML
+<Page loaded="pageLoaded">
+    <StackLayout orientation="vertical">
+        {%raw%}<TextView text="{{ someProperty }}" />
+        <TextView text="{{ someProperty }}" />{%endraw%}
+    </StackLayout>
+</Page>
+```
 {%snippet observable-declare%}
 ### Creating a TextView
 {%snippet text-view-create%}

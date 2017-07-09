@@ -87,6 +87,40 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
         // << webview-localfile
     }
 
+    public testLoadLocalFileWithSpaceInPath(done) {
+        let webView = this.testView;
+
+        webView.on(webViewModule.WebView.loadFinishedEvent, function (args: webViewModule.LoadEventData) {
+            let actual;
+            let expectedTitle = 'MyTitle';
+            let expectedHtml = '<span style="color:red">TestÖ with Spaces</span>';
+
+            if (webView.ios) {
+                actual = webView.ios.stringByEvaluatingJavaScriptFromString("document.body.innerHTML").trim();
+            } else if (webView.android) {
+                actual = webView.android.getTitle();
+            }
+
+            try {
+                TKUnit.assertNull(args.error, args.error);
+                TKUnit.assertEqual(actual, webView.ios ? expectedHtml : expectedTitle, "File ~/ui/web-view/test.html not loaded properly.");
+                done(null);
+            }
+            catch (e) {
+                done(e);
+            }
+
+            let message;
+            if (!args.error) {
+                message = "WebView finished loading " + args.url;
+            }
+            else {
+                message = "Error loading " + args.url + ": " + args.error;
+            }
+        });
+        webView.src = "~/ui/web-view/test with spaces.html";
+    }
+
     public testLoadHTMLString(done) {
         let webView = this.testView;
 
@@ -135,24 +169,6 @@ export class WebViewTest extends testModule.UITest<webViewModule.WebView> {
             try {
                 TKUnit.assertNull(args.error, args.error);
                 TKUnit.assertEqual(args.url, targetSrc.toLowerCase(), "args.url");
-                done(null);
-            }
-            catch (e) {
-                done(e);
-            }
-        });
-
-        webView.src = targetSrc;
-    }
-
-    public testLoadStartedNavigationTypeExists(done) {
-        let webView = this.testView;
-        let targetSrc = "https://github.com/";
-
-        webView.on(webViewModule.WebView.loadStartedEvent, function (args: webViewModule.LoadEventData) {
-            try {
-                TKUnit.assertNull(args.error, args.error);
-                TKUnit.assertTrue(webViewModule.WebView.navigationTypes.indexOf(args.navigationType) > -1, "navigationTypeExists");
                 done(null);
             }
             catch (e) {

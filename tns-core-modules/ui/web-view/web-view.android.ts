@@ -34,7 +34,7 @@ function initializeWebViewClient(): void {
                 if (traceEnabled()) {
                     traceWrite("WebViewClientClass.onPageStarted(" + url + ", " + favicon + ")", traceCategories.Debug);
                 }
-                owner._onLoadStarted(url, WebViewBase.navigationTypes[WebViewBase.navigationTypes.indexOf("linkClicked")]);
+                owner._onLoadStarted(url, undefined);
             }
         }
 
@@ -105,27 +105,17 @@ export class WebView extends WebViewBase {
         (<any>this.nativeView).client.owner = this;
     }
 
-    public resetNativeView() {
+    public disposeNativeView() {
         const nativeView = this.nativeView;
         if (nativeView) {
             nativeView.destroy();
         }
 
         (<any>nativeView).client.owner = null;
-        super.resetNativeView();
+        super.disposeNativeView();
     }
 
-    public _loadFileOrResource(path: string, content: string) {
-        const nativeView = this.nativeView;
-        if (!nativeView) {
-            return;
-        }
-
-        const baseUrl = `file:///${path.substring(0, path.lastIndexOf('/') + 1)}`;
-        nativeView.loadDataWithBaseURL(baseUrl, content, "text/html", "utf-8", null);
-    }
-
-    public _loadHttp(src: string) {
+    public _loadUrl(src: string) {
         const nativeView = this.nativeView;
         if (!nativeView) {
             return;

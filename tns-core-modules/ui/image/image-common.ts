@@ -1,4 +1,4 @@
-﻿import { Image as ImageDefinition } from ".";
+﻿import { Image as ImageDefinition, Stretch } from ".";
 import { View, Property, InheritedCssProperty, Style, Color, isIOS, booleanConverter } from "../core/view";
 import { ImageAsset } from "../../image-asset";
 import { ImageSource, fromAsset, fromNativeSource, fromUrl } from "../../image-source";
@@ -11,7 +11,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
     public imageSource: ImageSource;
     public src: string | ImageSource;
     public isLoading: boolean;
-    public stretch: "none" | "aspectFill" | "aspectFit" | "fill";
+    public stretch: Stretch;
     public loadMode: "sync" | "async";
 
     get tintColor(): Color {
@@ -24,19 +24,18 @@ export abstract class ImageBase extends View implements ImageDefinition {
     /**
      * @internal
      */
-    public _createImageSourceFromSrc(): void {
-        let value = this.src;
-        let originalValue = value;
-        let sync = this.loadMode === "sync";
-        if (typeof value === "string") {
+    public _createImageSourceFromSrc(value: string | ImageSource): void {
+        const originalValue = value;
+        const sync = this.loadMode === "sync";
+        if (typeof value === "string" || value instanceof String) {
             value = value.trim();
             this.imageSource = null;
             this["_url"] = value;
 
             this.isLoading = true;
 
-            let source = new ImageSource();
-            let imageLoaded = () => {
+            const source = new ImageSource();
+            const imageLoaded = () => {
                 let currentValue = this.src;
                 if (currentValue !== originalValue) {
                     return;
@@ -46,7 +45,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
             };
 
             if (isDataURI(value)) {
-                let base64Data = value.split(",")[1];
+                const base64Data = value.split(",")[1];
                 if (base64Data !== undefined) {
                     if (sync) {
                         source.loadFromBase64(base64Data);
@@ -55,10 +54,9 @@ export abstract class ImageBase extends View implements ImageDefinition {
                         source.fromBase64(base64Data).then(imageLoaded);
                     }
                 }
-            }
-            else if (isFileOrResourcePath(value)) {
+            } else if (isFileOrResourcePath(value)) {
                 if (value.indexOf(RESOURCE_PREFIX) === 0) {
-                    let resPath = value.substr(RESOURCE_PREFIX.length);
+                    const resPath = value.substr(RESOURCE_PREFIX.length);
                     if (sync) {
                         source.loadFromResource(resPath);
                         imageLoaded();
@@ -84,8 +82,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
                     }
                 });
             }
-        }
-        else if (value instanceof ImageSource) {
+        } else if (value instanceof ImageSource) {
             // Support binding the imageSource trough the src property
             this.imageSource = value;
             this.isLoading = false;
@@ -103,7 +100,7 @@ export abstract class ImageBase extends View implements ImageDefinition {
     }
 }
 
-// ImageBase.prototype.recycleNativeView = true;
+ImageBase.prototype.recycleNativeView = true;
 
 export const imageSourceProperty = new Property<ImageBase, ImageSource>({ name: "imageSource" });
 imageSourceProperty.register(ImageBase);
@@ -117,7 +114,7 @@ loadModeProperty.register(ImageBase);
 export const isLoadingProperty = new Property<ImageBase, boolean>({ name: "isLoading", defaultValue: false, valueConverter: booleanConverter });
 isLoadingProperty.register(ImageBase);
 
-export const stretchProperty = new Property<ImageBase, "none" | "aspectFill" | "aspectFit" | "fill">({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS });
+export const stretchProperty = new Property<ImageBase, Stretch>({ name: "stretch", defaultValue: "aspectFit", affectsLayout: isIOS });
 stretchProperty.register(ImageBase);
 
 export const tintColorProperty = new InheritedCssProperty<Style, Color>({ name: "tintColor", cssName: "tint-color", equalityComparer: Color.equals, valueConverter: (value) => new Color(value) });

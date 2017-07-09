@@ -21,6 +21,10 @@ function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << article-binding-switch-property
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new switchModule.Switch());
+}
+
 export function test_default_TNS_values() {
     // >> article-create-switch
     var mySwitch = new switchModule.Switch();

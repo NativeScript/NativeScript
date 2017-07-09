@@ -1,16 +1,24 @@
-import * as colorModule from "../color";
-export var RESOURCE_PREFIX: string;
+/**
+ * @module "utils/utils"
+ */ /** */
+
+import { dip, px } from "../ui/core/view";
+
+export const RESOURCE_PREFIX: string;
+export const FILE_PREFIX: string;
 
 //@private
 /**
- * Used by various android event listener implementations
+ * Used by various android event listener implementations.
+ * @private
  */
 interface Owned {
     owner: any;
 }
 
 /**
- * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType. 
+ * Used to cache and restore Android views' layer type, i.e. android.view.View.getLayerType and android.view.View.setLayerType.
+ * @private
  */
 interface CacheLayerType {
     layerType: number;
@@ -23,9 +31,6 @@ interface CacheLayerType {
  * Utility module related to layout.
  */
 export module layout {
-    export type px = number;
-    export type dip = number;
-
     /**
      * Bits that provide the actual measured size.
      */
@@ -62,12 +67,12 @@ export module layout {
      */
     export function getDisplayDensity(): number;
     /**
-     * Convert value to device pixels.
+     * Convert device independent pixels to device pixels - dip to px.
      * @param value - The pixel to convert.
      */
     export function toDevicePixels(value: dip): px;
     /**
-     * Convert value to device independent pixels.
+     * Convert device pixels to device independent pixels - px to dip.
      * @param value - The pixel to convert.
      */
     export function toDeviceIndependentPixels(value: px): dip;
@@ -209,11 +214,6 @@ export module ios {
     }
 
     /**
-     * Gets NativeScript color from [UIColor](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIColor_Class/).
-     * @param uiColor - UIColor instance used to create a NativeScript color.
-     */
-    export function getColor(uiColor: any /* UIColor */): colorModule.Color;
-    /**
      * Gets an information about if current mode is Landscape.
      */
     export function isLandscape(): boolean;
@@ -270,3 +270,16 @@ export function convertString(value: any): any
  * @param compareFunc - function that will be used to compare two elements of the array
  */
 export function mergeSort(arr: Array<any>, compareFunc: (a: any, b: any) => number): Array<any>
+
+/**
+ * 
+ * Checks if array has any duplicate elements.
+ * @param arr - The array to be checked.
+ */
+export function hasDuplicates(arr: Array<any>): boolean;
+
+/**
+ * Removes duplicate elements from array.
+ * @param arr - The array.
+ */
+export function eliminateDuplicates(arr: Array<any>): Array<any>;

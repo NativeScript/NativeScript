@@ -1,6 +1,8 @@
 ﻿/**
  * Contains the TimePicker class.
- */
+ * @module "ui/time-picker"
+ */ /** */
+
 import { View, Property } from "../core/view";
 
 /**

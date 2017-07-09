@@ -78,7 +78,7 @@ export class SettingsViewModel extends observable.Observable {
         });
     }
 
-    public promptName(args: observable.EventData) {
+    public promptText(args: observable.EventData) {
         dialogs.prompt({
             title: "Name",
             message: "Enter name:",
@@ -87,6 +87,46 @@ export class SettingsViewModel extends observable.Observable {
             okButtonText: "OK",
             defaultText: "John Reese",
             inputType: dialogs.inputType.text
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
+            }
+        });
+    }
+
+    public promptPass(args: observable.EventData) {
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter name:",
+            cancelButtonText: "Cancel",
+            neutralButtonText: "Ignore",
+            okButtonText: "OK",
+            defaultText: "John Reese",
+            inputType: dialogs.inputType.password
+        }).then((promptResult) => {
+            console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
+            if (promptResult.result) {
+                this.set("name", promptResult.text);
+            }
+            else {
+                this.set("name", "Harold Finch");
+            }
+        });
+    }
+
+    public promptEmail(args: observable.EventData) {
+        dialogs.prompt({
+            title: "Name",
+            message: "Enter name:",
+            cancelButtonText: "Cancel",
+            neutralButtonText: "Ignore",
+            okButtonText: "OK",
+            defaultText: "John Reese",
+            inputType: dialogs.inputType.email
         }).then((promptResult) => {
             console.log("### Result: " + promptResult.result + ", Text: " + promptResult.text);
             if (promptResult.result) {

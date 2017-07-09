@@ -1,51 +1,15 @@
 ﻿import {
-    ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, unsetValue, Color,
+    ImageSource, ImageBase, stretchProperty, imageSourceProperty, srcProperty, tintColorProperty, Color,
     isDataURI, isFileOrResourcePath, RESOURCE_PREFIX
 } from "./image-common";
-import { path, knownFolders } from "../../file-system";
+import { knownFolders } from "../../file-system";
 
 export * from "./image-common";
 
 const FILE_PREFIX = "file:///";
 const ASYNC = "async";
 
-let imageFetcher: org.nativescript.widgets.image.Fetcher;
-let imageCache: org.nativescript.widgets.image.Cache;
-
-export enum CacheMode {
-    none,
-    memory,
-    diskAndMemory
-}
-
-export let currentCacheMode: CacheMode;
-
-export function initImageCache(context: android.content.Context, mode = CacheMode.diskAndMemory, memoryCacheSize: number = 0.25, diskCacheSize: number = 10 * 1024 * 1024): void {
-    if (currentCacheMode === mode) {
-        return;
-    }
-
-    currentCacheMode = mode;
-    if (!imageFetcher) {
-        imageFetcher = org.nativescript.widgets.image.Fetcher.getInstance(context);
-    }
-
-    // Disable cache.
-    if (mode === CacheMode.none) {
-        if (imageCache != null && imageFetcher != null) {
-            imageFetcher.clearCache();
-        }
-    }
-
-    let params = new org.nativescript.widgets.image.Cache.CacheParams();
-    params.memoryCacheEnabled = mode !== CacheMode.none;
-    params.setMemCacheSizePercent(memoryCacheSize); // Set memory cache to % of app memory
-    params.diskCacheEnabled = mode === CacheMode.diskAndMemory;
-    params.diskCacheSize = diskCacheSize;
-    imageCache = org.nativescript.widgets.image.Cache.getInstance(params);
-    imageFetcher.addImageCache(imageCache);
-    imageFetcher.initCache();
-}
+let AndroidImageView: typeof org.nativescript.widgets.ImageView;
 
 interface ImageLoadedListener {
     new (owner: Image): org.nativescript.widgets.image.Worker.OnImageLoadedListener;
@@ -83,12 +47,12 @@ export class Image extends ImageBase {
     public useCache = true;
 
     public createNativeView() {
-        initializeImageLoadedListener();
-        if (!imageFetcher) {
-            initImageCache(this._context);
+        if (!AndroidImageView) {
+            AndroidImageView = org.nativescript.widgets.ImageView;
         }
-
-        const imageView = new org.nativescript.widgets.ImageView(this._context);
+        initializeImageLoadedListener();
+        
+        const imageView = new AndroidImageView(this._context);
         const listener = new ImageLoadedListener(this);
         imageView.setImageLoadedListener(listener);
         (<any>imageView).listener = listener;
@@ -106,44 +70,48 @@ export class Image extends ImageBase {
         super.disposeNativeView();
     }
 
-    public _createImageSourceFromSrc() {
-        let imageView = this.nativeView;
-        this.imageSource = <any>unsetValue;
+    public resetNativeView(): void {
+        super.resetNativeView();
+        this.nativeView.setImageMatrix(new android.graphics.Matrix());        
+    }
 
-        if (!imageView || !this.src) {
+    public _createImageSourceFromSrc(value: string | ImageSource) {
+        const imageView = this.nativeView;
+        if (!imageView) {
             return;
         }
 
-        let value = this.src;
-        let async = this.loadMode === ASYNC;
+        if (!value) {
+            imageView.setUri(null, 0, 0, false, true);
+            return;
+        }
 
-        if (typeof value === "string") {
+        const async = this.loadMode === ASYNC;
+
+        if (typeof value === "string" || value instanceof String) {
             value = value.trim();
             this.isLoading = true;
 
             if (isDataURI(value)) {
                 // TODO: Check with runtime what should we do in case of base64 string.
-                super._createImageSourceFromSrc();
-            }
-            else if (isFileOrResourcePath(value)) {
+                super._createImageSourceFromSrc(value);
+            } else if (isFileOrResourcePath(value)) {
                 if (value.indexOf(RESOURCE_PREFIX) === 0) {
                     imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, async);
-                }
-                else {
+                } else {
                     let fileName = value;
                     if (fileName.indexOf("~/") === 0) {
-                        fileName = path.join(knownFolders.currentApp().path, fileName.replace("~/", ""));
+                        fileName = knownFolders.currentApp().path + "/" + fileName.replace("~/", "");
                     }
 
                     imageView.setUri(FILE_PREFIX + fileName, this.decodeWidth, this.decodeHeight, this.useCache, async);
                 }
-            }
-            else {
+            } else {
                 // For backwards compatibility http always use async loading.
                 imageView.setUri(value, this.decodeWidth, this.decodeHeight, this.useCache, true);
             }
         } else {
-            super._createImageSourceFromSrc();
+            super._createImageSourceFromSrc(value);
         }
     }
 
@@ -198,6 +166,6 @@ export class Image extends ImageBase {
         return undefined;
     }
     [srcProperty.setNative](value: any) {
-        this._createImageSourceFromSrc();
+        this._createImageSourceFromSrc(value);
     }
 }

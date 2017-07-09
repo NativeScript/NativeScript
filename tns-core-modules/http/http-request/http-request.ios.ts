@@ -11,17 +11,20 @@ import * as utils from "../../utils/utils";
 import getter = utils.ios.getter;
 
 import * as domainDebugger from "../../debugger/debugger";
+import { getFilenameFromUrl } from "./http-request-common";
 
-export const enum HttpResponseEncoding {
+export enum HttpResponseEncoding {
     UTF8,
     GBK
 }
 
-var device = utils.ios.getter(UIDevice, UIDevice.currentDevice).userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
+var currentDevice = utils.ios.getter(UIDevice, UIDevice.currentDevice);
+var device = currentDevice.userInterfaceIdiom === UIUserInterfaceIdiom.Phone ? "Phone" : "Pad";
+var osVersion = currentDevice.systemVersion;
 
 var GET = "GET";
 var USER_AGENT_HEADER = "User-Agent";
-var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5355d Safari/8536.25`;
+var USER_AGENT = `Mozilla/5.0 (i${device}; CPU OS ${osVersion.replace('.', '_')} like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/${osVersion} Mobile/10A5355d Safari/8536.25`;
 var sessionConfig = getter(NSURLSessionConfiguration, NSURLSessionConfiguration.defaultSessionConfiguration);
 var queue = getter(NSOperationQueue, NSOperationQueue.mainQueue);
 
@@ -146,11 +149,11 @@ export function request(options: http.HttpRequestOptions): Promise<http.HttpResp
                                         });
                                     });
                                 },
-                                toFile: (destinationFilePath?: string) => {
+                                toFile: (destinationFilePath?: string) => {  
                                     var fs: typeof fsModule = require("file-system");
-                                    var fileName = options.url;
+                                    
                                     if (!destinationFilePath) {
-                                        destinationFilePath = fs.path.join(fs.knownFolders.documents().path, fileName.substring(fileName.lastIndexOf('/') + 1));
+                                        destinationFilePath = getFilenameFromUrl(options.url);
                                     }
                                     if (data instanceof NSData) {
                                         data.writeToFileAtomically(destinationFilePath, true);

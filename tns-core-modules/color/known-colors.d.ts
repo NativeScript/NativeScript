@@ -1,4 +1,8 @@
-﻿export var AliceBlue;
+﻿/**
+ * @module "color/known-colors"
+ */ /** */
+
+export var AliceBlue;
 export var AntiqueWhite;
 export var Aqua;
 export var Aquamarine;

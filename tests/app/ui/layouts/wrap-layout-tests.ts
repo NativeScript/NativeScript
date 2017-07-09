@@ -1,8 +1,9 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import {Label} from "tns-core-modules/ui/label";
+import { Label } from "tns-core-modules/ui/label";
 import * as layoutHelper from "./layout-helper";
 import * as testModule from "../../ui-test";
 import * as commonTests from "./common-layout-tests";
+import * as helper from "../helper";
 
 // >> wrap-layout-require
 import * as wrapLayoutModule from "tns-core-modules/ui/layouts/wrap-layout";
@@ -28,6 +29,10 @@ export class WrapLayoutTest extends testModule.UITest<wrapLayoutModule.WrapLayou
         }
 
         return wrapLayout;
+    }
+
+    public test_StackLayout_recycling() {
+        helper.nativeView_recycling_test(() => new wrapLayoutModule.WrapLayout());
     }
 
     public testItemWidhtItemHeight() {

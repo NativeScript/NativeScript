@@ -1,7 +1,7 @@
-﻿import {StackLayout} from "tns-core-modules/ui/layouts/stack-layout";
-import {Button} from "tns-core-modules/ui/button";
+﻿import { StackLayout } from "tns-core-modules/ui/layouts/stack-layout";
+import { Button } from "tns-core-modules/ui/button";
 import * as TKUnit from "../../TKUnit";
-import * as helper from "./layout-helper";
+import * as helper from "../helper";
 import * as enums from "tns-core-modules/ui/enums";
 import * as utils from "tns-core-modules/utils/utils";
 import * as testModule from "../../ui-test";
@@ -10,19 +10,23 @@ import * as commonTests from "./common-layout-tests";
 
 export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
-    private rootLayout: helper.MyStackLayout;
-    private btn1: helper.MyButton;
-    private btn2: helper.MyButton;
+    private rootLayout: layoutHelper.MyStackLayout;
+    private btn1: layoutHelper.MyButton;
+    private btn2: layoutHelper.MyButton;
 
     public create(): StackLayout {
-        this.rootLayout = new helper.MyStackLayout();
-        this.btn1 = new helper.MyButton();
+        this.rootLayout = new layoutHelper.MyStackLayout();
+        this.btn1 = new layoutHelper.MyButton();
         this.btn1.text = "btn1";
         this.rootLayout.addChild(this.btn1);
-        this.btn2 = new helper.MyButton();
+        this.btn2 = new layoutHelper.MyButton();
         this.btn2.text = "btn2";
         this.rootLayout.addChild(this.btn2);
         return this.rootLayout;
+    }
+
+    public test_StackLayout_recycling() {
+        helper.nativeView_recycling_test(() => new StackLayout());
     }
 
     public test_orientation_DefaultValue() {
@@ -105,11 +109,11 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
         this.waitUntilTestElementLayoutIsValid();
 
-        helper.assertMeasure(this.btn1, 260, 50);
-        helper.assertMeasure(this.btn2, 260, 50);
+        layoutHelper.assertMeasure(this.btn1, 260, 50);
+        layoutHelper.assertMeasure(this.btn2, 260, 50);
 
-        helper.assertLayout(this.btn1, 10, 20, 260, 50, "btn1");
-        helper.assertLayout(this.btn2, 10, 70, 260, 50, "btn2");
+        layoutHelper.assertLayout(this.btn1, 10, 20, 260, 50, "btn1");
+        layoutHelper.assertLayout(this.btn2, 10, 70, 260, 50, "btn2");
     }
 
     public test_Padding_Horizontal() {
@@ -127,11 +131,11 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
 
         this.waitUntilTestElementLayoutIsValid();
 
-        helper.assertMeasure(this.btn1, 50, 240);
-        helper.assertMeasure(this.btn2, 50, 240);
+        layoutHelper.assertMeasure(this.btn1, 50, 240);
+        layoutHelper.assertMeasure(this.btn2, 50, 240);
 
-        helper.assertLayout(this.btn1, 10, 20, 50, 240, "btn1");
-        helper.assertLayout(this.btn2, 60, 20, 50, 240, "btn2");
+        layoutHelper.assertLayout(this.btn1, 10, 20, 50, 240, "btn1");
+        layoutHelper.assertLayout(this.btn2, 60, 20, 50, 240, "btn2");
     }
 
     private assertChildTexts(expected, layout, message) {
@@ -164,7 +168,7 @@ export class StackLayoutTest extends testModule.UITest<StackLayout> {
         // >> stack-layout-require
         // var StackLayout = require("ui/layouts/stack-layout").StackLayout;
         // << stack-layout-require
-        
+
         // >> stack-layout-new     
         // >> (hide)
         // var Button = require("ui/button").Button;

@@ -1,0 +1,7 @@
+#btn2, #btn3, #btn4 {
+    border-width: 2;
+    border-color: teal;
+    border-radius: 20;
+    font-weight: 400;
+    font-size: 32;
+}

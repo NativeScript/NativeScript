@@ -27,6 +27,7 @@ function getApplication() {
 
     return application;
 }
+
 function getResources() {
     if (!resources) {
         resources = getApplication().getResources();
@@ -241,14 +242,14 @@ export function fromNativeSource(source: any): ImageSource {
     return image.setNativeSource(source) ? image : null;
 }
 
-export function fromUrl(url: string): Promise<ImageSource> {
+export function fromUrl(url: string): Promise<ImageSourceDefinition> {
     ensureHttp();
     return http.getImage(url);
 }
 
 export function fromFileOrResource(path: string): ImageSource {
     if (!isFileOrResourcePath(path)) {
-        throw new Error("Path \"" + "\" is not a valid file or resource.");
+        throw new Error(`${path} is not a valid file or resource.`);
     }
 
     if (path.indexOf(RESOURCE_PREFIX) === 0) {

@@ -8,6 +8,12 @@ import * as platform from "tns-core-modules/platform";
 import * as datePickerModule from "tns-core-modules/ui/date-picker";
 // << date-picker-require
 
+import * as helper from "../helper";
+
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new datePickerModule.DatePicker());
+}
+
 function assertDate(datePicker: datePickerModule.DatePicker, expectedYear: number, expectedMonth: number, expectedDay: number) {
     TKUnit.assertEqual(datePicker.year, expectedYear, "datePicker.year");
     TKUnit.assertEqual(datePicker.month, expectedMonth, "datePicker.month");

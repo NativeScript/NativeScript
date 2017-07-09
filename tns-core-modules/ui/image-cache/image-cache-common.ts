@@ -184,3 +184,7 @@ export class Cache extends observable.Observable implements definition.Cache {
         this._download(request);
     }
 }
+export interface Cache {
+    on(eventNames: string, callback: (args: observable.EventData) => void , thisArg?: any);
+    on(event: "downloaded", callback: (args: definition.DownloadedData) => void , thisArg?: any);
+}

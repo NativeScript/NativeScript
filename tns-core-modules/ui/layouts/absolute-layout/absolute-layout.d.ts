@@ -1,4 +1,8 @@
-﻿import { LayoutBase, View, Property, Length } from "../layout-base";
+﻿/**
+ * @module "ui/layouts/absolute-layout"
+ */ /** */
+
+import { LayoutBase, View, Property, Length } from "../layout-base";
 
 /**
  *  A layout that lets you specify exact locations (left/top coordinates) of its children.
