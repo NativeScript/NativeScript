@@ -26,6 +26,12 @@ export class ActionBar extends View {
     navigationButton: NavigationButton;
 
     /**
+     * Removes the shadow/border at the bottom of the ActionBar and removes translucency on iOS.
+     * Default false.
+     */
+    flat: boolean;
+
+    /**
      * Gets the collection of action items.
      */
     actionItems: ActionItems;
