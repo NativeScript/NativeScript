@@ -378,6 +378,18 @@ export var testNativeFontSizeFromLocal = function () {
     });
 }
 
+var expectedLineHeight = 10;
+export var testLocalLineHeightFromCss = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+        var page = <pagesModule.Page>views[1];
+
+        page.css = "textview { line-height: " + expectedLineHeight + "; }";
+        var actualResult = textView.style.lineHeight;
+        TKUnit.assert(actualResult === expectedLineHeight, "Actual: " + actualResult + "; Expected: " + expectedLineHeight);
+    });
+}
+
 var expectedColorHex = "#FFFF0000";
 var expectedNormalizedColorHex = "#FF0000";
 export var testLocalColorFromCss = function () {

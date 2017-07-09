@@ -122,6 +122,12 @@ export class TextBase extends TextBaseCommon {
             attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeView.font.pointSize, { location: 0, length: attrText.length });
         }
 
+        if (this.lineHeight !== 0) {
+            const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+            paragraphStyle.lineSpacing = this.lineHeight;
+            attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
+        }
+
         if (this.nativeView instanceof UIButton) {
             this.nativeView.setAttributedTitleForState(attrText, UIControlState.Normal);
         }
@@ -152,6 +158,12 @@ export class TextBase extends TextBaseCommon {
 
         if (style.letterSpacing !== 0) {
             dict.set(NSKernAttributeName, style.letterSpacing * this.nativeView.font.pointSize);
+        }
+
+        if (style.lineHeight !== 0) {
+            const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+            paragraphStyle.lineSpacing = style.lineHeight;
+            dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
         const isTextView = this.nativeView instanceof UITextView;
