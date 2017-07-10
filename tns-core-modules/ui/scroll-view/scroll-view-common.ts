@@ -77,7 +77,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
         return 0;
     }
 
-    get scrollBar(): boolean {
+    get scrollBarIndicatorVisible(): boolean {
         return true;
     }
 
@@ -100,8 +100,8 @@ export const orientationProperty = new Property<ScrollViewBase, Orientation>({
 });
 orientationProperty.register(ScrollViewBase);
 
-export const scrollBarProperty = new Property<ScrollViewBase, boolean>({
+export const scrollBarIndicatorVisibleProperty = new Property<ScrollViewBase, boolean>({
     name: "scrollBar", defaultValue: true,
     valueConverter: booleanConverter
 });
-scrollBarProperty.register(ScrollViewBase);
+scrollBarIndicatorVisibleProperty.register(ScrollViewBase);

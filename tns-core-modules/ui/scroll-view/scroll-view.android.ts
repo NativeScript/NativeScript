@@ -1,5 +1,5 @@
 ﻿import { ScrollEventData } from ".";
-import { ScrollViewBase, layout, scrollBarProperty } from "./scroll-view-common";
+import { ScrollViewBase, layout, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 
@@ -44,10 +44,10 @@ export class ScrollView extends ScrollViewBase {
         return nativeView.getScrollableLength() / layout.getDisplayDensity();
     }
 
-    [scrollBarProperty.getDefault](): boolean {
+    [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
         return true;
     }
-    [scrollBarProperty.setNative](value: boolean) {
+    [scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
         if (this.orientation === "horizontal") {
             this.nativeView.setHorizontalScrollBarEnabled(value);
         } else {

@@ -1,5 +1,5 @@
 ﻿import { ScrollEventData } from ".";
-import { View, layout, ScrollViewBase, scrollBarProperty } from "./scroll-view-common";
+import { View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 
@@ -85,10 +85,10 @@ export class ScrollView extends ScrollViewBase {
         return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height);
     }
 
-    [scrollBarProperty.getDefault](): boolean {
+    [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
         return true;
     }
-    [scrollBarProperty.setNative](value: boolean) {
+    [scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
         this.updateScrollBarVisibility(value);   
     }
 

@@ -37,7 +37,7 @@ export class ScrollView extends ContentView {
     /**
      * Toggles scrollbar indicator visibility
      */
-    scrollBar: boolean;
+    scrollBarIndicatorVisible: boolean;
 
     /**
      * Scrolls the content the specified vertical offset position.
