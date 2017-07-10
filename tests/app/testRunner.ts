@@ -262,34 +262,22 @@ var running = false;
 var testsQueue = new Array<TestInfo>();
 
 function printRunTestStats() {
-    let testFileContent = new Array<string>();
     const testCases = new Array<string>();
 
     var failedTestCount = 0;
-    var failedTestInfo = [];
+    const failedTestInfo = [];
     const slowTests = new Array<string>();
 
     let allTests = testsQueue.filter(t => t.isTest);
 
-    testFileContent.push("<testsuites>");
-
     allTests.forEach((testCase, i, arr) => {
         let testName = testCase.testName;
-        let duration = (testCase.duration / 1000).toFixed(2);
-
         if (!testCase.isPassed) {
             failedTestCount++;
-
-            let errorMessage = testCase.errorMessage;
-
             failedTestInfo.push(testCase.testName + " FAILED: " + testCase.errorMessage);
-
-            testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"><failure type="exceptions.AssertionError"><![CDATA[${errorMessage}]]></failure></testcase>`);
-
-        } else {
-            testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}"></testcase>`);
         }
 
+        let duration = (testCase.duration / 1000).toFixed(2);
         if (testCase.duration > 500) {
             slowTests.push(`${testCase.testName}: ${duration}s`);
         }
@@ -297,13 +285,11 @@ function printRunTestStats() {
 
     const totalTime = (TKUnit.time() - startTime).toFixed(2);
 
-    testFileContent.push(`<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`);
-
-    testFileContent = testFileContent.concat(testCases);
-
-    let finalMessage = `\n=== ALL TESTS COMPLETE ===\n` +
+    let finalMessage = `\n`+
+        `=== ALL TESTS COMPLETE ===\n` +
         `${(allTests.length - failedTestCount)} OK, ${failedTestCount} failed\n` +
         `DURATION: ${totalTime} ms\n`;
+
     TKUnit.write(finalMessage, messageType.info);
 
     failedTestInfo.forEach((message, i, arr) => {
@@ -311,40 +297,56 @@ function printRunTestStats() {
         finalMessage += "\n" + message;
     });
 
+    // console.log("test-result.xml:\n" + generateTestFile(allTests));
+
     // DO NOT CHANGE THE FIRST ROW! Used as an indicator for test run pass detection.
     TKUnit.write(`Tests EOF!`, messageType.info);
 
-    testFileContent.push("</testsuite>");
-    testFileContent.push("</testsuites>");
+    showReportPage(finalMessage);
+}
 
-    let testFilePath: string;
-    let testResultsFileName = "test-results.xml";
-    if (platform.isIOS) {
-        testFilePath = fs.path.join(fs.knownFolders.documents().path, testResultsFileName);
-    } else {
-        testFilePath = fs.path.join(android.os.Environment.getExternalStorageDirectory().getAbsolutePath(), "Documents", testResultsFileName);
-    }
+function generateTestFile(allTests: TestInfo[]) {
+    let failedTestCount = 0;
 
-    let testFile = fs.File.fromPath(testFilePath);
-    testFile.writeTextSync(testFileContent.join(""));
+    const testCases = new Array<string>();
+    allTests.forEach((testCase, i, arr) => {
+        let testName = testCase.testName;
+        let duration = (testCase.duration / 1000).toFixed(2);
 
-    finalMessage += "\n" + "Test results: " + testFilePath;
-    // finalMessage += "\n" + "----------------- ";
-    // finalMessage += "\n" + "Slow tests: ";
-    // slowTests.forEach((message, i, arr) => {
-    //     TKUnit.write(message, messageType.error);
-    //     finalMessage += "\n" + message;
-    // });
+        testCases.push(`<testcase classname="${platform.device.os}" name="${testName}" time="${duration}">`)
+        if (!testCase.isPassed) {
+            failedTestCount++;
+            testCases.push(`<failure type="exceptions.AssertionError"><![CDATA[${testCase.errorMessage}]]></failure>`)
+        }
+        testCases.push(`</testcase>`);
+    });
 
+    const totalTime = (TKUnit.time() - startTime).toFixed(2);
+
+    const result = [
+        "<testsuites>",
+        `<testsuite name="NativeScript Tests" timestamp="${new Date()}" hostname="hostname" time="${totalTime}" errors="0" tests="${allTests.length}" skipped="0" failures="${failedTestCount}">`,
+        ...testCases,
+        "</testsuite>",
+        "</testsuites>"
+    ].join("");
+
+    return result;
+}
+
+function showReportPage(finalMessage: string) {
     let stack = new StackLayout();
+
     let btn = new Button();
     btn.text = "Rerun tests";
     btn.on("tap", () => runAll(testsSelector));
     stack.addChild(btn);
+
     let messageContainer = new TextView();
     messageContainer.editable = messageContainer.autocorrect = false;
     messageContainer.text = finalMessage;
     stack.addChild(messageContainer);
+
     const page = topmost().currentPage;
     page.id = unsetValue;
     page.className = unsetValue;
@@ -361,6 +363,7 @@ function printRunTestStats() {
         });
     }
 }
+
 
 function startLog(): void {
     let testsName: string = this.name;
