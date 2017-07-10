@@ -54,7 +54,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     protected updateScrollBarVisibility(value) {
-        if (this.orientation == "horizontal") {
+        if (this.orientation === "horizontal") {
             this.nativeView.showsHorizontalScrollIndicator = value;
         } else {
             this.nativeView.showsVerticalScrollIndicator = value;

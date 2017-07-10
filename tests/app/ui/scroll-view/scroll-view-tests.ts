@@ -261,22 +261,18 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         if (app.ios) {
-            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
-            TKUnit.assertEqual(isEnabled, true);
+            TKUnit.assertEqual(this.testView.ios.showsHorizontalScrollIndicator, true);
         } else {
-            var isEnabled = this.testView.android.isHorizontalScrollBarEnabled();
-            TKUnit.assertEqual(isEnabled, true);
+            TKUnit.assertEqual(this.testView.android.isHorizontalScrollBarEnabled(), true);
         }
 
         this.testView.scrollBar = false;
         this.waitUntilTestElementLayoutIsValid();
 
         if (app.ios) {
-            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
-            TKUnit.assertEqual(isEnabled, false);
+            TKUnit.assertEqual(this.testView.ios.showsHorizontalScrollIndicator, false);
         } else {
-            var isEnabled = this.testView.android.isHorizontalScrollBarEnabled();
-            TKUnit.assertEqual(isEnabled, false);
+            TKUnit.assertEqual(this.testView.android.isHorizontalScrollBarEnabled(), false);
         }
     }
 
@@ -286,22 +282,18 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         this.waitUntilTestElementLayoutIsValid();
 
         if (app.ios) {
-            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
-            TKUnit.assertEqual(isEnabled, true);
+            TKUnit.assertEqual(this.testView.ios.showsVerticalScrollIndicator, true);
         } else {
-            var isEnabled = this.testView.android.isVerticalScrollBarEnabled();
-            TKUnit.assertEqual(isEnabled, true);
+            TKUnit.assertEqual(this.testView.android.isVerticalScrollBarEnabled(), true);
         }
 
         this.testView.scrollBar = false;
         this.waitUntilTestElementLayoutIsValid();
 
         if (app.ios) {
-            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
-            TKUnit.assertEqual(isEnabled, false);
+            TKUnit.assertEqual(this.testView.ios.showsVerticalScrollIndicator, false);
         } else {
-            var isEnabled = this.testView.android.isVerticalScrollBarEnabled();
-            TKUnit.assertEqual(isEnabled, false);
+            TKUnit.assertEqual(this.testView.android.isVerticalScrollBarEnabled(), false);
         }
     }
 }

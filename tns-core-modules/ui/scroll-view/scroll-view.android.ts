@@ -48,7 +48,7 @@ export class ScrollView extends ScrollViewBase {
         return true;
     }
     [scrollBarProperty.setNative](value: boolean) {
-        if (this.orientation == "horizontal") {
+        if (this.orientation === "horizontal") {
             this.nativeView.setHorizontalScrollBarEnabled(value);
         } else {
             this.nativeView.setVerticalScrollBarEnabled(value);
