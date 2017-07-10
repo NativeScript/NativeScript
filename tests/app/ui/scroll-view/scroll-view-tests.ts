@@ -254,6 +254,56 @@ class ScrollLayoutTest extends testModule.UITest<scrollViewModule.ScrollView> {
         TKUnit.assertEqual(scrollX, this.testView.horizontalOffset);
         TKUnit.assertEqual(scrollX, layoutHelper.dp(100));
     }
+
+    public test_scrollView_horizontal_can_set_indicator_state() {
+        this.testView.orientation = "horizontal";
+        this.testView.scrollBar = true;
+        this.waitUntilTestElementLayoutIsValid();
+
+        if (app.ios) {
+            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
+            TKUnit.assertEqual(isEnabled, true);
+        } else {
+            var isEnabled = this.testView.android.isHorizontalScrollBarEnabled();
+            TKUnit.assertEqual(isEnabled, true);
+        }
+
+        this.testView.scrollBar = false;
+        this.waitUntilTestElementLayoutIsValid();
+
+        if (app.ios) {
+            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
+            TKUnit.assertEqual(isEnabled, false);
+        } else {
+            var isEnabled = this.testView.android.isHorizontalScrollBarEnabled();
+            TKUnit.assertEqual(isEnabled, false);
+        }
+    }
+
+    public test_scrollView_vertical_can_set_indicator_state() {
+        this.testView.orientation = "vertical";
+        this.testView.scrollBar = true;
+        this.waitUntilTestElementLayoutIsValid();
+
+        if (app.ios) {
+            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
+            TKUnit.assertEqual(isEnabled, true);
+        } else {
+            var isEnabled = this.testView.android.isVerticalScrollBarEnabled();
+            TKUnit.assertEqual(isEnabled, true);
+        }
+
+        this.testView.scrollBar = false;
+        this.waitUntilTestElementLayoutIsValid();
+
+        if (app.ios) {
+            var isEnabled = this.testView.ios.showsVerticalScrollIndicator;
+            TKUnit.assertEqual(isEnabled, false);
+        } else {
+            var isEnabled = this.testView.android.isVerticalScrollBarEnabled();
+            TKUnit.assertEqual(isEnabled, false);
+        }
+    }
 }
 
 export function createTestCase(): ScrollLayoutTest {
