@@ -35,7 +35,7 @@ export class ScrollView extends ContentView {
     scrollableWidth: number;
 
     /**
-     * Toggles scrollbar visibility
+     * Toggles scrollbar indicator visibility
      */
     scrollBar: boolean;
 
