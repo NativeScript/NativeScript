@@ -9,6 +9,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public static scrollEvent = "scroll";
 
     public orientation: Orientation;
+    public scrollBarIndicatorVisible: boolean;
 
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
@@ -75,10 +76,6 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
 
     get scrollableHeight(): number {
         return 0;
-    }
-
-    get scrollBarIndicatorVisible(): boolean {
-        return true;
     }
 
     public abstract scrollToVerticalOffset(value: number, animated: boolean);
