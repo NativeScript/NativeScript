@@ -161,7 +161,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public _onOrientationChanged() {
-        this.updateScrollBarVisibility(this.scrollBar);   
+        this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);   
     }
 }
 
