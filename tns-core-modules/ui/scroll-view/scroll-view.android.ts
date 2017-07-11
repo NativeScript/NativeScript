@@ -1,5 +1,5 @@
 ﻿import { ScrollEventData } from ".";
-import { ScrollViewBase, layout } from "./scroll-view-common";
+import { ScrollViewBase, layout, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 
@@ -42,6 +42,17 @@ export class ScrollView extends ScrollViewBase {
         }
 
         return nativeView.getScrollableLength() / layout.getDisplayDensity();
+    }
+
+    [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
+        return true;
+    }
+    [scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
+        if (this.orientation === "horizontal") {
+            this.nativeView.setHorizontalScrollBarEnabled(value);
+        } else {
+            this.nativeView.setVerticalScrollBarEnabled(value);
+        }   
     }
 
     public scrollToVerticalOffset(value: number, animated: boolean) {

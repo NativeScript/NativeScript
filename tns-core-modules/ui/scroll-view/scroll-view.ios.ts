@@ -1,5 +1,5 @@
 ﻿import { ScrollEventData } from ".";
-import { View, layout, ScrollViewBase } from "./scroll-view-common";
+import { View, layout, ScrollViewBase, scrollBarIndicatorVisibleProperty } from "./scroll-view-common";
 
 export * from "./scroll-view-common";
 
@@ -53,6 +53,14 @@ export class ScrollView extends ScrollViewBase {
         this.nativeView.delegate = null;
     }
 
+    protected updateScrollBarVisibility(value) {
+        if (this.orientation === "horizontal") {
+            this.nativeView.showsHorizontalScrollIndicator = value;
+        } else {
+            this.nativeView.showsVerticalScrollIndicator = value;
+        } 
+    }
+
     get horizontalOffset(): number {
         return this.nativeView.contentOffset.x;
     }
@@ -75,6 +83,13 @@ export class ScrollView extends ScrollViewBase {
         }
 
         return Math.max(0, this.nativeView.contentSize.height - this.nativeView.bounds.size.height);
+    }
+
+    [scrollBarIndicatorVisibleProperty.getDefault](): boolean {
+        return true;
+    }
+    [scrollBarIndicatorVisibleProperty.setNative](value: boolean) {
+        this.updateScrollBarVisibility(value);   
     }
 
     get ios(): UIView {
@@ -146,7 +161,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     public _onOrientationChanged() {
-        // NOOP
+        this.updateScrollBarVisibility(this.scrollBarIndicatorVisible);   
     }
 }
 
