@@ -101,7 +101,7 @@ export const orientationProperty = new Property<ScrollViewBase, Orientation>({
 orientationProperty.register(ScrollViewBase);
 
 export const scrollBarIndicatorVisibleProperty = new Property<ScrollViewBase, boolean>({
-    name: "scrollBar", defaultValue: true,
+    name: "scrollBarIndicatorVisible", defaultValue: true,
     valueConverter: booleanConverter
 });
 scrollBarIndicatorVisibleProperty.register(ScrollViewBase);
