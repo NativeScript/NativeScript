@@ -133,8 +133,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public static loadedEvent = "loaded";
     public static unloadedEvent = "unloaded";
 
-    public recycleNativeView: boolean;
-
+    private _recycleNativeView: boolean;
     private _iosView: Object;
     private _androidView: Object;
     private _style: Style;
@@ -204,6 +203,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     public _defaultPaddingRight: number;
     public _defaultPaddingBottom: number;
     public _defaultPaddingLeft: number;
+    private _isPaddingRelative: boolean;
 
     constructor() {
         super();
@@ -214,6 +214,14 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     // TODO: Use Type.prototype.typeName instead.
     get typeName(): string {
         return types.getClass(this);
+    }
+
+    get recycleNativeView(): boolean {
+        return this._recycleNativeView;
+    }
+
+    set recycleNativeView(value: boolean) {
+        this._recycleNativeView = typeof value === "boolean" ? value : booleanConverter(value);
     }
 
     get style(): Style {
@@ -630,6 +638,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         if (this._styleScope === view._styleScope) {
             view._setStyleScope(null);
         }
+        
         if (view.isLoaded) {
             view.onUnloaded();
         }
@@ -662,9 +671,13 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
     private resetNativeViewInternal(): void {
         const nativeView = this.nativeView;
-        if (nativeView && this.recycleNativeView && isAndroid) {
+        if (nativeView && this._recycleNativeView && isAndroid) {
             resetNativeView(this);
-            nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            if (this._isPaddingRelative) {
+                nativeView.setPaddingRelative(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            } else {
+                nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+            }
             this.resetNativeView();
         }
         if (this._cssState) {
@@ -689,7 +702,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
         let nativeView;
         if (isAndroid) {
-            if (this.recycleNativeView) {
+            if (this._recycleNativeView) {
                 nativeView = <android.view.View>getNativeView(context, this.typeName);
             }
 
@@ -699,6 +712,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
 
             this._androidView = nativeView;
             if (nativeView) {
+                if (this._isPaddingRelative === undefined) {
+                    this._isPaddingRelative = nativeView.isPaddingRelative();
+                }
+
                 let result: android.graphics.Rect = (<any>nativeView).defaultPaddings;
                 if (result === undefined) {
                     result = org.nativescript.widgets.ViewHelper.getPadding(nativeView);
@@ -789,7 +806,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
         }
 
         const nativeView = this.nativeView;
-        if (nativeView && this.recycleNativeView && isAndroid) {
+        if (nativeView && this._recycleNativeView && isAndroid) {
             const nativeParent = isAndroid ? (<android.view.View>nativeView).getParent() : (<UIView>nativeView).superview;
             if (!nativeParent) {
                 putNativeView(this._context, this);
@@ -979,7 +996,7 @@ export const idProperty = new Property<ViewBase, string>({ name: "id", valueChan
 idProperty.register(ViewBase);
 
 export function booleanConverter(v: string): boolean {
-    let lowercase = (v + '').toLowerCase();
+    const lowercase = (v + '').toLowerCase();
     if (lowercase === "true") {
         return true;
     } else if (lowercase === "false") {

@@ -313,9 +313,13 @@ export class ActionBar extends ActionBarBase {
     }
 
     private static _setOnClickListener(item: ActionItem): void {
+        const weakRef = new WeakRef(item);
         item.actionView.android.setOnClickListener(new android.view.View.OnClickListener({
             onClick: function (v: android.view.View) {
-                item._raiseTap();
+                const owner = weakRef.get();
+                if (owner) {
+                    owner._raiseTap();
+                }
             }
         }));
     }

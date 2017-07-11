@@ -7,7 +7,12 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
     public _configureEditText(editText: android.widget.EditText) {
         editText.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_NORMAL | android.text.InputType.TYPE_TEXT_FLAG_CAP_SENTENCES | android.text.InputType.TYPE_TEXT_FLAG_MULTI_LINE | android.text.InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
-        editText.setGravity(android.view.Gravity.TOP | android.view.Gravity.LEFT);
+        editText.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
+    }
+
+    public resetNativeView(): void {
+        super.resetNativeView();
+        this.nativeView.setGravity(android.view.Gravity.TOP | android.view.Gravity.START);
     }
 }
 

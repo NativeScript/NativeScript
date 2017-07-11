@@ -279,11 +279,63 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     layout.addChild(newer);
     layout.addChild(first);
 
+    if (first.typeName !== "SearchBar") {
+        // There are way too many differences in native methods for search-bar.
+        compareUsingReflection(newer, first);
+    }
+
     TKUnit.assertEqual(newer.nativeView, nativeView, "nativeView not reused.");
     checkDefaults(newer, first, props, nativeGetters || defaultNativeGetters);
     checkDefaults(newer, first, styleProps, nativeGetters || defaultNativeGetters);
+
     layout.removeChild(newer);
     layout.removeChild(first);
+}
+
+function compareUsingReflection(recycledNativeView: View, newNativeView: View): void {
+    const recycled: android.view.View = recycledNativeView.nativeView;
+    const newer: android.view.View = newNativeView.nativeView;
+    TKUnit.assertNotEqual(recycled, newer);
+    const methods = newer.getClass().getMethods();
+    for (let i = 0, length = methods.length; i < length; i++) {
+        const method = methods[i];
+        const returnType = method.getReturnType();
+        const name = method.getName();
+        const skip = name.includes('ViewId')
+            || name.includes('Accessibility')
+            || name.includes('hashCode')
+            || name === 'getId'
+            || name === 'hasFocus'
+            || name === 'isDirty'
+            || name === 'toString';
+        if (skip || method.getParameterTypes().length > 0) {
+            continue;
+        }
+
+        if ((<any>java).lang.Comparable.class.isAssignableFrom(returnType)) {
+            const defValue = method.invoke(newer, null);
+            const currValue = method.invoke(recycled, null);
+            if (defValue !== currValue && defValue.compareTo(currValue) !== 0) {
+                throw new Error(`Actual: ${currValue}, Expected: ${defValue}, for method: ${method.getName()}`);
+            }
+        } else if (java.lang.String.class === returnType ||
+            java.lang.Character.class === returnType ||
+            (<any>java).lang.CharSequence.class === returnType ||
+            returnType === java.lang.Byte.TYPE ||
+            returnType === java.lang.Double.TYPE ||
+            returnType === java.lang.Float.TYPE ||
+            returnType === java.lang.Integer.TYPE ||
+            returnType === java.lang.Long.TYPE ||
+            returnType === java.lang.Short.TYPE ||
+            returnType === java.lang.Boolean.TYPE) {
+
+            const defValue = method.invoke(newer, null);
+            const currValue = method.invoke(recycled, null);
+            if ((currValue + '') !== (defValue + '')) {
+                throw new Error(`Actual: ${currValue}, Expected: ${defValue}, for method: ${method.getName()}`);
+            }
+        }
+    }
 }
 
 function checkDefaults(newer: View, first: View, props: Array<any>, nativeGetters: Map<string, (view) => any>): void {

@@ -70,6 +70,7 @@ function initializeTouchListener(): void {
 }
 
 export class View extends ViewCommon {
+    private _isClickable: boolean;
     private touchListenerIsSet: boolean;
     private touchListener: android.view.View.OnTouchListener;
 
@@ -94,6 +95,7 @@ export class View extends ViewCommon {
         if (this.touchListenerIsSet) {
             this.nativeView.setOnTouchListener(null);
             this.touchListenerIsSet = false;
+            this.nativeView.setClickable(this._isClickable);
         }
 
         this._cancelAllAnimations();
@@ -102,6 +104,11 @@ export class View extends ViewCommon {
 
     private hasGestureObservers() {
         return this._gestureObservers && Object.keys(this._gestureObservers).length > 0
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        this._isClickable = this.nativeView.isClickable();
     }
 
     private setOnTouchListener() {

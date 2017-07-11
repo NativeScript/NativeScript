@@ -8,11 +8,21 @@ export class HtmlView extends HtmlViewBase {
     nativeView: android.widget.TextView;
 
     public createNativeView() {
-        const textView = new android.widget.TextView(this._context);
+        return new android.widget.TextView(this._context);
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        const nativeView = this.nativeView;
+
         // This makes the html <a href...> work
-        textView.setLinksClickable(true);
-        textView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
-        return textView;
+        nativeView.setLinksClickable(true);
+        nativeView.setMovementMethod(android.text.method.LinkMovementMethod.getInstance());
+    }
+
+    public resetNativeView(): void {
+        super.resetNativeView();
+        this.nativeView.setAutoLinkMask(0);
     }
 
     [htmlProperty.getDefault](): string {
