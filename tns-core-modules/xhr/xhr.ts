@@ -200,10 +200,7 @@ export class XMLHttpRequest {
         let result = "";
 
         for (let i in this._headers) {
-            // Cookie headers are excluded
-            if (i !== "set-cookie" && i !== "set-cookie2") {
-                result += i + ": " + this._headers[i] + "\r\n";
-            }
+            result += i + ": " + this._headers[i] + "\r\n";
         }
         return result.substr(0, result.length - 2);
     }
