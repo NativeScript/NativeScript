@@ -206,7 +206,6 @@ export class ImageSource implements ImageSourceDefinition {
 function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitmap.CompressFormat {
     switch (format) {
         case "jpeg":
-            return android.graphics.Bitmap.CompressFormat.JPEG;
         case "jpg":
             return android.graphics.Bitmap.CompressFormat.JPEG;
         default:
