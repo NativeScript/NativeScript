@@ -211,5 +211,5 @@ textDecorationProperty.register(Style);
 export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 letterSpacingProperty.register(Style);
 
-export const lineHeightProperty = new CssProperty<Style, number>({ name: "lineHeight", cssName: "line-height", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
+export const lineHeightProperty = new CssProperty<Style, number>({ name: "lineHeight", cssName: "line-height", affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 lineHeightProperty.register(Style);

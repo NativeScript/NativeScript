@@ -218,6 +218,9 @@ export class TextBase extends TextBaseCommon {
         }
     }
 
+    [lineHeightProperty.getDefault](): number {
+        return 0;
+    }
     [lineHeightProperty.setNative](value: number) {
         this.nativeView.setLineSpacing(value * layout.getDisplayDensity(), 1);
     }
