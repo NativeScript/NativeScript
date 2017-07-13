@@ -1,4 +1,4 @@
-﻿import { 
+﻿import {
     TextFieldBase, secureProperty, textProperty, hintProperty, colorProperty, placeholderColorProperty,
     Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty, _updateCharactersInRangeReplacementString, Color, layout
 } from "./text-field-common";
@@ -48,7 +48,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
         this.firstEdit = false;
         const owner = this._owner.get();
         if (owner) {
-            textProperty.nativeValueChange(owner,  '');
+            textProperty.nativeValueChange(owner, '');
         }
 
         return true;
@@ -82,7 +82,7 @@ class UITextFieldDelegateImpl extends NSObject implements UITextFieldDelegate {
                 else {
                     if (range.location <= textField.text.length) {
                         const newText = NSString.stringWithString(textField.text).stringByReplacingCharactersInRangeWithString(range, replacementString);
-                        textProperty.nativeValueChange(owner,  newText);
+                        textProperty.nativeValueChange(owner, newText);
                     }
                 }
             }
@@ -181,22 +181,23 @@ export class TextField extends TextFieldBase {
         this.nativeView.secureTextEntry = value;
     }
 
-    [colorProperty.getDefault](): UIColor {
+    [colorProperty.getDefault](): { textColor: UIColor, tintColor: UIColor } {
         // return this.nativeView.tintColor;
-        return this.nativeView.textColor;
+        console.log("----> TextField: colorProperty.getDefault: " + this.nativeView.textColor)
+        return {
+            textColor: this.nativeView.textColor,
+            tintColor: this.nativeView.tintColor
+        };
     }
-    [colorProperty.setNative](value: UIColor | Color) {
-        // NOTE: Do we need this code? We have placeholderColor.
-        // let nativeValue = this.nativeView;
-        // if (this.isShowingHint && value) {
-        //     nativeValue.textColor = value.colorWithAlphaComponent(0.22);
-        // } else {
-        //     nativeValue.textColor = value;
-        //     nativeValue.tintColor = value;
-        // }
-        let color = value instanceof Color ? value.ios : value;
-        this.nativeView.textColor = color;
-        this.nativeView.tintColor = color;
+    [colorProperty.setNative](value: Color | { textColor: UIColor, tintColor: UIColor }) {
+        if (value instanceof Color) {
+            let color = value instanceof Color ? value.ios : value;
+            this.nativeView.textColor = color;
+            this.nativeView.tintColor = color;
+        } else {
+            this.nativeView.textColor = value.textColor;
+            this.nativeView.tintColor = value.tintColor;
+        }
     }
 
     [placeholderColorProperty.getDefault](): UIColor {

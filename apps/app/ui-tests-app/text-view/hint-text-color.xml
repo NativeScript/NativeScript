@@ -6,14 +6,14 @@
         <Label text="TextView:" />
         <TextView hint="nothing" fontSize="18" />
         <TextView hint="placeholder-color"  style="placeholder-color: green;" fontSize="18" />
-        <TextView hint="color" style="color: blue;" fontSize="18" />
-        <TextView hint="both" style="color: blue; placeholder-color: green;" fontSize="18" />
+        <TextView hint="color" style="color: brown;" fontSize="18" />
+        <TextView hint="both" style="color: brown; placeholder-color: green;" fontSize="18" />
 
         <Label text="TextField:" />
         <TextField hint="nothing" fontSize="18" />
         <TextField hint="placeholder-color"  style="placeholder-color: green;" fontSize="18" />
-        <TextField hint="color" style="color: blue;" fontSize="18" />
-        <TextField hint="both" style="color: blue; placeholder-color: green;" fontSize="18" />
+        <TextField hint="color" style="color: brown;" fontSize="18" />
+        <TextField hint="both" style="color: brown; placeholder-color: green;" fontSize="18" />
 
         <StackLayout orientation="horizontal">
         <Button id="btnSetText" text="set text" tap="setText" width="80"/>
