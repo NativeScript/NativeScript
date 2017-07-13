@@ -18,7 +18,7 @@ import * as platform from "tns-core-modules/platform";
 
 import * as utils from "tns-core-modules/utils/utils";
 
-var sdkVersion = parseInt(platform.device.sdkVersion);
+const sdkVersion = parseInt(platform.device.sdkVersion);
 
 trace.enable();
 
