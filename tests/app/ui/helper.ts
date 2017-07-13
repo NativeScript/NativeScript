@@ -12,8 +12,10 @@ import { LayoutBase } from "tns-core-modules/ui/layouts/layout-base";
 import { FlexboxLayout } from "tns-core-modules/ui/layouts/flexbox-layout";
 import { FormattedString, Span } from "tns-core-modules/text/formatted-string";
 import { _getProperties, _getStyleProperties } from "tns-core-modules/ui/core/properties";
+import { device } from "tns-core-modules/platform";
 
-var DELTA = 0.1;
+const DELTA = 0.1;
+const sdkVersion = parseInt(device.sdkVersion);
 
 export var ASYNC = 0.2;
 export var MEMORY_ASYNC = 2;
@@ -243,6 +245,7 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
         // recycling not implemented yet.
         return;
     }
+
     setupSetters();
     const page = getClearCurrentPage();
     let layout: LayoutBase = new FlexboxLayout();
@@ -279,8 +282,9 @@ export function nativeView_recycling_test(createNew: () => View, createLayout?: 
     layout.addChild(newer);
     layout.addChild(first);
 
-    if (first.typeName !== "SearchBar") {
+    if (first.typeName !== "SearchBar" && sdkVersion > 19) {
         // There are way too many differences in native methods for search-bar.
+        // There are too many methods that just throw for newly created views in API lvl 19 and 17 
         compareUsingReflection(newer, first);
     }
 
