@@ -5,7 +5,7 @@ import {
     TextBaseCommon, formattedTextProperty, textAlignmentProperty, textDecorationProperty, fontSizeProperty,
     textProperty, textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty,
     paddingLeftProperty, paddingTopProperty, paddingRightProperty, paddingBottomProperty, Length,
-    whiteSpaceProperty, FormattedString, layout, Span, Color, isBold
+    whiteSpaceProperty, lineHeightProperty, FormattedString, layout, Span, Color, isBold
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -216,6 +216,13 @@ export class TextBase extends TextBaseCommon {
                 this.nativeView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, value.nativeSize);
             }
         }
+    }
+
+    [lineHeightProperty.getDefault](): number {
+        return this.nativeView.getLineSpacingExtra() / layout.getDisplayDensity();
+    }
+    [lineHeightProperty.setNative](value: number) {
+        this.nativeView.setLineSpacing(value * layout.getDisplayDensity(), 1);
     }
 
     [fontInternalProperty.getDefault](): android.graphics.Typeface {

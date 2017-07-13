@@ -55,6 +55,13 @@ export abstract class TextBaseCommon extends View implements TextBaseDefinition 
         this.style.letterSpacing = value;
     }
 
+    get lineHeight(): number {
+        return this.style.lineHeight;
+    }
+    set lineHeight(value: number) {
+        this.style.lineHeight = value;
+    }
+
     get textAlignment(): TextAlignment {
         return this.style.textAlignment;
     }
@@ -203,3 +210,6 @@ textDecorationProperty.register(Style);
 
 export const letterSpacingProperty = new CssProperty<Style, number>({ name: "letterSpacing", cssName: "letter-spacing", defaultValue: 0, affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
 letterSpacingProperty.register(Style);
+
+export const lineHeightProperty = new CssProperty<Style, number>({ name: "lineHeight", cssName: "line-height", affectsLayout: isIOS, valueConverter: v => parseFloat(v) });
+lineHeightProperty.register(Style);
