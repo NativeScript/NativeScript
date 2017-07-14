@@ -17,6 +17,7 @@ npm_install() {
     MARKER_FILE="./node_modules/installed"
     if [ ! -f "$MARKER_FILE" ] ; then
         npm install
+        npm install @types/handlebars@4.0.33
         touch "$MARKER_FILE"
     fi
 }
