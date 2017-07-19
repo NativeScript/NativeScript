@@ -11,6 +11,7 @@ import * as types from "tns-core-modules/utils/types";
 import * as viewModule from "tns-core-modules/ui/core/view";
 import { resolveFileNameFromUrl } from "tns-core-modules/ui/styling/style-scope";
 import { unsetValue } from "tns-core-modules/ui/core/view";
+import * as color from "tns-core-modules/color";
 
 export function test_css_dataURI_is_applied_to_backgroundImageSource() {
     const stack = new stackModule.StackLayout();
@@ -164,7 +165,7 @@ export function test_type_selector() {
     stack.addChild(btn);
 
     TKUnit.assert(btn.backgroundColor, "backgroundColor property not applied correctly.");
-    TKUnit.assertEqual(btn.backgroundColor.hex, "#FF0000", "backgroundColor");
+    TKUnit.assertEqual((<color.Color>btn.backgroundColor).hex, "#FF0000", "backgroundColor");
     TKUnit.assertNull(label.backgroundColor, "backgroundColor should not have a value");
 }
 

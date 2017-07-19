@@ -168,7 +168,7 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
     /**
      * Gets or sets the background color of the view.
      */
-    backgroundColor: Color;
+    backgroundColor: string | Color;
 
     /**
      * Gets or sets the background image of the view.

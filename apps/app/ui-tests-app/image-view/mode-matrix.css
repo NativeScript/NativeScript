@@ -1,0 +1,9 @@
+Image {
+    margin: 1;
+}
+
+GridLayout {
+    background-image: url("~/ui-tests-app/resources/images/tile.png");
+    background-repeat: repeat;
+    background-size: 78 78;
+}

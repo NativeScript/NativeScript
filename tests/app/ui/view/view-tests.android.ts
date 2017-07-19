@@ -286,7 +286,7 @@ export function getUniformNativeCornerRadius(v: view.View): number {
 export function checkNativeBackgroundColor(v: view.View): boolean {
     const bkg = <org.nativescript.widgets.BorderDrawable>(<android.view.View>v.android).getBackground();
 
-    return v.backgroundColor && bkg && bkg.getBackgroundColor() === v.backgroundColor.android;
+    return v.backgroundColor && bkg && bkg.getBackgroundColor() === (<Color>v.backgroundColor).android;
 }
 
 export function checkNativeBackgroundImage(v: view.View): boolean {

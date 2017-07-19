@@ -118,7 +118,7 @@ if (isIOS) {
         slider.backgroundColor = new Color("red");
 
         function testAction(views: Array<View>) {
-            TKUnit.assertEqual(slider.backgroundColor.ios.CGColor, slider.ios.minimumTrackTintColor.CGColor, "slider.backgroundColor");
+            TKUnit.assertEqual((<Color>slider.backgroundColor).ios.CGColor, slider.ios.minimumTrackTintColor.CGColor, "slider.backgroundColor");
         };
 
         helper.buildUIAndRunTest(slider, testAction);

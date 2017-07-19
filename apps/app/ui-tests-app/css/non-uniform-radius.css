@@ -1,0 +1,35 @@
+GridLayout>GridLayout {
+    width: 80;
+    height: 80;
+    border-color: rgba(0, 255, 0, 0.5);
+    background-color: rgba(0, 0, 255, 0.5);
+}
+
+.b1, .b2, .b3, .b4, .b5 {
+    background-image: url("~/ui-tests-app/resources/images/tile.png");
+}
+
+.b1 {
+    background-repeat: no-repeat;
+    background-position: 50% 50%;
+}
+
+.b2 {
+    background-repeat: repeat-x;
+    background-position: 0% 0%;
+}
+
+.b3 {
+    background-repeat: repeat-y;
+    background-position: 0% 0%;
+}
+
+.b4 {
+    background-repeat: repeat;
+    background-position: 0% 0%;
+}
+
+.b5 {
+    background-repeat: no-repeat;
+    background-position: 100% 100%;
+}

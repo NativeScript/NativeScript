@@ -880,7 +880,7 @@ export function testSetInlineStyle() {
 
     helper.buildUIAndRunTest(lbl, function (views: Array<View>) {
         TKUnit.assertEqual(lbl.color.hex, expectedColor);
-        TKUnit.assertEqual(lbl.backgroundColor.hex, expectedBackgroundColor);
+        TKUnit.assertEqual((<Color>lbl.backgroundColor).hex, expectedBackgroundColor);
     });
 };
 

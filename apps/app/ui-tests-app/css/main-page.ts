@@ -37,6 +37,7 @@ export function loadExamples() {
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("combinators", "css/combinators");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
-    
+    examples.set("non-uniform-radius", "css/non-uniform-radius");
+
     return examples;
 }
