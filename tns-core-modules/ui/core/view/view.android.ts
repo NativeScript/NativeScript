@@ -1,6 +1,7 @@
 // Definitions.
 import { Point, CustomLayoutView as CustomLayoutViewDefinition, dip } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
+import { CacheLayerType } from "../../../utils/utils";
 
 // Types.
 import { Background, ad as androidBackground } from "../../styling/background";
@@ -17,12 +18,13 @@ import {
     rotateProperty, scaleXProperty, scaleYProperty, translateXProperty, translateYProperty,
     zIndexProperty, backgroundInternalProperty
 } from "../../styling/style-properties";
+
 import { profile } from "../../../profiling";
 
 export * from "./view-common";
 
 interface TouchListener {
-    new (owner: View): android.view.View.OnTouchListener;
+    new(owner: View): android.view.View.OnTouchListener;
 }
 
 let TouchListener: TouchListener;
@@ -485,6 +487,13 @@ export class View extends ViewCommon {
             const nativeView = this.nativeView;
             org.nativescript.widgets.ViewHelper.setBackground(nativeView, value);
             nativeView.setPadding(this._defaultPaddingLeft, this._defaultPaddingTop, this._defaultPaddingRight, this._defaultPaddingBottom);
+
+            (<any>nativeView).background = undefined;
+            const cache = <CacheLayerType><any>nativeView;
+            if (cache.layerType !== undefined) {
+                cache.setLayerType(cache.layerType, null);
+                cache.layerType = undefined;
+            }
         }
     }
 }
