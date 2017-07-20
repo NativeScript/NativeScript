@@ -24,7 +24,7 @@ export interface Declaration {
     value: string;
 }
 
-export class SelectorCore {
+export interface SelectorCore {
     /**
      * Dynamic selectors depend on attributes and pseudo classes.
      */
@@ -74,3 +74,5 @@ export class SelectorsMatch<T extends Node> {
 }
 
 export function fromAstNodes(astRules: parser.Node[]): RuleSet[];
+
+export function createSelector(sel: string): SelectorCore;

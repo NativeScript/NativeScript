@@ -408,7 +408,7 @@ function createDeclaration(decl: cssParser.Declaration): any {
     return { property: decl.property.toLowerCase(), value: decl.value };
 }
 
-function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
+export function createSelector(sel: string): SimpleSelector | SimpleSelectorSequence | Selector {
     try {
         let ast = selectorParser.parse(sel);
         if (ast.length === 0) {

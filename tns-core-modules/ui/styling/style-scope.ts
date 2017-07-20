@@ -419,9 +419,8 @@ function isKeyframe(node: CssNode): node is KeyframesDefinition {
     return node.type === "keyframes";
 }
 
-class InlineSelector extends SelectorCore {
+class InlineSelector implements SelectorCore {
     constructor(ruleSet: RuleSet) {
-        super();
         this.ruleset = ruleSet;
     }
 
