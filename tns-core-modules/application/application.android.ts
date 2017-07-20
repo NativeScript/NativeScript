@@ -1,6 +1,7 @@
 ﻿import {
     AndroidActivityBundleEventData, AndroidActivityEventData, ApplicationEventData, OrientationChangedEventData,
-    AndroidApplication as AndroidApplicationDefinition
+    AndroidApplication as AndroidApplicationDefinition,
+    AndroidActivityResultEventData, AndroidActivityBackPressedEventData, AndroidActivityRequestPermissionsEventData
 } from ".";
 
 import {
@@ -102,6 +103,19 @@ export class AndroidApplication extends Observable implements AndroidApplication
         }
     }
 }
+export interface AndroidApplication {
+    on(eventNames: string, callback: (data: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityCreated", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+    on(event: "activityDestroyed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityStarted", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityPaused", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityResumed", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "activityStopped", callback: (args: AndroidActivityEventData) => void, thisArg?: any);
+    on(event: "saveActivityState", callback: (args: AndroidActivityBundleEventData) => void, thisArg?: any);
+    on(event: "activityResult", callback: (args: AndroidActivityResultEventData) => void, thisArg?: any);
+    on(event: "activityBackPressed", callback: (args: AndroidActivityBackPressedEventData) => void, thisArg?: any);
+    on(event: "activityRequestPermissions", callback: (args: AndroidActivityRequestPermissionsEventData) => void, thisArg?: any);
+}
 
 const androidApp = new AndroidApplication();
 // use the exports object instead of 'export var' due to global namespace collision
@@ -185,7 +199,7 @@ function initLifecycleCallbacks() {
             androidApp.notify(<AndroidActivityBundleEventData>{ eventName: ActivityCreated, object: androidApp, activity, bundle: savedInstanceState });
 
             if (hasListeners(displayedEvent)) {
-                let rootView = activity.findViewById((<any>android).R.id.content);
+                const rootView = activity.getWindow().getDecorView().getRootView();
                 let onGlobalLayoutListener = new android.view.ViewTreeObserver.OnGlobalLayoutListener({
                     onGlobalLayout() {
                         notify({ eventName: displayedEvent, object: androidApp, activity });

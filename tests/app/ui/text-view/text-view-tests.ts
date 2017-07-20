@@ -35,6 +35,10 @@ export function pageLoaded(args) {
 exports.pageLoaded = pageLoaded;
 // << observable-declare
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(_createTextViewFunc);
+}
+
 var _createTextViewFunc = function (): textViewModule.TextView {
     // >> text-view-create
     var textView = new textViewModule.TextView();
@@ -371,6 +375,18 @@ export var testNativeFontSizeFromLocal = function () {
 
         var actualResult = textViewTestsNative.getNativeFontSize(textView);
         helper.assertAreClose(actualResult, expectedFontSize, "FontSizeFromLocal");
+    });
+}
+
+var expectedLineHeight = 10;
+export var testLocalLineHeightFromCss = function () {
+    helper.buildUIAndRunTest(_createTextViewFunc(), function (views: Array<viewModule.View>) {
+        var textView = <textViewModule.TextView>views[0];
+        var page = <pagesModule.Page>views[1];
+
+        page.css = "textview { line-height: " + expectedLineHeight + "; }";
+        var actualResult = textView.style.lineHeight;
+        TKUnit.assert(actualResult === expectedLineHeight, "Actual: " + actualResult + "; Expected: " + expectedLineHeight);
     });
 }
 

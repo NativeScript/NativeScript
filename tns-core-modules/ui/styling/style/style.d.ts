@@ -96,6 +96,7 @@ export class Style extends Observable {
     public visibility: Visibility;
 
     public letterSpacing: number;
+    public lineHeight: number;
     public textAlignment: TextAlignment;
     public textDecoration: TextDecoration;
     public textTransform: TextTransform;

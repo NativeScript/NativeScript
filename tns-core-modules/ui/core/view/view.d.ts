@@ -558,6 +558,10 @@ export abstract class View extends ViewBase implements ApplyXmlAttributes {
      * @private
      */
     _redrawNativeBackground(value: any): void;
+    /**
+     * @private
+     */
+    _removeAnimation(animation: Animation): boolean
     //@endprivate
 
     /**

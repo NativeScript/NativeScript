@@ -105,14 +105,14 @@ export class WebView extends WebViewBase {
         (<any>this.nativeView).client.owner = this;
     }
 
-    public resetNativeView() {
+    public disposeNativeView() {
         const nativeView = this.nativeView;
         if (nativeView) {
             nativeView.destroy();
         }
 
         (<any>nativeView).client.owner = null;
-        super.resetNativeView();
+        super.disposeNativeView();
     }
 
     public _loadUrl(src: string) {

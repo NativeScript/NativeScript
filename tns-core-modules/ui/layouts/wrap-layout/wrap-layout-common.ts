@@ -11,7 +11,7 @@ export class WrapLayoutBase extends LayoutBase implements WrapLayoutDefinition {
     public effectiveItemHeight: number;
 }
 
-// WrapLayoutBase.prototype.recycleNativeView = true;
+WrapLayoutBase.prototype.recycleNativeView = true;
 
 export const itemWidthProperty = new Property<WrapLayoutBase, Length>({
     name: "itemWidth", defaultValue: "auto", affectsLayout: isIOS, valueConverter: (v) => Length.parse(v),

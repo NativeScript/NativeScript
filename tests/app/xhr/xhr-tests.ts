@@ -383,3 +383,10 @@ export function test_getResponseHeader() {
 
     TKUnit.assertEqual(xhr.getResponseHeader("Content-Type"), "application/json");
 };
+
+export function test_soap_content_types_recognized_as_text() {
+    const xhr = <any>new XMLHttpRequest();
+
+    TKUnit.assertTrue(xhr.isTextContentType("text/xml"), "text/xml failed to be recognized as a text response type");
+    TKUnit.assertTrue(xhr.isTextContentType("application/xml"), "application/xml failed to be recognized as a text response type");
+};

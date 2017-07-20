@@ -3,7 +3,9 @@ declare var __stopCPUProfiler: any;
 
 import { TimerInfo as TimerInfoDefinition, InstrumentationMode } from ".";
 
-export const uptime = global.android ? (<any>org).nativescript.Process.getUpTime : (<any>global).__tns_uptime;
+export function uptime() {
+    return global.android ? (<any>org).nativescript.Process.getUpTime() : (<any>global).__tns_uptime();
+}
 
 interface TimerInfo extends TimerInfoDefinition {
     totalTime: number;
@@ -115,16 +117,16 @@ export function enable(mode: InstrumentationMode = "counters") {
     }[mode];
 }
 
-if (!(<any>global).__snapshot) {
+try {
+    const appConfig = require("~/package.json");
+    if (appConfig && appConfig.profiling) {
+        enable(appConfig.profiling);
+    }
+} catch(e1) {
     try {
-        const appConfig = global.require("~/package.json");
-        if (appConfig && appConfig.profiling) {
-            if (appConfig && appConfig.profiling) {
-                enable(appConfig.profiling);
-            }
-        }
-    } catch(e) {
-            console.log("Profiling startup failed to figure out defaults from package.json, error: " + e);
+        console.log("Profiling startup failed to figure out defaults from package.json, error: " + e1);
+    } catch(e2) {
+        // We can get here if an exception is thrown in the mksnapshot as there is no console there.
     }
 }
 
@@ -159,7 +161,7 @@ const profileMethodUnnamed = (target, key, descriptor) => {
 }
 
 function profileMethodNamed(name: string): MethodDecorator {
-    return (target, key, descriptor) => {
+    return (target, key, descriptor: PropertyDescriptor) => {
 
         // save a reference to the original method this way we keep the values currently in the
         // descriptor and don't overwrite what another decorator might have done to the descriptor.

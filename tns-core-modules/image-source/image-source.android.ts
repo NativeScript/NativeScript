@@ -205,7 +205,8 @@ export class ImageSource implements ImageSourceDefinition {
 
 function getTargetFormat(format: "png" | "jpeg" | "jpg"): android.graphics.Bitmap.CompressFormat {
     switch (format) {
-        case "jpeg" || "jpg":
+        case "jpeg":
+        case "jpg":
             return android.graphics.Bitmap.CompressFormat.JPEG;
         default:
             return android.graphics.Bitmap.CompressFormat.PNG;
@@ -242,7 +243,7 @@ export function fromNativeSource(source: any): ImageSource {
     return image.setNativeSource(source) ? image : null;
 }
 
-export function fromUrl(url: string): Promise<ImageSource> {
+export function fromUrl(url: string): Promise<ImageSourceDefinition> {
     ensureHttp();
     return http.getImage(url);
 }

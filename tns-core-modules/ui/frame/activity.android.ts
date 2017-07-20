@@ -1,5 +1,10 @@
 import { setActivityCallbacks, AndroidActivityCallbacks } from "./frame";
+import * as globals from "../../globals";
 import * as appModule from "../../application";
+
+if ((<any>global).__snapshot || (<any>global).__snapshotEnabled) {
+    globals.install();
+}
 
 @JavaProxy("com.tns.NativeScriptActivity")
 class NativeScriptActivity extends android.app.Activity {

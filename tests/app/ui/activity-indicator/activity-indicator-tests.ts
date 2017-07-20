@@ -9,6 +9,10 @@ import * as color from "tns-core-modules/color";
 import * as activityIndicatorModule from "tns-core-modules/ui/activity-indicator";
 // << activity-indicator-require
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new activityIndicatorModule.ActivityIndicator());
+}
+
 export function test_default_TNS_values() {
     // >> activity-indicator-create
     var indicator = new activityIndicatorModule.ActivityIndicator();

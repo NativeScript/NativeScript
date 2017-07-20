@@ -8,7 +8,7 @@ export class TextFieldBase extends EditableTextBase implements TextFieldDefiniti
     public secure: boolean;
 }
 
-// TextFieldBase.prototype.recycleNativeView = true;
+TextFieldBase.prototype.recycleNativeView = true;
 
 export const secureProperty = new Property<TextFieldBase, boolean>({ name: "secure", defaultValue: false, valueConverter: booleanConverter });
 secureProperty.register(TextFieldBase);

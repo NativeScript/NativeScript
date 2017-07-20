@@ -1,12 +1,16 @@
 // Definitions.
 import {
+    Keyframes as KeyframesDefinition,
+    UnparsedKeyframe as UnparsedKeyframeDefinition,
     KeyframeDeclaration as KeyframeDeclarationDefinition,
     KeyframeInfo as KeyframeInfoDefinition,
     KeyframeAnimationInfo as KeyframeAnimationInfoDefinition,
-    KeyframeAnimation as KeyframeAnimationDefinition
+    KeyframeAnimation as KeyframeAnimationDefinition,
 } from "./keyframe-animation";
 
 import { View, Color } from "../core/view";
+
+import { AnimationCurve } from "../enums";
 
 // Types.
 import { unsetValue } from "../core/properties";
@@ -18,6 +22,16 @@ import {
     rotateProperty, opacityProperty
 } from "../styling/style-properties";
 
+export class Keyframes implements KeyframesDefinition {
+    name: string;
+    keyframes: Array<UnparsedKeyframe>;
+}
+
+export class UnparsedKeyframe implements UnparsedKeyframeDefinition {
+    values: Array<any>;
+    declarations: Array<KeyframeDeclaration>;
+}
+
 export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
     public property: string;
     public value: any;
@@ -25,19 +39,19 @@ export class KeyframeDeclaration implements KeyframeDeclarationDefinition {
 
 export class KeyframeInfo implements KeyframeInfoDefinition {
     public duration: number;
-    public curve: any;
     public declarations: Array<KeyframeDeclaration>;
+    public curve?: any = AnimationCurve.ease;
 }
 
 export class KeyframeAnimationInfo implements KeyframeAnimationInfoDefinition {
-    public name: string = "";
-    public duration: number = 0.3;
-    public delay: number = 0;
-    public iterations: number = 1;
-    public curve: any = "ease";
-    public isForwards: boolean = false;
-    public isReverse: boolean = false;
     public keyframes: Array<KeyframeInfo>;
+    public name?: string = "";
+    public duration?: number = 0.3;
+    public delay?: number = 0;
+    public iterations?: number = 1;
+    public curve?: any = "ease";
+    public isForwards?: boolean = false;
+    public isReverse?: boolean = false;
 }
 
 interface Keyframe {
@@ -64,17 +78,19 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
     private _nativeAnimations: Array<Animation>;
     private _target: View;
 
-    public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo) {
+    public static keyframeAnimationFromInfo(info: KeyframeAnimationInfo)
+        : KeyframeAnimation {
+
+        const length = info.keyframes.length;
         let animations = new Array<Keyframe>();
-        let length = info.keyframes.length;
         let startDuration = 0;
+
         if (info.isReverse) {
             for (let index = length - 1; index >= 0; index--) {
                 let keyframe = info.keyframes[index];
                 startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
             }
-        }
-        else {
+        } else {
             for (let index = 0; index < length; index++) {
                 let keyframe = info.keyframes[index];
                 startDuration = KeyframeAnimation.parseKeyframe(info, keyframe, animations, startDuration);
@@ -88,17 +104,15 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
                 }
             }
         }
-        for (let index = 1; index < length; index++) {
-            let a = animations[index];
-            if (a["curve"] === undefined) {
-                a["curve"] = info.curve;
-            }
-        }
-        let animation: KeyframeAnimation = new KeyframeAnimation();
+
+        animations.map(a => a["curve"] ? a : Object.assign(a, {curve: info.curve}));
+
+        const animation: KeyframeAnimation = new KeyframeAnimation();
         animation.delay = info.delay;
         animation.iterations = info.iterations;
         animation.animations = animations;
         animation._isForwards = info.isForwards;
+
         return animation;
     }
 
@@ -107,11 +121,11 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
         for (let declaration of keyframe.declarations) {
             animation[declaration.property] = declaration.value;
         }
+
         let duration = keyframe.duration;
         if (duration === 0) {
             duration = 0.01;
-        }
-        else {
+        } else {
             duration = (info.duration * duration) - startDuration;
             startDuration += duration;
         }
@@ -120,6 +134,7 @@ export class KeyframeAnimation implements KeyframeAnimationDefinition {
         animation.forceLayer = true;
         animation.valueSource = "keyframe";
         animations.push(animation);
+
         return startDuration;
     }
 

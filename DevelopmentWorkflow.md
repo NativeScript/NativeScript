@@ -1,11 +1,13 @@
 Development Workflow
 ====================
 
+## Project Structure
+
 The repository contains several packages and apps:
- - `tns-platform-declarations` - Android and iOS native APIs supported in JavaScript
- - `tns-core-modules` - Core ui, io and sensor modules
- - `apps` - UI app used for manual testing and automation
- - `tests` - Unit tests for the `tns-core-modules`
+ - `tns-core-modules` - The core NativeScript TypeScript modules used to develop NativeScript apps.
+ - `apps` - UI app used for manual testing and automation.
+ - `tests` - Unit tests app for the `tns-core-modules`.
+ - `tns-platform-declarations` - TypeScript definitions for Android and iOS native APIs.
 
 Working with the repo is organized with npm scripts,
 go and read through the `scripts` section in the [package.json](./package.json).
@@ -23,14 +25,18 @@ Managing dependencies:
 > NOTE: `tns-core-modules` depends on `tns-core-modules-widgets`,
 this dependency contains native code and is rarely modified so for now it remains outside this repo.
 
-## Manage Dependencies
-Get devDependencies by:
+## Initial Setup
+Clone (or fork/clone) the repo:
+```bash
+git clone https://github.com/NativeScript/NativeScript.git
+```
+
+Install devDependencies:
 ```bash
 npm install
 ```
 
-Setting up the environment for work we use [`npm link`](https://docs.npmjs.com/cli/link).
-The dependencies in the repo are `npm link`-ed (~synlinked) using the following script:
+Run setup script. This will [`npm link`](https://docs.npmjs.com/cli/link) the `tns-core-modules` and `tns-core-modules-declarations` dependencies inside the `tests` and `apps` projects.
 ```bash
 npm run setup
 ```
@@ -48,29 +54,55 @@ tsc --skipLibCheck
 tsc --skipLibCheck -w
 ```
 
-The modules have `typescript` as devDependency so you should also be able to use locally installed TypeScript compiler from node_modules:
-```
+The modules have `typescript` as a devDependency so you should also be able to use the locally installed TypeScript compiler from node_modules:
+```bash
 ./node_modules/.bin/tsc
 ```
 
-You can compile the typescript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
-```
+You can compile the TypeScript files in the `tns-core-modules`, `tns-platform-declarations`, `apps` and `tests` at once at the root of the repo:
+```bash
 npm run tsc
 ```
 
-## Tests
+## Running Unit Tests
 The test app is an ordinary NativeScript app that logs the test results as it go.
-To run the test app:
-```
-# Once after npm install
-npm run setup
-
-# After changes in the modules or the tests
+After the [initial setup](#initial-setup) you can run the tests with:
+```bash
+# Make sure TypeScript is transpiled
 tsc
 
-tns livesync ios --path tests
-tns livesync android --path tests
+# Run the tests app
+tns run ios --path tests
+tns run android --path tests
 ```
+
+## Running the Test App
+
+The test app is an ordinary NativeScript app that logs the test results as it go.
+After the [initial setup](#initial-setup) you can run the tests with:
+
+```
+# Make sure TypeScript is transpiled
+tsc
+
+# Run the app
+tns run ios --path apps
+tns run android --path apps
+```
+
+## Running Another App
+The [initial setup](#initial-setup) will `npm-link` the `tns-core-modules` globally. You can use it in any local project:
+
+```bash
+# Run once: Link tns-core-modules in your project
+npm link tns-core-modules
+
+# Run the app
+tns run ios
+tns run android
+```
+>Note: You still have to rebuild the TypeScript if you have made changes in the code of the core-modules.
+
 
 ## Platform declarations
 To update the platform declarations (the ios.d.ts-es) you can run:

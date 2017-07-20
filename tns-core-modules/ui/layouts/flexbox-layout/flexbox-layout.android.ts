@@ -16,7 +16,7 @@ let widgetFlexboxLayout: typeof org.nativescript.widgets.FlexboxLayout;
 let widgetLayoutParams: typeof org.nativescript.widgets.FlexboxLayout.LayoutParams;
 
 function makeNativeSetter<T>(setter: (lp: org.nativescript.widgets.FlexboxLayout.LayoutParams, value: T) => void) {
-    return function(this: View, value: T) {
+    return function (this: View, value: T) {
         const nativeView: android.view.View = this.nativeView;
         const lp = nativeView.getLayoutParams() || new widgetLayoutParams();
         if (lp instanceof widgetLayoutParams) {
@@ -82,17 +82,21 @@ const alignSelfMap = {
 export class FlexboxLayout extends FlexboxLayoutBase {
     nativeView: org.nativescript.widgets.FlexboxLayout;
 
-    public createNativeView() {
+    constructor() {
+        super();
         if (!widgetFlexboxLayout) {
             widgetFlexboxLayout = org.nativescript.widgets.FlexboxLayout;
             widgetLayoutParams = widgetFlexboxLayout.LayoutParams;
         }
+    }
+    
+    public createNativeView() {
         return new widgetFlexboxLayout(this._context);
     }
 
-    public disposeNativeView() {
-        (<any>this.nativeView).invalidateOrdersCache();
-        super.disposeNativeView();
+    public resetNativeView(): void {
+        super.resetNativeView();
+        (<any>this.nativeView).invalidateOrdersCache();   
     }
 
     [flexDirectionProperty.getDefault](): FlexDirection {

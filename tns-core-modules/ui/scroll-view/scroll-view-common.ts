@@ -1,5 +1,5 @@
-﻿import { ScrollView as ScrollViewDefinition, Orientation } from ".";
-import { ContentView, Property, makeParser, makeValidator } from "../content-view";
+﻿import { ScrollView as ScrollViewDefinition, Orientation, ScrollEventData } from ".";
+import { ContentView, Property, makeParser, makeValidator, EventData, booleanConverter } from "../content-view";
 import { profile } from "../../profiling";
 
 export * from "../content-view";
@@ -9,6 +9,7 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public static scrollEvent = "scroll";
 
     public orientation: Orientation;
+    public scrollBarIndicatorVisible: boolean;
 
     public addEventListener(arg: string, callback: any, thisArg?: any) {
         super.addEventListener(arg, callback, thisArg);
@@ -81,6 +82,10 @@ export abstract class ScrollViewBase extends ContentView implements ScrollViewDe
     public abstract scrollToHorizontalOffset(value: number, animated: boolean);
     public abstract _onOrientationChanged();
 }
+export interface ScrollViewBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any);
+    on(event: "scroll", callback: (args: ScrollEventData) => void, thisArg?: any);
+}
 
 const converter = makeParser<Orientation>(makeValidator("horizontal", "vertical"));
 export const orientationProperty = new Property<ScrollViewBase, Orientation>({
@@ -91,3 +96,9 @@ export const orientationProperty = new Property<ScrollViewBase, Orientation>({
     valueConverter: converter
 });
 orientationProperty.register(ScrollViewBase);
+
+export const scrollBarIndicatorVisibleProperty = new Property<ScrollViewBase, boolean>({
+    name: "scrollBarIndicatorVisible", defaultValue: true,
+    valueConverter: booleanConverter
+});
+scrollBarIndicatorVisibleProperty.register(ScrollViewBase);

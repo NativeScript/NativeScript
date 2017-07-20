@@ -1,6 +1,21 @@
 Cross Platform Modules Changelog
 ==============================
 
+## 3.1.0 (2017, June 22)
+
+### Fixed
+
+- [(# 4147)](https://github.com/NativeScript/NativeScript/issues/4147) SearchBar style creates error
+- [(# 4272)](https://github.com/NativeScript/NativeScript/issues/4272) SearchBar is not displayed on Android API 24
+- [(# 4287)](https://github.com/NativeScript/NativeScript/issues/4287) Margin value with TextWrap overlapping problem
+- [(# 4266)](https://github.com/NativeScript/NativeScript/issues/4266) IOS: Wrapped text in Button not properly centered
+- [(# 3354)](https://github.com/NativeScript/NativeScript/issues/3354) IOS: TextView hint becomes text
+
+### New
+
+- [(# 3614)](https://github.com/NativeScript/NativeScript/issues/3614) TextField `maxLength` property support
+- [(# 3957)](https://github.com/NativeScript/NativeScript/issues/3957) http.getFile(url) should strip query string from saved file name
+
 ## 3.0.1 (2017, May 23)
 
 ### Fixed
@@ -46,6 +61,12 @@ A full list of breaking changes could be found [here](https://github.com/NativeS
 - [(# 3872)](https://github.com/NativeScript/NativeScript/issues/3872) Can't load a local HTML file with querystring via WebView.src (WebView.url works but is removed)
 - [(# 3118)](https://github.com/NativeScript/NativeScript/issues/3118) Feature: New Dialog-Prompt-Input-Type for E-Mails
 - [(# 3642)](https://github.com/NativeScript/NativeScript/issues/3642) BREAKING: Make typings compatible with DOM and Node typings
+
+## 2.5.3 (2017, June 29)
+
+### Fixed
+
+- [(#4342)](https://github.com/NativeScript/NativeScript/issues/4342) Unable to change the fontWeight for both iOS and Android
 
 ## 2.5.2 (2017, March 21)
 

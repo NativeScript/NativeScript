@@ -1,7 +1,7 @@
 ﻿import { Page as PageDefinition, NavigatedData, ShownModallyData } from ".";
 import {
     ContentView, View, eachDescendant, Property, CssProperty, Color, isIOS,
-    booleanConverter, resetCSSProperties, Style
+    booleanConverter, resetCSSProperties, Style, EventData
 } from "../content-view";
 import { Frame, topmost as topmostFrame, resolvePageFromEntry } from "../frame";
 import { ActionBar } from "../action-bar";
@@ -154,7 +154,8 @@ export class PageBase extends ContentView implements PageDefinition {
     }
 
     get frame(): Frame {
-        return <Frame>this.parent;
+        const frame = this.parent;
+        return frame instanceof Frame ? frame : undefined;
     }
 
     private createNavigatedData(eventName: string, isBackNavigation: boolean): NavigatedData {
@@ -295,6 +296,15 @@ export class PageBase extends ContentView implements PageDefinition {
         resetCssValuesFunc(this);
         eachDescendant(this, resetCssValuesFunc);
     }
+}
+export interface PageBase {
+    on(eventNames: string, callback: (data: EventData) => void, thisArg?: any): void;
+    on(event: "navigatingTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "navigatedTo", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "navigatingFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "navigatedFrom", callback: (args: NavigatedData) => void, thisArg?: any): void;
+    on(event: "showingModally", callback: (args: ShownModallyData) => void, thisArg?: any): void;
+    on(event: "shownModally", callback: (args: ShownModallyData) => void, thisArg?: any);
 }
 
 /**

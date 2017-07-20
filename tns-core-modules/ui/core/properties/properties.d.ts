@@ -45,7 +45,7 @@ export interface CssAnimationPropertyOptions<T, U> {
     readonly valueConverter?: (value: string) => U;
 }
 
-export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U> {
+export class Property<T extends ViewBase, U> {
     constructor(options: PropertyOptions<T, U>);
 
     public readonly getDefault: symbol;
@@ -55,11 +55,15 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
     public nativeValueChange(T, U): void;
     public isSet(instance: T): boolean;
 }
+export interface Property<T extends ViewBase, U> extends TypedPropertyDescriptor<U> {
+}
 
-export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> implements TypedPropertyDescriptor<U> {
+export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> {
     constructor(options: CoerciblePropertyOptions<T, U>);
 
     public readonly coerce: (target: T) => void;
+}
+export interface CoercibleProperty<T extends ViewBase, U> extends TypedPropertyDescriptor<U> {
 }
 
 export class InheritedProperty<T extends ViewBase, U> extends Property<T, U> {
@@ -108,8 +112,18 @@ export class CssAnimationProperty<T extends Style, U> {
 
     public register(cls: { prototype: T }): void;
     public isSet(instance: T): boolean;
-    
+
+    /**
+     * @private
+     */
+    public _initDefaultNativeValue(target: T): void;
+    /**
+     * @private
+     */
     public _valueConverter?: (value: string) => any;
+    /**
+     * @private
+     */
     public static _getByCssName(name: string): CssAnimationProperty<any, any>;
 }
 
@@ -122,3 +136,18 @@ export function clearInheritedProperties(view: ViewBase): void;
 
 export function makeValidator<T>(...values: T[]): (value: any) => value is T;
 export function makeParser<T>(isValid: (value: any) => boolean): (value: any) => T;
+
+export function getSetProperties(view: ViewBase): [string, any][];
+export function getComputedCssValues(view: ViewBase): [string, any][];
+
+//@private
+/**
+ * @private get all properties defined on ViewBase
+ */
+export function _getProperties(): Property<any, any>[];
+
+/**
+ * @private get all properties defined on Style
+ */
+export function _getStyleProperties(): CssProperty<any, any>[];
+//@endprivate

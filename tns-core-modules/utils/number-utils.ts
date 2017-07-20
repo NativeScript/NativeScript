@@ -1,4 +1,4 @@
-﻿var epsilon = 1E-05;
+﻿const epsilon = 1E-05;
 
 export function areClose(value1: number, value2: number): boolean {
     return (Math.abs(value1 - value2) < epsilon);
@@ -27,3 +27,7 @@ export function greaterThanZero(value: Object): boolean {
 export function notNegative(value: Object): boolean {
     return (<number>value) >= 0;
 }
+
+export const radiansToDegrees = (a: number) => a * (180 / Math.PI);
+
+export const degreesToRadians = (a: number) => a * (Math.PI / 180);

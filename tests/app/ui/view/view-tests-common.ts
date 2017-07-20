@@ -1003,6 +1003,8 @@ export function test_getActualSize() {
 
 export function test_background_image_doesnt_throw() {
     var btn = new Button();
+    // There is no need to wait until image is downloaded.
+    // It was throwing an exception when starting the download...
     btn.style.backgroundImage = 'https://www.bodybuilding.com/images/2016/june/8-benefits-to-working-out-in-the-morning-header-v2-830x467.jpg';
     helper.buildUIAndRunTest(btn, function (views: Array<View>) {
         helper.waitUntilLayoutReady(btn);

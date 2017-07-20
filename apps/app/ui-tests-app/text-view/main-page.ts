@@ -13,5 +13,6 @@ export function loadExamples() {
     const examples = new Map<string, string>();
     examples.set("text-view-border", "text-view/text-view-border");
     examples.set("text-view-hint-color", "text-view/text-view-hint-color");
+    examples.set("hint-text-color", "text-view/hint-text-color");
     return examples;
 }

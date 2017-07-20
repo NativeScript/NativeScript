@@ -69,6 +69,14 @@ export class Slider extends SliderBase {
         super.disposeNativeView();
     }
 
+    public resetNativeView(): void {
+        super.resetNativeView();
+        const nativeView = this.nativeView;
+        nativeView.setMax(100);
+        nativeView.setProgress(0);
+        nativeView.setKeyProgressIncrement(1);
+    }
+
     /**
      * There is no minValue in Android. We simulate this by subtracting the minValue from the native value and maxValue. 
      * We need this method to call native setMax and setProgress methods when minValue property is changed,
@@ -80,8 +88,7 @@ export class Slider extends SliderBase {
         try {
             nativeView.setMax(newMaxValue);
             nativeView.setProgress(newValue);
-        }
-        finally {
+        } finally {
             this._supressNativeValue = false;
         }
     }
@@ -102,7 +109,7 @@ export class Slider extends SliderBase {
         return 100;
     }
     [maxValueProperty.setNative](value: number) {
-        this.nativeView.setMax(value - this.minValue);
+        this.setNativeValuesSilently(value - this.minValue, value);
     }
 
     [colorProperty.getDefault](): number {

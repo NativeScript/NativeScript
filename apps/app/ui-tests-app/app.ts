@@ -81,4 +81,4 @@ application.on(application.uncaughtErrorEvent, function (args: application.Unhan
 });
 
 application.setCssFileName("ui-tests-app/app.css");
-application.start({ moduleName: "ui-tests-app/mainPage" });
+application.start({ moduleName: "ui-tests-app/main-page" });

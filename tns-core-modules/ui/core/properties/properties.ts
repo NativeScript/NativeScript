@@ -12,6 +12,7 @@ export { Style };
 
 export const unsetValue: any = new Object();
 
+let cssPropertyNames: string[] = [];
 let symbolPropertyMap = {};
 let cssSymbolPropertyMap = {};
 
@@ -39,6 +40,20 @@ const enum ValueSource {
     Css = 2,
     Local = 3,
     Keyframe = 4
+}
+
+export function _getProperties(): Property<any, any>[] {
+    return getPropertiesFromMap(symbolPropertyMap) as Property<any, any>[];
+}
+
+export function _getStyleProperties(): CssProperty<any, any>[] {
+    return getPropertiesFromMap(cssSymbolPropertyMap) as CssProperty<any, any>[];
+}
+
+function getPropertiesFromMap(map): Property<any, any>[] | CssProperty<any, any>[] {
+    const props = [];
+    Object.getOwnPropertySymbols(map).forEach(symbol => props.push(map[symbol]));
+    return props;
 }
 
 export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<U>, definitions.Property<T, U> {
@@ -152,6 +167,14 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
                 if (affectsLayout) {
                     this.requestLayout();
                 }
+
+                if (this.domNode) {
+                    if (reset) {
+                        this.domNode.attributeRemoved(propertyName);
+                    } else {
+                        this.domNode.attributeModified(propertyName, value);
+                    }
+                }
             }
         };
 
@@ -178,6 +201,10 @@ export class Property<T extends ViewBase, U> implements TypedPropertyDescriptor<
 
                 if (affectsLayout) {
                     owner.requestLayout();
+                }
+
+                if (owner.domNode) {
+                    owner.domNode.attributeModified(propertyName, value);
                 }
             }
         };
@@ -299,6 +326,14 @@ export class CoercibleProperty<T extends ViewBase, U> extends Property<T, U> imp
                 if (affectsLayout) {
                     this.requestLayout();
                 }
+
+                if (this.domNode) {
+                    if (reset) {
+                        this.domNode.attributeRemoved(propertyName);
+                    } else {
+                        this.domNode.attributeModified(propertyName, value);
+                    }
+                }
             }
         }
     }
@@ -398,6 +433,8 @@ export class CssProperty<T extends Style, U> implements definitions.CssProperty<
     constructor(options: definitions.CssPropertyOptions<T, U>) {
         const propertyName = options.name;
         this.name = propertyName;
+
+        cssPropertyNames.push(options.cssName);
 
         this.cssName = `css:${options.cssName}`;
         this.cssLocalName = options.cssName;
@@ -635,6 +672,8 @@ export class CssAnimationProperty<T extends Style, U> {
         const propertyName = options.name;
         this.name = propertyName;
 
+        cssPropertyNames.push(options.cssName);
+
         CssAnimationProperty.properties[propertyName] = this;
         if (options.cssName && options.cssName !== propertyName) {
             CssAnimationProperty.properties[options.cssName] = this;
@@ -655,7 +694,7 @@ export class CssAnimationProperty<T extends Style, U> {
         this.defaultValue = defaultValue;
 
         const cssValue = Symbol(cssName);
-        const styleValue = Symbol(propertyName);
+        const styleValue = Symbol(`local:${propertyName}`);
         const keyframeValue = Symbol(keyframeName);
         const computedValue = Symbol("computed-value:" + propertyName);
         this.key = computedValue;
@@ -750,6 +789,16 @@ export class CssAnimationProperty<T extends Style, U> {
                 Object.defineProperty(cls.prototype, options.cssName, stylePropertyDescriptor);
             }
             Object.defineProperty(cls.prototype, keyframeName, keyframePropertyDescriptor);
+        }
+    }
+
+    public _initDefaultNativeValue(target: T): void {
+        const defaultValueKey = this.defaultValueKey;
+
+        if (!(defaultValueKey in target)) {
+            const view = target.view;
+            const getDefault = this.getDefault;
+            target[defaultValueKey] = view[getDefault] ? view[getDefault]() : this.defaultValue;
         }
     }
 
@@ -1087,11 +1136,9 @@ export function applyAllNativeSetters(view: ViewBase): void {
         }
 
         if (view[property.setNative]) {
-            if (view[property.getDefault]) {
-                const defaultValueKey = property.defaultValueKey;
-                if (!(defaultValueKey in style)) {
-                    style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
-                }
+            const defaultValueKey = property.defaultValueKey;
+            if (!(defaultValueKey in style)) {
+                style[defaultValueKey] = view[property.getDefault] ? view[property.getDefault]() : property.defaultValue;
             }
 
             const value = style[symbol];
@@ -1206,4 +1253,34 @@ export function makeParser<T>(isValid: (value: any) => boolean): (value: any) =>
             throw new Error("Invalid value: " + value);
         }
     };
+}
+
+export function getSetProperties(view: ViewBase): [string, any][] {
+    const result = [];
+
+    Object.getOwnPropertyNames(view).forEach(prop => {
+        result.push([prop, view[prop]]);
+    });
+
+    let symbols = Object.getOwnPropertySymbols(view);
+    for (let symbol of symbols) {
+        const property = symbolPropertyMap[symbol];
+        if (!property) {
+            continue;
+        }
+
+        const value = view[property.key];
+        result.push([property.name, value]);
+    }
+
+    return result;
+}
+
+export function getComputedCssValues(view: ViewBase): [string, any][] {
+    const result = [];
+    const style = view.style;
+    for (var prop of cssPropertyNames) {
+        result.push([prop, style[prop]]);
+    }
+    return result;
 }

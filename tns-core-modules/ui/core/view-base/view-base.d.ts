@@ -15,6 +15,7 @@ import { layout } from "../../../utils/utils";
 import { Color } from "../../../color";
 import { Order, FlexGrow, FlexShrink, FlexWrapBefore, AlignSelf } from "../../layouts/flexbox-layout";
 import { Length } from "../../styling/style-properties";
+import { DOMNode } from "../../../debugger/dom-node";
 
 export { isIOS, isAndroid, layout, Color };
 
@@ -57,6 +58,7 @@ export abstract class ViewBase extends Observable {
     col: number;
     rowSpan: number;
     colSpan: number;
+    domNode: DOMNode;
 
     order: Order;
     flexGrow: FlexGrow;
@@ -277,7 +279,7 @@ export abstract class ViewBase extends Observable {
 
     /**
      * Performs the core logic of adding a child view to the native visual tree. Returns true if the view's native representation has been successfully added, false otherwise.
-     */
+    */
     _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean;
     _removeViewFromNativeVisualTree(view: ViewBase): void;
     _childIndexToNativeChildIndex(index?: number): number;
@@ -295,6 +297,12 @@ export abstract class ViewBase extends Observable {
      * A widget can call this method to discard mathing css pseudo class.
      */
     public deletePseudoClass(name: string): void;
+
+    /**
+     * @unstable
+     * Ensures a dom-node for this view.
+     */
+    public ensureDomNode();
 
     //@private
     public _styleScope: any;

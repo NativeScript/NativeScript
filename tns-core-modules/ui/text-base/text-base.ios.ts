@@ -2,8 +2,8 @@
 import { Font } from "../styling/font";
 import {
     TextBaseCommon, textProperty, formattedTextProperty, textAlignmentProperty, textDecorationProperty,
-    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, FormattedString,
-    Span, Color, isBold
+    textTransformProperty, letterSpacingProperty, colorProperty, fontInternalProperty, lineHeightProperty,
+    FormattedString, Span, Color, isBold
 } from "./text-base-common";
 
 export * from "./text-base-common";
@@ -12,12 +12,16 @@ export class TextBase extends TextBaseCommon {
 
     public nativeView: UITextField | UITextView | UILabel | UIButton;
 
-    [textProperty.setNative](value: string) {
-        if (this.formattedText) {
+    [textProperty.getDefault](): number {
+        return -1;
+    }
+    [textProperty.setNative](value: string | number) {
+        const reset = value === -1;
+        if (!reset && this.formattedText) {
             return;
         }
 
-        this._setNativeText();
+        this._setNativeText(reset);
         this._requestLayoutOnTextChanged();
     }
 
@@ -88,7 +92,26 @@ export class TextBase extends TextBaseCommon {
         this._setNativeText();
     }
 
-    _setNativeText() {
+    [lineHeightProperty.setNative](value: number) {
+        this._setNativeText();
+    }
+
+    _setNativeText(reset: boolean = false): void {
+        if (reset) {
+            const nativeView = this.nativeView;
+            if (nativeView instanceof UIButton) {
+                // Clear attributedText or title won't be affected.
+                nativeView.setAttributedTitleForState(null, UIControlState.Normal);
+                nativeView.setTitleForState(null, UIControlState.Normal);
+            } else {
+                // Clear attributedText or text won't be affected.
+                nativeView.attributedText = null;
+                nativeView.text = null;
+            }
+
+            return;
+        }
+
         if (this.formattedText) {
             this.setFormattedTextDecorationAndTransform();
         } else {
@@ -101,6 +124,12 @@ export class TextBase extends TextBaseCommon {
         // TODO: letterSpacing should be applied per Span.
         if (this.letterSpacing !== 0) {
             attrText.addAttributeValueRange(NSKernAttributeName, this.letterSpacing * this.nativeView.font.pointSize, { location: 0, length: attrText.length });
+        }
+
+        if (this.style.lineHeight) {
+            const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+            paragraphStyle.lineSpacing = this.lineHeight;
+            attrText.addAttributeValueRange(NSParagraphStyleAttributeName, paragraphStyle, { location: 0, length: attrText.length });
         }
 
         if (this.nativeView instanceof UIButton) {
@@ -133,6 +162,12 @@ export class TextBase extends TextBaseCommon {
 
         if (style.letterSpacing !== 0) {
             dict.set(NSKernAttributeName, style.letterSpacing * this.nativeView.font.pointSize);
+        }
+
+        if (style.lineHeight) {
+            const paragraphStyle = NSMutableParagraphStyle.alloc().init();
+            paragraphStyle.lineSpacing = style.lineHeight;
+            dict.set(NSParagraphStyleAttributeName, paragraphStyle);
         }
 
         const isTextView = this.nativeView instanceof UITextView;

@@ -24,6 +24,10 @@ var _createSearchBarFunc = function (): searchBarModule.SearchBar {
     return searchBar;
 };
 
+export function test_recycling() {
+    helper.nativeView_recycling_test(() => new searchBarModule.SearchBar());
+}
+
 export var testSearchBarHintColorAndroid = function () {
     helper.buildUIAndRunTest(_createSearchBarFunc(), function (views: Array<viewModule.View>) {
         var searchBar = <searchBarModule.SearchBar>views[0];

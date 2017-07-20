@@ -80,7 +80,7 @@ export class ListView extends ListViewBase {
         const nativeView: any = this.nativeView;
         (<any>nativeView).itemClickListener.owner = this;
         const adapter = (<any>nativeView).adapter;
-        adapter.owner = this;       
+        adapter.owner = this;
         nativeView.setAdapter(adapter);
         if (this._androidViewId < 0) {
             this._androidViewId = android.view.View.generateViewId();
@@ -90,7 +90,7 @@ export class ListView extends ListViewBase {
 
     public disposeNativeView() {
         const nativeView = this.nativeView;
-         nativeView.setAdapter(null);
+        nativeView.setAdapter(null);
         (<any>nativeView).itemClickListener.owner = null;
         (<any>nativeView).adapter.owner = null;
         this.clearRealizedCells();

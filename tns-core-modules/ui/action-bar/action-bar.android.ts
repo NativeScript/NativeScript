@@ -9,6 +9,7 @@ export * from "./action-bar-common";
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
 
+let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
 function generateItemId(): number {
     actionItemIdGenerator++;
@@ -26,6 +27,8 @@ function initializeMenuItemClickListener(): void {
     if (MenuItemClickListener) {
         return;
     }
+
+    AppCompatTextView = (<any>android).support.v7.widget.AppCompatTextView;
 
     @Interfaces([android.support.v7.widget.Toolbar.OnMenuItemClickListener])
     class MenuItemClickListenerImpl extends java.lang.Object implements android.support.v7.widget.Toolbar.OnMenuItemClickListener {
@@ -310,9 +313,13 @@ export class ActionBar extends ActionBarBase {
     }
 
     private static _setOnClickListener(item: ActionItem): void {
+        const weakRef = new WeakRef(item);
         item.actionView.android.setOnClickListener(new android.view.View.OnClickListener({
             onClick: function (v: android.view.View) {
-                item._raiseTap();
+                const owner = weakRef.get();
+                if (owner) {
+                    owner._raiseTap();
+                }
             }
         }));
     }
@@ -354,20 +361,45 @@ export class ActionBar extends ActionBarBase {
     }
 
     [colorProperty.getDefault](): number {
+        const nativeView = this.nativeView;
         if (!defaultTitleTextColor) {
-            let textView = new android.widget.TextView(this._context);
-            defaultTitleTextColor = textView.getTextColors().getDefaultColor();
+            let tv: android.widget.TextView = getAppCompatTextView(nativeView);
+            if (!tv) {
+                const title = nativeView.getTitle();
+                // setTitle will create AppCompatTextView internally;
+                nativeView.setTitle("");
+                tv = getAppCompatTextView(nativeView);
+                if (title) {
+                    // restore title.
+                    nativeView.setTitle(title);
+                }
+            }
+
+            // Fallback to hardcoded falue if we don't find TextView instance...
+            // using new TextView().getTextColors().getDefaultColor() returns different value: -1979711488 
+            defaultTitleTextColor = tv ? tv.getTextColors().getDefaultColor() : -570425344;
         }
 
         return defaultTitleTextColor;
     }
     [colorProperty.setNative](value: number | Color) {
-        let color = value instanceof Color ? value.android : value;
+        const color = value instanceof Color ? value.android : value;
         this.nativeView.setTitleTextColor(color);
     }
 }
 
-// ActionBar.prototype.recycleNativeView = true;
+function getAppCompatTextView(toolbar: android.support.v7.widget.Toolbar): typeof AppCompatTextView {
+    for (let i = 0, count = toolbar.getChildCount(); i < count; i++) {
+        const child = toolbar.getChildAt(i);
+        if (child instanceof AppCompatTextView) {
+            return child;
+        }
+    }
+
+    return null;
+}
+
+ActionBar.prototype.recycleNativeView = true;
 
 let defaultTitleTextColor: number;
 

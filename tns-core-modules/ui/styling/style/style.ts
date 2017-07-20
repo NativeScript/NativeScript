@@ -17,6 +17,10 @@ export class Style extends Observable implements StyleDefinition {
         super();
     }
 
+    toString() {
+        return `${this.view}.style`;
+    }
+
     public fontInternal: Font;
     public backgroundInternal: Background;
 
@@ -64,6 +68,7 @@ export class Style extends Observable implements StyleDefinition {
     public visibility: Visibility;
 
     public letterSpacing: number;
+    public lineHeight: number;
     public textAlignment: TextAlignment;
     public textDecoration: TextDecoration;
     public textTransform: TextTransform;
