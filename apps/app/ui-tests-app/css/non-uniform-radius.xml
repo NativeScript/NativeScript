@@ -18,5 +18,10 @@
 
         <GridLayout row="4" col="0" borderWidth="20" borderRadius="0 10 20 30" class="b3" />
         <GridLayout row="4" col="1" borderWidth="20" borderRadius="20 30 40 50" class="b4" />
+        <GridLayout row="4" col="2" class="g1" />
+
+        <GridLayout row="5" col="0" class="g2" />
+        <GridLayout row="5" col="1" class="g3" />
+        <GridLayout row="5" col="2" class="g4" />
     </GridLayout>
 </Page>

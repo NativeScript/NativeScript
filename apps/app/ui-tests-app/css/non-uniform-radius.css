@@ -33,3 +33,31 @@ GridLayout>GridLayout {
     background-repeat: no-repeat;
     background-position: 100% 100%;
 }
+
+.g1 {
+    border-width: 15;
+    border-color: red;
+    border-radius: 0 10 20 30;
+    background-color: blue;
+}
+
+.g2 {
+    border-width: 15 10 5 0;
+    border-color: red;
+    border-radius: 0 10 20 30;
+    background-color: blue;
+}
+
+.g3 {
+    border-width: 10 20 10 20;
+    border-color: red;
+    border-radius: 30 30 30 30;
+    background-color: blue;
+}
+
+.g4 {
+    border-width: 20 10 20 10;
+    border-color: red;
+    border-radius: 30 30 30 30;
+    background-color: blue;
+}
