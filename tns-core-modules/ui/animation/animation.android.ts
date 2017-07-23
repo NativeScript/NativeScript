@@ -192,14 +192,20 @@ export class Animation extends AnimationBase {
         this._propertyUpdateCallbacks.forEach(v => v());
         this._disableHardwareAcceleration();
         this._resolveAnimationFinishedPromise();
-        this._target._removeAnimation(this);
+
+        if (this._target) {
+            this._target._removeAnimation(this);
+        }
     }
 
     private _onAndroidAnimationCancel() { // tslint:disable-line 
         this._propertyResetCallbacks.forEach(v => v());
         this._disableHardwareAcceleration();
         this._rejectAnimationFinishedPromise();
-        this._target._removeAnimation(this);
+
+        if (this._target) {
+            this._target._removeAnimation(this);
+        }
     }
 
     private _createAnimators(propertyAnimation: PropertyAnimation): void {
