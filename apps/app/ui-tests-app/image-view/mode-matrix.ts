@@ -8,7 +8,7 @@ const sources = [
     { src: "up-cw", rotation: -90 },
     { src: "up-flip", rotation: 180 },
     { src: "up-ccw", rotation: 90 }
-].map(({ src, rotation }) => ({ src: `~/ui-tests-app/resources/images/${src }.png`, rotation }));
+].map(({ src, rotation }) => ({ src: `res://${src}`, rotation }));
 const stretchModes: Stretch[] = ["none", "aspectFill", "aspectFit", "fill"];
 
 export function navigatingTo(args) {

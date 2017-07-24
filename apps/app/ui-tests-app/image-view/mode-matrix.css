@@ -3,7 +3,7 @@ Image {
 }
 
 GridLayout {
-    background-image: url("~/ui-tests-app/resources/images/tile.png");
+    background-image: url("res://tile");
     background-repeat: repeat;
     background-size: 78 78;
 }
