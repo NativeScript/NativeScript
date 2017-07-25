@@ -135,7 +135,7 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
             if (placeholderColor) {
                 this.nativeView.textColor = placeholderColor.ios;
             } else if (color) {
-                // Use semi-transparent vesion of color for back-compatibility 
+                // Use semi-transparent version of color for back-compatibility 
                 this.nativeView.textColor = color.ios.colorWithAlphaComponent(0.22);
             } else {
                 this.nativeView.textColor = UIColor.blackColor.colorWithAlphaComponent(0.22);
@@ -145,8 +145,10 @@ export class TextView extends EditableTextBase implements TextViewDefinition {
 
             if (color) {
                 this.nativeView.textColor = color.ios;
+                this.nativeView.tintColor = color.ios;
             } else {
-                this.nativeView.textColor = UIColor.blackColor;
+                this.nativeView.textColor = null;
+                this.nativeView.tintColor = null;
             }
         }
     }
