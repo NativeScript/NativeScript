@@ -1,12 +1,13 @@
 GridLayout>GridLayout {
-    width: 80;
-    height: 80;
+    width: 60;
+    height: 60;
+    margin: 2;
     border-color: rgba(0, 255, 0, 0.5);
     background-color: rgba(0, 0, 255, 0.5);
 }
 
 .b1, .b2, .b3, .b4, .b5 {
-    background-image: url("~/ui-tests-app/resources/images/tile.png");
+    background-image: url("res://tile");
 }
 
 .b1 {
@@ -49,15 +50,15 @@ GridLayout>GridLayout {
 }
 
 .g3 {
-    border-width: 10 20 10 20;
+    border-width: 5 10 5 10;
     border-color: red;
-    border-radius: 30 30 30 30;
+    border-radius: 20 20 20 20;
     background-color: blue;
 }
 
 .g4 {
-    border-width: 20 10 20 10;
+    border-width: 10 5 10 5;
     border-color: red;
-    border-radius: 30 30 30 30;
+    border-radius: 20 20 20 20;
     background-color: blue;
 }

@@ -5,9 +5,9 @@ import * as imageSource from "tns-core-modules/image-source";
 
 const sources = [
     { src: "up", rotation: 0 },
-    { src: "up-cw", rotation: -90 },
-    { src: "up-flip", rotation: 180 },
-    { src: "up-ccw", rotation: 90 }
+    { src: "upcw", rotation: -90 },
+    { src: "upflip", rotation: 180 },
+    { src: "upccw", rotation: 90 }
 ].map(({ src, rotation }) => ({ src: `res://${src}`, rotation }));
 const stretchModes: Stretch[] = ["none", "aspectFill", "aspectFit", "fill"];
 

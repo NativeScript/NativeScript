@@ -1,5 +1,5 @@
 <Page loaded="onLoaded">
-    <GridLayout rows="*,*,*,*,*,*" columns="*,*,*">
+    <GridLayout rows="65,65,65,65,65,65" columns="65,65,65">
         <GridLayout row="0" col="0" borderWidth="3" borderRadius="10" class="b1" />
         <GridLayout row="0" col="1" borderWidth="0 3" borderRadius="10" class="b2" />
         <GridLayout row="0" col="2" borderWidth="3 0" borderRadius="10" class="b3" />
