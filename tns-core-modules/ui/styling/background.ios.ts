@@ -40,11 +40,7 @@ export module ios {
             clearNonUniformBorders(nativeView);
         }
 
-        if (background.hasBorderRadius()
-            && background.hasBorderWidth()
-            && background.hasUniformBorderColor()
-            && (!background.hasUniformBorderWidth() || !background.hasUniformBorderRadius())) {
-
+        if (background.hasUniformBorderColor() && background.hasBorderRadius()) {
             drawUniformColorNonUniformBorders(nativeView, background);
         } else if (background.hasUniformBorder()) {
             const layer = nativeView.layer;
@@ -124,10 +120,12 @@ function setUIColorFromImage(view: View, nativeView: UIView, callback: (uiColor:
     if (isDataURI(imageUri)) {
         const base64Data = imageUri.split(",")[1];
         if (base64Data !== undefined) {
-            bitmap = fromBase64(base64Data).ios
+            const imageSource = fromBase64(base64Data);
+            bitmap = imageSource && imageSource.ios
         }
     } else if (isFileOrResourcePath(imageUri)) {
-        bitmap = fromFileOrResource(imageUri).ios;
+        const imageSource = fromFileOrResource(imageUri);
+        bitmap = imageSource && imageSource.ios;
     } else if (imageUri.indexOf("http") !== -1) {
         style[symbolUrl] = imageUri;
         fromUrl(imageUri).then((r) => {
@@ -281,13 +279,14 @@ function getDrawParams(this: void, image: UIImage, background: BackgroundDefinit
 }
 
 function uiColorFromImage(img: UIImage, view: View, callback: (uiColor: UIColor) => void, flip?: boolean): void {
+    const background = view.style.backgroundInternal;
+
     if (!img) {
-        callback(null);
+        callback(background.color && background.color.ios);
         return;
     }
 
     const nativeView = view.nativeView as UIView;
-    const background = view.style.backgroundInternal;
     const frame = nativeView.frame;
     const boundsWidth = view.scaleX ? frame.size.width / view.scaleX : frame.size.width;
     const boundsHeight = view.scaleY ? frame.size.height / view.scaleY : frame.size.height;
@@ -412,10 +411,8 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
     const cappedOuterBottomRightRadius = capRadius(outerBottomRightRadius, outerBottomRightRadius / bottomRadii * width, outerBottomRightRadius / rightRadii * height);
     const cappedOuterBottomLeftRadius = capRadius(outerBottomLeftRadius, outerBottomLeftRadius / bottomRadii * width, outerBottomLeftRadius / leftRadii * height);
 
-    const borderPath = CGPathCreateMutable();
-    const clipPath = CGPathCreateMutable();
-
     // Outer contour
+    const clipPath = CGPathCreateMutable();
     CGPathMoveToPoint(clipPath, null, left + cappedOuterTopLeftRadius, top);
     CGPathAddArcToPoint(clipPath, null, right, top, right, top + cappedOuterTopRightRadius, cappedOuterTopRightRadius);
     CGPathAddArcToPoint(clipPath, null, right, bottom, right - cappedOuterBottomRightRadius, bottom, cappedOuterBottomRightRadius);
@@ -423,67 +420,90 @@ function drawUniformColorNonUniformBorders(nativeView: NativeView, background: B
     CGPathAddArcToPoint(clipPath, null, left, top, left + cappedOuterTopLeftRadius, top, cappedOuterTopLeftRadius);
     CGPathCloseSubpath(clipPath);
 
-    CGPathAddRect(borderPath, null, CGRectMake(left, top, width, height));
-
-    // Inner contour
-    CGPathMoveToPoint(borderPath, null, left + cappedOuterTopLeftRadius, top + cappedBorderTopWidth);
-
-    const innerTopRightWRadius = max(0, cappedOuterTopRightRadius - cappedBorderRightWidth);
-    const innerTopRightHRadius = max(0, cappedOuterTopRightRadius - cappedBorderTopWidth);
-    const innerTopRightMaxRadius = max(innerTopRightWRadius, innerTopRightHRadius);
-    const innerTopRightTransform: any = CGAffineTransformMake(
-        innerTopRightMaxRadius && innerTopRightWRadius / innerTopRightMaxRadius, 0,
-        0, innerTopRightMaxRadius && innerTopRightHRadius / innerTopRightMaxRadius,
-        right - cappedBorderRightWidth - innerTopRightWRadius, top + cappedBorderTopWidth + innerTopRightHRadius
-    );
-    CGPathAddArc(borderPath, innerTopRightTransform, 0, 0, innerTopRightMaxRadius, Math.PI * 3 / 2, 0, false);
-
-    const innerBottomRightWRadius = max(0, cappedOuterBottomRightRadius - cappedBorderRightWidth);
-    const innerBottomRightHRadius = max(0, cappedOuterBottomRightRadius - cappedBorderBottomWidth);
-    const innerBottomRightMaxRadius = max(innerBottomRightWRadius, innerBottomRightHRadius);
-    const innerBottomRightTransform: any = CGAffineTransformMake(
-        innerBottomRightMaxRadius && innerBottomRightWRadius / innerBottomRightMaxRadius, 0,
-        0, innerBottomRightMaxRadius && innerBottomRightHRadius / innerBottomRightMaxRadius,
-        right - cappedBorderRightWidth - innerBottomRightWRadius, bottom - cappedBorderBottomWidth - innerBottomRightHRadius
-    );
-    CGPathAddArc(borderPath, innerBottomRightTransform, 0, 0, innerBottomRightMaxRadius, 0, Math.PI / 2, false);
-
-    const innerBottomLeftWRadius = max(0, cappedOuterBottomLeftRadius - cappedBorderLeftWidth);
-    const innerBottomLeftHRadius = max(0, cappedOuterBottomLeftRadius - cappedBorderBottomWidth);
-    const innerBottomLeftMaxRadius = max(innerBottomLeftWRadius, innerBottomLeftHRadius);
-    const innerBottomLeftTransform: any = CGAffineTransformMake(
-        innerBottomLeftMaxRadius && innerBottomLeftWRadius / innerBottomLeftMaxRadius, 0,
-        0, innerBottomLeftMaxRadius && innerBottomLeftHRadius / innerBottomLeftMaxRadius,
-        left + cappedBorderLeftWidth + innerBottomLeftWRadius, bottom - cappedBorderBottomWidth - innerBottomLeftHRadius
-    );
-    CGPathAddArc(borderPath, innerBottomLeftTransform, 0, 0, innerBottomLeftMaxRadius, Math.PI / 2, Math.PI, false);
-
-    const innerTopLeftWRadius = max(0, cappedOuterTopLeftRadius - cappedBorderLeftWidth);
-    const innerTopLeftHRadius = max(0, cappedOuterTopLeftRadius - cappedBorderTopWidth);
-    const innerTopLeftMaxRadius = max(innerTopLeftWRadius, innerTopLeftHRadius);
-    const innerTopLeftTransform: any = CGAffineTransformMake(
-        innerTopLeftMaxRadius && innerTopLeftWRadius / innerTopLeftMaxRadius, 0,
-        0, innerTopLeftMaxRadius && innerTopLeftHRadius / innerTopLeftMaxRadius,
-        left + cappedBorderLeftWidth + innerTopLeftWRadius, top + cappedBorderTopWidth + innerTopLeftHRadius
-    );
-    CGPathAddArc(borderPath, innerTopLeftTransform, 0, 0, innerTopLeftMaxRadius, Math.PI, Math.PI * 3 / 2, false);
-
-    CGPathCloseSubpath(borderPath);
-
-    const borderLayer = CAShapeLayer.layer();
-    borderLayer.fillColor = background.borderTopColor && background.borderTopColor.ios.CGColor || UIColor.blackColor.CGColor;
-    borderLayer.fillRule = kCAFillRuleEvenOdd;
-    borderLayer.path = borderPath;
-
-    layer.addSublayer(borderLayer);
-    nativeView.borderLayer = borderLayer;
-    nativeView.hasNonUniformBorder = true;
-
     nativeView.borderOriginalMask = layer.mask;
     const clipShapeLayer = CAShapeLayer.layer();
     clipShapeLayer.path = clipPath;
     layer.mask = clipShapeLayer;
     nativeView.hasBorderMask = true;
+
+    if (cappedBorderLeftWidth > 0 || cappedBorderTopWidth > 0 || cappedBorderRightWidth > 0 || cappedBorderBottomWidth > 0) {
+        const borderPath = CGPathCreateMutable();
+        CGPathAddRect(borderPath, null, CGRectMake(left, top, width, height));
+
+        // Inner contour
+        if (cappedBorderTopWidth > 0 || cappedBorderLeftWidth > 0) {
+            CGPathMoveToPoint(borderPath, null, left + cappedOuterTopLeftRadius, top + cappedBorderTopWidth);
+        } else {
+            CGPathMoveToPoint(borderPath, null, left, top);
+        }
+
+        if (cappedBorderTopWidth > 0 || cappedBorderRightWidth > 0) {
+            const innerTopRightWRadius = max(0, cappedOuterTopRightRadius - cappedBorderRightWidth);
+            const innerTopRightHRadius = max(0, cappedOuterTopRightRadius - cappedBorderTopWidth);
+            const innerTopRightMaxRadius = max(innerTopRightWRadius, innerTopRightHRadius);
+            const innerTopRightTransform: any = CGAffineTransformMake(
+                innerTopRightMaxRadius && innerTopRightWRadius / innerTopRightMaxRadius, 0,
+                0, innerTopRightMaxRadius && innerTopRightHRadius / innerTopRightMaxRadius,
+                right - cappedBorderRightWidth - innerTopRightWRadius, top + cappedBorderTopWidth + innerTopRightHRadius
+            );
+            CGPathAddArc(borderPath, innerTopRightTransform, 0, 0, innerTopRightMaxRadius, Math.PI * 3 / 2, 0, false);
+        } else {
+            CGPathMoveToPoint(borderPath, null, right, top);
+        }
+
+        if (cappedBorderBottomWidth > 0 || cappedBorderRightWidth > 0) {
+            const innerBottomRightWRadius = max(0, cappedOuterBottomRightRadius - cappedBorderRightWidth);
+            const innerBottomRightHRadius = max(0, cappedOuterBottomRightRadius - cappedBorderBottomWidth);
+            const innerBottomRightMaxRadius = max(innerBottomRightWRadius, innerBottomRightHRadius);
+            const innerBottomRightTransform: any = CGAffineTransformMake(
+                innerBottomRightMaxRadius && innerBottomRightWRadius / innerBottomRightMaxRadius, 0,
+                0, innerBottomRightMaxRadius && innerBottomRightHRadius / innerBottomRightMaxRadius,
+                right - cappedBorderRightWidth - innerBottomRightWRadius, bottom - cappedBorderBottomWidth - innerBottomRightHRadius
+            );
+            CGPathAddArc(borderPath, innerBottomRightTransform, 0, 0, innerBottomRightMaxRadius, 0, Math.PI / 2, false);
+        } else {
+            CGPathAddLineToPoint(borderPath, null, right, bottom);
+        }
+
+        if (cappedBorderBottomWidth > 0 || cappedBorderLeftWidth > 0) {
+            const innerBottomLeftWRadius = max(0, cappedOuterBottomLeftRadius - cappedBorderLeftWidth);
+            const innerBottomLeftHRadius = max(0, cappedOuterBottomLeftRadius - cappedBorderBottomWidth);
+            const innerBottomLeftMaxRadius = max(innerBottomLeftWRadius, innerBottomLeftHRadius);
+            const innerBottomLeftTransform: any = CGAffineTransformMake(
+                innerBottomLeftMaxRadius && innerBottomLeftWRadius / innerBottomLeftMaxRadius, 0,
+                0, innerBottomLeftMaxRadius && innerBottomLeftHRadius / innerBottomLeftMaxRadius,
+                left + cappedBorderLeftWidth + innerBottomLeftWRadius, bottom - cappedBorderBottomWidth - innerBottomLeftHRadius
+            );
+            CGPathAddArc(borderPath, innerBottomLeftTransform, 0, 0, innerBottomLeftMaxRadius, Math.PI / 2, Math.PI, false);
+        } else {
+            CGPathAddLineToPoint(borderPath, null, left, bottom);
+        }
+
+        if (cappedBorderTopWidth > 0 || cappedBorderLeftWidth > 0) {
+            const innerTopLeftWRadius = max(0, cappedOuterTopLeftRadius - cappedBorderLeftWidth);
+            const innerTopLeftHRadius = max(0, cappedOuterTopLeftRadius - cappedBorderTopWidth);
+            const innerTopLeftMaxRadius = max(innerTopLeftWRadius, innerTopLeftHRadius);
+            const innerTopLeftTransform: any = CGAffineTransformMake(
+                innerTopLeftMaxRadius && innerTopLeftWRadius / innerTopLeftMaxRadius, 0,
+                0, innerTopLeftMaxRadius && innerTopLeftHRadius / innerTopLeftMaxRadius,
+                left + cappedBorderLeftWidth + innerTopLeftWRadius, top + cappedBorderTopWidth + innerTopLeftHRadius
+            );
+            CGPathAddArc(borderPath, innerTopLeftTransform, 0, 0, innerTopLeftMaxRadius, Math.PI, Math.PI * 3 / 2, false);
+        } else {
+            CGPathAddLineToPoint(borderPath, null, left, top);
+        }
+
+        CGPathCloseSubpath(borderPath);
+
+        const borderLayer = CAShapeLayer.layer();
+        borderLayer.fillColor = background.borderTopColor && background.borderTopColor.ios.CGColor || UIColor.blackColor.CGColor;
+        borderLayer.fillRule = kCAFillRuleEvenOdd;
+        borderLayer.path = borderPath;
+        layer.addSublayer(borderLayer);
+        nativeView.borderLayer = borderLayer;
+    }
+
+    nativeView.hasNonUniformBorder = true;
 }
 
 function drawNoRadiusNonUniformBorders(nativeView: NativeView, background: BackgroundDefinition) {

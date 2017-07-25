@@ -15,6 +15,7 @@ export function loadExamples() {
     examples.set("roundimg", "image-view/rounded-images");
     examples.set("mode-matrix", "image-view/mode-matrix");
     examples.set("stretch-modes", "image-view/stretch-modes");
+    examples.set("missing-image", "image-view/missing-image");
 
     return examples;
 }
