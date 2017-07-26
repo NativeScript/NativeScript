@@ -658,6 +658,7 @@ export class CssAnimationProperty<T extends Style, U> {
     public readonly keyframe: string;
     public readonly defaultValueKey: symbol;
     public readonly key: symbol;
+    private readonly source: symbol;
 
     public readonly defaultValue: U;
 
@@ -699,6 +700,7 @@ export class CssAnimationProperty<T extends Style, U> {
         const computedValue = Symbol("computed-value:" + propertyName);
         this.key = computedValue;
         const computedSource = Symbol("computed-source:" + propertyName);
+        this.source = computedSource;
 
         this.getDefault = Symbol(propertyName + ":getDefault");
         const getDefault = this.getDefault;
@@ -712,7 +714,11 @@ export class CssAnimationProperty<T extends Style, U> {
                 enumerable, configurable,
                 get: getsComputed ? function (this: T) { return this[computedValue]; } : function (this: T) { return this[symbol]; },
                 set(this: T, boxedValue: U) {
-                    let oldValue = this[computedValue];
+
+                    const oldValue = this[computedValue];
+                    const oldSource = this[computedSource];
+                    const wasSet = oldSource !== ValueSource.Default;
+
                     if (boxedValue === unsetValue) {
                         this[symbol] = unsetValue;
                         if (this[computedSource] === propertySource) {
@@ -724,8 +730,8 @@ export class CssAnimationProperty<T extends Style, U> {
                                 this[computedSource] = ValueSource.Css;
                                 this[computedValue] = this[cssValue];
                             } else {
-                                this[computedSource] = ValueSource.Default;
-                                this[computedValue] = defaultValueKey in this ? this[defaultValueKey] : defaultValue;
+                                delete this[computedSource];
+                                delete this[computedValue];
                             }
                         }
                     } else {
@@ -738,29 +744,41 @@ export class CssAnimationProperty<T extends Style, U> {
                             this[computedValue] = boxedValue;
                         }
                     }
-                    let value = this[computedValue];
-                    if (oldValue !== value && (!equalityComparer || !equalityComparer(oldValue, value))) {
-                        if (valueChanged) {
-                            valueChanged(this, oldValue, value);
-                        }
 
-                        const view = this.view;
-                        if (view[setNative]) {
-                            if (view._suspendNativeUpdatesCount) {
-                                if (view._suspendedUpdates) {
-                                    view._suspendedUpdates[propertyName] = property;
-                                }
-                            } else {
-                                if (!(defaultValueKey in this)) {
+                    const value = this[computedValue];
+                    const source = this[computedSource];
+                    const isSet = source !== ValueSource.Default;
+
+                    const computedValueChanged = oldValue !== value && (!equalityComparer || !equalityComparer(oldValue, value));
+
+                    if (computedValueChanged && valueChanged) {
+                        valueChanged(this, oldValue, value);
+                    }
+
+                    const view = this.view;
+                    if (view[setNative] && (computedValueChanged || isSet !== wasSet)) {
+                        if (view._suspendNativeUpdatesCount) {
+                            if (view._suspendedUpdates) {
+                                view._suspendedUpdates[propertyName] = property;
+                            }
+                        } else {
+                            if (isSet) {
+                                if (!wasSet && !(defaultValueKey in this)) {
                                     this[defaultValueKey] = view[getDefault] ? view[getDefault]() : defaultValue;
                                 }
-
                                 view[setNative](value);
+                            } else if (wasSet) {
+                                if (defaultValueKey in this) {
+                                    view[setNative](this[defaultValueKey]);
+                                } else {
+                                    view[setNative](defaultValue);
+                                }
                             }
                         }
-                        if (this.hasListeners(eventName)) {
-                            this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
-                        }
+                    }
+
+                    if (computedValueChanged && this.hasListeners(eventName)) {
+                        this.notify<PropertyChangeData>({ object: this, eventName, propertyName, value, oldValue });
                     }
                 }
             }
@@ -807,7 +825,7 @@ export class CssAnimationProperty<T extends Style, U> {
     }
 
     public isSet(instance: T): boolean {
-        return instance[this.key] !== unsetValue;
+        return instance[this.source] !== ValueSource.Default;
     }
 }
 CssAnimationProperty.prototype.isStyleProperty = true;
