@@ -9,5 +9,8 @@
         "tns-core-modules/declarations.d.ts",
         "tns-core-modules/es6-promise.d.ts",
         "node-tests/**/*.ts"
-    ]
+    ],
+    "compilerOptions": {
+        "types": ["node"]
+    }
 }

@@ -15,6 +15,7 @@
         "reactNamespace": "UIBuilder",
         "lib": [
             "es6", "dom"
-        ]
+        ],
+        "types": []
     }
 }
