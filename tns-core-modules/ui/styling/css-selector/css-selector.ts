@@ -45,6 +45,33 @@ namespace Match {
     export var Static = false;
 }
 
+function getNodeIndex(node): number {
+    if (!node.parent || !node.parent.getChildIndex) return -1;
+    return node.parent.getChildIndex(node);
+}
+
+function isFirstChild(node): boolean {
+    return getNodeIndex(node) === 0;
+}
+
+function isLastChild(node): boolean {
+    if (!node.parent || !node.parent.getChildrenCount) return false;
+    return getNodeIndex(node) === (node.parent.getChildrenCount());
+}
+
+function getNodePreviousDirectSibling(node): Node {
+    if (!node.parent || !node.parent.getChildAt) return false;
+    const nodeIndex = getNodeIndex(node);
+    if (nodeIndex <= 0) return false;
+    return node.parent.getChildAt(nodeIndex - 1);
+}
+
+function getNodeNextDirectSibling(node): Node {
+    if (!node.parent || !node.parent.getChildAt) return false;
+    const nodeIndex = getNodeIndex(node);
+    return node.parent.getChildAt(nodeIndex + 1);
+}
+
 function getNodeDirectSibling(node): null | Node {
     if (!node.parent || !node.parent.getChildIndex || !node.parent.getChildAt) {
         return null;
@@ -205,11 +232,47 @@ export class AttributeSelector extends SimpleSelector {
 
 @SelectorProperties(Specificity.PseudoClass, Rarity.PseudoClass, Match.Dynamic)
 export class PseudoClassSelector extends SimpleSelector {
-    constructor(public cssPseudoClass: string) { super(); }
+    constructor(public cssPseudoClass: string, public value: string) { super(); }
     public toString(): string { return `:${this.cssPseudoClass}${wrap(this.combinator)}`; }
-    public match(node: Node): boolean { return node.cssPseudoClasses && node.cssPseudoClasses.has(this.cssPseudoClass); }
+    public match(node: Node): boolean {
+        if (this.value) {
+            if (this.cssPseudoClass === "nth-child") return this._nthChildMatch(node, this.value);
+        }
+        if (this.cssPseudoClass === "first-child") return isFirstChild(node);
+        if (this.cssPseudoClass === "last-child") return isLastChild(node);
+        return node.cssPseudoClasses && node.cssPseudoClasses.has(this.cssPseudoClass);
+    }
     public mayMatch(node: Node): boolean { return true; }
     public trackChanges(node: Node, map: ChangeAccumulator): void { map.addPseudoClass(node, this.cssPseudoClass); }
+
+    private _nthChildMatch(node: Node, eq: string): boolean {
+        if (eq.toLowerCase() === "even") eq = "2n";
+        if (eq.toLowerCase() === "odd") eq = "2n+1";
+
+        const childIndex = getNodeIndex(node) + 1;
+        const regex = /([+-]?\d*)(n?)([+-]?\d*)/;
+        const sections = eq.match(regex);
+        const hasN = sections[2] == 'n';
+        let match = false;
+        let multiplier = 1;
+        let scalar = 0;
+
+        if (hasN) {
+            if (sections[1]) {
+                multiplier = (sections[1] === "-") ? -1 : parseInt(sections[1]);
+            }
+            scalar = sections[3] ? parseInt(sections[3]) : 0;
+        } else {
+            scalar = parseInt(sections[1])
+        }
+
+        if (!hasN) {
+            match = (childIndex === scalar);
+        } else {
+            match = (childIndex - scalar) % multiplier === 0;
+        }
+        return match;
+    }
 }
 
 export class SimpleSelectorSequence extends SimpleSelector {
@@ -456,7 +519,7 @@ function createSimpleSelector(sel: selectorParser.SimpleSelector): SimpleSelecto
     } else if (selectorParser.isClass(sel)) {
         return new ClassSelector(sel.ident);
     } else if (selectorParser.isPseudo(sel)) {
-        return new PseudoClassSelector(sel.ident);
+        return new PseudoClassSelector(sel.ident, sel.value);
     } else if (selectorParser.isAttribute(sel)) {
         if (sel.test) {
             return new AttributeSelector(sel.prop, sel.test, sel.value);
@@ -504,7 +567,7 @@ export class SelectorsMap<T extends Node> implements LookupSorter {
         let selectors = selectorClasses
             .filter(arr => !!arr)
             .reduce((cur, next) => cur.concat(next), []);
-        
+
         let selectorsMatch = new SelectorsMatch<T>();
 
         selectorsMatch.selectors = selectors

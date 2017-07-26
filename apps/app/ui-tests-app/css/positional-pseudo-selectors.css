@@ -1,0 +1,32 @@
+.first-child Button:first-child {
+  background-color: red;
+  color: white;
+}
+
+.last-child Button:last-child {
+  background-color: blue;
+  color: white;
+}
+
+.nth-child Button:nth-child(n) {
+  border-width: 1;
+  border-color: black;
+}
+
+.nth-child Button:nth-child(2n) {
+  background-color: blue;
+  color: white;
+}
+
+.nth-child Button:nth-child(3) {
+  background-color: red;
+  color: white;
+}
+
+.nth-child Button:nth-child(3n+1) {
+  font-weight: bold;
+}
+
+.sibling-test-label {
+  text-align: center;
+}

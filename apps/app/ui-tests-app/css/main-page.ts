@@ -37,6 +37,7 @@ export function loadExamples() {
     examples.set("padding-and-border", "css/padding-and-border");
     examples.set("combinators", "css/combinators");
     examples.set("styled-formatted-text", "css/styled-formatted-text");
-    
+    examples.set("positional-pseudo-selectors", "css/positional-pseudo-selectors");
+
     return examples;
 }

@@ -48,11 +48,84 @@ export function isAttribute(sel: SimpleSelector): sel is AttributeSelector {
     return sel.type === "[]";
 }
 
-var regex = /(\s*)(?:(\*)|(#|\.|:|\b)([_-\w][_-\w\d]*)|\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\])(?:\s*(\+|~|>|\s))?/g;
-// no lead ws     univ   type pref and ident          [    prop                   =                            ident    -or-    "string escapes \" \00aaff"    -or-   'string    escapes \' urf-8: \00aaff'       ]        combinator
+// Keep it here for simple test with tools
+// var regex = /(\s*)(?:(\*)|(#|\.|:|\b)([_-\w][_-\w\d]*)([_-\w\d]*\(([+-\w\d]*)\))?|\[\s*([_-\w][_-\w\d]*)\s*(?:(=|\^=|\$=|\*=|\~=|\|=)\s*(?:([_-\w][_-\w\d]*)|"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"|'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)')\s*)?\])(?:\s*(\+|~|>|\s))?/g;
+var RegexSingleton = (function () {
+    let regex;
+
+    const regexParts = {
+        space: /\s*/,
+        openingBracket: /\[/,
+        closingBracket: /\]/,
+        universal: /(\*)/,
+        selectorTypes: /(#|\.|:|\b)/,
+        selectorName: /([_-\w][_-\w\d]*)/,
+        pseudoSelectoValue: /([_-\w\d]*\(([+-\w\d]*)\))?/,
+        attributeName: /([_-\w][_-\w\d]*)/,
+        attributeEqual: /(=|\^=|\$=|\*=|\~=|\|=)/,
+        attributeValues: {
+            noQuotes: /([_-\w][_-\w\d]*)/,
+            doubleQuotes: /"((?:[^\\"]|\\(?:"|n|r|f|\\|0-9a-f))*)"/,
+            simpleQuotes: /'((?:[^\\']|\\(?:'|n|r|f|\\|0-9a-f))*)'/
+        },
+        combinators: /(?:\s*(\+|~|>|\s))?/
+    };
+
+    const attributeValueRegex = "(?:" +
+        regexParts.attributeValues.noQuotes.source +
+        "|" +
+        regexParts.attributeValues.doubleQuotes.source +
+        "|" +
+        regexParts.attributeValues.simpleQuotes.source +
+    ")";
+
+    const attributeValueAssertionRegex = "(?:" +
+        regexParts.attributeEqual.source +
+        regexParts.space.source +
+        attributeValueRegex +
+        regexParts.space.source +
+    ")?";
+
+    const attributesRegex = "" +
+        regexParts.openingBracket.source +
+        regexParts.space.source +
+        regexParts.attributeName.source +
+        regexParts.space.source +
+        attributeValueAssertionRegex +
+        regexParts.closingBracket.source;
+
+    const selectorRegex = "(?:" +
+        regexParts.universal.source +
+        "|" +
+        regexParts.selectorTypes.source +
+        regexParts.selectorName.source +
+        regexParts.pseudoSelectoValue.source +
+        "|" +
+        attributesRegex +
+    ")";
+
+    function createRegex() {
+        regex = new RegExp(
+            "(" + regexParts.space.source + ")" +
+            selectorRegex +
+            regexParts.combinators.source
+        , 'g');
+        return regex;
+    }
+
+    return {
+        getRegex: function() {
+            if (!regex) {
+                regex = createRegex();
+            }
+            return regex;
+        }
+    }
+})();
 
 export function parse(selector: string): SimpleSelector[] {
     let selectors: any[] = [];
+    const regex = RegexSingleton.getRegex();
 
     var result: RegExpExecArray;
     var lastIndex = regex.lastIndex = 0;
@@ -67,6 +140,7 @@ export function parse(selector: string): SimpleSelector[] {
         lastIndex = regex.lastIndex;
 
         var type = getType(result);
+        let value;
         let selector: SimpleSelector | SimpleIdentifierSelector | AttributeSelector;
         switch (type) {
             case "*":
@@ -77,13 +151,14 @@ export function parse(selector: string): SimpleSelector[] {
             case ":":
             case "":
                 let ident = getIdentifier(result);
-                selector = { pos, type, ident };
+                value = getPropertyValue(result);
+                selector = { pos, type, ident, value };
                 break;
             case "[]":
                 let prop = getProperty(result);
                 let test = getPropertyTest(result);
                 // TODO: Unescape escape sequences. Unescape UTF-8 characters.
-                let value = getPropertyValue(result);
+                value = getPropertyValue(result);
                 selector = test ? { pos, type, prop, test, value } : { pos, type, prop };
                 break;
             default:
@@ -106,7 +181,7 @@ function getLeadingWhiteSpace(result: RegExpExecArray): string {
     return result[1] || "";
 }
 function getType(result: RegExpExecArray): "" | "*" | "." | "#" | ":" | "[]" {
-    return <"[]">(result[5] && "[]") || <"*">result[2] || <"" | "." | "#" | ":">result[3];
+    return <":">(result[6] && ":") || <"[]">(result[5] && "[]") || <"*">result[2] || <"" | "." | "#" | ":">result[3];
 }
 function getIdentifier(result: RegExpExecArray): string {
     return result[4];
@@ -118,7 +193,7 @@ function getPropertyTest(result: RegExpExecArray): string {
     return result[6] || undefined;
 }
 function getPropertyValue(result: RegExpExecArray): string {
-    return result[7] || result[8] || result[9];
+    return (result[3] === ":" && result[6]) || result[7] || result[8] || result[9];
 }
 function getCombinator(result: RegExpExecArray): "+" | "~" | ">" | " " {
     return <("+" | "~" | ">" | " ")>result[result.length - 1] || undefined;

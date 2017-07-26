@@ -97,6 +97,9 @@ export function test_pseudoClass(): void {
 export function test_attribute_no_value(): void {
     test(`[src]`, [{ pos: 0, type: "[]", prop: "src" }]);
 }
+export function test_pseudoClassWithArguments(): void {
+    test(`:nth-child(2)`, [{ pos: 0, type: ":", ident: "nth-child", value: '2' }]);
+}
 export function test_attribute_equal(): void {
     test(`[src = "res://"]`, [{ pos: 0, type: "[]", prop: "src", test: "=", value: `res://` }]);
 }

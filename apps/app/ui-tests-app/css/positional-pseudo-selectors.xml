@@ -1,0 +1,35 @@
+<Page>
+	<ScrollView>
+		<StackLayout>
+
+			<StackLayout class="first-child">
+				<Label text="First child test"/>
+				<StackLayout>
+					<Button text="I'm the first child!"/>
+					<Button text="I'm not!"/>
+					<Button text="I'm not either!"/>
+				</StackLayout>
+			</StackLayout>
+
+			<StackLayout class="last-child">
+				<Label text="Last child test"/>
+				<StackLayout>
+					<Button text="I'm not!"/>
+          <Button text="I'm not either!"/>
+					<Button text="I'm the last child!"/>
+				</StackLayout>
+			</StackLayout>
+
+			<StackLayout class="nth-child">
+				<Label text="Nth child test"/>
+				<StackLayout>
+					<Button text="We all have border!"/>
+          <Button text="Only the 4 and me have blue background"/>
+					<Button text="I have a red background"/>
+          <Button text="Only the 2 and me have blue background"/>
+				</StackLayout>
+			</StackLayout>
+
+		</StackLayout>
+	</ScrollView>
+</Page>
