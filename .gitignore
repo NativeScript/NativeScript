@@ -50,3 +50,5 @@ apps/platforms/
 apps/lib/
 apps/hooks/
 apps/node_modules/
+
+package-lock.json
