@@ -14,6 +14,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.Shader;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
@@ -160,6 +161,13 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
         return backgroundSize;
     }
 
+    public boolean hasBorderWidth() {
+        return this.borderTopWidth != 0
+            || this.borderRightWidth != 0
+            || this.borderBottomWidth != 0
+            || this.borderLeftWidth != 0;
+    }
+
     public boolean hasUniformBorderColor() {
         return this.borderTopColor == this.borderRightColor &&
                 this.borderTopColor == this.borderBottomColor &&
@@ -260,23 +268,36 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
     @Override
     public void draw(Canvas canvas) {
         Rect bounds = this.getBounds();
-        if (bounds.width() <= 0 || bounds.height() <= 0) {
+        float width = (float)bounds.width();
+        float height = (float)bounds.height();
+
+        if (width <= 0 || height <= 0) {
             // When the view is off-screen the bounds might be empty and we don't have anything to draw.
             return;
         }
+
+        RectF backgroundBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
 
         float topBackoffAntialias = calculateBackoffAntialias(this.borderTopColor, this.borderTopWidth);
         float rightBackoffAntialias = calculateBackoffAntialias(this.borderRightColor, this.borderRightWidth);
         float bottomBackoffAntialias = calculateBackoffAntialias(this.borderBottomColor, this.borderBottomWidth);
         float leftBackoffAntialias = calculateBackoffAntialias(this.borderLeftColor, this.borderLeftWidth);
 
-        RectF backgroundBoundsF = new RectF(
-                bounds.left + leftBackoffAntialias,
-                bounds.top + topBackoffAntialias,
-                bounds.right - rightBackoffAntialias,
-                bounds.bottom - bottomBackoffAntialias);
+        float[] backgroundRadii = {
+            Math.max(0, borderTopLeftRadius + leftBackoffAntialias), Math.max(0, borderTopLeftRadius + topBackoffAntialias),
+            Math.max(0, borderTopRightRadius + rightBackoffAntialias), Math.max(0, borderTopRightRadius + topBackoffAntialias),
+            Math.max(0, borderBottomRightRadius + rightBackoffAntialias), Math.max(0, borderBottomRightRadius + bottomBackoffAntialias),
+            Math.max(0, borderBottomLeftRadius + leftBackoffAntialias), Math.max(0, borderBottomLeftRadius + bottomBackoffAntialias)
+        };
 
-        float outerRadius = this.getUniformBorderRadius();
+        Path backgroundPath = new Path();
+        RectF backgroundRect = new RectF(
+            leftBackoffAntialias,
+            topBackoffAntialias,
+            width - rightBackoffAntialias,
+            height - bottomBackoffAntialias
+        );
+        backgroundPath.addRoundRect(backgroundRect, backgroundRadii, Path.Direction.CW);
 
         // draw background
         if (this.backgroundColor != 0) {
@@ -288,12 +309,12 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
             if (this.clipPath != null && !this.clipPath.isEmpty()) {
                 drawClipPath(this.clipPath, canvas, backgroundColorPaint, backgroundBoundsF, this.density);
             } else {
-                canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundColorPaint);
+                canvas.drawPath(backgroundPath, backgroundColorPaint);
             }
         }
 
         if (this.backgroundBitmap != null) {
-            BackgroundDrawParams params = this.getDrawParams(bounds.width(), bounds.height());
+            BackgroundDrawParams params = this.getDrawParams(width, height);
             Matrix transform = new Matrix();
             if (params.sizeX > 0 && params.sizeY > 0) {
                 float scaleX = params.sizeX / this.backgroundBitmap.getWidth();
@@ -303,16 +324,21 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
                 params.sizeX = this.backgroundBitmap.getWidth();
                 params.sizeY = this.backgroundBitmap.getHeight();
             }
-            transform.postTranslate(params.posX - leftBackoffAntialias, params.posY - topBackoffAntialias);
-
-            BitmapShader shader = new BitmapShader(this.backgroundBitmap, android.graphics.Shader.TileMode.REPEAT, android.graphics.Shader.TileMode.REPEAT);
-            shader.setLocalMatrix(transform);
+            transform.postTranslate(params.posX, params.posY);
 
             Paint backgroundImagePaint = new Paint();
+            BitmapShader shader = new BitmapShader(
+                this.backgroundBitmap,
+                params.repeatX ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP,
+                params.repeatY ? Shader.TileMode.REPEAT : Shader.TileMode.CLAMP
+            );
+            shader.setLocalMatrix(transform);
+            backgroundImagePaint.setAntiAlias(true);
+            backgroundImagePaint.setFilterBitmap(true);
             backgroundImagePaint.setShader(shader);
 
-            float imageWidth = params.repeatX ? bounds.width() : params.sizeX;
-            float imageHeight = params.repeatY ? bounds.height() : params.sizeY;
+            float imageWidth = params.repeatX ? width : params.sizeX;
+            float imageHeight = params.repeatY ? height : params.sizeY;
             params.posX = params.repeatX ? 0 : params.posX;
             params.posY = params.repeatY ? 0 : params.posY;
 
@@ -321,59 +347,65 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
             } else {
                 boolean supportsPathOp = android.os.Build.VERSION.SDK_INT >= 19;
                 if (supportsPathOp) {
-                    // Path.Op can be used in API level 19+ to achieve the perfect geometry.
-                    Path backgroundPath = new Path();
-                    backgroundPath.addRoundRect(backgroundBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
                     Path backgroundNoRepeatPath = new Path();
                     backgroundNoRepeatPath.addRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight, Path.Direction.CCW);
-                    intersect(backgroundPath, backgroundNoRepeatPath);
-                    canvas.drawPath(backgroundPath, backgroundImagePaint);
+                    intersect(backgroundNoRepeatPath, backgroundPath);
+                    canvas.drawPath(backgroundNoRepeatPath, backgroundImagePaint);
                 } else {
                     // Clipping here will not be anti-aliased but at least it won't shine through the rounded corners.
                     canvas.save();
                     canvas.clipRect(params.posX, params.posY, params.posX + imageWidth, params.posY + imageHeight);
-                    canvas.drawRoundRect(backgroundBoundsF, outerRadius, outerRadius, backgroundImagePaint);
+                    canvas.drawPath(backgroundPath, backgroundImagePaint);
                     canvas.restore();
                 }
             }
         }
 
         // draw border
-        if (this.hasUniformBorder()) {
+        if (this.clipPath != null && !this.clipPath.isEmpty()) {
             float borderWidth = this.getUniformBorderWidth();
-            int borderColor = this.getUniformBorderColor();
-
-            // iOS and browsers use black when no color is specified.
             if (borderWidth > 0) {
-                float halfBorderWidth = borderWidth / 2.0f;
-                RectF middleBoundsF = new RectF(bounds.left + halfBorderWidth, bounds.top + halfBorderWidth, bounds.right - halfBorderWidth, bounds.bottom - halfBorderWidth);
                 Paint borderPaint = new Paint();
-                borderPaint.setColor(borderColor);
+                borderPaint.setColor(this.getUniformBorderColor());
+                borderPaint.setStyle(Paint.Style.STROKE);
+                borderPaint.setStrokeWidth(borderWidth);
+                drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, this.density);
+            }
+        } else if (!this.hasBorderWidth()) {
+            // No borders trap.
+        } else if (this.hasUniformBorderColor()) {
+            // iOS and browsers use black when no color is specified.
+            if (borderLeftWidth > 0 || borderTopWidth > 0 || borderRightWidth > 0 || borderBottomWidth > 0) {
+                Paint borderPaint = new Paint();
+                borderPaint.setColor(this.getUniformBorderColor());
+                borderPaint.setStyle(Paint.Style.FILL);
                 borderPaint.setAntiAlias(true);
-                if (this.clipPath != null && !this.clipPath.isEmpty()) {
-                    borderPaint.setStyle(Paint.Style.STROKE);
-                    borderPaint.setStrokeWidth(borderWidth);
-                    drawClipPath(this.clipPath, canvas, borderPaint, backgroundBoundsF, this.density);
-                } else {
-                    if (outerRadius <= 0) {
-                        borderPaint.setStyle(Paint.Style.STROKE);
-                        borderPaint.setStrokeWidth(borderWidth);
-                        canvas.drawRect(middleBoundsF, borderPaint);
-                    } else if (outerRadius >= borderWidth) {
-                        borderPaint.setStyle(Paint.Style.STROKE);
-                        borderPaint.setStrokeWidth(borderWidth);
-                        float middleRadius = Math.max(0, outerRadius - halfBorderWidth);
-                        canvas.drawRoundRect(middleBoundsF, middleRadius, middleRadius, borderPaint);
-                    } else {
-                        Path borderPath = new Path();
-                        RectF borderOuterBoundsF = new RectF(bounds.left, bounds.top, bounds.right, bounds.bottom);
-                        borderPath.addRoundRect(borderOuterBoundsF, outerRadius, outerRadius, Path.Direction.CCW);
-                        RectF borderInnerBoundsF = new RectF(bounds.left + borderWidth, bounds.top + borderWidth, bounds.right - borderWidth, bounds.bottom - borderWidth);
-                        borderPath.addRect(borderInnerBoundsF, Path.Direction.CW);
-                        borderPaint.setStyle(Paint.Style.FILL);
-                        canvas.drawPath(borderPath, borderPaint);
-                    }
-                }
+                Path borderPath = new Path();
+
+                RectF borderOuterRect = new RectF(0, 0, width, height);
+                float[] borderOuterRadii = {
+                    borderTopLeftRadius, borderTopLeftRadius,
+                    borderTopRightRadius, borderTopRightRadius,
+                    borderBottomRightRadius, borderBottomRightRadius, 
+                    borderBottomLeftRadius, borderBottomLeftRadius
+                };
+                borderPath.addRoundRect(borderOuterRect, borderOuterRadii, Path.Direction.CW);
+
+                RectF borderInnerRect = new RectF(
+                    borderLeftWidth,
+                    borderTopWidth,
+                    width - borderRightWidth,
+                    height - borderBottomWidth
+                );
+                float[] borderInnerRadii = {
+                    Math.max(0, borderTopLeftRadius - borderLeftWidth), Math.max(0, borderTopLeftRadius - borderTopWidth),
+                    Math.max(0, borderTopRightRadius - borderRightWidth), Math.max(0, borderTopRightRadius - borderTopWidth),
+                    Math.max(0, borderBottomRightRadius - borderRightWidth), Math.max(0, borderBottomRightRadius - borderBottomWidth),
+                    Math.max(0, borderBottomLeftRadius - borderLeftWidth), Math.max(0, borderBottomLeftRadius - borderBottomWidth)
+                };
+                borderPath.addRoundRect(borderInnerRect, borderInnerRadii, Path.Direction.CCW);
+
+                canvas.drawPath(borderPath, borderPaint);
             }
         } else {
             float top = this.borderTopWidth;
@@ -467,7 +499,7 @@ public class BorderDrawable extends ColorDrawable implements BitmapOwner {
         // If the border is transparent we will backoff less, and we will not backoff more than half a pixel or half the border width.
         float halfBorderWidth = borderWidth / 2.0f;
         float normalizedBorderAlpha = ((float) Color.alpha(borderColor)) / 255.0f;
-        return Math.min(0.5f, halfBorderWidth) * normalizedBorderAlpha;
+        return Math.min(1f, halfBorderWidth) * normalizedBorderAlpha;
     }
 
     @TargetApi(19)

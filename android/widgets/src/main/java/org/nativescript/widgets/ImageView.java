@@ -6,11 +6,11 @@ package org.nativescript.widgets;
 import android.content.Context;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 
 import org.nativescript.widgets.image.BitmapOwner;
 import org.nativescript.widgets.image.Fetcher;
 import org.nativescript.widgets.image.Worker;
-
 /**
  * @author hhristov
  */
@@ -208,78 +208,108 @@ public class ImageView extends android.widget.ImageView implements BitmapOwner {
     @Override
     protected void onDraw(Canvas canvas) {
         BorderDrawable background = this.getBackground() instanceof BorderDrawable ? (BorderDrawable) this.getBackground() : null;
-        float uniformBorderWidth = background != null ? background.getUniformBorderWidth() : 0;
-        float uniformBorderRadius = background != null ? background.getUniformBorderRadius() : 0;
 
-        // floor the border width to avoid gaps between the border and the image
-        float roundedBorderWidth = (float) Math.floor(uniformBorderWidth);
-        float innerRadius = Math.max(0, uniformBorderRadius - roundedBorderWidth);
+        if (this.mBitmap != null) {
+            float borderTopLeftRadius, borderTopRightRadius, borderBottomRightRadius, borderBottomLeftRadius;
 
-        if (background != null) {
-            background.draw(canvas);
-        }
+            if (background != null) {
+                background.draw(canvas);
 
-        // The border width is included in the padding so there is no need for
-        // clip if there is no inner border radius.
-        if (innerRadius > 0) {
-            this.rect.set(
-                    roundedBorderWidth,
-                    roundedBorderWidth,
-                    this.getWidth() - roundedBorderWidth,
-                    this.getHeight() - roundedBorderWidth);
+                borderTopLeftRadius = background.getBorderTopLeftRadius();
+                borderTopRightRadius = background.getBorderTopRightRadius();
+                borderBottomRightRadius = background.getBorderBottomRightRadius();
+                borderBottomLeftRadius = background.getBorderBottomLeftRadius();
+            } else {
+                borderTopLeftRadius = borderTopRightRadius = borderBottomRightRadius = borderBottomLeftRadius = 0;
+            }
 
-            this.path.reset();
-            this.path.addRoundRect(rect, innerRadius, innerRadius, Path.Direction.CW);
+            // Padding?
+            float borderTopWidth = this.getPaddingTop();
+            float borderRightWidth = this.getPaddingRight();
+            float borderBottomWidth = this.getPaddingBottom();
+            float borderLeftWidth = this.getPaddingLeft();
 
-            canvas.clipPath(this.path);
-        }
+            float innerWidth, innerHeight;
 
-        float rotationDegree = this.getRotationAngle();
+            float rotationDegree = this.getRotationAngle();
+            boolean swap = Math.abs(rotationDegree % 180) > 45 && Math.abs(rotationDegree % 180) < 135;
 
-        if (Math.abs(rotationDegree) > ImageView.EPSILON && Math.abs((rotationDegree % 90) - 0.0) < ImageView.EPSILON) {
-            ScaleType scaleType = this.getScaleType();
+            innerWidth = this.getWidth() - borderLeftWidth - borderRightWidth;
+            innerHeight = this.getHeight() - borderTopWidth - borderBottomWidth;
 
-            float viewWidth = this.getWidth() - (2 * roundedBorderWidth);
-            float viewHeight = this.getHeight() - (2 * roundedBorderWidth);
+            // TODO: Capture all created objects here in locals and update them instead...
+            Path path = new Path();
+            float[] radii = {
+                Math.max(0, borderTopLeftRadius - borderLeftWidth), Math.max(0, borderTopLeftRadius - borderTopWidth),
+                Math.max(0, borderTopRightRadius - borderRightWidth), Math.max(0, borderTopRightRadius - borderTopWidth),
+                Math.max(0, borderBottomRightRadius - borderRightWidth), Math.max(0, borderBottomRightRadius - borderBottomWidth),
+                Math.max(0, borderBottomLeftRadius - borderLeftWidth), Math.max(0, borderBottomLeftRadius - borderBottomWidth)
+            };
+            path.addRoundRect(new RectF(borderLeftWidth, borderTopWidth, borderLeftWidth + innerWidth, borderTopWidth + innerHeight), radii, Path.Direction.CW);
+
+            Paint paint = new Paint();
+            BitmapShader bitmapShader = new BitmapShader(this.mBitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+
             float bitmapWidth = (float) mBitmap.getWidth();
             float bitmapHeight = (float) mBitmap.getHeight();
-
-            float scaleX;
-            float scaleY;
-            float decision = (rotationDegree / 90) % 2;
-            if (Math.abs(Math.floor(decision) - 0) < ImageView.EPSILON) {
-                scaleX = viewWidth / bitmapWidth;
-                scaleY = viewHeight / bitmapHeight;
-            } else {
-                scaleX = viewHeight / bitmapWidth;
-                scaleY = viewWidth / bitmapHeight;
-            }
-
-            float scale = 1.0f;
-
-            if (scaleType == ScaleType.FIT_CENTER || scaleType == ScaleType.MATRIX) {
-                scale = (scaleX < scaleY) ? scaleX : scaleY;
-            } else if (scaleType == ScaleType.CENTER_CROP) {
-                scale = (scaleX < scaleY) ? scaleY : scaleX;
-            }
 
             Matrix matrix = this.mMatrix;
             matrix.reset();
 
-            if (scaleType == ScaleType.CENTER_CROP || scaleType == ScaleType.FIT_CENTER || scaleType == ScaleType.MATRIX) {
-                matrix.postScale(scale, scale);
-                matrix.postTranslate(-(bitmapWidth * scale) / 2, -(bitmapHeight * scale) / 2);
-            } else if (scaleType == ScaleType.FIT_XY) {
-                matrix.postScale(scaleX, scaleY);
-                matrix.postTranslate(-((bitmapWidth * scaleX) + roundedBorderWidth) / 2, -((bitmapHeight * scaleY) + roundedBorderWidth) / 2);
+            matrix.postRotate(rotationDegree, bitmapWidth / 2, bitmapHeight / 2);
+            if (swap) {
+                matrix.postTranslate((bitmapHeight - bitmapWidth) / 2, (bitmapWidth - bitmapHeight) / 2);
+                float temp = bitmapWidth;
+                bitmapWidth = bitmapHeight;
+                bitmapHeight = temp;
             }
 
-            matrix.postRotate(rotationDegree);
-            matrix.postTranslate(viewWidth / 2 + roundedBorderWidth, viewHeight / 2 + roundedBorderWidth);
+            float fittingScaleX = innerWidth / bitmapWidth;
+            float fittingScaleY = innerHeight / bitmapHeight;
 
-            canvas.drawBitmap(this.mBitmap, matrix, null);
-        } else {
-            super.onDraw(canvas);
+            float uniformScale;
+            float pivotX, pivotY;
+            switch(this.getScaleType()) {
+                case FIT_CENTER: // aspectFit
+                    uniformScale = Math.min(fittingScaleX, fittingScaleY);
+                    matrix.postTranslate((innerWidth - bitmapWidth) / 2, (innerHeight - bitmapHeight) / 2);
+                    matrix.postScale(uniformScale, uniformScale, innerWidth / 2, innerHeight / 2);
+                    canvas.clipRect(
+                        borderLeftWidth + (innerWidth - bitmapWidth * uniformScale) / 2,
+                        borderTopWidth + (innerHeight - bitmapHeight * uniformScale) / 2,
+                        borderLeftWidth + (innerWidth + bitmapWidth * uniformScale) / 2,
+                        borderTopWidth + (innerHeight + bitmapHeight * uniformScale) / 2
+                    );
+                    break;
+                case CENTER_CROP: // aspectFill
+                    uniformScale = Math.max(fittingScaleX, fittingScaleY);
+                    matrix.postTranslate((innerWidth - bitmapWidth) / 2, (innerHeight - bitmapHeight) / 2);
+                    matrix.postScale(uniformScale, uniformScale, innerWidth / 2, innerHeight / 2);
+                    canvas.clipRect(
+                        borderLeftWidth + (innerWidth - bitmapWidth * uniformScale) / 2,
+                        borderTopWidth + (innerHeight - bitmapHeight * uniformScale) / 2,
+                        borderLeftWidth + (innerWidth + bitmapWidth * uniformScale) / 2,
+                        borderTopWidth + (innerHeight + bitmapHeight * uniformScale) / 2
+                    );
+                    break;
+                case FIT_XY: // fill
+                    matrix.postScale(fittingScaleX, fittingScaleY);
+                    break;
+                case MATRIX: // none
+                    canvas.clipRect(
+                        borderLeftWidth,
+                        borderTopWidth,
+                        borderLeftWidth + bitmapWidth,
+                        borderTopWidth + bitmapHeight
+                    );
+                    break;
+            }
+            matrix.postTranslate(borderLeftWidth, borderTopWidth);
+            bitmapShader.setLocalMatrix(matrix);
+            paint.setAntiAlias(true);
+            paint.setFilterBitmap(true);
+            paint.setShader(bitmapShader);
+            canvas.drawPath(path, paint);
         }
     }
 
