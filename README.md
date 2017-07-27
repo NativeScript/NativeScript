@@ -75,3 +75,5 @@ We [worked together with the Google Angular team](http://angularjs.blogspot.com/
 Please, use [github issues](https://github.com/NativeScript/NativeScript/issues) strictly for [reporting a bugs](CONTRIBUTING.md#bugs) or [requesting features](CONTRIBUTING.md#features). For general NativeScript questions and support, check out the [NativeScript community forum](https://discourse.nativescript.org/).
 
 ![](https://ga-beacon.appspot.com/UA-111455-24/nativescript/nativescript?pixel) 
+
+just a test
