@@ -74,7 +74,7 @@ if (platform.device.os === platform.platformNames.ios) {
         progress.backgroundColor = new color.Color("red");
 
         function testAction(views: Array<viewModule.View>) {
-            TKUnit.assertEqual(progress.backgroundColor.ios.CGColor, progress.ios.trackTintColor.CGColor, "progress.color");
+            TKUnit.assertEqual((<color.Color>progress.backgroundColor).ios.CGColor, progress.ios.trackTintColor.CGColor, "progress.color");
         };
 
         helper.buildUIAndRunTest(progress, testAction);

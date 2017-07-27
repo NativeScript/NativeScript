@@ -218,7 +218,7 @@ export class ActionBar extends ActionBarBase {
             navBar.tintColor = null;
         }
 
-        let bgColor = this.backgroundColor;
+        let bgColor = <Color>this.backgroundColor;
         navBar.barTintColor = bgColor ? bgColor.ios : null;
     }
 

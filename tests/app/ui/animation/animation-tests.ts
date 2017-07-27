@@ -303,7 +303,7 @@ export function test_AnimateBackgroundColor(done) {
 
     label.animate({ backgroundColor: red, duration: 20 })
         .then(() => {
-            TKUnit.assert(label.backgroundColor.equals(red));
+            TKUnit.assert((<colorModule.Color>label.backgroundColor).equals(red));
             done();
         })
         .catch((e) => {
@@ -318,7 +318,7 @@ export function test_AnimateBackgroundColor_FromString(done) {
 
     label.animate({ backgroundColor: <any>expected, duration: 20 })
         .then(() => {
-            TKUnit.assert(label.backgroundColor.equals(clr));
+            TKUnit.assert((<colorModule.Color>label.backgroundColor).equals(clr));
             done();
         })
         .catch((e) => {

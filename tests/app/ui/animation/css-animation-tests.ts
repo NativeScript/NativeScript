@@ -362,7 +362,7 @@ export function test_ExecuteCSSAnimation() {
     TKUnit.waitUntilReady(() => label.isLoaded);
     label.className = "l";
     let green = new color.Color("green");
-    TKUnit.waitUntilReady(() => green.equals(label.backgroundColor), 1);
+    TKUnit.waitUntilReady(() => green.equals(<color.Color>label.backgroundColor), 1);
     TKUnit.assertEqual(label.backgroundColor, green);
 }
 

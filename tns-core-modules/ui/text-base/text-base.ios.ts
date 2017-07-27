@@ -246,9 +246,9 @@ export class TextBase extends TextBaseCommon {
         }
 
         // We don't use isSet function here because defaultValue for backgroundColor is null.
-        const backgroundColor = style.backgroundColor
+        const backgroundColor = <Color>(style.backgroundColor
             || (<FormattedString>span.parent).backgroundColor
-            || (<TextBase>(<FormattedString>span.parent).parent).backgroundColor;
+            || (<TextBase>(<FormattedString>span.parent).parent).backgroundColor);
         if (backgroundColor) {
             attrDict[NSBackgroundColorAttributeName] = backgroundColor.ios;
         }
