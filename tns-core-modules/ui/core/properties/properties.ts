@@ -996,25 +996,19 @@ export class ShorthandProperty<T extends Style, P> implements definitions.Shorth
         const converter = options.converter;
 
         function setLocalValue(this: T, value: string | P): void {
-            if (this[key] !== value) {
-                this[key] = value;
-                this.view._batchUpdate(() => {
-                    for (let [p, v] of converter(value)) {
-                        this[p.name] = v;
-                    }
-                });
-            }
+            this.view._batchUpdate(() => {
+                for (let [p, v] of converter(value)) {
+                    this[p.name] = v;
+                }
+            });
         }
 
         function setCssValue(this: T, value: string): void {
-            if (this[key] !== value) {
-                this[key] = value;
-                this.view._batchUpdate(() => {
-                    for (let [p, v] of converter(value)) {
-                        this[p.cssName] = v;
-                    }
-                });
-            }
+            this.view._batchUpdate(() => {
+                for (let [p, v] of converter(value)) {
+                    this[p.cssName] = v;
+                }
+            });
         }
 
         this.cssValueDescriptor = {

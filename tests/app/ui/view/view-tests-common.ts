@@ -1,5 +1,5 @@
 ﻿import * as TKUnit from "../../TKUnit";
-import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, Property, Style } from "tns-core-modules/ui/core/view";
+import { View, eachDescendant, getViewById, InheritedProperty, CssProperty, CssAnimationProperty, ShorthandProperty, Property, Style } from "tns-core-modules/ui/core/view";
 import { topmost } from "tns-core-modules/ui/frame";
 import { Page } from "tns-core-modules/ui/page";
 import { Button } from "tns-core-modules/ui/button";
@@ -256,6 +256,43 @@ const customCssProperty = new CssProperty<Style, string>({ name: "customCssPrope
 const customCssAnimationProperty = new CssAnimationProperty<Style, string>({ name: "customCssAnimationProperty", cssName: "custom-css-animation-property" });
 const customViewProperty = new Property<TestView, string>({ name: "custom" });
 
+const customCssAProperty = new CssProperty<Style, string>({
+    name: "customCssA",
+    cssName: "custom-css-a",
+    valueChanged(target, oldValue, newValue) {
+        if ((<any>target).customCssAPropertyChanged) {
+            (<any>target).customCssAPropertyChanged(oldValue, newValue);
+        }
+    }
+});
+customCssAProperty.register(Style);
+const customCssBProperty = new CssProperty<Style, string>({
+    name: "customCssB",
+    cssName: "custom-css-b",
+    valueChanged(target, oldValue, newValue) {
+        if ((<any>target).customCssBPropertyChanged) {
+            (<any>target).customCssBPropertyChanged(oldValue, newValue);
+        }
+    }
+});
+customCssBProperty.register(Style);
+const customShortHandProperty = new ShorthandProperty<Style, string>({
+    name: "customShortHand",
+    cssName: "custom-short-hand",
+    converter(value: string): [CssProperty<any, any>, any][] {
+        console.log("Convert: " + value);
+        const values = value.split(",");
+        return [
+            [customCssAProperty, values[0]],
+            [customCssBProperty, values[1]]
+        ];
+    },
+    getter(this: Style): string {
+        return `${(<any>this).customCssA},${(<any>this).customCssB}`;
+    }
+});
+customShortHandProperty.register(Style);
+
 class TestView extends Layout {
     public inheritanceTest: number;
     public booleanInheritanceTest: boolean;
@@ -286,6 +323,28 @@ class TestView extends Layout {
     }
     set customCssAnimationProperty(value: string) {
         this.style["customCssAnimationProperty"] = value;
+    }
+
+    get customCssA(): string {
+        return (<any>this.style).customCssA;
+    }
+    set customCssA(value: string) {
+        (<any>this.style).customCssA = value;
+    }
+
+    get customCssB(): string {
+        return (<any>this.style).customCssB;
+    }
+    set customCssB(value: string) {
+        (<any>this.style).customCssB = value;
+    }
+
+    get customShortHand(): string {
+        return (<any>this.style).customShortHand;
+    }
+    set customShortHand(value: string) {
+        console.log("Setting style's customShortHand: " + value);
+        (<any>this.style).customShortHand = value;
     }
 
     private _nativeView;
@@ -981,4 +1040,33 @@ export function test_background_image_doesnt_throw() {
     helper.buildUIAndRunTest(btn, function (views: Array<View>) {
         helper.waitUntilLayoutReady(btn);
     });
+}
+
+export function test_shorthand_property_sets_composite_properties() {
+    var view = new TestView("view1");
+    view.customShortHand = "left,right";
+    TKUnit.assertEqual(view.customCssA, "left", "Expected customCssAProperty to be 'left'.");
+    TKUnit.assertEqual(view.customCssB, "right", "Expected customCssAProperty to be 'right'.");
+}
+
+export function test_shorthand_property_is_set_by_composite_properties() {
+    var view = new TestView("view1");
+    view.customCssA = "left";
+    view.customCssB = "right";
+    TKUnit.assertEqual(view.customShortHand, "left,right");
+}
+
+export function test_shorthand_property_doesnt_cache() {
+    var view = new TestView("view1");
+    view.customShortHand = "left,right";
+    TKUnit.assertEqual(view.customCssA, "left", "Expected customCssA to be 'left' the first time.");
+    TKUnit.assertEqual(view.customCssB, "right", "Expected customCssA to be 'right' the second time.");
+    view.customCssA = "top";
+    view.customCssB = "bottom";
+    TKUnit.assertEqual(view.customShortHand, "top,bottom", "Expected customShortHand to be 'top,bottom' calculated from the composite properties.");
+    // This used to fail in https://github.com/NativeScript/NativeScript/issues/4450 the customShortHand would cache "left,right" when initially set,
+    // And won't run internal logic as the new value is "same" as the previous value, not taking into account that meanwhile the composite properties were set.
+    view.customShortHand = "left,right";
+    TKUnit.assertEqual(view.customCssA, "left", "Expected customCssA to be 'left' the second time.");
+    TKUnit.assertEqual(view.customCssB, "right", "Expected customCssA to be 'right' the second time.");
 }
