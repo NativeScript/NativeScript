@@ -1,5 +1,5 @@
 import { AndroidActionBarSettings as AndroidActionBarSettingsDefinition, AndroidActionItemSettings } from ".";
-import { ActionItemBase, ActionBarBase, isVisible, View, colorProperty, Color } from "./action-bar-common";
+import { ActionItemBase, ActionBarBase, isVisible, View, layout, colorProperty, flatProperty, Color } from "./action-bar-common";
 import { RESOURCE_PREFIX } from "../../utils/utils";
 import { fromFileOrResource } from "../../image-source";
 import * as application from "../../application";
@@ -8,6 +8,7 @@ export * from "./action-bar-common";
 
 const R_ID_HOME = 0x0102002c;
 const ACTION_ITEM_ID_OFFSET = 10000;
+const DEFAULT_ELEVATION = 4;
 
 let AppCompatTextView;
 let actionItemIdGenerator = ACTION_ITEM_ID_OFFSET;
@@ -385,6 +386,18 @@ export class ActionBar extends ActionBarBase {
     [colorProperty.setNative](value: number | Color) {
         const color = value instanceof Color ? value.android : value;
         this.nativeView.setTitleTextColor(color);
+    }
+
+    [flatProperty.setNative](value: boolean) {
+        const compat = <any>android.support.v4.view.ViewCompat;
+        if (compat.setElevation) {
+            if (value) {
+                compat.setElevation(this.nativeView, 0);
+            } else {
+                const val = DEFAULT_ELEVATION * layout.getDisplayDensity();
+                compat.setElevation(this.nativeView, val);
+            }
+        }
     }
 }
 

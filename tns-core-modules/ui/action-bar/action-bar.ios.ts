@@ -144,6 +144,9 @@ export class ActionBar extends ActionBarBase {
 
         // update colors explicitly - they may have to be cleared form a previous page
         this.updateColors(navigationBar);
+
+        // the 'flat' property may have changed in between pages
+        this.updateFlatness(navigationBar);
     }
 
     private populateMenuItems(navigationItem: UINavigationItem) {
@@ -234,6 +237,18 @@ export class ActionBar extends ActionBarBase {
 
         let navigationItem: UINavigationItem = (<UIViewController>page.ios).navigationItem;
         navigationItem.title = this.title;
+    }
+
+    private updateFlatness(navBar: UINavigationBar) {
+        if (this.flat) {
+            navBar.setBackgroundImageForBarMetrics(UIImage.new(), UIBarMetrics.Default);
+            navBar.shadowImage = UIImage.new();
+            navBar.translucent = false;
+        } else {
+            navBar.setBackgroundImageForBarMetrics(null, null);
+            navBar.shadowImage = null;
+            navBar.translucent = true;
+        }
     }
 
     private _navigationBarHeight: number = 0;
